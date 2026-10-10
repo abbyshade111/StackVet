@@ -27,6 +27,13 @@ fn main() {
         .or_else(|| git(&["rev-parse", "HEAD"]))
         .unwrap_or_else(|| "unknown".to_owned());
     println!("cargo:rustc-env=SV_GIT_COMMIT={commit}");
+    // A checkout with changes to tracked files that are not committed (backlog 0233): the commit alone does not say
+    // what was built, so the mark is set and a report says so. Given no git, nothing is marked, and the commit is
+    // `unknown` in that case anyway.
+    println!("cargo:rerun-if-env-changed=SV_GIT_DIRTY");
+    if git(&["status", "--porcelain", "--untracked-files=no"]).is_some() {
+        println!("cargo:rustc-env=SV_GIT_DIRTY=1");
+    }
     // Run again when the checkout moves: the HEAD file changes on a switch, and the branch's own file on a commit.
     if let Some(head) = git(&["rev-parse", "--git-path", "HEAD"]) {
         println!("cargo:rerun-if-changed={head}");

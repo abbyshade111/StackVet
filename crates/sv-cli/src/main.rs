@@ -2543,6 +2543,7 @@ fn keep_unfinished(
         sv_report::MadeBy {
             version: env!("CARGO_PKG_VERSION").to_owned(),
             commit: env!("SV_GIT_COMMIT").to_owned(),
+            uncommitted_changes: option_env!("SV_GIT_DIRTY").is_some(),
         }
         .describe(),
         outcome,

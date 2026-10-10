@@ -2496,6 +2496,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         made_by: sv_report::MadeBy {
             version: env!("CARGO_PKG_VERSION").to_owned(),
             commit: env!("SV_GIT_COMMIT").to_owned(),
+            uncommitted_changes: option_env!("SV_GIT_DIRTY").is_some(),
         },
         run_note,
         run_steps,
@@ -2537,6 +2538,10 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
             .as_deref()
             .map(|text| crate::bundle::sha256(text.as_bytes())),
         sv_data_sha256: report_lock::data_sha256(),
+        sv_data_files: report_lock::data_files_sha256()
+            .into_iter()
+            .map(|(file, sha256)| sv_report::DataFileHash { file, sha256 })
+            .collect(),
     });
     report.run_record = Some(run_record);
     report.seen = seen;
