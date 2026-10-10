@@ -79,7 +79,8 @@ fn mail_header_check(
         if to_account == 1 { "" } else { "s" }
     ));
     if to_theirs > 0 {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["reset-header-crlf".to_owned(), "reset-header-lf".to_owned()],
             &MAIL_HEADER_INJECTED,
             "A header typed into the email address is added to the app's email",
             Severity::High,
@@ -345,7 +346,12 @@ fn reset_flow(
         }
     ));
     if old_works {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "reset-request-1".to_owned(),
+                "reset-use-1".to_owned(),
+                "private-reset-new".to_owned(),
+            ],
             &RESET_KEEPS_OLD,
             "The old password still works after a reset",
             Severity::High,
@@ -373,7 +379,8 @@ fn reset_flow(
         if reused { "signed in" } else { "was refused" }
     ));
     if reused {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["reset-use-1".to_owned(), "reset-use-2".to_owned()],
             &RESET_REUSABLE,
             "A password reset link works more than once",
             Severity::High,
@@ -442,7 +449,8 @@ fn code_in_answer_check(
         }
     ));
     if let Some(place) = found {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["reset-request-1".to_owned(), "reset-request-2".to_owned(), "reset-request-nobody".to_owned()],
             &RESET_CODE_IN_ANSWER,
             "A password reset hands its code to whoever asked",
             Severity::Critical,
@@ -465,7 +473,8 @@ fn reset_code_check(codes: &[String], out: &mut Outcome) {
     };
     let bits = most_bits(shortest);
     if bits < 19.9 {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["reset-request-1".to_owned(), "reset-request-2".to_owned()],
             &RESET_CODE_GUESSABLE,
             "The password reset code is short enough to guess",
             Severity::High,
@@ -483,7 +492,8 @@ fn reset_code_check(codes: &[String], out: &mut Outcome) {
         && let [.., earlier, later] = numbers.as_slice()
         && (1..=1000).contains(&later.abs_diff(*earlier))
     {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["reset-request-1".to_owned(), "reset-request-2".to_owned()],
             &RESET_CODE_GUESSABLE,
             "Password reset codes count up",
             Severity::High,

@@ -178,7 +178,8 @@ fn changed_token(
         if opened { "opened" } else { "refused" }
     ));
     if opened {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![id.to_owned()],
             rule,
             title,
             Severity::Critical,
@@ -369,7 +370,8 @@ fn placeholder_secret_check(jwt: &Jwt, out: &mut Outcome) {
     ));
     if let Some(secret) = matched {
         let shown = crate::finding::Secret::redact(secret);
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["login-a-token".to_owned()],
             &APP_TOKEN_PLACEHOLDER_KEY,
             "The app signs its sign-in tokens with a placeholder secret",
             Severity::Critical,
@@ -452,7 +454,8 @@ fn key_source_check(http: &mut dyn Http, jwt: &Jwt, confirm: &str, out: &mut Out
             .map(|f| format!("`{f}`"))
             .collect::<Vec<_>>()
             .join(" and ");
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["token-jku".to_owned(), "token-x5u".to_owned()],
             &APP_TOKEN_KEY_SOURCE,
             "The app fetches the key for its sign-in token from an address the token names",
             Severity::High,
@@ -577,7 +580,8 @@ pub(super) fn app_token_expiry_check(
         if opened { "opened" } else { "refused" }
     ));
     if opened {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["token-expired".to_owned()],
             &APP_TOKEN_EXPIRED,
             "The app still takes its sign-in token after it has expired",
             Severity::High,
