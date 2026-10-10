@@ -109,6 +109,18 @@ fn a_change_to_the_security_notes_is_kept_and_named_as_why_two_runs_are_not_comp
         sv_cli::bundle::sha256(&content),
         "{inputs}"
     );
+    // The helper images, each named by digest (backlog 0238): the list is the one sv runs.
+    let helpers = inputs["helper_images"]
+        .as_array()
+        .expect("a list of helper images");
+    assert_eq!(
+        helpers.len(),
+        sv_run::docker::HELPER_IMAGES.len(),
+        "{inputs}"
+    );
+    for image in helpers {
+        assert!(image.as_str().unwrap().contains("@sha256:"), "{inputs}");
+    }
     assert_ne!(
         first["run_record"]["inputs"]["security_notes_sha256"],
         inputs["security_notes_sha256"]

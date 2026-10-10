@@ -20,8 +20,10 @@ use std::time::Duration;
 
 /// How long to wait for the app to answer before calling it not assessed.
 const READY_TIMEOUT_SECONDS: u64 = 60;
-/// The image the probes run from. Tiny, and already needed for the health check.
-const PROBE_IMAGE: &str = "busybox:1.36";
+/// The image the probes run from. Tiny, and already needed for the health check. Named by its digest as well as its tag,
+/// so a moved tag cannot change what runs (backlog 0238); the digest is the multi-platform one the tag points to.
+const PROBE_IMAGE: &str =
+    "busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662";
 
 /// The one place a container that talks to the app may write: in memory, where nothing written can
 /// be run, and only big enough for the request it is about to send.
@@ -42,10 +44,12 @@ const GATEWAY_PORT: &str = "9";
 /// The mail server the app is given when the probes need to read its email: Mailpit, which keeps
 /// every message it is sent and answers questions about them over HTTP. Pinned to a minor release,
 /// as the probe image is, so a run does not change under the owner because a new one came out.
-const MAIL_IMAGE: &str = "axllent/mailpit:v1.31";
+const MAIL_IMAGE: &str =
+    "axllent/mailpit:v1.31@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48";
 /// The test OpenID Connect provider runs in a stock Node image: its script uses built-in modules
-/// only, because the fence has no route to a package registry.
-const PROVIDER_IMAGE: &str = "node:22-alpine";
+/// only, because the fence has no route to a package registry. Named by digest (backlog 0238).
+const PROVIDER_IMAGE: &str =
+    "node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402";
 const PROVIDER_PORT: u16 = 9000;
 const PROVIDER_SCRIPT: &str = include_str!("../assets/oidc-provider.mjs");
 /// The test model the app's AI feature is pointed at, in the same stock Node image. See
@@ -60,7 +64,45 @@ const MODEL_KEY: &str = "sv-test-model-key-not-a-real-key";
 const PROVIDER_CLIENT_ID: &str = "sv-test-client";
 /// The headless browser, pinned to one version so a run today and a run next month draw pages the
 /// same way. Its DevTools port is reached only from the driver, which shares its network.
-const BROWSER_IMAGE: &str = "chromedp/headless-shell:151.0.7922.109";
+const BROWSER_IMAGE: &str = "chromedp/headless-shell:151.0.7922.109@sha256:2d349b544a1ea6b5b5fd7c0fe99215ff662339c57407ee2e8c0a11af93516b04";
+/// Every helper image `sv` runs, by name and digest, in the run record so a report says what ran (backlog 0238).
+pub const HELPER_IMAGES: &[&str] = &[PROBE_IMAGE, MAIL_IMAGE, PROVIDER_IMAGE, BROWSER_IMAGE];
+
+/// The digest the owner's app image was pulled by, from the local Docker, for the run record (backlog 0238): the one
+/// its registry names when it was pulled, otherwise its own image ID. Local only: `docker image inspect` asks no
+/// registry. `None` when Docker cannot say.
+pub fn image_digest(image: &str) -> Option<String> {
+    let inspect = |format: &str| -> Option<String> {
+        let out = std::process::Command::new("docker")
+            .args(["image", "inspect", "--format", format, image])
+            .output()
+            .ok()?;
+        out.status
+            .success()
+            .then(|| String::from_utf8_lossy(&out.stdout).trim().to_owned())
+            .filter(|s| !s.is_empty())
+    };
+    inspect("{{index .RepoDigests 0}}")
+        .as_deref()
+        .and_then(digest_of)
+        .or_else(|| inspect("{{.Id}}").as_deref().and_then(digest_of))
+}
+
+/// The `sha256:` digest in a repository digest such as `repo/name@sha256:…`, or an image ID; `None` for anything
+/// else. A digest is 64 lowercase hexadecimal characters after `sha256:`.
+pub fn digest_of(text: &str) -> Option<String> {
+    let digest = text.rsplit_once('@').map_or(text, |(_, d)| d);
+    let hex = digest.strip_prefix("sha256:")?;
+    (hex.len() == 64
+        && hex
+            .bytes()
+            .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase()))
+    .then(|| digest.to_owned())
+}
+
+#[cfg(test)]
+#[path = "docker_images_tests.rs"]
+mod images_tests;
 /// What drives it: a script of `sv`'s own, run in the same stock Node image as the test provider.
 const DRIVER_SCRIPT: &str = include_str!("../assets/browser-driver.mjs");
 /// Where the app sends its mail on the mail server, and where the probes read it.
@@ -3870,7 +3912,13 @@ mod probe_tests {
         assert_eq!(driver[at + 1], "container:sv-1-browser");
         assert_eq!(driver.last(), Some(&DRIVER_SCRIPT));
         // One version of Chromium, named, so two runs draw pages the same way.
-        let tag = BROWSER_IMAGE.rsplit(':').next().unwrap();
+        let tag = BROWSER_IMAGE
+            .split('@')
+            .next()
+            .unwrap()
+            .rsplit(':')
+            .next()
+            .unwrap();
         assert!(
             tag.split('.').count() == 4 && tag.split('.').all(|p| p.parse::<u32>().is_ok()),
             "{BROWSER_IMAGE}"

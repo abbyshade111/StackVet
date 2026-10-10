@@ -2396,6 +2396,12 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         word,
         run_record,
     } = gathered;
+    // The app's own image by its digest, read before the run's status is taken apart below (backlog 0238): the local
+    // Docker only, and only when the app was run.
+    let app_image_digest = match &run.status {
+        sv_report::RunStatus::Started { image, .. } => sv_run::docker::image_digest(image),
+        _ => None,
+    };
     let RunningApp {
         status: run_status,
         note: run_note,
@@ -2613,6 +2619,13 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
             .into_iter()
             .map(|(file, sha256)| sv_report::DataFileHash { file, sha256 })
             .collect(),
+        // The helper images by name and digest, and the app's own image by its digest, so the report says what ran
+        // (backlog 0238). The app's digest is read from the local Docker only, and only when the app was run.
+        helper_images: sv_run::docker::HELPER_IMAGES
+            .iter()
+            .map(|image| (*image).to_owned())
+            .collect(),
+        app_image_digest,
     });
     report.run_record = Some(run_record);
     report.seen = seen;
