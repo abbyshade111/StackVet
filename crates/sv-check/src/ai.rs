@@ -3275,6 +3275,14 @@ fn failure_logged(markers: &LogMarkers, log: &str, out: &mut Outcome) {
                 )
                 .in_part(),
             );
+            // The line the failure was found on, kept beside the report so a person can check it (0229, part 3).
+            if let Some(line) = log.lines().find(|l| l.contains(&format!("SVERR{tag}"))) {
+                out.log_lines.push(crate::logs::KeptLine {
+                    read_for: "the AI service failing one message on purpose (V16.5.2, V16.5.3)"
+                        .to_owned(),
+                    line: line.to_owned(),
+                });
+            }
             None
         }
         Some(_) => Some(
@@ -3384,6 +3392,13 @@ fn tool_action_logged(markers: &LogMarkers, log: &str, out: &mut Outcome) {
     let line = log.lines().find(|line| {
         line.contains("sv_lookup") && line.replace(&message_marker, "").contains(tag.as_str())
     });
+    // The line that recorded the call, kept beside the report so a person can check it (0229, part 3).
+    if let Some(found) = line {
+        out.log_lines.push(crate::logs::KeptLine {
+            read_for: "the AI's call to the test tool (C12.4.2)".to_owned(),
+            line: found.to_owned(),
+        });
+    }
     match line {
         Some(line) => out.verified.push(
             crate::Verified::new(

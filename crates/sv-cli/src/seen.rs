@@ -209,10 +209,16 @@ pub fn stand_ins(rules: &SecretRules, received: &sv_run::stand_ins::StandIns, se
 /// The lines of the app's own output the log checks read, and its last lines, made ready to keep
 /// (backlog 0229, part 3): each through `redact_text` and cut at `KEPT_CHARS` characters. `sv`'s
 /// test secrets were blanked in `sv-run`. Adds the credentials cut to `seen.credentials_removed`.
-pub fn app_log(rules: &SecretRules, asked: Option<&sv_check::signed_in::Outcome>, seen: &mut Seen) {
-    let Some(asked) = asked else {
+pub fn app_log(
+    rules: &SecretRules,
+    asked: Option<&sv_check::signed_in::Outcome>,
+    ai: Option<&sv_check::signed_in::Outcome>,
+    seen: &mut Seen,
+) {
+    // The lines the AI feature's log checks read are kept beside the signed-in suite's (0229, part 3).
+    if asked.is_none() && ai.is_none() {
         return;
-    };
+    }
     let cuts = std::cell::Cell::new(0);
     let mut removed = 0;
     let mut cut = |text: &str| {
@@ -221,14 +227,15 @@ pub fn app_log(rules: &SecretRules, asked: Option<&sv_check::signed_in::Outcome>
         bounded(text, &cuts)
     };
     let lines_read = asked
-        .log_lines
-        .iter()
+        .into_iter()
+        .chain(ai)
+        .flat_map(|o| o.log_lines.iter())
         .map(|k| sv_report::seen::LogLine {
             read_for: k.read_for.clone(),
             line: cut(&k.line),
         })
         .collect();
-    let last_lines = asked.log_tail.iter().map(|l| cut(l)).collect();
+    let last_lines = asked.map_or_else(Vec::new, |o| o.log_tail.iter().map(|l| cut(l)).collect());
     seen.app_log = sv_report::seen::AppLog {
         lines_read,
         last_lines,

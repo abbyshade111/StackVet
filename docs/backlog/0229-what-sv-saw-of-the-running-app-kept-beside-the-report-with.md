@@ -1,6 +1,6 @@
 # What sv saw of the running app, kept beside the report with credentials removed
 
-**Status:** partly done: part 1: probe exchanges are kept (crates/sv-report/src/seen.rs) but no finding links to them; part 3: log lines are kept, and its own status says partly. Claim released 10 October 2026.
+**Status:** partly done: part 1: probe exchanges are kept, but no finding links to them (claimed by paper-facts, 10 October 2026)
 
 The owner's decision A of the observability review (0226, part 3), 9 October 2026: "yes to A, C, and D"; recorded as
 ADR-082. At the owner's word that evening ("yes, please go ahead"), an item of its own, as the backlog's rules now say
@@ -25,7 +25,7 @@ passes through `secrets::redact_text` first.
 
 3. **The app's own log lines the log checks rest on.** The lines a logging check matched, and a short tail of the log,
    redacted, so a V16 credit can be checked by a person.
-   **Part status:** claimed by stackvet-backlog-org, 10 October 2026
+   **Part status:** done, 10 October 2026
 
 4. **An outside tool's raw output, when asked for.** `--keep-tool-output` copies each tool's report, redacted, beside
    the report; its version, arguments, and exit code are recorded always (0226, part 2, item 14).
@@ -33,3 +33,5 @@ passes through `secrets::redact_text` first.
 
 **Said plainly, in every part:** the report says the record is there, what it holds, and that it is the app's own text,
 which can hold personal data the app was given during the run (only `sv`'s own test accounts sign in).
+
+**Part 3, checked 10 October 2026:** the AI feature's two log checks now keep the line they matched (the service's own failure, V16.5.2 and V16.5.3; the test tool call, C12.4.2), through the same redaction and cut as the signed-in lines (`crates/sv-check/src/ai.rs`, `crates/sv-cli/src/seen.rs`). Tests: `the_lines_the_ai_log_checks_matched_are_kept_for_a_person_to_read` and `the_lines_the_ai_feature_read_are_kept_and_a_key_in_them_is_not`; the first was broken on purpose and went red.
