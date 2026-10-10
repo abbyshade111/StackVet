@@ -1,6 +1,6 @@
 # sv probe exits 2 when it could not reach the address (observability review, part 3, G)
 
-**Status:** open
+**Status:** claimed by stackvet-backlog-org, 10 October 2026
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: yes (part 3, G, of backlog 0226).
 
