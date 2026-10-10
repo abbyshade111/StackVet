@@ -169,7 +169,11 @@ pub(super) fn open_redirect_check(
         }
     ));
     if !seen.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            TARGETS
+                .iter()
+                .map(|(kind, _)| format!("redirect-login-page-{kind}"))
+                .collect(),
             &OPEN_REDIRECT,
             "The sign-in flow sends the browser to any address it is given",
             Severity::Medium,
@@ -254,7 +258,8 @@ pub(super) fn page_redirect_check(
         }
     ));
     if !seen.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            TARGETS.iter().map(|(kind, _)| format!("redirect-page-{kind}")).collect(),
             &OPEN_REDIRECT,
             "A page of the app sends the browser to any address it is given",
             Severity::Medium,

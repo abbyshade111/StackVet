@@ -1267,6 +1267,24 @@ const RAISED_ON_A_REFUSAL: &[(&str, &[&str])] = &[
 
 /// Whether `id` is one of `requests`: equal to one, or the page fetched for its form's token
 /// first (`signup-short-page`), or starting with one that ends in `-`.
+/// Names on each signed-in credit the recorded answers its entry in `RESTS_ON_A_REFUSAL` lists, so a
+/// credit names only answers that were actually sent (ADR-082, backlog 0229, part 1).
+pub(crate) fn name_credits(verified: &mut [crate::Verified], exchanges: &[recording::Recorded]) {
+    for credit in verified.iter_mut() {
+        let Some((_, requests)) = RESTS_ON_A_REFUSAL
+            .iter()
+            .find(|(rule, _)| *rule == credit.check_id)
+        else {
+            continue;
+        };
+        credit.evidence = exchanges
+            .iter()
+            .map(|exchange| exchange.id.clone())
+            .filter(|id| one_of(id, requests))
+            .collect();
+    }
+}
+
 fn one_of(id: &str, requests: &[&str]) -> bool {
     let id = id.strip_suffix("-page").unwrap_or(id);
     requests
@@ -1750,7 +1768,8 @@ fn run_checks(
         ));
     }
     if !served_anonymously.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["private-anonymous".to_owned()],
             &PRIVATE_PAGE,
             "A page meant for signed-in users opens without signing in",
             Severity::High,

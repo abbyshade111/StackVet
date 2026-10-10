@@ -214,7 +214,8 @@ pub(super) fn owner_field_check(
         return;
     }
     if claimed_shown {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["owner-field-claimed-a".to_owned()],
             &OWNER_FIELD,
             "A record can be put into another user's account",
             Severity::High,

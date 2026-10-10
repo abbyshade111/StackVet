@@ -132,3 +132,32 @@ fn a_finding_named_by_its_answers_carries_their_ids() {
     );
     assert_eq!(found.evidence, ["upload-svg-fetch"]);
 }
+
+#[test]
+fn a_signed_in_credit_names_only_the_recorded_answers_its_entry_lists() {
+    use crate::signed_in::recording::Recorded;
+    let exchange = |id: &str| Recorded {
+        id: id.to_owned(),
+        method: "GET".to_owned(),
+        path: "/".to_owned(),
+        status: Some(200),
+        headers: Vec::new(),
+        body: String::new(),
+    };
+    let exchanges = [
+        exchange("admin-a-0"),
+        exchange("admin-admin-0"),
+        exchange("guess-0"),
+    ];
+    let mut credits = vec![crate::Verified::new(
+        crate::signed_in::rules::ADMIN_PAGE.rule_id,
+        &[],
+        "a test".to_owned(),
+    )];
+    crate::signed_in::name_credits(&mut credits, &exchanges);
+    assert_eq!(
+        credits[0].evidence,
+        ["admin-a-0", "admin-admin-0"],
+        "{credits:?}"
+    );
+}

@@ -98,7 +98,11 @@ pub(super) fn stored_markup_check(
         }
     ));
     if !raw.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (0..places.len())
+                .map(|i| format!("stored-markup-{i}"))
+                .chain(std::iter::once("stored-markup-create".to_owned()))
+                .collect(),
             &STORED_HTML,
             "Saved text is written into the page unencoded",
             Severity::High,

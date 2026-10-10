@@ -193,7 +193,10 @@ pub(super) fn flow_checks(
             ),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (0..tries.len())
+                .map(|i| format!("login-flow-b{i}"))
+                .collect(),
             &STEP_SKIPPED,
             "The flow can be finished without its steps in order",
             Severity::High,
