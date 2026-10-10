@@ -81,6 +81,10 @@ vulnerability. `sv` holds itself to this every week, auditing the Rust files it 
 Running the app needs a container backend (Docker or Colima). Without one, everything that needs the app
 running reports *not assessed* — never a pass, and never a failure.
 
+The report's run record (`report.json`, `inputs`) names the helper images `sv` runs by digest either way. Its
+`app_image_digest`, the digest of your app's own image, is read from the local Docker, so it is left out when Docker
+is not running or the app was not run. Nothing else in the record changes.
+
 `sv run` gives the app no network, so it cannot install its own packages, and an app that needs them never starts.
 Put `install = true` under `[stack.run]` and `sv` installs them first, in a container of its own that sees only the
 package list, never the app's code or its `.env`: from `requirements.txt` with every line pinned (`name==1.2.3`), or
