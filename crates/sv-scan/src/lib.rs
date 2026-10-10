@@ -522,6 +522,28 @@ fn evaluate(
         };
     }
 
+    // A package list `sv` found and could not read may name the very package this signature looks for, so an
+    // absent package is not an answer while one is unread (backlog 0236). Only for a signature that looks for
+    // packages: an unread list cannot hide a code pattern.
+    if !report.unread_manifests.is_empty() && !sig.packages.is_empty() {
+        let mut names: Vec<&str> = report
+            .unread_manifests
+            .iter()
+            .map(|u| u.manifest.as_str())
+            .collect();
+        names.sort_unstable();
+        return Answer {
+            condition,
+            value: None,
+            evidence: Evidence::Incomplete {
+                reason: format!(
+                    "package lists `sv` could not read are present ({}), so it cannot say this is absent",
+                    names.join(", ")
+                ),
+            },
+        };
+    }
+
     // An ecosystem that does not pin what it installs is a second way of not knowing: the declared names are not
     // what is installed, so an absent dependency is not evidence of an absent technology.
     if !report.unpinned.is_empty() && !sig.packages.is_empty() {
