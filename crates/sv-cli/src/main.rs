@@ -135,7 +135,7 @@ fn run() -> Result<i32> {
         "rules" => finished(cmd_rules(rest)),
         "explain" => finished(cmd_explain(rest)),
         "prompts" => finished(cmd_prompts(rest)),
-        "probe" => finished(cmd_probe(rest)),
+        "probe" => cmd_probe(rest),
         "run" => cmd_run(rest),
         "check" => cmd_check(rest),
         "sbom" => finished(cmd_sbom(rest.first().map(PathBuf::from))),
@@ -776,7 +776,7 @@ fn cmd_scope(path: Option<PathBuf>) -> Result<()> {
 ///
 /// The address is an argument and never comes from a file: see `sv_check::production`, where the
 /// limits on what this may do are set out and tested.
-fn cmd_probe(args: &[String]) -> Result<()> {
+fn cmd_probe(args: &[String]) -> Result<i32> {
     let mut url = None;
     // A copy of Chromium's HSTS preload list the owner downloaded. `sv` never fetches it: looking a
     // name up in somebody else's service tells that service which site is being checked.
@@ -926,7 +926,13 @@ fn cmd_probe(args: &[String]) -> Result<()> {
         "This says nothing about the code. Run `sv report` in the app folder for that, and read \
          the two together."
     );
-    Ok(())
+    // Not assessed when the address could not be reached, so a CI step fails rather than passing on
+    // an address this never touched (backlog 0235; ADR-029, Later).
+    Ok(if reached {
+        exit::CLEAN
+    } else {
+        exit::NOT_ASSESSED
+    })
 }
 
 /// Writes `security-notes.md`: the questions no tool can answer, for the requirements that apply.

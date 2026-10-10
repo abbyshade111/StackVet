@@ -80,14 +80,17 @@ fn a_package_json_that_does_not_parse_turns_a_used_library_into_not_used_and_is_
         "{:?}",
         read.unread_manifests
     );
-    // Not read, the same app reads as not using it: the wrong answer this item is about. Whether that
-    // answer should count for nothing is the owner's (backlog 0226, part 3, item H).
+    // Not read, the same app used to read as not using it, the wrong answer. Now the answer is not given:
+    // the package list it cannot read may name the package, so it is incomplete and says which list (backlog 0236).
     let why = unread
         .answers
         .iter()
         .find(|a| a.condition == Condition::Memcache)
         .map(|a| format!("{:?}", a.evidence));
-    assert_eq!(memcache(&unread), Some(false), "{why:?}");
+    assert_eq!(memcache(&unread), None, "{why:?}");
+    let said = why.clone().unwrap_or_default();
+    assert!(said.contains("Incomplete"), "{said}");
+    assert!(said.contains("package.json"), "{said}");
     // What is built here: the file is named, with why.
     assert_eq!(
         unread.unread_manifests.len(),
