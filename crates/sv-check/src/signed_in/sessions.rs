@@ -678,7 +678,7 @@ const SECRET_FIELD_NAMES: &[&str] = &[
 ///
 /// Only ever a finding. Not seeing these names proves nothing: this app may have no such column,
 /// may call it something else, or may return the record somewhere this never looked.
-pub(super) fn record_fields_check(body: &str, path: &str, out: &mut Outcome) {
+pub(super) fn record_fields_check(body: &str, path: &str, answer: &str, out: &mut Outcome) {
     let lower = body.to_lowercase();
     // A name has to appear as a field, not as a word in a sentence: `"password":` in JSON, or
     // `password=` / `password":` in whatever the app writes. Otherwise a page saying "change your
@@ -699,7 +699,8 @@ pub(super) fn record_fields_check(body: &str, path: &str, out: &mut Outcome) {
     if found.is_empty() {
         return;
     }
-    out.findings.push(finding(
+    out.findings.push(finding_on(
+        vec![answer.to_owned()],
         &RECORD_LEAKS_FIELDS,
         "A record is handed back with fields that should stay on the server",
         Severity::Medium,
@@ -824,10 +825,15 @@ pub(super) fn private_page_checks(
     };
     let mut set_again_bare = Vec::new();
     let mut set_again_kept = Vec::new();
+    let mut set_again_ids: Vec<String> = Vec::new();
+    let mut with_link_ids: Vec<String> = Vec::new();
+    let mut stored_ids: Vec<String> = Vec::new();
+    let mut without_headers_ids: Vec<String> = Vec::new();
+    let mut shared_ids: Vec<String> = Vec::new();
 
-    for path in &users.private {
-        let Some(response) = http.send(&get("private-page-headers", path, &signed_in.session))
-        else {
+    for (i, path) in users.private.iter().enumerate() {
+        let page_id = format!("private-page-headers-{i}");
+        let Some(response) = http.send(&get(&page_id, path, &signed_in.session)) else {
             continue;
         };
         if !(200..300).contains(&response.status) {
@@ -852,6 +858,7 @@ pub(super) fn private_page_checks(
             if lacks.is_empty() {
                 set_again_kept.push(format!("{path} (`{}`)", cookie.name));
             } else {
+                set_again_ids.push(page_id.clone());
                 set_again_bare.push(format!(
                     "{path} sets `{}` again without {}",
                     cookie.name,
@@ -861,6 +868,7 @@ pub(super) fn private_page_checks(
         }
         let missing = crate::probes::missing_headers(&response);
         if !missing.is_empty() {
+            without_headers_ids.push(page_id.clone());
             without_headers.push(format!(
                 "{path} came back without {}",
                 missing.join("; without ")
@@ -878,6 +886,7 @@ pub(super) fn private_page_checks(
         if parts.contains(&"no-store") {
             not_stored.push(path.clone());
         } else {
+            stored_ids.push(page_id.clone());
             stored.push(path.clone());
         }
         // Shared caches may keep a response marked `public` or given an `s-maxage`, unless
@@ -886,10 +895,12 @@ pub(super) fn private_page_checks(
             && !parts.contains(&"private")
             && !parts.contains(&"no-store")
         {
+            shared_ids.push(page_id.clone());
             shared.push(path.clone());
         }
 
         if logout_path.is_some_and(|logout| points_at(&response.body, logout)) {
+            with_link_ids.push(page_id.clone());
             with_link.push(path.clone());
         } else {
             without_link.push(path.clone());
@@ -914,7 +925,8 @@ pub(super) fn private_page_checks(
         ));
     }
     if !set_again_bare.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            set_again_ids.clone(),
             &SESSION_COOKIE,
             "A signed-in page sets the session cookie again without the attributes that protect it",
             Severity::High,
@@ -945,7 +957,7 @@ pub(super) fn private_page_checks(
         ));
     } else {
         out.findings.push(finding_on(
-            vec!["private-page-headers".to_owned()],
+            stored_ids.clone(),
             &PRIVATE_PAGE_CACHING,
             "A private page may be kept in the browser's cache",
             Severity::Medium,
@@ -975,7 +987,7 @@ pub(super) fn private_page_checks(
         ));
     } else {
         out.findings.push(finding_on(
-            vec!["private-page-headers".to_owned()],
+            without_headers_ids.clone(),
             &PRIVATE_PAGE_HEADERS,
             "A private page is missing headers a browser relies on",
             Severity::Medium,
@@ -996,7 +1008,7 @@ pub(super) fn private_page_checks(
     ));
     if !shared.is_empty() {
         out.findings.push(finding_on(
-            vec!["private-page-headers".to_owned()],
+            shared_ids.clone(),
             &PRIVATE_PAGE_SHARED_CACHE,
             "A private page tells shared caches they may keep it",
             Severity::Medium,
@@ -1039,7 +1051,8 @@ pub(super) fn private_page_checks(
             ),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            with_link_ids.clone(),
             &SIGN_OUT_LINK,
             "A private page offers no visible way to sign out",
             Severity::Low,
@@ -1168,7 +1181,8 @@ pub(super) fn session_id_check(
         }
     ));
     if !problems.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["login-a".to_owned(), "login-a-again".to_owned()],
             &WEAK_SESSION_ID,
             "The session id could be guessed",
             Severity::High,
@@ -1232,7 +1246,12 @@ fn static_session_check(
         }
     ));
     if !repeated.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "login-a".to_owned(),
+                "login-a-again".to_owned(),
+                "static-again".to_owned(),
+            ],
             &STATIC_SESSION,
             "The session is one fixed key",
             Severity::High,
@@ -1316,7 +1335,8 @@ pub(super) fn session_checks(
             // The session works and sign-in issued nothing: the cookie from before sign-in is now
             // the signed-in session. That is session fixation, whatever else is true.
             let names: Vec<&str> = a.before_login.iter().map(|(n, _)| n.as_str()).collect();
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                vec!["login-page-a".to_owned(), "login-a".to_owned()],
                 &SESSION_RENEWAL,
                 "Signing in does not issue a new session",
                 Severity::High,
@@ -1338,7 +1358,8 @@ pub(super) fn session_checks(
         Some(true) => {}
         Some(false) => {
             let names: Vec<&str> = a.before_login.iter().map(|(n, _)| n.as_str()).collect();
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                vec!["login-page-a".to_owned(), "login-a".to_owned()],
                 &SESSION_RENEWAL,
                 "Signing in does not issue a new session",
                 Severity::High,
@@ -1391,7 +1412,8 @@ pub(super) fn session_checks(
             "every cookie the app set when a test user signed in".to_owned(),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["login-a".to_owned()],
             &SESSION_COOKIE,
             "The session cookie is set without the attributes that protect it",
             Severity::High,
@@ -1416,7 +1438,8 @@ pub(super) fn session_checks(
             "a sign-in by a test user, compared with the cookies given before it".to_owned(),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["login-page-a".to_owned(), "login-a".to_owned()],
             &SESSION_RENEWAL,
             "Signing in does not issue a new session",
             Severity::High,
@@ -1453,16 +1476,19 @@ pub(super) fn identity_header_check(
     out: &mut Outcome,
 ) {
     let mut opened = Vec::new();
+    let mut opened_ids: Vec<String> = Vec::new();
     let mut asked = 0;
-    for path in private {
+    for (p, path) in private.iter().enumerate() {
         for (n, header) in IDENTITY_HEADERS.iter().enumerate() {
             let value = if *header == "X-User-ID" { "1" } else { user };
-            let mut request = get(&format!("identity-header-{n}"), path, &Session::default());
+            let id = format!("identity-header-{p}-{n}");
+            let mut request = get(&id, path, &Session::default());
             request
                 .headers
                 .push(((*header).to_owned(), value.to_owned()));
             asked += 1;
             if ok(&http.send(&request)) {
+                opened_ids.push(id.clone());
                 opened.push(format!("{path} with {header}: {value}"));
             }
         }
@@ -1477,7 +1503,8 @@ pub(super) fn identity_header_check(
         opened.len()
     ));
     if !opened.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            opened_ids.clone(),
             &IDENTITY_HEADER,
             "A header that names a user opens a private page without signing in",
             Severity::High,
@@ -1533,7 +1560,7 @@ mod tests {
             "<p>Your secret is safe with us</p>",
         ] {
             let mut out = Outcome::default();
-            record_fields_check(prose, "/notes/1", &mut out);
+            record_fields_check(prose, "/notes/1", "test-answer", &mut out);
             assert!(
                 out.findings.is_empty(),
                 "prose was read as a leaked field: {prose}"
@@ -1546,7 +1573,7 @@ mod tests {
             "id=1&api_key=sk-live-abc",
         ] {
             let mut out = Outcome::default();
-            record_fields_check(record, "/notes/1", &mut out);
+            record_fields_check(record, "/notes/1", "test-answer", &mut out);
             assert_eq!(
                 out.findings.len(),
                 1,
@@ -3103,5 +3130,22 @@ mod tests {
             "{:?}",
             o.steps
         );
+    }
+}
+
+#[cfg(test)]
+mod answer_ids_tests {
+    use super::*;
+
+    #[test]
+    fn a_record_field_finding_names_the_answer_it_read() {
+        let mut out = Outcome::default();
+        record_fields_check(r#"{"password": "x"}"#, "/notes/1", "owned-a", &mut out);
+        let finding = out
+            .findings
+            .iter()
+            .find(|f| f.rule_id == RECORD_LEAKS_FIELDS.rule_id)
+            .expect("the setup should produce a record-field finding");
+        assert_eq!(finding.evidence, ["owned-a"], "{finding:?}");
     }
 }

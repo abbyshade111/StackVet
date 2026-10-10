@@ -721,7 +721,7 @@ pub(super) fn owned_checks(
     // The record the owner is entitled to read is exactly the place to look for fields nobody
     // should be handed at all (V15.3.1). Read from the response already in hand.
     if let Some(body) = as_a.as_ref().map(|r| r.body.as_str()) {
-        record_fields_check(body, &read_path, out);
+        record_fields_check(body, &read_path, "owned-a", out);
     }
 
     let b = sign_in(http, users, "b", &accounts.b, &mut out.steps);
