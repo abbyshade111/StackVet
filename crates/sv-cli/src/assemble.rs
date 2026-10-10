@@ -220,6 +220,8 @@ pub fn assemble_report_saying(
         began
             .borrow_mut()
             .push((REPORT_STAGES[n], std::time::Instant::now()));
+        // The names of the stages only, for the opt-in SV_LOG file (backlog 0237).
+        crate::own_log::line(&format!("stage {n}: {}", REPORT_STAGES[n]));
         starting(n, REPORT_STAGES[n])
     };
     let started = std::time::SystemTime::now();

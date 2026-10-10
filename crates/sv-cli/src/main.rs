@@ -45,6 +45,7 @@ mod review;
 fn main() {
     crash::install();
     let ran = std::panic::catch_unwind(run);
+    // The crash file, when a panic reached this far (backlog 0237), is written by `write_crash_file` below.
     match ran {
         Ok(Ok(exit::CLEAN)) => {}
         Ok(Ok(code)) => exit::exit_with(code),
@@ -58,9 +59,38 @@ fn main() {
             use std::io::Write;
             let _ = std::io::stdout().flush();
             eprintln!("{}", crash::said());
+            write_crash_file();
             exit::exit_with(exit::FAILED)
         }
     }
+}
+
+/// The crash file, under the history folder, when a panic reached `main` (backlog 0237): the version, the name of the
+/// command, and the place of the panic. Never the arguments, and never the panic's message, which can name a path the
+/// owner typed. Written only when the folder can be made; a failure to write it does not change the exit.
+fn write_crash_file() {
+    let Some((_, place)) = crash::noted() else {
+        return;
+    };
+    let command = std::env::args()
+        .nth(1)
+        .filter(|a| COMMANDS.iter().any(|c| c.name == a.as_str()))
+        .unwrap_or_else(|| "none".to_owned());
+    let Some(folder) = history::folder() else {
+        return;
+    };
+    if std::fs::create_dir_all(&folder).is_err() {
+        return;
+    }
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let text = format!(
+        "version: {}\ncommand: {command}\nplace: {place}\n",
+        env!("CARGO_PKG_VERSION")
+    );
+    let _ = std::fs::write(folder.join(format!("crash-{secs}.txt")), text);
 }
 
 /// The command named on the command line, and the status it ends with when it finished.
@@ -95,6 +125,8 @@ fn run() -> Result<i32> {
         print_help();
         bail!("unknown command: {first}");
     };
+    // The name of the command, for the opt-in SV_LOG file (backlog 0237): never its arguments.
+    sv_cli::own_log::line(&format!("command {}", command.name));
     let rest = &args[1..];
     if rest.iter().any(|a| a == "--help" || a == "-h") {
         print!("USAGE:\n{}", command.help);
