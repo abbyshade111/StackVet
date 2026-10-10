@@ -400,3 +400,33 @@ fn a_test_secret_marker_in_an_address_is_left_whole_not_cut_as_a_password() {
     let (out, n) = redact_around_markers(&rules, &format!("/login?password={key}"));
     assert!(!out.contains(&key) && n >= 1, "{out}");
 }
+
+#[test]
+fn each_reading_of_the_container_is_kept_with_the_id_it_is_named_by() {
+    let reading =
+        |after: &str, status: &str, exit_code: i32, answered: bool| sv_check::running::Liveness {
+            after: after.to_owned(),
+            status: status.to_owned(),
+            restarts: 0,
+            exit_code,
+            out_of_memory: false,
+            answered,
+        };
+    let readings = [
+        reading(
+            "the questions asked as somebody not signed in",
+            "running",
+            0,
+            true,
+        ),
+        reading("the signed-in questions as well", "exited", 1, false),
+    ];
+    let mut seen = Seen::default();
+    liveness(&rules(), &readings, &mut seen);
+    let ids: Vec<&str> = seen.liveness.iter().map(|r| r.id.as_str()).collect();
+    assert_eq!(ids, ["liveness-1", "liveness-2"]);
+    assert_eq!(seen.liveness[1].status, "exited");
+    assert_eq!(seen.liveness[1].exit_code, 1);
+    assert!(!seen.liveness[1].answered);
+    assert_eq!(seen.credentials_removed, 0);
+}

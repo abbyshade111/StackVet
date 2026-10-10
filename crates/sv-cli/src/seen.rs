@@ -103,6 +103,26 @@ pub fn signed_in(
     }
 }
 
+/// The app's container as it was read between the stages of the questions (backlog 229 part 1),
+/// numbered as the credits and findings name them. Its text goes through `redact_text` like the
+/// rest, and the credentials cut from it are counted.
+pub fn liveness(rules: &SecretRules, readings: &[sv_check::running::Liveness], seen: &mut Seen) {
+    for (index, reading) in readings.iter().enumerate() {
+        let (after, cut_after) = redact_text(rules, &reading.after);
+        let (status, cut_status) = redact_text(rules, &reading.status);
+        seen.credentials_removed += cut_after + cut_status;
+        seen.liveness.push(sv_report::seen::Reading {
+            id: sv_check::running::liveness_id(index),
+            after,
+            status,
+            restarts: reading.restarts,
+            exit_code: reading.exit_code,
+            out_of_memory: reading.out_of_memory,
+            answered: reading.answered,
+        });
+    }
+}
+
 /// One answer, kept: its session and sign-in headers' values taken out, and every string in it
 /// through `redact_text`, counting the credentials cut into `removed`.
 #[allow(clippy::too_many_arguments)]

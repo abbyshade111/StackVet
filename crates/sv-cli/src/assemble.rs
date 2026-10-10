@@ -958,6 +958,7 @@ fn running_app(
                     &mut record,
                 );
                 crate::seen::signed_in(secret_rules, outcome.signed_in.as_ref(), &mut record);
+                crate::seen::liveness(secret_rules, &outcome.liveness, &mut record);
                 seen = Some(record);
                 findings.extend(running_findings);
                 probe_verified = running_verified;

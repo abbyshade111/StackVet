@@ -537,6 +537,12 @@ fn private_files_served(responses: &[ProbeResponse], private: &[PrivateFile], ou
 
 // V16.5.4 -----------------------------------------------------------------------------------------
 
+/// The id a reading of the container is named by: `liveness-N` for the Nth reading, from 1, as
+/// `seen.json` numbers them (backlog 229 part 1).
+pub fn liveness_id(index: usize) -> String {
+    format!("liveness-{}", index + 1)
+}
+
 fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
     if liveness.is_empty() {
         return;
@@ -551,19 +557,23 @@ fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
         ));
         return;
     }
-    let Some(stopped) = liveness
+    let Some((index, stopped)) = liveness
         .iter()
-        .find(|l| l.status != "running" || l.restarts > 0 || !l.answered)
+        .enumerate()
+        .find(|(_, l)| l.status != "running" || l.restarts > 0 || !l.answered)
     else {
-        out.verified.push(Verified::new(
-            STAYED_UP,
-            &[],
-            format!(
-                "the app was still running and answering after {}; questions it was not asked may \
-                 still stop it",
-                liveness.last().map_or("", |l| l.after.as_str())
-            ),
-        ));
+        out.verified.push(
+            Verified::new(
+                STAYED_UP,
+                &[],
+                format!(
+                    "the app was still running and answering after {}; questions it was not asked may \
+                     still stop it",
+                    liveness.last().map_or("", |l| l.after.as_str())
+                ),
+            )
+            .with_evidence((0..liveness.len()).map(liveness_id).collect()),
+        );
         return;
     };
     if stopped.out_of_memory {
@@ -587,7 +597,7 @@ fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
     } else {
         "was running and no longer answered its health path".to_owned()
     };
-    out.findings.push(finding(
+    let mut found = finding(
         &APP_STOPPED_DURING_QUESTIONS_ABOUT,
         "Something the app was sent stopped it",
         Severity::Medium,
@@ -597,7 +607,9 @@ fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
              own output (`sv run` shows where) says which.",
             stopped.after
         ),
-    ));
+    );
+    found.evidence = vec![liveness_id(index)];
+    out.findings.push(found);
 }
 
 #[cfg(test)]
@@ -764,6 +776,38 @@ mod tests {
         let refusals: Vec<ProbeResponse> = asked.iter().map(|id| answer(id, 404, "")).collect();
         let private = evaluate(&refusals, &[], &files, &[]);
         assert_eq!(credit_evidence(&private, PRIVATE_FILES), asked);
+    }
+
+    #[test]
+    fn stayed_up_names_each_reading_and_the_one_that_stopped() {
+        let stays = evaluate(&[], &[], &[], &[up("a"), up("b")]);
+        assert_eq!(
+            credit_evidence(&stays, STAYED_UP),
+            ["liveness-1", "liveness-2"]
+        );
+
+        let stopped = evaluate(
+            &[],
+            &[],
+            &[],
+            &[
+                up("a"),
+                Liveness {
+                    status: "exited".into(),
+                    exit_code: 1,
+                    answered: false,
+                    ..up("b")
+                },
+            ],
+        );
+        let finding = stopped
+            .findings
+            .iter()
+            .find(|f| f.rule_id == APP_STOPPED_DURING_QUESTIONS_ABOUT.rule_id)
+            .expect("the stop is found");
+        assert_eq!(finding.evidence, ["liveness-2"]);
+        // Only the reading that stopped is named: the one before it was fine.
+        assert!(credit_evidence(&stopped, STAYED_UP).is_empty());
     }
 
     fn scratch(name: &str) -> std::path::PathBuf {

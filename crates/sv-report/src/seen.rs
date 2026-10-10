@@ -45,6 +45,28 @@ pub struct Seen {
     /// How many of those questions the app did not answer.
     #[serde(skip_serializing_if = "is_zero")]
     pub signed_in_unanswered: usize,
+    /// The app's container, read between the stages of the questions (backlog 229 part 1): whether
+    /// it was running, restarted, or answered its health path. These describe the container, not
+    /// the app's answers. Empty when no reading was taken.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub liveness: Vec<Reading>,
+}
+
+/// One reading of the app's container, numbered `liveness-N` in the order taken (backlog 229 part 1).
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct Reading {
+    /// The name the credits and findings use for this reading.
+    pub id: String,
+    /// Which questions had been asked by then, in words.
+    pub after: String,
+    /// `docker inspect`'s state: `running`, `exited`, `restarting`, and so on. Empty when it could
+    /// not be read.
+    pub status: String,
+    pub restarts: u32,
+    pub exit_code: i32,
+    pub out_of_memory: bool,
+    /// Whether the app answered its health path.
+    pub answered: bool,
 }
 
 fn is_zero(n: &usize) -> bool {
