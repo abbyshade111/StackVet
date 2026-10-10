@@ -4,6 +4,11 @@
 //! The address is a public one, which `sv` resolves before it asks anything, as `probe_addresses.rs` does; `curl` is
 //! a stand-in on the PATH, so no real site is asked.
 
+// The stand-in `curl` below is a shell script put first on the PATH, and its permissions are Unix
+// permissions, so the whole file is for Unix. Windows does not run this check. This is a
+// test-only gate: `sv probe` itself is unchanged.
+#![cfg(unix)]
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
