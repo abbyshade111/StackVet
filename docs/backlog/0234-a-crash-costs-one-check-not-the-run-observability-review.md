@@ -1,6 +1,6 @@
 # A crash costs one check, not the run (observability review, part 3, F)
 
-**Status:** open
+**Status:** claimed by stackvet-backlog-org, 10 October 2026
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: yes (part 3, F, of backlog 0226).
 
