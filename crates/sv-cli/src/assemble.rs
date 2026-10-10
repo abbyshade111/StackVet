@@ -1513,14 +1513,13 @@ fn what_was_not_read(
     gaps.extend(static_scan.package_gaps());
     examined.extend(static_scan.examined());
     // A package list found and not read: what it names is unknown, so a technology known only by its
-    // package may be answered as not used (backlog 0226, part 1, item 11). Whether such an answer
-    // should count for nothing is the owner's (part 3, item H); saying so beside it is not.
+    // package is answered as incomplete, not as not used (backlog 0226, part 1, item 11; 0236).
     for unread in &scan_report.unread_manifests {
         gaps.push(sv_report::Gap {
             what: format!("the package list {}", unread.manifest),
             why: format!(
                 "{}, so the packages it names were not read: a technology `sv` knows only by its \
-                 package may be answered as not used. Fix the file and check again",
+                 package is not answered as not used, but as incomplete. Fix the file and check again",
                 unread.why
             ),
             reason: sv_report::GapReason::CouldNotRead,
