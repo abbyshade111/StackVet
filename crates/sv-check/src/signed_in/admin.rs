@@ -184,23 +184,27 @@ pub(super) fn admin_checks(
     let mut refused_and_confirmed = 0;
     let mut opened_by_ordinary = Vec::new();
     let mut unconfirmed = Vec::new();
-    for path in &users.admin {
-        let as_a = http.send(&get("admin-a", path, &a.session));
+    let mut ordinary_ids: Vec<String> = Vec::new();
+    for (i, path) in users.admin.iter().enumerate() {
+        let as_a = http.send(&get(&format!("admin-a-{i}"), path, &a.session));
         let as_admin = admin
             .as_ref()
-            .map(|admin| http.send(&get("admin-admin", path, &admin.session)));
+            .map(|admin| http.send(&get(&format!("admin-admin-{i}"), path, &admin.session)));
         let admin_opens = as_admin.as_ref().is_some_and(ok);
         if ok(&as_a) {
             // A 2xx to an ordinary user is a finding whether or not the admin was confirmed.
             opened_by_ordinary.push(path.clone());
-        } else if admin_opens {
+            ordinary_ids.push(format!("admin-a-{i}"));
+        } else if as_a.is_some() && admin_opens {
+            // A refusal is an answer that was not a page: no answer at all is not a refusal.
             refused_and_confirmed += 1;
         } else {
             unconfirmed.push(path.clone());
         }
     }
     if !opened_by_ordinary.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            ordinary_ids.clone(),
             &ADMIN_PAGE,
             "An ordinary user can open an admin page",
             Severity::High,
@@ -236,7 +240,9 @@ pub(super) fn admin_checks(
             },
         ));
     }
-    if refused_and_confirmed > 0 && opened_by_ordinary.is_empty() {
+    // Credited only when every admin page was judged: a page that could not be read is reported as not
+    // assessed, and the pages that were judged do not stand in for it.
+    if refused_and_confirmed > 0 && opened_by_ordinary.is_empty() && unconfirmed.is_empty() {
         out.verified.push(crate::Verified::new(
             ADMIN_PAGE.rule_id,
             ADMIN_PAGE.requirement_ids,
@@ -352,6 +358,7 @@ pub(super) fn role_field_check(
     };
 
     let mut opened = Vec::new();
+    let mut opened_ids: Vec<String> = Vec::new();
     let mut compared = 0usize;
     for (i, page) in users.admin.iter().enumerate() {
         let as_plain = http.send(&get(
@@ -372,10 +379,12 @@ pub(super) fn role_field_check(
         ));
         if ok(&as_claimed) {
             opened.push(page.clone());
+            opened_ids.push(format!("role-admin-{i}-claimed"));
         }
     }
     if !opened.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            opened_ids.clone(),
             &ROLE_FIELD,
             "A new account can make itself an admin at sign-up",
             Severity::Critical,
@@ -487,6 +496,8 @@ pub(super) fn admin_action_checks(
     let mut refused = 0usize;
     let mut done_by_ordinary = Vec::new();
     let mut answered_ordinary = Vec::new();
+    let mut done_ids: Vec<String> = Vec::new();
+    let mut answered_ids: Vec<String> = Vec::new();
     let mut unconfirmed = Vec::new();
     let mut unjudged = Vec::new();
     for (i, action) in users.admin_actions.iter().enumerate() {
@@ -507,6 +518,7 @@ pub(super) fn admin_action_checks(
         .0;
         let Some(check) = &action.check else {
             if ok(&as_a) {
+                answered_ids.push(format!("admin-action-{i}-a"));
                 answered_ordinary.push(format!(
                     "{} {} (answered {})",
                     request.method,
@@ -539,6 +551,7 @@ pub(super) fn admin_action_checks(
             &admin.session,
         ) {
             Some(true) => {
+                done_ids.push(format!("admin-action-{i}-a"));
                 done_by_ordinary.push(format!("{} {}", request.method, request.path));
                 continue;
             }
@@ -580,7 +593,8 @@ pub(super) fn admin_action_checks(
     }
 
     if !done_by_ordinary.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            done_ids.clone(),
             &ADMIN_ACTION,
             "An ordinary user can do what only an admin should",
             Severity::High,
@@ -592,7 +606,8 @@ pub(super) fn admin_action_checks(
         ));
     }
     if !answered_ordinary.is_empty() {
-        let mut f = finding(
+        let mut f = finding_on(
+            answered_ids.clone(),
             &ADMIN_ACTION,
             "An ordinary user's admin request was answered as if it worked",
             Severity::High,
@@ -715,17 +730,21 @@ pub(super) fn owned_checks(
         .map(|b| http.send(&get("owned-b", &read_path, &b.session)));
     let as_nobody = http.send(&get("owned-anonymous", &read_path, &Session::default()));
     let mut leaked_to = Vec::new();
+    let mut leaked_ids: Vec<String> = Vec::new();
     if as_b.as_ref().is_some_and(holds_marker) {
         leaked_to.push("another signed-in user");
+        leaked_ids.push("owned-b".to_owned());
     }
     if holds_marker(&as_nobody) {
         leaked_to.push("somebody not signed in");
+        leaked_ids.push("owned-anonymous".to_owned());
     }
 
     // Where apps most often show one person's data to another: their lists. The second user opens
     // every private page and the record's list, and the first user's marker in any of them is the
     // record shown to somebody else (ADR-053).
     let mut listed = Vec::new();
+    let mut listed_ids: Vec<String> = Vec::new();
     let mut looked = Vec::new();
     if let Some(b) = &b {
         let mut places = users.private.clone();
@@ -739,6 +758,7 @@ pub(super) fn owned_checks(
             }
             if holds_marker(&seen) {
                 listed.push(place.clone());
+                listed_ids.push(format!("owned-b-list-{i}"));
             }
         }
     }
@@ -874,7 +894,8 @@ pub(super) fn owned_checks(
     }
 
     if !leaked_to.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            leaked_ids.clone(),
             &OTHER_USERS_DATA,
             "One user can read another user's records",
             Severity::Critical,
@@ -886,7 +907,8 @@ pub(super) fn owned_checks(
         ));
     }
     if !listed.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            listed_ids.clone(),
             &OTHER_USERS_DATA,
             "One user's records show on another user's pages",
             Severity::Critical,
@@ -899,7 +921,11 @@ pub(super) fn owned_checks(
         ));
     }
     if changed == Some(true) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "owned-b-update".to_owned(),
+                "owned-a-after-update".to_owned(),
+            ],
             &OTHER_USERS_DATA,
             "One user can change another user's records",
             Severity::Critical,
@@ -910,7 +936,11 @@ pub(super) fn owned_checks(
         ));
     }
     if deleted == Some(true) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "owned-b-delete".to_owned(),
+                "owned-a-after-delete".to_owned(),
+            ],
             &OTHER_USERS_DATA,
             "One user can delete another user's records",
             Severity::Critical,

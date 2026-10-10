@@ -80,7 +80,7 @@ pub fn signed_in(
     let Some(asked) = asked else {
         return;
     };
-    for (index, exchange) in asked.exchanges.iter().enumerate() {
+    for exchange in &asked.exchanges {
         let Some(status) = exchange.status else {
             seen.signed_in_unanswered += 1;
             continue;
@@ -92,7 +92,7 @@ pub fn signed_in(
         let kept = kept_exchange(
             rules,
             &mut seen.credentials_removed,
-            &format!("signed-in-{}", index + 1),
+            &exchange.id,
             &exchange.method,
             &exchange.path,
             status,

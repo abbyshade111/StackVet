@@ -161,7 +161,8 @@ pub(super) fn session_timeout_checks(
             },
         ));
         if left_open {
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                vec!["idle-after".to_owned(), "busy-after-idle".to_owned()],
                 &NO_IDLE_TIMEOUT,
                 "A session left unused does not time out",
                 Severity::Medium,
@@ -210,7 +211,8 @@ pub(super) fn session_timeout_checks(
             if fresh { "worked" } else { "did not" },
         ));
         if busy_open {
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                vec!["busy-after-lifetime".to_owned()],
                 &NO_SESSION_LIFETIME,
                 "A session kept busy never has to sign in again",
                 Severity::Medium,
@@ -393,7 +395,8 @@ pub(super) fn invented_session_check(
             out,
         );
     } else if opened {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["invented-session".to_owned()],
             &SESSION_TOKEN_UNVERIFIED,
             "A made-up session value opens a private page",
             Severity::High,
@@ -501,7 +504,11 @@ pub(super) fn websocket_session_checks(
         }
     ));
     if anonymous || invented == Some(true) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "websocket-no-session".to_owned(),
+                "websocket-invented-session".to_owned(),
+            ],
             &WS_WITHOUT_SESSION,
             "A private WebSocket opens without a real session",
             Severity::High,
@@ -554,7 +561,8 @@ pub(super) fn websocket_session_checks(
         }
     ));
     match foreign_status {
-        Some(101) => out.findings.push(finding(
+        Some(101) => out.findings.push(finding_on(
+            vec!["websocket-foreign-origin".to_owned()],
             &WS_FOREIGN_ORIGIN,
             "A private WebSocket is accepted from any website",
             Severity::Medium,
@@ -630,7 +638,8 @@ pub(super) fn websocket_session_checks(
         if after { "accepted" } else { "refused" }
     ));
     if after {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["websocket-after-sign-out".to_owned()],
             &WS_AFTER_SIGN_OUT,
             "A private WebSocket still opens after signing out",
             Severity::Medium,
@@ -935,7 +944,8 @@ pub(super) fn private_page_checks(
             ),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["private-page-headers".to_owned()],
             &PRIVATE_PAGE_CACHING,
             "A private page may be kept in the browser's cache",
             Severity::Medium,
@@ -964,7 +974,8 @@ pub(super) fn private_page_checks(
             ),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["private-page-headers".to_owned()],
             &PRIVATE_PAGE_HEADERS,
             "A private page is missing headers a browser relies on",
             Severity::Medium,
@@ -984,7 +995,8 @@ pub(super) fn private_page_checks(
         if opened.len() == 1 { "it" } else { "them" }
     ));
     if !shared.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["private-page-headers".to_owned()],
             &PRIVATE_PAGE_SHARED_CACHE,
             "A private page tells shared caches they may keep it",
             Severity::Medium,
