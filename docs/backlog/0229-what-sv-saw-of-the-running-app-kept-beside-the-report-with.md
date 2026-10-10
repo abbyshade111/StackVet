@@ -16,7 +16,7 @@ passes through `secrets::redact_text` first.
    already keeps), each with an id, in one file in the report folder, sealed with the report; each finding and credit
    read from the running app names the ids it rests on. Bounded per exchange and in all, with what was left out said.
    A test plants a key built from pieces in a response and fails when it reaches the file.
-   **Part status:** claimed by credit-names, 10 October 2026
+   **Part status:** partly done: the four running-app credits (grants, admin-by-address, private files, stayed-up) name no answers yet; every signed-in credit names its answers
 
 2. **What the stand-in services received.** The test model's record of what it was sent and the paths it was asked
    for, the test sign-in provider's requests, and each mail's recipient, subject, and time (not its body), saved before
