@@ -108,9 +108,7 @@ fn what_the_running_app_answered_is_kept_with_no_credential_in_it() {
     // (backlog 0229, part 1), and no request's password is in the record.
     let signed = value["signed_in"].as_array();
     assert!(
-        signed.is_some_and(|l| !l.is_empty()
-            && l[0]["id"] == "signed-in-1"
-            && l[0]["status"].is_u64()),
+        signed.is_some_and(|l| !l.is_empty() && l[0]["id"].is_string() && l[0]["status"].is_u64()),
         "{seen}"
     );
     // And the report says the record is there.

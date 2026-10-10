@@ -91,7 +91,7 @@ use passwords::*;
 use redirects::*;
 use reset::*;
 use rules::*;
-pub(crate) use rules::{Rule, finding};
+pub(crate) use rules::{Rule, finding, finding_on};
 use sessions::*;
 use signin::*;
 use sql::*;
@@ -1104,7 +1104,7 @@ fn settle_limited(patient: &mut Patient<'_>, out: &mut Outcome) {
 /// scenario there.
 const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     (PRIVATE_PAGE.rule_id, &["private-anonymous"]),
-    (ADMIN_PAGE.rule_id, &["login-a", "admin-a"]),
+    (ADMIN_PAGE.rule_id, &["login-a", "admin-a-", "admin-admin-"]),
     (ROLE_FIELD.rule_id, &["role-admin-"]),
     (
         EMAIL_ROLE_FIELD.rule_id,

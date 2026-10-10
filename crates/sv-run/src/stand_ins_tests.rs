@@ -104,6 +104,7 @@ fn a_test_password_in_a_signed_in_answer_is_blanked() {
     let s = secrets();
     let mut asked = sv_check::signed_in::Outcome {
         exchanges: vec![sv_check::signed_in::recording::Recorded {
+            id: "reset".to_owned(),
             method: "GET".to_owned(),
             path: format!("/reset?password={}", s[0]),
             status: Some(200),

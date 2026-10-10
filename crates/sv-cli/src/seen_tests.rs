@@ -338,6 +338,7 @@ fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
     let asked = sv_check::signed_in::Outcome {
         exchanges: vec![
             sv_check::signed_in::recording::Recorded {
+                id: "account".to_owned(),
                 method: "GET".to_owned(),
                 path: "/account".to_owned(),
                 status: Some(200),
@@ -352,6 +353,7 @@ fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
             },
             // A question no answer came to: counted, not kept.
             sv_check::signed_in::recording::Recorded {
+                id: "silent".to_owned(),
                 method: "GET".to_owned(),
                 path: "/silent".to_owned(),
                 status: None,
@@ -372,7 +374,7 @@ fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
         "a session reached the record: {kept}"
     );
     assert_eq!(seen.signed_in.len(), 1, "{seen:#?}");
-    assert_eq!(seen.signed_in[0].id, "signed-in-1");
+    assert_eq!(seen.signed_in[0].id, "account");
     assert_eq!(seen.signed_in[0].status, 200);
     assert!(
         kept.contains("trace=") || kept.contains("sid=[removed,"),

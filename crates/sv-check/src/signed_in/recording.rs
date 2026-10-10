@@ -12,6 +12,9 @@ use crate::probes::{ProbeRequest, ProbeResponse};
 /// One question the signed-in suite asked the app, and its answer if one came.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Recorded {
+    /// The id the check gave its request (`timeout-keep-busy`), which the answer carries too. A
+    /// repeated id is numbered (`…-2`), so every answer in one record has its own.
+    pub id: String,
     pub method: String,
     pub path: String,
     /// The status the app answered with; `None` when it did not answer.
@@ -26,6 +29,7 @@ pub struct Recorded {
 pub struct Recording<'a> {
     inner: Box<dyn Http + 'a>,
     exchanges: Vec<Recorded>,
+    used: std::collections::BTreeSet<String>,
 }
 
 impl<'a> Recording<'a> {
@@ -33,6 +37,7 @@ impl<'a> Recording<'a> {
         Self {
             inner,
             exchanges: Vec::new(),
+            used: std::collections::BTreeSet::new(),
         }
     }
 
@@ -41,8 +46,22 @@ impl<'a> Recording<'a> {
         self.exchanges
     }
 
+    /// `base`, or `base` numbered from 2 when an earlier answer already has it.
+    fn unique_id(&mut self, base: &str) -> String {
+        let mut candidate = base.to_owned();
+        let mut n = 1;
+        while self.used.contains(&candidate) {
+            n += 1;
+            candidate = format!("{base}-{n}");
+        }
+        self.used.insert(candidate.clone());
+        candidate
+    }
+
     fn keep(&mut self, request: &ProbeRequest, response: Option<&ProbeResponse>) {
+        let id = self.unique_id(&request.id);
         self.exchanges.push(Recorded {
+            id,
             method: request.method.clone(),
             path: request.path.clone(),
             status: response.map(|r| r.status),

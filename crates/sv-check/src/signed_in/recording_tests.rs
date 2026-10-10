@@ -102,3 +102,33 @@ fn the_other_methods_are_passed_through_and_not_kept() {
     );
     assert!(http.finish().is_empty());
 }
+
+#[test]
+fn each_answer_keeps_its_request_id_and_a_repeated_one_is_numbered() {
+    let mut http = Recording::new(Box::new(Canned));
+    let _ = http.send(&request("GET", "/a", None));
+    let _ = http.send(&request("GET", "/b", None));
+    let _ = http.send(&request("GET", "/c", None));
+    let kept = http.finish();
+    // `request` gives every question the id `q`, as a check that reuses one id would.
+    let ids: Vec<&str> = kept.iter().map(|k| k.id.as_str()).collect();
+    assert_eq!(ids, ["q", "q-2", "q-3"], "{kept:#?}");
+}
+
+#[test]
+fn a_finding_named_by_its_answers_carries_their_ids() {
+    let found = crate::signed_in::rules::finding_on(
+        vec!["upload-svg-fetch".to_owned()],
+        &crate::signed_in::rules::Rule {
+            rule_id: "signed-in.test",
+            requirement_ids: &[],
+            cwe: &[],
+            impact: "",
+            fix: "",
+        },
+        "t",
+        crate::finding::Severity::Low,
+        "d".to_owned(),
+    );
+    assert_eq!(found.evidence, ["upload-svg-fetch"]);
+}
