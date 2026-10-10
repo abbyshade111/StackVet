@@ -45,6 +45,28 @@ pub struct Seen {
     /// How many of those questions the app did not answer.
     #[serde(skip_serializing_if = "is_zero")]
     pub signed_in_unanswered: usize,
+    /// The app's container, read between the stages of the questions (backlog 229 part 1): whether
+    /// it was running, restarted, or answered its health path. These describe the container, not
+    /// the app's answers. Empty when no reading was taken.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub liveness: Vec<Reading>,
+}
+
+/// One reading of the app's container, numbered `liveness-N` in the order taken (backlog 229 part 1).
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct Reading {
+    /// The name the credits and findings use for this reading.
+    pub id: String,
+    /// Which questions had been asked by then, in words.
+    pub after: String,
+    /// `docker inspect`'s state: `running`, `exited`, `restarting`, and so on. Empty when it could
+    /// not be read.
+    pub status: String,
+    pub restarts: u32,
+    pub exit_code: i32,
+    pub out_of_memory: bool,
+    /// Whether the app answered its health path.
+    pub answered: bool,
 }
 
 fn is_zero(n: &usize) -> bool {
@@ -172,20 +194,7 @@ answer's id is the one sv's checks read it by.";
 /// `seen.json` for `report`.
 pub fn render(report: &Report) -> String {
     let value = match &report.seen {
-        Some(seen) => serde_json::json!({
-            "app": report.app_name,
-            "about": ABOUT,
-            "exchanges": seen.exchanges,
-            "not_answered": seen.not_answered,
-            "left_out": seen.left_out,
-            "most_kept": MOST_EXCHANGES,
-            "credentials_removed": seen.credentials_removed,
-            "stand_ins": seen.stand_ins,
-            "app_log": seen.app_log,
-            "tool_output": seen.tool_output,
-            "signed_in": seen.signed_in,
-            "signed_in_unanswered": seen.signed_in_unanswered,
-        }),
+        Some(seen) => kept_value(&report.app_name, seen),
         None => serde_json::json!({
             "app": report.app_name,
             "about": "sv did not ask the running app anything for this report, so there is nothing \
@@ -195,3 +204,27 @@ pub fn render(report: &Report) -> String {
     };
     serde_json::to_string_pretty(&value).expect("a JSON value serializes") + "\n"
 }
+
+/// The file's JSON for a record that was kept. Every section `Seen` holds goes in here, so a new
+/// section that is left out is written nowhere (backlog 229 part 1, the container readings).
+fn kept_value(app: &str, seen: &Seen) -> serde_json::Value {
+    serde_json::json!({
+        "app": app,
+        "about": ABOUT,
+        "exchanges": seen.exchanges,
+        "not_answered": seen.not_answered,
+        "left_out": seen.left_out,
+        "most_kept": MOST_EXCHANGES,
+        "credentials_removed": seen.credentials_removed,
+        "stand_ins": seen.stand_ins,
+        "app_log": seen.app_log,
+        "tool_output": seen.tool_output,
+        "signed_in": seen.signed_in,
+        "signed_in_unanswered": seen.signed_in_unanswered,
+        "liveness": seen.liveness,
+    })
+}
+
+#[cfg(test)]
+#[path = "seen_render_tests.rs"]
+mod render_tests;

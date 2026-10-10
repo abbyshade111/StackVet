@@ -111,6 +111,13 @@ fn what_the_running_app_answered_is_kept_with_no_credential_in_it() {
         signed.is_some_and(|l| !l.is_empty() && l[0]["id"].is_string() && l[0]["status"].is_u64()),
         "{seen}"
     );
+    // The container was read between the stages of the questions, and each reading is kept with its
+    // id, the one the stayed-up credit names (backlog 229, part 1).
+    let readings = value["liveness"].as_array();
+    assert!(
+        readings.is_some_and(|l| !l.is_empty() && l[0]["id"] == "liveness-1"),
+        "{seen}"
+    );
     // And the report says the record is there.
     let report = std::fs::read_to_string(folder.join("compliance.md")).unwrap();
     assert!(
