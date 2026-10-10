@@ -31,7 +31,6 @@ macro_rules! print {
 }
 
 mod baseline;
-mod crash;
 mod history;
 mod review;
 

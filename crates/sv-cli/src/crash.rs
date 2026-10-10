@@ -33,6 +33,12 @@ pub fn install() {
     }));
 }
 
+/// The panic the hook noted, taken away, so a stage that caught it can say where and what (backlog 0234) and a
+/// later panic is not told an old one's place. `None` when none was noted.
+pub fn take() -> Option<(String, String)> {
+    SEEN.lock().ok().and_then(|mut seen| seen.take())
+}
+
 /// The lines `main` prints for the panic the hook noted.
 pub fn said() -> String {
     let (what, place) = SEEN

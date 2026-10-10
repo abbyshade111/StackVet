@@ -25,8 +25,10 @@ macro_rules! eprintln {
 }
 
 pub mod assemble;
+// One copy, in the library: the report's stages catch a panic through it, and the binary's hook records into it (0234).
 pub mod bundle;
 pub mod compare;
+pub mod crash;
 pub mod exit;
 pub mod report_lock;
 pub mod static_scan;
