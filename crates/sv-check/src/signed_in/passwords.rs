@@ -134,6 +134,15 @@ fn context_password(words: &[String]) -> Option<(String, String)> {
 }
 
 /// Makes an account through `signup`, and nothing else.
+/// The answers the sign-up and the private-page check of each of these labels read, by their ids:
+/// `signup-{label}` and `private-{label}` (ADR-082, backlog 0229, part 1).
+pub(super) fn answers_of(labels: &[&str]) -> Vec<String> {
+    labels
+        .iter()
+        .flat_map(|label| [format!("signup-{label}"), format!("private-{label}")])
+        .collect()
+}
+
 pub(super) fn sign_up_only(
     http: &mut dyn Http,
     signup: &RequestTemplate,
@@ -212,7 +221,8 @@ fn judge_breached(accepted: bool, control_accepted: bool, evidence: &str, out: &
                  Restore the file from StackVet's repository and build `sv` again."
             ),
         )),
-        (true, _, Ok(seen)) => out.findings.push(finding(
+        (true, _, Ok(seen)) => out.findings.push(finding_on(
+            answers_of(&["breached", "control"]),
             &BREACHED_PASSWORD,
             "A password known from data breaches is accepted",
             Severity::Low,
@@ -340,7 +350,8 @@ pub(super) fn password_checks(
     }
 
     if works["short"] {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            answers_of(&["short"]),
             &SHORT_PASSWORD,
             "A password shorter than 8 characters is accepted",
             Severity::Medium,
@@ -367,7 +378,8 @@ pub(super) fn password_checks(
             "a 32-character password of lowercase letters alone, accepted at sign-up".to_owned(),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            answers_of(&["lower"]),
             &COMPOSITION_RULES,
             "Passwords must contain certain kinds of character",
             Severity::Low,
@@ -396,8 +408,14 @@ pub(super) fn password_checks(
         .map(|(_, word)| *word)
         .collect();
     let all: Vec<&str> = words.iter().map(|(_, word)| *word).collect();
+    let accepted_labels: Vec<&str> = words
+        .iter()
+        .filter(|(label, _)| works[label])
+        .map(|(label, _)| *label)
+        .collect();
     match (!accepted.is_empty(), works["like-common"]) {
-        (true, _) => out.findings.push(finding(
+        (true, _) => out.findings.push(finding_on(
+            answers_of(&accepted_labels),
             &COMMON_PASSWORD,
             "A common password is accepted",
             Severity::Medium,
@@ -452,7 +470,8 @@ pub(super) fn password_checks(
             },
         )),
         Some((word, password)) => match (works["context"], works["like-context"]) {
-            (true, _) => out.findings.push(finding(
+            (true, _) => out.findings.push(finding_on(
+                answers_of(&["context"]),
                 &CONTEXT_WORD_PASSWORD,
                 "A password made from one of your context-specific words is accepted",
                 Severity::Low,
@@ -538,7 +557,8 @@ fn exact_password_checks(
             ),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            answers_of(&["long"]),
             &LONG_PASSWORD,
             "A long password is refused",
             Severity::Low,
@@ -561,7 +581,8 @@ fn exact_password_checks(
         ));
     }
     if !altered.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            answers_of(&["case", "cut"]),
             &ALTERED_PASSWORD,
             "The password is not checked exactly as typed",
             Severity::Medium,
@@ -620,6 +641,9 @@ pub(super) fn password_field_checks(
     let mut pasting = Vec::new();
     let mut missing = Vec::new();
     let mut hints = Vec::new();
+    let mut hint_ids: Vec<String> = Vec::new();
+    let mut unmasked_ids: Vec<String> = Vec::new();
+    let mut paste_ids: Vec<String> = Vec::new();
     for (label, template, session) in forms {
         // Every field a password is sent in: the one of a sign-in, both of a password change.
         let fields: Vec<&String> = template
@@ -642,6 +666,7 @@ pub(super) fn password_field_checks(
             .and_then(|p| password_hint(&p.body))
         {
             hints.push(format!("the {label} page {} ({what})", template.path));
+            hint_ids.push(format!("password-field-{label}"));
         }
         let inputs: Vec<String> = page
             .as_ref()
@@ -665,13 +690,16 @@ pub(super) fn password_field_checks(
             masked.push(where_.clone());
         } else {
             unmasked.push(where_.clone());
+            unmasked_ids.push(format!("password-field-{label}"));
         }
         if inputs.iter().any(|tag| attribute(tag, "onpaste").is_some()) {
+            paste_ids.push(format!("password-field-{label}"));
             pasting.push(where_);
         }
     }
     if !unmasked.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            unmasked_ids.clone(),
             &UNMASKED_PASSWORD,
             "A password field shows what is typed",
             Severity::Medium,
@@ -691,7 +719,8 @@ pub(super) fn password_field_checks(
         ));
     }
     if !hints.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            hint_ids.clone(),
             &PASSWORD_HINTS,
             "A password hint or secret question is offered",
             Severity::Medium,
@@ -699,7 +728,8 @@ pub(super) fn password_field_checks(
         ));
     }
     if !pasting.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            paste_ids.clone(),
             &PASTE_BLOCKED,
             "Pasting into a password field is blocked",
             Severity::Low,
@@ -833,7 +863,11 @@ pub(super) fn change_password_checks(
         confirm,
         &mut out.steps,
     ) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "change-password-wrong-current".to_owned(),
+                "private-changed".to_owned(),
+            ],
             &CHANGE_WITHOUT_CURRENT,
             "The password can be changed without the current one",
             Severity::High,
@@ -930,7 +964,11 @@ pub(super) fn change_password_checks(
     }
     let old_works = account_works(http, users, "old", &account, confirm, &mut out.steps);
     if old_works {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "change-password-right-current".to_owned(),
+                "private-old".to_owned(),
+            ],
             &CHANGE_PASSWORD,
             "The old password still works after a change",
             Severity::High,
@@ -1068,7 +1106,11 @@ pub(super) fn change_email_check(
         confirm,
         &mut out.steps,
     ) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "change-email-wrong-password".to_owned(),
+                "private-email-moved-wrong".to_owned(),
+            ],
             &EMAIL_CHANGE_WITHOUT_PASSWORD,
             "The email address can be changed without the password",
             Severity::High,
@@ -1257,7 +1299,8 @@ pub(super) fn signup_replaces_account_check(
         },
     ));
     if new_works {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            answers_of(&["resignup-1", "resignup-2"]),
             &SIGNUP_REPLACES_ACCOUNT,
             "Signing up again with a taken address takes the account",
             Severity::Critical,
@@ -1365,7 +1408,13 @@ pub(super) fn reveals_account_check(
     };
     let what = asked.what;
     if first.status == second.status && stranger.status != first.status {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "signup-reveal-made".to_owned(),
+                "signup-reveal-1".to_owned(),
+                "signup-reveal-2".to_owned(),
+                "signup-reveal-nobody".to_owned(),
+            ],
             asked.rule,
             asked.title,
             Severity::Medium,
@@ -1391,7 +1440,13 @@ pub(super) fn reveals_account_check(
         shape(stranger, nobody),
     );
     if a == b && c != a && first.status == stranger.status {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "signup-reveal-made".to_owned(),
+                "signup-reveal-1".to_owned(),
+                "signup-reveal-2".to_owned(),
+                "signup-reveal-nobody".to_owned(),
+            ],
             asked.rule,
             asked.title,
             Severity::Medium,
@@ -1564,7 +1619,8 @@ pub(super) fn delete_account_check(
         return;
     }
     if opens(http, &second.session, "delete-after") {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["private-deleted".to_owned(), "delete-after".to_owned()],
             &SESSIONS_SURVIVE_DELETION,
             "A deleted account's other sessions keep working",
             Severity::High,
@@ -2851,3 +2907,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "passwords_ids_tests.rs"]
+mod passwords_ids_tests;
