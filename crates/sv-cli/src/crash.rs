@@ -39,6 +39,12 @@ pub fn take() -> Option<(String, String)> {
     SEEN.lock().ok().and_then(|mut seen| seen.take())
 }
 
+/// The panic the hook noted, left in place: for the crash file, which is written on the way out of the run
+/// (backlog 0237). Only the place is written there, never the message.
+pub fn noted() -> Option<(String, String)> {
+    SEEN.lock().ok().and_then(|seen| seen.clone())
+}
+
 /// The lines `main` prints for the panic the hook noted.
 pub fn said() -> String {
     let (what, place) = SEEN

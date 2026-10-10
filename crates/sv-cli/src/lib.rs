@@ -29,7 +29,9 @@ pub mod assemble;
 pub mod bundle;
 pub mod compare;
 pub mod crash;
+// The opt-in log of stages, named by SV_LOG (backlog 0237).
 pub mod exit;
+pub mod own_log;
 pub mod report_lock;
 pub mod static_scan;
 pub use assemble::{REPORT_STAGES, assemble_report_saying};
