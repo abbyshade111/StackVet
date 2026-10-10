@@ -1128,7 +1128,10 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
         ],
     ),
     (FORGERY.rule_id, &["forged-create"]),
-    (STEP_SKIPPED.rule_id, &["flow-flow-b"]),
+    (
+        STEP_SKIPPED.rule_id,
+        &["login-flow-b0", "login-flow-b1", "login-flow-b2"],
+    ),
     (
         EMAIL_CODE_UNBOUND.rule_id,
         &["email-code-use-crossed", "email-code-private-crossed"],
@@ -1187,13 +1190,12 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
         &[
             "change-password-wrong-current",
             "login-wrong-current",
-            "private-wrong-current",
             "login-changed",
             "private-changed",
         ],
     ),
     (CHANGE_ENDS_SESSIONS.rule_id, &["bystander-after"]),
-    (DONE_TWICE.rule_id, &["once"]),
+    (DONE_TWICE.rule_id, &["once-"]),
     (CREATE_UNLIMITED.rule_id, &["burst-"]),
     (
         EMAIL_CHANGE_WITHOUT_PASSWORD.rule_id,
@@ -1237,6 +1239,44 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     (UPLOAD_PATH_TRAVERSAL.rule_id, &["upload-traversal"]),
     (UPLOAD_NOT_SCANNED.rule_id, &["upload-eicar"]),
     (ARCHIVE_UNCHECKED.rule_id, &["upload-archive-"]),
+    // Credits that rest on a refusal or an answer, named by the requests the check read (ADR-082,
+    // backlog 229 part 1). A credit that reads its answers from a helper names every request it made.
+    (ADMIN_ACTION.rule_id, &["admin-action-"]),
+    (SIMPLE_REQUEST.rule_id, &["simple-request-"]),
+    (
+        COMPOSITION_RULES.rule_id,
+        &["signup-lower", "login-lower", "private-lower"],
+    ),
+    (
+        LONG_PASSWORD.rule_id,
+        &["signup-long", "login-long", "private-long"],
+    ),
+    (UNMASKED_PASSWORD.rule_id, &["password-field-"]),
+    (CHANGE_NOTIFIED.rule_id, &["change-password-right-current"]),
+    (MAIL_HEADER_INJECTED.rule_id, &["reset-header-"]),
+    (PRIVATE_PAGE_CACHING.rule_id, &["private-page-headers-"]),
+    (PRIVATE_PAGE_HEADERS.rule_id, &["private-page-headers-"]),
+    (SIGN_OUT_LINK.rule_id, &["private-page-headers-"]),
+    (
+        STATIC_SESSION.rule_id,
+        &[
+            "login-a",
+            "login-a-again",
+            "login-page-a-again",
+            "static-again",
+        ],
+    ),
+    (SESSION_COOKIE.rule_id, &["login-a"]),
+    (SESSION_RENEWAL.rule_id, &["login-page-a", "login-a"]),
+    (DOWNLOAD_NAME_INJECTED.rule_id, &["download-hostile"]),
+    (
+        UPLOAD_EXECUTED.rule_id,
+        &["upload-code", "upload-code-fetch"],
+    ),
+    (
+        UPLOAD_RENDERED.rule_id,
+        &["upload-page-file", "upload-page-file-fetch"],
+    ),
 ];
 
 /// The findings the signed-in checks raise because the app refused something, or answered two
@@ -3894,6 +3934,25 @@ mod crash_tests {
         );
     }
 
+    /// The users with an upload form the app serves files back from, for the upload scenarios.
+    fn upload_users() -> UsersSection {
+        let mut u = users();
+        u.upload = Some(sv_manifest::UploadSection {
+            path: "/upload".into(),
+            field: "file".into(),
+            form: [("csrf_token".to_owned(), "{csrf}".to_owned())].into(),
+            serves_at: Some("/files/{name}".into()),
+            max_bytes: Some(UPLOAD_LIMIT as u64),
+            unpacks_archives: Some(vec![
+                sv_manifest::ArchiveFormat::Zip,
+                sv_manifest::ArchiveFormat::Gzip,
+            ]),
+            max_unpacked_bytes: Some(ARCHIVE_UNPACK_LIMIT),
+            max_files: Some(ARCHIVE_FILE_LIMIT),
+        });
+        u
+    }
+
     fn scenarios() -> Vec<Scenario> {
         // Sign-up and seeding both: the password rules need the app's own sign-up, and the role
         // check needs a seeded admin to compare with.
@@ -4075,6 +4134,160 @@ mod crash_tests {
                     true,
                 )
             },
+            // ADR-082, backlog 229 part 1: one scenario per rule the credit names. Each turns on a
+            // flaw the checks already find on their own (see `each_flaw_is_found_by_its_own_rule`),
+            // so the sweep can crash each request of a run where that rule is the one at fault.
+            Scenario::new(
+                "an announcement any signed-in user can post",
+                Flaws {
+                    admin_action_open: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "a JSON create the app also takes as a form",
+                Flaws {
+                    api_takes_forms: true,
+                    ..Default::default()
+                },
+                {
+                    let mut u = users();
+                    u.owned = Some(sv_manifest::OwnedSection {
+                        create: RequestTemplate {
+                            method: "POST".into(),
+                            path: "/api/notes".into(),
+                            form: BTreeMap::new(),
+                            json: [("text".to_owned(), "{marker}".to_owned())].into(),
+                        },
+                        read: Some("/api/notes/{id}".into()),
+                        id_field: None,
+                        list: None,
+                        update: None,
+                        delete: None,
+                    });
+                    u
+                },
+                true,
+            ),
+            Scenario::new(
+                "a password of lowercase letters refused",
+                Flaws {
+                    composition_rules: true,
+                    ..Default::default()
+                },
+                with_signup(),
+                false,
+            ),
+            Scenario::new(
+                "a password longer than 64 characters refused",
+                Flaws {
+                    longest_64: true,
+                    ..Default::default()
+                },
+                with_signup(),
+                false,
+            ),
+            Scenario::new(
+                "a reset address with a header typed in it",
+                Flaws {
+                    reset_mails_typed_address: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "private pages without the browser's headers",
+                Flaws {
+                    private_page_no_headers: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "private pages a browser may keep",
+                Flaws {
+                    private_page_cacheable: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "no way to sign out on the private pages",
+                Flaws {
+                    no_sign_out_link: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "the same session for every sign-in",
+                Flaws {
+                    same_session_id: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "a session cookie without HttpOnly",
+                Flaws {
+                    no_httponly: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "a session kept across sign-in",
+                Flaws {
+                    keep_session_at_login: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "a password field that shows what is typed",
+                Flaws {
+                    password_shown: true,
+                    ..Default::default()
+                },
+                users(),
+                true,
+            ),
+            Scenario::new(
+                "an uploaded .php that runs",
+                Flaws {
+                    runs_uploaded_code: true,
+                    ..Default::default()
+                },
+                upload_users(),
+                true,
+            ),
+            Scenario::new(
+                "an uploaded .html that renders",
+                Flaws {
+                    renders_uploaded_pages: true,
+                    ..Default::default()
+                },
+                upload_users(),
+                true,
+            ),
+            Scenario::new(
+                "an uploaded file's name written into its header raw",
+                Flaws {
+                    download_name_raw: true,
+                    ..Default::default()
+                },
+                upload_users(),
+                true,
+            ),
         ]
     }
 
@@ -4260,6 +4473,26 @@ mod crash_tests {
             }));
         }
         assert!(raised.is_empty(), "{raised:#?}");
+    }
+
+    /// Every name in `RESTS_ON_A_REFUSAL` is an answer some scenario's run really sends, so a
+    /// misspelt name cannot leave a credit unnamed while the test still passes (ADR-082, 229 part 1).
+    #[test]
+    fn every_name_in_the_table_is_an_answer_some_run_sends() {
+        let mut sent = BTreeSet::new();
+        for scenario in scenarios() {
+            sent.extend(scenario.run(None).1);
+        }
+        let missing: Vec<String> = RESTS_ON_A_REFUSAL
+            .iter()
+            .flat_map(|(rule, requests)| {
+                requests
+                    .iter()
+                    .filter(|r| !sent.iter().any(|id| one_of(id, &[r])))
+                    .map(move |r| format!("{rule}: {r}"))
+            })
+            .collect();
+        assert!(missing.is_empty(), "names no run sends: {missing:#?}");
     }
 
     #[test]
