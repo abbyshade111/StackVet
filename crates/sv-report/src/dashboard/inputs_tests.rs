@@ -13,6 +13,7 @@ fn run(notes: Option<&str>, decisions: Option<&str>, data: Option<&str>) -> Run 
             security_notes_sha256: notes.map(str::to_owned),
             design_decisions_sha256: decisions.map(str::to_owned),
             sv_data_sha256: data.map(str::to_owned),
+            ..RunInputs::default()
         }),
         ..Run::default()
     }

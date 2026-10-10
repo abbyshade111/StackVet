@@ -91,6 +91,24 @@ fn a_change_to_the_security_notes_is_kept_and_named_as_why_two_runs_are_not_comp
     );
     let data = sv_cli::report_lock::data_sha256().expect("this test finds sv's data");
     assert_eq!(inputs["sv_data_sha256"], data, "{inputs}");
+    // The same folder, file by file (backlog 0233): one entry per data file, and one file's hash is its own content's.
+    let files = sv_cli::report_lock::data_files_sha256();
+    assert!(!files.is_empty(), "no data file was hashed: {inputs}");
+    let listed = inputs["sv_data_files"]
+        .as_array()
+        .expect("a list of data files");
+    assert_eq!(listed.len(), files.len(), "{inputs}");
+    let one = "tech-signatures.json";
+    let content = std::fs::read(sv_frameworks::data::file(one)).unwrap();
+    let entry = listed
+        .iter()
+        .find(|e| e["file"] == one)
+        .unwrap_or_else(|| panic!("{one} is not listed: {inputs}"));
+    assert_eq!(
+        entry["sha256"],
+        sv_cli::bundle::sha256(&content),
+        "{inputs}"
+    );
     assert_ne!(
         first["run_record"]["inputs"]["security_notes_sha256"],
         inputs["security_notes_sha256"]

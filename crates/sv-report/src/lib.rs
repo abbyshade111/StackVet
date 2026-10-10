@@ -847,6 +847,9 @@ impl AiProcess {
 pub struct MadeBy {
     pub version: String,
     pub commit: String,
+    /// Whether `sv` was built from a checkout with changes to tracked files not committed (backlog 0233): then
+    /// the commit does not say exactly what was built.
+    pub uncommitted_changes: bool,
 }
 
 impl MadeBy {
@@ -896,6 +899,20 @@ pub struct RunInputs {
     /// Every file in `sv`'s data folder, by name and content: the standards, the rules, and what
     /// each check knows. Two copies of one version of `sv` can be given different data.
     pub sv_data_sha256: Option<String>,
+    /// The same folder, file by file, so a report says which file differs, not only that the folder does (backlog
+    /// 0233). A list of records rather than a map from name to hash: the credential scan reads a file name beside a
+    /// value as a secret assigned, and a data file can be named for passwords or secrets. Left out of an older record.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sv_data_files: Vec<DataFileHash>,
+}
+
+/// One file of `sv`'s data folder and the SHA-256 of its content (backlog 0233).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, serde::Deserialize)]
+#[serde(default)]
+pub struct DataFileHash {
+    /// The file's name in the folder, written with `/` on every system.
+    pub file: String,
+    pub sha256: String,
 }
 
 impl RunRecord {
