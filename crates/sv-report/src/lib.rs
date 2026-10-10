@@ -462,6 +462,9 @@ pub enum GapReason {
     /// Read, in a form that is out of date: a file under its old name, or one that changed while
     /// the run was reading it.
     Outdated,
+    /// A check crashed while it ran (backlog 0234): the rest of the report is written, and the gap says where.
+    /// Nothing that check would have said is in the report.
+    Crashed,
 }
 
 /// Whether this report looked for one family of findings, for a program reading `report.json`

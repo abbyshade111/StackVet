@@ -47,6 +47,40 @@ pub(crate) fn say_step(what: &str) {
     eprintln!("{}", step_line(what));
 }
 
+/// Runs one check of the report, and if it panics, catches it: the panic is recorded where it happened, so the
+/// check costs itself and not the report (backlog 0234). Returns the place and the message of the panic. Under a
+/// debug build, `SV_PANIC_IN_STAGE` set to the check's name makes it panic inside the guard, so the path can be
+/// tested (as `SV_PANIC_FOR_TEST` does for the whole run).
+fn guarded<T>(name: &str, run: impl FnOnce() -> T) -> std::result::Result<T, String> {
+    #[cfg(debug_assertions)]
+    let inject = std::env::var("SV_PANIC_IN_STAGE").ok().as_deref() == Some(name);
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        #[cfg(debug_assertions)]
+        if inject {
+            panic!("a panic asked for by SV_PANIC_IN_STAGE");
+        }
+        run()
+    }))
+    .map_err(|_| {
+        let (what, place) = crash::take()
+            .unwrap_or_else(|| ("no message".to_owned(), "a place not recorded".to_owned()));
+        format!("{what}, at {place}")
+    })
+}
+
+/// The gap for a check that crashed: what it was, and where the panic was (backlog 0234).
+fn crash_gap(check: &str, place: &str) -> sv_report::Gap {
+    sv_report::Gap {
+        what: format!("{check}: the check crashed"),
+        why: format!(
+            "the check crashed while it ran ({place}), so what it would have said is not in this report; the \
+             rest of the report is written"
+        ),
+        reason: sv_report::GapReason::Crashed,
+        requirements: Vec::new(),
+    }
+}
+
 /// `assemble_report`, calling `starting` with each stage's number (from 0) and name as it begins.
 /// What the design answers given as `planned` come to, when they are not a finding: each credits
 /// nothing, and the report says which are plans, which are due an answer, and which `sv` cannot
@@ -250,7 +284,16 @@ pub fn assemble_report_saying(
     findings.extend(static_scan.code.findings.iter().cloned());
 
     stage(7);
-    let tools = outside_tools(&scene, &mut findings, &mut examined)?;
+    // A check that crashes costs itself, not the report (backlog 0234): its gap says where, and the rest is written.
+    let tools = match guarded("outside_tools", || {
+        outside_tools(&scene, &mut findings, &mut examined)
+    }) {
+        Ok(tools) => tools?,
+        Err(place) => Tools {
+            verified: Vec::new(),
+            gaps: vec![crash_gap("the outside tools", &place)],
+        },
+    };
 
     // Every limit `sv` knows about, said out loud. This list existing is the difference between a
     // report about an app and a report about the part of an app somebody happened to look at.
@@ -265,7 +308,33 @@ pub fn assemble_report_saying(
         });
     }
     stage(8);
-    let run = running_app(&scene, &mut findings, &mut gaps);
+    // The same for the app's own checks (backlog 0234): if they crash, the app is said not to have been asked, and
+    // the gap says why.
+    let run = match guarded("running_app", || {
+        running_app(&scene, &mut findings, &mut gaps)
+    }) {
+        Ok(run) => run,
+        Err(place) => {
+            gaps.push(crash_gap("the app's own checks", &place));
+            RunningApp {
+                status: sv_report::RunStatus::NotAsked {
+                    why: "its checks crashed before they finished; the gap says where".to_owned(),
+                },
+                note: None,
+                steps: Vec::new(),
+                test_output: None,
+                tests_examined: sv_report::Examined::not_run(
+                    "the app's own tests",
+                    "its checks crashed before they finished",
+                ),
+                probe_verified: Vec::new(),
+                test_verified: Vec::new(),
+                seen: None,
+                timings: Vec::new(),
+                request_timings: Vec::new(),
+            }
+        }
+    };
     let suite_timings = run.timings.clone();
     let request_timings = run.request_timings.clone();
     stage(9);
