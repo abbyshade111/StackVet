@@ -289,6 +289,7 @@ fn signed_in(
         spent,
     );
     out.exchanges = http.finish();
+    crate::signed_in::name_credits(&mut out.verified, &out.exchanges);
 
     // Last of all, and only after everything the probes do: whether the app wrote any of it
     // down. Reading the log earlier would be reading it before the events happened.

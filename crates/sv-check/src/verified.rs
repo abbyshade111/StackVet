@@ -62,6 +62,10 @@ pub struct Verified {
     /// What was examined, in a person's words: "12 Python files", "48 files, against 8 known
     /// credential formats". Printed beside the claim.
     pub scope: String,
+    /// The answers the running app gave that this credit was read from, by their ids in `seen.json`
+    /// (ADR-082, backlog 0229, part 1). Empty for a credit that rests on none of them.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence: Vec<String>,
     /// The check tried only part of what its requirements ask, so it is evidence *in part*: a
     /// requirement whose only credit is in part is *checked in part*, never *checked* (ADR-053).
     /// V8.2.2 is the first: another user refused reading a record, with changing and deleting it
@@ -83,9 +87,16 @@ impl Verified {
             check_id: check_id.to_owned(),
             requirement_ids: requirement_ids.iter().map(|s| (*s).to_owned()).collect(),
             scope,
+            evidence: Vec::new(),
             in_part: false,
             tier: Tier::Checked,
         }
+    }
+
+    /// The same credit, naming the answers it was read from (ADR-082, backlog 0229, part 1).
+    pub fn with_evidence(mut self, ids: Vec<String>) -> Self {
+        self.evidence = ids;
+        self
     }
 
     /// The same credit, marked as resting on part of what its requirements ask (ADR-053).

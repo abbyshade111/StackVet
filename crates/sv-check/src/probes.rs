@@ -508,6 +508,46 @@ const SECURITY_HEADERS: Rule = Rule {
 /// and a rule whose response is absent is skipped rather than credited — which is why each arm
 /// looks up its own response instead of assuming the suite ran.
 pub fn verified(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
+    name_credits(verified_unnamed(responses))
+}
+
+/// The answers each probe credit was read from, by their ids (ADR-082, backlog 0229, part 1): the same
+/// answers the check's findings name. A credit whose check is not listed here names none.
+fn name_credits(credits: Vec<crate::Verified>) -> Vec<crate::Verified> {
+    credits
+        .into_iter()
+        .map(|credit| {
+            let pages = ["home", "missing", "root"].map(str::to_owned).to_vec();
+            let ids: Vec<String> = match credit.check_id.as_str() {
+                id if id == SECURITY_HEADERS.rule_id
+                    || id == COOKIE_ATTRIBUTES.rule_id
+                    || id == CONTENT_TYPE.rule_id
+                    || id == OPENER_POLICY.rule_id =>
+                {
+                    pages
+                }
+                id if id == CORS_ANY_ORIGIN.rule_id => vec!["cors".to_owned()],
+                id if id == ERROR_DETAIL_LEAK.rule_id => vec!["missing".to_owned()],
+                id if id == TRACE_ENABLED.rule_id => vec!["trace".to_owned()],
+                id if id == CSP_REPORTING.rule_id => vec!["home".to_owned()],
+                id if id == SOURCE_CONTROL.rule_id => {
+                    vec!["git-head".to_owned(), "git-config".to_owned()]
+                }
+                id if id == GRAPHQL_INTROSPECTION.rule_id => {
+                    vec!["graphql-introspection".to_owned()]
+                }
+                id if id == GRAPHQL_AMOUNT.rule_id => vec!["graphql-aliases".to_owned()],
+                id if id == WS_ORIGIN.rule_id => {
+                    vec!["ws-no-origin".to_owned(), "ws-foreign-origin".to_owned()]
+                }
+                _ => Vec::new(),
+            };
+            credit.with_evidence(ids)
+        })
+        .collect()
+}
+
+fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
     let mut out = Vec::new();
     let find = |id: &str| responses.iter().find(|r| r.id == id);
 
@@ -1004,7 +1044,7 @@ pub fn evaluate_api(
             ));
         }
     }
-    (findings, verified, not_assessed)
+    (findings, name_credits(verified), not_assessed)
 }
 
 const GRAPHQL_INTROSPECTION: Rule = Rule {

@@ -182,6 +182,7 @@ pub(super) fn sql_injection_check(
     let mut n = 0;
     for (spot, forms) in &asked {
         let mut differed = None;
+        let mut differed_n = 0;
         for (words, true_end, false_end) in forms {
             n += 1;
             if let Some(answers) = ask(
@@ -192,6 +193,7 @@ pub(super) fn sql_injection_check(
             ) && answers.0 != answers.1
             {
                 differed = Some((*words, *true_end, *false_end, answers));
+                differed_n = n;
                 break;
             }
         }
@@ -205,7 +207,13 @@ pub(super) fn sql_injection_check(
             }
         ));
         if let Some((words, true_end, false_end, ((ts, tl), (fs, fl)))) = differed {
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                (1..=2)
+                    .flat_map(|round| {
+                        ["true", "false"]
+                            .map(|version| format!("sql-{differed_n}-{version}-{round}"))
+                    })
+                    .collect(),
                 &SQL_INJECTION,
                 "A value in a web address is read into a database query",
                 Severity::Critical,

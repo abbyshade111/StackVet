@@ -146,7 +146,8 @@ pub(super) fn email_role_check(
         .map(|(_, page)| (*page).clone())
         .collect();
     if !opened.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["email-role-old".to_owned(), "email-role-new".to_owned(), "email-role-change".to_owned()],
             &EMAIL_ROLE_FIELD,
             "An account can make itself an admin by changing its email address",
             Severity::Critical,

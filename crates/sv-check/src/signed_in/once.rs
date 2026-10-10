@@ -130,7 +130,8 @@ pub(super) fn once_check(
         once.method, once.path
     ));
     if by_a > 0 && by_b > 0 {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["once".to_owned()],
             &DONE_TWICE,
             "An action that should go through once went through for two people",
             Severity::High,

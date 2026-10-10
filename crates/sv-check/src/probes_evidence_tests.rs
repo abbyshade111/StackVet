@@ -67,3 +67,34 @@ fn an_answer_with_no_problem_is_not_named_by_the_check_it_passes() {
         "{found:#?}"
     );
 }
+
+#[test]
+fn a_probe_credit_names_the_answers_its_check_reads() {
+    // Every page is answered with a charset, so the content-type check credits them all.
+    let pages = [
+        answer(
+            "home",
+            200,
+            &[("content-type", "text/html; charset=utf-8")],
+            "ok",
+        ),
+        answer(
+            "missing",
+            404,
+            &[("content-type", "text/html; charset=utf-8")],
+            "no",
+        ),
+        answer(
+            "root",
+            200,
+            &[("content-type", "text/html; charset=utf-8")],
+            "ok",
+        ),
+    ];
+    let credits = verified(&pages);
+    let credit = credits
+        .iter()
+        .find(|c| c.check_id == CONTENT_TYPE.rule_id)
+        .expect("the setup should credit the content type");
+    assert!(credit.evidence.contains(&"home".to_owned()), "{credit:?}");
+}
