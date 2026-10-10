@@ -236,7 +236,7 @@ fn no_credential_the_app_logged_reaches_the_record() {
     // The setup: the key is in both kinds of kept line.
     assert_eq!(format!("{asked:?}").matches(key.as_str()).count(), 2);
     let mut seen = Seen::default();
-    app_log(&rules, Some(&asked), &mut seen);
+    app_log(&rules, Some(&asked), None, &mut seen);
     let kept = serde_json::to_string(&seen).unwrap();
     assert!(!kept.contains(&key), "a key reached the record: {kept}");
     assert!(seen.credentials_removed >= 2, "{seen:#?}");
@@ -249,8 +249,30 @@ fn no_credential_the_app_logged_reaches_the_record() {
     assert_eq!(seen.app_log.cut, 1);
     // No suite that read the log, nothing kept.
     let mut none = Seen::default();
-    app_log(&rules, None, &mut none);
+    app_log(&rules, None, None, &mut none);
     assert!(none.app_log.is_empty());
+}
+
+#[test]
+fn the_lines_the_ai_feature_read_are_kept_and_a_key_in_them_is_not() {
+    let rules = rules();
+    let (key, _) = planted();
+    let ai = sv_check::signed_in::Outcome {
+        log_lines: vec![sv_check::logs::KeptLine {
+            read_for: "the AI service failing one message on purpose (V16.5.2, V16.5.3)".to_owned(),
+            line: format!("2026-10-10T03:00:02Z ERROR SVERR7 upstream key {key}"),
+        }],
+        ..Default::default()
+    };
+    // The setup: the AI line is found and carries the key before anything is cut.
+    assert_eq!(format!("{ai:?}").matches(key.as_str()).count(), 1);
+    let mut seen = Seen::default();
+    app_log(&rules, None, Some(&ai), &mut seen);
+    let kept = serde_json::to_string(&seen).unwrap();
+    assert!(!kept.contains(&key), "a key reached the record: {kept}");
+    assert_eq!(seen.app_log.lines_read.len(), 1, "{seen:#?}");
+    assert!(kept.contains("SVERR7"), "{kept}");
+    assert!(seen.credentials_removed >= 1, "{seen:#?}");
 }
 
 fn examined_with(output: Option<String>) -> sv_report::Examined {
