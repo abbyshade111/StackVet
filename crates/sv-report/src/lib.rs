@@ -907,6 +907,14 @@ pub struct RunInputs {
     /// value as a secret assigned, and a data file can be named for passwords or secrets. Left out of an older record.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub sv_data_files: Vec<DataFileHash>,
+    /// The helper images `sv` ran, each as the name and digest it is run by (backlog 0238), so a run is repeatable and a
+    /// moved tag cannot change what ran. Left out of a record that predates it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub helper_images: Vec<String>,
+    /// The digest of the app's own image, as the local Docker has it, when the app was run (backlog 0238). `None` when the
+    /// app was not run, or Docker could not say.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_image_digest: Option<String>,
 }
 
 /// One file of `sv`'s data folder and the SHA-256 of its content (backlog 0233).
