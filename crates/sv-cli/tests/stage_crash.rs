@@ -126,14 +126,17 @@ fn a_crashed_file_list_stops_every_reader_and_the_report_says_so() {
         ),
         "the readers' examined entries do not say they did not run: {json}"
     );
-    // The setup: a clean run of the same app does examine the keys and passwords, so the entry above means something.
+    // Nothing was read, so nothing can be a finding. A reader that ran on the empty list would say the app has no config
+    // file, which is a finding about the list, not the app. The setup: a clean run of the same app does find things,
+    // so an empty list here means something.
+    let found = |json: &str| -> usize {
+        let report: serde_json::Value = serde_json::from_str(json).expect("report.json parses");
+        report["findings"].as_array().map_or(0, Vec::len)
+    };
     let clean = report("reader-file_list-clean", None).1;
     let clean_json = std::fs::read_to_string(clean.join("report.json")).unwrap_or_default();
-    assert!(clean_json.contains("\"secrets.\""), "{clean_json}");
-    assert!(
-        !clean_json.contains("the list of the app's files crashed"),
-        "{clean_json}"
-    );
+    assert!(found(&clean_json) > 0, "the clean run found nothing: {clean_json}");
+    assert_eq!(found(&json), 0, "a reader ran on the empty list: {json}");
 }
 
 /// The known-vulnerability check crashed: the report is still written, the gap says where, and the `examined` entry
