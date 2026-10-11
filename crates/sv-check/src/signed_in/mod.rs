@@ -2530,7 +2530,11 @@ mod tests {
         ] {
             assert!(credited_in_part(&o, id), "{id}: {:#?}", o.verified);
         }
-        assert!(credited_in_full(&o, ADMIN_ACTION.rule_id), "{:#?}", o.verified);
+        assert!(
+            credited_in_full(&o, ADMIN_ACTION.rule_id),
+            "{:#?}",
+            o.verified
+        );
     }
 
     #[test]

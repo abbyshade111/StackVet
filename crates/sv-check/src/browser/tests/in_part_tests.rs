@@ -17,7 +17,11 @@ fn a_sign_out_control_seen_on_the_one_listed_page_is_credited_in_part() {
     let (o, _) = run_on(App::default(), &one);
     let credits = sign_out_credits(&o);
     assert_eq!(credits.len(), 1, "{:?} {:?}", o.steps, o.not_assessed);
-    assert!(credits[0].scope.starts_with("1 private page,"), "{}", credits[0].scope);
+    assert!(
+        credits[0].scope.starts_with("1 private page,"),
+        "{}",
+        credits[0].scope
+    );
     assert!(credits[0].in_part, "{:?}", credits[0]);
 }
 
@@ -28,6 +32,10 @@ fn a_sign_out_control_seen_on_both_listed_pages_is_credited_in_full() {
     let (o, _) = run_on(App::default(), &two);
     let credits = sign_out_credits(&o);
     assert_eq!(credits.len(), 1, "{:?} {:?}", o.steps, o.not_assessed);
-    assert!(credits[0].scope.starts_with("2 private pages,"), "{}", credits[0].scope);
+    assert!(
+        credits[0].scope.starts_with("2 private pages,"),
+        "{}",
+        credits[0].scope
+    );
     assert!(!credits[0].in_part, "{:?}", credits[0]);
 }
