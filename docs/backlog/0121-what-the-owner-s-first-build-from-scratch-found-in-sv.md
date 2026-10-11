@@ -94,15 +94,15 @@ says so.
    path, and then added the build folder to their shell's PATH in `~/.zshrc` at the tool's
    suggestion. The results should say how `sv` was started, or the walk-through should install it as
    a command.
-   **Part status:** claimed by securevibe-e8, 27 September 2026
+   **Part status:** done, 27 September 2026
 7. **The app was never put in git, so the check that matters most never ran.** Whether a secrets
    file was ever committed is *not assessed* when the folder is not a repository, honestly, and
    nothing suggested making it one. A beginner's app will usually start this way.
-   **Part status:** claimed by securevibe-e8, 27 September 2026
+   **Part status:** done, 27 September 2026
 8. **The `rag` question** — "does it search a document store or vector database?" — led the tool to
    count a web search as one, which brought in the C8 vector-database requirements for an app with
    no database. The question should say what it means by search.
-   **Part status:** claimed by securevibe-e8, 27 September 2026
+   **Part status:** done, 27 September 2026
 9. **The terminal summary does not say whether `--run` started the app.** The tool had to infer it
    from the counts. One line — started, answered N requests, or could not start and why — would do.
    **Claimed on 27 September 2026 by session securevibe-e9.** **Done the same day:** the first line after the files
