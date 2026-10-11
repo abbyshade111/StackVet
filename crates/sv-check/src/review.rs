@@ -42,6 +42,8 @@ pub const LEAST_WHY_CHARS_SECRET: usize = 80;
 
 pub const FALSE_ALARM: &str = "false-alarm";
 pub const ACCEPTED_RISK: &str = "accepted-risk";
+/// A reviewer says a test-file information finding (ADR-091) is real, so it counts as a finding (ADR-093).
+pub const COUNTS: &str = "counts";
 
 /// A finding a person set aside, with what they decided.
 #[derive(Debug, Clone, serde::Serialize)]
@@ -64,6 +66,9 @@ pub struct Outcome {
     pub set_aside: Vec<SetAside>,
     /// Entries that do not count, each with its reason, for the report to list.
     pub not_counted: Vec<String>,
+    /// The fingerprints of test-file information findings that a sealed `counts` entry says are real, so
+    /// they count as findings (ADR-093). `assemble` keeps them out of the information list.
+    pub counted_in_test: Vec<String>,
 }
 
 /// What a fingerprint made since 5 October 2026 starts with (deep review A2). A fingerprint of
@@ -527,9 +532,15 @@ pub fn apply(
     }
     let mut set_aside = Vec::new();
     let mut gone = Vec::new();
+    let mut counted_in_test = Vec::new();
     for (k, i, sealed) in counting {
         let entry = &entries[k];
         if voided[k] {
+            continue;
+        }
+        if entry.verdict == COUNTS {
+            // The finding stays in `findings`; the information list no longer takes it (ADR-093).
+            counted_in_test.push(findings[i].fingerprint.clone());
             continue;
         }
         if entry.verdict == FALSE_ALARM {
@@ -554,6 +565,7 @@ pub fn apply(
         findings,
         set_aside,
         not_counted,
+        counted_in_test,
     }
 }
 
@@ -616,9 +628,17 @@ fn judge(
             );
         }
         ACCEPTED_RISK => {}
+        COUNTS if !finding.is_test_information() => {
+            return Err(
+                "`counts` is for a finding that is information in test code (ADR-091), and this one is not: \
+                 it counts already, or is a finding in the app's own code."
+                    .to_owned(),
+            );
+        }
+        COUNTS => {}
         other => {
             return Err(format!(
-                "`verdict = \"{other}\"` is not one of the two: `false-alarm` or `accepted-risk`."
+                "`verdict = \"{other}\"` is not one of the three: `false-alarm`, `accepted-risk`, or `counts`."
             ));
         }
     }
@@ -683,6 +703,10 @@ fn judge(
 /// What the owner does to make a proposal count.
 pub const AGREE: &str = "If you agree after reading the code, run `sv review` in your own terminal \
     to record it as your decision.";
+
+#[cfg(test)]
+#[path = "review_counts_tests.rs"]
+mod counts_tests;
 
 #[cfg(test)]
 mod tests {
