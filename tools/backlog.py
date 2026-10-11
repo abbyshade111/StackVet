@@ -998,7 +998,13 @@ def main(argv):
     parser.add_argument("--by", help="the session making a claim")
     parser.add_argument("--date", default=today())
     parser.add_argument("--remains", help="with done: what remains, making the item partly done")
-    parser.add_argument("--html", help="with board: write the board as one HTML page to this path")
+    parser.add_argument(
+        "--html",
+        nargs="?",
+        const="",
+        help="with board: write the board as one HTML page to this path (default: beside the repository, "
+        "as stackvet-backlog.html)",
+    )
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     a = parser.parse_args(argv)
@@ -1024,9 +1030,12 @@ def main(argv):
         return 0
     if a.command == "board":
         now = datetime.date.today()
-        if a.html:
-            write_text(Path(a.html), board_html(items(), now))
-            print(f"wrote {a.html}")
+        if a.html is not None:
+            # Beside the repository by default, not inside it, so the board is never committed with the code.
+            path = Path(a.html) if a.html else ROOT.parent / "stackvet-backlog.html"
+            write_text(path, board_html(items(), now))
+            print(f"wrote {path}")
+            print("the dashboard links to it if the file backlog-board, in the stackvet config folder, holds this path")
         else:
             print(board_markdown(items(), now), end="")
         return 0

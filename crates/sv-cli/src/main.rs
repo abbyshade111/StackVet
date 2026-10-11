@@ -1911,7 +1911,9 @@ fn cmd_dashboard(args: &[String]) -> Result<()> {
             .map(|d| d.as_secs())
             .unwrap_or(0),
     );
-    let page = sv_report::dashboard::page(&apps, &written[..written.len().min(10)]);
+    let board = sv_cli::board_link::current();
+    let page =
+        sv_report::dashboard::page(&apps, &written[..written.len().min(10)], board.as_deref());
     let staging = parent.join(format!(
         ".{}.sv-{}",
         name.to_string_lossy(),
