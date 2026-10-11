@@ -111,7 +111,13 @@ fn turned_off_the_report_says_it_cannot_tell() {
         .trim(),
     )
     .unwrap();
-    let keys: Vec<&String> = line.as_object().unwrap().keys().collect();
+    // The chain (backlog 0239) is integrity metadata, not a fact about the call, so it is left out of the keys.
+    let keys: Vec<&String> = line
+        .as_object()
+        .unwrap()
+        .keys()
+        .filter(|k| k.as_str() != "chain")
+        .collect();
     assert_eq!(keys, ["off", "time"], "{line}");
     assert_eq!(report_json(&app)["build_loop"]["off"], true);
     let folder = sv_scan::ecosystems::default_report_dir_in(&app);
