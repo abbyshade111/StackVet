@@ -1,6 +1,6 @@
 # The helper images by digest, and the app image's digest in the report (observability review, part 3, K)
 
-**Status:** partly done: the digests are not yet checked by a docker pull on a computer with Docker running; the app image's digest is read from the local Docker and is empty when Docker is not running
+**Status:** done, 11 October 2026
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: yes (part 3, K, of backlog 0226).
 
