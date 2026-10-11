@@ -58,6 +58,10 @@ fn probe(dir: &Path, answers: bool) -> std::process::Output {
         paths.extend(std::env::split_paths(&path));
     }
     let path = std::env::join_paths(paths).expect("the PATH joins");
+    // Windows looks a program up on this process's PATH, not the child's, so this process's PATH must find the
+    // stand-in too. This file has one test, so no other thread reads the environment while it is changed.
+    // SAFETY: as above, nothing else in this test binary reads or writes the environment at the same time.
+    unsafe { std::env::set_var("PATH", &path) };
     Command::new(env!("CARGO_BIN_EXE_sv"))
         .args(["probe", "https://example.com"])
         .env("PATH", path)
