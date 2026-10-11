@@ -25,11 +25,11 @@ fn a_moved_requirement_opens_onto_its_status_in_every_kept_run() {
         run("2026-10-01T10:00:00Z", &[("V1.1.1", Status::NotVerified)]),
         run(
             "2026-10-05T10:00:00Z",
-            &[("V1.1.1", Status::NotVerified), ("V9.9.9", Status::Checked)],
+            &[("V1.1.1", Status::NotVerified), ("V2.2.2", Status::Checked)],
         ),
         run(
             "2026-10-09T10:00:00Z",
-            &[("V1.1.1", Status::Checked), ("V9.9.9", Status::Checked)],
+            &[("V1.1.1", Status::Checked), ("V2.2.2", Status::Checked)],
         ),
     ];
     let page = over_time(&runs, 0);
