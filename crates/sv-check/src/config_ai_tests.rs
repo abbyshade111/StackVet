@@ -7,7 +7,14 @@ fn run(dir: &Path, args: &[&str]) {
     let ok = std::process::Command::new("git")
         .arg("-C")
         .arg(dir)
-        .args(["-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false"])
+        .args([
+            "-c",
+            "user.email=t@t",
+            "-c",
+            "user.name=t",
+            "-c",
+            "commit.gpgsign=false",
+        ])
         .args(args)
         .output()
         .is_ok_and(|o| o.status.success());
@@ -41,7 +48,11 @@ fn finding_of(outcome: Outcome) -> Finding {
 
 #[test]
 fn an_ai_commit_outside_a_merge_is_a_info_note_that_names_it() {
-    if std::process::Command::new("git").arg("--version").output().is_err() {
+    if std::process::Command::new("git")
+        .arg("--version")
+        .output()
+        .is_err()
+    {
         println!("no git here; this needs it");
         return;
     }
@@ -49,22 +60,40 @@ fn an_ai_commit_outside_a_merge_is_a_info_note_that_names_it() {
     let f = finding_of(ai_commits_off_merge(&dir));
     assert_eq!(f.rule_id, "config.ai-commits-off-merge");
     assert_eq!(f.severity, Severity::Info, "a note, not a failure");
-    assert!(f.title.starts_with("1 commit(s)"), "the title counts it: {}", f.title);
-    assert!(f.description.contains("Add sign-in"), "the note names the commit");
+    assert!(
+        f.title.starts_with("1 commit(s)"),
+        "the title counts it: {}",
+        f.title
+    );
+    assert!(
+        f.description.contains("Add sign-in"),
+        "the note names the commit"
+    );
     assert!(f.description.contains("Cursor"), "the note names the tool");
-    assert!(f.requirement_ids.is_empty(), "the note cites no requirement and credits none");
+    assert!(
+        f.requirement_ids.is_empty(),
+        "the note cites no requirement and credits none"
+    );
 }
 
 #[test]
 fn a_branch_with_no_ai_commit_says_none_was_found() {
-    if std::process::Command::new("git").arg("--version").output().is_err() {
+    if std::process::Command::new("git")
+        .arg("--version")
+        .output()
+        .is_err()
+    {
         println!("no git here; this needs it");
         return;
     }
     let dir = repo("clean", false);
     let f = finding_of(ai_commits_off_merge(&dir));
     assert_eq!(f.severity, Severity::Info);
-    assert!(f.title.starts_with("No commit"), "the note says none was found: {}", f.title);
+    assert!(
+        f.title.starts_with("No commit"),
+        "the note says none was found: {}",
+        f.title
+    );
 }
 
 #[test]

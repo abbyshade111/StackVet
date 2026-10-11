@@ -116,8 +116,18 @@ pub fn is_shallow(app_dir: &Path) -> Option<bool> {
 /// The AI coding tools a `Co-Authored-By:` trailer may name (ADR-092). An `Assisted-by:` trailer counts
 /// whatever it names, since the repository's own rules ask for that line from any tool.
 const AI_TOOL_NAMES: [&str; 12] = [
-    "claude", "anthropic", "cursor", "copilot", "codex", "gemini", "chatgpt", "openai", "aider", "windsurf",
-    "muse spark", "devin",
+    "claude",
+    "anthropic",
+    "cursor",
+    "copilot",
+    "codex",
+    "gemini",
+    "chatgpt",
+    "openai",
+    "aider",
+    "windsurf",
+    "muse spark",
+    "devin",
 ];
 
 /// A commit on the default branch that an AI coding tool made, and that came in directly rather than
@@ -150,7 +160,11 @@ fn trailer_tool(message: &str) -> Option<String> {
         let lower = t.to_ascii_lowercase();
         if lower.starts_with("assisted-by:") {
             let named = t["assisted-by:".len()..].trim();
-            return Some(if named.is_empty() { "a tool not named".to_owned() } else { named.to_owned() });
+            return Some(if named.is_empty() {
+                "a tool not named".to_owned()
+            } else {
+                named.to_owned()
+            });
         }
         let rest = lower.strip_prefix("co-authored-by:")?;
         if AI_TOOL_NAMES.iter().any(|name| rest.contains(name)) {

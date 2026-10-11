@@ -285,21 +285,36 @@ fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
     };
     let (title, description) = match commits.len() {
         0 => (
-            "No commit on the default branch was made by an AI coding tool outside a merge".to_owned(),
-            "Every commit that names an AI coding tool came in through a merge, or none names one.".to_owned(),
+            "No commit on the default branch was made by an AI coding tool outside a merge"
+                .to_owned(),
+            "Every commit that names an AI coding tool came in through a merge, or none names one."
+                .to_owned(),
         ),
         n => {
             let shown: Vec<String> = commits
                 .iter()
                 .take(10)
-                .map(|c| format!("`{}` {} ({})", &c.hash[..c.hash.len().min(8)], c.subject, c.tool))
+                .map(|c| {
+                    format!(
+                        "`{}` {} ({})",
+                        &c.hash[..c.hash.len().min(8)],
+                        c.subject,
+                        c.tool
+                    )
+                })
                 .collect();
             (
-                format!("{n} commit(s) on the default branch were made by an AI coding tool and not merged in"),
+                format!(
+                    "{n} commit(s) on the default branch were made by an AI coding tool and not merged in"
+                ),
                 format!(
                     "These commits name an AI coding tool and reached the branch directly: {}{}.",
                     shown.join("; "),
-                    if n > 10 { format!("; and {} more", n - 10) } else { String::new() }
+                    if n > 10 {
+                        format!("; and {} more", n - 10)
+                    } else {
+                        String::new()
+                    }
                 ),
             )
         }

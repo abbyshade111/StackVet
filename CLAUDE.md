@@ -84,6 +84,9 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   health and a public repository is permanent. The name is deliberately not recorded here, so this file cannot leak it.
   Anonymized before the repository went public (20 September 2026, `d5d5719`); the owner confirmed on 4 October 2026
   that the paper follows suit, after the comparison study had put the name back into `docs/paper` that morning.
+- **Name the tool in every commit you make.** Add an `Assisted-by:` line (for example `Assisted-by: Claude Code`), or a
+  `Co-Authored-By:` line naming the tool. `sv` reads these lines in the default branch's history to note commits an AI
+  coding tool made outside a merge (ADR-092), so a commit without one is not seen by that note.
 - Git is pre-approved. Commit and push to a working branch, open pull requests, and merge one into `main` once its checks
   are green, without asking first. Say what went in afterwards; a short, honest account of each change is the point, not a
   request for permission. The owner asked for this on 18 September 2026.
