@@ -123,7 +123,11 @@ jobs:
         env:
           SV_CREDIT_LOG: ${{ runner.temp }}/credits.log
           SV_REQUIRE_BACKEND: "1"
-        run: cargo test --workspace
+        # The archive tests read the 7z files they make with py7zr, a test-only package pinned to one version
+        # (ADR-089); without it they fail, rather than passing without reading.
+        run: |
+          python3 -m pip install py7zr==1.1.3
+          cargo test --workspace
 
       - name: What the suite saw credited
         # Fails when a check listed as only ever a finding was credited, or one never credited is not

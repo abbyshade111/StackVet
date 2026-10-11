@@ -818,6 +818,11 @@ pub enum ArchiveFormat {
     Gzip,
     /// A plain `.tar`, which holds many files and is not compressed (backlog 0241).
     Tar,
+    /// A `.7z`, written here stored, not compressed, so it holds many files and is as big as what it
+    /// unpacks to (backlog 0242, ADR-089). Named `7z` in `stackvet.toml`, which serde cannot spell from
+    /// the variant's name alone.
+    #[serde(rename = "7z")]
+    SevenZ,
 }
 
 impl ArchiveFormat {
@@ -827,6 +832,7 @@ impl ArchiveFormat {
             ArchiveFormat::Zip => "zip",
             ArchiveFormat::Gzip => "gzip",
             ArchiveFormat::Tar => "tar",
+            ArchiveFormat::SevenZ => "7z",
         }
     }
 }
@@ -2631,6 +2637,11 @@ mod mcp_server_tests {
         assert_eq!(u.unpacks_archives, None);
         let u: UploadSection = toml::from_str(&format!("{base}unpacks-archives = []\n")).unwrap();
         assert_eq!(u.unpacks_archives, Some(vec![]));
+        // `7z` is spelled as it is in `stackvet.toml`, not as serde would spell its variant (backlog 0242).
+        let sevenz: UploadSection =
+            toml::from_str(&format!("{base}unpacks-archives = [\"7z\"]\n")).unwrap();
+        assert_eq!(sevenz.unpacks_archives, Some(vec![ArchiveFormat::SevenZ]));
+        assert_eq!(ArchiveFormat::SevenZ.name(), "7z");
         // A format `sv` cannot send is refused by name, rather than quietly never sent.
         let refused =
             toml::from_str::<UploadSection>(&format!("{base}unpacks-archives = [\"rar\"]\n"))

@@ -282,6 +282,7 @@ pub fn ordinary(format: &str) -> Vec<u8> {
     match format {
         "gzip" => gzip(&deflate_stored(ORDINARY_TEXT), crc, size.into()),
         "tar" => tar("sv-probe.txt", ORDINARY_TEXT),
+        "7z" => sevenz("sv-probe.txt", ORDINARY_TEXT),
         _ => zip(&[Entry {
             name: "sv-probe.txt".to_owned(),
             method: 0,
@@ -294,10 +295,13 @@ pub fn ordinary(format: &str) -> Vec<u8> {
 
 /// An archive of `format` holding one file of `n` zero bytes, compressed.
 pub fn unpacks_to(format: &str, n: u64) -> Vec<u8> {
-    // A tar is not compressed, so it is as big as what it unpacks to: the caller keeps `n` within the
-    // upload's own cap (`over_limits`), and this builds nothing bigger.
+    // A tar or a stored 7z is not compressed, so it is as big as what it unpacks to: the caller keeps `n`
+    // within the upload's own cap (`over_limits`), and this builds nothing bigger.
     if format == "tar" {
         return tar("sv-probe-zeros.txt", &vec![0; n as usize]);
+    }
+    if format == "7z" {
+        return sevenz("sv-probe-zeros.txt", &vec![0; n as usize]);
     }
     let deflated = deflate_zeros(n);
     let crc = crc32_of_zeros(n);
@@ -340,6 +344,73 @@ pub fn tar(name: &str, data: &[u8]) -> Vec<u8> {
     out
 }
 
+/// A `.7z` holding one file called `name` with `data`, stored without compression (backlog 0242, ADR-089): the
+/// 32-byte signature header, the file's bytes, then a header that names the file, says it is stored with the
+/// Copy method, and gives its CRC. Written by hand, as the other writers are; Python's `py7zr` reads it back.
+pub fn sevenz(name: &str, data: &[u8]) -> Vec<u8> {
+    // The header, in the 7z property IDs: 0x01 starts it, 0x04 the streams, 0x06 the packed stream's
+    // place and size, 0x07 the folder that unpacks it, 0x05 the files, 0x11 a file's name, 0x00 ends each.
+    let mut header = vec![0x01, 0x04, 0x06];
+    number(&mut header, 0); // the packed stream starts straight after the signature header
+    number(&mut header, 1); // one packed stream
+    header.push(0x09); // its size
+    number(&mut header, data.len() as u64);
+    header.push(0x00);
+    header.push(0x07); // the folder: one coder, with a one-byte method ID of 0x00, Copy
+    header.push(0x0b);
+    number(&mut header, 1);
+    header.push(0x00); // not kept elsewhere
+    number(&mut header, 1);
+    header.push(0x01); // one byte of method ID, no properties
+    header.push(0x00);
+    header.push(0x0c); // what the folder unpacks to
+    number(&mut header, data.len() as u64);
+    header.push(0x0a); // its CRC, defined
+    header.push(0x01);
+    header.extend_from_slice(&crc32(data).to_le_bytes());
+    header.push(0x00);
+    // The files inside each folder: one, so its size and CRC are the folder's own.
+    header.push(0x08); // the substreams
+    header.push(0x0d); // how many in the folder
+    number(&mut header, 1);
+    header.push(0x00);
+    header.push(0x00); // the streams end
+    header.push(0x05); // the files
+    number(&mut header, 1);
+    let mut names = vec![0u8]; // the names are not kept elsewhere
+    for unit in name.encode_utf16().chain(std::iter::once(0)) {
+        names.extend_from_slice(&unit.to_le_bytes());
+    }
+    header.push(0x11);
+    number(&mut header, names.len() as u64);
+    header.extend_from_slice(&names);
+    header.push(0x00);
+    header.push(0x00);
+    // The signature header: the 7z marker and version, then the CRC of the 20 bytes that say where the
+    // header is, which hold its offset (just past the data), its size, and its own CRC.
+    let mut start = Vec::with_capacity(20);
+    start.extend_from_slice(&(data.len() as u64).to_le_bytes());
+    start.extend_from_slice(&(header.len() as u64).to_le_bytes());
+    start.extend_from_slice(&crc32(&header).to_le_bytes());
+    let mut out = vec![0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c, 0x00, 0x04];
+    out.extend_from_slice(&crc32(&start).to_le_bytes());
+    out.extend_from_slice(&start);
+    out.extend_from_slice(data);
+    out.extend_from_slice(&header);
+    out
+}
+
+/// A 7z number: one byte under 0x80, or a 0xff byte and eight bytes little-endian. Only the second form is
+/// written here, for anything that does not fit in a byte.
+fn number(out: &mut Vec<u8>, n: u64) {
+    if n < 0x80 {
+        out.push(n as u8);
+    } else {
+        out.push(0xff);
+        out.extend_from_slice(&n.to_le_bytes());
+    }
+}
+
 /// A zip whose headers say its one file unpacks to `stated` bytes, while its data unpacks to `n`
 /// zero bytes, with the CRC of what really comes out. An app that checks only what a zip states
 /// lets it through; one that counts what it unpacks does not; and a reader that stops at the
@@ -378,6 +449,7 @@ fn file_name(format: &str, what: &str) -> String {
     match format {
         "gzip" => format!("sv-probe-{what}.txt.gz"),
         "tar" => format!("sv-probe-{what}.tar"),
+        "7z" => format!("sv-probe-{what}.7z"),
         _ => format!("sv-probe-{what}.zip"),
     }
 }
@@ -402,10 +474,13 @@ fn over_limits(format: ArchiveFormat, upload: &UploadSection) -> (Vec<OverLimit>
                 "`max-unpacked-bytes` is {most}, and a {f} just over it would unpack to more than \
                  the {MOST_UNPACKED_BYTES} bytes this check ever sends"
             ));
-        } else if format == ArchiveFormat::Tar && n > super::uploads::MOST_UPLOAD_BYTES {
-            // A tar is not compressed: one just over the stated most is as big as what it unpacks to.
+        } else if matches!(format, ArchiveFormat::Tar | ArchiveFormat::SevenZ)
+            && n > super::uploads::MOST_UPLOAD_BYTES
+        {
+            // A tar or a stored 7z is not compressed: one just over the stated most is as big as what it
+            // unpacks to.
             not.push(format!(
-                "`max-unpacked-bytes` is {most}, and a tar just over it is not compressed, so it \
+                "`max-unpacked-bytes` is {most}, and a {f} just over it is not compressed, so it \
                  would be {n} bytes, more than the {} bytes this check sends",
                 super::uploads::MOST_UPLOAD_BYTES
             ));
@@ -430,11 +505,11 @@ fn over_limits(format: ArchiveFormat, upload: &UploadSection) -> (Vec<OverLimit>
             }
         }
     }
-    if let (Some(most), ArchiveFormat::Tar) = (upload.max_files, format) {
-        // Not silence: a tar's files are not sent here, and the report says so.
+    if let (Some(most), ArchiveFormat::Tar | ArchiveFormat::SevenZ) = (upload.max_files, format) {
+        // Not silence: a tar's or a 7z's files are not sent here, and the report says so.
         not.push(format!(
-            "`max-files` is {most}, and this check does not send a tar holding more files than \
-             one, so the most files a tar may hold is not tested"
+            "`max-files` is {most}, and this check does not send a {f} holding more files than \
+             one, so the most files a {f} may hold is not tested"
         ));
     }
     if let (Some(most), ArchiveFormat::Zip) = (upload.max_files, format) {
@@ -1223,6 +1298,16 @@ mod tests {
         \x20k+=1\n\
         print(k,n,zero)";
 
+    /// Unpacks a 7z with `py7zr`, which reads it whole and checks each file's CRC, and says how many files it
+    /// held, how many bytes they came to, and whether every byte was zero (or the text). A package outside
+    /// `sv`, so the writer above is not checked against itself (backlog 0242, ADR-089).
+    const READ_SEVENZ: &str = "import sys,io,os,tempfile,py7zr\n\
+        z=py7zr.SevenZipFile(io.BytesIO(sys.stdin.buffer.read()))\n\
+        t=tempfile.mkdtemp()\n\
+        z.extractall(path=t)\n\
+        bs=[open(os.path.join(t,f),'rb').read() for f in z.getnames()]\n\
+        print(len(bs),sum(len(b) for b in bs),all(not b.strip(b'\\0') for b in bs))";
+
     #[test]
     fn the_crc_of_zeros_is_the_crc_of_that_many_zero_bytes() {
         for n in [0u64, 1, 2, 7, 8, 255, 256, 1000, 65_537] {
@@ -1273,6 +1358,39 @@ mod tests {
             );
         }
         assert_eq!(python(READ_TAR, &ordinary("tar")), "1 23 False");
+    }
+
+    /// A stored 7z unpacks to exactly what it says in `py7zr`, at the sizes around a byte and a block and the
+    /// most the check ever sends (backlog 0242, ADR-089).
+    #[test]
+    fn each_stored_7z_unpacks_to_exactly_what_it_says_in_py7zr() {
+        for n in [
+            0u64,
+            1,
+            127,
+            128,
+            511,
+            512,
+            513,
+            1_000_003,
+            MOST_UPLOAD_BYTES,
+        ] {
+            assert_eq!(
+                python(READ_SEVENZ, &unpacks_to("7z", n)),
+                format!("1 {n} True"),
+                "a 7z of {n} zeros"
+            );
+        }
+        assert_eq!(python(READ_SEVENZ, &ordinary("7z")), "1 23 False");
+    }
+
+    /// A 7z whose data is altered is refused by `py7zr`, so the check above really reads the bytes, CRC and
+    /// all, and does not pass on a file it never opened.
+    #[test]
+    fn a_7z_whose_data_is_altered_is_refused_by_py7zr() {
+        let mut bad = ordinary("7z");
+        bad[32] ^= 0xff;
+        assert!(python_fails(READ_SEVENZ, &bad), "py7zr read an altered 7z");
     }
 
     /// The largest an archive here is ever made: a gigabyte, in a megabyte or so, and still read
