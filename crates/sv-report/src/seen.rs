@@ -128,6 +128,11 @@ pub struct StandIns {
     /// Each message the app sent: who it was to, its subject, and when. Never its body.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mail: Option<Vec<Mail>>,
+    /// The names the app looked up, each once, with how often and when first (ADR-085). Present
+    /// when the name server ran, with an empty list when the app asked for no name. Every answer
+    /// was SERVFAIL, so nothing here was resolved. Absent when the name server did not run.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub names: Option<Vec<NameAsked>>,
     /// The stand-ins that ran and whose record could not be read.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub not_read: Vec<String>,
@@ -136,11 +141,22 @@ pub struct StandIns {
     pub cut: usize,
 }
 
+/// One name the app looked up: the name as the app asked it (redacted), the kind of address it
+/// asked for, how many questions came for it, and when the first one came.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct NameAsked {
+    pub name: String,
+    pub kind: String,
+    pub asked: usize,
+    pub first: String,
+}
+
 impl StandIns {
     pub fn is_empty(&self) -> bool {
         self.model.is_none()
             && self.sign_in_provider.is_none()
             && self.mail.is_none()
+            && self.names.is_none()
             && self.not_read.is_empty()
     }
 }
