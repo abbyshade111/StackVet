@@ -19,12 +19,12 @@ written by hand here and checked by a reader that is not `sv`'s own.
 
 The owner's choice, one of:
 
-1. **Keep both as known limits**, closing 0242 with a note. No code, no new tool.
-2. **Build 7z only**, with a reader for tests. The reader is a new tool, either a Python package (`py7zr`) or the
+- **Option A, keep both as known limits**, closing 0242 with a note. No code, no new tool.
+- **Option B, build 7z only**, with a reader for tests. The reader is a new tool, either a Python package (`py7zr`) or the
    `7z` program. Tests only, not shipped with `sv`, but a dependency all the same: it needs its own decision record,
    and the choice of reader needs the owner's yes.
-3. **Build 7z with a hand-written reader check**, no tool. Possible for the stored and zeros cases, but the test would
+- **Option C, build 7z with a hand-written reader check**, no tool. Possible for the stored and zeros cases, but the test would
    then only prove what the writer itself says.
 
-Recommendation: option 1 for rar, and for 7z option 2 only if the owner wants 7z in the report's claims; otherwise
-option 1 for both. Until the owner chooses, nothing here is built.
+Recommendation: option A for rar, and for 7z option B only if the owner wants 7z in the report's claims; otherwise
+option A for both. Until the owner chooses, nothing here is built.
