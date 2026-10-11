@@ -1143,6 +1143,7 @@ mod tests {
             claims: vec![],
             findings: vec![],
             set_aside: Vec::new(),
+            test_information: Vec::new(),
             reviews_not_counted: Vec::new(),
             out_of_scope: vec![],
             checklist_above_level: vec![],

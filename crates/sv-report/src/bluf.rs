@@ -79,6 +79,27 @@ pub fn headline(report: &Report) -> String {
         .iter()
         .filter(|s| s.verdict == sv_check::review::FALSE_ALARM)
         .count();
+    // Information in test code is not a finding and is not counted (ADR-091). Said here, with the rules, so a
+    // reader knows the test files have something to review with `sv review`.
+    let information_said = if report.test_information.is_empty() {
+        String::new()
+    } else {
+        let mut rules: Vec<&str> = report
+            .test_information
+            .iter()
+            .map(|f| f.rule_id.as_str())
+            .collect();
+        rules.sort_unstable();
+        rules.dedup();
+        let k = report.test_information.len();
+        format!(
+            " {k} {} in test code {} information, not counted as {}: {}. Review them with `sv review`.",
+            if k == 1 { "thing" } else { "things" },
+            if k == 1 { "is" } else { "are" },
+            if k == 1 { "a finding" } else { "findings" },
+            rules.join(", ")
+        )
+    };
     let set_aside_said = match set_aside {
         0 => String::new(),
         1 => " 1 more was found and set aside as a false alarm in stackvet.toml; it is listed \
@@ -130,7 +151,7 @@ pub fn headline(report: &Report) -> String {
         ),
     };
     format!(
-        "{n} thing{} {} found, worst first.{apart}{set_aside_said}",
+        "{n} thing{} {} found, worst first.{apart}{set_aside_said}{information_said}",
         if n == 1 { "" } else { "s" },
         if n == 1 { "was" } else { "were" }
     )
@@ -408,6 +429,7 @@ mod tests {
             claims: Vec::new(),
             findings: Vec::new(),
             set_aside: Vec::new(),
+            test_information: Vec::new(),
             reviews_not_counted: Vec::new(),
             out_of_scope: Vec::new(),
             satisfied_elsewhere: Vec::new(),

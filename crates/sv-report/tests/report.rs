@@ -64,6 +64,7 @@ fn inputs<'a>(
 ) -> Inputs<'a> {
     Inputs {
         set_aside: Vec::new(),
+        test_information: Vec::new(),
         reviews_not_counted: Vec::new(),
         app_name: "Test",
         on_the_internet: false,
@@ -1110,6 +1111,7 @@ fn report_for_folder(files: &[(&str, &str)]) -> sv_report::Report {
     let manual_only = buckets.manual_only(&config);
     build(Inputs {
         set_aside: Vec::new(),
+        test_information: Vec::new(),
         reviews_not_counted: Vec::new(),
         app_name: "Chain",
         on_the_internet: false,

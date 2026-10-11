@@ -87,6 +87,14 @@ impl Secret {
 /// this list only when it does, so the report never contradicts the finding it shows.
 pub const INFORMATION_ONLY: &[&str] = &[crate::suite::NAME_MISMATCH];
 
+/// The rules whose findings in test code are information, not findings (ADR-091, approved by the owner on
+/// 11 October 2026): Bandit's assert (B101) and its password-looking strings (B105, B106, B107). An assert is how
+/// a test is written, and a password string in a test file is usually a fixture. Such a finding is listed in its
+/// own section, for the owner to review, and it does not count. The secrets scan's rules are not on this list,
+/// so a real-looking key in a test file still counts.
+pub const TEST_FILE_INFORMATION: &[&str] =
+    &["bandit.B101", "bandit.B105", "bandit.B106", "bandit.B107"];
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Location {
     pub file: String,
@@ -302,6 +310,14 @@ impl Finding {
     /// code gets copied.
     pub fn in_test_code(&self) -> bool {
         self.marked_test_code || is_test_path(&self.location.file)
+    }
+
+    /// Whether this is information rather than a finding: one of `TEST_FILE_INFORMATION`, in test code, that no
+    /// other tool also reported (ADR-091). Listed in its own section, never counted.
+    pub fn is_test_information(&self) -> bool {
+        self.in_test_code()
+            && self.also_reported_by.is_empty()
+            && TEST_FILE_INFORMATION.contains(&self.rule_id.as_str())
     }
 
     /// Whether the finding is only "worth a look": reported by one of the Semgrep rules in
@@ -658,6 +674,9 @@ pub(crate) fn reads_code(f: &Finding) -> bool {
 
 #[cfg(test)]
 mod quoted_tests;
+
+#[cfg(test)]
+mod test_information_tests;
 
 #[cfg(test)]
 mod tests {

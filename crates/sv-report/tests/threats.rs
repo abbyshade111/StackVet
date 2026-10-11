@@ -436,6 +436,7 @@ fn report_with_threats(findings: Vec<sv_check::Finding>) -> sv_report::Report {
     let ctx = context(&[("auth", true), ("uploads", false)]);
     sv_report::build(sv_report::Inputs {
         set_aside: Vec::new(),
+        test_information: Vec::new(),
         reviews_not_counted: Vec::new(),
         app_name: "Threats",
         on_the_internet: false,
@@ -537,6 +538,7 @@ fn without_threat_rules_the_report_has_no_threat_section() {
     let buckets = sv_frameworks::applicability::Buckets::default();
     let report = sv_report::build(sv_report::Inputs {
         set_aside: Vec::new(),
+        test_information: Vec::new(),
         reviews_not_counted: Vec::new(),
         app_name: "None",
         on_the_internet: false,
@@ -757,6 +759,7 @@ fn the_report_lists_atlas_references_for_a_reviewer_only_where_ai_threats_apply(
         let ctx = context(&[("auth", true), ("ai", ai)]);
         sv_report::build(sv_report::Inputs {
             set_aside: Vec::new(),
+            test_information: Vec::new(),
             reviews_not_counted: Vec::new(),
             app_name: "Atlas",
             on_the_internet: false,
