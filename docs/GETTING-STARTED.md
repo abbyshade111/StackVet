@@ -138,8 +138,9 @@ your organization has turned these tools off. If StackVet does not appear or wil
 
 ### Other tools
 
-The same `command` and `args` go in the tool's own MCP settings file. **Cursor has not been tried
-with StackVet yet**, so if it does not work, tell us:
+The same `command` and `args` go in the tool's own MCP settings file. **Cursor has been tried once**, on
+one app built from an empty folder (see [the record](design/0368-the-app-built-in-cursor-from-an-empty-folder-11-october-2026.md)),
+with the settings below. If it does not work for you, tell us:
 
 - **Cursor:** `.cursor/mcp.json` in the app's folder, with the same `mcpServers` block as for Claude, above.
 
@@ -257,7 +258,8 @@ asks for a passphrase to protect it with (press Enter to choose one, or type `no
 without it, and without one the report says so beside each entry. Only then does the report count it as yours: a line
 saying `owner` that was never recorded this way still counts as the tool's word, because a tool trying to
 quiet a warning could write that line too. The same goes for an answer the tool confirmed and you looked
-at yourself, and for a finding set aside as a false alarm. `sv review` needs a terminal someone is typing
+at yourself, and for a finding set aside as a false alarm. `sv review` is only for those: a real finding is fixed in the code and
+checked again, and recording it does not make it go away. `sv review` needs a terminal someone is typing
 in, so your AI tool cannot run it for you. The README ("Setting a finding aside, confirming an answer, or
 giving your own") says more.
 

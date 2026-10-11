@@ -1,6 +1,6 @@
 # Test a build with Cursor, once the backlog is worked off
 
-**Status:** partly done: the design entry and any guide changes, once the owner has the notes from the app built in Cursor
+**Status:** done, 11 October 2026
 
 Asked for by the owner on 9 October 2026, for after the roadmap: every trial so far built with Claude Code or a
 model behind `tools/prompt_trial.py`. Build one app with Cursor connected to `sv mcp` as `docs/GETTING-STARTED.md`
