@@ -122,6 +122,8 @@ const MOST_CPUS: u64 = 2;
 
 #[cfg(all(test, unix))]
 mod container_record_tests;
+#[cfg(all(test, unix))]
+mod resource_reading_tests;
 
 /// How the wait for the app to answer ended: whether it answered, after how many seconds, and how
 /// it ended when it stopped of its own accord first.
@@ -287,6 +289,33 @@ impl DockerBackend {
         let mut c = Command::new(&self.binary);
         c.args(self.prepared(args));
         output_of(&mut c)
+    }
+
+    /// What the engine says of the app's container now: one `docker stats` reading and the limits it started
+    /// with (backlog 0243). `None` when the engine would not say, or what it said is not the format
+    /// `crate::resources` reads; the report then says so rather than showing a guess.
+    fn resource_readings(&self, app: &str) -> Option<crate::resources::Taken> {
+        let (code, stats) = self
+            .docker(&[
+                "stats",
+                "--no-stream",
+                "--format",
+                crate::resources::STATS_FORMAT,
+                app,
+            ])
+            .ok()?;
+        if code != 0 {
+            return None;
+        }
+        let reading = crate::resources::parse_stats(stats.lines().find(|l| !l.trim().is_empty())?)?;
+        let (code, limits) = self
+            .docker(&["inspect", "--format", crate::resources::LIMITS_FORMAT, app])
+            .ok()?;
+        if code != 0 {
+            return None;
+        }
+        let limits = crate::resources::parse_limits(limits.trim())?;
+        Some(crate::resources::Taken { reading, limits })
     }
 
     /// As `docker`, with `secrets` in the Docker program's own environment, for arguments that name
@@ -817,6 +846,9 @@ impl DockerBackend {
         secrets.push(client_secret.clone());
         secrets.extend(mcp_token.clone());
         let stand_ins = self.stand_ins(&via, mail, provider, model, name_server, &secrets);
+        // What the engine says of the app's own container, read while it still runs (backlog 0243). Nothing
+        // after this point sends a request, so these are the app's numbers as the probes left it.
+        let resources = self.resource_readings(&app);
         // And from the lines of the app's own output the log checks read, kept the same way: an
         // app that logs a sign-in with its password logs the test account's.
         if let Some(asked) = signed_in.as_mut() {
@@ -941,6 +973,7 @@ impl DockerBackend {
             sidecar_lost: self.sidecar_lost(),
             container,
             stand_ins,
+            resources,
             suite_timings,
             request_timings: self.take_request_times(),
         })
