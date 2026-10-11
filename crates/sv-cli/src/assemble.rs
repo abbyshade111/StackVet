@@ -1026,6 +1026,10 @@ fn running_app(
                          credentials sv recognized cut out: it is the app's own text.",
                         sv_report::seen::FILE
                     ));
+                    note.push_str(&format!(
+                        " {}",
+                        crate::seen::lookups_sentence(outcome.stand_ins.names.as_deref())
+                    ));
                 }
                 if let (Some(note), Some(installed)) = (
                     run_note.as_mut(),
