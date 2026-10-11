@@ -268,7 +268,28 @@ impl Run {
 
     /// What changed since `earlier`, in a few short sentences.
     pub fn changes_since(&self, earlier: &Run) -> Vec<String> {
-        let mut out = Vec::new();
+        let c = self.changes(earlier);
+        let mut out = c.before;
+        for (id, then, now) in c.moved.iter().take(MOVED_SHOWN) {
+            out.push(moved_sentence(id, *then, *now));
+        }
+        if c.moved.len() > MOVED_SHOWN {
+            out.push(format!(
+                "and {} more requirements moved",
+                c.moved.len() - MOVED_SHOWN
+            ));
+        }
+        out.extend(c.after);
+        if out.is_empty() {
+            out.push(NO_CHANGE.to_owned());
+        }
+        out
+    }
+
+    /// What changed since `earlier`, split so the page can open each requirement that moved onto its own
+    /// status across every run (ADR-086, answer 3). `changes_since` says the same thing in sentences.
+    fn changes(&self, earlier: &Run) -> Changes {
+        let mut before = Vec::new();
         let gone: Vec<&KeptFinding> = earlier
             .findings
             .iter()
@@ -285,58 +306,98 @@ impl Run {
             })
             .collect();
         for f in &new {
-            out.push(format!("New finding ({}): {}", f.severity, f.title));
+            before.push(format!("New finding ({}): {}", f.severity, f.title));
         }
         for f in &gone {
-            out.push(format!("No longer found ({}): {}", f.severity, f.title));
+            before.push(format!("No longer found ({}): {}", f.severity, f.title));
         }
         for status in crate::Status::ALL {
             let (was, now) = (earlier.counts.of(status), self.counts.of(status));
             if was != now {
-                out.push(format!(
+                before.push(format!(
                     "{}: {was} then, {now} now",
                     status.applies_row().trim_start_matches("Applies, ")
                 ));
             }
         }
+        let mut moved = Vec::new();
+        let mut after = Vec::new();
         if self.requirements.is_empty() || earlier.requirements.is_empty() {
             if crate::Status::ALL
                 .iter()
                 .any(|s| self.counts.of(*s) != earlier.counts.of(*s))
             {
-                out.push(
+                after.push(
                     "Which requirements moved is not known: one of these runs was kept by an older \
                      sv, which kept counts only."
                         .to_owned(),
                 );
             }
         } else {
-            let moved = self.moved_since(earlier);
-            let word = |s: Option<crate::Status>| s.map_or("did not apply", |s| s.label());
-            for (id, then, now) in moved.iter().take(MOVED_SHOWN) {
-                out.push(format!("{id}: {} then, {} now", word(*then), word(*now)));
-            }
-            if moved.len() > MOVED_SHOWN {
-                out.push(format!(
-                    "and {} more requirements moved",
-                    moved.len() - MOVED_SHOWN
-                ));
-            }
+            moved = self.moved_since(earlier);
         }
         // Something moved, and one run did not keep what else it read: say the cause may be there.
-        if !out.is_empty() && (self.inputs.is_none() || earlier.inputs.is_none()) {
-            out.push(
+        if (!before.is_empty() || !moved.is_empty() || !after.is_empty())
+            && (self.inputs.is_none() || earlier.inputs.is_none())
+        {
+            after.push(
                 "Whether the security notes, the design decisions, or sv's data changed between \
                  these runs is not known: one of them was kept by an older sv, which did not keep \
                  that."
                     .to_owned(),
             );
         }
-        if out.is_empty() {
-            out.push("No finding appeared or went away, and no count changed.".to_owned());
+        Changes {
+            before,
+            moved,
+            after,
         }
-        out
     }
+}
+
+/// What changed between two runs, in three parts: the sentences about findings and counts, every requirement
+/// whose status moved, and the sentences about what cannot be known.
+struct Changes {
+    before: Vec<String>,
+    moved: Vec<(String, Option<crate::Status>, Option<crate::Status>)>,
+    after: Vec<String>,
+}
+
+/// Said when nothing changed between two runs.
+const NO_CHANGE: &str = "No finding appeared or went away, and no count changed.";
+
+/// One requirement that moved, in words: its status then and now.
+fn moved_sentence(id: &str, then: Option<crate::Status>, now: Option<crate::Status>) -> String {
+    let word = |s: Option<crate::Status>| s.map_or("did not apply", |s| s.label());
+    format!("{id}: {} then, {} now", word(then), word(now))
+}
+
+/// One requirement's status in each run kept for an app, oldest first: the drill-down behind a requirement
+/// that moved (ADR-086, answer 3). A run that did not finish, or kept no statuses, says so rather than
+/// leaving its row out.
+fn status_across(runs: &[Run], id: &str) -> String {
+    let mut out = String::from(
+        "<table class=\"rows\"><tr><th scope=\"col\">Run</th><th scope=\"col\">Status</th></tr>",
+    );
+    for run in runs {
+        let cell = if !run.finished() {
+            "the run did not finish".to_owned()
+        } else if run.requirements.is_empty() {
+            "not kept by the sv that made this run".to_owned()
+        } else {
+            run.requirements
+                .iter()
+                .find(|r| r.id == id)
+                .map_or("did not apply".to_owned(), |r| r.status.label().to_owned())
+        };
+        out.push_str(&format!(
+            "<tr><td>{}</td><td>{}</td></tr>",
+            escape(&day(&Some(run.started.clone()))),
+            escape(&cell)
+        ));
+    }
+    out.push_str("</table>");
+    out
 }
 
 const SEVERITIES: [&str; 5] = ["critical", "high", "medium", "low", "info"];
@@ -605,8 +666,24 @@ fn over_time(runs: &[Run], unread: usize) -> String {
                     "<br>Compared with {}:<ul>",
                     escape(&day(&Some(e.started.clone())))
                 ));
-                for change in run.changes_since(e) {
-                    b.push_str(&format!("<li>{}</li>", escape(&change)));
+                let c = run.changes(e);
+                if c.before.is_empty() && c.moved.is_empty() && c.after.is_empty() {
+                    b.push_str(&format!("<li>{NO_CHANGE}</li>"));
+                }
+                for change in &c.before {
+                    b.push_str(&format!("<li>{}</li>", escape(change)));
+                }
+                // Each requirement that moved opens onto its status in every kept run, so none is hidden,
+                // only sorted (ADR-086, answer 3). Not a link to a row: a `#` link would change which view shows.
+                for (id, then, now) in &c.moved {
+                    b.push_str(&format!(
+                        "<li><details><summary>{}</summary>{}</details></li>",
+                        escape(&moved_sentence(id, *then, *now)),
+                        status_across(runs, id)
+                    ));
+                }
+                for change in &c.after {
+                    b.push_str(&format!("<li>{}</li>", escape(change)));
                 }
                 b.push_str("</ul>");
             }
@@ -647,6 +724,8 @@ main:has(.view:target:not(#all)) #all { display: none; }
 .app { border: 1px solid var(--edge); border-radius: 6px; padding: .8rem 1rem; margin: .8rem 0; }
 .app h3 { margin: 0 0 .3rem; }
 .chips .sev { margin-right: .3rem; }
+table.rows { border-collapse: collapse; margin: .3rem 0; }
+table.rows th, table.rows td { text-align: left; padding: .2rem .8rem .2rem 0; vertical-align: top; }
 ";
 
 /// One crash `sv` kept on this computer (backlog 0237): when it happened, the version, the command, and where in
@@ -893,6 +972,8 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) 
 
 #[cfg(test)]
 mod board_tests;
+#[cfg(test)]
+mod drill_tests;
 #[cfg(test)]
 mod given_tests;
 #[cfg(test)]
