@@ -91,7 +91,7 @@ claimed.
    used ten minutes after it was asked for is a finding if it signs in, and credited only when a
    fresh code then works. V6.5.5 was already counted, through the two-factor check, so no level
    changes. See DESIGN, "How long an emailed code lasts".
-   **Part status:** claimed by securevibe-e9, 26 September 2026
+   **Part status:** done, 26 September 2026
 4. **A seeded TOTP secret (2).** Not a tool: the `seed` script makes a user with two-factor sign-in
    and hands `sv` the secret, and `sv` computes the codes itself (RFC 6238) to try one twice and
    one late (V6.5.1, V6.5.5). **Claimed on 26 September 2026 by session securevibe-e8.** A third account, made by
