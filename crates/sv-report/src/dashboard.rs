@@ -643,8 +643,9 @@ main:has(.view:target:not(#all)) #all { display: none; }
 .chips .sev { margin-right: .3rem; }
 ";
 
-/// The page: every app in alphabetical order, then each app's own view.
-pub fn page(apps: &[App], written: &str) -> String {
+/// The page: every app in alphabetical order, then each app's own view. `board` is the backlog overview's
+/// file when the owner has named one that exists, linked from the top (backlog 0227, ADR-086).
+pub fn page(apps: &[App], written: &str, board: Option<&Path>) -> String {
     let mut apps: Vec<&App> = apps.iter().collect();
     apps.sort_by_key(|a| label(a).to_lowercase());
     let mut b = String::new();
@@ -657,6 +658,13 @@ pub fn page(apps: &[App], written: &str) -> String {
         "<style>{STYLE}{DASH_STYLE}</style>\n</head>\n<body>\n"
     ));
     b.push_str("<h1>Your apps, as their last reports left them</h1>\n");
+    if let Some(board) = board {
+        b.push_str(&format!(
+            "<p class=\"note\"><a href=\"{}\">The backlog overview</a>: the board of what is open, claimed, partly done, \
+             and done, read from the backlog's own status lines.</p>\n",
+            file_url(board)
+        ));
+    }
     b.push_str(&format!(
         "<p class=\"note\">Written by <code>sv dashboard</code> on {}, from the report already in each app's \
          <code>{}</code> folder. It checks nothing itself: run <code>sv report</code> on an app to \
@@ -776,6 +784,8 @@ pub fn page(apps: &[App], written: &str) -> String {
 }
 
 #[cfg(test)]
+mod board_tests;
+#[cfg(test)]
 mod given_tests;
 #[cfg(test)]
 mod inputs_tests;
@@ -827,7 +837,7 @@ mod tests {
 
     #[test]
     fn the_page_is_marked_as_the_dashboard_s_own() {
-        let page = page(&[], "2026-10-08");
+        let page = page(&[], "2026-10-08", None);
         assert!(page.contains(MADE_BY));
         assert!(!page.contains("<script"));
     }
