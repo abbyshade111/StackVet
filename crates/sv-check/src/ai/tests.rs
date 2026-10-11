@@ -96,6 +96,8 @@ pub(super) struct Flaws {
     quota: Option<u32>,
     /// This copy was started with the kill switch on.
     switched_off: bool,
+    /// With the switch on, the copy answers with a server error, as a crashed copy would.
+    switch_crashes: bool,
     /// The kill switch is read once and cached before the setting, so it changes nothing.
     ignores_kill_switch: bool,
     /// With the switch on, the chat gives no answer at all.
@@ -675,8 +677,11 @@ impl FakeChat {
         if self.flaws.ignores_base_url {
             return answer(502, "{\"error\":\"could not reach the model\"}".into());
         }
+        if self.flaws.switched_off && self.flaws.switch_crashes {
+            return answer(500, "{\"error\":\"internal error\"}".into());
+        }
         if self.flaws.switched_off && !self.flaws.ignores_kill_switch {
-            return answer(503, "{\"error\":\"The assistant is switched off.\"}".into());
+            return answer(200, "{\"reply\":\"The assistant is switched off.\"}".into());
         }
         if self.flaws.every_other_refused && self.passed_on % 2 == 1 {
             self.passed_on += 1;
@@ -3451,6 +3456,31 @@ fn a_switch_that_stops_the_model_is_credited() {
         credit.scope.contains("without a restart was not shown"),
         "{}",
         credit.scope
+    );
+}
+
+#[test]
+fn a_copy_that_answers_with_a_server_error_with_the_switch_on_is_not_credited() {
+    let o = ask_switched(
+        Flaws::default(),
+        Flaws {
+            switch_crashes: true,
+            ..Default::default()
+        },
+        true,
+    );
+    // The setup: the copy really answered with a server error, so the test is about that answer.
+    assert!(o.steps.iter().any(|s| s.contains("(500)")), "{:?}", o.steps);
+    assert!(
+        !credited(&o).contains(&KILL_SWITCH.rule_id),
+        "{:?}",
+        o.steps
+    );
+    assert!(!found(&o).contains(&KILL_SWITCH.rule_id), "{:?}", o.steps);
+    assert!(
+        switch_why(&o).iter().any(|w| w.contains("server error")),
+        "{:?}",
+        o.not_assessed
     );
 }
 
