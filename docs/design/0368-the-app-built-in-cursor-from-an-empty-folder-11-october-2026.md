@@ -40,11 +40,10 @@ not a statement that the app is secure, and the StackVet report says so itself. 
 - **pytest.** The write-up's 8.3.3 is the version the advisory was found against. The agent first moved to 8.3.5,
   as the owner approved, and the pull request then moved it to 9.1.1. There is no discrepancy here, and the earlier
   note on this entry was wrong.
-- **Tool counts.** The write-up gives `stackvet_check` as 58 mentions. This transcript has 36. The write-up's figures
-  come from an archived part of the session that we do not have, so they cannot be checked here.
-
-## What the agent did with StackVet
-
+- **Tool counts.** The write-up gives `stackvet_check` as 58 mentions, and 35 calls in all. This transcript has 36 mentions
+  of `stackvet_check`. The export's build-loop record is written by `sv` itself and lists each call it received: 44 calls,
+  20 of them `stackvet_check`, from 12:37 to 16:32 Eastern, and none of them a git command. That is the figure to use for
+  what `sv` saw. The write-up's counts do not match it.
 - **The spec.** Before any code, the agent wrote `stackvet.toml` from what the app would really do, and kept it
   current. Its settings for hosting and for continuous integration were changed as the work moved. The write-up
   reports that one such change surfaced a real finding about a checkout token left on disk; we have not checked it.
