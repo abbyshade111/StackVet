@@ -781,6 +781,8 @@ pub enum ArchiveFormat {
     Zip,
     /// A `.gz`, which holds one.
     Gzip,
+    /// A plain `.tar`, which holds many files and is not compressed (backlog 0241).
+    Tar,
 }
 
 impl ArchiveFormat {
@@ -789,6 +791,7 @@ impl ArchiveFormat {
         match self {
             ArchiveFormat::Zip => "zip",
             ArchiveFormat::Gzip => "gzip",
+            ArchiveFormat::Tar => "tar",
         }
     }
 }
