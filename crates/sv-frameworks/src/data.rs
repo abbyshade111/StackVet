@@ -13,7 +13,19 @@
 
 use crate::paths::Canonical;
 use std::path::{Path, PathBuf};
-use std::sync::OnceLock;
+use std::sync::{Mutex, OnceLock};
+
+/// The names of the data files that could not be read in this run, as `not_understood` is asked about them.
+static NOT_LOADED: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
+/// The names of the data files that did not load since the last call, sorted, each once; the list starts
+/// again empty (backlog 0227, ADR-086). A run's record takes it once, when the run is kept.
+pub fn take_not_loaded() -> Vec<String> {
+    let mut seen = NOT_LOADED.lock().unwrap_or_else(|p| p.into_inner());
+    let mut names = std::mem::take(&mut *seen);
+    names.sort();
+    names
+}
 
 /// The repository's `data` folder as it was when `sv` was built.
 fn built_from() -> PathBuf {
@@ -108,6 +120,13 @@ pub fn dir() -> Result<PathBuf, String> {
 /// cannot fix the file, and it most likely belongs to another version of `sv`, so it says that, what
 /// to do, and that nothing about the app was checked.
 pub fn not_understood(path: &Path) -> String {
+    // Kept by name, not by path, for the run's record (backlog 0227, ADR-086): a path would name the owner's folders.
+    if let Some(name) = path.file_name().map(|n| n.to_string_lossy().into_owned()) {
+        let mut seen = NOT_LOADED.lock().unwrap_or_else(|p| p.into_inner());
+        if !seen.contains(&name) {
+            seen.push(name);
+        }
+    }
     format!(
         "{} is one of the data files `sv` ships, and this `sv` could not read it. It most likely \
          belongs to another version of `sv`: reinstall `sv`, or, if SV_DATA_DIR is set, point it at \
@@ -121,6 +140,10 @@ pub fn not_understood(path: &Path) -> String {
 pub fn file(name: &str) -> PathBuf {
     dir().unwrap_or_else(|_| built_from()).join(name)
 }
+
+#[cfg(test)]
+#[path = "data_not_loaded_tests.rs"]
+mod not_loaded_tests;
 
 #[cfg(test)]
 mod tests {

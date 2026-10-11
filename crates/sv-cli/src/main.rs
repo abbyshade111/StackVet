@@ -2576,7 +2576,7 @@ fn keep_unfinished(
     outcome: sv_report::dashboard::Outcome,
     code: i32,
 ) {
-    let run = sv_report::dashboard::Run::unfinished(
+    let mut run = sv_report::dashboard::Run::unfinished(
         &report_lock::run_record(started, b""),
         sv_report::MadeBy {
             version: env!("CARGO_PKG_VERSION").to_owned(),
@@ -2587,6 +2587,8 @@ fn keep_unfinished(
         outcome,
         code,
     );
+    // The data files that did not load in this run, by name (backlog 0227, ADR-086).
+    run.data_files_not_loaded = Some(sv_frameworks::data::take_not_loaded());
     if let Err(e) = history::keep(app, &run) {
         eprintln!("History is on, and this run's record could not be kept: {e:#}");
     }
@@ -2826,6 +2828,7 @@ fn report_command(
     // with what the run ends with (ADR-083, part 2).
     let kept = sv_report::dashboard::Run::of(&report).map(|mut run| {
         run.exit_code = Some(status);
+        run.data_files_not_loaded = Some(sv_frameworks::data::take_not_loaded());
         history::keep(&app_dir, &run)
     });
     match kept {

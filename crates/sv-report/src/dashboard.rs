@@ -10,6 +10,7 @@
 use crate::Counts;
 use crate::html::{STYLE, escape, glance_of};
 use serde_json::Value;
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 /// Marks a page as one `sv dashboard` wrote, so it replaces only its own.
@@ -84,6 +85,10 @@ pub struct Run {
     /// What `sv` ended with: 0, 1, or 2 for a finished run, 3 for one that failed, 130 for one
     /// stopped with Ctrl-C. `None` in a record from before format 4.
     pub exit_code: Option<i32>,
+    /// The names of the data files `sv` ships that did not load in this run (backlog 0227, ADR-086). `None` in a
+    /// record from before this field, which says nothing either way; an empty list says the run read them all.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub data_files_not_loaded: Option<Vec<String>>,
 }
 
 /// How a kept run ended.
@@ -156,6 +161,7 @@ impl Run {
             inputs: record.inputs.clone(),
             outcome: Outcome::Finished,
             exit_code: None,
+            data_files_not_loaded: None,
         })
     }
 
@@ -663,7 +669,7 @@ pub struct Health {
 
 /// The dashboard's section on `sv`'s own health: each crash kept, the crash files that could not be read, and the
 /// kept runs that could not be read. Always shown, so an empty list is said, not left out.
-fn health_section(health: &Health, unread_runs: usize) -> String {
+fn health_section(health: &Health, unread_runs: usize, not_loaded: &[(String, usize)]) -> String {
     let mut b =
         String::from("<section class=\"health\">\n<h2>sv's own health on this computer</h2>\n");
     if health.crashes.is_empty() {
@@ -703,8 +709,40 @@ fn health_section(health: &Health, unread_runs: usize) -> String {
             if unread_runs == 1 { "" } else { "s" }
         ));
     }
+    if not_loaded.is_empty() {
+        b.push_str(
+            "<p>No kept run that records this shows a data file `sv` ships that did not load.</p>\n",
+        );
+    } else {
+        b.push_str(
+            "<h3>Data files `sv` ships that did not load</h3>\n<p class=\"note\">Counted over the kept runs that record \
+             this. The file is named, not its path; a file that did not load is one `sv` cannot check the app with.</p>\n<ul>\n",
+        );
+        for (name, runs) in not_loaded {
+            b.push_str(&format!(
+                "<li><code>{}</code>: in {runs} kept run{}</li>\n",
+                escape(name),
+                if *runs == 1 { "" } else { "s" }
+            ));
+        }
+        b.push_str("</ul>\n");
+    }
     b.push_str("</section>\n");
     b
+}
+
+/// How many kept runs each data file `sv` ships did not load in, over the apps, by file name, sorted (backlog 0227,
+/// ADR-086). A run from before the record kept this says nothing, so it is not counted either way.
+fn not_loaded_counts(apps: &[&App]) -> Vec<(String, usize)> {
+    let mut counts: BTreeMap<String, usize> = BTreeMap::new();
+    for app in apps {
+        for run in &app.runs {
+            for name in run.data_files_not_loaded.iter().flatten() {
+                *counts.entry(name.clone()).or_default() += 1;
+            }
+        }
+    }
+    counts.into_iter().collect()
 }
 
 /// The page: every app in alphabetical order, then each app's own view. `board` is the backlog overview's
@@ -723,7 +761,11 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) 
         "<style>{STYLE}{DASH_STYLE}</style>\n</head>\n<body>\n"
     ));
     b.push_str("<h1>Your apps, as their last reports left them</h1>\n");
-    b.push_str(&health_section(health, unread_runs));
+    b.push_str(&health_section(
+        health,
+        unread_runs,
+        &not_loaded_counts(&apps),
+    ));
     if let Some(board) = board {
         b.push_str(&format!(
             "<p class=\"note\"><a href=\"{}\">The backlog overview</a>: the board of what is open, claimed, partly done, \
