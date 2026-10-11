@@ -3206,7 +3206,10 @@ pub fn kill_switch(
                 section.chat.path
             ),
         ));
-    } else if answer.is_some() {
+    } else if answer
+        .as_ref()
+        .is_some_and(|r| (200..500).contains(&r.status))
+    {
         out.verified.push(crate::Verified::new(
             KILL_SWITCH.rule_id,
             KILL_SWITCH.requirement_ids,
@@ -3217,6 +3220,18 @@ pub fn kill_switch(
                 status(&answer)
             ),
         ));
+    } else if answer.as_ref().is_some_and(|r| r.status >= 500) {
+        // A server error cannot be told from a copy that crashed, so it is not a pass: the same status
+        // rule as C2.1.3 (200 to 499 answers the request).
+        say(
+            format!(
+                "Whether the AI feature can be switched off: with {switch} set, the copy answered with a \
+                 server error ({}), which cannot be told from a copy that crashed. A feature that is off \
+                 should answer with a status below 500.",
+                status(&answer)
+            ),
+            out,
+        );
     } else {
         say(
             format!(

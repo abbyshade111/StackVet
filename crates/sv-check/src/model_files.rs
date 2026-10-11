@@ -344,6 +344,18 @@ pub fn check(listing: &Listing, report: &mut ConfigReport) {
         ),
     };
     let Some((first, _)) = found.first() else {
+        // A large file not read whole could hold an old pickle, so nothing here is a pass (the same rule as
+        // "not assessed" everywhere else): it is said, and not credited.
+        if !not_whole.is_empty() {
+            report.not_assessed.push((
+                PICKLE_MODEL.to_owned(),
+                format!(
+                    "{looked} file(s) named like a model file, none found to hold a pickle among those read, but \
+                     {pointer_note}; these were not judged, so the check does not pass"
+                ),
+            ));
+            return;
+        }
         report.passed.push(Verified::new(
             PICKLE_MODEL,
             &[],
@@ -699,6 +711,28 @@ mod tests {
         assert!(
             !walks_as_pickle(b"\x80\x02\x80\x05N.", 2),
             "a later PROTO claiming more than the opening"
+        );
+    }
+
+    /// A model-named file too large to read whole, which is no pickle as far as its first and last bytes show. It
+    /// could hold an old pickle, so the check does not pass; the file is said, and not credited (ADR-046 rules).
+    #[test]
+    fn a_large_model_file_not_read_whole_is_not_a_pass() {
+        let dir = scratch("large-unread");
+        let f = fs::File::create(dir.join("big.bin")).unwrap();
+        f.set_len(MAX_WALK + 1).unwrap();
+        // The setup: the file really is over the walk limit.
+        assert!(fs::metadata(dir.join("big.bin")).unwrap().len() > MAX_WALK);
+        let report = run(&dir);
+        assert!(found(&report).is_none(), "{report:?}");
+        assert!(report.passed.is_empty(), "{:?}", report.passed);
+        assert!(
+            report
+                .not_assessed
+                .iter()
+                .any(|(id, why)| id == PICKLE_MODEL && why.contains("not read whole")),
+            "{:?}",
+            report.not_assessed
         );
     }
 }

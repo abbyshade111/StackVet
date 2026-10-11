@@ -56,3 +56,42 @@ fn two_pages_listed_are_each_asked_and_credited_in_full() {
         assert!(credited_in_part(&o, id), "{id}");
     }
 }
+
+/// A private page the owner lists that does not open for the test user is not judged, and the report says
+/// so under each requirement it would have covered; the credits for the pages that did open are then in part,
+/// since not every listed page was checked (backlog 0006 part 4).
+#[test]
+fn a_listed_private_page_that_does_not_open_is_said_and_puts_the_credits_in_part() {
+    let mut u = users();
+    u.private.push("/account?tab=2".into());
+    u.private.push("/no-such-page".into());
+    let o = run_against(Flaws::default(), &u);
+    // The setup: two listed pages opened, so the in-part mark is about the missing one, not about a single page.
+    let scope = &o
+        .verified
+        .iter()
+        .find(|v| v.check_id == PRIVATE_PAGE_CACHING.rule_id)
+        .unwrap_or_else(|| panic!("{:#?}", o.not_assessed))
+        .scope;
+    assert!(scope.starts_with("2 private pages"), "{scope}");
+    // The setup: the missing page was asked, and reported as skipped.
+    let said: Vec<&str> = o
+        .not_assessed
+        .iter()
+        .filter(|(id, _)| id == PRIVATE_PAGE_CACHING.requirement_ids[0])
+        .map(|(_, why)| why.as_str())
+        .collect();
+    assert!(
+        said.iter().any(|w| w.contains("/no-such-page")),
+        "{:?}",
+        o.not_assessed
+    );
+    for id in [
+        PRIVATE_PAGE_CACHING.rule_id,
+        PRIVATE_PAGE_HEADERS.rule_id,
+        SIGN_OUT_LINK.rule_id,
+    ] {
+        assert!(credited_in_part(&o, id), "{id}: {:#?}", o.verified);
+        assert!(!credited_in_full(&o, id), "{id}");
+    }
+}

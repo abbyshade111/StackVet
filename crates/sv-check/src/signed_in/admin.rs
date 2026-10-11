@@ -644,16 +644,27 @@ pub(super) fn admin_action_checks(
             ),
         ));
     }
-    if refused > 0 && done_by_ordinary.is_empty() && answered_ordinary.is_empty() {
-        out.verified.push(crate::Verified::new(
-            ADMIN_ACTION.rule_id,
-            ADMIN_ACTION.requirement_ids,
-            format!(
-                "{refused} admin action{}, sent straight to the app: refused to an ordinary user and \
-                 carried out for the admin, as the page named to show each said",
-                if refused == 1 { "" } else { "s" }
-            ),
-        ));
+    // Every action the owner listed is tried, and each must be judged and confirmed as the admin's own (as
+    // ADMIN_PAGE requires): an action that never went through is not a pass for the others. One listed
+    // action is one sample of the list, so it is in part (backlog 0006 part 4, group H).
+    if refused > 0
+        && done_by_ordinary.is_empty()
+        && answered_ordinary.is_empty()
+        && unjudged.is_empty()
+        && unconfirmed.is_empty()
+    {
+        out.verified.push(
+            crate::Verified::new(
+                ADMIN_ACTION.rule_id,
+                ADMIN_ACTION.requirement_ids,
+                format!(
+                    "{refused} admin action{}, sent straight to the app: refused to an ordinary user and \
+                     carried out for the admin, as the page named to show each said",
+                    if refused == 1 { "" } else { "s" }
+                ),
+            )
+            .in_part_if(refused == 1),
+        );
     }
 }
 
@@ -1157,6 +1168,52 @@ mod tests {
             action.check = None;
         }
         u
+    }
+
+    /// The ordinary user's action is refused, and the admin's never posts, so nothing shows the admin's own action
+    /// went through: the credit for the list is not given on the strength of the refusal alone (backlog 0006 part 4).
+    #[test]
+    fn an_admin_action_that_never_went_through_is_not_credited_on_the_refusal_alone() {
+        let o = run_against(
+            Flaws {
+                admin_action_broken: true,
+                ..Default::default()
+            },
+            &users(),
+        );
+        // The setup: something was said about the action that did not go through, so the test is about that.
+        assert!(
+            !o.not_assessed.is_empty() || !o.findings.is_empty(),
+            "{:#?}",
+            o.steps
+        );
+        assert!(!action_credited(&o), "{:#?}", o.verified);
+    }
+
+    /// Two actions listed: the first is refused to the ordinary user and posted by the admin, the second is refused
+    /// to the ordinary user and never posts for the admin. The refusal of the first is not a pass for the second
+    /// (backlog 0006 part 4): nothing is credited for the list.
+    #[test]
+    fn a_second_admin_action_that_never_posts_is_not_credited_on_the_first_refusal() {
+        let mut u = users();
+        let second = u.admin_actions[0].clone();
+        u.admin_actions.push(second);
+        let o = run_against(
+            Flaws {
+                admin_action_stops_after_first: true,
+                ..Default::default()
+            },
+            &u,
+        );
+        // The setup: the second action was judged as not having gone through, and the first was refused.
+        assert!(
+            o.not_assessed
+                .iter()
+                .any(|(_, w)| w.contains("did not show")),
+            "{:#?}",
+            o.not_assessed
+        );
+        assert!(!action_credited(&o), "{:#?}", o.verified);
     }
 
     fn action_findings(o: &Outcome) -> Vec<&Finding> {
