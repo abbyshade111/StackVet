@@ -53,17 +53,18 @@ fn fake_curl(dir: &Path) -> PathBuf {
 }
 
 fn probe(dir: &Path, answers: bool) -> std::process::Output {
-    let mut paths = vec![fake_curl(dir)];
+    let bin = fake_curl(dir);
+    let mut paths = vec![bin.clone()];
     if let Some(path) = std::env::var_os("PATH") {
         paths.extend(std::env::split_paths(&path));
     }
     let path = std::env::join_paths(paths).expect("the PATH joins");
-    // Windows looks a program up on this process's PATH, not the child's, so this process's PATH must find the
-    // stand-in too. This file has one test, so no other thread reads the environment while it is changed.
-    // SAFETY: as above, nothing else in this test binary reads or writes the environment at the same time.
-    unsafe { std::env::set_var("PATH", &path) };
+    // On Windows a program is looked up first in the folder the program was started from, before the PATH, and
+    // before the system folder where a real `curl.exe` lives. So `sv` is started from the stand-in's folder: the
+    // `curl` it runs is the stand-in, on Windows and on Unix alike.
     Command::new(env!("CARGO_BIN_EXE_sv"))
         .args(["probe", "https://example.com"])
+        .current_dir(&bin)
         .env("PATH", path)
         .env("PROBE_EXIT_ANSWERS", if answers { "1" } else { "0" })
         .output()
