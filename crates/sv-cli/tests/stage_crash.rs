@@ -105,3 +105,56 @@ fn a_reader_of_the_app_that_crashes_costs_its_own_results_and_the_report_says_so
         );
     }
 }
+
+/// The list of the app's files crashed: no reader runs on it, since an empty list is not an empty app. The report
+/// is still written, the gap names the list, and each reader's `examined` entry says it did not run because of it
+/// (backlog 0234).
+#[test]
+fn a_crashed_file_list_stops_every_reader_and_the_report_says_so() {
+    let (crashed, out) = report("reader-file_list", Some("file_list"));
+    let said = String::from_utf8_lossy(&crashed.stderr).to_string();
+    assert_ne!(crashed.status.code(), Some(3), "{said}");
+    let json = std::fs::read_to_string(out.join("report.json"))
+        .unwrap_or_else(|e| panic!("no report written: {e}\n{said}"));
+    assert!(
+        json.contains("the list of the app's files: the check crashed"),
+        "{json}"
+    );
+    assert!(
+        json.contains(
+            "did not run, because the list of the app's files crashed, so nothing it reads was checked"
+        ),
+        "the readers' examined entries do not say they did not run: {json}"
+    );
+    // The setup: a clean run of the same app does examine the keys and passwords, so the entry above means something.
+    let clean = report("reader-file_list-clean", None).1;
+    let clean_json = std::fs::read_to_string(clean.join("report.json")).unwrap_or_default();
+    assert!(clean_json.contains("\"secrets.\""), "{clean_json}");
+    assert!(
+        !clean_json.contains("the list of the app's files crashed"),
+        "{clean_json}"
+    );
+}
+
+/// The known-vulnerability check crashed: the report is still written, the gap says where, and the `examined` entry
+/// for advisories says nothing was compared (backlog 0234).
+#[test]
+fn a_crashed_known_vulnerability_check_costs_itself_and_the_report_says_so() {
+    let (crashed, out) = report("advisories", Some("advisories"));
+    let said = String::from_utf8_lossy(&crashed.stderr).to_string();
+    assert_ne!(crashed.status.code(), Some(3), "{said}");
+    let json = std::fs::read_to_string(out.join("report.json"))
+        .unwrap_or_else(|e| panic!("no report written: {e}\n{said}"));
+    assert!(
+        json.contains("the known-vulnerability check: the check crashed"),
+        "{json}"
+    );
+    assert!(
+        json.contains("the known-vulnerability check crashed, so nothing was compared"),
+        "{json}"
+    );
+    assert!(
+        json.contains("a panic asked for by SV_PANIC_IN_STAGE"),
+        "{json}"
+    );
+}
