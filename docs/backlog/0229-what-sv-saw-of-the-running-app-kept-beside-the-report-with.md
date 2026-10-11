@@ -1,6 +1,6 @@
 # What sv saw of the running app, kept beside the report with credentials removed
 
-**Status:** partly done: part 1: probe exchanges are kept, but no finding links to them (claimed by paper-facts, 10 October 2026)
+**Status:** partly done: part 1: the signed-in findings and the credits do not yet name the answers they rest on; the probe findings do. Claim released by the owner, 10 October 2026.
 
 The owner's decision A of the observability review (0226, part 3), 9 October 2026: "yes to A, C, and D"; recorded as
 ADR-082. At the owner's word that evening ("yes, please go ahead"), an item of its own, as the backlog's rules now say
@@ -16,7 +16,7 @@ passes through `secrets::redact_text` first.
    already keeps), each with an id, in one file in the report folder, sealed with the report; each finding and credit
    read from the running app names the ids it rests on. Bounded per exchange and in all, with what was left out said.
    A test plants a key built from pieces in a response and fails when it reaches the file.
-   **Part status:** done, 10 October 2026
+   **Part status:** partly done: the signed-in findings (signup, upload, SVG, breached password) and the credits name no answers yet; the probe findings do (ADR-082, 10 October 2026). Claim released by the owner, 10 October 2026.
 
 2. **What the stand-in services received.** The test model's record of what it was sent and the paths it was asked
    for, the test sign-in provider's requests, and each mail's recipient, subject, and time (not its body), saved before
