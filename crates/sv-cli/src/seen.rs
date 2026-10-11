@@ -103,6 +103,24 @@ pub fn signed_in(
     }
 }
 
+/// The report's sentence on the names the app looked up on its own network (ADR-085, backlog 0240): how many distinct
+/// names, and where the list is kept. The names themselves are not printed here: they are the app's text, and a
+/// name can carry a secret in a subdomain, so the record, where they are redacted, is the place to read them. `None`
+/// when the name server did not run.
+pub fn names_sentence(names: Option<&[sv_run::name_server::Lookup]>) -> Option<String> {
+    let distinct: std::collections::BTreeSet<&str> =
+        names?.iter().map(|l| l.name.as_str()).collect();
+    Some(match distinct.len() {
+        0 => " The app looked up no name on its own network.".to_owned(),
+        n => format!(
+            " The app looked up {n} distinct name{} on its own network; {} keeps them under \
+             stand_ins.names, with the credentials cut out.",
+            if n == 1 { "" } else { "s" },
+            sv_report::seen::FILE
+        ),
+    })
+}
+
 /// The app's container as it was read between the stages of the questions (backlog 229 part 1),
 /// numbered as the credits and findings name them. Its text goes through `redact_text` like the
 /// rest, and the credentials cut from it are counted.
