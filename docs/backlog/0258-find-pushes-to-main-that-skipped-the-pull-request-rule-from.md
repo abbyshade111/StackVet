@@ -1,4 +1,4 @@
-# Find pushes to main that skipped the pull-request rule, from the repository's own history
+# Find pushes to main that skipped the pull-request rule, from the repository history
 
 **Status:** claimed by securevibe-git-history, 11 October 2026
 
