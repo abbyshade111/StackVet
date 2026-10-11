@@ -1,6 +1,6 @@
 # Nightly: Windows fails: probe_exit (compile error, then a failed test), 10 to 11 October 2026
 
-**Status:** claimed by nightly-windows-probe, 11 October 2026
+**Status:** partly done: The nightly failure is fixed: the Windows job has passed on every push since 11 October 2026 (#1414, #1416). Still open: the whole sv probe command is tested on Unix only. A Windows check that runs the real command end to end needs sv to accept a stand-in for curl on Windows, which changes what sv runs, so it waits for the owner's decision (ADR-029).
 
 Recorded by the nightly CI routine on 11 October 2026. The Windows workflow failed on 23 of the 57 pushes to `main`
 between 19:03 UTC on 10 October and 02:27 UTC on 11 October, all in one test file, `crates/sv-cli/tests/probe_exit.rs`,
