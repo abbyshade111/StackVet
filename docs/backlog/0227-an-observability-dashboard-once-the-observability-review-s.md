@@ -1,6 +1,6 @@
 # An observability dashboard, once the observability review's findings are built
 
-**Status:** open
+**Status:** claimed by build-0227, 10 October 2026
 
 Asked for by the owner on 9 October 2026, after the observability review (0226): "please add to the backlog an item
 to work on an observability dashboard once this work is complete". **Not to be taken before 0226's findings are
