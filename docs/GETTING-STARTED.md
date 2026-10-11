@@ -207,6 +207,12 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    questions one at a time. Record my answers with `stackvet_record_answer`, and only what I
 >    actually answer as mine.
 
+**If you ask your AI tool to push, say so in these words:** "push it, and do not bypass any branch protection or
+ruleset; if the only way to push is to bypass one, stop and ask me first." Without that, a tool may push straight to
+`main`, which skips the pull-request rule you set, and the tools that check the code never see the change first. Its
+own rules say it must not push to `main` unless you ask for that push, but in the Cursor build a plain "please push"
+was taken as covering a push that bypassed the rule. Ask it for a pull request, and merge it yourself.
+
 More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md).
 The ones shown to work are already given to your AI tool, at the end of the instructions it reads first, so you
 need not paste them. The rest, not yet shown to work, are there too: `sv prompts` prints them, and your AI tool can

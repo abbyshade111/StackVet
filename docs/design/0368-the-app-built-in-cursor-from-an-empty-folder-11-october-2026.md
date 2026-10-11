@@ -78,6 +78,8 @@ entry makes no claim about a difference.
    finding as a false alarm, and had to be corrected. `sv review` is for findings a person has checked and sets aside
    as false alarms, and for answers a person confirms. A real finding is fixed in the code and checked again. Section
    5 now says so.
+3. **A push could bypass the rules.** The guide now says, under the build prompt, that a request to push should
+   say it must not bypass protections, because a plain "please push" was taken as covering one.
 
 ## Left open
 
