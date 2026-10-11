@@ -394,7 +394,7 @@ rule, is your decision, or is reached by nothing in `sv`.
 by the OWASP AISVS project and its contributors, licensed under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Its requirements were rewritten as
 instructions for an AI coding tool, and only those a coding tool can act on while it writes code are
-included (18 rules, drawn from 27 of its 68 requirements; the owner's decisions among the rest are asked
+included (27 rules, drawn from 39 of its 68 requirements; the owner's decisions among the rest are asked
 through `sv questions` and the security notes). Every copy `sv` writes carries this credit and the license, and the adapted text is
 shared under the same license. It does not reach your app's own code.
 
