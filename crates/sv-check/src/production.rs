@@ -1174,6 +1174,19 @@ pub(crate) mod tests_support {
 #[cfg(test)]
 mod tests;
 
+/// The program that asks the address for its answer: `curl`, found on the PATH. Only in a debug build,
+/// `SV_CURL_FOR_TEST` names the program to run instead, so the probe test can put its own stand-in in
+/// place of the system's `curl` on every platform (backlog 0245). On Windows the system's `curl.exe` is
+/// found before the PATH, so a stand-in on the PATH is never run there. A released `sv` has no such
+/// switch.
+fn curl_program() -> std::ffi::OsString {
+    #[cfg(debug_assertions)]
+    if let Some(program) = std::env::var_os("SV_CURL_FOR_TEST") {
+        return program;
+    }
+    "curl".into()
+}
+
 /// The real fetcher: `curl`, with the flags that make the limits above true rather than intended.
 ///
 /// `curl` rather than a Rust HTTP client for the reason the tool adapters are external programs: it
@@ -1272,7 +1285,7 @@ impl Curl {
         args.extend(extra.iter().copied());
         args.push(url);
 
-        let out = match std::process::Command::new("curl")
+        let out = match std::process::Command::new(curl_program())
             .args(self.args(&args))
             .output()
         {
@@ -1304,7 +1317,7 @@ impl Curl {
 
     /// Whether `curl` is on this machine at all.
     pub fn available() -> bool {
-        std::process::Command::new("curl")
+        std::process::Command::new(curl_program())
             .arg("--version")
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
@@ -1332,7 +1345,7 @@ impl Fetch for Curl {
             ));
         }
         self.made += 1;
-        let out = match std::process::Command::new("curl")
+        let out = match std::process::Command::new(curl_program())
             .args(self.args(&[
                 // curl refuses the handshake when no stapled status comes back, with its own exit
                 // code, 91; any other failure is not an answer to this question.
@@ -1367,7 +1380,7 @@ impl Fetch for Curl {
             ));
         }
         // Asked of curl itself, on this machine, before the request: which TLS library it uses.
-        let library = std::process::Command::new("curl")
+        let library = std::process::Command::new(curl_program())
             .arg("--version")
             .output()
             .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
@@ -1392,7 +1405,7 @@ impl Fetch for Curl {
         ];
         args.extend(old_tls_library_args(&library));
         args.push(url);
-        match std::process::Command::new("curl")
+        match std::process::Command::new(curl_program())
             .args(self.args(&args))
             .output()
         {
