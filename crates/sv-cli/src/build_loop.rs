@@ -508,6 +508,9 @@ pub fn summarize(bytes: &[u8]) -> BuildLoop {
             Some("refused") => summary.refused += 1,
             _ => {}
         }
+        for (name, size) in &line.handed_sizes {
+            summary.handed_sizes.entry(name.clone()).or_insert(*size);
+        }
         for (seen, names) in [
             (&mut summary.asked, &line.asked),
             (&mut summary.handed, &line.handed),

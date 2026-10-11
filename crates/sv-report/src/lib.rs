@@ -1613,6 +1613,10 @@ pub struct BuildLoop {
     pub asked: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub handed: Vec<String>,
+    /// The size in bytes of each of `handed` that has one (backlog 0227, ADR-084). Left out when none has a
+    /// size, so a report written before sizes were kept reads and seals the same.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub handed_sizes: BTreeMap<String, u64>,
     /// Between the first check and the last, which findings went and came (ADR-084, decision 6).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub findings_moved: Option<FindingsMoved>,
