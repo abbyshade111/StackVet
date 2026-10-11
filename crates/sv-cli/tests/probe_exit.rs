@@ -1,12 +1,11 @@
 //! `sv probe` exits 2 when it could not reach the address (backlog 0235), so a CI step that runs it fails rather than
 //! passing on an address it never touched. Reached, it exits 0 whatever it found.
 //!
-//! This runs the whole command with a stand-in `curl` on the PATH, and so only on Unix: on Windows the command runs
-//! the system's own `curl`, whatever the PATH says. The decision it makes is tested on every platform in
+//! This runs the whole command with a stand-in `curl`, named by `SV_CURL_FOR_TEST` (a debug build only, see
+//! `production.rs`). It is used on every platform: Windows finds the system's own `curl.exe` before anything on the
+//! PATH, so a stand-in there was never run (backlog 0245). The decision the command makes is also tested in
 //! `probe_verdict_tests.rs`. The address is a public one, which `sv` resolves before it asks anything, so no real
 //! site is asked: the stand-in is a small program this test compiles with `rustc` before it runs.
-
-#![cfg(unix)]
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -57,18 +56,11 @@ fn fake_curl(dir: &Path) -> PathBuf {
 
 fn probe(dir: &Path, answers: bool) -> std::process::Output {
     let bin = fake_curl(dir);
-    let mut paths = vec![bin.clone()];
-    if let Some(path) = std::env::var_os("PATH") {
-        paths.extend(std::env::split_paths(&path));
-    }
-    let path = std::env::join_paths(paths).expect("the PATH joins");
-    // On Windows a program is looked up first in the folder the program was started from, before the PATH, and
-    // before the system folder where a real `curl.exe` lives. So `sv` is started from the stand-in's folder: the
-    // `curl` it runs is the stand-in, on Windows and on Unix alike.
+    let curl = bin.join(format!("curl{}", std::env::consts::EXE_SUFFIX));
+    // The debug `sv` this test runs asks the stand-in instead of the system's `curl`, on every platform.
     Command::new(env!("CARGO_BIN_EXE_sv"))
         .args(["probe", "https://example.com"])
-        .current_dir(&bin)
-        .env("PATH", path)
+        .env("SV_CURL_FOR_TEST", &curl)
         .env("PROBE_EXIT_ANSWERS", if answers { "1" } else { "0" })
         .output()
         .unwrap()
