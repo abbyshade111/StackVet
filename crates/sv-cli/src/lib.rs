@@ -30,6 +30,7 @@ pub mod board_link;
 pub mod bundle;
 pub mod compare;
 pub mod crash;
+pub mod crash_notes;
 // The opt-in log of stages, named by SV_LOG (backlog 0237).
 pub mod exit;
 pub mod own_log;

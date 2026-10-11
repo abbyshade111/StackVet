@@ -1912,8 +1912,16 @@ fn cmd_dashboard(args: &[String]) -> Result<()> {
             .unwrap_or(0),
     );
     let board = sv_cli::board_link::current();
-    let page =
-        sv_report::dashboard::page(&apps, &written[..written.len().min(10)], board.as_deref());
+    let health = match history::folder() {
+        Some(folder) => sv_cli::crash_notes::read(&folder),
+        None => sv_report::dashboard::Health::default(),
+    };
+    let page = sv_report::dashboard::page(
+        &apps,
+        &written[..written.len().min(10)],
+        board.as_deref(),
+        &health,
+    );
     let staging = parent.join(format!(
         ".{}.sv-{}",
         name.to_string_lossy(),

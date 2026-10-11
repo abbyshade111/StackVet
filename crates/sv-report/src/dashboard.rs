@@ -643,11 +643,76 @@ main:has(.view:target:not(#all)) #all { display: none; }
 .chips .sev { margin-right: .3rem; }
 ";
 
+/// One crash `sv` kept on this computer (backlog 0237): when it happened, the version, the command, and where in
+/// `sv` it stopped. Never the panic's message, which can name a path the owner typed.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Crash {
+    pub when: String,
+    pub version: String,
+    pub command: String,
+    pub place: String,
+}
+
+/// What `sv` itself kept about its health, for the dashboard (backlog 0227, ADR-086): the crashes kept on this
+/// computer, and how many crash files could not be read.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Health {
+    pub crashes: Vec<Crash>,
+    pub unreadable_crash_files: usize,
+}
+
+/// The dashboard's section on `sv`'s own health: each crash kept, the crash files that could not be read, and the
+/// kept runs that could not be read. Always shown, so an empty list is said, not left out.
+fn health_section(health: &Health, unread_runs: usize) -> String {
+    let mut b =
+        String::from("<section class=\"health\">\n<h2>sv's own health on this computer</h2>\n");
+    if health.crashes.is_empty() {
+        b.push_str("<p>No crashes are kept on this computer.</p>\n");
+    } else {
+        let n = health.crashes.len();
+        b.push_str(&format!(
+            "<p>{n} crash{} kept on this computer. Each is a file in the history folder, with the version, the \
+             command, and where in sv it stopped. The message is never kept.</p>\n<ul>\n",
+            if n == 1 { "" } else { "es" }
+        ));
+        for c in &health.crashes {
+            b.push_str(&format!(
+                "<li>{}: sv {}, running <code>{}</code>, stopped at <code>{}</code></li>\n",
+                escape(&c.when),
+                escape(&c.version),
+                escape(&c.command),
+                escape(&c.place)
+            ));
+        }
+        b.push_str("</ul>\n");
+    }
+    if health.unreadable_crash_files > 0 {
+        b.push_str(&format!(
+            "<p>{} crash file{} in the history folder could not be read.</p>\n",
+            health.unreadable_crash_files,
+            if health.unreadable_crash_files == 1 {
+                ""
+            } else {
+                "s"
+            }
+        ));
+    }
+    if unread_runs > 0 {
+        b.push_str(&format!(
+            "<p>{unread_runs} kept run{} in all could not be read; each app's view says how many.</p>\n",
+            if unread_runs == 1 { "" } else { "s" }
+        ));
+    }
+    b.push_str("</section>\n");
+    b
+}
+
 /// The page: every app in alphabetical order, then each app's own view. `board` is the backlog overview's
 /// file when the owner has named one that exists, linked from the top (backlog 0227, ADR-086).
-pub fn page(apps: &[App], written: &str, board: Option<&Path>) -> String {
+pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) -> String {
     let mut apps: Vec<&App> = apps.iter().collect();
     apps.sort_by_key(|a| label(a).to_lowercase());
+    let unread_runs: usize = apps.iter().map(|a| a.unread_runs).sum();
     let mut b = String::new();
     b.push_str("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n");
     b.push_str(crate::html::CSP_META);
@@ -658,6 +723,7 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>) -> String {
         "<style>{STYLE}{DASH_STYLE}</style>\n</head>\n<body>\n"
     ));
     b.push_str("<h1>Your apps, as their last reports left them</h1>\n");
+    b.push_str(&health_section(health, unread_runs));
     if let Some(board) = board {
         b.push_str(&format!(
             "<p class=\"note\"><a href=\"{}\">The backlog overview</a>: the board of what is open, claimed, partly done, \
@@ -788,6 +854,8 @@ mod board_tests;
 #[cfg(test)]
 mod given_tests;
 #[cfg(test)]
+mod health_tests;
+#[cfg(test)]
 mod inputs_tests;
 #[cfg(test)]
 mod moved_tests;
@@ -837,7 +905,7 @@ mod tests {
 
     #[test]
     fn the_page_is_marked_as_the_dashboard_s_own() {
-        let page = page(&[], "2026-10-08", None);
+        let page = page(&[], "2026-10-08", None, &Health::default());
         assert!(page.contains(MADE_BY));
         assert!(!page.contains("<script"));
     }

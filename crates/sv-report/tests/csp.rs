@@ -23,7 +23,7 @@ fn the_policy_lets_nothing_load_and_no_script_run() {
 
 #[test]
 fn the_dashboard_carries_the_policy_in_its_head() {
-    let page = dashboard::page(&[], "2026-10-08", None);
+    let page = dashboard::page(&[], "2026-10-08", None, &dashboard::Health::default());
     let head = page.split("</head>").next().unwrap();
     assert!(head.contains(CSP_META.trim_end()), "{head}");
     assert!(!page.contains("<script"));
