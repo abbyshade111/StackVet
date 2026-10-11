@@ -424,7 +424,7 @@ listed apart, below this item.
    **(b), the test model's half, done the same day**
    (`docs/design/0331-the-model-s-reply-written-into-the-page-as-html-9-october.md`; ADR-042, Later):
    `probe.ai-reply-html-unencoded`.
-   **Part status:** claimed by mass-assignment-creates, 11 October 2026
+   **Part status:** done, 11 October 2026
 14. **Template and notebook files are skipped without saying so.** (`docs/GAP-ANALYSIS.md`, 3.6.) Name `.astro`,
    `.ejs`, `.erb`, `.hbs`, `.pug`, `.twig`, `.j2`, `.njk`, `.liquid`, `.cshtml`, `.razor`, `.jsp`, `.ipynb`, and
    `.sql` as unread code; read notebook code cells as Python and Astro's frontmatter as TypeScript.
