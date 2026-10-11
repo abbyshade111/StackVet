@@ -1189,6 +1189,32 @@ mod tests {
         assert!(!action_credited(&o), "{:#?}", o.verified);
     }
 
+    /// Two actions listed: the first is refused to the ordinary user and posted by the admin, the second is refused
+    /// to the ordinary user and never posts for the admin. The refusal of the first is not a pass for the second
+    /// (backlog 0006 part 4): nothing is credited for the list.
+    #[test]
+    fn a_second_admin_action_that_never_posts_is_not_credited_on_the_first_refusal() {
+        let mut u = users();
+        let second = u.admin_actions[0].clone();
+        u.admin_actions.push(second);
+        let o = run_against(
+            Flaws {
+                admin_action_stops_after_first: true,
+                ..Default::default()
+            },
+            &u,
+        );
+        // The setup: the second action was judged as not having gone through, and the first was refused.
+        assert!(
+            o.not_assessed
+                .iter()
+                .any(|(_, w)| w.contains("did not show")),
+            "{:#?}",
+            o.not_assessed
+        );
+        assert!(!action_credited(&o), "{:#?}", o.verified);
+    }
+
     fn action_findings(o: &Outcome) -> Vec<&Finding> {
         o.findings
             .iter()

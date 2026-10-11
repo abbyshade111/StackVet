@@ -63,8 +63,17 @@ fn two_pages_listed_are_each_asked_and_credited_in_full() {
 #[test]
 fn a_listed_private_page_that_does_not_open_is_said_and_puts_the_credits_in_part() {
     let mut u = users();
+    u.private.push("/account?tab=2".into());
     u.private.push("/no-such-page".into());
     let o = run_against(Flaws::default(), &u);
+    // The setup: two listed pages opened, so the in-part mark is about the missing one, not about a single page.
+    let scope = &o
+        .verified
+        .iter()
+        .find(|v| v.check_id == PRIVATE_PAGE_CACHING.rule_id)
+        .unwrap_or_else(|| panic!("{:#?}", o.not_assessed))
+        .scope;
+    assert!(scope.starts_with("2 private pages"), "{scope}");
     // The setup: the missing page was asked, and reported as skipped.
     let said: Vec<&str> = o
         .not_assessed
