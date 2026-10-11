@@ -1,6 +1,6 @@
 # The weekly review's routine left no trace on its first Monday
 
-**Status:** open
+**Status:** done, 10 October 2026
 
 "Weekly decision-record review" was scheduled on
 4 October to run every Monday at 8:45 Eastern and claim its week here first. On 5 October nothing was claimed and no
