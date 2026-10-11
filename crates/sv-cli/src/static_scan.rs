@@ -15,8 +15,18 @@ use crate::{Loaded, ReviewLookup, decisions_then_reviews};
 use anyhow::Result;
 use std::path::Path;
 
+/// A reader of the app's files that crashed: its name, and the place the panic was (backlog 0234).
+#[derive(Debug, Clone)]
+pub struct Crashed {
+    pub scanner: &'static str,
+    pub place: String,
+}
+
 /// What the five scanners that read the app's files found, built once for a run.
 pub struct StaticScan {
+    /// The readers that crashed. Each one's results are empty, and the report says so, since an empty result
+    /// is not a pass (backlog 0234).
+    pub crashed: Vec<Crashed>,
     /// One walk of the folder, shared by every check (DESIGN, "One walk of the app").
     pub listing: sv_scan::files::Listing,
     /// Its languages and frameworks, and the folders the manifest sets apart as applied (ADR-031).
@@ -39,21 +49,45 @@ impl StaticScan {
     ) -> Result<Self> {
         starting(0);
         let listing = sv_scan::files::Listing::of(app_dir);
+        let mut crashed = Vec::new();
         starting(1);
-        let scan_report = sv_scan::scan_listing_app(&listing, &loaded.signatures, not_the_app)?;
+        let scan_report = match crate::assemble::guarded("scan_report", || {
+            sv_scan::scan_listing_app(&listing, &loaded.signatures, not_the_app)
+        }) {
+            Ok(result) => result?,
+            Err(place) => {
+                crashed.push(Crashed {
+                    scanner: "scan_report",
+                    place,
+                });
+                sv_scan::ScanReport::default()
+            }
+        };
         starting(2);
-        let bill_of_materials = sv_check::sbom::build_in(&listing);
+        let bill_of_materials = keep(&mut crashed, "bill_of_materials", || {
+            sv_check::sbom::build_in(&listing)
+        });
         starting(3);
-        let secrets = sv_check::secrets::scan_listing(&loaded.secret_rules, &listing);
+        let secrets = keep(&mut crashed, "secrets", || {
+            sv_check::secrets::scan_listing(&loaded.secret_rules, &listing)
+        });
         starting(4);
-        let config = sv_check::config::check_dir_in(&listing, &bill_of_materials);
+        let config = keep(&mut crashed, "config", || {
+            sv_check::config::check_dir_in(&listing, &bill_of_materials)
+        });
         starting(5);
-        let mut code = sv_check::ast::scan_listing(&loaded.ast_rules, &listing);
-        let uses = (bill_of_materials.components.iter())
-            .map(|c| (c.ecosystem.as_str(), c.name.as_str()))
-            .chain((scan_report.declared.iter()).map(|d| (d.ecosystem.as_str(), d.name.as_str())));
-        sv_check::ast::hold_back_for_packages(&loaded.ast_rules, &mut code, uses);
+        let code = keep(&mut crashed, "code", || {
+            let mut code = sv_check::ast::scan_listing(&loaded.ast_rules, &listing);
+            let uses = (bill_of_materials.components.iter())
+                .map(|c| (c.ecosystem.as_str(), c.name.as_str()))
+                .chain(
+                    (scan_report.declared.iter()).map(|d| (d.ecosystem.as_str(), d.name.as_str())),
+                );
+            sv_check::ast::hold_back_for_packages(&loaded.ast_rules, &mut code, uses);
+            code
+        });
         Ok(StaticScan {
+            crashed,
             listing,
             scan_report,
             bill_of_materials,
@@ -61,6 +95,18 @@ impl StaticScan {
             config,
             code,
         })
+    }
+
+    /// Whether the named reader crashed, so its results are empty and not a pass.
+    pub fn crashed(&self, scanner: &str) -> bool {
+        self.crashed.iter().any(|c| c.scanner == scanner)
+    }
+
+    /// The gaps for the readers that crashed: what each was, and where its panic was (backlog 0234).
+    pub fn crash_gaps(&self) -> Vec<sv_report::Gap> {
+        (self.crashed.iter())
+            .map(|c| crate::assemble::crash_gap(label(c.scanner), &c.place))
+            .collect()
     }
 
     /// Every finding of the five scanners, as one list. The bill of materials speaks for itself
@@ -86,9 +132,17 @@ impl StaticScan {
         passed
     }
 
-    /// What the checks that read the app's files could not do, for the exit status.
+    /// What the checks that read the app's files could not do, for the exit status: a reader that crashed is one
+    /// (backlog 0234), so `sv check` exits not assessed for it as `sv report` does.
     pub fn file_gaps(&self) -> crate::exit::Gaps {
-        crate::exit::Gaps::of_files(&self.listing, &self.secrets, &self.code)
+        let mut gaps = crate::exit::Gaps::of_files(&self.listing, &self.secrets, &self.code);
+        for c in &self.crashed {
+            gaps.could_not_run.push(format!(
+                "{}: it crashed, so what it reads was not checked",
+                label(c.scanner)
+            ));
+        }
+        gaps
     }
 
     /// The checks that read the app's files, per family, for `examined`. Each one read only part
@@ -138,7 +192,10 @@ impl StaticScan {
                 code.unparsed_files.len()
             ));
         }
-        let mut examined = vec![family("ast.", code_short)];
+        let mut examined = vec![match self.crashed_why("code") {
+            Some(why) => sv_report::Examined::not_run("ast.", why),
+            None => family("ast.", code_short),
+        }];
         for broken in &code.broken_queries {
             examined.push(sv_report::Examined::partly(
                 broken.rule_id.clone(),
@@ -168,9 +225,15 @@ impl StaticScan {
                 secrets.coverage.skipped.len()
             ));
         }
-        examined.push(family("secrets.", secrets_short));
+        examined.push(match self.crashed_why("secrets") {
+            Some(why) => sv_report::Examined::not_run("secrets.", why),
+            None => family("secrets.", secrets_short),
+        });
 
-        examined.push(family("config.", links));
+        examined.push(match self.crashed_why("config") {
+            Some(why) => sv_report::Examined::not_run("config.", why),
+            None => family("config.", links),
+        });
         for (id, why) in &config.not_assessed {
             examined.push(sv_report::Examined::not_run(id.clone(), why.clone()));
         }
@@ -190,6 +253,45 @@ impl StaticScan {
                 requirements: Vec::new(),
             })
             .collect()
+    }
+}
+
+impl StaticScan {
+    /// Why the reader is not run, when it crashed.
+    pub(crate) fn crashed_why(&self, scanner: &str) -> Option<String> {
+        self.crashed(scanner).then(|| {
+            format!(
+                "the reader of {} crashed, so nothing it reads was checked",
+                label(scanner)
+            )
+        })
+    }
+}
+
+/// The reader's name for a person: what its gap and its `examined` entry say.
+fn label(scanner: &str) -> &'static str {
+    match scanner {
+        "scan_report" => "the app's languages and packages",
+        "bill_of_materials" => "the packages the app ships",
+        "secrets" => "the keys and passwords in the app's files",
+        "config" => "the app's configuration files",
+        "code" => "the app's code",
+        _ => "one of the app's files",
+    }
+}
+
+/// Runs a reader, and if it crashes, records it and gives back its empty result (backlog 0234).
+fn keep<T: Default>(
+    crashed: &mut Vec<Crashed>,
+    scanner: &'static str,
+    run: impl FnOnce() -> T,
+) -> T {
+    match crate::assemble::guarded(scanner, run) {
+        Ok(value) => value,
+        Err(place) => {
+            crashed.push(Crashed { scanner, place });
+            T::default()
+        }
     }
 }
 

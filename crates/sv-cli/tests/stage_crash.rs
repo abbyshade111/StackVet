@@ -78,3 +78,30 @@ fn with_no_check_made_to_crash_no_crash_is_reported() {
     );
     assert!(!json.contains("\"reason\": \"crashed\""), "{json}");
 }
+
+/// Each reader of the app's files, crashed in turn: the report is still written, the reader's gap says it crashed, the
+/// `examined` entry for it says it was not run, and what it would have said is not credited (backlog 0234).
+#[test]
+fn a_reader_of_the_app_that_crashes_costs_its_own_results_and_the_report_says_so() {
+    for reader in [
+        "scan_report",
+        "bill_of_materials",
+        "secrets",
+        "config",
+        "code",
+    ] {
+        let (crashed, out) = report(&format!("reader-{reader}"), Some(reader));
+        let said = String::from_utf8_lossy(&crashed.stderr).to_string();
+        assert_ne!(crashed.status.code(), Some(3), "{reader}: {said}");
+        let json = std::fs::read_to_string(out.join("report.json"))
+            .unwrap_or_else(|e| panic!("{reader}: no report written: {e}\n{said}"));
+        assert!(json.contains("\"reason\": \"crashed\""), "{reader}: {json}");
+        assert!(json.contains("the check crashed"), "{reader}: {json}");
+        // The reader's `examined` entry says it was not run, for each reader that has one.
+        let has_entry = reader != "scan_report";
+        assert!(
+            !has_entry || json.contains("crashed, so nothing it reads was checked"),
+            "{reader}: the examined list does not say it was not run: {json}"
+        );
+    }
+}
