@@ -193,6 +193,24 @@ fn session_value(name: &str, value: &str) -> String {
     }
 }
 
+/// What the report says of the name lookups the stand-in name server recorded (ADR-085, backlog
+/// 0240). Counts only: the names themselves are in `seen.json`, redacted, and are not repeated here.
+pub fn lookups_sentence(names: Option<&[sv_run::name_server::Lookup]>) -> String {
+    match names {
+        None => "No name lookups were recorded, because the name server did not run.".to_owned(),
+        Some([]) => "The app looked up no names.".to_owned(),
+        Some(asked) => {
+            let times = if asked.len() == 1 { "" } else { "s" };
+            format!(
+                "The app made {} name lookup{times}. Each was answered SERVFAIL, so none resolved. \
+                 The names are listed, redacted, in {}.",
+                asked.len(),
+                sv_report::seen::FILE
+            )
+        }
+    }
+}
+
 /// What the stand-ins received, made ready to keep (backlog 0229, part 2): every piece of text in
 /// it passed through `redact_text`, cut at `KEPT_CHARS` characters, and every list at
 /// `MOST_EXCHANGES` entries. `sv`'s own test secrets were blanked by value in `sv-run`, which alone
