@@ -198,14 +198,18 @@ pub const FILE: &str = "seen.json";
 const ABOUT: &str = "What sv saw of the running app while it made this report: each question it asked \
 as somebody not signed in, and what the app answered; and, under stand_ins, what sv's own stand-ins \
 for the services the app uses received from it (the test model, the test sign-in provider, and the \
-mail catcher, of whose mail only who it was to, its subject, and when are kept); and, under app_log, \
-the lines of the app's own output the log checks read, and its last lines; under signed_in, what the \
-signed-in questions were answered with, and how many got no answer; and, under tool_output, \
-when --keep-tool-output asked for them, each outside tool's own report, which quotes the app's code. This is the app's own text, with every \
-credential sv recognized cut down to its first four characters and its length, and the value \
-of every cookie and sign-in header taken out. It can hold \
-personal data the app was given during the run; only sv's own test accounts were used. Each \
-answer's id is the one sv's checks read it by.";
+mail catcher, of whose mail only who it was to, its subject, and when are kept), and under stand_ins.names \
+each name the app looked up, once, with how many times and when first; every lookup was answered \
+SERVFAIL, so no name resolved; under app_log, the lines of the app's own output the log checks read, \
+and its last lines; under signed_in, what the signed-in questions were answered with, and under \
+signed_in_unanswered how many got no answer; under liveness, each reading of the app's container (its \
+state, restarts, exit code, memory, and whether its health path answered), taken between the stages of \
+the questions: these describe the container, not the app's answers; and, under tool_output, when \
+--keep-tool-output asked for them, each outside tool's own report, which quotes the app's code. This is \
+the app's own text, with every credential sv recognized cut down to its first four characters and its \
+length, and the value of every cookie and sign-in header taken out. It can hold personal data the app \
+was given during the run; only sv's own test accounts were used. Each answer's id is the one sv's checks \
+read it by.";
 
 /// `seen.json` for `report`.
 pub fn render(report: &Report) -> String {
