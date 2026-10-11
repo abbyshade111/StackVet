@@ -58,4 +58,20 @@ fn a_tool_s_version_line_arguments_exit_code_and_time_are_kept() {
     );
     assert_eq!(record.exit_code, Some(1));
     assert!(run.ran.contains(&"fake".to_owned()), "{run:?}");
+    // The report it wrote is held for `--keep-tool-output` (backlog 0229, part 4), and never goes
+    // into `report.json` with the rest of the record.
+    assert!(
+        record
+            .output
+            .as_deref()
+            .is_some_and(|o| o.contains(r#""name":"Fake""#)),
+        "{record:?}"
+    );
+    // Checked as a key of the record's own JSON object: the report is a string inside it, so its
+    // text is escaped there, and a search for its own text would never find it.
+    let value = serde_json::to_value(record).unwrap();
+    assert!(
+        value.get("output").is_none(),
+        "the report leaked into the record: {value}"
+    );
 }

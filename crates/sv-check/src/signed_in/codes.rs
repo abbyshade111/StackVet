@@ -60,8 +60,10 @@ pub(super) fn email_code_checks(
     codes.extend([one.clone(), two.clone()]);
     email_code_short_check(&codes, out);
     let crossed = flow.signs_in(http, &one, &mut asked_two, "crossed", out);
-    let bound = if crossed {
-        out.findings.push(finding(
+    let bound =
+        if crossed {
+            out.findings.push(finding_on(
+            vec!["email-code-use-crossed".to_owned(), "email-code-private-crossed".to_owned()],
             &EMAIL_CODE_UNBOUND,
             "An emailed sign-in code works for a sign-in it was not sent for",
             Severity::Medium,
@@ -71,9 +73,9 @@ pub(super) fn email_code_checks(
                 flow.entry.use_code.path
             ),
         ));
-        Some(false)
-    } else if flow.signs_in(http, &two, &mut asked_two, "own", out) {
-        out.verified.push(crate::Verified::new(
+            Some(false)
+        } else if flow.signs_in(http, &two, &mut asked_two, "own", out) {
+            out.verified.push(crate::Verified::new(
             EMAIL_CODE_UNBOUND.rule_id,
             EMAIL_CODE_UNBOUND.requirement_ids,
             format!(
@@ -82,16 +84,16 @@ pub(super) fn email_code_checks(
                 flow.entry.use_code.path
             ),
         ));
-        Some(true)
-    } else {
-        out.not_assessed.push((
-            "V6.6.2".to_owned(),
-            "A code used in a session that did not ask for it was refused, and so was that \
+            Some(true)
+        } else {
+            out.not_assessed.push((
+                "V6.6.2".to_owned(),
+                "A code used in a session that did not ask for it was refused, and so was that \
              session's own code afterwards, so the refusal cannot be said to be about the code."
-                .to_owned(),
-        ));
-        None
-    };
+                    .to_owned(),
+            ));
+            None
+        };
 
     // 3. The first code again, already used, from a new session (V6.5.1). Signing in is a finding
     //    whatever else is true. A refusal is credited only where codes were shown to work outside
@@ -99,7 +101,11 @@ pub(super) fn email_code_checks(
     //    not, and the session it belonged to is the one its first use signed in.
     let mut again = Session::default();
     if flow.signs_in(http, &code, &mut again, "again", out) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "email-code-use-again".to_owned(),
+                "email-code-private-again".to_owned(),
+            ],
             &EMAIL_CODE_REUSABLE,
             "An emailed sign-in code works more than once",
             Severity::High,
@@ -197,7 +203,11 @@ pub(super) fn email_code_lifetime(
     let waited = http.now().saturating_sub(asked_at);
     let after = format!("{} minutes {} seconds", waited / 60, waited % 60);
     if late {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "email-code-use-late".to_owned(),
+                "email-code-private-late".to_owned(),
+            ],
             &EMAIL_CODE_LONG_LIVED,
             "An emailed sign-in code still works after ten minutes",
             Severity::Medium,
@@ -369,7 +379,8 @@ pub(super) fn email_code_guessing(
              first {}, and {next} only to the last",
             allowed + 1
         ));
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["email-code-use-after-guesses".to_owned(), "email-code-private-after-guesses".to_owned()],
             &EMAIL_CODE_GUESSING,
             "One more wrong emailed code than stated is let through",
             Severity::Medium,
@@ -435,7 +446,11 @@ pub(super) fn email_code_guessing(
         }
     ));
     if how.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "email-code-use-after-guesses".to_owned(),
+                "email-code-private-after-guesses".to_owned(),
+            ],
             &EMAIL_CODE_GUESSING,
             "Emailed sign-in codes can be guessed without limit",
             Severity::High,
@@ -488,7 +503,8 @@ fn email_code_short_check(codes: &[String], out: &mut Outcome) {
     };
     let bits = most_bits(shortest);
     if bits < 19.9 {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["email-code-request-1".to_owned()],
             &EMAIL_CODE_SHORT,
             "The emailed sign-in code is short enough to guess",
             Severity::High,

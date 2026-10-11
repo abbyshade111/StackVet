@@ -25,9 +25,13 @@ macro_rules! eprintln {
 }
 
 pub mod assemble;
+// One copy, in the library: the report's stages catch a panic through it, and the binary's hook records into it (0234).
 pub mod bundle;
 pub mod compare;
+pub mod crash;
+// The opt-in log of stages, named by SV_LOG (backlog 0237).
 pub mod exit;
+pub mod own_log;
 pub mod report_lock;
 pub mod static_scan;
 pub use assemble::{REPORT_STAGES, assemble_report_saying};
@@ -358,6 +362,9 @@ pub struct ReportOptions {
     pub advisories: Option<PathBuf>,
     /// Said in the report when there was no database to compare with.
     pub why_no_advisories: String,
+    /// With `run_tools`: keep each tool's own report, redacted, in `seen.json` (ADR-082, backlog
+    /// 0229, part 4). Opt-in: a tool's report quotes the app's code, and can be large.
+    pub keep_tool_output: bool,
 }
 
 impl ReportOptions {
@@ -376,6 +383,7 @@ impl ReportOptions {
             why_no_advisories: format!(
                 "{caller} does not compare packages with known vulnerabilities."
             ),
+            keep_tool_output: false,
         }
     }
 
@@ -401,6 +409,7 @@ impl ReportOptions {
                 "{caller} compares against known vulnerabilities only when you pass --advisories \
                  DIR."
             ),
+            keep_tool_output: false,
         }
     }
 }

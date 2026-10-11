@@ -462,6 +462,9 @@ pub enum GapReason {
     /// Read, in a form that is out of date: a file under its old name, or one that changed while
     /// the run was reading it.
     Outdated,
+    /// A check crashed while it ran (backlog 0234): the rest of the report is written, and the gap says where.
+    /// Nothing that check would have said is in the report.
+    Crashed,
 }
 
 /// Whether this report looked for one family of findings, for a program reading `report.json`
@@ -847,6 +850,9 @@ impl AiProcess {
 pub struct MadeBy {
     pub version: String,
     pub commit: String,
+    /// Whether `sv` was built from a checkout with changes to tracked files not committed (backlog 0233): then
+    /// the commit does not say exactly what was built.
+    pub uncommitted_changes: bool,
 }
 
 impl MadeBy {
@@ -896,6 +902,28 @@ pub struct RunInputs {
     /// Every file in `sv`'s data folder, by name and content: the standards, the rules, and what
     /// each check knows. Two copies of one version of `sv` can be given different data.
     pub sv_data_sha256: Option<String>,
+    /// The same folder, file by file, so a report says which file differs, not only that the folder does (backlog
+    /// 0233). A list of records rather than a map from name to hash: the credential scan reads a file name beside a
+    /// value as a secret assigned, and a data file can be named for passwords or secrets. Left out of an older record.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sv_data_files: Vec<DataFileHash>,
+    /// The helper images `sv` ran, each as the name and digest it is run by (backlog 0238), so a run is repeatable and a
+    /// moved tag cannot change what ran. Left out of a record that predates it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub helper_images: Vec<String>,
+    /// The digest of the app's own image, as the local Docker has it, when the app was run (backlog 0238). `None` when the
+    /// app was not run, or Docker could not say.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_image_digest: Option<String>,
+}
+
+/// One file of `sv`'s data folder and the SHA-256 of its content (backlog 0233).
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, serde::Deserialize)]
+#[serde(default)]
+pub struct DataFileHash {
+    /// The file's name in the folder, written with `/` on every system.
+    pub file: String,
+    pub sha256: String,
 }
 
 impl RunRecord {
@@ -1555,6 +1583,18 @@ pub struct BuildLoop {
     pub clients: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub svs: Vec<String>,
+    /// Lines of the record whose hash is chained to the line before, and checks out (backlog 0239). Left out of a
+    /// report when 0, so a report written before the chain reads and seals the same.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub chained: usize,
+    /// The line where the chain first stops checking out, counting the record's lines from 1: a line was changed,
+    /// removed, or added after it was written (backlog 0239). Left out when the chain holds.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chain_broken_at: Option<usize>,
+    /// The last chain that checked out, the record's head, which a report keeps so a later rewrite of the whole record
+    /// shows when two reports are compared (backlog 0239).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chain_head: Option<String>,
     /// How many times the record was turned off while the app was built, each a gap in it.
     #[serde(skip_serializing_if = "is_zero")]
     pub turned_off: usize,
@@ -1722,7 +1762,10 @@ pub fn slowest_line(report: &Report) -> Option<String> {
 
 /// `slowest_line`, from the timings alone.
 fn slowest_of(timings: &[Timing]) -> Option<String> {
-    let mut slowest: Vec<&Timing> = timings.iter().collect();
+    let mut slowest: Vec<&Timing> = timings
+        .iter()
+        .filter(|t| !t.what.starts_with(REQUEST_TIMING))
+        .collect();
     slowest.sort_by_key(|a| std::cmp::Reverse(a.took_ms));
     let named: Vec<String> = slowest
         .iter()
@@ -1734,7 +1777,11 @@ fn slowest_of(timings: &[Timing]) -> Option<String> {
     }
     let total: u64 = timings
         .iter()
-        .filter(|t| !t.what.starts_with(TOOL_TIMING) && !t.what.starts_with(SUITE_TIMING))
+        .filter(|t| {
+            !t.what.starts_with(TOOL_TIMING)
+                && !t.what.starts_with(SUITE_TIMING)
+                && !t.what.starts_with(REQUEST_TIMING)
+        })
         .map(|t| t.took_ms)
         .sum();
     Some(format!(
@@ -1751,6 +1798,11 @@ pub const TOOL_TIMING: &str = "the outside tool ";
 /// How a suite of questions to the running app is named in the timings, for the same reason: it
 /// runs inside the stage that runs the app (backlog 226, part 2, item 13).
 pub const SUITE_TIMING: &str = "the running app, ";
+
+/// How one request to the running app is named in the timings (backlog 226, part 2, item 13). It
+/// runs inside its suite, so it is counted in no total, and it is left out of the slowest parts,
+/// which would otherwise name a request beside the suite that holds it.
+pub const REQUEST_TIMING: &str = "the request ";
 
 /// One paragraph saying what the record of the build loop shows, for the top of the report. `None`
 /// for a report that was not written into a report folder.
@@ -1847,6 +1899,20 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
     }
     text.push_str(&unreadable);
     text.push_str(&gaps);
+    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not.
+    if let Some(at) = b.chain_broken_at {
+        text.push_str(&format!(
+            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added after it \
+             was written, so that line and the lines after it are not vouched for."
+        ));
+    } else if let (true, Some(head)) = (b.chained > 0, &b.chain_head) {
+        let short: String = head.chars().take(12).collect();
+        text.push_str(&format!(
+            " Each of the record's {} chained lines checks out against the one before it, ending at the hash {short}. \
+             A rewrite of the whole record would keep a valid chain, so compare that hash with an earlier report's.",
+            b.chained
+        ));
+    }
     if b.full {
         text.push_str(
             " The record reached its size limit, so later calls were not written down: the last \

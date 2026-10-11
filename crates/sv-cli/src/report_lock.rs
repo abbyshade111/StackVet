@@ -65,8 +65,30 @@ pub fn data_sha256() -> Option<String> {
         .clone()
 }
 
-/// `data_sha256` for any folder.
-pub fn folder_sha256(root: &Path) -> Option<String> {
+/// Each file of the data folder by its own SHA-256, under the same name `data_sha256` uses, so a report can say
+/// which data file it was made from and not only that the folder was not the same (backlog 0233). Found once per
+/// run; empty when there is no data folder or a file in it could not be read.
+pub fn data_files_sha256() -> std::collections::BTreeMap<String, String> {
+    static FOUND: std::sync::OnceLock<std::collections::BTreeMap<String, String>> =
+        std::sync::OnceLock::new();
+    FOUND
+        .get_or_init(|| {
+            files_sha256(&sv_frameworks::data::dir().unwrap_or_default()).unwrap_or_default()
+        })
+        .clone()
+}
+
+/// `data_files_sha256` for any folder: `None` when a file could not be read, so no part of it is said.
+pub fn files_sha256(root: &Path) -> Option<std::collections::BTreeMap<String, String>> {
+    let mut out = std::collections::BTreeMap::new();
+    for (name, path) in listing(root)? {
+        out.insert(name, crate::bundle::sha256(&std::fs::read(&path).ok()?));
+    }
+    Some(out)
+}
+
+/// Every file under `root`, by its name in the folder (written with `/`), in name order.
+fn listing(root: &Path) -> Option<Vec<(String, PathBuf)>> {
     fn walk(root: &Path, dir: &Path, out: &mut Vec<(String, PathBuf)>) -> Option<()> {
         for entry in std::fs::read_dir(dir).ok()? {
             let path = entry.ok()?.path();
@@ -85,6 +107,12 @@ pub fn folder_sha256(root: &Path) -> Option<String> {
     let mut files = Vec::new();
     walk(root, root, &mut files)?;
     files.sort();
+    Some(files)
+}
+
+/// `data_sha256` for any folder.
+pub fn folder_sha256(root: &Path) -> Option<String> {
+    let files = listing(root)?;
     let mut all = Vec::new();
     for (name, path) in files {
         let bytes = std::fs::read(&path).ok()?;

@@ -75,3 +75,67 @@ fn a_subject_keeps_short_numbers_and_everything_else() {
     assert_eq!(without_codes("Code: 1234."), "Code: [left out].");
     assert_eq!(without_codes("Order 12 of 2026"), "Order 12 of [left out]");
 }
+
+#[test]
+fn a_test_secret_in_the_kept_log_is_blanked() {
+    let s = secrets();
+    let mut asked = sv_check::signed_in::Outcome {
+        log_lines: vec![sv_check::logs::KeptLine {
+            read_for: "the successful sign-in (V16.3.1)".to_owned(),
+            line: format!("login ok user=sv-a password={}", s[0]),
+        }],
+        log_tail: vec![format!("totp seed {}", s[1]), "listening".to_owned()],
+        ..Default::default()
+    };
+    blank_log(&mut asked, &s);
+    let kept = format!("{asked:?}");
+    for secret in &s {
+        assert!(!kept.contains(secret.as_str()), "{kept}");
+    }
+    assert_eq!(
+        asked.log_lines[0].line,
+        format!("login ok user=sv-a password={TEST_SECRET}")
+    );
+    assert_eq!(asked.log_tail[1], "listening");
+}
+
+#[test]
+fn a_test_password_in_a_signed_in_answer_is_blanked() {
+    let s = secrets();
+    let mut asked = sv_check::signed_in::Outcome {
+        exchanges: vec![sv_check::signed_in::recording::Recorded {
+            id: "reset".to_owned(),
+            method: "GET".to_owned(),
+            path: format!("/reset?password={}", s[0]),
+            status: Some(200),
+            headers: vec![("x-echo".to_owned(), s[1].clone())],
+            body: format!("<input value=\"{}\">", s[0]),
+        }],
+        ..Default::default()
+    };
+    blank_log(&mut asked, &s);
+    let kept = format!("{asked:?}");
+    for secret in &s {
+        assert!(!kept.contains(secret.as_str()), "{kept}");
+    }
+    assert_eq!(
+        asked.exchanges[0].path,
+        format!("/reset?password={TEST_SECRET}")
+    );
+    assert_eq!(
+        asked.exchanges[0].body,
+        format!("<input value=\"{TEST_SECRET}\">")
+    );
+}
+
+#[test]
+fn a_test_secret_in_a_url_is_blanked_in_the_form_a_url_writes() {
+    let s = secrets();
+    // The setup: the password is in the address as a browser writes it, with `!` as `%21`.
+    let raw = format!("/reset?password={}", percent_encoded(&s[0]));
+    assert!(raw.contains("%21") && !raw.contains('!'), "{raw}");
+    assert_eq!(
+        without_test_secrets(&raw, &s),
+        format!("/reset?password={TEST_SECRET}")
+    );
+}

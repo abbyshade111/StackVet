@@ -1,6 +1,6 @@
 # A deep review of sv for observability: what it can show of itself, and what it should
 
-**Status:** partly done: part 2 item 13 (a time on each request inside a running-app suite); part 3 (A to K, the owner's decisions)
+**Status:** partly done: part 3, decided and each now an item of its own (0229, 0233 to 0240)
 
 Asked for by the owner on 9 October 2026, when choosing a record of the build loop for finding 22(d) of the gap
 analysis: "observability is really important, so let's go with the first option and also please add a review task
@@ -128,7 +128,7 @@ decision; part 2 is cheap visibility, also not the owner's; part 3 needs the own
    **Part status:** done, 10 October 2026
 13. **How long each part took.** Every `Instant::now()` outside tests sets a deadline and is never recorded.
     `started_ms` and `took_ms` on each `Examined` entry and each running-app step; "the slowest five" on the page.
-   **Part status:** partly done: a time on each request inside a running-app suite
+   **Part status:** done, 10 October 2026
 14. **What each outside tool was.** Its version line (asked, then thrown away), its arguments, its exit code, and
     its time, in `Examined` (`crates/sv-check/src/adapters.rs`). Keeping its raw output is part 3, item A.
    **Part status:** done, 10 October 2026
@@ -204,6 +204,10 @@ is asked before it is built. Recommended first: **A**, then **C**, then **D**.
   Medium.
 - **K. The helper images by digest**, not by tag (`busybox`, `mailpit`, `node`, the headless browser), and the app
   image's digest in the report. Changes what `sv` runs. Small.
+
+**The owner's word on the rest of part 3, 10 October 2026** ("yes, agree with all your recommendations, please
+proceed"), each now an item of its own: B (backlog 0233), F (0234), G (0235), H (0236), I (0237), and K (0238) to be
+built; J (0239) if the paper relies on the build-loop record; and E (0240) later, after A and the dashboard.
 
 ### Over time: what the records could feed
 
@@ -460,3 +464,13 @@ requirement's status kept, a run that did not finish kept, the inputs in the com
 call's outcome, a turned-off record seen as a gap, which AI tool and which `sv`, the names asked about, what was handed
 over, and the findings no longer found, set aside, and new between the first check and the last).
 
+
+**Part 2, item 13 claimed on 10 October 2026 by session stackvet-e9**, its remainder, under the owner's "please
+continue with the leftovers", in branch `claude/stackvet-e9-request-times`: a time on each request inside a
+running-app suite, taken where every request to the app is sent (`DockerBackend::probe` and the two that send
+several), so no suite has to time itself, and listed in `report.json`'s `timings` beside the suites', left out of the
+total as they are. With a test that fails without it.
+
+**Part 2, item 13 done on 10 October 2026** (`docs/design/0364-a-time-on-each-request-to-the-running-app-10-october-2026.md`): each request to the running app is timed where it is sent,
+and listed in `report.json`'s `timings` after the suites, counted in no total and named among no slowest five. With
+it, part 2 is done. Breaks: with each piece undone, its test fails.

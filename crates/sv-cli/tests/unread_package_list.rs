@@ -73,12 +73,15 @@ fn a_package_list_that_does_not_parse_is_named_beside_the_answer_it_changes() {
         "V1.3.9 excluded with memjs read"
     );
     assert_eq!(package_list_gap(&read), None);
-    // Not read: the wrong answer reaches the report, as it stands until the owner decides (H).
-    assert!(excluded(&unread, "V1.3.9"));
+    // Not read: the requirement is not excluded as not used, since the unread list may name the package (0236).
+    assert!(
+        !excluded(&unread, "V1.3.9"),
+        "V1.3.9 excluded with its package list unread"
+    );
     // And the report says why, beside it, in both forms.
     let why = package_list_gap(&unread).expect("the unread package list is named");
     assert!(why.contains("not valid JSON"), "{why}");
-    assert!(why.contains("may be answered as not used"), "{why}");
+    assert!(why.contains("as incomplete"), "{why}");
     let examined = compliance
         .split("## What was not examined")
         .nth(1)

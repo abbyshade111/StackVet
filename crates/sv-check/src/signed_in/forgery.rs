@@ -67,7 +67,8 @@ pub(super) fn forgery_check(
             && a.set_at_login
                 .iter()
                 .all(|c| matches!(c.same_site.as_deref(), Some("lax") | Some("strict")));
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["forged-create".to_owned()],
             &FORGERY,
             "A request from another site is accepted",
             if protected_by_same_site {
@@ -189,7 +190,11 @@ pub(super) fn null_origin_check(
         .as_ref()
         .is_some_and(|r| (400..500).contains(&r.status));
     if refused && accepted(&control) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "null-origin-page".to_owned(),
+                "null-origin-control".to_owned(),
+            ],
             &OWN_FORMS_REFUSED,
             "The app refuses its own forms in a real browser",
             Severity::Low,
@@ -330,7 +335,11 @@ pub(super) fn simple_request_check(
             && a.set_at_login
                 .iter()
                 .all(|c| matches!(c.same_site.as_deref(), Some("lax") | Some("strict")));
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            taken
+                .iter()
+                .map(|name| format!("simple-request-{}", name.replace([' ', '/'], "-")))
+                .collect(),
             &SIMPLE_REQUEST,
             "A request another site can send without asking is accepted",
             if protected_by_same_site {

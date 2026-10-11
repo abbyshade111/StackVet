@@ -1,6 +1,6 @@
 # Packaging `sv` for somebody who is not technical: a container now, a download later
 
-**Status:** partly done: a way to install sv on Windows (Scoop or winget), which needs a published Windows program, the owner's to decide; and the guide's Windows section after it
+**Status:** partly done: Scoop and winget routes are not built; the Homebrew formula is in abbyshade111/homebrew-stackvet, outside this repository
 
 **The
 owner's decision, 26 September 2026: build the container now, and keep the downloadable program
@@ -350,3 +350,8 @@ and tested on Windows in CI, nightly since 10 October, with every test passing (
 there stays open, since Scoop and winget each install a published program and none is published. Step 3: the guide
 has "Installing with Homebrew"; its Windows section waits for that.
 
+**The owner's word, 10 October 2026, on the Windows program** ("do the Windows build after signed releases"): a
+Windows program is published, and Scoop (and later winget) offered, only once releases are signed (backlog 0191,
+part 4). Until then the guide keeps saying Windows is built and tested in CI and installs through Docker or from
+source. Step 2's remainder waits for 0191 part 4.
+**Windows, 10 October 2026:** the guide no longer says Windows was "never built": the project builds and tests StackVet on Windows in `windows.yml`, but nobody has tried these steps on a Windows computer.

@@ -264,6 +264,7 @@ struct About {
 #[track_caller]
 fn finding(about: &About, title: &str, severity: Severity, description: String) -> Finding {
     crate::finding::found(Finding {
+        evidence: Vec::new(),
         also_reported_by: Vec::new(),
         fingerprint: String::new(),
         earlier_fingerprints: Vec::new(),
@@ -355,6 +356,8 @@ fn words(document: &serde_json::Value, field: &str) -> Vec<String> {
 fn grants(responses: &[ProbeResponse], out: &mut Evidence) {
     let mut published = Vec::new();
     let mut retired = Vec::new();
+    // The answers the credit rests on: each settings file that named its issuer.
+    let mut read = Vec::new();
     for (id, path) in DISCOVERY {
         let Some(r) = found(responses, id) else {
             continue;
@@ -371,6 +374,7 @@ fn grants(responses: &[ProbeResponse], out: &mut Evidence) {
             continue;
         }
         published.push(*path);
+        read.push(id.to_string());
         for grant in words(&document, "grant_types_supported") {
             if grant == "password" || grant == "implicit" {
                 retired.push(format!("`{grant}` in `grant_types_supported` at {path}"));
@@ -398,7 +402,7 @@ fn grants(responses: &[ProbeResponse], out: &mut Evidence) {
                  a settings file that leaves `grant_types_supported` out says nothing either way",
                 published.join(" and ")
             ),
-        ));
+        ).with_evidence(read));
         return;
     }
     out.findings.push(finding(
@@ -420,6 +424,8 @@ fn grants(responses: &[ProbeResponse], out: &mut Evidence) {
 fn admin_by_address(responses: &[ProbeResponse], admin_pages: &[String], out: &mut Evidence) {
     let mut asked = 0;
     let mut opened = Vec::new();
+    // The answers the credit rests on: each page asked for, with and without the headers.
+    let mut read = Vec::new();
     for (i, page) in admin_pages.iter().take(ADMIN_PAGES).enumerate() {
         let (Some(plain), Some(from_here)) = (
             found(responses, &format!("admin-{i}")),
@@ -428,6 +434,8 @@ fn admin_by_address(responses: &[ProbeResponse], admin_pages: &[String], out: &m
             continue;
         };
         asked += 1;
+        read.push(format!("admin-{i}"));
+        read.push(format!("admin-{i}-from-here"));
         let shut = !(200..300).contains(&plain.status);
         let open = (200..300).contains(&from_here.status);
         if shut && open {
@@ -441,16 +449,19 @@ fn admin_by_address(responses: &[ProbeResponse], admin_pages: &[String], out: &m
         return;
     }
     if opened.is_empty() {
-        out.verified.push(Verified::new(
-            ADMIN_BY_ADDRESS,
-            &[],
-            format!(
-                "{asked} admin page{} asked for as a stranger, with and without headers saying \
+        out.verified.push(
+            Verified::new(
+                ADMIN_BY_ADDRESS,
+                &[],
+                format!(
+                    "{asked} admin page{} asked for as a stranger, with and without headers saying \
                  the request came from the app's own computer: the headers opened none; what else \
                  guards them is not something a request shows",
-                if asked == 1 { "" } else { "s" }
-            ),
-        ));
+                    if asked == 1 { "" } else { "s" }
+                ),
+            )
+            .with_evidence(read),
+        );
         return;
     }
     out.findings.push(finding(
@@ -471,6 +482,8 @@ fn admin_by_address(responses: &[ProbeResponse], admin_pages: &[String], out: &m
 fn private_files_served(responses: &[ProbeResponse], private: &[PrivateFile], out: &mut Evidence) {
     let mut answered = 0;
     let mut served = Vec::new();
+    // The answers the credit rests on: each request for a file that was answered.
+    let mut read = Vec::new();
     for file in private {
         let mut any = false;
         for (id, path) in &file.asked {
@@ -478,6 +491,7 @@ fn private_files_served(responses: &[ProbeResponse], private: &[PrivateFile], ou
                 continue;
             };
             any = true;
+            read.push(id.clone());
             // The file's own opening, in the answer: a page that answers every address with the
             // same thing does not contain it.
             if (200..300).contains(&r.status) && r.body.replace("\r\n", "\n").contains(&file.head) {
@@ -501,7 +515,7 @@ fn private_files_served(responses: &[ProbeResponse], private: &[PrivateFile], ou
                  name: none was handed back; other files, and other names for them, were not asked for",
                 if answered == 1 { "" } else { "s" }
             ),
-        ));
+        ).with_evidence(read));
         return;
     }
     let secret = served.iter().any(|(f, _)| f.secret);
@@ -523,6 +537,12 @@ fn private_files_served(responses: &[ProbeResponse], private: &[PrivateFile], ou
 
 // V16.5.4 -----------------------------------------------------------------------------------------
 
+/// The id a reading of the container is named by: `liveness-N` for the Nth reading, from 1, as
+/// `seen.json` numbers them (backlog 229 part 1).
+pub fn liveness_id(index: usize) -> String {
+    format!("liveness-{}", index + 1)
+}
+
 fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
     if liveness.is_empty() {
         return;
@@ -537,19 +557,23 @@ fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
         ));
         return;
     }
-    let Some(stopped) = liveness
+    let Some((index, stopped)) = liveness
         .iter()
-        .find(|l| l.status != "running" || l.restarts > 0 || !l.answered)
+        .enumerate()
+        .find(|(_, l)| l.status != "running" || l.restarts > 0 || !l.answered)
     else {
-        out.verified.push(Verified::new(
-            STAYED_UP,
-            &[],
-            format!(
-                "the app was still running and answering after {}; questions it was not asked may \
-                 still stop it",
-                liveness.last().map_or("", |l| l.after.as_str())
-            ),
-        ));
+        out.verified.push(
+            Verified::new(
+                STAYED_UP,
+                &[],
+                format!(
+                    "the app was still running and answering after {}; questions it was not asked may \
+                     still stop it",
+                    liveness.last().map_or("", |l| l.after.as_str())
+                ),
+            )
+            .with_evidence((0..liveness.len()).map(liveness_id).collect()),
+        );
         return;
     };
     if stopped.out_of_memory {
@@ -573,7 +597,7 @@ fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
     } else {
         "was running and no longer answered its health path".to_owned()
     };
-    out.findings.push(finding(
+    let mut found = finding(
         &APP_STOPPED_DURING_QUESTIONS_ABOUT,
         "Something the app was sent stopped it",
         Severity::Medium,
@@ -583,7 +607,9 @@ fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
              own output (`sv run` shows where) says which.",
             stopped.after
         ),
-    ));
+    );
+    found.evidence = vec![liveness_id(index)];
+    out.findings.push(found);
 }
 
 #[cfg(test)]
@@ -693,6 +719,95 @@ mod tests {
             answer("admin-0-from-here", 200, "x"),
         ];
         assert!(evaluate(&open, &pages[..1], &[], &[]).findings.is_empty());
+    }
+
+    /// The ids a credit names as the answers it read (ADR-082, backlog 229 part 1).
+    fn credit_evidence(evidence: &Evidence, id: &str) -> Vec<String> {
+        evidence
+            .verified
+            .iter()
+            .find(|v| v.check_id == id)
+            .map(|v| v.evidence.clone())
+            .unwrap_or_default()
+    }
+
+    #[test]
+    fn each_credit_names_the_answers_it_read_and_no_others() {
+        // Grants: the one settings file that named its issuer, and the other, which did not, is not named.
+        let settings =
+            r#"{"issuer": "http://app", "grant_types_supported": ["authorization_code"]}"#;
+        let grants = evaluate(
+            &[
+                answer("discovery-openid", 200, settings),
+                answer("discovery-oauth", 404, ""),
+            ],
+            &[],
+            &[],
+            &[],
+        );
+        assert_eq!(credit_evidence(&grants, GRANTS), ["discovery-openid"]);
+
+        // Admin pages: both requests for each page asked, with and without the headers.
+        let pages = vec!["/admin".to_owned()];
+        let shut = [
+            answer("admin-0", 403, ""),
+            answer("admin-0-from-here", 302, ""),
+        ];
+        let admin = evaluate(&shut, &pages, &[], &[]);
+        assert_eq!(
+            credit_evidence(&admin, ADMIN_BY_ADDRESS),
+            ["admin-0", "admin-0-from-here"]
+        );
+
+        // Private files: each request for the file that was answered, all refused here.
+        let dir = scratch("names");
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(
+            dir.join(".env"),
+            format!("SESSION_SECRET={}\n", "s".repeat(24)),
+        )
+        .unwrap();
+        let files = private_files(&Listing::of(&dir));
+        let asked: Vec<String> = files
+            .iter()
+            .flat_map(|f| f.asked.iter().map(|(id, _)| id.clone()))
+            .collect();
+        assert!(!asked.is_empty(), "the file was not asked for");
+        let refusals: Vec<ProbeResponse> = asked.iter().map(|id| answer(id, 404, "")).collect();
+        let private = evaluate(&refusals, &[], &files, &[]);
+        assert_eq!(credit_evidence(&private, PRIVATE_FILES), asked);
+    }
+
+    #[test]
+    fn stayed_up_names_each_reading_and_the_one_that_stopped() {
+        let stays = evaluate(&[], &[], &[], &[up("a"), up("b")]);
+        assert_eq!(
+            credit_evidence(&stays, STAYED_UP),
+            ["liveness-1", "liveness-2"]
+        );
+
+        let stopped = evaluate(
+            &[],
+            &[],
+            &[],
+            &[
+                up("a"),
+                Liveness {
+                    status: "exited".into(),
+                    exit_code: 1,
+                    answered: false,
+                    ..up("b")
+                },
+            ],
+        );
+        let finding = stopped
+            .findings
+            .iter()
+            .find(|f| f.rule_id == APP_STOPPED_DURING_QUESTIONS_ABOUT.rule_id)
+            .expect("the stop is found");
+        assert_eq!(finding.evidence, ["liveness-2"]);
+        // Only the reading that stopped is named: the one before it was fine.
+        assert!(credit_evidence(&stopped, STAYED_UP).is_empty());
     }
 
     fn scratch(name: &str) -> std::path::PathBuf {

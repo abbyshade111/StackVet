@@ -31,7 +31,6 @@ macro_rules! print {
 }
 
 mod baseline;
-mod crash;
 mod history;
 mod review;
 
@@ -46,6 +45,7 @@ mod review;
 fn main() {
     crash::install();
     let ran = std::panic::catch_unwind(run);
+    // The crash file, when a panic reached this far (backlog 0237), is written by `write_crash_file` below.
     match ran {
         Ok(Ok(exit::CLEAN)) => {}
         Ok(Ok(code)) => exit::exit_with(code),
@@ -59,9 +59,38 @@ fn main() {
             use std::io::Write;
             let _ = std::io::stdout().flush();
             eprintln!("{}", crash::said());
+            write_crash_file();
             exit::exit_with(exit::FAILED)
         }
     }
+}
+
+/// The crash file, under the history folder, when a panic reached `main` (backlog 0237): the version, the name of the
+/// command, and the place of the panic. Never the arguments, and never the panic's message, which can name a path the
+/// owner typed. Written only when the folder can be made; a failure to write it does not change the exit.
+fn write_crash_file() {
+    let Some((_, place)) = crash::noted() else {
+        return;
+    };
+    let command = std::env::args()
+        .nth(1)
+        .filter(|a| COMMANDS.iter().any(|c| c.name == a.as_str()))
+        .unwrap_or_else(|| "none".to_owned());
+    let Some(folder) = history::folder() else {
+        return;
+    };
+    if std::fs::create_dir_all(&folder).is_err() {
+        return;
+    }
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let text = format!(
+        "version: {}\ncommand: {command}\nplace: {place}\n",
+        env!("CARGO_PKG_VERSION")
+    );
+    let _ = std::fs::write(folder.join(format!("crash-{secs}.txt")), text);
 }
 
 /// The command named on the command line, and the status it ends with when it finished.
@@ -96,6 +125,8 @@ fn run() -> Result<i32> {
         print_help();
         bail!("unknown command: {first}");
     };
+    // The name of the command, for the opt-in SV_LOG file (backlog 0237): never its arguments.
+    sv_cli::own_log::line(&format!("command {}", command.name));
     let rest = &args[1..];
     if rest.iter().any(|a| a == "--help" || a == "-h") {
         print!("USAGE:\n{}", command.help);
@@ -135,7 +166,7 @@ fn run() -> Result<i32> {
         "rules" => finished(cmd_rules(rest)),
         "explain" => finished(cmd_explain(rest)),
         "prompts" => finished(cmd_prompts(rest)),
-        "probe" => finished(cmd_probe(rest)),
+        "probe" => cmd_probe(rest),
         "run" => cmd_run(rest),
         "check" => cmd_check(rest),
         "sbom" => finished(cmd_sbom(rest.first().map(PathBuf::from))),
@@ -286,9 +317,11 @@ const COMMANDS: &[Command] = &[
     Command {
         name: "report",
         word: Some("PATH"),
-        flags: &["--run", "--slow", "--tools"],
+        flags: &["--run", "--slow", "--tools", "--keep-tool-output"],
         valued: &["--out", "--advisories", "--fail-on", "--baseline"],
-        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--tools] [--advisories DIR] [--fail-on WHAT] [--baseline DIR]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, a tool --tools could\n                     not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
+        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--tools [--keep-tool-output]] [--advisories DIR] [--fail-on WHAT] [--baseline DIR]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n\
+                     --keep-tool-output, with --tools, keeps each tool's own report,\n\
+                     credentials cut out, in seen.json beside the report\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, a tool --tools could\n                     not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
     },
     Command {
         name: "review",
@@ -774,7 +807,7 @@ fn cmd_scope(path: Option<PathBuf>) -> Result<()> {
 ///
 /// The address is an argument and never comes from a file: see `sv_check::production`, where the
 /// limits on what this may do are set out and tested.
-fn cmd_probe(args: &[String]) -> Result<()> {
+fn cmd_probe(args: &[String]) -> Result<i32> {
     let mut url = None;
     // A copy of Chromium's HSTS preload list the owner downloaded. `sv` never fetches it: looking a
     // name up in somebody else's service tells that service which site is being checked.
@@ -924,7 +957,13 @@ fn cmd_probe(args: &[String]) -> Result<()> {
         "This says nothing about the code. Run `sv report` in the app folder for that, and read \
          the two together."
     );
-    Ok(())
+    // Not assessed when the address could not be reached, so a CI step fails rather than passing on
+    // an address this never touched (backlog 0235; ADR-029, Later).
+    Ok(if reached {
+        exit::CLEAN
+    } else {
+        exit::NOT_ASSESSED
+    })
 }
 
 /// Writes `security-notes.md`: the questions no tool can answer, for the requirements that apply.
@@ -2342,6 +2381,7 @@ fn cmd_bundle(args: &[String]) -> Result<()> {
         slow,
         run_tools,
         advisories_dir,
+        ..
     } = parse_report_args(args, "a file name ending in .zip")?;
     if !app_dir.is_dir() {
         bail!("{} is not a folder", app_dir.display());
@@ -2400,6 +2440,8 @@ struct ReportArgs {
     /// Opt-in for the same reason as --run, and one more: these are other people's programs, and one
     /// of them fetches its rules over the network the first time it runs.
     run_tools: bool,
+    /// With --tools, keep each tool's own report in `seen.json` (`sv report` only).
+    keep_tool_output: bool,
     /// A folder the owner downloaded on purpose. `sv` never fetches advisories itself.
     advisories_dir: Option<PathBuf>,
 }
@@ -2411,6 +2453,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
         run_the_app: false,
         slow: false,
         run_tools: false,
+        keep_tool_output: false,
         advisories_dir: None,
     };
     let mut rest = args.iter();
@@ -2425,6 +2468,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             "--run" => parsed.run_the_app = true,
             "--slow" => parsed.slow = true,
             "--tools" => parsed.run_tools = true,
+            "--keep-tool-output" => parsed.keep_tool_output = true,
             "--advisories" => {
                 parsed.advisories_dir = Some(PathBuf::from(
                     rest.next().context("--advisories needs a folder")?,
@@ -2530,6 +2574,7 @@ fn keep_unfinished(
         sv_report::MadeBy {
             version: env!("CARGO_PKG_VERSION").to_owned(),
             commit: env!("SV_GIT_COMMIT").to_owned(),
+            uncommitted_changes: option_env!("SV_GIT_DIRTY").is_some(),
         }
         .describe(),
         outcome,
@@ -2560,8 +2605,12 @@ fn report_command(
         run_the_app,
         slow,
         run_tools,
+        keep_tool_output,
         advisories_dir,
     } = parse_report_args(args, "a directory")?;
+    if keep_tool_output && !run_tools {
+        bail!("--keep-tool-output keeps what the tools wrote, so it needs --tools as well");
+    }
     *app_seen = Some(app_dir.clone());
     {
         let app = app_dir.clone();
@@ -2600,13 +2649,16 @@ fn report_command(
             // report on stdout is left alone (backlog 226, part 2, item 15).
             let mut report = assemble_report_saying(
                 &app_dir,
-                &ReportOptions::asked_of(
-                    "`sv report`",
-                    run_the_app,
-                    slow,
-                    run_tools,
-                    advisories_dir,
-                ),
+                &ReportOptions {
+                    keep_tool_output,
+                    ..ReportOptions::asked_of(
+                        "`sv report`",
+                        run_the_app,
+                        slow,
+                        run_tools,
+                        advisories_dir,
+                    )
+                },
                 &loaded,
                 &|n, name| eprintln!("{}", sv_cli::assemble::stage_line(n, name)),
             )?;
@@ -2624,6 +2676,14 @@ fn report_command(
     println!("Wrote {} files to {}:", written.len(), out_dir.display());
     for name in &written {
         println!("  {name}");
+    }
+    let kept = report.seen.as_ref().map_or(0, |s| s.tool_output.len());
+    if keep_tool_output {
+        println!(
+            "Each outside tool's own report is kept in {} ({kept} of them), with the credentials \
+             sv recognized cut out. It quotes the app's code, so share it as you would the code.",
+            sv_report::seen::FILE
+        );
     }
     // First, because the counts below mean something different depending on it.
     if let Some(status) = &report.run_status {
@@ -2888,6 +2948,7 @@ mod tests {
         let decided = sv_check::decisions::safe_defaults(section).decided;
         assert_eq!(decided.len(), 1, "the setup: the line is read");
         let probe = sv_check::Finding {
+            evidence: Vec::new(),
             also_reported_by: Vec::new(),
             fingerprint: String::new(),
             earlier_fingerprints: Vec::new(),
@@ -2939,6 +3000,7 @@ mod tests {
     fn a_line_is_gathered_after_the_reviews_so_a_verdict_sets_aside_one_problem_only() {
         let at = |rule: &str| {
             let mut f = sv_check::Finding {
+                evidence: Vec::new(),
                 rule_id: rule.to_owned(),
                 title: rule.to_owned(),
                 severity: sv_check::Severity::High,

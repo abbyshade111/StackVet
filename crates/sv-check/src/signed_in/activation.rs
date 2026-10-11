@@ -199,7 +199,11 @@ pub(super) fn activation_checks(
             if reused { "signed in" } else { "not signed in" }
         ));
         if reused {
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                vec![
+                    "activation-first-private".to_owned(),
+                    "activation-again-private".to_owned(),
+                ],
                 &ACTIVATION_REUSABLE,
                 "An activation link signs its account in more than once",
                 Severity::High,
@@ -234,7 +238,8 @@ fn activation_code_check(codes: &[String], out: &mut Outcome) {
     };
     let bits = most_bits(shortest);
     if bits < 19.9 {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (0..codes.len()).map(|n| format!("activate-{n}")).collect(),
             &ACTIVATION_GUESSABLE,
             "The activation code is short enough to guess",
             Severity::High,
@@ -251,7 +256,8 @@ fn activation_code_check(codes: &[String], out: &mut Outcome) {
         && let [.., earlier, later] = numbers.as_slice()
         && (1..=1000).contains(&later.abs_diff(*earlier))
     {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (0..codes.len()).map(|n| format!("activate-{n}")).collect(),
             &ACTIVATION_GUESSABLE,
             "Activation codes count up",
             Severity::High,

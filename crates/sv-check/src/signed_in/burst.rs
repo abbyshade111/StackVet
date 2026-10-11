@@ -183,7 +183,8 @@ fn burst_one(
             out,
         );
     } else if through == sent {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (1..=n + 1).map(|i| format!("burst-{i}")).collect(),
             &CREATE_UNLIMITED,
             "One user can create records without limit",
             Severity::Medium,

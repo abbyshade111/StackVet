@@ -223,7 +223,13 @@ fn forwarded_check(
         said(&plain)
     ));
     if lifted && still_refused {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec![
+                "guess-forwarded-0".to_owned(),
+                "guess-forwarded-1".to_owned(),
+                "guess-after-forwarded-0".to_owned(),
+                "guess-after-forwarded-1".to_owned(),
+            ],
             &FORWARDED_TRUSTED,
             "The limit on guessing passwords can be lifted by claiming another address",
             Severity::Medium,
@@ -416,7 +422,8 @@ pub(super) fn brute_force_check(
              {}, and {next} only to the last",
             allowed + 1
         ));
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (0..attempts).map(|n| format!("guess-{n}")).collect(),
             &NO_BRUTE_FORCE_LIMIT,
             "One more wrong password than stated is let through",
             Severity::Medium,
@@ -496,7 +503,8 @@ pub(super) fn brute_force_check(
             ),
         ));
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (0..attempts).map(|n| format!("guess-{n}")).collect(),
             &NO_BRUTE_FORCE_LIMIT,
             "Wrong passwords can be tried without limit",
             Severity::High,
@@ -712,7 +720,8 @@ pub(super) fn sign_out_on_get_check(
         }
     ));
     if ended {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["logout-by-get".to_owned()],
             &SIGN_OUT_ON_GET,
             "Signing out happens on a plain page visit",
             Severity::Low,
@@ -749,15 +758,21 @@ pub(super) fn default_account_check(
         return;
     };
     let mut opened = Vec::new();
-    for (user, password) in DEFAULT_ACCOUNTS {
+    let mut opened_ids: Vec<String> = Vec::new();
+    for (i, (user, password)) in DEFAULT_ACCOUNTS.iter().enumerate() {
         let account = Account {
             user: (*user).to_owned(),
             password: (*password).to_owned(),
         };
         let mut quiet = Vec::new();
         if let Some(signed_in) = sign_in(http, users, "default", &account, &mut quiet)
-            && ok(&http.send(&get("private-default", confirm, &signed_in.session)))
+            && ok(&http.send(&get(
+                &format!("private-default-{i}"),
+                confirm,
+                &signed_in.session,
+            )))
         {
+            opened_ids.push(format!("private-default-{i}"));
             opened.push(format!("{user} / {password}"));
         }
     }
@@ -771,7 +786,8 @@ pub(super) fn default_account_check(
         }
     ));
     if !opened.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            opened_ids.clone(),
             &DEFAULT_ACCOUNT,
             "A default account can sign in",
             Severity::Critical,
@@ -852,7 +868,8 @@ pub(super) fn password_in_url_check(
         if works { "opened" } else { "refused" }
     ));
     if works {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["login-in-url".to_owned(), "private-url".to_owned()],
             &PASSWORD_IN_URL,
             "The app accepts a password in the address",
             Severity::Medium,
@@ -927,7 +944,8 @@ pub(super) fn logout_check(
     // The copy kept from before logout, as somebody who had copied the cookie would use it.
     let replay = http.send(&get("after-logout", &path, &before));
     if ok(&replay) {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["after-logout".to_owned()],
             &LOGOUT,
             "Signing out does not end the session",
             Severity::High,

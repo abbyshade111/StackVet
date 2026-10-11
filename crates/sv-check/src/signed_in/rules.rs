@@ -8,6 +8,21 @@ pub(crate) struct Rule {
     pub(crate) fix: &'static str,
 }
 
+/// `finding`, naming the answers it rests on by their ids, so the record can show which answers
+/// the finding was read from (ADR-082, backlog 0229, part 1).
+#[track_caller]
+pub(crate) fn finding_on(
+    ids: Vec<String>,
+    rule: &Rule,
+    title: &str,
+    severity: Severity,
+    description: String,
+) -> Finding {
+    let mut found = finding(rule, title, severity, description);
+    found.evidence = ids;
+    found
+}
+
 #[track_caller]
 pub(crate) fn finding(
     rule: &Rule,
@@ -16,6 +31,7 @@ pub(crate) fn finding(
     description: String,
 ) -> Finding {
     crate::finding::found(Finding {
+        evidence: Vec::new(),
         also_reported_by: Vec::new(),
         fingerprint: String::new(),
         earlier_fingerprints: Vec::new(),

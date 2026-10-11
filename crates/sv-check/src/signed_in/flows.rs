@@ -195,7 +195,10 @@ pub(super) fn flow_checks(
         // The one flow stackvet.toml names, not every flow the app has (ADR-053, Later).
         .in_part());
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            (0..tries.len())
+                .map(|i| format!("login-flow-b{i}"))
+                .collect(),
             &STEP_SKIPPED,
             "The flow can be finished without its steps in order",
             Severity::High,

@@ -544,7 +544,8 @@ pub(super) fn archive_checks(
                 if was_refused { "refused" } else { "accepted" }
             ));
             if !was_refused {
-                out.findings.push(finding(
+                out.findings.push(finding_on(
+                    vec![archive.id.clone()],
                     &ARCHIVE_UNCHECKED,
                     "A compressed file past the stated limits was accepted",
                     Severity::Medium,

@@ -4379,6 +4379,59 @@ fn a_caught_injection_logged_with_why_and_when_is_credited_in_part_and_nothing_e
 }
 
 #[test]
+fn the_lines_the_ai_log_checks_matched_are_kept_for_a_person_to_read() {
+    // The setup: the failure's marker and the tool call's are each on a line of their own.
+    let failure = LogMarkers {
+        failure: Some("abc123".into()),
+        ..call_markers()
+    };
+    let mut o = Outcome::default();
+    logged(
+        &failure,
+        "2026-10-10T12:00:02Z ERROR SVERRabc123 the model call failed\nother",
+        &mut o,
+    );
+    assert!(
+        credited(&o).contains(&FAILURE_LOGGED.rule_id),
+        "{:?}",
+        o.verified
+    );
+    assert_eq!(o.log_lines.len(), 1, "{:?}", o.log_lines);
+    assert!(
+        o.log_lines[0].line.contains("SVERRabc123"),
+        "{:?}",
+        o.log_lines
+    );
+    assert!(
+        o.log_lines[0].read_for.contains("V16.5.2"),
+        "{:?}",
+        o.log_lines
+    );
+
+    let tool = LogMarkers {
+        tool_call: Some("abc999".into()),
+        ..call_markers()
+    };
+    let mut o = Outcome::default();
+    logged(
+        &tool,
+        "2026-10-10T12:00:03Z INFO tool call sv_lookup args={\"q\":\"abc999\"}",
+        &mut o,
+    );
+    assert_eq!(o.log_lines.len(), 1, "{:?}", o.log_lines);
+    assert!(
+        o.log_lines[0].line.contains("sv_lookup"),
+        "{:?}",
+        o.log_lines
+    );
+    assert!(
+        o.log_lines[0].read_for.contains("C12.4.2"),
+        "{:?}",
+        o.log_lines
+    );
+}
+
+#[test]
 fn a_tool_call_logged_with_its_argument_is_credited_in_part_and_nothing_else_is() {
     // ADR-075, C12.4.2: the MCP control call to `sv_lookup`, with the tag as its argument.
     let markers = LogMarkers {

@@ -29,6 +29,89 @@ pub struct Seen {
     /// none ran.
     #[serde(skip_serializing_if = "StandIns::is_empty")]
     pub stand_ins: StandIns,
+    /// The lines of the app's own output the log checks read, and its last lines (backlog 0229,
+    /// part 3). Empty when no log check ran.
+    #[serde(skip_serializing_if = "AppLog::is_empty")]
+    pub app_log: AppLog,
+    /// Each outside tool's own report, when `--keep-tool-output` asked for them (backlog 0229,
+    /// part 4). Empty otherwise.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub tool_output: Vec<ToolOutput>,
+    /// Every question the signed-in suite asked the app as a signed-in user, and what it answered,
+    /// numbered `signed-in-N` in the order asked (backlog 0229, part 1). Their requests' headers and
+    /// bodies are not kept: they carry the test accounts' passwords and cookies.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub signed_in: Vec<Exchange>,
+    /// How many of those questions the app did not answer.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub signed_in_unanswered: usize,
+    /// The app's container, read between the stages of the questions (backlog 229 part 1): whether
+    /// it was running, restarted, or answered its health path. These describe the container, not
+    /// the app's answers. Empty when no reading was taken.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub liveness: Vec<Reading>,
+}
+
+/// One reading of the app's container, numbered `liveness-N` in the order taken (backlog 229 part 1).
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct Reading {
+    /// The name the credits and findings use for this reading.
+    pub id: String,
+    /// Which questions had been asked by then, in words.
+    pub after: String,
+    /// `docker inspect`'s state: `running`, `exited`, `restarting`, and so on. Empty when it could
+    /// not be read.
+    pub status: String,
+    pub restarts: u32,
+    pub exit_code: i32,
+    pub out_of_memory: bool,
+    /// Whether the app answered its health path.
+    pub answered: bool,
+}
+
+fn is_zero(n: &usize) -> bool {
+    *n == 0
+}
+
+/// One outside tool's own report, as it wrote it, with the credentials in it cut out.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct ToolOutput {
+    /// The program that wrote it.
+    pub program: String,
+    /// The rules `sv` reads it as (`semgrep.`, `bandit.`), which the report's findings carry.
+    pub rules: String,
+    /// What it wrote, cut at `MOST_TOOL_CHARS` characters.
+    pub report: String,
+    /// How many characters were cut from the end; 0 when it is whole.
+    pub cut_chars: usize,
+}
+
+/// The most characters of one tool's report kept: a few megabytes of SARIF at most, so the file
+/// stays well within what the seal reads.
+pub const MOST_TOOL_CHARS: usize = 2_000_000;
+
+/// What `sv` kept of the app's own output.
+#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+pub struct AppLog {
+    /// Each line a log check read a conclusion from, with what it was read for.
+    pub lines_read: Vec<LogLine>,
+    /// The last lines of its output when the log was read.
+    pub last_lines: Vec<String>,
+    /// Lines cut at `KEPT_CHARS` characters.
+    pub cut: usize,
+}
+
+impl AppLog {
+    pub fn is_empty(&self) -> bool {
+        self.lines_read.is_empty() && self.last_lines.is_empty()
+    }
+}
+
+/// One line of the app's output, and what a log check read it for.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct LogLine {
+    pub read_for: String,
+    pub line: String,
 }
 
 /// What `sv`'s stand-in services received: the test model, the test sign-in provider, and the mail
@@ -99,7 +182,10 @@ pub const FILE: &str = "seen.json";
 const ABOUT: &str = "What sv saw of the running app while it made this report: each question it asked \
 as somebody not signed in, and what the app answered; and, under stand_ins, what sv's own stand-ins \
 for the services the app uses received from it (the test model, the test sign-in provider, and the \
-mail catcher, of whose mail only who it was to, its subject, and when are kept). This is the app's own text, with every \
+mail catcher, of whose mail only who it was to, its subject, and when are kept); and, under app_log, \
+the lines of the app's own output the log checks read, and its last lines; under signed_in, what the \
+signed-in questions were answered with, and how many got no answer; and, under tool_output, \
+when --keep-tool-output asked for them, each outside tool's own report, which quotes the app's code. This is the app's own text, with every \
 credential sv recognized cut down to its first four characters and its length, and the value \
 of every cookie and sign-in header taken out. It can hold \
 personal data the app was given during the run; only sv's own test accounts were used. Each \
@@ -108,16 +194,7 @@ answer's id is the one sv's checks read it by.";
 /// `seen.json` for `report`.
 pub fn render(report: &Report) -> String {
     let value = match &report.seen {
-        Some(seen) => serde_json::json!({
-            "app": report.app_name,
-            "about": ABOUT,
-            "exchanges": seen.exchanges,
-            "not_answered": seen.not_answered,
-            "left_out": seen.left_out,
-            "most_kept": MOST_EXCHANGES,
-            "credentials_removed": seen.credentials_removed,
-            "stand_ins": seen.stand_ins,
-        }),
+        Some(seen) => kept_value(&report.app_name, seen),
         None => serde_json::json!({
             "app": report.app_name,
             "about": "sv did not ask the running app anything for this report, so there is nothing \
@@ -127,3 +204,27 @@ pub fn render(report: &Report) -> String {
     };
     serde_json::to_string_pretty(&value).expect("a JSON value serializes") + "\n"
 }
+
+/// The file's JSON for a record that was kept. Every section `Seen` holds goes in here, so a new
+/// section that is left out is written nowhere (backlog 229 part 1, the container readings).
+fn kept_value(app: &str, seen: &Seen) -> serde_json::Value {
+    serde_json::json!({
+        "app": app,
+        "about": ABOUT,
+        "exchanges": seen.exchanges,
+        "not_answered": seen.not_answered,
+        "left_out": seen.left_out,
+        "most_kept": MOST_EXCHANGES,
+        "credentials_removed": seen.credentials_removed,
+        "stand_ins": seen.stand_ins,
+        "app_log": seen.app_log,
+        "tool_output": seen.tool_output,
+        "signed_in": seen.signed_in,
+        "signed_in_unanswered": seen.signed_in_unanswered,
+        "liveness": seen.liveness,
+    })
+}
+
+#[cfg(test)]
+#[path = "seen_render_tests.rs"]
+mod render_tests;

@@ -272,7 +272,8 @@ pub(super) fn upload_checks(
                 // One file on the one upload route stackvet.toml names (ADR-053, Later).
                 .in_part());
             } else {
-                out.findings.push(finding(
+                out.findings.push(finding_on(
+                    vec!["upload-oversized".to_owned()],
                     &OVERSIZED_FILE,
                     "A file larger than the stated limit was accepted",
                     Severity::Medium,
@@ -324,7 +325,8 @@ pub(super) fn upload_checks(
         // One file on the one upload route stackvet.toml names (ADR-053, Later).
         .in_part());
     } else {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["upload-mismatched".to_owned()],
             &CONTENT_MISMATCH,
             "A file is accepted on the strength of its name",
             Severity::Medium,
@@ -452,7 +454,8 @@ fn traversal_check(
             out.steps.push(format!(
                 "sent a file named `../{base}`: it was saved outside the upload folder, at {above}"
             ));
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                vec!["upload-traversal-above".to_owned()],
                 &UPLOAD_PATH_TRAVERSAL,
                 "An uploaded file's name decides where it is saved",
                 Severity::High,
@@ -627,7 +630,8 @@ fn svg_check(
             "fetched an uploaded SVG back from {path}: {} kept",
             kept.join(" and ")
         ));
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["upload-svg-fetch".to_owned()],
             &UPLOAD_SVG_SCRIPT,
             "An uploaded SVG image keeps its script",
             if contained {
@@ -781,7 +785,11 @@ fn scan_check(
         "sent the antivirus test file (EICAR): accepted, and served back unchanged from {path} \
          {SCANNER_GRACE} seconds later"
     ));
-    out.findings.push(finding(
+    out.findings.push(finding_on(
+        vec![
+            "upload-eicar-fetch".to_owned(),
+            "upload-eicar-fetch-again".to_owned(),
+        ],
         &UPLOAD_NOT_SCANNED,
         "Uploaded files are not scanned for viruses",
         Severity::Medium,
@@ -889,7 +897,8 @@ fn download_name_checks(
                     .in_part(),
                 );
             } else {
-                out.findings.push(finding(
+                out.findings.push(finding_on(
+                    vec!["download-ordinary".to_owned()],
                     &DOWNLOAD_UNNAMED,
                     "An uploaded file is served back without a file name",
                     Severity::Low,
@@ -970,7 +979,8 @@ fn download_name_checks(
         }
     ));
     if injected {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["download-hostile".to_owned()],
             &DOWNLOAD_NAME_INJECTED,
             "A file name is written into a response header unescaped",
             Severity::Medium,
@@ -1092,7 +1102,8 @@ fn served_upload_checks(
                 }
             ));
             if ran {
-                out.findings.push(finding(
+                out.findings.push(finding_on(
+                    vec![format!("{}-fetch", file.id)],
                     &UPLOAD_EXECUTED,
                     "An uploaded file is executed as server-side code",
                     Severity::High,
@@ -1153,7 +1164,8 @@ fn served_upload_checks(
                     .in_part(),
                 );
             } else {
-                out.findings.push(finding(
+                out.findings.push(finding_on(
+                    vec![format!("{}-fetch", file.id)],
                     &UPLOAD_RENDERED,
                     "An uploaded page is served for the browser to render",
                     Severity::High,
@@ -1287,7 +1299,8 @@ pub(super) fn client_side_validation_check(
         if accepted { "accepted" } else { "refused" }
     ));
     if accepted {
-        out.findings.push(finding(
+        out.findings.push(finding_on(
+            vec!["validation-broken".to_owned()],
             &CLIENT_SIDE_VALIDATION,
             "A rule the form states is not applied on the server",
             Severity::Medium,

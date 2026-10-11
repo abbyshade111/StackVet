@@ -201,7 +201,8 @@ pub(super) fn totp_checks(
         ),
     ] {
         if worked {
-            out.findings.push(finding(
+            out.findings.push(finding_on(
+                vec![id.to_owned()],
                 rule,
                 title,
                 severity,

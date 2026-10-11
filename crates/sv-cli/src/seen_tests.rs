@@ -217,3 +217,216 @@ fn a_stand_in_record_is_bounded_and_says_what_was_cut() {
     // One string cut, and five entries.
     assert_eq!(seen.stand_ins.cut, 6);
 }
+
+#[test]
+fn no_credential_the_app_logged_reaches_the_record() {
+    let rules = rules();
+    let (key, _) = planted();
+    let asked = sv_check::signed_in::Outcome {
+        log_lines: vec![sv_check::logs::KeptLine {
+            read_for: "the failed sign-in (V16.3.1, V16.2.1, V16.2.2, V16.2.4)".to_owned(),
+            line: format!("2026-10-10T03:00:01Z WARN sign-in failed, upstream key {key}"),
+        }],
+        log_tail: vec![
+            format!("boot with ANTHROPIC_API_KEY={key}"),
+            "x".repeat(KEPT_CHARS + 3),
+        ],
+        ..Default::default()
+    };
+    // The setup: the key is in both kinds of kept line.
+    assert_eq!(format!("{asked:?}").matches(key.as_str()).count(), 2);
+    let mut seen = Seen::default();
+    app_log(&rules, Some(&asked), None, &mut seen);
+    let kept = serde_json::to_string(&seen).unwrap();
+    assert!(!kept.contains(&key), "a key reached the record: {kept}");
+    assert!(seen.credentials_removed >= 2, "{seen:#?}");
+    assert!(kept.contains("sign-in failed, upstream key"), "{kept}");
+    assert_eq!(
+        seen.app_log.lines_read[0].read_for,
+        asked.log_lines[0].read_for
+    );
+    assert!(seen.app_log.last_lines[1].ends_with("… (3 more characters)"));
+    assert_eq!(seen.app_log.cut, 1);
+    // No suite that read the log, nothing kept.
+    let mut none = Seen::default();
+    app_log(&rules, None, None, &mut none);
+    assert!(none.app_log.is_empty());
+}
+
+#[test]
+fn the_lines_the_ai_feature_read_are_kept_and_a_key_in_them_is_not() {
+    let rules = rules();
+    let (key, _) = planted();
+    let ai = sv_check::signed_in::Outcome {
+        log_lines: vec![sv_check::logs::KeptLine {
+            read_for: "the AI service failing one message on purpose (V16.5.2, V16.5.3)".to_owned(),
+            line: format!("2026-10-10T03:00:02Z ERROR SVERR7 upstream key {key}"),
+        }],
+        ..Default::default()
+    };
+    // The setup: the AI line is found and carries the key before anything is cut.
+    assert_eq!(format!("{ai:?}").matches(key.as_str()).count(), 1);
+    let mut seen = Seen::default();
+    app_log(&rules, None, Some(&ai), &mut seen);
+    let kept = serde_json::to_string(&seen).unwrap();
+    assert!(!kept.contains(&key), "a key reached the record: {kept}");
+    assert_eq!(seen.app_log.lines_read.len(), 1, "{seen:#?}");
+    assert!(kept.contains("SVERR7"), "{kept}");
+    assert!(seen.credentials_removed >= 1, "{seen:#?}");
+}
+
+fn examined_with(output: Option<String>) -> sv_report::Examined {
+    sv_report::Examined::not_run("semgrep.", "a test").with_tool(Some(
+        sv_check::adapters::ToolRun {
+            program: "Semgrep".to_owned(),
+            output,
+            ..Default::default()
+        },
+    ))
+}
+
+#[test]
+fn no_credential_a_tool_quoted_reaches_the_kept_tool_output() {
+    let rules = rules();
+    let (key, _) = planted();
+    let sarif = format!(
+        r#"{{"runs":[{{"results":[{{"message":{{"text":"hard-coded key"}},"snippet":"client = Client(\"{key}\")"}}]}}]}}"#
+    );
+    // The setup: the key is in what the tool wrote.
+    assert!(sarif.contains(&key));
+    let examined = vec![
+        examined_with(Some(sarif)),
+        // A tool that wrote nothing, and one of sv's own checks: neither has a report to keep.
+        examined_with(None),
+        sv_report::Examined::not_run("config.", "a test"),
+    ];
+    let mut seen = Seen::default();
+    tool_output(&rules, &examined, &mut seen);
+    assert_eq!(seen.tool_output.len(), 1, "{seen:#?}");
+    let kept = &seen.tool_output[0];
+    assert!(
+        !kept.report.contains(&key),
+        "a key reached the record: {}",
+        kept.report
+    );
+    assert!(kept.report.contains("hard-coded key"), "{}", kept.report);
+    assert_eq!(
+        (kept.program.as_str(), kept.rules.as_str()),
+        ("Semgrep", "semgrep.")
+    );
+    assert_eq!(kept.cut_chars, 0);
+    assert!(seen.credentials_removed >= 1);
+}
+
+#[test]
+fn a_tool_report_past_its_most_is_cut_and_says_by_how_much() {
+    let rules = rules();
+    let long = "a".repeat(sv_report::seen::MOST_TOOL_CHARS + 7);
+    let mut seen = Seen::default();
+    tool_output(&rules, &[examined_with(Some(long))], &mut seen);
+    assert_eq!(seen.tool_output[0].cut_chars, 7);
+    assert_eq!(
+        seen.tool_output[0].report.chars().count(),
+        sv_report::seen::MOST_TOOL_CHARS
+    );
+}
+
+#[test]
+fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
+    let rules = rules();
+    let (key, session) = planted();
+    let asked = sv_check::signed_in::Outcome {
+        exchanges: vec![
+            sv_check::signed_in::recording::Recorded {
+                id: "account".to_owned(),
+                method: "GET".to_owned(),
+                path: "/account".to_owned(),
+                status: Some(200),
+                headers: vec![
+                    (
+                        "set-cookie".to_owned(),
+                        format!("sid={session}; Path=/; HttpOnly"),
+                    ),
+                    ("x-debug-key".to_owned(), key.clone()),
+                ],
+                body: format!("<p>your key is {key}</p>"),
+            },
+            // A question no answer came to: counted, not kept.
+            sv_check::signed_in::recording::Recorded {
+                id: "silent".to_owned(),
+                method: "GET".to_owned(),
+                path: "/silent".to_owned(),
+                status: None,
+                headers: Vec::new(),
+                body: String::new(),
+            },
+        ],
+        ..Default::default()
+    };
+    // The setup: the key and the session are in what the signed-in suite was answered with.
+    assert!(format!("{asked:?}").matches(key.as_str()).count() >= 2);
+    let mut seen = Seen::default();
+    signed_in(&rules, Some(&asked), &mut seen);
+    let kept = serde_json::to_string(&seen).unwrap();
+    assert!(!kept.contains(&key), "a key reached the record: {kept}");
+    assert!(
+        !kept.contains(&session),
+        "a session reached the record: {kept}"
+    );
+    assert_eq!(seen.signed_in.len(), 1, "{seen:#?}");
+    assert_eq!(seen.signed_in[0].id, "account");
+    assert_eq!(seen.signed_in[0].status, 200);
+    assert!(
+        kept.contains("trace=") || kept.contains("sid=[removed,"),
+        "{kept}"
+    );
+    assert_eq!(seen.signed_in_unanswered, 1);
+    assert!(seen.credentials_removed >= 2, "{seen:#?}");
+    // No signed-in suite ran, nothing kept.
+    let mut none = Seen::default();
+    signed_in(&rules, None, &mut none);
+    assert!(none.signed_in.is_empty());
+}
+
+#[test]
+fn a_test_secret_marker_in_an_address_is_left_whole_not_cut_as_a_password() {
+    let rules = rules();
+    // What sv-run leaves where a test password was in the address: the marker after `password=`.
+    let address = format!("/login?email=sv-a%40example.test&password={TEST_SECRET}&next=/account");
+    let (out, _) = redact_around_markers(&rules, &address);
+    assert_eq!(out, address, "the marker was cut: {out}");
+    // A real password in the same place is still cut.
+    let (key, _) = planted();
+    let (out, n) = redact_around_markers(&rules, &format!("/login?password={key}"));
+    assert!(!out.contains(&key) && n >= 1, "{out}");
+}
+
+#[test]
+fn each_reading_of_the_container_is_kept_with_the_id_it_is_named_by() {
+    let reading =
+        |after: &str, status: &str, exit_code: i32, answered: bool| sv_check::running::Liveness {
+            after: after.to_owned(),
+            status: status.to_owned(),
+            restarts: 0,
+            exit_code,
+            out_of_memory: false,
+            answered,
+        };
+    let readings = [
+        reading(
+            "the questions asked as somebody not signed in",
+            "running",
+            0,
+            true,
+        ),
+        reading("the signed-in questions as well", "exited", 1, false),
+    ];
+    let mut seen = Seen::default();
+    liveness(&rules(), &readings, &mut seen);
+    let ids: Vec<&str> = seen.liveness.iter().map(|r| r.id.as_str()).collect();
+    assert_eq!(ids, ["liveness-1", "liveness-2"]);
+    assert_eq!(seen.liveness[1].status, "exited");
+    assert_eq!(seen.liveness[1].exit_code, 1);
+    assert!(!seen.liveness[1].answered);
+    assert_eq!(seen.credentials_removed, 0);
+}
