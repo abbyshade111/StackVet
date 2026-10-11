@@ -174,6 +174,8 @@ health = "/"              # a path that returns 200 once the app is up
 # creates = [{ path = "/comments", form = { text = "{marker}", csrf_token = "{csrf}" } }]
 #   Other requests that each create a record, held to `requests-per-minute` under [policy] as
 #   `owned`'s create is; `{marker}` where a value must differ from one record to the next.
+#   Add `read = "/comments/{id}"` (and `id-field` for a JSON answer) to an entry whose record can be read back:
+#   then the owner field is tried on it too, as on `owned`, and V15.3.3 is checked for that entry (ADR-087).
 # change-password = { path = "/password", form = { current = "{password}", new = "{new_password}", csrf_token = "{csrf}" } }
 # change-email = { path = "/account/email", form = { password = "{password}", email = "{new_email}", csrf_token = "{csrf}" } }
 #   Changing the signed-in user's email address, with `{password}` where the app asks for the

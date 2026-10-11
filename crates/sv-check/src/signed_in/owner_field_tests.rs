@@ -171,3 +171,103 @@ fn the_field_goes_into_the_body_the_request_already_has() {
         .is_none()
     );
 }
+
+/// The shared fixture, with one `creates` entry for comments: read back at `/comments/{id}` when `read` is
+/// given, so the owner field is tried on it (backlog 0006 part 13(a)).
+fn with_comments(read: Option<&str>) -> UsersSection {
+    let mut u = users();
+    u.creates = vec![sv_manifest::CreateTemplate {
+        method: "POST".into(),
+        path: "/comments".into(),
+        form: [("text", "{marker}"), ("csrf_token", "{csrf}")]
+            .iter()
+            .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+            .collect(),
+        json: BTreeMap::new(),
+        read: read.map(str::to_owned),
+        id_field: None,
+    }];
+    u
+}
+
+/// The steps that say B created a record with an owner field: the owned record's and each `creates`
+/// entry's, which share the one wording.
+fn owner_field_steps(o: &Outcome) -> usize {
+    o.steps
+        .iter()
+        .filter(|s| s.starts_with("B created a record with `user_id`"))
+        .count()
+}
+
+#[test]
+fn an_owner_taken_from_the_request_on_a_create_is_found() {
+    let o = run_against(
+        naming_owner(Flaws {
+            comment_owner_from_request: true,
+            ..Default::default()
+        }),
+        &with_comments(Some("/comments/{id}")),
+    );
+    // The setup: the owned record and the comment were each tried, so the one found is the comment's.
+    assert_eq!(owner_field_steps(&o), 2, "{:?}", o.steps);
+    let f = o
+        .findings
+        .iter()
+        .find(|f| {
+            f.rule_id == OWNER_FIELD.rule_id
+                && f.evidence.iter().any(|i| i == "creates-0-claimed-a")
+        })
+        .unwrap_or_else(|| panic!("{:?}", o.steps));
+    assert_eq!(f.title, "A record can be put into another user's account");
+    assert!(f.description.contains("`user_id`"), "{}", f.description);
+}
+
+#[test]
+fn a_create_whose_owner_the_server_sets_is_not_found() {
+    let o = run_against(
+        naming_owner(Flaws::default()),
+        &with_comments(Some("/comments/{id}")),
+    );
+    assert_eq!(owner_field_steps(&o), 2, "{:?}", o.steps);
+    assert!(
+        !o.findings
+            .iter()
+            .any(|f| f.evidence.iter().any(|i| i.starts_with("creates-"))),
+        "{:?}",
+        o.findings.iter().map(|f| &f.evidence).collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn a_create_without_a_read_back_is_not_tried_for_its_owner() {
+    let o = run_against(
+        naming_owner(Flaws {
+            comment_owner_from_request: true,
+            ..Default::default()
+        }),
+        &with_comments(None),
+    );
+    // The setup: only the owned record was tried, so the count is one, not two.
+    assert_eq!(owner_field_steps(&o), 1, "{:?}", o.steps);
+    assert!(
+        !o.findings
+            .iter()
+            .any(|f| f.evidence.iter().any(|i| i.starts_with("creates-"))),
+        "{:?}",
+        o.steps
+    );
+}
+
+#[test]
+fn a_read_back_without_an_owned_section_says_the_owner_check_did_not_run() {
+    let mut u = with_comments(Some("/comments/{id}"));
+    u.owned = None;
+    let o = run_against(naming_owner(Flaws::default()), &u);
+    assert!(
+        unasked(&o)
+            .iter()
+            .any(|why| why.contains("add an `owned` entry to try it")),
+        "{:?}",
+        unasked(&o)
+    );
+}

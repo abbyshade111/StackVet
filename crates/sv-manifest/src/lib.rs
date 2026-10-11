@@ -458,6 +458,40 @@ fn post() -> String {
     "POST".to_owned()
 }
 
+/// One of `[stack.run.users] creates`: a request that creates a record, with where that record is
+/// read back, so the owner field can be tried on it (backlog 0006 part 13(a)). Without `read`, the
+/// entry is only sent for the rate limit, as before.
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct CreateTemplate {
+    #[serde(default = "post")]
+    pub method: String,
+    pub path: String,
+    #[serde(default)]
+    pub form: std::collections::BTreeMap<String, String>,
+    #[serde(default)]
+    pub json: std::collections::BTreeMap<String, String>,
+    /// Where the record is read back, with `{id}` for what the create answer gave (or the `Location`
+    /// the answer sends, when `{id}` is left out). Only with `read`, the owner field is tried.
+    #[serde(default)]
+    pub read: Option<String>,
+    /// The field of a JSON create answer holding the new id. Defaults to `id`.
+    #[serde(default)]
+    pub id_field: Option<String>,
+}
+
+impl CreateTemplate {
+    /// The request itself, as the rest of the checks send a `RequestTemplate`.
+    pub fn request(&self) -> RequestTemplate {
+        RequestTemplate {
+            method: self.method.clone(),
+            path: self.path.clone(),
+            form: self.form.clone(),
+            json: self.json.clone(),
+        }
+    }
+}
+
 /// A request only an admin should be able to make, such as publishing an announcement or changing
 /// another user's role.
 ///
@@ -612,9 +646,10 @@ pub struct UsersSection {
     pub owned: Option<OwnedSection>,
     /// Other requests that each create a record, beside `owned`'s `create`: each is sent one more
     /// time than `[policy] requests-per-minute` inside a minute by the second user, as `owned`'s is
-    /// (V2.4.1). Put `{marker}` where a value must differ from one record to the next.
+    /// (V2.4.1). Put `{marker}` where a value must differ from one record to the next. An entry with
+    /// `read` is also tried for mass assignment of its owner (V15.3.3, backlog 0006 part 13(a)).
     #[serde(default)]
-    pub creates: Vec<RequestTemplate>,
+    pub creates: Vec<CreateTemplate>,
     /// Changes the signed-in user's password: `{password}` is the current one, `{new_password}`
     /// the new. Asked last, with an account made for it through `signup`, or with A when there is
     /// no `signup`.
