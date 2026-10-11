@@ -82,6 +82,8 @@ pub(super) struct FakeApp {
     pub(super) users: BTreeMap<String, (String, bool)>, // user -> (password, is admin)
     sessions: BTreeMap<String, String>,                 // session id -> user ("" = not signed in)
     notes: Vec<(String, String)>,                       // (owner, text)
+    /// Comments made through `POST /comments`, as (owner, text), read back at `/comments/{n}`.
+    comments: Vec<(String, String)>,
     /// The notes deleted, by number: read back as not there.
     deleted_notes: std::collections::BTreeSet<usize>,
     /// Announcements posted, newest last.
@@ -420,6 +422,9 @@ pub(super) struct Flaws {
     pub(super) record_names_owner: bool,
     /// A new note's owner is the `user_id` the request sends, when it sends one (mass assignment).
     pub(super) owner_from_request: bool,
+    /// A new comment's owner is the `user_id` the request sends, when it sends one (mass assignment
+    /// beyond sign-up, through `creates`, backlog 0006 part 13(a)).
+    pub(super) comment_owner_from_request: bool,
     /// A note's text is written into its page and the list of notes as it is, not HTML-escaped.
     pub(super) notes_unescaped: bool,
     /// The JSON API reads a JSON body whatever its Content-Type says.
@@ -2418,7 +2423,29 @@ impl FakeApp {
                     }
                     times.push(now);
                 }
-                Self::respond(201, vec![], "posted")
+                let owner = match form(r).get("user_id") {
+                    Some(given) if self.flaws.comment_owner_from_request => given.clone(),
+                    _ => owner,
+                };
+                self.comments
+                    .push((owner, form(r).get("text").cloned().unwrap_or_default()));
+                let at = format!("/comments/{}", self.comments.len());
+                Self::respond(201, vec![("Location", at)], "posted")
+            }
+            ("GET", p) if p.starts_with("/comments/") => {
+                let n: usize = p["/comments/".len()..].parse().ok()?;
+                let Some((owner, text)) = self.comments.get(n.checked_sub(1)?) else {
+                    return Some(Self::respond(404, vec![], "none"));
+                };
+                if user.as_ref() == Some(owner) {
+                    Self::respond(
+                        200,
+                        vec![],
+                        &format!("{{\"user_id\":\"{owner}\",\"text\":\"{text}\"}}"),
+                    )
+                } else {
+                    Self::respond(404, vec![], "none")
+                }
             }
             // One's own notes, listed; everybody's under the flaw.
             ("GET", "/my-notes") => {

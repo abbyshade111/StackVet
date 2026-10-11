@@ -669,6 +669,15 @@ pub(super) fn owned_checks(
     // record created here, so a return before it leaves that unasked too (the architecture
     // assessment of 8 October 2026, item 8).
     let Some(owned) = &users.owned else {
+        if users.creates.iter().any(|c| c.read.is_some()) {
+            out.not_assessed.push((
+                "V15.3.3".to_owned(),
+                "stackvet.toml names where a record made through `creates` is read back, and the \
+                 owner-field check for those runs with the owned record's sign-ins, which `owned` \
+                 sets up: add an `owned` entry to try it."
+                    .to_owned(),
+            ));
+        }
         out.not_assessed.push((
             "V8.2.2, V3.5.1, V3.5.2".to_owned(),
             "Another user's records, and requests from another site: stackvet.toml lists no \
@@ -1021,6 +1030,11 @@ pub(super) fn owned_checks(
     if let (Some(b), Some(as_a)) = (&b, &as_a) {
         owner_field_check(http, users, owned, &session, &b.session, &as_a.body, out);
     }
+
+    // The same for each entry of `creates` that names where its record is read back (backlog 0006 part 13(a)).
+    if let Some(b) = &b {
+        owner_field_creates(http, users, &session, &b.session, out);
+    }
     // Whether what a user saves is written back into a page unencoded (finding 13(b)).
     stored_markup_check(http, users, owned, &session, out);
 
@@ -1035,15 +1049,25 @@ pub(super) fn record_path(
     owned: &sv_manifest::OwnedSection,
     created: &ProbeResponse,
 ) -> Option<String> {
+    record_path_with(owned.read.as_deref(), owned.id_field.as_deref(), created)
+}
+
+/// `record_path` for any create that names its read-back (`read`, `id-field`): `owned`'s, or an
+/// entry of `creates` (backlog 0006 part 13(a)).
+pub(super) fn record_path_with(
+    read: Option<&str>,
+    id_field: Option<&str>,
+    created: &ProbeResponse,
+) -> Option<String> {
     let location = created
         .header("location")
         .map(|l| strip_origin(l).to_owned());
-    match &owned.read {
+    match read {
         Some(read) if read.contains("{id}") => {
-            let id = record_id(owned, created)?;
+            let id = record_id_with(id_field, created)?;
             Some(read.replace("{id}", &id))
         }
-        Some(read) => Some(read.clone()),
+        Some(read) => Some(read.to_owned()),
         None => location,
     }
 }
@@ -1054,7 +1078,12 @@ pub(super) fn record_id(
     owned: &sv_manifest::OwnedSection,
     created: &ProbeResponse,
 ) -> Option<String> {
-    let field = owned.id_field.as_deref().unwrap_or("id");
+    record_id_with(owned.id_field.as_deref(), created)
+}
+
+/// `record_id` given the `id-field` directly.
+pub(super) fn record_id_with(id_field: Option<&str>, created: &ProbeResponse) -> Option<String> {
+    let field = id_field.unwrap_or("id");
     let from_json = serde_json::from_str::<serde_json::Value>(&created.body)
         .ok()
         .and_then(|v| match v.get(field)? {

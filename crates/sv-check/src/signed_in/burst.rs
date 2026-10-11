@@ -42,11 +42,12 @@ pub(super) fn burst_check(
 ) {
     // `owned`'s create first, then each request `creates` names (the owner's decision, 6 October
     // 2026): each is its own action, judged on its own.
+    let extra: Vec<RequestTemplate> = users.creates.iter().map(|c| c.request()).collect();
     let creates: Vec<&RequestTemplate> = users
         .owned
         .iter()
         .map(|o| &o.create)
-        .chain(users.creates.iter())
+        .chain(extra.iter())
         .collect();
     if creates.is_empty() {
         out.not_assessed.push((
@@ -576,8 +577,8 @@ mod tests {
         super::super::run(&mut app, &u, &acc, true, &policy)
     }
 
-    fn comments() -> RequestTemplate {
-        RequestTemplate {
+    fn comments() -> sv_manifest::CreateTemplate {
+        sv_manifest::CreateTemplate {
             method: "POST".into(),
             path: "/comments".into(),
             form: [("text", "{marker}")]
@@ -585,6 +586,8 @@ mod tests {
                 .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
                 .collect(),
             json: BTreeMap::new(),
+            read: None,
+            id_field: None,
         }
     }
 

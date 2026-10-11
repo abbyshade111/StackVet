@@ -105,6 +105,99 @@ pub(super) fn owner_field_check(
     as_a: &str,
     out: &mut Outcome,
 ) {
+    owner_field_probe(
+        http,
+        users,
+        "owner-field",
+        &owned.create,
+        owned.read.as_deref(),
+        owned.id_field.as_deref(),
+        owned.list.as_deref(),
+        a,
+        b,
+        as_a,
+        out,
+    );
+}
+
+/// The same check for each entry of `[stack.run.users] creates` that names where its record is read
+/// back (`read`): the first user creates one first, reads it back to learn its owner, and the second
+/// user is then tried with that owner's value (backlog 0006 part 13(a)).
+pub(super) fn owner_field_creates(
+    http: &mut dyn Http,
+    users: &UsersSection,
+    a: &Session,
+    b: &Session,
+    out: &mut Outcome,
+) {
+    for (i, create) in users.creates.iter().enumerate() {
+        let Some(read) = create.read.as_deref() else {
+            continue;
+        };
+        let tag = format!("creates-{i}");
+        let request = create.request();
+        let mut a_session = a.clone();
+        let (made, _) = send_template(
+            http,
+            &format!("{tag}-a"),
+            &request,
+            &Values {
+                marker: "sv-probe-owner-a-4e9b",
+                ..Default::default()
+            },
+            &mut a_session,
+            &users.private,
+        );
+        let Some(path) = made
+            .as_ref()
+            .and_then(|r| admin::record_path_with(Some(read), create.id_field.as_deref(), r))
+        else {
+            out.not_assessed.push((
+                "V15.3.3".to_owned(),
+                format!(
+                    "Whether a record's owner can be set by whoever creates it: the first user's \
+                     record from `{}` could not be found to read back ({}), so there is no owner \
+                     to send.",
+                    create.path,
+                    status(&made)
+                ),
+            ));
+            continue;
+        };
+        let as_a_body = http
+            .send(&get(&format!("{tag}-a-record"), &path, &a_session))
+            .map(|r| r.body)
+            .unwrap_or_default();
+        owner_field_probe(
+            http,
+            users,
+            &tag,
+            &request,
+            Some(read),
+            create.id_field.as_deref(),
+            None,
+            a,
+            b,
+            &as_a_body,
+            out,
+        );
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn owner_field_probe(
+    http: &mut dyn Http,
+    users: &UsersSection,
+    tag: &str,
+    create: &RequestTemplate,
+    read: Option<&str>,
+    id_field: Option<&str>,
+    list: Option<&str>,
+    a: &Session,
+    b: &Session,
+    as_a: &str,
+    out: &mut Outcome,
+) {
     let Some((field, value)) = named_owner(as_a) else {
         out.not_assessed.push((
             "V15.3.3".to_owned(),
@@ -118,8 +211,8 @@ pub(super) fn owner_field_check(
         return;
     };
     let mut places = users.private.clone();
-    if let Some(list) = owned.list.as_ref().filter(|l| !places.contains(l)) {
-        places.push(list.clone());
+    if let Some(list) = list.filter(|l| !places.contains(&l.to_string())) {
+        places.push(list.to_owned());
     }
 
     // The control first: the same request, without the field, as the second user.
@@ -127,8 +220,8 @@ pub(super) fn owner_field_check(
     let mut b_session = b.clone();
     let (plain, _) = send_template(
         http,
-        "owner-field-plain",
-        &owned.create,
+        &format!("{tag}-plain"),
+        create,
         &Values {
             marker: plain_marker,
             ..Default::default()
@@ -151,8 +244,8 @@ pub(super) fn owner_field_check(
     let claimed_marker = "sv-probe-owner-claimed-6f1c";
     let sent = prepared(
         http,
-        "owner-field-claimed",
-        &owned.create,
+        &format!("{tag}-claimed"),
+        create,
         &Values {
             marker: claimed_marker,
             ..Default::default()
@@ -184,12 +277,15 @@ pub(super) fn owner_field_check(
         return;
     }
 
-    let path_of = |r: &Option<ProbeResponse>| r.as_ref().and_then(|r| record_path(owned, r));
+    let path_of = |r: &Option<ProbeResponse>| {
+        r.as_ref()
+            .and_then(|r| admin::record_path_with(read, id_field, r))
+    };
     let plain_path = path_of(&plain);
     let claimed_path = path_of(&claimed);
     let plain_shown = shown_to_a(
         http,
-        "owner-field-plain-a",
+        &format!("{tag}-plain-a"),
         plain_path.as_deref(),
         &places,
         a,
@@ -197,7 +293,7 @@ pub(super) fn owner_field_check(
     );
     let claimed_shown = shown_to_a(
         http,
-        "owner-field-claimed-a",
+        &format!("{tag}-claimed-a"),
         claimed_path.as_deref(),
         &places,
         a,
@@ -215,7 +311,7 @@ pub(super) fn owner_field_check(
     }
     if claimed_shown {
         out.findings.push(finding_on(
-            vec!["owner-field-claimed-a".to_owned()],
+            vec![format!("{tag}-claimed-a")],
             &OWNER_FIELD,
             "A record can be put into another user's account",
             Severity::High,
