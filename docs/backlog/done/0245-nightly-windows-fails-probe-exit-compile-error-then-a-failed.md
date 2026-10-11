@@ -1,6 +1,6 @@
 # Nightly: Windows fails: probe_exit (compile error, then a failed test), 10 to 11 October 2026
 
-**Status:** claimed by windows-stand-in, 11 October 2026
+**Status:** done, 11 October 2026
 **Status:** partly done: The nightly failure is fixed: the Windows job has passed on every push since 11 October 2026 (#1414, #1416). Still open: the whole sv probe command is tested on Unix only. A Windows check that runs the real command end to end needs sv to accept a stand-in for curl on Windows, which changes what sv runs, so it waits for the owner's decision (ADR-029).
 
 Recorded by the nightly CI routine on 11 October 2026. The Windows workflow failed on 23 of the 57 pushes to `main`
@@ -30,3 +30,5 @@ runs on every platform. The last Windows push run read, on `ae498be` (#1422), pa
 **What stays open:** the whole `sv probe` command, from the address to the exit code, is tested on Unix only. A
 Windows stand-in for `curl` that `sv probe` really finds would close that, or this item can be marked done with a note
 that the platform-wide verdict test is enough.
+
+**Built 11 October 2026:** the Windows stand-in landed in PR #1433 (merged); the probe test runs the whole command on every platform, and the Windows job passed on the branch before merge.
