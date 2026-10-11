@@ -116,15 +116,19 @@ pub(super) fn email_code_checks(
             ),
         ));
     } else if bound == Some(false) {
-        out.verified.push(crate::Verified::new(
-            EMAIL_CODE_REUSABLE.rule_id,
-            EMAIL_CODE_REUSABLE.requirement_ids,
-            format!(
-                "an emailed sign-in code through {}, which signed in once and was refused the \
+        out.verified.push(
+            crate::Verified::new(
+                EMAIL_CODE_REUSABLE.rule_id,
+                EMAIL_CODE_REUSABLE.requirement_ids,
+                format!(
+                    "an emailed sign-in code through {}, which signed in once and was refused the \
                  second time, where an unused code worked from any session",
-                flow.entry.use_code.path
-            ),
-        ));
+                    flow.entry.use_code.path
+                ),
+            )
+            // An emailed code alone, of the codes and TOTPs V6.5.1 names (ADR-053, Later).
+            .in_part(),
+        );
     } else {
         out.not_assessed.push((
             "V6.5.1".to_owned(),
@@ -237,7 +241,9 @@ pub(super) fn email_code_lifetime(
                  session kept in use, where a code asked for then signed in",
                 flow.entry.use_code.path
             ),
-        ));
+        )
+        // An emailed code alone, of the codes and TOTPs V6.5.5 names (ADR-053, Later).
+        .in_part());
     } else {
         out.not_assessed.push((
             ID.to_owned(),
@@ -860,6 +866,8 @@ mod tests {
             "{:?}",
             o.steps
         );
+        // An emailed code alone, of what V6.5.5 names (ADR-053, Later).
+        assert!(credited_in_part(&o, EMAIL_CODE_LONG_LIVED.rule_id));
     }
 
     #[test]
@@ -1089,6 +1097,8 @@ mod tests {
                 "{:?}",
                 o.steps
             );
+            // An emailed code alone, of what V6.5.1 names (ADR-053, Later).
+            assert!(credited_in_part(&o, EMAIL_CODE_REUSABLE.rule_id));
         }
     }
 
