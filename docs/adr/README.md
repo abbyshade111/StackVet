@@ -128,6 +128,7 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-082](ADR-082.md) | What `sv` saw of the running app kept beside the report, with credentials removed (accepted) |
 | [ADR-083](ADR-083.md) | History that can show a trend: each requirement's status in each run, and why two runs differ (proposed) |
 | [ADR-084](ADR-084.md) | More in the build-loop record: each call's outcome, what was handed over, and what changed between checks (proposed) |
+| [ADR-085](ADR-085.md) | A stand-in name server on the fenced network records the names an app asks for (proposed) |
 
 ## Where v1's records disagree with what v1 built
 
