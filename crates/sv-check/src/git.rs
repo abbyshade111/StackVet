@@ -113,6 +113,118 @@ pub fn is_shallow(app_dir: &Path) -> Option<bool> {
     }
 }
 
+/// The AI coding tools a `Co-Authored-By:` trailer may name (ADR-092). An `Assisted-by:` trailer counts
+/// whatever it names, since the repository's own rules ask for that line from any tool.
+const AI_TOOL_NAMES: [&str; 12] = [
+    "claude",
+    "anthropic",
+    "cursor",
+    "copilot",
+    "codex",
+    "gemini",
+    "chatgpt",
+    "openai",
+    "aider",
+    "windsurf",
+    "muse spark",
+    "devin",
+];
+
+/// A commit on the default branch that an AI coding tool made, and that came in directly rather than
+/// through a merge (ADR-092). `tool` is the trailer's text, as the commit names the tool.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AiCommit {
+    pub hash: String,
+    pub subject: String,
+    pub tool: String,
+}
+
+/// The branch read: `main`, else `master`, else whatever HEAD is.
+fn default_branch(app_dir: &Path) -> &'static str {
+    ["main", "master"]
+        .into_iter()
+        .find(|b| {
+            git(app_dir)
+                .args(["rev-parse", "--verify", "--quiet", b])
+                .output()
+                .is_ok_and(|o| o.status.success())
+        })
+        .unwrap_or("HEAD")
+}
+
+/// The tool a commit's message names in a trailer, if it names one: an `Assisted-by:` line, or a
+/// `Co-Authored-By:` line whose name is one of `AI_TOOL_NAMES`. The first such line wins.
+fn trailer_tool(message: &str) -> Option<String> {
+    message.lines().find_map(|line| {
+        let t = line.trim();
+        let lower = t.to_ascii_lowercase();
+        if lower.starts_with("assisted-by:") {
+            let named = t["assisted-by:".len()..].trim();
+            return Some(if named.is_empty() {
+                "a tool not named".to_owned()
+            } else {
+                named.to_owned()
+            });
+        }
+        let rest = lower.strip_prefix("co-authored-by:")?;
+        if AI_TOOL_NAMES.iter().any(|name| rest.contains(name)) {
+            return Some(t["co-authored-by:".len()..].trim().to_owned());
+        }
+        None
+    })
+}
+
+/// Commits on the default branch that an AI coding tool made, and that were not merged in (ADR-092),
+/// oldest last, as `git log` lists them. A merge is not listed, since a merged change reached the
+/// branch through a pull request; `--first-parent` keeps to the branch's own line of commits.
+/// `None` when git could not say. A commit with no trailer naming a tool is not listed: the check
+/// sees only what a commit says about itself.
+pub fn ai_commits_off_merge(app_dir: &Path) -> Option<Vec<AiCommit>> {
+    let branch = default_branch(app_dir);
+    let out = git(app_dir)
+        .args(LOG_OVERRIDES)
+        .args([
+            "log",
+            "--first-parent",
+            "--no-merges",
+            "--no-show-signature",
+            "--no-ext-diff",
+            "--no-textconv",
+            "--format=%H%x1f%s%x1f%B%x1e",
+            branch,
+            "--",
+        ])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let text = String::from_utf8_lossy(&out.stdout);
+    Some(
+        text.split('\u{1e}')
+            .filter_map(|record| {
+                let mut fields = record.splitn(3, '\u{1f}');
+                let hash = fields.next()?.trim();
+                let subject = fields.next()?;
+                let body = fields.next().unwrap_or("");
+                if hash.is_empty() {
+                    return None;
+                }
+                let tool = trailer_tool(body)?;
+                Some(AiCommit {
+                    hash: hash.to_owned(),
+                    subject: subject.to_owned(),
+                    tool,
+                })
+            })
+            .collect(),
+    )
+}
+
+#[cfg(test)]
+#[path = "git_ai_tests.rs"]
+mod ai_tests;
+
 #[cfg(test)]
 mod tests {
     use super::*;

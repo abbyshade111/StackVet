@@ -135,6 +135,7 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-089](ADR-089.md) | A test-only 7z reader, `py7zr` pinned to one version, to check the 7z archives the upload check sends (accepted, 11 October 2026) |
 | [ADR-090](ADR-090.md) | The part 4 audit's one-sample credits are checked in part, as the owner approved on 11 October 2026; the admin-by-address check is left as it is (accepted) |
 | [ADR-091](ADR-091.md) | Four Bandit rules in test code are information, not findings, and a person reviews them (accepted, 11 October 2026) |
+| [ADR-092](ADR-092.md) | A note lists the commits an AI coding tool made straight onto the default branch (accepted, 11 October 2026) |
 
 ## Where v1's records disagree with what v1 built
 
