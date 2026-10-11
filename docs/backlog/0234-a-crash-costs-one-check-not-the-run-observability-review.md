@@ -1,6 +1,6 @@
 # A crash costs one check, not the run (observability review, part 3, F)
 
-**Status:** partly done: the static scan and the other stages are not guarded; only the outside tools and the app's own checks are
+**Status:** partly done: the reading of the app's file list, and the report's own stages after the scan, are not guarded: a crash there is still a whole-run fault. Each reader of the files (the languages and packages, the packages it ships, the keys and passwords, the configuration, the code) now runs under the guard, and a crashed one costs only its own results.
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: yes (part 3, F, of backlog 0226).
 
