@@ -172,6 +172,7 @@ fn no_credential_a_stand_in_received_reaches_the_record() {
             at: "2026-10-10T03:00:01Z".to_owned(),
         }]),
         unread: vec!["the test sign-in provider"],
+        names: None,
     };
     // The setup: the key is in every kind of record.
     assert!(format!("{received:?}").matches(key.as_str()).count() >= 4);

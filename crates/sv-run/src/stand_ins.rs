@@ -30,6 +30,10 @@ pub struct StandIns {
     pub mail: Option<Vec<Mail>>,
     /// The stand-ins that were running and whose record could not be read, by name.
     pub unread: Vec<&'static str>,
+    /// Each question the stand-in name server was asked, in the order asked, as the app asked it.
+    /// `None` when the name server did not run or its output could not be read; an empty list means
+    /// it ran and was asked nothing (ADR-085).
+    pub names: Option<Vec<crate::name_server::Lookup>>,
 }
 
 /// One message the app sent, without its body.

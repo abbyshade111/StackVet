@@ -216,10 +216,33 @@ pub fn stand_ins(rules: &SecretRules, received: &sv_run::stand_ins::StandIns, se
             })
             .collect()
     });
+    // Each name is redacted like every other string here, then counted: the same name asked for
+    // twice (once as an IPv4 address, once as an IPv6 one, or on a retry) is one entry, asked twice
+    // (ADR-085).
+    let names = received.names.as_ref().map(|lookups| {
+        let mut kept: Vec<sv_report::seen::NameAsked> = Vec::new();
+        for lookup in lookups {
+            let name = cut(&lookup.name);
+            let kind = sv_run::name_server::kind_name(lookup.kind);
+            match kept.iter_mut().find(|k| k.name == name && k.kind == kind) {
+                Some(entry) => entry.asked += 1,
+                None => kept.push(sv_report::seen::NameAsked {
+                    name,
+                    kind,
+                    asked: 1,
+                    first: lookup.at.clone(),
+                }),
+            }
+        }
+        cuts.set(cuts.get() + kept.len().saturating_sub(MOST_EXCHANGES));
+        kept.truncate(MOST_EXCHANGES);
+        kept
+    });
     seen.stand_ins = sv_report::seen::StandIns {
         model: received.model.clone().map(|v| walk(v, &cut, &cuts)),
         sign_in_provider: received.provider.clone().map(|v| walk(v, &cut, &cuts)),
         mail,
+        names,
         not_read: received.unread.iter().map(|s| (*s).to_owned()).collect(),
         cut: cuts.get(),
     };
@@ -345,3 +368,7 @@ fn walk(value: Value, each: &dyn Fn(&str) -> String, cuts: &std::cell::Cell<usiz
 #[cfg(test)]
 #[path = "seen_tests.rs"]
 mod seen_tests;
+
+#[cfg(test)]
+#[path = "seen_names_tests.rs"]
+mod seen_names_tests;

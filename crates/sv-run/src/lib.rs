@@ -46,6 +46,7 @@ pub mod cleanup;
 pub mod docker;
 pub mod image_reference;
 pub mod install;
+pub mod name_server;
 pub mod stand_ins;
 
 /// Why the app could not be run. Every one of these produces `not assessed`.

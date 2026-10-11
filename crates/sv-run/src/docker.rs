@@ -48,7 +48,7 @@ const MAIL_IMAGE: &str =
     "axllent/mailpit:v1.31@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48";
 /// The test OpenID Connect provider runs in a stock Node image: its script uses built-in modules
 /// only, because the fence has no route to a package registry. Named by digest (backlog 0238).
-const PROVIDER_IMAGE: &str =
+pub(crate) const PROVIDER_IMAGE: &str =
     "node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402";
 const PROVIDER_PORT: u16 = 9000;
 const PROVIDER_SCRIPT: &str = include_str!("../assets/oidc-provider.mjs");
@@ -476,6 +476,7 @@ impl DockerBackend {
         let provider_name = format!("{run_id}-idp");
         let browser_name = format!("{run_id}-browser");
         let model_name = format!("{run_id}-model");
+        let name_server_name = format!("{run_id}-dns");
         let switched_off = format!("{run_id}-app-off");
         let installer = |e: crate::install::Ecosystem| format!("{run_id}-install-{}", e.short());
         let guard = Teardown {
@@ -489,6 +490,7 @@ impl DockerBackend {
                 provider_name.clone(),
                 browser_name.clone(),
                 model_name.clone(),
+                name_server_name.clone(),
                 switched_off.clone(),
                 installer(crate::install::Ecosystem::Python),
                 installer(crate::install::Ecosystem::Node),
@@ -602,6 +604,18 @@ impl DockerBackend {
         let browser = (wants_browser && self.start_browser(&network, &browser_name))
             .then_some(browser_name.as_str());
 
+        // 1f. The stand-in name server (ADR-085, backlog 0240), on the same fenced network and before
+        //     the app. The app's name lookups go to it through `--dns`: it answers each with SERVFAIL,
+        //     as a name is answered today, and writes each question down. Its address is read back from
+        //     Docker once it runs. If it cannot be started, or its address cannot be read, the app runs
+        //     as before, and the record says no names were asked.
+        let name_server_dns = if self.start_name_server(&network, &name_server_name) {
+            self.address_on(&name_server_name, &network)
+        } else {
+            None
+        };
+        let name_server = name_server_dns.as_ref().map(|_| name_server_name.as_str());
+
         // 2. The app, fenced and hardened like every helper (`app_args`).
         let mount = format!("{}:/app:ro", plan.app_dir.display());
         let port_env = format!("PORT={}", plan.port);
@@ -645,6 +659,10 @@ impl DockerBackend {
             None => format!("cd /app && {}", plan.start),
         };
         let mut args: Vec<&str> = app_args(&app, &network, &mount, &port_env);
+        // The app's own name lookups go to the name server, when it runs (ADR-085).
+        if let Some(address) = &name_server_dns {
+            args.extend(["--dns", address.as_str()]);
+        }
         args.extend(install_args.iter().map(String::as_str));
         for pair in &mail_env {
             args.extend(["-e", pair.as_str()]);
@@ -798,7 +816,7 @@ impl DockerBackend {
         let mut secrets = accounts.as_ref().map(test_secrets).unwrap_or_default();
         secrets.push(client_secret.clone());
         secrets.extend(mcp_token.clone());
-        let stand_ins = self.stand_ins(&via, mail, provider, model, &secrets);
+        let stand_ins = self.stand_ins(&via, mail, provider, model, name_server, &secrets);
         // And from the lines of the app's own output the log checks read, kept the same way: an
         // app that logs a sign-in with its password logs the test account's.
         if let Some(asked) = signed_in.as_mut() {
@@ -813,6 +831,7 @@ impl DockerBackend {
         helpers.extend(provider.is_some().then_some(&provider_name));
         helpers.extend(browser.is_some().then_some(&browser_name));
         helpers.extend(model.is_some().then_some(&model_name));
+        helpers.extend(name_server.is_some().then_some(&name_server_name));
         for helper in helpers {
             container.not_removed.extend(not_removed(
                 "container",
@@ -1282,7 +1301,7 @@ pub(crate) const HARDENING: [&str; 5] = [
 ];
 
 /// `args` with `HARDENING` just after the command word.
-fn hardened(args: Vec<String>) -> Vec<String> {
+pub(crate) fn hardened(args: Vec<String>) -> Vec<String> {
     let mut out = args;
     let at = 1.min(out.len());
     out.splice(at..at, HARDENING.iter().map(|s| (*s).to_owned()));
@@ -1545,10 +1564,23 @@ impl DockerBackend {
         mail: Option<&str>,
         provider: Option<&str>,
         model: Option<&str>,
+        name_server: Option<&str>,
         secrets: &[String],
     ) -> crate::stand_ins::StandIns {
         use crate::stand_ins::{StandIns, mail_of, read_json};
         let mut out = StandIns::default();
+        // The name server writes each question to its output, which `docker logs` keeps until the
+        // container is removed. Read before it goes, like the others (ADR-085).
+        if let Some(name) = name_server {
+            out.names = self
+                .docker(&["logs", name])
+                .ok()
+                .filter(|(code, _)| *code == 0)
+                .map(|(_, log)| crate::name_server::parse_log(&log));
+            if out.names.is_none() {
+                out.unread.push("the name server");
+            }
+        }
         if let Some(host) = model {
             out.model = self
                 .fetch(via, host, MODEL_PORT, "/_sv/seen")
@@ -1830,6 +1862,23 @@ impl DockerBackend {
 
     fn start_browser(&self, network: &str, name: &str) -> bool {
         matches!(self.docker(&browser_args(network, name)), Ok((0, _)))
+    }
+
+    /// Starts the stand-in name server on the app's fenced network (ADR-085). Its script is passed
+    /// on the command line, as the test provider's is, so nothing is written to the owner's disk.
+    fn start_name_server(&self, network: &str, name: &str) -> bool {
+        let args = crate::name_server::start_args(network, name);
+        let args: Vec<&str> = args.iter().map(String::as_str).collect();
+        matches!(self.docker(&args), Ok((0, _)))
+    }
+
+    /// The address Docker gave `name` on `network`, read from Docker's own record. `None` when it
+    /// has none, so the app is not pointed at an address nothing answers from.
+    fn address_on(&self, name: &str, network: &str) -> Option<String> {
+        let template = format!("{{{{(index .NetworkSettings.Networks \"{network}\").IPAddress}}}}");
+        let (code, out) = self.docker(&["inspect", "-f", &template, name]).ok()?;
+        let address = out.trim();
+        (code == 0 && !address.is_empty()).then(|| address.to_owned())
     }
 
     /// Carries the browser's `localhost:<port>` to the app. Refused for the two ports Chromium's
