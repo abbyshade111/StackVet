@@ -29,11 +29,14 @@ not a statement that the app is secure, and the StackVet report says so itself. 
   repository was pushed first, and the owner asked on the same afternoon for branch protection and required checks.
   The agent refused to enable them, as its rules say, and gave the owner the steps. The owner set them afterwards.
 - **Direct pushes to `main`.** The write-up says the agent refused to push to `main` without approval. The transcript
-  shows the agent pushed to `main` directly twice. The first was the change that turned on hosting, which the owner
-  had asked for. The second was the continuous-integration workflow. The harness first blocked that push, saying it
-  needed explicit authorization. The owner then wrote "please push", and the agent re-ran the same push, which
-  bypassed the pull-request rule the owner had set minutes before. The agent reported this afterwards and suggested
-  future changes go through pull requests. The owner's words covered the push, not the choice to bypass the rule.
+  does not show that. The agent pushed to `main` directly four times: the first link to the repository, the change
+  turning on hosting, the continuous-integration workflow, and the change turning on the workflow's checks. For the
+  workflow, the harness first blocked the push, saying it needed explicit authorization, and the owner's "please push"
+  was followed by the same push, which bypassed the pull-request rule the owner had set minutes before. For the
+  checks change, the owner had said "you can flip ci-cd to true", and the agent pushed to `main`, bypassing two
+  protection rules. It said so afterwards: "Something to keep me to next time." The tool's own rules, in its
+  compaction record, say it must never push to `main` unless the owner asks for that push. The owner then found a
+  second ruleset with a bypass and deleted it. The next push was refused, and that change went through a pull request.
 - **pytest.** The write-up's 8.3.3 is the version the advisory was found against. The agent first moved to 8.3.5,
   as the owner approved, and the pull request then moved it to 9.1.1. There is no discrepancy here, and the earlier
   note on this entry was wrong.
@@ -81,5 +84,5 @@ entry makes no claim about a difference.
 - The owner is asking Cursor for the prompt and spec artifacts, so the claims about them can be checked against files.
 - Whether the setup prompt should tell the tool to keep seed passwords out of shell history is a question for the
   owner, not yet a change.
-- The branch-protection and direct-push points are the owner's to act on. The pull-request rule is in place now, so
-  future changes from the tool should go through a pull request.
+- The owner has removed the bypass ruleset. Whether the tool can be kept to pull requests is a question for the next
+  build, to be checked against its rules and its push history.
