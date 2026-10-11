@@ -131,7 +131,7 @@ listed apart, below this item.
    requirement names. It lowers how many requirements a report calls checked, so it waits for the owner's word.
    **The owner's word, 10 October 2026** ("go with your recommendation"): groups A to G in part, group H in part only when one page is listed (ADR-053, Later, accepted); more samples for each group are backlog 0232.
    **Built 10 October 2026 by session securevibe-e2** (`docs/design/0364-groups-a-to-g-of-the-one-sample-inventory-checked-in-part-10.md`). **Not finished:** a credit-by-credit audit of every running check against these groups; a check outside the files the build covers that gives plain checked from one sample is not yet marked.
-   **Part status:** partly done: The approved marks are in (ADR-089). Still open: the audit's three unread items, suite.rs (the app's own tests named by requirement, read test by test), config.rs's .gitignore check (root only, whether V13.3.1 covers env files in subfolders), running.rs's admin page found by address was decided on 11 October 2026 (ADR-089): left as it is.
+   **Part status:** partly done: The approved marks are in (ADR-090). Still open: the audit's three unread items, suite.rs (the app's own tests named by requirement, read test by test), config.rs's .gitignore check (root only, whether V13.3.1 covers env files in subfolders), running.rs's admin page found by address was decided on 11 October 2026 (ADR-090): left as it is.
 5. **The coverage documents count requirements that can never be credited as "can settle".**
    (`docs/GAP-ANALYSIS.md`, 1.8.) Add a "can be credited" column to COVERAGE.md's summary, level, and chapter
    tables; label finding-only requirements "can only be found failing" in REQUIREMENTS.md; repeat the AISVS
