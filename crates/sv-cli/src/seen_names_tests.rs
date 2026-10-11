@@ -110,3 +110,28 @@ fn the_names_say_whether_the_name_server_ran_and_asked_nothing() {
     let kept = serde_json::to_string(&seen.stand_ins).unwrap();
     assert!(!kept.contains("names"), "{kept}");
 }
+
+#[test]
+fn the_report_says_how_many_names_the_app_looked_up_and_not_what_they_are() {
+    assert_eq!(
+        super::names_sentence(None),
+        None,
+        "no name server, no sentence"
+    );
+    let none = super::names_sentence(Some(&[])).unwrap();
+    assert!(none.contains("looked up no name"), "{none}");
+
+    let lookups = [
+        asked("api.example.test", 1, "2026-10-11T00:00:00Z"),
+        asked("api.example.test", 28, "2026-10-11T00:00:01Z"),
+        asked("cdn.example.test", 1, "2026-10-11T00:00:02Z"),
+    ];
+    let sentence = super::names_sentence(Some(&lookups)).unwrap();
+    // Two distinct names, though three questions: the sentence counts names, once each.
+    assert!(sentence.contains("2 distinct names"), "{sentence}");
+    assert!(sentence.contains("stand_ins.names"), "{sentence}");
+    assert!(
+        !sentence.contains("api.example.test"),
+        "a name was printed: {sentence}"
+    );
+}

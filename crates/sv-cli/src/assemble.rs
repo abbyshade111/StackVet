@@ -1027,6 +1027,12 @@ fn running_app(
                         sv_report::seen::FILE
                     ));
                 }
+                if let (Some(note), Some(names)) = (
+                    run_note.as_mut(),
+                    crate::seen::names_sentence(outcome.stand_ins.names.as_deref()),
+                ) {
+                    note.push_str(&names);
+                }
                 if let (Some(note), Some(installed)) = (
                     run_note.as_mut(),
                     sv_run::install::sentence(&outcome.installed),
