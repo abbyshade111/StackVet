@@ -140,7 +140,8 @@ your organization has turned these tools off. If StackVet does not appear or wil
 
 The same `command` and `args` go in the tool's own MCP settings file. **Cursor has been tried once**, on
 one app built from an empty folder (see [the record](design/0368-the-app-built-in-cursor-from-an-empty-folder-11-october-2026.md)),
-with the settings below. If it does not work for you, tell us:
+with the settings below. In Cursor, turn the StackVet server on under Settings, then MCP, before its tools appear;
+until then the chat lists none. If it does not work for you, tell us:
 
 - **Cursor:** `.cursor/mcp.json` in the app's folder, with the same `mcpServers` block as for Claude, above.
 

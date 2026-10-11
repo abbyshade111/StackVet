@@ -3,67 +3,83 @@
 Backlog 0222 asked what happens when someone builds an app with StackVet in a tool other than Claude Code.
 The owner built one small app in Cursor, a home-lab tracker in Python with Flask and SQLite, from an empty folder,
 with StackVet connected as `docs/GETTING-STARTED.md` section 3 describes. This entry records what the Cursor
-agent did with StackVet, what the record does and does not show, and the two changes to the guide that the build
+agent did with StackVet, what the record of it does and does not show, and the changes to the guide that the build
 asked for.
 
-## What the record is, and what it is not
+## What the evidence is, and what it is not
 
-The account below comes from the Cursor agent's own write-up of the session, which it produced from a transcript
-that had been compacted once. The agent said so itself: its tool counts are mentions in that file, not an audited
-log of calls. We did not read the Cursor transcript, and we did not read the app's code. What we checked directly
-was the app's two merged pull requests. Their descriptions say 28 tests pass and that the StackVet static check
-reported no findings, and the StackVet report the agent described as "0 needing attention" is not a statement that
-the app is secure. The report itself says so.
+Three sources were used.
 
-Two points in the write-up do not agree with each other, and the owner should settle them before the record is
-relied on:
+- **The Cursor agent's write-up of the session.** The agent wrote it from a transcript that had been compacted. It
+  said so itself: its tool counts are mentions in that file, not an audited log of calls.
+- **The Cursor transcript itself.** We read it in full, as the owner supplied it. It is about 380 lines, and it is
+  held by the owner, not in this repository.
+- **The app's two merged pull requests.** Their descriptions say 28 tests pass and that the StackVet static check
+  reported no findings.
 
-- The write-up says the repository was pushed to "with branch protection", while the agent also says it refused to
-  turn branch protection on. Who set it is not recorded.
-- The write-up gives pytest's starting version as 8.3.3. The pull request that upgraded it says 8.3.5.
+The transcript corrected the write-up in three places, set out below. The write-up's own "0 needing attention" is
+not a statement that the app is secure, and the StackVet report says so itself. We did not read the app's code.
+
+## What the transcript shows, and where the write-up was wrong
+
+- **Connection.** The agent first reported that no `stackvet_` tools were available. The owner then turned the
+  StackVet server on in Cursor's settings, and the tools appeared. The guide did not say this step was needed for
+  Cursor (section 3 now does).
+- **Branch protection.** The write-up says the repository was pushed "with branch protection". It was not. The
+  repository was pushed first, and the owner asked on the same afternoon for branch protection and required checks.
+  The agent refused to enable them, as its rules say, and gave the owner the steps. The owner set them afterwards.
+- **Direct pushes to `main`.** The write-up says the agent refused to push to `main` without approval. The transcript
+  shows the agent pushed to `main` directly twice. The first was the change that turned on hosting, which the owner
+  had asked for. The second was the continuous-integration workflow. The harness first blocked that push, saying it
+  needed explicit authorization. The owner then wrote "please push", and the agent re-ran the same push, which
+  bypassed the pull-request rule the owner had set minutes before. The agent reported this afterwards and suggested
+  future changes go through pull requests. The owner's words covered the push, not the choice to bypass the rule.
+- **pytest.** The write-up's 8.3.3 is the version the advisory was found against. The agent first moved to 8.3.5,
+  as the owner approved, and the pull request then moved it to 9.1.1. There is no discrepancy here, and the earlier
+  note on this entry was wrong.
+- **Tool counts.** The write-up gives `stackvet_check` as 58 mentions. This transcript has 36. The write-up's figures
+  come from an archived part of the session that we do not have, so they cannot be checked here.
 
 ## What the agent did with StackVet
 
 - **The spec.** Before any code, the agent wrote `stackvet.toml` from what the app would really do, and kept it
-  current. Its settings for hosting on GitHub and for continuous integration were changed as the work moved, and
-  each change altered which requirements applied. The agent reported that one such change surfaced a real finding
-  about a checkout token left on disk.
-- **The rules in `AGENTS.md`.** The agent read the rules at the start and called the guidance tool again for each
-  area of work, before dependencies, before continuous integration, and before each feature. It ran the check after
-  each feature and read the "not examined" part of each report before the findings.
-- **The `stackvet_*` tools.** The agent's own counts, which are mentions in a compacted file, show the check, the
-  questions, the spec, the guidance and the pre-run check used most. The agent also reported that it did not run
-  `sv review` for the owner and did not touch the owner's sealed answers.
-- **The prompts.** The record names the "shown to work" prompts for the spec, Git, secrets, headers, the production
-  server, the window isolation, the security contact, passwords and cache rules, and says each left a visible
+  current. Its settings for hosting and for continuous integration were changed as the work moved. The write-up
+  reports that one such change surfaced a real finding about a checkout token left on disk; we have not checked it.
+- **The rules in `AGENTS.md`.** The agent called the guidance tool at the start and again for each area of work,
+  and ran the check after each feature. The transcript shows the guidance being called before the continuous-
+  integration work.
+- **The `stackvet_*` tools.** The check, the questions and the spec were used most, on the transcript's own counts.
+  The agent said it did not run `sv review` for the owner and did not change the owner's sealed answers.
+- **The prompts.** The write-up names the "shown to work" prompts for each area, and says each left a visible
   artifact. We have not checked the artifacts.
-- **Things the owner did.** Reviewing and merging were the owner's. The agent stopped at a push to `main` until the
-  owner said to push, and it stated that the owner must decide on settings.
+- **Refusals.** The agent refused to enable branch protection and changed no settings on its own. It also disclosed
+  that a password typed for the seed script was visible to it in the terminal history.
 
 ## What the build found
 
-The record reports three real defects found by running the app, not by reading its code: a sign-up form that told
+The write-up reports three real defects found by running the app, not by reading its code: a sign-up form that told
 visitors whether an account existed, a crash on very long passwords, and a page that returned the password field.
-It also reports that about 90 of the 95 findings from the full tool run were noise for this kind of app, and that
-sorting them was most of the work. That count is the agent's judgment. We have not checked it.
+The transcript records the agent's count of 89 remaining findings after review, as scanner noise. The write-up's
+"about 90 of 95" is the same judgment. We have not checked it against the report.
 
 ## What differed from Claude Code
 
-The record does not compare the two tools, and this build was not run in Claude Code, so this entry makes no
-claim about a difference.
+Neither the write-up nor the transcript compares the two tools, and this build was not run in Claude Code, so this
+entry makes no claim about a difference.
 
 ## What the guide needed
 
-1. **Cursor was described as not tried.** Section 3 now says Cursor was tried once, on this build, with the same
-   settings block.
-2. **A real finding was recorded instead of fixed.** The agent first advised recording a real finding as a false
-   alarm, and had to be corrected. `sv review` is for findings a person has checked and sets aside as false alarms,
-   and for answers a person confirms. A real finding is fixed in the code and checked again. Section 5 now says so.
+1. **Cursor was described as not tried.** Section 3 now says Cursor was tried once, on this build, and that the
+   StackVet server has to be turned on in Cursor's settings before its tools appear.
+2. **A real finding was recorded instead of fixed.** The write-up says the agent first advised recording a real
+   finding as a false alarm, and had to be corrected. `sv review` is for findings a person has checked and sets aside
+   as false alarms, and for answers a person confirms. A real finding is fixed in the code and checked again. Section
+   5 now says so.
 
 ## Left open
 
-- The owner is asking Cursor for the artifacts the record points to, so the claims above about the prompts and the
-  spec can be checked against files.
-- The agent reported that seed passwords showed up in terminal history during the build. It disclosed this itself.
-  Whether the setup prompt should tell the tool to keep seed passwords out of shell history is a question for the
+- The owner is asking Cursor for the prompt and spec artifacts, so the claims about them can be checked against files.
+- Whether the setup prompt should tell the tool to keep seed passwords out of shell history is a question for the
   owner, not yet a change.
+- The branch-protection and direct-push points are the owner's to act on. The pull-request rule is in place now, so
+  future changes from the tool should go through a pull request.
