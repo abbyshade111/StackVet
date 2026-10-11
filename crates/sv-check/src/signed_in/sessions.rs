@@ -814,6 +814,8 @@ pub(super) fn private_page_checks(
     let logout_path = users.logout.as_ref().map(|l| l.path.as_str());
 
     let mut opened = Vec::new();
+    // Listed pages that did not open for the test user (not 2xx, or no answer): not judged, and said so.
+    let mut skipped: Vec<String> = Vec::new();
     let mut not_stored = Vec::new();
     let mut stored = Vec::new();
     let mut shared = Vec::new();
@@ -844,9 +846,11 @@ pub(super) fn private_page_checks(
     for (i, path) in users.private.iter().enumerate() {
         let page_id = format!("private-page-headers-{i}");
         let Some(response) = http.send(&get(&page_id, path, &signed_in.session)) else {
+            skipped.push(format!("{path} (no answer)"));
             continue;
         };
         if !(200..300).contains(&response.status) {
+            skipped.push(format!("{path} ({})", response.status));
             continue;
         }
         opened.push(path.clone());
@@ -917,6 +921,19 @@ pub(super) fn private_page_checks(
         }
     }
 
+    if !skipped.is_empty() {
+        let why = format!(
+            "the listed private page{} {} did not open for the test user, so the pages that did are the only \
+             ones checked for this: a page that answered with an error is not judged for its headers, cookies or sign-out link",
+            if skipped.len() == 1 { "" } else { "s" },
+            skipped.join(", ")
+        );
+        for rule in [&PRIVATE_PAGE_CACHING, &PRIVATE_PAGE_HEADERS, &SIGN_OUT_LINK] {
+            for id in rule.requirement_ids {
+                out.not_assessed.push(((*id).to_owned(), why.clone()));
+            }
+        }
+    }
     if opened.is_empty() {
         out.not_assessed.push((
             "V14.3.2, V7.4.4".to_owned(),
@@ -967,7 +984,7 @@ pub(super) fn private_page_checks(
                 ),
             )
             // Each private page listed is asked; one opened is one sample (ADR-053, Later).
-            .in_part_if(opened.len() == 1),
+            .in_part_if(opened.len() == 1 || !skipped.is_empty()),
         );
     } else {
         out.findings.push(finding_on(
@@ -1001,7 +1018,7 @@ pub(super) fn private_page_checks(
                 ),
             )
             // Each private page listed is asked; one opened is one sample (ADR-053, Later).
-            .in_part_if(opened.len() == 1),
+            .in_part_if(opened.len() == 1 || !skipped.is_empty()),
         );
     } else {
         out.findings.push(finding_on(
@@ -1070,7 +1087,7 @@ pub(super) fn private_page_checks(
                 ),
             )
             // Each private page listed is asked; one opened is one sample (ADR-053, Later).
-            .in_part_if(opened.len() == 1),
+            .in_part_if(opened.len() == 1 || !skipped.is_empty()),
         );
     } else {
         out.findings.push(finding_on(
