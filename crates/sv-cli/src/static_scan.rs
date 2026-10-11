@@ -48,19 +48,39 @@ impl StaticScan {
         starting: &dyn Fn(usize),
     ) -> Result<Self> {
         starting(0);
-        let listing = sv_scan::files::Listing::of(app_dir);
+        // The list of the app's files is the one thing every reader needs. If it crashes, there is no list to read,
+        // and an empty list is not an empty app: so no reader runs, and each is recorded as crashed through this one
+        // entry (backlog 0234).
         let mut crashed = Vec::new();
+        let listing =
+            match crate::assemble::guarded("file_list", || sv_scan::files::Listing::of(app_dir)) {
+                Ok(listing) => listing,
+                Err(place) => {
+                    crashed.push(Crashed {
+                        scanner: "file_list",
+                        place,
+                    });
+                    sv_scan::files::Listing {
+                        root: app_dir.to_path_buf(),
+                        ..Default::default()
+                    }
+                }
+            };
         starting(1);
-        let scan_report = match crate::assemble::guarded("scan_report", || {
-            sv_scan::scan_listing_app(&listing, &loaded.signatures, not_the_app)
-        }) {
-            Ok(result) => result?,
-            Err(place) => {
-                crashed.push(Crashed {
-                    scanner: "scan_report",
-                    place,
-                });
-                sv_scan::ScanReport::default()
+        let scan_report = if listed_crashed(&crashed) {
+            sv_scan::ScanReport::default()
+        } else {
+            match crate::assemble::guarded("scan_report", || {
+                sv_scan::scan_listing_app(&listing, &loaded.signatures, not_the_app)
+            }) {
+                Ok(result) => result?,
+                Err(place) => {
+                    crashed.push(Crashed {
+                        scanner: "scan_report",
+                        place,
+                    });
+                    sv_scan::ScanReport::default()
+                }
             }
         };
         starting(2);
@@ -99,7 +119,7 @@ impl StaticScan {
 
     /// Whether the named reader crashed, so its results are empty and not a pass.
     pub fn crashed(&self, scanner: &str) -> bool {
-        self.crashed.iter().any(|c| c.scanner == scanner)
+        listed_crashed(&self.crashed) || self.crashed.iter().any(|c| c.scanner == scanner)
     }
 
     /// The gaps for the readers that crashed: what each was, and where its panic was (backlog 0234).
@@ -259,18 +279,31 @@ impl StaticScan {
 impl StaticScan {
     /// Why the reader is not run, when it crashed.
     pub(crate) fn crashed_why(&self, scanner: &str) -> Option<String> {
-        self.crashed(scanner).then(|| {
-            format!(
+        if !self.crashed(scanner) {
+            return None;
+        }
+        if self.crashed.iter().any(|c| c.scanner == scanner) {
+            return Some(format!(
                 "the reader of {} crashed, so nothing it reads was checked",
                 label(scanner)
-            )
-        })
+            ));
+        }
+        Some(format!(
+            "the reader of {} did not run, because the list of the app's files crashed, so nothing it reads was checked",
+            label(scanner)
+        ))
     }
+}
+
+/// Whether the list of the app's files crashed, so that no reader ran on it (backlog 0234).
+fn listed_crashed(crashed: &[Crashed]) -> bool {
+    crashed.iter().any(|c| c.scanner == "file_list")
 }
 
 /// The reader's name for a person: what its gap and its `examined` entry say.
 fn label(scanner: &str) -> &'static str {
     match scanner {
+        "file_list" => "the list of the app's files",
         "scan_report" => "the app's languages and packages",
         "bill_of_materials" => "the packages the app ships",
         "secrets" => "the keys and passwords in the app's files",
@@ -286,6 +319,9 @@ fn keep<T: Default>(
     scanner: &'static str,
     run: impl FnOnce() -> T,
 ) -> T {
+    if listed_crashed(crashed) {
+        return T::default();
+    }
     match crate::assemble::guarded(scanner, run) {
         Ok(value) => value,
         Err(place) => {

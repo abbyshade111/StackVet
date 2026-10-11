@@ -283,7 +283,24 @@ pub fn assemble_report_saying(
         } else {
             sv_report::Examined::ran("sbom.")
         }];
-    let advisories = advisories(&scene, &mut examined)?;
+    // The known-vulnerability check crashing costs only itself (backlog 0234): what it had written to `examined` is
+    // taken back, and in its place the entry says it did not run, and the gap says where it crashed.
+    let before = examined.len();
+    let advisories = match guarded("advisories", || advisories(&scene, &mut examined)) {
+        Ok(advisories) => advisories?,
+        Err(place) => {
+            examined.truncate(before);
+            examined.push(sv_report::Examined::not_run(
+                "advisory.",
+                "the known-vulnerability check crashed, so nothing was compared",
+            ));
+            Advisories {
+                findings: Vec::new(),
+                verified: Vec::new(),
+                gaps: vec![crash_gap("the known-vulnerability check", &place)],
+            }
+        }
+    };
 
     let mut findings = Vec::new();
     findings.extend(advisories.findings);

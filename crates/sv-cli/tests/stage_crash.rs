@@ -105,3 +105,62 @@ fn a_reader_of_the_app_that_crashes_costs_its_own_results_and_the_report_says_so
         );
     }
 }
+
+/// The list of the app's files crashed: no reader runs on it, since an empty list is not an empty app. The report
+/// is still written, the gap names the list, and each reader's `examined` entry says it did not run because of it
+/// (backlog 0234).
+#[test]
+fn a_crashed_file_list_stops_every_reader_and_the_report_says_so() {
+    let (crashed, out) = report("reader-file_list", Some("file_list"));
+    let said = String::from_utf8_lossy(&crashed.stderr).to_string();
+    assert_ne!(crashed.status.code(), Some(3), "{said}");
+    let json = std::fs::read_to_string(out.join("report.json"))
+        .unwrap_or_else(|e| panic!("no report written: {e}\n{said}"));
+    assert!(
+        json.contains("the list of the app's files: the check crashed"),
+        "{json}"
+    );
+    assert!(
+        json.contains(
+            "did not run, because the list of the app's files crashed, so nothing it reads was checked"
+        ),
+        "the readers' examined entries do not say they did not run: {json}"
+    );
+    // Nothing was read, so nothing can be a finding. A reader that ran on the empty list would say the app has no config
+    // file, which is a finding about the list, not the app. The setup: a clean run of the same app does find things,
+    // so an empty list here means something.
+    let found = |json: &str| -> usize {
+        let report: serde_json::Value = serde_json::from_str(json).expect("report.json parses");
+        report["findings"].as_array().map_or(0, Vec::len)
+    };
+    let clean = report("reader-file_list-clean", None).1;
+    let clean_json = std::fs::read_to_string(clean.join("report.json")).unwrap_or_default();
+    assert!(
+        found(&clean_json) > 0,
+        "the clean run found nothing: {clean_json}"
+    );
+    assert_eq!(found(&json), 0, "a reader ran on the empty list: {json}");
+}
+
+/// The known-vulnerability check crashed: the report is still written, the gap says where, and the `examined` entry
+/// for advisories says nothing was compared (backlog 0234).
+#[test]
+fn a_crashed_known_vulnerability_check_costs_itself_and_the_report_says_so() {
+    let (crashed, out) = report("advisories", Some("advisories"));
+    let said = String::from_utf8_lossy(&crashed.stderr).to_string();
+    assert_ne!(crashed.status.code(), Some(3), "{said}");
+    let json = std::fs::read_to_string(out.join("report.json"))
+        .unwrap_or_else(|e| panic!("no report written: {e}\n{said}"));
+    assert!(
+        json.contains("the known-vulnerability check: the check crashed"),
+        "{json}"
+    );
+    assert!(
+        json.contains("the known-vulnerability check crashed, so nothing was compared"),
+        "{json}"
+    );
+    assert!(
+        json.contains("a panic asked for by SV_PANIC_IN_STAGE"),
+        "{json}"
+    );
+}
