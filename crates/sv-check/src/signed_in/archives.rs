@@ -1259,6 +1259,13 @@ mod tests {
     #[test]
     fn each_plain_tar_unpacks_to_exactly_what_it_says_in_pythons_tarfile() {
         for n in [0u64, 1, 511, 512, 513, 1024, 1_000_003, MOST_UPLOAD_BYTES] {
+            // `tarfile` reads a tar that lacks its two end blocks as well, so the length is checked too: a
+            // header, the data in whole blocks, and the two empty blocks that end the archive.
+            assert_eq!(
+                unpacks_to("tar", n).len() as u64,
+                512 + n.div_ceil(512) * 512 + 1024,
+                "the length of a tar of {n} zeros"
+            );
             assert_eq!(
                 python(READ_TAR, &unpacks_to("tar", n)),
                 format!("1 {n} True"),
