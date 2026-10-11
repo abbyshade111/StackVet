@@ -131,7 +131,7 @@ listed apart, below this item.
    requirement names. It lowers how many requirements a report calls checked, so it waits for the owner's word.
    **The owner's word, 10 October 2026** ("go with your recommendation"): groups A to G in part, group H in part only when one page is listed (ADR-053, Later, accepted); more samples for each group are backlog 0232.
    **Built 10 October 2026 by session securevibe-e2** (`docs/design/0364-groups-a-to-g-of-the-one-sample-inventory-checked-in-part-10.md`). **Not finished:** a credit-by-credit audit of every running check against these groups; a check outside the files the build covers that gives plain checked from one sample is not yet marked.
-   **Part status:** partly done: the audit of every running check against groups A to H, which the build did not finish
+   **Part status:** claimed by mass-assignment-creates, 11 October 2026
 5. **The coverage documents count requirements that can never be credited as "can settle".**
    (`docs/GAP-ANALYSIS.md`, 1.8.) Add a "can be credited" column to COVERAGE.md's summary, level, and chapter
    tables; label finding-only requirements "can only be found failing" in REQUIREMENTS.md; repeat the AISVS
@@ -424,7 +424,7 @@ listed apart, below this item.
    **(b), the test model's half, done the same day**
    (`docs/design/0331-the-model-s-reply-written-into-the-page-as-html-9-october.md`; ADR-042, Later):
    `probe.ai-reply-html-unencoded`.
-   **Part status:** partly done: (a) on `creates`, which needs a way in stackvet.toml to read back what those requests make, so an owner field sent there can be seen to take
+   **Part status:** claimed by mass-assignment-creates, 11 October 2026
 14. **Template and notebook files are skipped without saying so.** (`docs/GAP-ANALYSIS.md`, 3.6.) Name `.astro`,
    `.ejs`, `.erb`, `.hbs`, `.pug`, `.twig`, `.j2`, `.njk`, `.liquid`, `.cshtml`, `.razor`, `.jsp`, `.ipynb`, and
    `.sql` as unread code; read notebook code cells as Python and Astro's frontmatter as TypeScript.
