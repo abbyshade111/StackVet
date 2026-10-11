@@ -42,14 +42,24 @@ pub struct ConfigReport {
     pub not_assessed: Vec<(String, String)>,
 }
 
+/// The check that reads the app's root `.gitignore` for the environment files (`gitignore_covers_env`).
+const GITIGNORE_COVERS_ENV: &str = "config.gitignore-covers-env";
+
 impl ConfigReport {
     fn record(&mut self, id: &str, outcome: Outcome) {
         match outcome {
-            Outcome::Passed(requirement_ids) => self.passed.push(Verified::new(
-                id,
-                requirement_ids,
-                "the files this check reads".to_owned(),
-            )),
+            Outcome::Passed(requirement_ids) => {
+                let credit =
+                    Verified::new(id, requirement_ids, "the files this check reads".to_owned());
+                // The `.gitignore` check reads the app's root only, and V13.3.1 speaks of every secret in the
+                // source, so its pass is one sample of that (backlog 0006 part 4; ADR-090).
+                let credit = if id == GITIGNORE_COVERS_ENV {
+                    credit.in_part()
+                } else {
+                    credit
+                };
+                self.passed.push(credit)
+            }
             Outcome::Failed(f) => self.findings.push(*f),
             Outcome::NotAssessed(why) => self.not_assessed.push((id.to_owned(), why)),
         }
@@ -75,7 +85,7 @@ pub fn check_dir_in(
         "config.secrets-file-committed",
         secrets_file_committed(app_dir),
     );
-    report.record("config.gitignore-covers-env", gitignore_covers_env(app_dir));
+    report.record(GITIGNORE_COVERS_ENV, gitignore_covers_env(app_dir));
     report.record("config.security-contact", security_contact(app_dir));
     report.record(
         "config.versions-pinned",
@@ -2135,5 +2145,25 @@ mod passed_evidence_tests {
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(&dir).unwrap();
         dir
+    }
+
+    /// The `.gitignore` check reads the app's root only, so a root `.gitignore` that leaves out `.env` is one sample of
+    /// V13.3.1 (which speaks of every secret in the source): credited, and in part (backlog 0006 part 4).
+    #[test]
+    fn a_root_gitignore_that_leaves_out_env_is_credited_in_part() {
+        let dir = std::env::temp_dir().join(format!("sv-gitignore-in-part-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join(".gitignore"), ".env\n").unwrap();
+        std::fs::write(dir.join("main.py"), "print(1)\n").unwrap();
+        let report = check_dir(&dir);
+        // The setup: the check ran and passed, so the in-part mark is about a real pass.
+        let credit = report
+            .passed
+            .iter()
+            .find(|p| p.check_id == "config.gitignore-covers-env")
+            .unwrap_or_else(|| panic!("no pass: {report:?}"));
+        assert!(credit.in_part, "{credit:?}");
+        assert_eq!(credit.requirement_ids, vec!["V13.3.1".to_owned()]);
     }
 }
