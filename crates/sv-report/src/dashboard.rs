@@ -32,6 +32,8 @@ pub struct Summary {
     pub only_they_reach: usize,
     /// What the report says was not examined.
     pub gaps: Vec<String>,
+    /// What the build loop was given: each report file or prompt by name, with its size where kept (0227).
+    pub given: Vec<(String, Option<u64>)>,
 }
 
 /// One app as the dashboard shows it: its folder, and its report or why there is none to show.
@@ -398,7 +400,47 @@ pub fn read(text: &str) -> Result<Summary, String> {
                     .collect()
             })
             .unwrap_or_default(),
+        given: given_of(&v["build_loop"]),
     })
+}
+
+/// What the build loop was given, as the report kept it: each report file or prompt by name, with its
+/// size where the record kept one (backlog 0227, ADR-084, decided 11 October 2026). A report from before
+/// sizes were kept gives the names only.
+fn given_of(build_loop: &Value) -> Vec<(String, Option<u64>)> {
+    let sizes = &build_loop["handed_sizes"];
+    build_loop["handed"]
+        .as_array()
+        .map(|names| {
+            names
+                .iter()
+                .filter_map(|n| n.as_str())
+                .map(|n| (n.to_owned(), sizes[n].as_u64()))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// The section of an app's view that lists what the build loop was given, names and sizes only, never
+/// their contents (ADR-086, decided 11 October 2026). Empty when nothing was given.
+fn given_section(given: &[(String, Option<u64>)]) -> String {
+    if given.is_empty() {
+        return String::new();
+    }
+    let mut b = String::from(
+        "<h3>What the AI coding tool was given</h3>\n<p class=\"note\">Names and sizes only; no \
+         contents are kept on this page. A name with no size was written before sizes were kept.</p>\n<ul>\n",
+    );
+    for (name, size) in given {
+        let size = size.map_or_else(|| "size not recorded".to_owned(), |s| format!("{s} bytes"));
+        b.push_str(&format!(
+            "<li><code>{}</code>: {}</li>\n",
+            escape(name),
+            size
+        ));
+    }
+    b.push_str("</ul>\n");
+    b
 }
 
 /// A path as a `file:` address a browser opens, every character that could end the address or the
@@ -689,6 +731,7 @@ pub fn page(apps: &[App], written: &str) -> String {
                     }
                     b.push_str("</ul>\n");
                 }
+                b.push_str(&given_section(&s.given));
                 b.push_str(&over_time(&app.runs, app.unread_runs));
                 if let Some(html) = &app.report_html {
                     b.push_str(&format!(
@@ -732,6 +775,8 @@ pub fn page(apps: &[App], written: &str) -> String {
     b
 }
 
+#[cfg(test)]
+mod given_tests;
 #[cfg(test)]
 mod inputs_tests;
 #[cfg(test)]
