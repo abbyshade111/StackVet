@@ -1,6 +1,6 @@
 # sv review and the report disagree: 'nothing waiting' beside a needs-attention item with no review path
 
-**Status:** open
+**Status:** claimed by securevibe-trial-prep, 11 October 2026
 
 Found by the feedback on the Cursor build (11 October 2026; design entry 0368). The owner's `sv review` run said nothing
 was waiting, while the report still listed the f-string finding as needing attention. `sv review` goes through the
