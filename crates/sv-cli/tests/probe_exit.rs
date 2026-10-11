@@ -1,12 +1,11 @@
 //! `sv probe` exits 2 when it could not reach the address (backlog 0235), so a CI step that runs it fails rather than
 //! passing on an address it never touched. Reached, it exits 0 whatever it found.
 //!
-//! The address is a public one, which `sv` resolves before it asks anything, as `probe_addresses.rs` does; `curl` is
-//! a stand-in on the PATH, so no real site is asked. The stand-in is a small program this test compiles with `rustc`
-//! before it runs. A shell script cannot be run as `curl` on Windows, so the same program serves on Unix and Windows.
+//! This runs the whole command with a stand-in `curl` on the PATH, and so only on Unix: on Windows the command runs
+//! the system's own `curl`, whatever the PATH says. The decision it makes is tested on every platform in
+//! `probe_verdict_tests.rs`. The address is a public one, which `sv` resolves before it asks anything, so no real
+//! site is asked: the stand-in is a small program this test compiles with `rustc` before it runs.
 
-// Unix only for now: on Windows `sv probe` still ran the real `curl` and not the stand-in, even when it was started
-// from the stand-in's folder, so this check is off there until the stand-in is found on Windows.
 #![cfg(unix)]
 
 use std::path::{Path, PathBuf};

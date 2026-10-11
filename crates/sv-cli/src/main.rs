@@ -32,6 +32,7 @@ macro_rules! print {
 
 mod baseline;
 mod history;
+mod probe_verdict;
 mod review;
 
 /// Runs the command, and ends with its status: 3 for any error `sv` could not get past, whichever
@@ -886,7 +887,7 @@ fn cmd_probe(args: &[String]) -> Result<i32> {
     let mut out = sv_check::production::run(&mut http, &target);
     // Whether the site answered at all, decided from its own answers before the two questions
     // below, which ask DNS and a local file rather than the site.
-    let reached = !(out.findings.is_empty() && out.verified.is_empty());
+    let reached = probe_verdict::reached(&out);
     let live = sv_check::live_tls::run(
         &mut sv_check::live_tls::SystemDns,
         &target.host,
@@ -959,11 +960,7 @@ fn cmd_probe(args: &[String]) -> Result<i32> {
     );
     // Not assessed when the address could not be reached, so a CI step fails rather than passing on
     // an address this never touched (backlog 0235; ADR-029, Later).
-    Ok(if reached {
-        exit::CLEAN
-    } else {
-        exit::NOT_ASSESSED
-    })
+    Ok(probe_verdict::exit_code(reached))
 }
 
 /// Writes `security-notes.md`: the questions no tool can answer, for the requirements that apply.
