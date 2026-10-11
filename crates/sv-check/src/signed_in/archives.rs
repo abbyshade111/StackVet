@@ -281,6 +281,7 @@ pub fn ordinary(format: &str) -> Vec<u8> {
     let size = ORDINARY_TEXT.len() as u32;
     match format {
         "gzip" => gzip(&deflate_stored(ORDINARY_TEXT), crc, size.into()),
+        "tar" => tar("sv-probe.txt", ORDINARY_TEXT),
         _ => zip(&[Entry {
             name: "sv-probe.txt".to_owned(),
             method: 0,
@@ -293,6 +294,11 @@ pub fn ordinary(format: &str) -> Vec<u8> {
 
 /// An archive of `format` holding one file of `n` zero bytes, compressed.
 pub fn unpacks_to(format: &str, n: u64) -> Vec<u8> {
+    // A tar is not compressed, so it is as big as what it unpacks to: the caller keeps `n` within the
+    // upload's own cap (`over_limits`), and this builds nothing bigger.
+    if format == "tar" {
+        return tar("sv-probe-zeros.txt", &vec![0; n as usize]);
+    }
     let deflated = deflate_zeros(n);
     let crc = crc32_of_zeros(n);
     match format {
@@ -305,6 +311,33 @@ pub fn unpacks_to(format: &str, n: u64) -> Vec<u8> {
             size: n as u32,
         }]),
     }
+}
+
+/// A plain `.tar` holding one file called `name` with `data` (backlog 0241): a 512-byte `ustar` header
+/// (name, mode, sizes, and the checksum of the header itself), the data padded to whole 512-byte blocks,
+/// and the two empty blocks that end an archive. Written by hand, as the zip and gzip writers are.
+pub fn tar(name: &str, data: &[u8]) -> Vec<u8> {
+    let mut header = [0u8; 512];
+    header[..name.len()].copy_from_slice(name.as_bytes());
+    header[100..107].copy_from_slice(b"0000644");
+    header[108..115].copy_from_slice(b"0000000");
+    header[116..123].copy_from_slice(b"0000000");
+    header[124..135].copy_from_slice(format!("{:011o}", data.len()).as_bytes());
+    header[136..147].copy_from_slice(b"00000000000");
+    header[156] = b'0';
+    header[257..263].copy_from_slice(b"ustar\0");
+    header[263..265].copy_from_slice(b"00");
+    // The checksum is the sum of every byte of the header, with the checksum field itself as spaces.
+    header[148..156].copy_from_slice(b"        ");
+    let sum: u32 = header.iter().map(|&b| u32::from(b)).sum();
+    header[148..154].copy_from_slice(format!("{sum:06o}").as_bytes());
+    header[154] = 0;
+    header[155] = b' ';
+    let mut out = header.to_vec();
+    out.extend_from_slice(data);
+    let padded = data.len().div_ceil(512) * 512;
+    out.resize(512 + padded + 1024, 0);
+    out
 }
 
 /// A zip whose headers say its one file unpacks to `stated` bytes, while its data unpacks to `n`
@@ -344,6 +377,7 @@ pub fn holding_files(n: u64) -> Vec<u8> {
 fn file_name(format: &str, what: &str) -> String {
     match format {
         "gzip" => format!("sv-probe-{what}.txt.gz"),
+        "tar" => format!("sv-probe-{what}.tar"),
         _ => format!("sv-probe-{what}.zip"),
     }
 }
@@ -368,6 +402,13 @@ fn over_limits(format: ArchiveFormat, upload: &UploadSection) -> (Vec<OverLimit>
                 "`max-unpacked-bytes` is {most}, and a {f} just over it would unpack to more than \
                  the {MOST_UNPACKED_BYTES} bytes this check ever sends"
             ));
+        } else if format == ArchiveFormat::Tar && n > super::uploads::MOST_UPLOAD_BYTES {
+            // A tar is not compressed: one just over the stated most is as big as what it unpacks to.
+            not.push(format!(
+                "`max-unpacked-bytes` is {most}, and a tar just over it is not compressed, so it \
+                 would be {n} bytes, more than the {} bytes this check sends",
+                super::uploads::MOST_UPLOAD_BYTES
+            ));
         } else {
             sent.push(OverLimit {
                 what: format!("A {f} that unpacks to {n} bytes (the stated most is {most})"),
@@ -388,6 +429,13 @@ fn over_limits(format: ArchiveFormat, upload: &UploadSection) -> (Vec<OverLimit>
                 });
             }
         }
+    }
+    if let (Some(most), ArchiveFormat::Tar) = (upload.max_files, format) {
+        // Not silence: a tar's files are not sent here, and the report says so.
+        not.push(format!(
+            "`max-files` is {most}, and this check does not send a tar holding more files than \
+             one, so the most files a tar may hold is not tested"
+        ));
     }
     if let (Some(most), ArchiveFormat::Zip) = (upload.max_files, format) {
         let n = most.saturating_add(1);
@@ -1161,6 +1209,20 @@ mod tests {
         \x20n+=len(b);zero=zero and not b.strip(b'\\0')\n\
         print(1,n,zero)";
 
+    /// Unpacks a plain tar with `tarfile`, which reads every member, and says how many files it held,
+    /// how many bytes they came to, and whether every byte was zero (or the text).
+    const READ_TAR: &str = "import sys,io,tarfile\n\
+        t=tarfile.open(fileobj=io.BytesIO(sys.stdin.buffer.read()))\n\
+        n=0;k=0;zero=True\n\
+        for i in t.getmembers():\n\
+        \x20f=t.extractfile(i)\n\
+        \x20while True:\n\
+        \x20\x20b=f.read(1<<20)\n\
+        \x20\x20if not b: break\n\
+        \x20\x20n+=len(b);zero=zero and not b.strip(b'\\0')\n\
+        \x20k+=1\n\
+        print(k,n,zero)";
+
     #[test]
     fn the_crc_of_zeros_is_the_crc_of_that_many_zero_bytes() {
         for n in [0u64, 1, 2, 7, 8, 255, 256, 1000, 65_537] {
@@ -1190,6 +1252,27 @@ mod tests {
         assert_eq!(python(READ_ZIP, &holding_files(37)), "37 0 True");
         assert_eq!(python(READ_ZIP, &ordinary("zip")), "1 23 False");
         assert_eq!(python(READ_GZIP, &ordinary("gzip")), "1 23 False");
+    }
+
+    /// A plain tar unpacks to exactly what it says in Python's `tarfile`, at every size around a block
+    /// (512 bytes) and the stated most the check ever sends (backlog 0241).
+    #[test]
+    fn each_plain_tar_unpacks_to_exactly_what_it_says_in_pythons_tarfile() {
+        for n in [0u64, 1, 511, 512, 513, 1024, 1_000_003, MOST_UPLOAD_BYTES] {
+            // `tarfile` reads a tar that lacks its two end blocks as well, so the length is checked too: a
+            // header, the data in whole blocks, and the two empty blocks that end the archive.
+            assert_eq!(
+                unpacks_to("tar", n).len() as u64,
+                512 + n.div_ceil(512) * 512 + 1024,
+                "the length of a tar of {n} zeros"
+            );
+            assert_eq!(
+                python(READ_TAR, &unpacks_to("tar", n)),
+                format!("1 {n} True"),
+                "a tar of {n} zeros"
+            );
+        }
+        assert_eq!(python(READ_TAR, &ordinary("tar")), "1 23 False");
     }
 
     /// The largest an archive here is ever made: a gigabyte, in a megabyte or so, and still read
