@@ -40,7 +40,7 @@ find it; `python3 tools/backlog.py summary` prints the counts. Items are named b
 searching `docs/backlog/` for it, or `python3 tools/backlog.py show <number>` prints one. Check an item against `main` before claiming: some were overtaken by later work and want
 a done note rather than a build.
 
-**Phase 0: the record of direct pushes.** Added 11 October 2026 at the owner's asking, ahead of everything else. Item 0248 (`python3 tools/backlog.py show 0248`): a check that finds pushes to `main` that skipped the pull-request rule, from the repository's own history. It is claimable on its own and does not wait for the phases below.
+**Phase 0: the record of direct pushes.** Added 11 October 2026 at the owner's asking, ahead of everything else. Item 0258 (`python3 tools/backlog.py show 0258`): a check that finds pushes to `main` that skipped the pull-request rule, from the repository's own history. It is claimable on its own and does not wait for the phases below.
 
 **Phase 1: close what is known to be broken.** Safety and honesty first; each numbered sub-item is claimable on
 its own. The two reviews of the code merged 1 to 6 October and the MCP hardening list, which the first version of
