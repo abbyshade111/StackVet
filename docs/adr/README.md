@@ -131,6 +131,7 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-085](ADR-085.md) | A stand-in name server on the fenced network records the names an app asks for (accepted) |
 | [ADR-086](ADR-086.md) | The observability dashboard adds five things to `sv dashboard`, as the owner chose on 11 October 2026 (proposed) |
 | [ADR-087](ADR-087.md) | A `creates` entry may name where its record is read back, so the owner field is tried on it (accepted, 11 October 2026) |
+| [ADR-088](ADR-088.md) | Four credits and gaps the part 4 audit found wrong, corrected (kill-switch status, skipped private pages, admin-action credit, model files not read whole); accepted 11 October 2026 |
 
 ## Where v1's records disagree with what v1 built
 

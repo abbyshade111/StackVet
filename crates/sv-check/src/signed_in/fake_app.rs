@@ -228,6 +228,8 @@ pub(super) struct Flaws {
     pub(super) admin_action_says_ok: bool,
     /// Nobody's announcement is posted, the admin's included.
     pub(super) admin_action_broken: bool,
+    /// The admin's announcement posts once; after that the admin's answer is a success that posts nothing.
+    pub(super) admin_action_stops_after_first: bool,
     /// Sign-up makes an admin of anybody who asks for it with `role=admin` or `is_admin=true`.
     pub(super) signup_trusts_role: bool,
     /// An email change makes an admin of the account that asks for it with `role=admin` or
@@ -2053,9 +2055,14 @@ impl FakeApp {
                     return Some(Self::respond(403, vec![], "forged"));
                 }
                 let allowed = is_admin || (user.is_some() && self.flaws.admin_action_open);
-                if allowed && !self.flaws.admin_action_broken {
+                let stopped = self.flaws.admin_action_stops_after_first
+                    && is_admin
+                    && !self.announcements.is_empty();
+                if allowed && !self.flaws.admin_action_broken && !stopped {
                     let text = form(r).get("text").cloned().unwrap_or_default();
                     self.announcements.push(text);
+                    Self::respond(302, vec![("Location", "/announcements".into())], "")
+                } else if stopped {
                     Self::respond(302, vec![("Location", "/announcements".into())], "")
                 } else if self.flaws.admin_action_says_ok {
                     Self::respond(200, vec![], "Something went wrong.")

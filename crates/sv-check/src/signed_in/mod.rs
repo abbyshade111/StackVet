@@ -2530,8 +2530,9 @@ mod tests {
         ] {
             assert!(credited_in_part(&o, id), "{id}: {:#?}", o.verified);
         }
+        // One action listed is one sample of the owner's list, so it is in part, as one listed page is (group H).
         assert!(
-            credited_in_full(&o, ADMIN_ACTION.rule_id),
+            credited_in_part(&o, ADMIN_ACTION.rule_id),
             "{:#?}",
             o.verified
         );
