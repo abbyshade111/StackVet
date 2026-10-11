@@ -27,4 +27,11 @@ The owner's choice, one of:
    then only prove what the writer itself says.
 
 Recommendation: option A for rar, and for 7z option B only if the owner wants 7z in the report's claims; otherwise
-option A for both. Until the owner chooses, nothing here is built.
+option A for both.
+
+**The owner's choice, 11 October 2026:** option A for rar (a known limit, said in the report), and option B for 7z.
+Asked which reader the 7z test uses, the owner chose `py7zr`, a Python package, for the tests only: it is not shipped
+with `sv`, and it reads the files `sv` writes without sharing code with the writer. Its use needs its own decision
+record and a CI install step, both in the pull request that builds it. Sent by a stored 7z (no compression), capped
+the way tar is (ADR-046), so a 7z holding more files than one is not tested for `max-files`, as tar's is not.
+ Until the owner chooses, nothing here is built.
