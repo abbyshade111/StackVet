@@ -171,7 +171,16 @@ fn a_run_that_fails_says_what_its_teardown_could_not_remove() {
 fn each_request_is_timed_where_it_is_sent_even_one_that_fails() {
     // Backlog 226, part 2, item 13: a time on each request inside a suite, taken in `probe`, so no
     // suite has to time itself.
-    let backend = backend_running("request-times", "#!/bin/sh\nsleep 0.05\nexit 1\n");
+    // The fake `docker` leaves a mark when it runs, so the time is checked only for a run that ran it
+    // (backlog 0246). A file written a moment before it is run can still be busy in another thread's
+    // child ("text file busy" on Linux); such a run never reaches the command and took no time worth
+    // checking, so it is tried again. Before this, that run was timed at zero milliseconds and failed.
+    let backend = backend_running(
+        "request-times",
+        "#!/bin/sh\ntouch \"$0.ran\"\nsleep 0.05\nexit 1\n",
+    );
+    let mark = format!("{}.ran", backend.binary);
+    let _ = std::fs::remove_file(&mark);
     let request = sv_check::probes::ProbeRequest {
         id: "probe-1".to_owned(),
         method: "GET".to_owned(),
@@ -179,14 +188,22 @@ fn each_request_is_timed_where_it_is_sent_even_one_that_fails() {
         headers: Vec::new(),
         body: None,
     };
+    let mut seen = Vec::new();
+    for _ in 0..5 {
+        let _ = backend.probe(&Via::Sidecar("sv-1-probe"), "app", 8000, &request);
+        seen.extend(backend.take_request_times());
+        if std::path::Path::new(&mark).exists() {
+            break;
+        }
+    }
     assert!(
-        backend
-            .probe(&Via::Sidecar("sv-1-probe"), "app", 8000, &request)
-            .is_none()
+        std::path::Path::new(&mark).exists(),
+        "the fake command never ran in five tries, so no time is checked: {seen:?}"
     );
-    let times = backend.take_request_times();
-    assert_eq!(times.len(), 1, "{times:?}");
-    assert_eq!(times[0].0, "probe-1");
-    assert!(times[0].1 >= 40, "{times:?}");
+    let (id, took) = seen
+        .last()
+        .expect("a time for the run that ran the command");
+    assert_eq!(id, "probe-1", "{seen:?}");
+    assert!(*took >= 40, "{seen:?}");
     assert!(backend.take_request_times().is_empty(), "taken once");
 }
