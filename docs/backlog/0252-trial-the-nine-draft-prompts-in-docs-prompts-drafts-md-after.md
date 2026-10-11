@@ -6,6 +6,7 @@ The nine drafts in `docs/prompts/drafts.md` (design entry 0368, from the Cursor 
 none is served by `sv`. Each draft names what its trial would measure. The trial needs the owner's yes and a budget,
 since it spends model money, and the library's rule (`docs/PROMPTS.md`) decides which drafts are promoted.
 
-Run it after the check of the repository's own history (0248 in the git-history item, which is first on the roadmap), so
+Run it after the noise work (the three items the other session adds on the high false-positive rate, which the owner
+asked for on 11 October 2026), and after the check of the repository's own history (0248 in the git-history item, which is first on the roadmap), so
 the trial can measure that check at the same time. Promote a draft to `data/prompts.json` only if its trial meets the
 rule; keep the rest in the drafts file with what happened.
