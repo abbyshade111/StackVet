@@ -31,6 +31,19 @@ pub struct Limits {
     pub mem_bytes: u64,
 }
 
+/// What a run took of its app's container: one reading, and the limits it started with (backlog 0243).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Taken {
+    pub reading: Reading,
+    pub limits: Limits,
+}
+
+/// The `--format` `docker stats` is asked for, in the order `parse_stats` reads it.
+pub const STATS_FORMAT: &str = "{{.CPUPerc}} | {{.MemUsage}} | {{.NetIO}} | {{.BlockIO}}";
+
+/// The `--format` `docker inspect` is asked for, in the order `parse_limits` reads it.
+pub const LIMITS_FORMAT: &str = "nanocpus={{.HostConfig.NanoCpus}} mem={{.HostConfig.Memory}}";
+
 /// Reads one line of `docker stats --no-stream --format "{{.CPUPerc}} | {{.MemUsage}} | {{.NetIO}} | {{.BlockIO}}"`,
 /// such as `0.00% | 404KiB / 64MiB | 736B / 126B | 0B / 0B`. `None` for any line that is not that: the run then says it
 /// could not read the engine, rather than guessing.

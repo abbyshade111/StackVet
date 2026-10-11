@@ -680,6 +680,9 @@ pub struct RunOutcome {
     pub installed: Vec<(install::Ecosystem, bool)>,
     /// What `sv`'s stand-in services received, read before they were removed (ADR-082).
     pub stand_ins: stand_ins::StandIns,
+    /// What the engine said of the app's container while it ran: its CPU, memory and traffic, and the limits it
+    /// started with (backlog 0243). `None` when the engine would not say.
+    pub resources: Option<resources::Taken>,
     /// What happened to the run's containers (backlog 226, part 2, item 18).
     pub container: ContainerRecord,
     /// How long each suite of questions took, and the app's own tests, in milliseconds, in the
@@ -713,6 +716,7 @@ impl RunOutcome {
             sidecar_lost: _,
             installed: _,
             stand_ins: _,
+            resources: _,
             container: _,
             suite_timings: _,
             request_timings: _,

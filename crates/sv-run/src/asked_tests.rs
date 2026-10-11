@@ -26,6 +26,7 @@ fn outcome() -> RunOutcome {
         sidecar_lost: None,
         installed: Vec::new(),
         stand_ins: Default::default(),
+        resources: None,
         container: Default::default(),
         suite_timings: Vec::new(),
         request_timings: Vec::new(),
