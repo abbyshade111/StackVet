@@ -987,7 +987,8 @@ pub(super) fn owned_checks(
             OTHER_USERS_DATA.rule_id,
             OTHER_USERS_DATA.requirement_ids,
             tried.join("; "),
-        );
+        )
+        .in_part();
         if writes_refused {
             out.verified.push(credit);
         } else {
@@ -1355,13 +1356,13 @@ mod tests {
     }
 
     #[test]
-    fn refused_reading_listing_changing_and_deleting_is_checked_and_reading_alone_is_checked_in_part()
-     {
+    fn refused_reading_listing_changing_and_deleting_is_checked_in_part_on_one_record() {
         // All four tried and refused: checked, and the line says what was tried.
         let (full, found) = other_users(Flaws::default(), &users_full());
         assert!(found.is_empty(), "{found:?}");
         let full = full.expect("credited");
-        assert!(!full.in_part, "{full:?}");
+        // One record of one owner is one sample of the owner's data (backlog 0006 part 4): in part.
+        assert!(full.in_part, "{full:?}");
         for said in [
             "refused to a second test user",
             "not shown to the second user on /account, /my-notes",
@@ -1415,10 +1416,10 @@ mod tests {
             o.not_assessed
         );
         // The control: a correct app's routes do change and delete the owner's own record, so the
-        // second user's being refused counts, and V8.2.2 is checked in full.
+        // second user's being refused counts, and V8.2.2 is checked, in part on one record.
         let (full, found) = other_users(Flaws::default(), &users_full());
         assert!(found.is_empty(), "{found:?}");
-        assert!(!full.expect("credited").in_part);
+        assert!(full.expect("credited").in_part);
     }
 
     #[test]

@@ -357,7 +357,7 @@ fn same_email_check(http: &mut dyn Http, section: &OidcSection, out: &mut Outcom
                 "a different person with the same email address did not see what the first person \
                  saved on {page}, and the first person still did after their email address changed"
             ),
-        )),
+        ).in_part()),
         _ if !out.findings.iter().any(|f| f.rule_id == SAME_EMAIL.rule_id) => not_assessed(
             out,
             format!(
@@ -581,13 +581,16 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
             ),
         ));
     } else if refused(idp::WRONG_ISS) && refused(idp::WRONG_TOKEN_ISS) && still_works {
-        out.verified.push(crate::Verified::new(
-            MIX_UP.rule_id,
-            MIX_UP.requirement_ids,
-            "a sign-in whose return named another provider, and one whose ID token did, both \
+        out.verified.push(
+            crate::Verified::new(
+                MIX_UP.rule_id,
+                MIX_UP.requirement_ids,
+                "a sign-in whose return named another provider, and one whose ID token did, both \
              refused, where an ordinary sign-in afterwards worked"
-                .to_owned(),
-        ));
+                    .to_owned(),
+            )
+            .in_part(),
+        );
     } else {
         out.not_assessed.push((
             "V10.2.2".to_owned(),
@@ -641,11 +644,14 @@ fn judge(
             severity,
             format!("The app signed the probes in with {what}."),
         )),
-        Some(false) if still_works => out.verified.push(crate::Verified::new(
-            rule.rule_id,
-            rule.requirement_ids,
-            format!("{what}, refused, where an ordinary sign-in afterwards worked"),
-        )),
+        Some(false) if still_works => out.verified.push(
+            crate::Verified::new(
+                rule.rule_id,
+                rule.requirement_ids,
+                format!("{what}, refused, where an ordinary sign-in afterwards worked"),
+            )
+            .in_part(),
+        ),
         Some(false) => out.not_assessed.push((
             ids,
             format!(

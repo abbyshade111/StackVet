@@ -610,15 +610,18 @@ pub(super) fn app_token_expiry_check(
         if works { "opened" } else { "refused" }
     ));
     if works {
-        out.verified.push(crate::Verified::new(
-            APP_TOKEN_EXPIRED.rule_id,
-            APP_TOKEN_EXPIRED.requirement_ids,
-            format!(
-                "the app's own sign-in token, which opened {confirm}, was refused {} after its \
+        out.verified.push(
+            crate::Verified::new(
+                APP_TOKEN_EXPIRED.rule_id,
+                APP_TOKEN_EXPIRED.requirement_ids,
+                format!(
+                    "the app's own sign-in token, which opened {confirm}, was refused {} after its \
                  expiry, while a new sign-in's token still opened it",
-                duration_text(late)
-            ),
-        ));
+                    duration_text(late)
+                ),
+            )
+            .in_part(),
+        );
     } else {
         say(
             "Whether the app refuses its own sign-in token once it has expired: the expired token \
@@ -819,11 +822,11 @@ mod tests {
                 o.not_assessed,
                 o.steps
             );
-            // One token changed one way at one page is in part; its expiry stays whole, as the
-            // session timeouts do (ADR-053, Later).
+            // One token changed one way at one page is in part; its expiry is one request after the wait, so in
+            // part too (backlog 0006 part 4).
             assert!(credited_in_part(&o, APP_TOKEN_UNSIGNED.rule_id));
             assert!(credited_in_part(&o, APP_TOKEN_ALG_NONE.rule_id));
-            assert!(credited_in_full(&o, APP_TOKEN_EXPIRED.rule_id));
+            assert!(credited_in_part(&o, APP_TOKEN_EXPIRED.rule_id));
             // Setup: the control was sent and opened, and the token was really waited out.
             assert!(sent.contains(&"token-real".to_owned()), "{sent:?}");
             assert!(

@@ -756,6 +756,7 @@ fn sign_out_visible(users: &UsersSection, visits: &[(&str, Value)], out: &mut Ou
                     if seen == 1 { "" } else { "s" }
                 ),
             )
+            .in_part()
             // Each private page listed is drawn; one drawn is one sample (ADR-053, Later).
             .in_part_if(visits.len() == 1),
         );
@@ -1530,9 +1531,12 @@ mod tests {
             credited(&o),
             vec![HIDDEN_SIGN_OUT.rule_id, TEXT_AS_MARKUP.rule_id]
         );
-        // One form is one sample; both private pages `users` lists were drawn (ADR-053, Later).
+        // One form is one sample; both private pages `users` lists were drawn (ADR-053, Later). The sign-out
+        // control is in part, since it is one of the listed pages' controls (backlog 0006 part 4).
         for v in &o.verified {
-            assert_eq!(v.in_part, v.check_id == TEXT_AS_MARKUP.rule_id, "{v:?}");
+            let in_part =
+                [TEXT_AS_MARKUP.rule_id, HIDDEN_SIGN_OUT.rule_id].contains(&v.check_id.as_str());
+            assert_eq!(v.in_part, in_part, "{v:?}");
         }
     }
 

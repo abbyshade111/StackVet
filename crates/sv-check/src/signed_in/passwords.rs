@@ -370,15 +370,19 @@ pub(super) fn password_checks(
             "a 7-character password at sign-up, refused where a 32-character one of the same kinds \
              of character was accepted"
                 .to_owned(),
-        ));
+        ).in_part());
     }
 
     if works["lower"] {
-        out.verified.push(crate::Verified::new(
-            COMPOSITION_RULES.rule_id,
-            COMPOSITION_RULES.requirement_ids,
-            "a 32-character password of lowercase letters alone, accepted at sign-up".to_owned(),
-        ));
+        out.verified.push(
+            crate::Verified::new(
+                COMPOSITION_RULES.rule_id,
+                COMPOSITION_RULES.requirement_ids,
+                "a 32-character password of lowercase letters alone, accepted at sign-up"
+                    .to_owned(),
+            )
+            .in_part(),
+        );
     } else {
         out.findings.push(finding_on(
             answers_of(&["lower"]),
@@ -491,7 +495,7 @@ pub(super) fn password_checks(
                     "a password made from \"{word}\", the first usable word in `context-words`, \
                      refused at sign-up where a random password of the same shape was accepted"
                 ),
-            )),
+            ).in_part()),
             (false, false) => out.not_assessed.push((
                 "V6.2.11".to_owned(),
                 format!(
@@ -601,7 +605,7 @@ fn exact_password_checks(
                  refused where the exact passwords signed in",
                 long.password.len()
             ),
-        ));
+        ).in_part());
     } else {
         out.not_assessed.push((
             "V6.2.8".to_owned(),
@@ -713,14 +717,17 @@ pub(super) fn password_field_checks(
             ),
         ));
     } else if !masked.is_empty() {
-        out.verified.push(crate::Verified::new(
-            UNMASKED_PASSWORD.rule_id,
-            UNMASKED_PASSWORD.requirement_ids,
-            format!(
-                "the password field stackvet.toml names, on {}, served as type=password",
-                masked.join(" and ")
-            ),
-        ));
+        out.verified.push(
+            crate::Verified::new(
+                UNMASKED_PASSWORD.rule_id,
+                UNMASKED_PASSWORD.requirement_ids,
+                format!(
+                    "the password field stackvet.toml names, on {}, served as type=password",
+                    masked.join(" and ")
+                ),
+            )
+            .in_part(),
+        );
     }
     if !hints.is_empty() {
         out.findings.push(finding_on(
@@ -1001,7 +1008,7 @@ pub(super) fn change_password_checks(
              with the right one took",
             change.path
         ),
-    ));
+    ).in_part());
     sessions_after_change(bystander_open_after, &change.path, out);
     email_after_change(mail_after, &change.path, out);
 }
@@ -1681,21 +1688,22 @@ mod tests {
         ] {
             assert!(verified_ids(&o).contains(&id), "{id}: {:?}", o.steps);
         }
-        // Sign-up alone, where V6.2.4 and V6.2.12 also name a password change, is in part; the
-        // password policy and the forms named are whole (ADR-053, Later).
+        // Sign-up alone, where V6.2.4 and V6.2.12 also name a password change, is in part (ADR-053, Later).
         for id in [COMMON_PASSWORD.rule_id, BREACHED_PASSWORD.rule_id] {
             assert!(credited_in_part(&o, id), "{id}");
         }
+        // One password against a rule, one listed form or one context word is one sample of what the rule governs:
+        // in part (backlog 0006 part 4). Only the long password, which V6.2.9 says is permitted, is whole.
         for id in [
             SHORT_PASSWORD.rule_id,
             COMPOSITION_RULES.rule_id,
             ALTERED_PASSWORD.rule_id,
-            LONG_PASSWORD.rule_id,
             UNMASKED_PASSWORD.rule_id,
             CONTEXT_WORD_PASSWORD.rule_id,
         ] {
-            assert!(credited_in_full(&o, id), "{id}");
+            assert!(credited_in_part(&o, id), "{id}");
         }
+        assert!(credited_in_full(&o, LONG_PASSWORD.rule_id));
         // These can only ever find something; a clean answer is credited with nothing.
         for id in [
             DEFAULT_ACCOUNT.rule_id,

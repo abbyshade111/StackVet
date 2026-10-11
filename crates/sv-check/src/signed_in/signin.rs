@@ -501,7 +501,7 @@ pub(super) fn brute_force_check(
                  two: the app {how}. The count is what was tested; `within-minutes` was not, \
                  because every attempt landed within a few seconds"
             ),
-        ));
+        ).in_part());
     } else {
         out.findings.push(finding_on(
             (0..attempts).map(|n| format!("guess-{n}")).collect(),

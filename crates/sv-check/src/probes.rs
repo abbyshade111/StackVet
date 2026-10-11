@@ -642,11 +642,14 @@ fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
     if let Some(trace) = find("trace")
         && trace_enabled(trace).is_none()
     {
-        out.push(crate::Verified::new(
-            TRACE_ENABLED.rule_id,
-            TRACE_ENABLED.requirement_ids,
-            "a TRACE request carrying a header this probe invented".to_owned(),
-        ));
+        out.push(
+            crate::Verified::new(
+                TRACE_ENABLED.rule_id,
+                TRACE_ENABLED.requirement_ids,
+                "a TRACE request carrying a header this probe invented".to_owned(),
+            )
+            .in_part(),
+        );
     }
     // Only over the page and the error, both of which have to have answered with a body: one
     // answer judged is not the app's responses judged.
@@ -705,11 +708,14 @@ fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
         && find("git-config").is_some()
         && source_control_exposed(responses).is_none()
     {
-        out.push(crate::Verified::new(
-            SOURCE_CONTROL.rule_id,
-            SOURCE_CONTROL.requirement_ids,
-            "requests for /.git/HEAD and /.git/config".to_owned(),
-        ));
+        out.push(
+            crate::Verified::new(
+                SOURCE_CONTROL.rule_id,
+                SOURCE_CONTROL.requirement_ids,
+                "requests for /.git/HEAD and /.git/config".to_owned(),
+            )
+            .in_part(),
+        );
     }
     out
 }
@@ -977,7 +983,7 @@ pub fn evaluate_api(
                         "an introspection query for the schema, refused where a plain GraphQL query \
                          was answered"
                             .to_owned(),
-                    )),
+                    ).in_part()),
                     (true, Some(false)) => findings.push(finding_on(
                         vec!["graphql-introspection".to_owned()],
                         &GRAPHQL_INTROSPECTION,
@@ -993,7 +999,7 @@ pub fn evaluate_api(
                         "introspection answered, which V4.3.2 allows for an API meant for other \
                          programs, as stackvet.toml says this one is"
                             .to_owned(),
-                    )),
+                    ).in_part()),
                     (true, None) => not_assessed.push((
                         "V4.3.2".to_owned(),
                         "Introspection is on. That is right for an API other programs are meant to \
@@ -1031,7 +1037,7 @@ pub fn evaluate_api(
                                 format!("refused ({})", many.status)
                             }
                         ),
-                    ));
+                    ).in_part());
                 }
             }
         }

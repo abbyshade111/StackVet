@@ -83,7 +83,7 @@ pub(super) fn email_code_checks(
                  session's own code then signed in",
                 flow.entry.use_code.path
             ),
-        ));
+        ).in_part());
             Some(true)
         } else {
             out.not_assessed.push((
@@ -469,7 +469,7 @@ pub(super) fn email_code_guessing(
                 "{attempts} wrong emailed codes in a row, the number you stated plus two: the app \
                  {how}"
             ),
-        ));
+        ).in_part());
     }
 }
 
