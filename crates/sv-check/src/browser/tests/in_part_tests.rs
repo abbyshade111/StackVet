@@ -26,7 +26,7 @@ fn a_sign_out_control_seen_on_the_one_listed_page_is_credited_in_part() {
 }
 
 #[test]
-fn a_sign_out_control_seen_on_both_listed_pages_is_credited_in_full() {
+fn a_sign_out_control_seen_on_both_listed_pages_is_credited_in_part() {
     let two = users(None, None);
     assert_eq!(two.private.len(), 2, "the fixture");
     let (o, _) = run_on(App::default(), &two);
@@ -37,5 +37,5 @@ fn a_sign_out_control_seen_on_both_listed_pages_is_credited_in_full() {
         "{}",
         credits[0].scope
     );
-    assert!(!credits[0].in_part, "{:?}", credits[0]);
+    assert!(credits[0].in_part, "{:?}", credits[0]);
 }

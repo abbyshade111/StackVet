@@ -402,7 +402,7 @@ fn grants(responses: &[ProbeResponse], out: &mut Evidence) {
                  a settings file that leaves `grant_types_supported` out says nothing either way",
                 published.join(" and ")
             ),
-        ).with_evidence(read));
+        ).in_part().with_evidence(read));
         return;
     }
     out.findings.push(finding(
@@ -515,7 +515,7 @@ fn private_files_served(responses: &[ProbeResponse], private: &[PrivateFile], ou
                  name: none was handed back; other files, and other names for them, were not asked for",
                 if answered == 1 { "" } else { "s" }
             ),
-        ).with_evidence(read));
+        ).in_part().with_evidence(read));
         return;
     }
     let secret = served.iter().any(|(f, _)| f.secret);
@@ -571,7 +571,7 @@ fn stayed_up(liveness: &[Liveness], out: &mut Evidence) {
                      still stop it",
                     liveness.last().map_or("", |l| l.after.as_str())
                 ),
-            )
+            ).in_part()
             .with_evidence((0..liveness.len()).map(liveness_id).collect()),
         );
         return;

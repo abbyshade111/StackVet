@@ -123,8 +123,14 @@ fn a_well_set_up_site_is_credited_for_each_thing_it_got_right() {
             "{want} was not credited: {checked:?}"
         );
     }
-    // The front page's one answer and its cookies, in part; the transport, in full (ADR-053, Later).
-    for v in &out.verified {
+    // The front page's one answer and its cookies, in part; the transport, in full (ADR-053, Later). The one
+    // request to the root that is answered 301 is one sample of the requests (backlog 0006 part 4), in part; the
+    // port-level answer is whole and stays plain.
+    for v in out
+        .verified
+        .iter()
+        .filter(|v| v.check_id != PLAIN_HTTP_SERVED.rule_id)
+    {
         let one_answer = [NO_HSTS.rule_id, COOKIE_WITHOUT_HOST_PREFIX.rule_id];
         assert_eq!(
             v.in_part,

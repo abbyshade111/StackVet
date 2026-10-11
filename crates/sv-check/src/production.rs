@@ -1131,14 +1131,17 @@ pub fn run(http: &mut dyn Fetch, target: &Target) -> Outcome {
                 target.host
             ),
         )),
-        (301 | 308, _) => out.verified.push(Verified::new(
-            PLAIN_HTTP_SERVED.rule_id,
-            PLAIN_HTTP_SERVED.requirement_ids,
-            format!(
-                "{} answered {} and sent the browser to HTTPS permanently",
-                target.http, plain.status
-            ),
-        )),
+        (301 | 308, _) => out.verified.push(
+            Verified::new(
+                PLAIN_HTTP_SERVED.rule_id,
+                PLAIN_HTTP_SERVED.requirement_ids,
+                format!(
+                    "{} answered {} and sent the browser to HTTPS permanently",
+                    target.http, plain.status
+                ),
+            )
+            .in_part(),
+        ),
         (302 | 303 | 307, _) => out.findings.push(finding(
             &TEMPORARY_REDIRECT,
             format!(

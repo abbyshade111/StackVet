@@ -183,7 +183,7 @@ pub(super) fn session_timeout_checks(
                     minutes + 1,
                     minutes_text(minutes)
                 ),
-            ));
+            ).in_part());
         } else {
             say(
                 "V7.3.1",
@@ -233,7 +233,7 @@ pub(super) fn session_timeout_checks(
                     minutes + 1,
                     minutes_text(minutes)
                 ),
-            ));
+            ).in_part());
         } else {
             say(
                 "V7.3.2",
