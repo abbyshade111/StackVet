@@ -110,3 +110,31 @@ fn the_names_say_whether_the_name_server_ran_and_asked_nothing() {
     let kept = serde_json::to_string(&seen.stand_ins).unwrap();
     assert!(!kept.contains("names"), "{kept}");
 }
+
+#[test]
+fn the_report_says_how_many_lookups_were_made_and_never_repeats_a_name() {
+    let one = [asked("secret-looking.example.test", 1, "t1")];
+    let two = [
+        asked("api.example.test", 1, "t1"),
+        asked("api.example.test", 28, "t2"),
+    ];
+    // Did not run, ran and asked nothing, and asked some: three different sentences.
+    assert_eq!(
+        lookups_sentence(None),
+        "No name lookups were recorded, because the name server did not run."
+    );
+    assert_eq!(lookups_sentence(Some(&[])), "The app looked up no names.");
+    let sentence = lookups_sentence(Some(&one));
+    assert!(
+        sentence.starts_with("The app made 1 name lookup."),
+        "{sentence}"
+    );
+    assert!(sentence.contains("seen.json"), "{sentence}");
+    // Two lookups, and the names themselves are never written into the report's sentence.
+    let sentence = lookups_sentence(Some(&two));
+    assert!(
+        sentence.starts_with("The app made 2 name lookups."),
+        "{sentence}"
+    );
+    assert!(!sentence.contains("api.example.test"), "{sentence}");
+}
