@@ -51,7 +51,7 @@ pub(crate) fn say_step(what: &str) {
 /// check costs itself and not the report (backlog 0234). Returns the place and the message of the panic. Under a
 /// debug build, `SV_PANIC_IN_STAGE` set to the check's name makes it panic inside the guard, so the path can be
 /// tested (as `SV_PANIC_FOR_TEST` does for the whole run).
-fn guarded<T>(name: &str, run: impl FnOnce() -> T) -> std::result::Result<T, String> {
+pub(crate) fn guarded<T>(name: &str, run: impl FnOnce() -> T) -> std::result::Result<T, String> {
     #[cfg(debug_assertions)]
     let inject = std::env::var("SV_PANIC_IN_STAGE").ok().as_deref() == Some(name);
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
@@ -69,7 +69,7 @@ fn guarded<T>(name: &str, run: impl FnOnce() -> T) -> std::result::Result<T, Str
 }
 
 /// The gap for a check that crashed: what it was, and where the panic was (backlog 0234).
-fn crash_gap(check: &str, place: &str) -> sv_report::Gap {
+pub(crate) fn crash_gap(check: &str, place: &str) -> sv_report::Gap {
     sv_report::Gap {
         what: format!("{check}: the check crashed"),
         why: format!(
@@ -271,7 +271,18 @@ pub fn assemble_report_saying(
     stage(6);
     // What was examined, per family of findings, for a program reading report.json: the same
     // limits as the gaps, decided in the same places (DESIGN, "What was examined, for a program").
-    let mut examined: Vec<sv_report::Examined> = vec![sv_report::Examined::ran("sbom.")];
+    // A bill of materials whose reader crashed is not read: `examined` says so (backlog 0234), and its gap is below.
+    let mut examined: Vec<sv_report::Examined> =
+        vec![if static_scan.crashed("bill_of_materials") {
+            sv_report::Examined::not_run(
+                "sbom.",
+                static_scan
+                    .crashed_why("bill_of_materials")
+                    .unwrap_or_default(),
+            )
+        } else {
+            sv_report::Examined::ran("sbom.")
+        }];
     let advisories = advisories(&scene, &mut examined)?;
 
     let mut findings = Vec::new();
@@ -445,6 +456,7 @@ fn advisories(scene: &Scene, examined: &mut Vec<sv_report::Examined>) -> Result<
         seals,
     } = *scene;
     let static_scan::StaticScan {
+        crashed: _,
         listing,
         scan_report,
         bill_of_materials,
@@ -718,6 +730,7 @@ fn outside_tools(
         seals,
     } = *scene;
     let static_scan::StaticScan {
+        crashed: _,
         listing,
         scan_report,
         bill_of_materials,
@@ -872,6 +885,7 @@ fn running_app(
         seals,
     } = *scene;
     let static_scan::StaticScan {
+        crashed: _,
         listing,
         scan_report,
         bill_of_materials,
@@ -1306,6 +1320,7 @@ fn what_was_not_read(
         seals,
     } = *scene;
     let static_scan::StaticScan {
+        crashed: _,
         listing,
         scan_report,
         bill_of_materials,
@@ -1587,6 +1602,7 @@ fn what_was_not_read(
     }
     gaps.extend(untaught_gaps(&code.untaught));
     gaps.extend(static_scan.package_gaps());
+    gaps.extend(static_scan.crash_gaps());
     examined.extend(static_scan.examined());
     // A package list found and not read: what it names is unknown, so a technology known only by its
     // package is answered as incomplete, not as not used (backlog 0226, part 1, item 11; 0236).
@@ -1664,6 +1680,7 @@ fn requirements_for_tests(
         seals,
     } = *scene;
     let static_scan::StaticScan {
+        crashed: _,
         listing,
         scan_report,
         bill_of_materials,
@@ -1747,6 +1764,7 @@ fn the_owners_word(
         seals,
     } = *scene;
     let static_scan::StaticScan {
+        crashed: _,
         listing,
         scan_report,
         bill_of_materials,
@@ -2350,6 +2368,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         seals,
     } = *scene;
     let static_scan::StaticScan {
+        crashed: _,
         listing,
         scan_report,
         bill_of_materials,
