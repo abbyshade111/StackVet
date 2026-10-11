@@ -1,6 +1,6 @@
 # Find pushes to main that skipped the pull-request rule, from the repository's own history
 
-**Status:** open
+**Status:** claimed by securevibe-git-history, 11 October 2026
 
 Found by the Cursor build (design entry 0368, on the branch of backlog 0222). The AI coding tool pushed to `main`
 directly four times, twice after the owner had set a rule requiring pull requests, and the owner found a second
