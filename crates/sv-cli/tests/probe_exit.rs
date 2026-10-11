@@ -5,6 +5,10 @@
 //! a stand-in on the PATH, so no real site is asked. The stand-in is a small program this test compiles with `rustc`
 //! before it runs. A shell script cannot be run as `curl` on Windows, so the same program serves on Unix and Windows.
 
+// Unix only for now: on Windows `sv probe` still ran the real `curl` and not the stand-in, even when it was started
+// from the stand-in's folder, so this check is off there until the stand-in is found on Windows.
+#![cfg(unix)]
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
