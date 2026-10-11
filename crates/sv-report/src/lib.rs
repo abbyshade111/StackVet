@@ -1053,6 +1053,10 @@ pub struct Report {
     /// Findings a person set aside: false alarms, no longer in `findings`, and accepted risks,
     /// still in it. See `sv_check::review`.
     pub set_aside: Vec<sv_check::review::SetAside>,
+    /// Rules that fired in test code and are information, not findings (ADR-091): not counted, listed
+    /// in their own section for a person to review with `sv review`. Left out of the file when empty.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub test_information: Vec<Finding>,
     /// Entries in `[[finding-review]]` that do not count, each with its reason.
     pub reviews_not_counted: Vec<String>,
     pub out_of_scope: Vec<OutOfScopeFinding>,
@@ -2118,6 +2122,8 @@ pub struct Inputs<'a> {
     pub findings: Vec<Finding>,
     /// What a person set aside, and the entries that did not count. See `Report::set_aside`.
     pub set_aside: Vec<sv_check::review::SetAside>,
+    /// Test-code information, not counted. See `Report::test_information`.
+    pub test_information: Vec<Finding>,
     pub reviews_not_counted: Vec<String>,
     /// Everything that ran, looked at what it needed to, and found nothing wrong.
     ///
@@ -2743,6 +2749,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         claims,
         findings,
         set_aside: inputs.set_aside,
+        test_information: inputs.test_information,
         reviews_not_counted: inputs.reviews_not_counted,
         out_of_scope,
         satisfied_elsewhere,

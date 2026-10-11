@@ -2511,7 +2511,11 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         seals,
         &safe_defaults.decided,
     );
-    let findings = reviewed.findings;
+    // Rules that fired in test code and are information, not findings (ADR-091): kept apart, never counted.
+    let (findings, test_information): (Vec<_>, Vec<_>) = reviewed
+        .findings
+        .into_iter()
+        .partition(|f| !f.is_test_information());
     if !safe_defaults.unreadable.is_empty() {
         gaps.push(sv_report::Gap {
             what: format!(
@@ -2625,6 +2629,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         buckets,
         claims: resolved,
         findings,
+        test_information,
         set_aside: reviewed.set_aside,
         reviews_not_counted: reviewed.not_counted,
         verified: &verified,
