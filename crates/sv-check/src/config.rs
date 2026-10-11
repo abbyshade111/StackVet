@@ -87,6 +87,7 @@ pub fn check_dir_in(
     );
     report.record(GITIGNORE_COVERS_ENV, gitignore_covers_env(app_dir));
     report.record("config.security-contact", security_contact(app_dir));
+    report.record("config.ai-commits-off-merge", ai_commits_off_merge(app_dir));
     report.record(
         "config.versions-pinned",
         versions_pinned(listing, bill_of_materials),
@@ -269,6 +270,70 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
                 .into(),
         }))),
     }
+}
+
+/// Commits on the default branch that an AI coding tool made and that were not merged in (ADR-092). Always an
+/// `Info` note, never a finding that fails and never a credit: a commit either names its tool or it does not,
+/// and the report says which of these it can and cannot see.
+fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
+    let Some(commits) = crate::git::ai_commits_off_merge(app_dir) else {
+        return Outcome::NotAssessed(
+            "This folder is not a git repository, or git could not read its history, so `sv` cannot say which \
+             commits an AI coding tool made outside a merge."
+                .to_owned(),
+        );
+    };
+    let (title, description) = match commits.len() {
+        0 => (
+            "No commit on the default branch was made by an AI coding tool outside a merge".to_owned(),
+            "Every commit that names an AI coding tool came in through a merge, or none names one.".to_owned(),
+        ),
+        n => {
+            let shown: Vec<String> = commits
+                .iter()
+                .take(10)
+                .map(|c| format!("`{}` {} ({})", &c.hash[..c.hash.len().min(8)], c.subject, c.tool))
+                .collect();
+            (
+                format!("{n} commit(s) on the default branch were made by an AI coding tool and not merged in"),
+                format!(
+                    "These commits name an AI coding tool and reached the branch directly: {}{}.",
+                    shown.join("; "),
+                    if n > 10 { format!("; and {} more", n - 10) } else { String::new() }
+                ),
+            )
+        }
+    };
+    Outcome::Failed(Box::new(crate::finding::found(Finding {
+        evidence: Vec::new(),
+        also_reported_by: Vec::new(),
+        fingerprint: String::new(),
+        earlier_fingerprints: Vec::new(),
+        marked_test_code: false,
+        bundled_library: None,
+        outranked: None,
+        also_on_this_line: Vec::new(),
+        rule_id: "config.ai-commits-off-merge".into(),
+        title,
+        severity: Severity::Info,
+        confidence: Confidence::High,
+        location: Location {
+            file: ".git".to_owned(),
+            line: 1,
+        },
+        secret: None,
+        requirement_ids: Vec::new(),
+        cwe: Vec::new(),
+        description: format!(
+            "{description} This check reads only what a commit says about itself, in its `Assisted-by:` or \
+             `Co-Authored-By:` line, so a commit that names no tool is not seen. Whether the hosting service's \
+             protection rules held is in its settings, which `sv` does not read."
+        ),
+        impact: "A change that reached the branch without a merge reached it without another person's review.".into(),
+        fix: "Ask the AI coding tool to work on a branch and open a pull request, and merge it after a look. Turn on \
+              the pull-request rule for the default branch, so a direct push is refused."
+            .into(),
+    })))
 }
 
 /// A file that holds credentials, committed in the past and no longer tracked: still in the history.
@@ -837,6 +902,10 @@ fn security_contact(app_dir: &Path) -> Outcome {
             .into(),
     })))
 }
+
+#[cfg(test)]
+#[path = "config_ai_tests.rs"]
+mod ai_tests;
 
 #[cfg(test)]
 mod tests {
