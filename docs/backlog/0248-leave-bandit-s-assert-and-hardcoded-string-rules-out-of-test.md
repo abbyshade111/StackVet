@@ -13,16 +13,23 @@ record, `Status: proposed`, when the change is built):
 - A file is test code when its path has a `tests` folder, or its name starts with `test_` or ends `_test.py`, `_test.go`,
   or `.test.js`.
 - In test code, Bandit's B101 (assert) and B105, B106, and B107 (hardcoded password or credential strings) are not
-  reported as findings. The report says so in one line per rule, with the count, and names the folder.
+  counted as findings. They are informational: the report keeps them in their own section, named for the rule and the
+  test file, with the count per rule. A person can review them with `sv review`, and mark each as a fixture or not.
+  Only a person's review can turn one into a finding, so the report never counts them as a failure on its own.
+- The report says, in one line per rule, which rules fired in test files, and names the folder, so the person knows
+  which files to look at if they want to change them.
 - The secrets scan (`sv`'s own, which looks for real key shapes) still runs on test files, and a real-looking key in a
-  test file is still a finding. That is the guard against a real credential being waved through as a fixture.
+  test file is still a finding, counted as one. That is the guard against a real credential being waved through as a
+  fixture.
 - Everything else Bandit reports in test code, and everything it reports in app code, is unchanged.
 
 Alternatives considered: leave it as it is (the report stays noisy, and a person has to read 79 lines to find the
-few that matter); downgrade these to "info" (still counted, still in the findings list, so the list stays long);
-exclude test folders altogether (would also hide a real key in a test file, which the proposal keeps visible).
+few that matter); count them as findings but downgrade to "info" (they would still be in the findings list and still
+move the counts); exclude test folders altogether (would also hide a real key in a test file, which the proposal keeps
+visible).
 
 What changes for the owner: the finding count drops, and the report's counts change; it changes what counts as evidence,
 so it needs the owner's yes, and a decision record in the pull request that builds it. Proposed test: a fixture test
-file holding an `assert` and a fixture password is quiet; the same code in app code still fires; a real-looking key in a
-test file still fires (break the rule, and check each of these fails).
+file holding an `assert` and a fixture password is reported as informational, not as a finding; the same code in app
+code still fires as a finding; a real-looking key in a test file still fires as a finding; and a reviewed-as-fixture
+note in `sv review` keeps its informational line (break each rule, and check each test fails).
