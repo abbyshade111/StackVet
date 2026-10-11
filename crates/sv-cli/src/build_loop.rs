@@ -9,6 +9,7 @@
 
 use anyhow::{Context, Result};
 use serde_json::{Value, json};
+use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::Path;
 use sv_report::{BuildLoop, LoopCounts};
@@ -47,6 +48,10 @@ pub struct Line {
     /// What `sv` handed over since the last line (ADR-084, decision 5): `instructions` (given when
     /// the AI tool connected), `prompt:<id>` (a prompt fetched), `report:<file>` (a report file read).
     pub handed: Vec<String>,
+    /// The size in bytes of each thing `handed` names that has one: a report file read, a prompt
+    /// fetched (backlog 0227, decided 11 October 2026, ADR-084). Keyed by the same name as `handed`;
+    /// empty for a line written before sizes were kept, and then the dashboard says so.
+    pub handed_sizes: BTreeMap<String, u64>,
 }
 
 /// The most names a line keeps of what a call asked, and of what was handed over.
@@ -143,6 +148,9 @@ impl Line {
         if !self.handed.is_empty() {
             line["handed"] = json!(self.handed);
         }
+        if !self.handed_sizes.is_empty() {
+            line["sizes"] = json!(self.handed_sizes);
+        }
         if let Some(c) = &self.counts {
             line["counts"] = json!({
                 "findings": c.findings,
@@ -197,6 +205,26 @@ impl Line {
         };
         let asked = names("asked", is_name)?;
         let handed = names("handed", is_handed)?;
+        // A size is kept only for a name the line hands over, and not past the limit: anything else
+        // makes the line one `sv` did not write.
+        let handed_sizes = match v.get("sizes") {
+            None => BTreeMap::new(),
+            Some(sizes) => {
+                let sizes = sizes.as_object()?;
+                if sizes.len() > MAX_NAMES {
+                    return None;
+                }
+                sizes
+                    .iter()
+                    .map(|(name, size)| {
+                        if !is_handed(name) || !handed.contains(name) {
+                            return None;
+                        }
+                        Some((name.clone(), size.as_u64()?))
+                    })
+                    .collect::<Option<BTreeMap<String, u64>>>()?
+            }
+        };
         // An outcome `sv` does not write makes the line one it did not write.
         let outcome = match v.get("outcome") {
             None => None,
@@ -226,6 +254,7 @@ impl Line {
             fingerprints_cut: v.get("fingerprints_cut") == Some(&Value::Bool(true)),
             asked,
             handed,
+            handed_sizes,
         })
     }
 }
@@ -530,6 +559,8 @@ mod limit_tests;
 mod names_tests;
 #[cfg(test)]
 mod outcome_tests;
+#[cfg(test)]
+mod sizes_tests;
 #[cfg(test)]
 mod tests;
 

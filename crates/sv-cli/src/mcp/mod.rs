@@ -288,6 +288,8 @@ pub struct Server {
     /// What `sv` handed over that names no app (its instructions, a prompt), kept until the next
     /// line written for an app carries it (ADR-084, decision 5).
     handed: std::sync::Mutex<Vec<String>>,
+    /// The size in bytes of each of those that has one (ADR-084, decided 11 October 2026).
+    handed_sizes: std::sync::Mutex<std::collections::BTreeMap<String, u64>>,
 }
 
 /// A check of the app in the folder, with the frameworks and rules loaded, saying each stage as it
@@ -366,6 +368,7 @@ impl Server {
             last_outcome: std::sync::Mutex::new(None),
             noted_off: std::sync::Mutex::new(std::collections::HashSet::new()),
             handed: std::sync::Mutex::new(Vec::new()),
+            handed_sizes: std::sync::Mutex::new(std::collections::BTreeMap::new()),
         })
     }
 
@@ -493,7 +496,7 @@ impl Server {
             },
             "prompts/get" => match get_prompt(&params) {
                 Ok(result) => {
-                    self.prompt_handed(&params);
+                    self.prompt_handed(&params, Some(&result));
                     ok_reply(id, result)
                 }
                 Err((code, why)) => error_reply(id, code, &why),
@@ -572,7 +575,7 @@ impl Server {
                 let answer = if method == "prompts/list" {
                     prompt_list()
                 } else {
-                    get_prompt(params).inspect(|_| self.prompt_handed(params))
+                    get_prompt(params).inspect(|result| self.prompt_handed(params, Some(result)))
                 };
                 match answer {
                     Ok(mut result) => {
@@ -603,20 +606,27 @@ impl Server {
     }
 
     /// Notes something `sv` handed over, for the next line written for an app (ADR-084).
-    fn hand_over(&self, what: String) {
+    fn hand_over(&self, what: String, size: Option<u64>) {
         let mut handed = self
             .handed
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         if !handed.contains(&what) && handed.len() < crate::build_loop::MAX_NAMES {
+            if let Some(size) = size {
+                self.handed_sizes
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .insert(what.clone(), size);
+            }
             handed.push(what);
         }
     }
 
     /// A report file read through `resources/read`, written down for the app the report is of: the
     /// folder above the report's, when that is an app (ADR-084, decision 5).
-    pub(super) fn report_read(&self, folder: &Path, name: &str) {
-        self.hand_over(format!("report:{name}"));
+    pub(super) fn report_read(&self, folder: &Path, name: &str, size: u64) {
+        // The size is the length of the text sv read and returned, kept beside its name (ADR-084).
+        self.hand_over(format!("report:{name}"), Some(size));
         let app = folder
             .parent()
             .filter(|app| matches!(sv_manifest::locate(app), Ok(Some(_))))
@@ -737,17 +747,27 @@ impl Server {
                         .lock()
                         .unwrap_or_else(std::sync::PoisonError::into_inner),
                 ),
+                handed_sizes: std::mem::take(
+                    &mut *self
+                        .handed_sizes
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner),
+                ),
             },
         );
     }
 
     /// A prompt fetched with `prompts/get`, by the name `sv` gave it (ADR-084, decision 5).
-    fn prompt_handed(&self, params: &Value) {
+    fn prompt_handed(&self, params: &Value, result: Option<&Value>) {
         if let Some(name) = params["name"]
             .as_str()
             .filter(|n| crate::build_loop::is_name(n))
         {
-            self.hand_over(format!("prompt:{name}"));
+            // A prompt's size is the length of its text as it was handed over.
+            let size = result
+                .and_then(|r| r["messages"][0]["content"]["text"].as_str())
+                .and_then(|text| u64::try_from(text.len()).ok());
+            self.hand_over(format!("prompt:{name}"), size);
         }
     }
 
@@ -763,7 +783,7 @@ impl Server {
     fn initialize(&self, params: &Value) -> Value {
         // Its instructions are handed over here, and which AI coding tool this is, as it says, kept
         // for the record of the build loop (ADR-084).
-        self.hand_over("instructions".to_owned());
+        self.hand_over("instructions".to_owned(), None);
         let info = &params["clientInfo"];
         *self
             .client
