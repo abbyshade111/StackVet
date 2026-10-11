@@ -1,6 +1,6 @@
 # Nightly: Windows fails: probe_exit (compile error, then a failed test), 10 to 11 October 2026
 
-**Status:** open
+**Status:** claimed by nightly-windows-probe, 11 October 2026
 
 Recorded by the nightly CI routine on 11 October 2026. The Windows workflow failed on 23 of the 57 pushes to `main`
 between 19:03 UTC on 10 October and 02:27 UTC on 11 October, all in one test file, `crates/sv-cli/tests/probe_exit.rs`,
