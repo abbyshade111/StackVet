@@ -1583,6 +1583,18 @@ pub struct BuildLoop {
     pub clients: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub svs: Vec<String>,
+    /// Lines of the record whose hash is chained to the line before, and checks out (backlog 0239). Left out of a
+    /// report when 0, so a report written before the chain reads and seals the same.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub chained: usize,
+    /// The line where the chain first stops checking out, counting the record's lines from 1: a line was changed,
+    /// removed, or added after it was written (backlog 0239). Left out when the chain holds.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chain_broken_at: Option<usize>,
+    /// The last chain that checked out, the record's head, which a report keeps so a later rewrite of the whole record
+    /// shows when two reports are compared (backlog 0239).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chain_head: Option<String>,
     /// How many times the record was turned off while the app was built, each a gap in it.
     #[serde(skip_serializing_if = "is_zero")]
     pub turned_off: usize,
@@ -1887,6 +1899,20 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
     }
     text.push_str(&unreadable);
     text.push_str(&gaps);
+    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not.
+    if let Some(at) = b.chain_broken_at {
+        text.push_str(&format!(
+            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added after it \
+             was written, so that line and the lines after it are not vouched for."
+        ));
+    } else if let (true, Some(head)) = (b.chained > 0, &b.chain_head) {
+        let short: String = head.chars().take(12).collect();
+        text.push_str(&format!(
+            " Each of the record's {} chained lines checks out against the one before it, ending at the hash {short}. \
+             A rewrite of the whole record would keep a valid chain, so compare that hash with an earlier report's.",
+            b.chained
+        ));
+    }
     if b.full {
         text.push_str(
             " The record reached its size limit, so later calls were not written down: the last \

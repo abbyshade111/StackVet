@@ -298,10 +298,79 @@ fn append(app_dir: &Path, line: &Line) -> Result<()> {
     let mut file = options
         .open(&path)
         .with_context(|| format!("opening {}", path.display()))?;
-    let mut text = line.to_json();
+    // Each line is chained to the one before it (backlog 0239): its hash covers the previous line's chain and this
+    // line's own text without the chain, so an edit to a line, or a line removed or added, breaks the chain after it.
+    let previous = std::fs::read(&path)
+        .ok()
+        .and_then(|bytes| last_chain(&bytes))
+        .unwrap_or_else(|| GENESIS.to_owned());
+    let mut value: Value = serde_json::from_str(&line.to_json()).context("the line as JSON")?;
+    value["chain"] = json!(chain_of(&previous, &value.to_string()));
+    let mut text = value.to_string();
     text.push('\n');
     file.write_all(text.as_bytes())
         .with_context(|| format!("writing {}", path.display()))
+}
+
+/// The chain a record starts from, before its first chained line (backlog 0239).
+const GENESIS: &str = "sv build-loop record, before its first chained line";
+
+/// The hash that chains a line to the one before it: over the previous line's chain, and this line's own text without
+/// its chain (backlog 0239).
+fn chain_of(previous: &str, body: &str) -> String {
+    crate::bundle::sha256(format!("{previous}\n{body}").as_bytes())
+}
+
+/// The chain of the last line of `bytes` that carries one, or `None` when no line does.
+fn last_chain(bytes: &[u8]) -> Option<String> {
+    String::from_utf8_lossy(bytes)
+        .lines()
+        .rev()
+        .filter_map(|raw| serde_json::from_str::<Value>(raw).ok())
+        .find_map(|value| value.get("chain")?.as_str().map(str::to_owned))
+}
+
+/// What checking a record's chain found (backlog 0239): how many chained lines check out, the line where the chain
+/// first stops checking out (counting the record's lines from 1), and the last chain that checked out, its head.
+/// Lines written before the chain carry none, and are not counted.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct ChainCheck {
+    pub chained: usize,
+    pub broken_at: Option<usize>,
+    pub head: Option<String>,
+}
+
+/// Checks each chained line in order against the one before it. After the first that does not check out, nothing more
+/// is vouched for.
+pub fn check_chain(bytes: &[u8]) -> ChainCheck {
+    let mut check = ChainCheck::default();
+    let mut previous = GENESIS.to_owned();
+    for (number, raw) in String::from_utf8_lossy(bytes).lines().enumerate() {
+        if check.broken_at.is_some() || raw.trim().is_empty() {
+            continue;
+        }
+        let Ok(mut value) = serde_json::from_str::<Value>(raw) else {
+            continue;
+        };
+        let Some(stored) = value
+            .get("chain")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+        else {
+            continue;
+        };
+        if let Some(object) = value.as_object_mut() {
+            object.remove("chain");
+        }
+        if chain_of(&previous, &value.to_string()) == stored {
+            check.chained += 1;
+            previous = stored.clone();
+            check.head = Some(stored);
+        } else {
+            check.broken_at = Some(number + 1);
+        }
+    }
+    check
 }
 
 /// What the record for the app at `app_dir` shows, for a report about to be written.
@@ -328,8 +397,13 @@ fn read_record(app_dir: &Path) -> BuildLoop {
         .join(sv_scan::ecosystems::BUILD_LOOP_RECORD);
     match std::fs::symlink_metadata(&path) {
         Ok(meta) if meta.is_file() => {
-            let mut summary = summarize(&read_at_most(&path));
+            let bytes = read_at_most(&path);
+            let mut summary = summarize(&bytes);
             summary.full = meta.len() >= MAX_BYTES;
+            let chain = check_chain(&bytes);
+            summary.chained = chain.chained;
+            summary.chain_broken_at = chain.broken_at;
+            summary.chain_head = chain.head;
             summary
         }
         // A link, a folder, or nothing at all: no record sv wrote.
@@ -458,3 +532,7 @@ mod names_tests;
 mod outcome_tests;
 #[cfg(test)]
 mod tests;
+
+// Whether the chain of hashes holds, and where it breaks (backlog 0239).
+#[cfg(test)]
+mod chain_tests;
