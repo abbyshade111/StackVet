@@ -135,7 +135,10 @@ fn a_crashed_file_list_stops_every_reader_and_the_report_says_so() {
     };
     let clean = report("reader-file_list-clean", None).1;
     let clean_json = std::fs::read_to_string(clean.join("report.json")).unwrap_or_default();
-    assert!(found(&clean_json) > 0, "the clean run found nothing: {clean_json}");
+    assert!(
+        found(&clean_json) > 0,
+        "the clean run found nothing: {clean_json}"
+    );
     assert_eq!(found(&json), 0, "a reader ran on the empty list: {json}");
 }
 
