@@ -1,0 +1,11 @@
+# Trial the nine draft prompts in docs/prompts/drafts.md, after the git-history check (0248)
+
+**Status:** open
+
+The nine drafts in `docs/prompts/drafts.md` (design entry 0368, from the Cursor build) are written but not tested, and
+none is served by `sv`. Each draft names what its trial would measure. The trial needs the owner's yes and a budget,
+since it spends model money, and the library's rule (`docs/PROMPTS.md`) decides which drafts are promoted.
+
+Run it after the check of the repository's own history (0248 in the git-history item, which is first on the roadmap), so
+the trial can measure that check at the same time. Promote a draft to `data/prompts.json` only if its trial meets the
+rule; keep the rest in the drafts file with what happened.
