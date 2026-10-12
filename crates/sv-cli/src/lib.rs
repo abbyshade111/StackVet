@@ -1229,13 +1229,38 @@ pub fn prompts_for(
 /// report is the only way to see what changed since.
 ///
 pub fn prompts_for_report(report: &Path) -> Result<ReportPrompts> {
-    let text = std::fs::read_to_string(report).map_err(|e| {
-        anyhow::anyhow!(
-            "there is no report to read at {} ({e}). Make one first: `sv report`, or \
-             `stackvet_write_report` from the AI coding tool.",
+    // A pipe here is read for ever, and with it the MCP server's one thread for answering (backlog
+    // 0282): only a plain file is read, and no more of it than the server reads of any file.
+    if let Ok(meta) = std::fs::symlink_metadata(report)
+        && !meta.is_file()
+    {
+        anyhow::bail!(
+            "{} is not an ordinary file (it is a pipe, a device, a socket, or a folder), so it is not \
+             read. Make a report first: `sv report`, or `stackvet_write_report` from the AI coding tool.",
             report.display()
-        )
-    })?;
+        );
+    }
+    let mut text = String::new();
+    std::fs::File::open(report)
+        .and_then(|file| {
+            std::io::Read::read_to_string(
+                &mut std::io::Read::take(file, crate::mcp::MAX_RESOURCE_BYTES + 1),
+                &mut text,
+            )
+        })
+        .map_err(|e| {
+            anyhow::anyhow!(
+                "there is no report to read at {} ({e}). Make one first: `sv report`, or \
+                 `stackvet_write_report` from the AI coding tool.",
+                report.display()
+            )
+        })?;
+    anyhow::ensure!(
+        text.len() as u64 <= crate::mcp::MAX_RESOURCE_BYTES,
+        "{} is larger than the {} MB sv reads of a report, so it is not read.",
+        report.display(),
+        crate::mcp::MAX_RESOURCE_BYTES / (1024 * 1024)
+    );
     let json: serde_json::Value = serde_json::from_str(&text)
         .with_context(|| format!("{} is not a report `sv` can read", report.display()))?;
     let gaps = sv_check::prompts::gaps_in_report(&json)
