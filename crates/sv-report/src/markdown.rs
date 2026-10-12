@@ -940,6 +940,9 @@ fn finding_section(out: &mut String, report: &Report, finding: &sv_check::Findin
     for note in crate::finding_notes(finding) {
         out.push_str(&format!("*{}*\n\n", inert(&note)));
     }
+    if let Some(step) = crate::next_step(report, finding) {
+        out.push_str(&format!("**Next step.** {}\n\n", inert(&step)));
+    }
     out.push_str(&format!("{}\n\n", inert(&finding.description)));
     out.push_str(&format!(
         "**Why it matters.** {}\n\n",

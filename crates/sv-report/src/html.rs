@@ -897,6 +897,12 @@ fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
     for note in crate::finding_notes(f) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&note)));
     }
+    if let Some(step) = crate::next_step(report, f) {
+        b.push_str(&format!(
+            "<p><strong>Next step.</strong> {}</p>\n",
+            escape(&step)
+        ));
+    }
     b.push_str(&format!("<p>{}</p>\n", escape(&f.description)));
     b.push_str(&format!(
         "<p><strong>Why it matters.</strong> {}</p>\n",

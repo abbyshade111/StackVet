@@ -22,6 +22,42 @@ use sv_check::seal::{App, Checker, Key, Sealed};
 use sv_check::signed::{Signer, SigningKey, Stored};
 use zeroize::Zeroizing;
 
+/// What `sv review` adds when nothing is waiting (ADR-096): it goes through entries only, so a finding that has none is
+/// never offered, and a person may read "nothing waiting" beside a report that still lists findings. Says what to do
+/// with such a finding, and how many the last report in the default report folder lists, when one can be read. It
+/// offers no way to set one aside: only an entry a person confirms here does that.
+pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
+    let folder = app_dir.join(sv_frameworks::names::REPORT_DIR);
+    let counted = std::fs::read_to_string(folder.join("report.json"))
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|report| report.get("findings")?.as_array().map(Vec::len));
+    let last = match counted {
+        Some(0) => format!(
+            "The last report in {} lists no finding that counts.",
+            folder.display()
+        ),
+        Some(1) => format!(
+            "The last report in {} lists 1 finding that counts.",
+            folder.display()
+        ),
+        Some(n) => format!(
+            "The last report in {} lists {n} findings that count.",
+            folder.display()
+        ),
+        None => format!("No report was read in {} to count from.", folder.display()),
+    };
+    format!(
+        "That is about entries only. A finding with no entry is never offered here: a real one is fixed in the code and \
+         checked again, and one that is a false alarm needs a [[finding-review]] entry first, written by you or \
+         proposed by your AI coding tool, which you then confirm here. {last}"
+    )
+}
+
+#[cfg(test)]
+#[path = "review_gap_tests.rs"]
+mod gap_tests;
+
 /// One entry waiting for a person.
 enum Waiting {
     Finding(usize),
@@ -432,6 +468,7 @@ fn review(
             manifest_path.display(),
             notes_catalog.file
         )?;
+        writeln!(out, "{}", findings_without_entries(app_dir))?;
         if scope_waiting {
             confirm_scope(
                 &manifest,
