@@ -38,7 +38,9 @@ def governs(text):
     if start < 0:
         return []
     paragraph = text[start:].split("\n\n")[0]
-    listed = paragraph.split(". A pull request")[0]
+    # The list ends where the standing sentence begins, however the line was wrapped: ". A\npull request" is the same
+    # sentence, and its footer names docs/adr/README.md, which is not a file the record governs (backlog 0267).
+    listed = re.split(r"\.\)?\s+A\s+pull\s+request", paragraph)[0]
     return re.findall(r"`([^`]+)`", listed)
 
 
@@ -128,6 +130,11 @@ def self_test():
     text = "**Status:** x.\n\n**Governs:** `a/b.rs`, `c/*`. A pull request that changes any of these.\n\n`d/e.rs`"
     assert governs(text) == ["a/b.rs", "c/*"], governs(text)
     assert governs("no list here") == []
+    # The standing sentence wrapped across lines still ends the list, so its footer is not read as a governed file.
+    wrapped = "**Governs:** `a/b.rs`. A\npull request that changes any of these changes this record too\n(`docs/adr/README.md`).\n\nx"
+    assert governs(wrapped) == ["a/b.rs"], governs(wrapped)
+    parenthesis = "**Governs:** `a/b.rs` (said later.) A pull request that changes these changes this record too (`docs/adr/README.md`)."
+    assert governs(parenthesis) == ["a/b.rs"], governs(parenthesis)
     print("adr_check self-test: ok")
 
 
