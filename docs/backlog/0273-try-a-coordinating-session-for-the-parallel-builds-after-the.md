@@ -42,8 +42,9 @@ in the pull request that starts the trial day.
   (0224), not after them, and starts on the owner's "go"; the owner tells this session, which does not poll.
 - **Who:** this session holds the role, with no fourth session; the board in git lets another take it over. It also
   does the deep review of the documentation and the code that the owner asked for next; every finding goes on the
-  board's queue and is handed out only after the loop trials are done. The role rule holds: the orchestrator never
-  grades the builders' own work.
+  board's queue. (The hold until the loop trials were done was lifted by the owner the same day: "the hand out of
+  findings no longer depends on the test loop".) The role rule holds: the orchestrator never grades the builders'
+  own work.
 - **Part 3 (merges one at a time): left out.** Auto-merge stays as it is; the trial measures hand-outs and numbers.
 - **Budget:** the trial workflow already puts its estimate to the owner for approval, so this item asks for none.
 - **Three principles, the owner's words:** keep it simple, prioritize transparency, document and test thoroughly.
@@ -92,3 +93,9 @@ and without the standing text.
 that only record a claim, merges of `main` into branches, numbers taken twice, the same work built twice, and pull
 requests refused after their checks passed. Keep the coordinator only if those fall and the items finished per day
 do not; write down what happened either way, in this item and the record.
+
+**Built 12 October 2026** (design entry 0381; ADR-061, Later, accepted): `docs/COORDINATION.md` (the role),
+`docs/coordination/board.md` (the board, opened with the two arms' sessions named and 0263 queued), `tools/coordination.py`
+(open, session, queue, assign, handout, finish, board, check, measure, setup-no-context, and a self-test),
+`crates/sv-cli/tests/coordination.rs`, a line in `CLAUDE.md`, and a row in `docs/ARCHITECTURE.md`. The item stays
+claimed until the trial day is run and written up here with `measure`'s counts.
