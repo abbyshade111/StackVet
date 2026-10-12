@@ -52,8 +52,7 @@ sweeps merged). Two jobs on the same commit, each on an ordinary GitHub runner w
   number of times, this one run cannot say; the logs were not kept. Adopting nextest would want both logs compared
   credit by credit first.
 - **Not measured.** With 0271's faster crash sweeps (CI's `sv-check` unit tests 267 to 279 s down to 149 s), `cargo test`
-  should be about two minutes shorter, which narrows the difference; nextest runs those two tests as processes of their
-  own, so it gains less from 0271.
+  should be about two minutes shorter, which narrows the difference; how much nextest gains from 0271 was not measured.
 
 **Nothing adopted.** Whether to adopt cargo-nextest, and how it is installed, is the owner's decision, asked on
 12 October 2026. The trial branch stays until the owner says it may be deleted.
