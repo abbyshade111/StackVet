@@ -69,6 +69,9 @@ pub struct Outcome {
     /// The fingerprints of test-file information findings that a sealed `counts` entry says are real, so
     /// they count as findings (ADR-093). `assemble` keeps them out of the information list.
     pub counted_in_test: Vec<String>,
+    /// Findings in a folder the owner left out of the checks, set aside rather than counted
+    /// (ADR-099). Filled by the caller that knows the folders; `apply` leaves it empty.
+    pub left_out: Vec<Finding>,
 }
 
 /// What a fingerprint made since 5 October 2026 starts with (deep review A2). A fingerprint of
@@ -566,6 +569,7 @@ pub fn apply(
         set_aside,
         not_counted,
         counted_in_test,
+        left_out: Vec::new(),
     }
 }
 

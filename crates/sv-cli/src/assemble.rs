@@ -244,7 +244,7 @@ pub fn assemble_report_saying(
     // approximate" and "this list is empty"; built once and handed to the lockfile check and the
     // findings below.
     let static_scan =
-        static_scan::StaticScan::read(app_dir, &manifest.not_the_app().0, loaded, &stage)?;
+        static_scan::StaticScan::read(app_dir, &manifest.set_apart(), loaded, &stage)?;
     let (ctx, resolved) =
         sv_manifest::resolve(&manifest, &static_scan.scan_report.as_corroborator());
     let buckets = bucket(
@@ -2507,6 +2507,9 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     // `examined` is complete before this.
     // Merged, marked, the decisions and then the reviews applied, one per line: as `sv check`
     // counts them too (`static_scan::settle`).
+    // The folders the owner left out, and which of them count as left out here (ADR-099).
+    let left_out = crate::left_out::LeftOut::of(manifest, seals);
+    let used = &static_scan.scan_report.not_the_app;
     let reviewed = static_scan::settle(
         app_dir,
         &manifest.finding_review,
@@ -2516,7 +2519,12 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         loaded,
         seals,
         &safe_defaults.decided,
+        &left_out.counted_out(used),
     );
+    let files: Vec<&str> = (static_scan.listing.app_files())
+        .map(|f| f.relative.as_str())
+        .collect();
+    gaps.extend(left_out.gaps(used, &files, &reviewed.left_out));
     // Rules that fired in test code and are information, not findings (ADR-091): kept apart, never counted.
     let (findings, test_information) =
         split_test_information(reviewed.findings, &reviewed.counted_in_test);

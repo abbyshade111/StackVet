@@ -58,6 +58,10 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
 #[path = "review_gap_tests.rs"]
 mod gap_tests;
 
+#[cfg(test)]
+#[path = "review_left_out_tests.rs"]
+mod left_out_tests;
+
 /// One entry waiting for a person.
 enum Waiting {
     Finding(usize),
@@ -78,6 +82,8 @@ enum Waiting {
     /// The two answers that set the level, the audience and the data list, offered for the owner
     /// to confirm (ADR-024, Later, 9 October 2026).
     Scope,
+    /// A `[[left-out]]` entry, offered for the owner to confirm (ADR-099): its place in the list.
+    LeftOut(usize),
 }
 
 pub fn cmd_review(path: Option<PathBuf>) -> Result<()> {
@@ -368,6 +374,14 @@ fn review(
             Waiting::Finding(i),
         );
     }
+    // A folder left out of the checks counts only once its owner confirms it here (ADR-099). An
+    // entry the manifest refuses is not offered: confirming it would change nothing.
+    for (i, _) in manifest.left_out().0 {
+        sort(
+            left_out_recorded(&manifest, i, &checker),
+            Waiting::LeftOut(i),
+        );
+    }
     let confirmations = manifest
         .design
         .iter()
@@ -574,6 +588,15 @@ fn review(
                 }
             }
             Waiting::Scope => unreachable!("asked after the list, never in it"),
+            Waiting::LeftOut(i) => {
+                match record_left_out(&manifest.left_out[i], today, &key, input, out)? {
+                    Some(entry) => {
+                        set_left_out(&mut doc, i, &entry).context("writing the entry")?;
+                        Some(Waiting::LeftOut(i))
+                    }
+                    None => None,
+                }
+            }
             Waiting::Notes(which, id) => {
                 let (catalog, path) = &files[which];
                 let text =
@@ -765,6 +788,11 @@ fn sign_again(
                 in_manifest.push(which);
             }
             Waiting::Scope => unreachable!("asked after the list, never in it"),
+            Waiting::LeftOut(i) => {
+                let seal = sign(&sv_check::seal::left_out_fields(&manifest.left_out[*i]))?;
+                listed_table(doc, "left-out", *i)?.insert("seal", toml_edit::value(seal));
+                in_manifest.push(which);
+            }
             Waiting::Notes(file, id) => {
                 let (catalog, path) = &files[*file];
                 let text =
@@ -1357,7 +1385,17 @@ fn finding_table(
     doc: &mut toml_edit::DocumentMut,
     i: usize,
 ) -> Result<&mut dyn toml_edit::TableLike> {
-    let table: Option<&mut dyn toml_edit::TableLike> = match doc.get_mut("finding-review") {
+    listed_table(doc, "finding-review", i)
+}
+
+/// The `i`th entry of the list `key` names (`[[finding-review]]`, `[[left-out]]`), written either
+/// way TOML allows.
+fn listed_table<'a>(
+    doc: &'a mut toml_edit::DocumentMut,
+    key: &str,
+    i: usize,
+) -> Result<&'a mut dyn toml_edit::TableLike> {
+    let table: Option<&mut dyn toml_edit::TableLike> = match doc.get_mut(key) {
         Some(toml_edit::Item::ArrayOfTables(tables)) => tables
             .get_mut(i)
             .map(|t| t as &mut dyn toml_edit::TableLike),
@@ -1368,6 +1406,108 @@ fn finding_table(
         _ => None,
     };
     table.context("the entry is not where it was")
+}
+
+/// Whether the `i`th `[[left-out]]` entry is the owner's, sealed, with a seal that holds here, as
+/// the report reads it (`left_out::LeftOut::of`): how it was sealed, or `Err` when it waits.
+fn left_out_recorded(
+    manifest: &sv_manifest::Manifest,
+    i: usize,
+    checker: &Checker,
+) -> Result<Sealed, ()> {
+    let entry = manifest.left_out.get(i).ok_or(())?;
+    if entry.by.as_deref().map(str::trim) != Some(sv_check::design::OWNER) {
+        return Err(());
+    }
+    sv_check::seal::owner_recorded(
+        checker,
+        entry.seal.as_deref(),
+        &sv_check::seal::left_out_fields(entry),
+    )
+    .map_err(drop)
+}
+
+/// A folder left out of the checks, shown for the owner to confirm (ADR-099): the entry to write,
+/// sealed, or `None` when they leave it as it is. A reason too short to tell a reader why is not
+/// offered: the report prints it beside the folder.
+fn record_left_out(
+    entry: &sv_manifest::LeftOut,
+    today: Day,
+    key: &Signer,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<Option<sv_manifest::LeftOut>> {
+    let least = sv_check::review::LEAST_WHY_CHARS;
+    writeln!(
+        out,
+        "stackvet.toml leaves the folder `{}` out of the checks, for this reason:\n  \"{}\"\nOnce \
+         you confirm it, no finding there counts except a key or password, which counts wherever \
+         it is; the report names the folder and prints this reason beside it. Until then the \
+         folder is checked and its findings count. If the app's own code is in it, do not \
+         confirm it.",
+        entry.folder.trim(),
+        entry.why.trim()
+    )?;
+    if entry.why.trim().chars().count() < least {
+        writeln!(
+            out,
+            "  The reason is shorter than {least} characters, too short to tell a reader why. \
+             Write a longer `why` in stackvet.toml, then run `sv review` again."
+        )?;
+        return Ok(None);
+    }
+    loop {
+        let Some(answer) = ask(
+            input,
+            out,
+            "Type `owner` if this is your app and the folder should be left out, to confirm it; \
+             or press Enter to leave it unconfirmed.\n> ",
+        )?
+        else {
+            return Ok(None);
+        };
+        if answer.is_empty() {
+            writeln!(out, "  Left unconfirmed.")?;
+            return Ok(None);
+        }
+        if !answer.eq_ignore_ascii_case(sv_check::design::OWNER) {
+            writeln!(
+                out,
+                "  Only the app's owner can leave part of it out. Type `owner` if that is you."
+            )?;
+            continue;
+        }
+        let mut confirmed = sv_manifest::LeftOut {
+            folder: entry.folder.clone(),
+            why: entry.why.clone(),
+            by: Some(sv_check::design::OWNER.to_owned()),
+            on: Some(today.show()),
+            seal: None,
+        };
+        confirmed.seal = Some(
+            key.seal(&sv_check::seal::as_strs(&sv_check::seal::left_out_fields(
+                &confirmed,
+            )))
+            .map_err(anyhow::Error::msg)?,
+        );
+        writeln!(out, "  Confirmed: the folder is left out.")?;
+        return Ok(Some(confirmed));
+    }
+}
+
+/// Writes who confirmed the `i`th `[[left-out]]` entry, when, and the seal, changing nothing else.
+fn set_left_out(
+    doc: &mut toml_edit::DocumentMut,
+    i: usize,
+    entry: &sv_manifest::LeftOut,
+) -> Result<()> {
+    let table = listed_table(doc, "left-out", i)?;
+    for (name, value) in [("by", &entry.by), ("on", &entry.on), ("seal", &entry.seal)] {
+        if let Some(value) = value {
+            table.insert(name, toml_edit::value(value));
+        }
+    }
+    Ok(())
 }
 
 /// Whether what was just recorded counts, as the report will read it.
@@ -1396,6 +1536,7 @@ fn counts(manifest: &sv_manifest::Manifest, which: &Waiting, checker: &Checker) 
             .is_ok()
         }),
         Waiting::Notes(..) | Waiting::NotesConfirm(..) => false,
+        Waiting::LeftOut(i) => left_out_recorded(manifest, *i, checker).is_ok(),
         Waiting::Scope => manifest.scope_review.as_ref().is_some_and(|entry| {
             let fields = sv_check::seal::scope_review_fields(entry);
             entry.still_holds_for(manifest)
