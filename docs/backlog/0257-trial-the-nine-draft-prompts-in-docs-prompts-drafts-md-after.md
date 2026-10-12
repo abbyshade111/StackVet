@@ -18,8 +18,8 @@ rule; keep the rest in the drafts file with what happened.
 **Scope of this claim (12 October 2026), the owner's choice the same day ("Group A first"):** the drafts the loop
 trials' club brief (`docs/prompts/trial-3/plain-brief.md`) gives something to act on, with no new setup: 8, 18, 19, 20
 and 22, and 10 and 12 if their checks fit the club app (to be confirmed in the protocol, before any build). The shape
-of the library trial of 6 October (`docs/prompts/library-trial/`): ten builds without any draft on each of Haiku and
-Sonnet, shared by every draft, then ten builds for each draft on the model whose control builds show its problem; the
+of the library trial of 6 October (`docs/prompts/library-trial/`): ten builds without any draft on each of Haiku 5.5
+(`claude-haiku-5-5`, never Haiku 4.5, at the owner's word the same day) and Sonnet 5.5 (`claude-sonnet-5-5`), shared by every draft, then ten builds for each draft on the model whose control builds show its problem; the
 library's rule decides. About 80 builds, a budget of about $20 to $25 of the owner's API credit, approved the same
 day. The protocol is written and merged before the first build (`docs/prompts/drafts-trial/protocol.md`). Drafts that
 need a second brief (10's sign-up half, 11, 13, 15, 16, 17, 21), and the process drafts (1 to 7, 9, 14, 23), are not in
