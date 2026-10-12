@@ -1,6 +1,6 @@
 # The third weekly review of the decision records (week to 12 October 2026)
 
-**Status:** partly done: the owner's answer on #1291: whether keeping a printed credential out of the report's crash line needs a record
+**Status:** done, 12 October 2026
 
 The scheduled routine "Weekly decision-record review" (Monday 12 October 2026, 8:45 Eastern). The earlier entry,
 "A weekly review of the decision records" (0091), was marked done on 10 October with the routine continuing outside
@@ -95,4 +95,6 @@ they became):
   (backlog 0268, ADR-103), done.
 - *The index in thirteen records' Governs lists:* taken out (backlog 0267), done.
 - *#1291, a credential the app printed kept out of the report's crash line, written without a record:* no answer is
-  recorded in any item, record, or design entry, as read on 12 October 2026. Asked again the same day.
+  recorded in any item, record, or design entry, as read on 12 October 2026. Asked again the same day, and answered:
+  a bug fix, needing no record ("yes, bug fix, record it and close 0266"). It enforces a rule `sv` already keeps
+  (CLAUDE.md: never print, log, echo, or commit a key, in a report or anywhere), and decides nothing new.
