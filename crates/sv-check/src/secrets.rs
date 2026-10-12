@@ -962,10 +962,15 @@ pub fn redact_text(rules: &SecretRules, text: &str) -> (String, usize) {
 /// were found in their files and masked only up to the `&` or `,`, or not at all).
 pub fn redact_text_in(rules: &SecretRules, relative: &str, text: &str) -> (String, usize) {
     let mut spans: Vec<(usize, usize)> = Vec::new();
-    for (_, re) in &rules.rules {
+    for (rule, re) in &rules.rules {
         for m in re.find_iter(text) {
             if !looks_like_placeholder(m.as_str()) {
-                spans.push((m.start(), m.end()));
+                let end = if rule.id == PRIVATE_KEY_BLOCK {
+                    block_end(text, m.as_str(), m.end())
+                } else {
+                    m.end()
+                };
+                spans.push((m.start(), end));
             }
         }
     }
@@ -1037,6 +1042,24 @@ pub fn redact_text_in(rules: &SecretRules, relative: &str, text: &str) -> (Strin
     }
     out.push_str(&text[at..]);
     (out, merged.len())
+}
+
+/// The rule that matches a private key's `-----BEGIN … PRIVATE KEY-----` header. The header alone is
+/// all the scan needs to name the file, so the rule matches only that line.
+const PRIVATE_KEY_BLOCK: &str = "secrets.private-key-block";
+
+/// Where the key block whose header is `header`, ending at `after`, ends: just past its matching
+/// `-----END …-----`, or the end of `text` when there is none, as in a log tail cut off inside the
+/// key. Redaction cuts the whole block, since the body is the key and the header only names it
+/// (backlog 0284: the header was cut and the body kept).
+fn block_end(text: &str, header: &str, after: usize) -> usize {
+    let label = header
+        .trim_start_matches("-----BEGIN ")
+        .trim_end_matches("-----");
+    let end = format!("-----END {label}-----");
+    text[after..]
+        .find(&end)
+        .map_or(text.len(), |at| after + at + end.len())
 }
 
 fn line_of(text: &str, byte_offset: usize) -> usize {

@@ -112,6 +112,43 @@ fn credential_shaped(parts: &[&str], separator: &str) -> String {
 }
 
 #[test]
+fn redacting_a_private_key_cuts_its_body_and_not_only_its_header() {
+    // Backlog 0284. The block rule matches the header alone, which is all the scan needs to name the
+    // file; redaction reused that match, so a log tail kept the header cut and the key's body whole.
+    // Built from pieces at run time (ADR-082), so no key is ever written into this repository.
+    let label = format!("RSA {} KEY", "PRIVATE");
+    let body = [
+        "MIIEpAIBAAKCAQEA0Zp8Kd3Wq1Ls6Vn0Rt4Yb",
+        "x9QmT2vLk7HsW3aPn5Rc8Ud1Fg",
+    ]
+    .join("\n");
+    let block = format!("-----BEGIN {label}-----\n{body}\n-----END {label}-----");
+    let text = format!("app starting with config:\n{block}\nlistening on :3000\n");
+    let (out, n) = redact_text(&rules(), &text);
+    // No message prints `out` whole: were a cut missed, it would hold the key.
+    for line in body.lines() {
+        assert!(!out.contains(line), "a line of the key's body was kept");
+    }
+    assert_eq!(n, 1, "the block is one credential");
+    assert!(out.contains("app starting with config:\n[redacted: "));
+    assert!(
+        out.ends_with("\nlistening on :3000\n"),
+        "what follows the block's end is left as written"
+    );
+
+    // A block cut off before its end, as a log tail can be, is cut to the end of the text.
+    let cut_off = format!("-----BEGIN {label}-----\n{body}");
+    let (out, n) = redact_text(&rules(), &format!("tail:\n{cut_off}"));
+    assert_eq!(n, 1);
+    for line in body.lines() {
+        assert!(
+            !out.contains(line),
+            "a line of a cut-off key's body was kept"
+        );
+    }
+}
+
+#[test]
 fn redacting_cuts_a_known_key_anywhere_and_a_value_by_its_name() {
     let key = credential_shaped(&["sk", "ant", "api03", "Zp8Kd3Wq1Ls6Vn0Rt4Yb"], "-");
     let text = format!(
