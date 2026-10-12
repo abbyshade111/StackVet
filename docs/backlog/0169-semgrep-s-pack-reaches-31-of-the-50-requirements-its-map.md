@@ -1,6 +1,6 @@
 # Semgrep's pack reaches 31 of the 50 requirements its map names
 
-**Status:** partly done: 1 of 12 parts done, 0 claimed, 11 open, as its markers read on 8 October 2026
+**Status:** claimed by backlog-org-0169, 12 October 2026
 
 Done on 26 September 2026: the honest
 count, the AI pack for apps that use AI, and option B (`p/default` beside `p/security-audit`) after the owner
