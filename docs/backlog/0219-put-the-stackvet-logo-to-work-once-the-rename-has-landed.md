@@ -19,12 +19,12 @@ how to make them again; the owner's choice is ADR-063. Each part below can be cl
    Social preview. **The owner's to do**: it is a repository setting, which sessions do not change. Check its line
    ("A security check for apps built with AI. It says plainly what it checked, and what it didn't.") still says what
    StackVet is when this is taken up; change it in `docs/brand/source/make_logo.py` and make the files again if not.
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 3. **The two sites.** stackvet.dev and stackvet.app are the owner's (bought 8 October 2026) and serve nothing yet.
    What they show, where they are hosted, and whether one sends visitors to the other are the owner's to decide,
    and hosting may cost money, so ask first. When a page exists, it uses `favicon.svg`, `favicon-32.png`, and
    `apple-touch-icon.png` from `docs/brand/`.
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 4. **The container image.** The `org.opencontainers.image.title`, `description`, `url`, and `source` labels in the
    `Dockerfile`, if the rename has not already set them, so the image's page on GitHub's package registry shows the
    new name and links back to the repository. Check what the rename did first.
@@ -49,3 +49,5 @@ hand: how the image's package page shows the labels, which needs the next push t
 2, 3, and 5 remain the owner's.
 
 **The owner's decision, 9 October 2026**, asked by session securevibe-e2 with a recommendation for each open choice: **yes to part 5**, the mark in `report.html` and the dashboard, as an inline SVG so a report still opens no network connection; it changes what `sv` writes into someone's folder, so it is built with a record. Part 2, the repository's preview image, stays the owner's to upload in Settings. Part 3, what the two sites show, waits for the website mock-ups (0224). Not claimed yet.
+
+**The owner's word, 12 October 2026:** part 2, the social preview image, was uploaded by the owner, so it is done. Part 3, the two sites, belongs to the item that builds out what the sites look like and say (backlog 0224), and is done here on that word. Part 5, the mark in `report.html` and the dashboard, is wanted ("I would like it done") and stays open to build.

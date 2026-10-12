@@ -1,6 +1,6 @@
 # The running-app checks, reviewed on 3 October 2026: one fault in the counts, and what to add
 
-**Status:** partly done: CPU, memory, disk, and egress quotas stay not assessed, with the container's own readings reported beside them (0243, ADR-094); item 13 is kept by a proxy
+**Status:** done, 12 October 2026
 
 By session
 securevibe-e9, at the owner's asking ("review them and then propose additional checks that would provide strong
@@ -361,3 +361,5 @@ still stay not assessed, since those readings are not limits the app sets. What 
 **Item 14's real-app run, 11 October 2026:** the example app has an email change now (0244, done), and
 `probe.email-change-without-password` credits it in part and finds a copy without its password check, in CI under
 Docker. What remains is the quotas, which stay not assessed by design, and item 13's proxy.
+
+**Done, 12 October 2026, at the owner's word ("yes, please do so"),** with two known limits, by design and with no item: CPU, memory, disk and egress quotas stay not assessed, since they are not limits the app sets (the container's own readings are reported beside them, 0243 and ADR-094), and item 13's limit kept by a proxy in production cannot be read from the code.

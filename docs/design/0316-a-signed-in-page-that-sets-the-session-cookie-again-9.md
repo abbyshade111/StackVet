@@ -3,7 +3,7 @@
 
 
 From the running-app checks' review of 3 October 2026, part 3
-(`docs/backlog/0029-the-running-app-checks-reviewed-on-3-october-2026-one-fault.md`), whose done note left two things
+(`docs/backlog/done/0029-the-running-app-checks-reviewed-on-3-october-2026-one-fault.md`), whose done note left two things
 open: the cookies a signed-in page sets, and pages the run does not ask for.
 
 **The cookies a signed-in page sets.** `probe.session-cookie-attributes` judged HttpOnly and SameSite on the cookies
