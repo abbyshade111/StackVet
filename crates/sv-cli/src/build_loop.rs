@@ -314,6 +314,17 @@ fn append(app_dir: &Path, line: &Line) -> Result<()> {
         &path,
         "Remove the link; sv writes its record only as a plain file.",
     )?;
+    // A pipe here is opened to write and waits for a reader, on the server's one thread for answering
+    // (backlog 0282). Only a plain file is written.
+    if let Ok(meta) = std::fs::symlink_metadata(&path)
+        && !meta.is_file()
+    {
+        anyhow::bail!(
+            "{} is not an ordinary file (it is a pipe, a device, a socket, or a folder), so sv does not \
+             write its record there. Remove it; sv writes its record only as a plain file.",
+            path.display()
+        );
+    }
     if std::fs::metadata(&path).is_ok_and(|m| m.len() >= MAX_BYTES) {
         return Ok(());
     }

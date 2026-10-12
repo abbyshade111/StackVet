@@ -368,7 +368,7 @@ pub(super) fn brute_force_check(
         let elapsed = started.elapsed().as_millis();
         match response {
             Some(r) => answers.push((r.status, elapsed)),
-            // No answer at all is the app refusing to talk, which is pushing back.
+            // No answer at all, read as 0: not pushing back, and past the limit not a credit.
             None => answers.push((0, elapsed)),
         }
     }
@@ -396,18 +396,38 @@ pub(super) fn brute_force_check(
     }
     // The first attempt past the limit, whose answer says whether the app pushed back.
     let last = answers[allowed as usize];
-    // Pushing back is any of: a different status past the limit than the first, a status that
-    // says refused outright, or both attempts past the limit markedly slower than any before it.
-    let status_changed = last.0 != first_status;
-    let refused = matches!(last.0, 0 | 423 | 429) || (last.0 >= 400 && first_status < 400);
     // The second attempt past the limit is read too. An app that answers it differently, having
     // answered the first past the limit as it answered the first of all, let one more through than
     // was stated; saying it "answered the same every time" would be untrue (the review of 6 October,
     // item 13).
     let next = answers[allowed as usize + 1].0;
-    // Only from real answers, every one up to the limit the same: a crash or no answer anywhere in
-    // the run is not the app pushing back, and must not read as a status that changed.
+    // Only from real answers: a crash (5xx) or no answer is not the app pushing back, and must not
+    // read as a status that changed, a refusal, or a delay (backlog 0280). Past the limit, either
+    // one makes the whole question unanswered rather than credited.
     let real = |status: u16| status != 0 && status < 500;
+    if !real(last.0) || !real(next) {
+        out.steps.push(format!(
+            "made {attempts} wrong sign-in attempts; the app answered {first_status} at first, and \
+             {} and {next} past the limit",
+            last.0
+        ));
+        out.not_assessed.push((
+            "V6.3.1".to_owned(),
+            format!(
+                "Whether the app resists password guessing: past the limit of {allowed} it \
+                 answered {} and {next}, where 0 is no answer at all and 500 or above is the app \
+                 failing. A crash or silence is not a limit, so nothing here says whether it \
+                 pushes back.",
+                last.0
+            ),
+        ));
+        return;
+    }
+    // Pushing back is any of: a different status past the limit than the first, a status that
+    // says refused outright, or both attempts past the limit markedly slower than any before it.
+    let status_changed = last.0 != first_status;
+    let refused = matches!(last.0, 423 | 429) || (last.0 >= 400 && first_status < 400);
+    // One more let through is read only from real answers, every one up to the limit the same.
     let alike = answers[..=allowed as usize]
         .iter()
         .all(|a| a.0 == first_status);
@@ -1392,6 +1412,36 @@ mod tests {
                  limiter: {}",
                 said.1
             );
+        }
+    }
+
+    #[test]
+    fn an_app_that_falls_over_past_the_limit_is_not_credited_with_pushing_back() {
+        // Backlog 0280: the first attempt past the limit answered 500, or not at all, read as a
+        // status that changed and was credited as a limit. A crash never turns a finding into a
+        // pass. The app here limits nothing; it only falls over.
+        for status in [500, 503, 0] {
+            let flaws = Flaws {
+                falls_over_after: Some((3, status)),
+                ..Flaws::default()
+            };
+            let out = run_with(flaws, &policy(Some(3)));
+            assert!(
+                !out.verified
+                    .iter()
+                    .any(|v| v.check_id == "probe.failed-sign-ins-unlimited"),
+                "answering {status} past the limit is not pushing back, but it was credited"
+            );
+            assert!(
+                !finding_ids(&out).contains(&"probe.failed-sign-ins-unlimited"),
+                "and {status} is not a finding either: the limit was never reached in a real answer"
+            );
+            let said = out
+                .not_assessed
+                .iter()
+                .find(|(ids, _)| ids.contains("V6.3.1"))
+                .unwrap_or_else(|| panic!("V6.3.1 must be named for {status}"));
+            assert!(said.1.contains("past the limit"), "{}", said.1);
         }
     }
 
