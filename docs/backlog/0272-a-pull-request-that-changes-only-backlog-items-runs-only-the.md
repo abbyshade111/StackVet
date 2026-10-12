@@ -1,6 +1,6 @@
 # A pull request that changes only backlog items runs only the tests that read them
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** partly done: Measure the first claim to merge after this lands, beside #1519's 21 minutes, and how long code scanning takes on it.
 
 The owner's request of 12 October 2026: a claim waits on the whole suite before it can merge, and every build waits on
 its claim. The required checks on `main` (the ruleset "Main - ADR Check") are "Decision records", "test", and code
