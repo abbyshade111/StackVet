@@ -292,6 +292,17 @@ pub fn markup_question(token: &str) -> String {
     )
 }
 
+/// The token for the `i`th of `of` text forms: the run's own when there is one form, as it always
+/// was, and otherwise the run's with `f<i>z` after it, so that no form's token is the start of
+/// another's and one form's text cannot be taken for another's on a page that shows both (ADR-097).
+pub(crate) fn form_token(token: &str, i: usize, of: usize) -> String {
+    if of < 2 {
+        token.to_owned()
+    } else {
+        format!("{token}f{i}z")
+    }
+}
+
 /// The line typed into the form. It closes a quoted attribute first, so it gets out of one if the
 /// page puts it inside one, and then carries an image whose failure to load runs a line of script,
 /// and a bold tag, each marked so the page can be asked whether they became elements.
@@ -329,8 +340,9 @@ pub(crate) fn checks(
     let Some(section) = &users.browser else {
         return;
     };
-    let ids = |section: &BrowserSection| {
-        if section.text_form.is_some() {
+    let forms = section.forms();
+    let ids = |_: &BrowserSection| {
+        if !forms.is_empty() {
             "V7.4.4, V3.2.2"
         } else {
             "V7.4.4"
@@ -366,17 +378,18 @@ pub(crate) fn checks(
             users.logout.as_ref().map_or("", |l| l.path.as_str()),
         )));
     }
-    if let Some(form) = &section.text_form {
+    for (i, text_form) in forms.iter().enumerate() {
+        let token = form_token(token, i, forms.len());
         actions.push(Action::Fill {
-            page: form.clone(),
-            text: markup_line(token),
+            page: text_form.form.clone(),
+            text: markup_line(&token),
         });
-        if let Some(shows) = &section.shows {
+        if let Some(shows) = &text_form.shows {
             actions.push(Action::Goto(shows.clone()));
         }
         // An image that fails to load does so a moment after the page has.
         actions.push(Action::Wait(700));
-        actions.push(Action::Eval(markup_question(token)));
+        actions.push(Action::Eval(markup_question(&token)));
     }
     // Last, what every page above tried to send elsewhere, after a moment for a beacon sent as a
     // page settles.
@@ -446,19 +459,44 @@ pub(crate) fn checks(
     ));
 
     sign_out_visible(users, &visits, out);
-    if let Some(form) = &section.text_form {
+    // Every text form named, each typed into and read on the page that shows it (ADR-097). One
+    // credit for all of them, whole only when there were two or more and each was shown as text.
+    let mut shown = Vec::new();
+    let mut found = false;
+    for text_form in &forms {
         let filled = answers.next().unwrap_or(Value::Null);
-        if section.shows.is_some() {
+        if text_form.shows.is_some() {
             let _ = answers.next();
         }
         let _wait = answers.next();
         let asked = answers.next().unwrap_or(Value::Null);
-        text_shown_as_text(
-            form,
-            section.shows.as_deref(),
+        let before = out.findings.len();
+        if let Some(place) = text_shown_as_text(
+            &text_form.form,
+            text_form.shows.as_deref(),
             &filled,
             field(&asked, "value"),
             out,
+        ) {
+            shown.push(place);
+        }
+        found |= out.findings.len() > before;
+    }
+    if !found && !shown.is_empty() {
+        out.verified.push(
+            crate::Verified::new(
+                TEXT_AS_MARKUP.rule_id,
+                TEXT_AS_MARKUP.requirement_ids,
+                format!(
+                    "a line of text containing an image tag with a script in its `onerror`, typed \
+                     in a real browser into {}, and shown as the text typed, neither run nor made \
+                     part of the page",
+                    shown.join("; ")
+                ),
+            )
+            // Every text form named; one, or one not shown as text, is in part (ADR-053, Later;
+            // ADR-097).
+            .in_part_if(forms.len() < 2 || shown.len() < forms.len()),
         );
     }
     details_sent_elsewhere(account, session.cookies(), &sent, out);
@@ -769,7 +807,7 @@ fn text_shown_as_text(
     filled: &Value,
     answer: &Value,
     out: &mut Outcome,
-) {
+) -> Option<String> {
     let not_assessed = |out: &mut Outcome, why: String| {
         out.not_assessed
             .push(("V3.2.2".to_owned(), format!("In a real browser: {why}")));
@@ -779,14 +817,14 @@ fn text_shown_as_text(
             out,
             format!("{form} did not open for the signed-in user, so nothing was typed into it."),
         );
-        return;
+        return None;
     }
     if field(filled, "found").as_bool() != Some(true) {
         not_assessed(
             out,
             format!("{form} has no form with a box to type text into, so nothing was typed."),
         );
-        return;
+        return None;
     }
     let after = field(filled, "after");
     if field(after, "status").as_u64().is_none_or(|s| s >= 400) {
@@ -797,7 +835,7 @@ fn text_shown_as_text(
                 field(after, "status")
             ),
         );
-        return;
+        return None;
     }
     let place = shows
         .map(str::to_owned)
@@ -820,7 +858,7 @@ fn text_shown_as_text(
             out,
             format!("{place} could not be asked about what was typed into {form}."),
         );
-        return;
+        return None;
     };
     out.steps.push(format!(
         "typed {what} into {form} in the browser; on {place} it {}",
@@ -853,16 +891,7 @@ fn text_shown_as_text(
                  is still being put into the page as markup."
             ),
         )),
-        (_, _, true, _) => out.verified.push(crate::Verified::new(
-            TEXT_AS_MARKUP.rule_id,
-            TEXT_AS_MARKUP.requirement_ids,
-            format!(
-                "{what}, typed into {form} in a real browser, shown on {place} as the text typed, \
-                 neither run nor made part of the page"
-            ),
-        )
-        // One form and one page it shows on, not every place text is shown (ADR-053, Later).
-        .in_part()),
+        (_, _, true, _) => return Some(format!("{form}, shown on {place}")),
         (_, _, _, true) => not_assessed(
             out,
             format!(
@@ -879,6 +908,7 @@ fn text_shown_as_text(
             ),
         ),
     }
+    None
 }
 
 /// What is kept in each kind of browser storage, as `kind: key` pairs, or `None` when the page
@@ -1076,6 +1106,7 @@ mod tests {
     use sv_manifest::RequestTemplate;
 
     mod in_part_tests;
+    mod text_forms_tests;
 
     /// How the fake browser's app behaves.
     #[derive(Clone, Copy)]
@@ -1102,6 +1133,11 @@ mod tests {
         /// A cookie the browser refuses, as Chromium answers: by name, with its reason. When it is
         /// the session cookie, `sid`, the browser is not signed in.
         refuses: Option<&'static str>,
+        /// The token of one text form whose text runs as script, whatever `text` says of the rest
+        /// (ADR-097).
+        runs_for: Option<&'static str>,
+        /// The token of one text form whose text does not appear on the page that should show it.
+        drops_for: Option<&'static str>,
     }
 
     impl Default for App {
@@ -1115,6 +1151,8 @@ mod tests {
                 storage: "cleared",
                 sends: "nothing",
                 refuses: None,
+                runs_for: None,
+                drops_for: None,
             }
         }
     }
@@ -1260,6 +1298,18 @@ mod tests {
                             "none" => json!({ "controls": 0, "visible": false }),
                             _ => Value::Null,
                         }})
+                    }
+                    Action::Eval(e)
+                        if a.runs_for.is_some_and(|t| e.contains(&format!("\"{t}\""))) =>
+                    {
+                        json!({ "value": { "ran": true, "element": true,
+                                           "as_text": false, "present": true } })
+                    }
+                    Action::Eval(e)
+                        if a.drops_for.is_some_and(|t| e.contains(&format!("\"{t}\""))) =>
+                    {
+                        json!({ "value": { "ran": false, "element": false,
+                                           "as_text": false, "present": false } })
                     }
                     Action::Eval(_) => {
                         let (ran, element, as_text, present) = match a.text {
@@ -1467,6 +1517,7 @@ mod tests {
             browser: Some(BrowserSection {
                 text_form: text_form.map(str::to_owned),
                 shows: shows.map(str::to_owned),
+                ..Default::default()
             }),
             ..Default::default()
         }
@@ -1840,7 +1891,8 @@ mod tests {
             o.verified
                 .iter()
                 .any(|v| v.check_id == TEXT_AS_MARKUP.rule_id
-                    && v.scope.contains("shown on /notes as the text typed")),
+                    && v.scope.contains("/notes/new, shown on /notes")
+                    && v.scope.contains("shown as the text typed")),
             "{:?}",
             o.verified
         );

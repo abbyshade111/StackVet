@@ -714,6 +714,37 @@ pub struct BrowserSection {
     /// The page that shows what was typed. Absent means the page the form leads to.
     #[serde(default)]
     pub shows: Option<String>,
+    /// Several such forms, each with the page that shows what was typed into it (ADR-097). In place
+    /// of `text-form` and `shows`, not beside them.
+    #[serde(default)]
+    pub text_forms: Vec<TextForm>,
+}
+
+/// One form of `text-forms`: a page with a form a signed-in user types text into, and the page that
+/// shows what was typed (absent means the page the form leads to).
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TextForm {
+    pub form: String,
+    #[serde(default)]
+    pub shows: Option<String>,
+}
+
+impl BrowserSection {
+    /// Every text form named, from `text-forms`, or the one `text-form` names, each with its
+    /// `shows`. Empty when there is none.
+    pub fn forms(&self) -> Vec<TextForm> {
+        if !self.text_forms.is_empty() {
+            return self.text_forms.clone();
+        }
+        self.text_form
+            .iter()
+            .map(|form| TextForm {
+                form: form.clone(),
+                shows: self.shows.clone(),
+            })
+            .collect()
+    }
 }
 
 /// Activating a new account with the code emailed at sign-up.
@@ -986,6 +1017,16 @@ impl UsersSection {
                  change the password to",
                 t.path
             ));
+        }
+        if let Some(browser) = &self.browser
+            && !browser.text_forms.is_empty()
+            && (browser.text_form.is_some() || browser.shows.is_some())
+        {
+            out.push(
+                "`browser` gives both `text-form` and `text-forms`: list every form under \
+                 `text-forms`, each with its own `shows`, and leave out `text-form` and `shows`"
+                    .to_owned(),
+            );
         }
         if let Some(t) = &self.change_email
             && !t
