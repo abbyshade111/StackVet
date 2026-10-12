@@ -33,7 +33,7 @@ how to make them again; the owner's choice is ADR-063. Each part below can be cl
    heading and as the browser tab's icon. That changes what `sv` writes into someone's folder, which is a decision
    (CLAUDE.md), so it needs the owner's yes and a record, and the icon has to be inside the page (an inline SVG),
    since a report opens no network connection. Ask before building it.
-   **Part status:** open
+   **Part status:** claimed by securevibe-trial-prep, 12 October 2026
 
 **Parts 1 and 4 claimed 9 October 2026 by session securevibe-e2**, the rename having merged, in branch
 `claude/securevibe-e2-logo`: the logo at the top of `README.md` (and of `docs/GETTING-STARTED.md` if it reads well
@@ -51,3 +51,5 @@ hand: how the image's package page shows the labels, which needs the next push t
 **The owner's decision, 9 October 2026**, asked by session securevibe-e2 with a recommendation for each open choice: **yes to part 5**, the mark in `report.html` and the dashboard, as an inline SVG so a report still opens no network connection; it changes what `sv` writes into someone's folder, so it is built with a record. Part 2, the repository's preview image, stays the owner's to upload in Settings. Part 3, what the two sites show, waits for the website mock-ups (0224). Not claimed yet.
 
 **The owner's word, 12 October 2026:** part 2, the social preview image, was uploaded by the owner, so it is done. Part 3, the two sites, belongs to the item that builds out what the sites look like and say (backlog 0224), and is done here on that word. Part 5, the mark in `report.html` and the dashboard, is wanted ("I would like it done") and stays open to build.
+
+**Part 5 claimed 12 October 2026 by session securevibe-trial-prep**, on the owner's yes of 9 October and again on 12 October ("the logo in the report and dashboard is cosmetic, but I would like it done"). The plan, a decision record proposed here and numbered in the pull request that builds it, since it changes what `sv` writes into someone's folder: the bracket mark (`docs/brand/stackvet-mark.svg`, and the dark one for a dark page) in the heading of `report.html` and of the dashboard `sv dashboard` writes, and as each page's browser-tab icon, both inside the page itself (an inline SVG, and a `data:` icon), so a report still opens no network connection and reads the same offline. Nothing else in either page changes, and the markdown reports carry no image. A test holds the mark in the page to the brand file, so a changed logo cannot leave an old one in the reports.
