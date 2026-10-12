@@ -436,13 +436,32 @@ nothing about what was found since. A kind of package with no download here is r
 You only need this for `sv report --run`. Everything in steps 1 to 5 keeps working through Docker as it
 is, and your AI tool keeps using the container: the copy you build here is for typing at a terminal.
 
-StackVet has no ready-made download yet, so you build it from its source code (the program written
-out as text, which a builder turns into a program you can run). It is done once and takes a few
-commands. These steps were tried on a Mac on 5 October 2026, from a fresh copy of StackVet. The Linux
-steps have not been tried by hand, though StackVet is built on Linux every time its code changes.
-**Windows:** the project's own checks build and test StackVet on Windows every time its code changes,
-but nobody has tried these steps on a Windows computer, so nothing here is known to work there; use
-the Docker steps above, and leave `--run` out for now.
+On Windows there is a ready-made download, installed with Scoop (below). On a Mac or Linux you build it from its
+source code (the program written out as text, which a builder turns into a program you can run), with Homebrew or by
+hand. It is done once and takes a few commands. The hand steps were tried on a Mac on 5 October 2026, from a fresh
+copy of StackVet. The Linux steps have not been tried by hand, though StackVet is built on Linux every time its code
+changes.
+
+**On Windows: Scoop.** [Scoop](https://scoop.sh) is a free installer for Windows programs. StackVet's Windows program
+is published with each release, zipped with its data and signed where GitHub built it, and Scoop downloads it, checks
+it against the published checksum, and puts it on your path. Nothing is built on your computer. In PowerShell:
+
+```powershell
+scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet
+scoop install stackvet/sv
+stackvet --version
+```
+
+**In PowerShell, type `stackvet` wherever this guide says `sv`.** PowerShell already uses `sv` as a short name for
+one of its own commands (`Set-Variable`), so plain `sv` there does nothing visible. Scoop installs the program under
+both names; `sv.exe` works too, and in the older Command Prompt plain `sv` does. `scoop update sv` updates it.
+
+This install is tried automatically on a Windows computer at GitHub every week and on every change to the bucket
+([github.com/abbyshade111/scoop-stack-vet](https://github.com/abbyshade111/scoop-stack-vet)): Scoop installs the
+latest release and it checks an example app. It has not yet been tried by hand on a person's own Windows computer.
+For `--run`, Docker Desktop must be set to Linux containers (its default); if it is set to Windows containers,
+StackVet says so and what to change, and the run is reported as not assessed. That has not been tried by hand on
+Windows either.
 
 **The quickest way, on a Mac or on Linux: Homebrew.** If you have [Homebrew](https://brew.sh), one command builds
 StackVet on your computer, fetching what the build needs by itself, and puts `sv` on your path with its data beside
