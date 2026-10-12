@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: groups B to H
+**Status:** partly done: group B claimed; groups C to H open
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -18,7 +18,13 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Part status:** done, 11 October 2026
 2. **B. Every private page and session path.** Session handling tried on each private page the owner lists and
    after each way of signing in, not one.
-   **Part status:** open
+   **Scope of this claim (12 October 2026):** the made-up session check (`probe.session-token-unverified`, V7.2.1,
+   whose requirement says *all* session-token verification) tried on every private page the owner lists, not one;
+   whole only when two or more were tried and every one refused. The other session credits marked in part (the
+   cookies, renewal, and fixed session of one sign-in, and the one sign-out) wait for "each way of signing in", which
+   needs the manifest to say what the ways are; idle timeout and lifetime were left out of the inventory as app-wide.
+   Recorded as a Later entry on ADR-053 in the pull request that builds it.
+   **Part status:** claimed by backlog-org-0232, 12 October 2026
 3. **C. Each form, flow, and connection.** Cross-site requests tried on each changing route the app answers, each
    step of a flow, and each WebSocket path, not one request.
    **Part status:** open
