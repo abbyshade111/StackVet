@@ -1,6 +1,6 @@
 # The build-folder check in moved.rs does not see test files declared in lib.rs or main.rs
 
-**Status:** open
+**Status:** claimed by backlog-org-0262, 12 October 2026
 
 Found on 11 October 2026, when it failed pull request #1472. Low priority: it errs on the strict side, so it can
 flag test code wrongly but never lets program code through.
