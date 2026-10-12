@@ -130,7 +130,10 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
 - **In a record's Governs paragraph, put backticks around real file paths only.** Write commands, flags, check ids,
   rule names and function names there as plain text: the decision-records test reads every backticked word in that
   paragraph as a file and fails on any that is not one (`--quiet`, `sv review`, and a check id each failed it on
-  11 and 12 October 2026). **Take a record's number only after looking at every open branch**, and ask the other
+  11 and 12 October 2026). **The one backticked form that is not a plain path is `path::NAME`** (ADR-103), a named part
+  of a large file: `crates/sv-check/src/ai.rs::HANG_HOLD` makes the check ask only when a changed line has that name as a
+  whole word, and the test fails if the name is no longer in a file the path matches. Use it when a decision lives in one
+  table or constant of a shared file, not for a command or a flag. **Take a record's number only after looking at every open branch**, and ask the other
   sessions running if any holds one not yet pushed: ADR-094, 096 and 100 were each taken twice in two days.
 - **A design entry is a new file, never a section added to `docs/DESIGN.md`.** Write it with
   `python3 tools/design_entry.py new "Its title (date)"`, which makes `docs/design/NNNN-its-title.md`; a test fails on
