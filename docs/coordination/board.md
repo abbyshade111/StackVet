@@ -69,6 +69,40 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 56. 0332 resolve's comment overstates its safety: an owner's no with no corroboration excludes requirements — ready
 57. 0333 A threat reads checked in part when one of its requirements is checked and the rest are not verified — ready
 58. 0334 probe.error-detail-leak's debug-mode credit rests on a finite marker list that misses ASP.NET Core and Laravel — ready
+59. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — ready
+60. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — ready
+61. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's decision first; see the item
+62. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
+63. 0340 Each CI part rebuilds the workspace from scratch, about 125 s each, and the no-cache reason no longer distinguishes a cache (the owner's decision) — hold: the owner's decision first; see the item
+64. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+65. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
+66. 0343 The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove — ready
+67. 0344 Dependencies carry full debug information in every debug build and in each of about 81 grammar-laden test binaries — ready
+68. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — ready
+69. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — ready
+70. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — ready
+71. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — ready
+72. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
+73. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
+74. 0351 Every file of the app is read from disk and decoded five to six times across the static stage — ready
+75. 0352 Thirty-odd separate regex passes per file in the secrets scan — ready
+76. 0353 One tree-sitter query walk per rule per file: up to 31 walks of each Python file — ready
+77. 0354 sv report --run walks the app folder twice more, only to compute the private files — ready
+78. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
+79. 0356 Incremental compilation is on in CI, where every build is fresh — ready
+80. 0357 The Dockerfile has no dependency layer, and copies examples/ into the build stage — ready
+81. 0358 The native comparison build is the one release build without --locked — ready
+82. 0359 The no-cache comment in rust.yml is duplicated and gives two different build times — ready
+83. 0360 fuzz/Cargo.lock no longer matches the manifests it locks — ready
+84. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — ready
+85. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — ready
+86. 0363 Every CI part fetches all five container images, 16 to 25 s per part, where each part starts only some — ready
+87. 0364 The crash sweeps' time grows with the square of the request count, and is not measured since 0271 — ready
+88. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
+89. 0366 git log --all --diff-filter=A --name-only walks every commit's diff for the secrets-file check — ready
+90. 0367 Quadratic grouping over findings in settle and in the report build — ready
+91. 0368 Outside tools run one after another, their start-ups never overlapping — ready
+92. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
 
 ## Log
 
@@ -133,3 +167,37 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-12 14:49 — queued 0332
 - 2026-10-12 14:49 — queued 0333
 - 2026-10-12 14:49 — queued 0334
+- 2026-10-12 15:08 — queued 0336
+- 2026-10-12 15:08 — queued 0337
+- 2026-10-12 15:08 — queued 0338, on hold: the owner's decision first; see the item
+- 2026-10-12 15:08 — queued 0339
+- 2026-10-12 15:08 — queued 0340, on hold: the owner's decision first; see the item
+- 2026-10-12 15:08 — queued 0341
+- 2026-10-12 15:08 — queued 0342
+- 2026-10-12 15:08 — queued 0343
+- 2026-10-12 15:08 — queued 0344
+- 2026-10-12 15:08 — queued 0345
+- 2026-10-12 15:08 — queued 0346
+- 2026-10-12 15:08 — queued 0347
+- 2026-10-12 15:08 — queued 0348
+- 2026-10-12 15:08 — queued 0349
+- 2026-10-12 15:08 — queued 0350
+- 2026-10-12 15:08 — queued 0351
+- 2026-10-12 15:08 — queued 0352
+- 2026-10-12 15:08 — queued 0353
+- 2026-10-12 15:08 — queued 0354
+- 2026-10-12 15:08 — queued 0355
+- 2026-10-12 15:08 — queued 0356
+- 2026-10-12 15:08 — queued 0357
+- 2026-10-12 15:08 — queued 0358
+- 2026-10-12 15:08 — queued 0359
+- 2026-10-12 15:08 — queued 0360
+- 2026-10-12 15:08 — queued 0361
+- 2026-10-12 15:08 — queued 0362
+- 2026-10-12 15:08 — queued 0363
+- 2026-10-12 15:08 — queued 0364
+- 2026-10-12 15:08 — queued 0365
+- 2026-10-12 15:08 — queued 0366
+- 2026-10-12 15:08 — queued 0367
+- 2026-10-12 15:08 — queued 0368
+- 2026-10-12 15:08 — queued 0369
