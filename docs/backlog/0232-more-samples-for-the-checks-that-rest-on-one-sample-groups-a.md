@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: group B partly done; groups C to H open
+**Status:** partly done: groups B, C, and D partly done; groups E to H open
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -49,7 +49,10 @@ by speaking for what its requirement names. One part per group of the inventory 
    `upload` to become a list, which is not in this claim; nor are the checks about one specific file (the size, the
    antivirus test file, the SVG) or the archives. Recorded as a Later entry on ADR-053 in the pull request that
    builds it.
-   **Part status:** claimed by backlog-org-0232, 12 October 2026
+   **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
+   `docs/design/0372-the-served-file-checks-judge-three-files-each-12-october-2026.md`): the two served-file checks judge
+   three files each, whole only when all three are safe.
+   **Part status:** partly done: more than one upload route (the manifest names one); the one-file checks and the archives
 5. **E. Each kind of event.** Each event the requirement names made to happen and looked for in the log, not one
    line.
    **Part status:** open
