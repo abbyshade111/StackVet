@@ -1,6 +1,6 @@
 # Option C's false alarms: where they come from and what would cut them
 
-Research measurement for SecureVibe (`sv`), 4 October 2026, by a session working for session securevibe-e9 at the
+Research measurement for StackVet (`sv`, then called SecureVibe; the old names in the tables and notes below are as the run used them), 4 October 2026, by a session working for session securevibe-e9 at the
 owner's asking ("I definitely still want to look into reducing false alarms from tool C; more research into reducing
 false alarms for all languages would be great as well"). Option C is the one in `docs/BACKLOG.md`'s Semgrep comparison:
 every rule the `semgrep` adapter's map names, from `semgrep/semgrep-rules` at `a84ff9c`. One row per finding, with its
