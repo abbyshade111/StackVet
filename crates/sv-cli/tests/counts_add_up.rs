@@ -155,14 +155,13 @@ fn counts_from_json(report: &Value) -> (usize, [usize; 9]) {
     let mut by_status = [0; 9];
     for (i, (status, field)) in STATUSES.iter().zip(COUNT_FIELDS).enumerate() {
         let in_rows = rows.iter().filter(|r| r["status"] == *status).count();
-        // The two statuses this fixture cannot give: a requirement tested by the app's own tests,
-        // or checked only in part by another user's records (ADR-053), needs the app started under
-        // `sv run`, which needs a container backend. Their counts are still held to their rows
-        // here, and every format is held to the sum with each present in `sv-report`'s
-        // `the_app_s_own_tests_are_a_tier_below_a_check_of_sv_s` and
-        // `checked_in_part_is_its_own_row_in_every_format_and_never_checked`.
+        // The one status this fixture cannot give: a requirement tested by the app's own tests
+        // needs the app started under `sv run`, which needs a container backend. Its count is still
+        // held to its rows here, and every format is held to the sum with it present in
+        // `sv-report`'s `the_app_s_own_tests_are_a_tier_below_a_check_of_sv_s`. *Checked in part*
+        // comes from reading the code since backlog 0281 (`ast.weak-cipher`, V11.3.2), so it occurs.
         assert!(
-            in_rows > 0 || *status == "app-tested" || *status == "checked-in-part",
+            in_rows > 0 || *status == "app-tested",
             "the fixture must give some requirement the status {status}; it gave none. \
              Statuses: {:?}",
             rows.iter().map(|r| &r["status"]).collect::<Vec<_>>()
@@ -251,7 +250,7 @@ fn the_counts_add_up_to_what_applies_in_every_format() {
     );
     assert_eq!(
         listed.len(),
-        7,
+        8,
         "one row per status, every one occurring:\n{short}"
     );
     let lede = between(
@@ -275,13 +274,13 @@ fn the_counts_add_up_to_what_applies_in_every_format() {
         applicable,
         "compliance.md's table"
     );
-    // The chapter table: with both columns of somebody's word present, each row's statuses add up
-    // to its "apply", and the "apply" column to the total.
+    // The chapter table: with both columns of somebody's word and the in-part column present, each
+    // row's statuses add up to its "apply", and the "apply" column to the total.
     let chapters = between(&compliance, "| chapter | apply |", "\n\n");
     assert!(
         chapters.starts_with(
-            " a problem found | checked | your word, not a check | your AI tool's word | \
-             not verified |"
+            " a problem found | checked | checked in part | your word, not a check | \
+             your AI tool's word | not verified |"
         ),
         "both columns of somebody's word are shown: {chapters}"
     );
@@ -293,8 +292,8 @@ fn the_counts_add_up_to_what_applies_in_every_format() {
             .filter(|c| !c.trim().is_empty())
             .map(|c| numbers(c)[0])
             .collect();
-        assert_eq!(cells.len(), 8, "{row}");
-        assert_eq!(cells[1..6].iter().sum::<usize>(), cells[0], "{row}");
+        assert_eq!(cells.len(), 9, "{row}");
+        assert_eq!(cells[1..7].iter().sum::<usize>(), cells[0], "{row}");
         apply_total += cells[0];
     }
     assert_eq!(
@@ -305,7 +304,7 @@ fn the_counts_add_up_to_what_applies_in_every_format() {
     // report.html: the same three.
     let tally = between(&html, "<ul class=\"tally\">\n", "</ul>");
     let listed = leading_numbers(tally.lines(), "<li><strong>");
-    assert_eq!(listed.len(), 7, "report.html, the short version:\n{tally}");
+    assert_eq!(listed.len(), 8, "report.html, the short version:\n{tally}");
     assert_eq!(
         listed.iter().sum::<usize>(),
         applicable,
@@ -337,7 +336,7 @@ fn the_counts_add_up_to_what_applies_in_every_format() {
         "\n\n",
     );
     let listed: Vec<usize> = summary.lines().map(|l| numbers(l)[0]).collect();
-    assert_eq!(listed.len(), 7, "the terminal's summary:\n{terminal}");
+    assert_eq!(listed.len(), 8, "the terminal's summary:\n{terminal}");
     assert_eq!(
         listed.iter().sum::<usize>(),
         applicable,

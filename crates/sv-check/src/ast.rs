@@ -218,6 +218,17 @@ pub struct AstRule {
     /// being encrypted: the address is usually built at run time, where no rule can see it.
     #[serde(default)]
     pub findings_only: bool,
+    /// A rule whose clean run shows part of what its requirements ask, so its credit is *in part*
+    /// (ADR-053): a requirement whose only credit is in part is *checked in part*, never *checked*.
+    /// Not seeing ECB and six retired ciphers is not "only approved ciphers are used" (V11.3.2):
+    /// AES-CBC with no MAC is none of the six (backlog 0281).
+    #[serde(default)]
+    pub in_part: bool,
+    /// Requirements a finding of this rule names and a clean run never credits, because the rule
+    /// does not look for what they ask. Its findings fail them; its silence says nothing of them.
+    /// The weak-cipher rule never looks for PKCS#1 v1.5 padding, V11.3.1's own example.
+    #[serde(default)]
+    pub findings_only_for: Vec<String>,
     /// Per ecosystem (as the bill of materials names it: `npm`, `Python`, `Go`, `PHP`), packages
     /// that build queries through calls of their own this rule does not read, each with those calls
     /// in a few words. While the app ships one, the rule claims nothing.
@@ -488,6 +499,27 @@ impl AstRules {
                     rule.id
                 );
             }
+            for id in &rule.findings_only_for {
+                anyhow::ensure!(
+                    rule.requirement_ids.contains(id),
+                    "rule {} lists {id} as credited by no clean run, and does not cite it",
+                    rule.id
+                );
+            }
+            anyhow::ensure!(
+                !rule.findings_only || (!rule.in_part && rule.findings_only_for.is_empty()),
+                "rule {} credits nothing when clean, so `inPart` and `findingsOnlyFor` say nothing",
+                rule.id
+            );
+            anyhow::ensure!(
+                rule.requirement_ids.is_empty()
+                    || rule
+                        .requirement_ids
+                        .iter()
+                        .any(|id| !rule.findings_only_for.contains(id)),
+                "rule {} lists every requirement it cites in `findingsOnlyFor`; it is `findingsOnly`",
+                rule.id
+            );
             for (language, why) in &rule.nothing_to_find {
                 anyhow::ensure!(
                     grammar(language).is_some(),
@@ -2027,7 +2059,16 @@ fn clean_rules(rules: &AstRules, scan: &AstScan) -> Vec<crate::Verified> {
             })
             .collect::<Vec<_>>()
             .join("; ");
-        out.push(crate::Verified::new(rule_id, &requirement_ids, scope));
+        // A clean run credits only what the rule looked for, and in part where that is part of it.
+        let credited: Vec<&str> = requirement_ids
+            .iter()
+            .copied()
+            .filter(|id| rule.is_none_or(|r| !r.findings_only_for.iter().any(|f| f == id)))
+            .collect();
+        out.push(
+            crate::Verified::new(rule_id, &credited, scope)
+                .in_part_if(rule.is_some_and(|r| r.in_part)),
+        );
     }
     out
 }

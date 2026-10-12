@@ -123,6 +123,10 @@ What a clean result says, each optional:
   cannot have both this and a query.
 - `findingsOnly` (true or false, false when left out): the rule can show the fault present and never its absence, so
   finding nothing credits nothing.
+- `inPart` (true or false, false when left out): a clean run shows part of what the rule's requirements ask, so its
+  credit is *in part* (ADR-053), and a requirement it alone credits reads *checked in part*, never *checked*.
+- `findingsOnlyFor` (requirement ids): requirements the rule's findings name and a clean run never credits, because the
+  rule does not look for what they ask. Each must be one the rule cites, and not all of them (that is `findingsOnly`).
 - `jsxQuery` (text): patterns added to the `typescript` query for files that may hold JSX (`.tsx`, `.astro`).
 - `unreadPackages` (per ecosystem, package name to text): packages that build queries through calls of their own the
   rule does not read, each with those calls in a few words. Ecosystems are named as the bill of materials names them

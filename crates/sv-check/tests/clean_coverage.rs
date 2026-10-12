@@ -1017,6 +1017,17 @@ fn nothing_claims_more_when_it_passes_than_it_cites_when_it_fails() {
             .into_iter()
             .find(|(id, _, _)| *id == v.check_id)
             .expect("the rule exists");
+        // Less is allowed only where the rule says so: a requirement in `findingsOnlyFor` is one
+        // its findings name and its silence says nothing of (backlog 0281).
+        let silent_on = &rules
+            .rules()
+            .find(|r| r.id == v.check_id)
+            .expect("the rule exists")
+            .findings_only_for;
+        let cited: Vec<&str> = cited
+            .into_iter()
+            .filter(|id| !silent_on.iter().any(|s| s == id))
+            .collect();
         assert_eq!(
             v.requirement_ids, cited,
             "{} verifies a different set of requirements from the ones it cites",
