@@ -74,4 +74,11 @@ said in the run's output, and the trial goes on. The owner is told the total as 
 
 ## Amendments
 
-None yet.
+1. **12 October 2026, before any build reached a model: the key helper's path is quoted.** The first start of the
+   controls, at the protocol's merge (`5a588421`), had every one of its twenty builds stop within ten seconds with
+   "apiKeyHelper failed": the trial's copy of the repository is on a drive whose name has a space in it, and the Claude
+   program runs the helper through the shell, so the unquoted path named nothing. No build was sent to a model, nothing
+   was spent ($0 in every transcript), and no result was seen; each transcript did show the build starting on
+   `claude-haiku-5-5` or `claude-sonnet-5-5`. `loop_trial.py` now quotes the path, tried through the shell before
+   the restart. The twenty folders are kept apart in `~/sv-drafts-failed-keyhelper`, and the controls start again from
+   the commit that carries this amendment.

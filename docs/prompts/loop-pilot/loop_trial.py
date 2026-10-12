@@ -15,7 +15,7 @@ settings is read or changed: --restricted ignores the settings files and confine
 folder, --strict-mcp-config uses no MCP server but this one, and --no-session-persistence keeps the run out of the
 session list. The transcript (stream-json) is written beside the folder, not in it, so `sv` does not read it.
 """
-import json, os, re, subprocess, sys, time
+import json, os, re, shlex, subprocess, sys, time
 
 CLAUDE = os.environ['CLAUDE_BIN']      # the Claude Code program to run, by its full path
 SV = os.environ['SV']                  # the sv release build every build is checked and helped by
@@ -118,7 +118,9 @@ def build(out, arm, model, n, budget, api):
            '--permission-mode', 'dontAsk', '--no-session-persistence',
            '--output-format', 'stream-json', '--verbose', '--max-budget-usd', str(budget)]
     if api:
-        cmd += ['--settings', json.dumps({'apiKeyHelper': KEY_HELPER})]
+        # The Claude program runs the helper through the shell, so a path with a space in it (the USB drive's, in the
+        # drafts trial) is quoted; unquoted, every build of 12 October 2026 stopped at once with "apiKeyHelper failed".
+        cmd += ['--settings', json.dumps({'apiKeyHelper': shlex.quote(KEY_HELPER)})]
     # Never install packages on this computer: `python3 -m pip` would match `Bash(python3:*)` and write into
     # the owner's own Python. Packages reach the app only through `sv`'s install step (ADR-052).
     refused = ['Bash(python3 -m pip:*)', 'Bash(python3 -m ensurepip:*)', 'Bash(pip:*)', 'Bash(pip3:*)']
