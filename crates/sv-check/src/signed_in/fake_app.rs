@@ -252,6 +252,10 @@ pub(super) struct Flaws {
     /// to them answers 405 for everybody, the note's owner too (ADR-053, Later).
     pub(super) writes_need_another_method: bool,
     pub(super) no_csrf_check: bool,
+    /// Not a flaw of the app's: the sign-in page has a Turkish heading and data-protection notice in
+    /// capitals before its form, and each capital dotted `İ` grows from two bytes to three when
+    /// lowered with `to_lowercase` (backlog 0278).
+    pub(super) non_ascii_heading: bool,
     /// The notes page sends `Referrer-Policy: no-referrer`. Not a flaw on its own.
     pub(super) no_referrer: bool,
     /// Creating a note refuses `Origin: null`, as a strict cross-site defense might.
@@ -1425,7 +1429,18 @@ impl FakeApp {
                     200,
                     headers,
                     &format!(
-                        "<form><input type=\"hidden\" name=\"csrf_token\" value=\"{CSRF}\">{}</form>",
+                        "{}<form><input type=\"hidden\" name=\"csrf_token\" value=\"{CSRF}\">{}</form>",
+                        if self.flaws.non_ascii_heading {
+                            concat!(
+                                "<h1>G\u{130}R\u{130}\u{15e}</h1><p>K\u{130}\u{15e}\u{130}SEL ",
+                                "VER\u{130}LER\u{130}N\u{130}Z\u{130}N \u{130}\u{15e}LENMES\u{130} ",
+                                "HAKKINDA B\u{130}LG\u{130}LEND\u{130}RME: K\u{130}\u{15e}\u{130}SEL ",
+                                "VER\u{130}LER\u{130}N\u{130}Z \u{130}LG\u{130}L\u{130} MEVZUATA ",
+                                "UYGUN \u{130}\u{15e}LEN\u{130}R.</p>"
+                            )
+                        } else {
+                            ""
+                        },
                         self.password_input()
                     ),
                 )
