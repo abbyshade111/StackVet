@@ -363,7 +363,6 @@
    "tools"
   ],
   "V11.3.1": [
-   "static",
    "tools"
   ],
   "V11.3.2": [
@@ -2357,7 +2356,7 @@
     "id": "ast.weak-cipher",
     "run": "Reads the code",
     "looks_for": "A cipher or block mode that is not approved is used",
-    "finding_only": false
+    "finding_only": true
    },
    {
     "id": "brakeman",

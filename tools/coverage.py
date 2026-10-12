@@ -586,6 +586,8 @@ def rust_literals():
 # adapters.json), by their folder name. A clean run credits none of these.
 # Requirement id -> {(tool, rule)}: rules that are only ever a finding against it.
 FINDINGS_ONLY = defaultdict(set)
+# Checks whose every credit is in part: the Rust ones listed above, and the AST rules marked `inPart`.
+IN_PART = set(RUST_IN_PART)
 # Requirement id -> {tool}: tools with some rule a clean run credits to it.
 CREDITED_BY_TOOL = defaultdict(set)
 # Requirement id -> {rule}: semgrep rules in the map that name it, in no pack the adapter runs.
@@ -657,8 +659,10 @@ def evidence():
     for rule in load(ROOT / "data/ast-rules.json")["rules"]:
         for q in rule["requirementIds"]:
             ev[q]["static"].append(rule["id"])
-            if rule.get("findingsOnly"):
+            if rule.get("findingsOnly") or q in rule.get("findingsOnlyFor", []):
                 FINDINGS_ONLY[q].add(("sv", rule["id"]))
+        if rule.get("inPart"):
+            IN_PART.add(rule["id"])
     for rule in load(ROOT / "data/secret-rules.json")["rules"]:
         for q in rule["requirementIds"]:
             ev[q]["static"].append(rule["id"])
@@ -802,7 +806,10 @@ def check_credits(log):
         return [f"{log} holds no credit from a check: was the suite run with SV_CREDIT_LOG set?"]
     cites = {check: (set(ids), check in RUST_FINDINGS_ONLY) for check, (_, ids) in RUST_CHECKS.items()}
     for rule in load(ROOT / "data/ast-rules.json")["rules"]:
-        cites[rule["id"]] = (set(rule["requirementIds"]), bool(rule.get("findingsOnly")))
+        # A requirement a clean run never credits (`findingsOnlyFor`) is not cited as a credit: the suite
+        # seeing it credited is a fault, as for a findings-only check.
+        cites[rule["id"]] = (set(rule["requirementIds"]) - set(rule.get("findingsOnlyFor", [])),
+                             bool(rule.get("findingsOnly")))
     faults = []
     for check, (ids, findings_only) in sorted(cites.items()):
         got = credited.get(check, set())
@@ -1244,11 +1251,11 @@ def main():
                  and c not in sv_finding_only(q)]
         parts = []
         if names:
-            whole = [c for c in names if c not in RUST_IN_PART]
+            whole = [c for c in names if c not in IN_PART]
             if whole:
                 parts.append(f"settled by {', '.join(f'`{c}`' for c in whole[:4])}"
                              + (f" and {len(whole) - 4} more" if len(whole) > 4 else ""))
-            partial = [c for c in names if c in RUST_IN_PART]
+            partial = [c for c in names if c in IN_PART]
             if partial:
                 parts.append(f"checked in part only, by {', '.join(f'`{c}`' for c in partial)}")
         by_tool = defaultdict(list)
@@ -1352,7 +1359,8 @@ def requirement_rows(asvs, aisvs, ev, tiers, settles, supports_only, manual_only
                         checks.append({"id": c, "kind": tier_name[t], "tool": False, "label": label,
                                        "words": text, "finding_only": c in only,
                                        "credited_only": c in RUST_CREDITS_ONLY,
-                                       "in_part": c in RUST_IN_PART})
+                                       # A credit in part is a credit: where the check only finds, it has none.
+                                       "in_part": c in IN_PART and c not in only})
             rows.append({
                 "id": q, "framework": name, "level": v["level"],
                 "family": v["chapter"], "family_name": v["chapter_name"],

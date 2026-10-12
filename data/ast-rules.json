@@ -626,6 +626,10 @@
         "shell": "^-(des\\S*|rc4\\S*|rc2\\S*|bf\\S*|blowfish\\S*|aes-\\d+-ecb|cast\\S*|idea\\S*)$"
       },
       "looksFor": "encryption in ECB mode, or with a retired cipher such as DES, triple DES, RC4, RC2, or Blowfish",
+      "inPart": true,
+      "findingsOnlyFor": [
+        "V11.3.1"
+      ],
       "looksForIn": {
         "shell": "openssl asked to encrypt with one of those ciphers or modes"
       }

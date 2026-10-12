@@ -3434,3 +3434,58 @@ fn dump_trees() {
     let tree = parser.parse(&src, None).unwrap();
     println!("{}", tree.root_node().to_sexp());
 }
+
+#[test]
+fn a_clean_run_of_the_weak_cipher_rule_credits_v11_3_2_in_part_and_v11_3_1_not_at_all() {
+    // Backlog 0281. The rule looks for ECB and six retired ciphers. Not seeing them is not "only
+    // approved ciphers and modes are used" (V11.3.2): AES-CBC with no MAC, ChaCha20 without
+    // Poly1305, Camellia and SEED are none of the six. And it never looks for PKCS#1 v1.5 padding,
+    // V11.3.1's own example, so a clean run says nothing about V11.3.1. Until then this credited
+    // both in full, and V11.3.2 read *checked* for an app using AES-CBC with no MAC.
+    let dir = std::env::temp_dir().join(format!("sv-ast-weak-cipher-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(
+        dir.join("app.py"),
+        "from Crypto.Cipher import AES\n\
+         cipher = AES.new(key, AES.MODE_CBC, iv)\n",
+    )
+    .unwrap();
+    let scan = scan_dir(rules(), &dir);
+    std::fs::remove_dir_all(&dir).ok();
+    assert!(
+        scan.findings.iter().all(|f| f.rule_id != "ast.weak-cipher"),
+        "AES-CBC is none of the six: {:?}",
+        scan.findings
+    );
+    let credit = scan
+        .verified
+        .iter()
+        .find(|v| v.check_id == "ast.weak-cipher")
+        .expect("a clean Python file still credits what the rule did look for");
+    assert!(
+        credit.in_part,
+        "not seeing six retired ciphers is not only approved ones being used: {credit:?}"
+    );
+    assert_eq!(
+        credit.requirement_ids,
+        vec!["V11.3.2".to_owned()],
+        "V11.3.1's padding is never looked for, so a clean run credits nothing of it"
+    );
+}
+
+#[test]
+fn findings_only_for_and_in_part_are_refused_where_they_say_nothing_or_too_much() {
+    let not_cited = one_rule(r#", "findingsOnlyFor": ["V11.3.1"]"#);
+    let err = rules_from(&not_cited).err().expect("refused").to_string();
+    assert!(err.contains("does not cite it"), "{err}");
+
+    let all = one_rule(r#", "findingsOnlyFor": ["V1.3.2"]"#);
+    let err = rules_from(&all).err().expect("refused").to_string();
+    assert!(err.contains("it is `findingsOnly`"), "{err}");
+
+    let with_findings_only = one_rule(r#", "findingsOnly": true, "inPart": true"#);
+    let err = rules_from(&with_findings_only).err().expect("refused").to_string();
+    assert!(err.contains("say nothing"), "{err}");
+
+    assert!(rules_from(&one_rule(r#", "inPart": true"#)).is_ok());
+}
