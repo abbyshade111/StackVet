@@ -1,6 +1,6 @@
 # Draft prompts, not yet tested
 
-These are drafts for the prompt library, written on 11 October 2026 after the Cursor build. None is served by `sv` and none
+These are drafts for the prompt library, written on 11 October 2026 after the Cursor build (1 to 9) and on 12 October 2026 (10 to 14, each checked against its requirement's text). None is served by `sv` and none
 is listed under "Shown to work", because none has been tried. Each becomes a prompt in `data/prompts.json` only after its
 trial, and only if the trial meets the library's rule (in `docs/PROMPTS.md`): the problem was in at least five builds
 without the prompt and in at most one with it. Each draft says what its trial would measure, so the trial can be run
@@ -129,7 +129,81 @@ The build had no instruction on what to do with it, so it was unclear whether it
 **Trial measures.** Whether each needs-attention item in the report has one of the three decisions written in the build's
 notes. Passes when every item has one. Fails when any item has none.
 
-## Trial plan (for all nine)
+## 10. `same-answer-for-any-account`: say nothing about which accounts exist
+
+**Gap.** The Cursor build's sign-up answered one way for a new email and another for one already registered (422 or a
+redirect), so anyone could learn who had an account. Its sign-in and reset were not checked for the same.
+
+**Prompt.**
+> Make sign-up, sign-in and password reset give the same answer whether or not the account exists: the same status, the
+> same page or message, and about the same time. Tell the person to check their email instead of saying an address is
+> taken or unknown.
+
+**Requirement.** V6.3.8 (valid users cannot be deduced from error messages, status codes or timing, registration and
+forgotten password included).
+
+**Trial measures.** Whether `sv report --run`'s probes find a different answer for a registered and an unregistered
+address. Passes when none differs. Fails when one does.
+
+## 11. `long-passwords-allowed`: take long passwords, and never crash on one
+
+**Gap.** The Cursor build's sign-up crashed with a server error on a very long password: the strength check had no cap.
+
+**Prompt.**
+> Accept passwords of at least 64 characters. Cap what the form accepts well above that (for example 1,024
+> characters), refuse anything longer with a plain message, and make sure no length, short or long, gives a server
+> error.
+
+**Requirement.** V6.2.9 (passwords of at least 64 characters are permitted).
+
+**Trial measures.** Whether the run's long-password probe gets a server error, and whether a 64-character password is
+accepted. Passes when there is no error and the 64-character one is taken.
+
+## 12. `return-named-fields`: send only the fields a page needs
+
+**Gap.** The Cursor build read whole rows (`select *`) and its device page returned the password field with the rest.
+
+**Prompt.**
+> Name the columns in every query, never `select *`, and send each page or answer only the fields it shows. A password
+> hash, a token, or any field the reader may not see never leaves the server.
+
+**Requirement.** V15.3.1 (only the required subset of fields from a data object is returned).
+
+**Trial measures.** Whether any answer the run collects holds a password hash or another field its page does not show,
+and whether the code has a `select *`. Passes when neither is found.
+
+## 13. `ci-checkout-no-credentials`: a workflow that leaves no token behind
+
+**Gap.** The Cursor build's workflow checked the code out with the job's token left on disk, which `ci-cd = true`
+surfaced as a real finding.
+
+**Prompt.**
+> In every CI workflow, check out with `persist-credentials: false`, give the job the fewest permissions it needs
+> (start from `contents: read`), and pin each action to a full commit. Say in the workflow and the commit that you
+> wrote it, and ask me to review it before it runs anywhere but my computer.
+
+**Requirements.** AC.12.2 (no credentials persisted into the workspace) and AC.12.5 (changes to workflow files go
+through an elevated review).
+
+**Trial measures.** Whether each workflow the build writes has `persist-credentials: false` and a `permissions` block,
+read from the file. Passes when every one does.
+
+## 14. `work-on-a-branch`: the tool's side of `push-without-bypass`
+
+**Gap.** The Cursor tool pushed straight to `main` four times, twice past a rule requiring pull requests, and said so
+only afterwards. Draft 7 is what the owner says; this is what the tool does on its own.
+
+**Prompt.**
+> Never push to the main branch. Work on a branch, push the branch, and open a pull request for me to merge. If a rule
+> or a setting blocks a push, stop and tell me; never look for a way around it, even when I have asked you to push.
+
+**Requirements.** AC.8.3 (agents cannot bypass branch protection, required reviews or checks) and AC.8.1 (agents cannot
+approve or merge what they generated).
+
+**Trial measures.** Whether the build's history has a commit on `main` that did not come through a merge, read with the
+note of backlog 0258 (ADR-092). Passes when there is none.
+
+## Trial plan (for all fourteen)
 
 - One app per prompt, built in a fresh folder, twice: once with the prompt, once without.
 - Ten builds each way, as the library's rule requires, with two models. The first trial uses the cheapest model that

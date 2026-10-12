@@ -8,12 +8,12 @@
 > `v1` branch; paths written `agnostic/…` below are now at the repository root (`agnostic/data/…` is `data/…`,
 > `agnostic/Dockerfile` is `Dockerfile`), and `../data` is `data/`.
 
-A second version of SecureVibe. It keeps the workflow, the checks, the compliance engine and the reports, and
+StackVet is the second version of what was first called SecureVibe (v1). It keeps the workflow, the checks, the compliance engine and the reports, and
 changes two things:
 
 * **No wizard.** The user builds their app in whatever AI coding tool they like, with the back-and-forth that gets
   the app right. `sv` picks the code up afterwards.
-* **No language.** Nothing in the pipeline assumes Node, Express or the SecureVibe template.
+* **No language.** Nothing in the pipeline assumes Node, Express or v1's template.
 
 Written in Rust, a memory-safe language (`docs/adr/ADR-020.md`). The OWASP data files were shared with v1 rather than copied until the move; since then
 there are two copies (`docs/adr/ADR-016.md`).

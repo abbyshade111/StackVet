@@ -1,7 +1,9 @@
-# A gap analysis of SecureVibe, start to finish (7 October 2026)
+# A gap analysis of StackVet, start to finish (7 October 2026)
 
-Asked for by the owner on 7 October 2026: "a deep gap analysis of SecureVibe - the process start to finish, etc. and
-let me know where there are blind spots or areas for improvement" (BACKLOG, "A deep gap analysis of SecureVibe,
+*Written while the product was still called SecureVibe (renamed 9 October 2026, ADR-062): the file and tool names below, such as `securevibe.toml` and `securevibe_check`, are the old names as they were on 7 October.*
+
+Asked for by the owner on 7 October 2026: "a deep gap analysis of SecureVibe [now StackVet] - the process start to finish, etc. and
+let me know where there are blind spots or areas for improvement" (BACKLOG, "A deep gap analysis of SecureVibe [now StackVet],
 start to finish"). This is a reading, not a build: nothing in `sv` changes with it. Each proposal is for the owner to
 choose; the ones that change what counts as evidence, what `sv` runs, or the repository's settings need a decision
 record or the owner's yes before anyone builds them.
