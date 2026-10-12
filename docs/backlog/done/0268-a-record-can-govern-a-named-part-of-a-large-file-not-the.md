@@ -1,6 +1,6 @@
 # A record can govern a named part of a large file, not the whole file
 
-**Status:** claimed by securevibe-weekly-adr-3, 12 October 2026
+**Status:** done, 12 October 2026
 
 Found by the third weekly review (12 October 2026, backlog 0266) and chosen by the owner the same day. Thirteen records have
 a decision living in a large shared file (`signed_in/mod.rs`, `signed_in/rules.rs`, `ai.rs`, `assemble.rs`, `main.rs`,
@@ -22,3 +22,13 @@ its file (the references test must fail).
 **Order.** After 0267, which is smaller and shares no file with this beyond `docs/adr/`.
 
 **Claimed 12 October 2026 by session securevibe-weekly-adr-3**, in the claim pull request, with 0267.
+
+**Built 12 October 2026** (ADR-103, accepted). `tools/adr_check.py` reads `path::NAME` and, for such a pattern, the lines the
+pull request adds or removes (`git diff -U0`); `crates/sv-cli/tests/decision_records.rs` fails when a name is in no file its
+path matches, and ends a record's Governs list the way the Python does. Named in ADR-021 and ADR-053 (`RESTS_ON_A_REFUSAL`),
+ADR-064 (`HANG_HOLD`), ADR-067 (`STATIC_SESSION`) and ADR-088 (`KILL_SWITCH`, `kill_switch`). Run for real against this
+tree: an edit elsewhere in `ai.rs` does not ask ADR-064; a change to the `HANG_HOLD` line does. Eight breaks put in on
+purpose, each caught by the case written for it. **Remains:** the other records whose decisions live in the large shared files
+(ADR-015, 022, 023, 029, 037, 082, 091 among them) take a name as each is next touched; the weekly review lists any left.
+`ai.rs` was already governed whole by six records (ADR-071, 073, 074, 075, 079, 094), so the "large files stay ungoverned"
+decision of 6 October had already been relaxed there.

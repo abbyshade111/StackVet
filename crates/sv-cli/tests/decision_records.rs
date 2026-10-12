@@ -72,17 +72,37 @@ fn quoted(text: &str) -> Vec<String> {
         .collect()
 }
 
-/// The patterns on a record's `**Governs:**` paragraph.
+/// The patterns on a record's `**Governs:**` paragraph. The list ends where the standing sentence ("A pull request that
+/// changes ...") begins, however its line was wrapped, and with `.)` as well as `.` before it, as `tools/adr_check.py`
+/// reads it (backlog 0267).
 pub fn governs(text: &str) -> Vec<String> {
     let Some(start) = text.find("**Governs:**") else {
         return Vec::new();
     };
     let paragraph = text[start..].split("\n\n").next().unwrap_or("");
-    let listed = paragraph
-        .split(". A pull request")
-        .next()
-        .unwrap_or(paragraph);
-    quoted(listed)
+    let words: Vec<&str> = paragraph.split_whitespace().collect();
+    let end = words
+        .windows(4)
+        .position(|w| {
+            (w[0].ends_with('.') || w[0].ends_with(".)"))
+                && w[1] == "A"
+                && w[2] == "pull"
+                && w[3] == "request"
+        })
+        .map_or(words.len(), |i| i + 1);
+    quoted(&words[..end].join(" "))
+}
+
+/// Whether `name` is in `text` as a whole word: no letter, digit or underscore on either side.
+fn has_word(text: &str, name: &str) -> bool {
+    let word = |c: char| c.is_ascii_alphanumeric() || c == '_';
+    text.match_indices(name).any(|(i, _)| {
+        text[..i].chars().next_back().is_none_or(|c| !word(c))
+            && text[i + name.len()..]
+                .chars()
+                .next()
+                .is_none_or(|c| !word(c))
+    })
 }
 
 /// A `Governs` pattern as `tools/adr_check.py` reads it: `*` matches any run of characters, `/` included.
@@ -153,9 +173,23 @@ fn problems(n: u32, text: &str, files: &[String], functions: &BTreeSet<String>) 
         out.push(format!("ADR-{n:03} has no **Governs:** list"));
     }
     for pattern in &patterns {
-        if !files.iter().any(|f| matches(pattern, f)) {
+        // `path::NAME` governs a named part of a large file (ADR-103): the name must still be in a file the path matches.
+        let (path, name) = pattern.split_once("::").unwrap_or((pattern, ""));
+        let reached: Vec<&String> = files.iter().filter(|f| matches(path, f)).collect();
+        if reached.is_empty() {
             out.push(format!(
                 "ADR-{n:03} governs `{pattern}`, which matches no file"
+            ));
+        } else if !name.is_empty()
+            && !reached.iter().any(|f| {
+                has_word(
+                    &std::fs::read_to_string(root().join(f)).unwrap_or_default(),
+                    name,
+                )
+            })
+        {
+            out.push(format!(
+                "ADR-{n:03} governs `{pattern}`, and `{name}` is in no file `{path}` matches"
             ));
         }
     }
@@ -297,4 +331,55 @@ fn the_checks_catch_what_they_are_for() {
     }
     assert!(matches("crates/*/Cargo.toml", "crates/sv-cli/Cargo.toml"));
     assert!(!matches("crates/*/Cargo.toml", "Cargo.toml"));
+}
+
+#[test]
+fn a_record_that_governs_a_named_part_fails_when_the_name_is_gone() {
+    // The setup: a real file, a name in it, and a name that is not.
+    let files = repository_files();
+    let seal = std::fs::read_to_string(root().join("crates/sv-check/src/seal.rs")).unwrap();
+    assert!(
+        has_word(&seal, "pub"),
+        "the file read has no word to look for"
+    );
+    let functions = functions();
+    let text = |pattern: &str| {
+        format!(
+            "**Governs:** `{pattern}`. A pull request that changes it changes this record too.\n\nx"
+        )
+    };
+    let found = |pattern: &str| problems(21, &text(pattern), &files, &functions);
+    // The name is in the file: nothing to say.
+    assert_eq!(
+        found("crates/sv-check/src/seal.rs::pub"),
+        Vec::<String>::new()
+    );
+    // The name is not in the file: said.
+    let gone = found("crates/sv-check/src/seal.rs::NO_SUCH_NAME_ANYWHERE");
+    assert_eq!(gone.len(), 1, "{gone:?}");
+    assert!(gone[0].contains("NO_SUCH_NAME_ANYWHERE"), "{gone:?}");
+    // The path matches no file: said, as it was before the form existed.
+    let nowhere = found("crates/sv-check/src/no_such_file.rs::pub");
+    assert!(nowhere[0].contains("matches no file"), "{nowhere:?}");
+}
+
+#[test]
+fn a_name_is_found_only_as_a_whole_word() {
+    assert!(has_word("const TABLE: u8 = 1;", "TABLE"));
+    assert!(has_word("x(TABLE)", "TABLE"));
+    assert!(!has_word(
+        "LONG_TABLE and TABLE_2 and TABLE1 and aTABLE",
+        "TABLE"
+    ));
+}
+
+#[test]
+fn the_standing_sentence_ends_the_list_however_it_is_wrapped() {
+    let wrapped = "**Governs:** `a/b.rs`. A\npull request that changes these changes this record too\n(`docs/adr/README.md`).\n\nx";
+    assert_eq!(governs(wrapped), vec!["a/b.rs".to_owned()]);
+    let parenthesis = "**Governs:** `a/b.rs` (said later.) A pull request that changes these (`docs/adr/README.md`).";
+    assert_eq!(governs(parenthesis), vec!["a/b.rs".to_owned()]);
+    let plain =
+        "**Governs:** `a/b.rs`, `c/*`. A pull request that changes any of these.\n\n`d/e.rs`";
+    assert_eq!(governs(plain), vec!["a/b.rs".to_owned(), "c/*".to_owned()]);
 }

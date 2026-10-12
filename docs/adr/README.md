@@ -20,7 +20,8 @@ it. (`sv`'s first eleven were each written one to seven days after the decision,
 - **Governs.** Each record lists the files whose change can change its decision. The "Decision records" check
   (`.github/workflows/decision-records.yml`, `tools/adr_check.py`) fails a pull request that touches one of them and
   neither changes the record nor says, on a line of its description, `ADR-0NN: unchanged, because ...` with a reason.
-  The reason is the point: it is the moment somebody reads the record against the change.
+  The reason is the point: it is the moment somebody reads the record against the change. A record may govern a named
+  part of a large file, `path::NAME` (ADR-103): then only a change to a line that has NAME as a word asks.
 - **References.** `crates/sv-cli/tests/decision_records.rs` fails when a record names a test or a file that no longer
   exists, governs a pattern that matches nothing, or when any record number cited in the code or the documents has no
   record, or a record is missing from the index below.
@@ -146,7 +147,7 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-100](ADR-100.md) | `sv` keeps two files of its own, an opt-in log and a crash file, and never puts an argument or a path in either (accepted, 12 October 2026) |
 | [ADR-101](ADR-101.md) | `sv connect` prints the settings an AI coding tool needs and writes nothing, and one prompt sets StackVet up (accepted, 12 October 2026) |
 | [ADR-102](ADR-102.md) | `sv report` says how long its slow stages take, how far a long wait is, and the slowest parts, unless `--quiet` (accepted, 12 October 2026) |
-| [ADR-103](ADR-103.md) | A record can govern a named part of a large file, and the check asks only when that part changes (proposed, 12 October 2026) |
+| [ADR-103](ADR-103.md) | A record can govern a named part of a large file, and the check asks only when that part changes (accepted, 12 October 2026) |
 
 ## Names in the records
 

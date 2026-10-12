@@ -13,6 +13,10 @@ owner's decision of 4 October 2026; BACKLOG, "Decision records written with the 
 
 A `*` in a pattern matches any run of characters, `/` included.
 
+A pattern may name a part of a file, `path::NAME` (ADR-103): it matches only when the pull request's diff adds or removes
+a line that contains NAME as a whole word (letters, digits and underscores on either side do not count), so a record can
+govern one table or constant in a large shared file without every change to the file owing a line.
+
 Usage:
     python3 tools/adr_check.py --base origin/main --head HEAD --event "$GITHUB_EVENT_PATH"
     python3 tools/adr_check.py --base origin/main --head HEAD --body-file description.md
@@ -54,7 +58,22 @@ def records(read):
     return out
 
 
-def owed(changed, patterns_by_record, body):
+def word_in(text, name):
+    """Whether `name` appears in `text` as a whole word: no letter, digit or underscore on either side."""
+    return re.search(r"(?<![A-Za-z0-9_])" + re.escape(name) + r"(?![A-Za-z0-9_])", text or "") is not None
+
+
+def touches(changed, pattern, lines):
+    """The changed files a pattern reaches. `path::NAME` reaches a file only when a changed line has NAME as a word;
+    with no changed lines to look at (`lines` is None) it reaches every file the path does, the safe side."""
+    path, _, name = pattern.partition("::")
+    reached = [f for f in changed if fnmatch.fnmatchcase(f, path)]
+    if not name or lines is None:
+        return reached
+    return [f for f in reached if word_in(lines.get(f, ""), name)]
+
+
+def owed(changed, patterns_by_record, body, lines=None):
     """The records a change touches and neither changes nor explains, with the files that touched each."""
     stated = {}
     for number, reason in UNCHANGED.findall(body or ""):
@@ -63,7 +82,9 @@ def owed(changed, patterns_by_record, body):
     out = {}
     for number, patterns in sorted(patterns_by_record.items()):
         record = f"{ADR_DIR}/ADR-{number:03d}.md"
-        touched = [f for f in changed if any(fnmatch.fnmatchcase(f, p) for p in patterns)]
+        touched = []
+        for pattern in patterns:
+            touched += [f for f in touches(changed, pattern, lines) if f not in touched]
         if touched and record not in changed and number not in stated:
             out[number] = touched
     return out
@@ -89,6 +110,25 @@ def changed_files(base, head):
     r = subprocess.run(["git", "diff", "--name-only", f"{base}...{head}"], cwd=ROOT, capture_output=True,
                        text=True, encoding="utf-8", check=True)
     return [line for line in r.stdout.splitlines() if line]
+
+
+def changed_lines(base, head, cwd=ROOT):
+    """File to the text of the lines the change adds or removes there, for the `path::NAME` form of a pattern."""
+    r = subprocess.run(["git", "diff", "-U0", "--no-color", f"{base}...{head}"], cwd=cwd, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace", check=True)
+    out, current, removed, in_header = {}, None, None, False
+    for line in r.stdout.splitlines():
+        if line.startswith("diff --git "):
+            in_header, current, removed = True, None, None
+        elif in_header and line.startswith("--- "):
+            removed = line[6:] if line.startswith("--- a/") else None
+        elif in_header and line.startswith("+++ "):
+            current = line[6:] if line.startswith("+++ b/") else removed
+        elif line.startswith("@@"):
+            in_header = False
+        elif not in_header and current and line[:1] in ("+", "-"):
+            out[current] = out.get(current, "") + line[1:] + "\n"
+    return out
 
 
 def report(missing, patterns_by_record):
@@ -135,6 +175,40 @@ def self_test():
     assert governs(wrapped) == ["a/b.rs"], governs(wrapped)
     parenthesis = "**Governs:** `a/b.rs` (said later.) A pull request that changes these changes this record too (`docs/adr/README.md`)."
     assert governs(parenthesis) == ["a/b.rs"], governs(parenthesis)
+    # A part of a file (ADR-103): it fires only when the change touches a line with the name as a whole word.
+    part = {21: ["crates/a/big.rs::TABLE"]}
+    quiet = {"crates/a/big.rs": "let x = 1;\n"}
+    assert owed(["crates/a/big.rs"], part, "", quiet) == {}, "a change elsewhere in the file owes nothing"
+    assert owed(["crates/a/big.rs"], part, "", {"crates/a/big.rs": "const TABLE: u8 = 1;\n"}) == {21: ["crates/a/big.rs"]}
+    assert owed(["crates/a/big.rs"], part, "", {"crates/a/big.rs": "let LONG_TABLE = 1; let TABLE_2 = 2; TABLE_\n"}) == {}, "a longer name is not the name"
+    assert owed(["crates/a/big.rs"], part, "", {"crates/a/big.rs": "x(TABLE)\n"}) == {21: ["crates/a/big.rs"]}, "next to punctuation it is the name"
+    assert owed(["crates/a/other.rs"], part, "", {"crates/a/other.rs": "const TABLE: u8 = 1;\n"}) == {}, "another file owes nothing"
+    assert owed(["crates/a/big.rs"], part, "") == {21: ["crates/a/big.rs"]}, "with no lines to read it asks, the safe side"
+    assert owed(["crates/a/big.rs"], part, "ADR-021: unchanged, because only the table's comment moved", {"crates/a/big.rs": "TABLE\n"}) == {}
+    assert owed(["crates/a/big.rs"], {21: ["crates/a/big.rs::TABLE", "crates/a/big.rs"]}, "", quiet) == {21: ["crates/a/big.rs"]}, "a whole-file pattern still asks"
+    # Reading the changed lines off a diff, a deleted file's included, and a header line never taken for content.
+    assert word_in("a TABLE b", "TABLE") and not word_in("aTABLE", "TABLE") and not word_in("TABLE1", "TABLE")
+    # The same, through a real repository: an edited file, a deleted one, and a content line that looks like a header.
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        def put(name, text):
+            with open(Path(tmp, name), "w", encoding="utf-8", newline="\n") as f:
+                f.write(text)
+
+        def git(*a):
+            subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *a], cwd=tmp, check=True, capture_output=True)
+        git("init", "-q", "-b", "main")
+        put("big.rs", "const A: u8 = 1;\nconst B: u8 = 2;\n-- not a header\n")
+        put("gone.rs", "const GONE: u8 = 1;\n")
+        git("add", "."); git("commit", "-q", "-m", "one")
+        put("big.rs", "const A: u8 = 1;\nconst B: u8 = 3;\n--- still not a header\n")
+        Path(tmp, "gone.rs").unlink()
+        git("add", "-A"); git("commit", "-q", "-m", "two")
+        got = changed_lines("HEAD~1", "HEAD", cwd=tmp)
+        assert set(got) == {"big.rs", "gone.rs"}, got
+        assert word_in(got["big.rs"], "B") and not word_in(got["big.rs"], "A"), got
+        assert word_in(got["gone.rs"], "GONE"), got
+        assert "still" in got["big.rs"] and "-- not a header" in got["big.rs"], got
     print("adr_check self-test: ok")
 
 
@@ -158,7 +232,9 @@ def main():
     elif args.body_file:
         body = Path(args.body_file).read_text(encoding="utf-8")
     patterns = records(Git(args.head))
-    missing = owed(changed_files(args.base, args.head), patterns, body)
+    changed = changed_files(args.base, args.head)
+    named = any("::" in p for ps in patterns.values() for p in ps)
+    missing = owed(changed, patterns, body, changed_lines(args.base, args.head) if named else None)
     if missing:
         print(report(missing, patterns))
         return 1
