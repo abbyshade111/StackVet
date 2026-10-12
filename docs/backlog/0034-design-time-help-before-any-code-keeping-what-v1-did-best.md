@@ -1,6 +1,6 @@
 # Design-time help before any code: keeping what v1 did best
 
-**Status:** partly done: parts 5, 6, 9 (backlog 0228's conversion read them as not done)
+**Status:** partly done: part 5: the design-time prompts do not yet ask for a planned answer
 
 Proposed on 4 October 2026 by session paper-facts,
 at the owner's asking, after comparing v1 and `sv` for the paper. v1 made the decisions first (the wizard, the design
@@ -76,7 +76,7 @@ changes credits anything: a plan, a brief, or a decision is still checked only t
    try a middle tier, "confirmed in the AI tool's form, not sealed", which would never stand in for `sv review`.
    **The owner's decision, 6 October 2026: no, not for now.** Elicitation stays unused; `sv review` is the only way
    an answer counts as the owner's.
-   **Part status:** claimed by securevibe-e2, 6 October 2026
+   **Part status:** done, 11 October 2026
 7. **A larger prompts trial.** One test app, one model, one build each so far. To say the help works with any tool:
    at least two AI tools or models and about three builds each, and a trial of the MCP flow itself (whether a tool
    with the server attached fetches the plan and briefs unasked, and whether the app comes out more testable).
@@ -127,7 +127,7 @@ changes credits anything: a plan, a brief, or a decision is still checked only t
    switch decided the safe way that the check finds otherwise is `decisions.not-held-to`, and without `--run` the
    report says the decisions were not looked at. Twelve guards broken in turn, each caught; the line joining the
    finding to the report needs Docker to run and is untested here.
-   **Part status:** claimed by securevibe-e2, 5 October 2026
+   **Part status:** done, 11 October 2026
 **Items 1, 2, and 8 claimed on 4 October 2026 by session paper-facts**, at the owner's word, in branch
 `claude/design-time-first`.
 **Items 1, 2, and 8 done the same day** (ADR-028; DESIGN, "Decide before you build: the instructions, the spec, and
@@ -137,3 +137,12 @@ and `prompts/get` in both protocols with the design-time prompts, each marked an
 below are written, each not tried and naming no requirement. Which clients list MCP prompts is not yet tried.
 Fourteen guards broken in turn, each caught.
 **Marked done 9 October 2026 by session securevibe-e9**, from the roadmap (Phase 4, item 3), read against `main`: items 1, 2, 3, 4, 5, 7, 8, and 9 are each done above, and item 6 was researched and the owner decided on 6 October not to build it.
+
+**Status checked against the code, 11 October 2026.** The line above saying the item was marked done on 9 October was
+not reflected in its status lines, which still read parts 5, 6, and 9 as open. Part 9 is built: `sv` reads
+`design-decisions.md` (`crates/sv-check/src/decisions.rs`; tests in `crates/sv-check/tests/decisions.rs` and
+`crates/sv-cli/tests/decisions_file.rs`). Part 6 is closed by the owner's decision of 6 October 2026 not to build it,
+now recorded in ADR-028 ("Later, 6 October 2026, written 11 October 2026"). Part 5 is half built: the check of a
+`planned` answer is in (`design.planned-never-built`, `crates/sv-check/src/design.rs`; `crates/sv-cli/tests/planned_decisions.rs`),
+but none of the design-time prompts in `data/design-prompts.json` or `docs/prompts/design-time.md` asks the AI tool to
+answer a design question `planned`, with a `where`, before the code exists. That is what remains.
