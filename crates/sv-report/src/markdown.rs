@@ -852,6 +852,7 @@ pub fn security(report: &Report) -> String {
              section above: it means the checks that ran found nothing, not that the app is \
              secure.\n\n",
         );
+        test_information_section(&mut out, report);
         return out;
     }
 
@@ -883,8 +884,41 @@ pub fn security(report: &Report) -> String {
             finding_section(&mut out, report, finding);
         }
     }
+    test_information_section(&mut out, report);
     out
 }
+
+/// Every test-file information finding (ADR-091), in full: not counted, listed so a person can read each
+/// and, with `sv review`, record the ones that are real so they count (ADR-093). Left out when there are none.
+fn test_information_section(out: &mut String, report: &Report) {
+    let info = &report.test_information;
+    if info.is_empty() {
+        return;
+    }
+    out.push_str(&format!(
+        "## {} thing{} in test code, information only\n\nThese rules fired in test code, where they \
+         are usually not a problem, so they are information and not counted (ADR-091). Read each one: \
+         if it is real, record it with a `counts` verdict in `[[finding-review]]`, naming its rule, file and \
+         fingerprint, and confirm it with `sv review` in your own terminal; then it counts (ADR-093).\n\n",
+        info.len(),
+        if info.len() == 1 { "" } else { "s" }
+    ));
+    for f in info {
+        out.push_str(&format!(
+            "- {} in {} line {}: {} (fingerprint {})\n",
+            code(&f.rule_id),
+            code(&f.location.file),
+            f.location.line,
+            inert(&f.title).replace(['\n', '\r'], " "),
+            code(&f.fingerprint)
+        ));
+    }
+    out.push('\n');
+}
+
+#[cfg(test)]
+#[path = "markdown_test_information_tests.rs"]
+mod test_information_tests;
 
 fn finding_section(out: &mut String, report: &Report, finding: &sv_check::Finding) {
     out.push_str(&format!(
