@@ -1,6 +1,6 @@
 # The build-folder check in moved.rs does not see test files declared in lib.rs or main.rs
 
-**Status:** claimed by backlog-org-0262, 12 October 2026
+**Status:** done, 12 October 2026
 
 Found on 11 October 2026, when it failed pull request #1472. Low priority: it errs on the strict side, so it can
 flag test code wrongly but never lets program code through.
@@ -21,3 +21,9 @@ ways, as `CLAUDE.md` asks: a top-level test file declared in `lib.rs` that names
 same line in a top-level file that is not declared for tests still fails. Keep the second case as a fixture, so the
 guard's strict side is tested on purpose rather than by accident. A test-only change: no decision record is owed
 beyond an `ADR-036: unchanged` line, since what counts as reading from the build folder does not change.
+
+**Done 12 October 2026:** `crates/sv-cli/tests/moved.rs` now reads a crate's `lib.rs` and `main.rs` for a file at the
+top of its `src/`, so a whole-file test module declared there may name the build folder as any test module may. The
+walk is a function of its own, `build_folder_reads`, and a new test runs it on a crate made for it in both directions: a
+test file declared in `lib.rs`, and one in `main.rs`, pass; a plain file beside them that names the build folder is
+found. Broken on purpose: `lib.rs` and `main.rs` not read (1 red); every file read as declared (1 red).
