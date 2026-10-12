@@ -2,8 +2,9 @@
 //! asked as somebody not signed in, and what came back, with every credential cut down first.
 //!
 //! Two passes, and a header pass before them. A header that carries a session or a sign-in
-//! (`set-cookie`, `authorization`, and the others in `SESSION_HEADERS`) keeps its name and, for a
-//! cookie, the cookie's name, and loses its value whatever it looks like: a session id is random
+//! (`set-cookie`, `authorization`, the others in `SESSION_HEADERS`, and any whose name says token,
+//! session, key, or secret) keeps its name and, for a cookie, the cookie's name, and loses its value
+//! whatever it looks like: a session id is random
 //! letters and digits, and no rule for keys knows it from any other. Then every header value and
 //! every body goes through `secrets::redact_text`, which cuts what the secrets scan would find and
 //! any value a name says is a credential. The test that plants a key built from pieces in each
@@ -144,7 +145,8 @@ fn kept_exchange(
     let headers = headers
         .iter()
         .map(|(name, value)| {
-            let value = if SESSION_HEADERS.contains(&name.as_str()) {
+            let value = if SESSION_HEADERS.contains(&name.as_str()) || named_for_a_credential(name)
+            {
                 session_value(name, value)
             } else {
                 value.clone()
@@ -162,6 +164,15 @@ fn kept_exchange(
         headers,
         body,
     }
+}
+
+/// Whether a header's name says it holds a token, a session, a key, or a secret (`x-session-token`,
+/// `x-amz-security-token`), whose value is cut whatever it looks like, as for `SESSION_HEADERS`
+/// (backlog 0285). Not the browser's cross-origin headers, which name credentials and headers
+/// (`access-control-allow-credentials: true`) and never hold one.
+fn named_for_a_credential(name: &str) -> bool {
+    !name.to_ascii_lowercase().starts_with("access-control-")
+        && sv_check::secrets::is_masked_name(name)
 }
 
 /// A session header's value with the value itself taken out: a cookie keeps its name and its
@@ -390,3 +401,7 @@ mod seen_tests;
 #[cfg(test)]
 #[path = "seen_names_tests.rs"]
 mod seen_names_tests;
+
+#[cfg(test)]
+#[path = "seen_header_names_tests.rs"]
+mod seen_header_names_tests;
