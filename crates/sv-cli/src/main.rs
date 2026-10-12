@@ -43,6 +43,23 @@ mod review;
 /// and not the app's, that nothing was assessed, and 3, rather than Rust's own line and 101, a code
 /// no document names (backlog 226, part 1, item 5). The panic unwinds first, so whatever cleans up
 /// on the way out (the run's containers, the report folder's lock) still does.
+/// What a command's own `--help` says beyond its line in the list of commands: kept short, and
+/// pointing at the guide where the whole flow is (backlog 0254).
+fn more_help(name: &str) -> &'static str {
+    match name {
+        "review" => {
+            "\nIt goes through each entry that does not yet count as yours, shows it, and asks your name:\n\
+             \x20 - a finding you set aside, with your reason ([[finding-review]] in stackvet.toml)\n\
+             \x20 - an answer the AI coding tool proposed that you confirm after looking (`confirmed`\n\
+             \x20   under [design] or [checked-by-hand] in stackvet.toml)\n\
+             \x20 - your own answers in security-notes.md\n\
+             Each is written back with your name, the date, and a seal. It runs only in your own\n\
+             terminal. The whole flow: docs/GETTING-STARTED.md, section 5, \"Answer the questions\".\n"
+        }
+        _ => "",
+    }
+}
+
 fn main() {
     crash::install();
     let ran = std::panic::catch_unwind(run);
@@ -130,7 +147,7 @@ fn run() -> Result<i32> {
     sv_cli::own_log::line(&format!("command {}", command.name));
     let rest = &args[1..];
     if rest.iter().any(|a| a == "--help" || a == "-h") {
-        print!("USAGE:\n{}", command.help);
+        print!("USAGE:\n{}{}", command.help, more_help(command.name));
         return Ok(exit::CLEAN);
     }
     // Every command reads sv's own data, so a copy that cannot find it says so before doing
