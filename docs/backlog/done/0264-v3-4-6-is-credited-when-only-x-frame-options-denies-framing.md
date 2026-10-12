@@ -1,6 +1,6 @@
 # V3.4.6 is credited when only X-Frame-Options denies framing, which the requirement says may not be relied on
 
-**Status:** claimed by backlog-org-0264, 12 October 2026
+**Status:** done, 12 October 2026
 
 Found on 11 October 2026, reading V3.4.6's own text while claiming backlog 0232, part 1.
 
@@ -20,3 +20,7 @@ Check `tools/coverage.py` and the report's wording for V3.4.6 alongside.
 `frame-ancestors` toward V3.4.6; `X-Frame-Options` alone is short of it, said as obsolete rather than missing. Recorded
 as a Later entry on ADR-047 (which governs the list of missing headers) in the pull request that builds it. The example
 apps' policies gain `frame-ancestors 'none'` where they rely on `X-Frame-Options`, so their reports stay as they are.
+
+**Done 12 October 2026** (ADR-047, "Later, 12 October 2026"): only `frame-ancestors` counts toward V3.4.6; a page with
+`X-Frame-Options` alone is short of it, said as obsolete. Tests: `crates/sv-check/src/probes/framing_tests.rs` (three).
+Broken on purpose: `X-Frame-Options` counted again (1 red); `frame-ancestors` not counted (35 red).
