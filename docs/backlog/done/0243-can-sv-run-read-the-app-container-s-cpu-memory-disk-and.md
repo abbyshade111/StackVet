@@ -1,6 +1,6 @@
 # Can sv run read the app container's CPU, memory, disk and egress from the host?
 
-**Status:** claimed by backlog-org-0243, 11 October 2026 (taken over from build-0243, whose session was archived, at the owner's request)
+**Status:** done, 11 October 2026
 
 From 0029, part 9 (C9.1.1). The AI probe records CPU, memory, disk and egress quotas as unchecked, because the app is judged from outside. `sv run` starts the app's container from the host, so the host may be able to read its resource use. Research first: find out whether the container backend reports these numbers for a running container and what it costs to read them. Build nothing until the answer is in this item.
 
@@ -30,3 +30,11 @@ What it can and cannot say:
 For the owner to decide: whether `sv run` should take these readings during a run and write them to the report beside
 the probe's unchecked quotas. That changes what a report says, so it needs a decision record in the pull request that
 builds it, as the rules ask. Until then, the quotas stay unchecked.
+
+## Built, 11 October 2026
+
+The owner approved it the same day. Built in three steps: reading the engine's words (#1464), taking one reading while
+the app runs (#1466), and saying it in the report and `sv run`'s printout (ADR-094). The report gives the container's
+CPU, memory, network, and disk use and its limits, or says Docker did not say, and C9.1.1's note on the tools' quotas
+says a reading was taken. No requirement's status changes: the readings are the whole container's, from outside, not
+limits the app puts on its own tools, so the quotas stay not assessed.
