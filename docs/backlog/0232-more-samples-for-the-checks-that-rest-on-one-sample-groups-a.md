@@ -78,6 +78,10 @@ by speaking for what its requirement names. One part per group of the inventory 
 7. **G. Each operation the requirement names.** Phone, two-factor, and recovery changes beside the email change
    (V7.5.1); password change beside sign-up for the password checks; both TOTP and an emailed code where both
    exist (V6.5.1, V6.5.5); one manifest key per operation.
+   **Assessed 12 October 2026, not built:** the phone, two-factor, and recovery changes each need a key of their own in
+   stackvet.toml for features few apps have, a change of format for a decision of its own; and the password checks
+   tried at a password change as well as sign-up stay in part either way, since ADR-090 keeps every password rule probe
+   in part (one password is one sample of every password). Left open for the owner to weigh.
    **Part status:** open
 8. **H. More than one listed page.** The owner is asked, where only one private or admin page is listed, to list
    more; `sv init` and the prompts say why.
