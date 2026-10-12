@@ -165,6 +165,31 @@ fn seal_in(
 /// computer and nothing has changed them since; otherwise why not, as the end of a sentence
 /// beginning "sv cannot show it wrote this report:".
 pub fn proven(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
+    holds_only_svs(dir)?;
+    sealed_here(dir)
+}
+
+/// Where a report whose seal holds was sealed, as against where its folder is now.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Place {
+    /// In the folder it is in.
+    Here,
+    /// In another folder, and copied or moved here since: still `sv`'s report and unchanged, but of
+    /// the folder it was written in, at the time its run record says.
+    Elsewhere,
+}
+
+/// `proven`, for a report the person names by its place (`sv explain --report`, `sv compare`): a
+/// report kept somewhere on purpose was sealed where it was written, and is still `sv`'s and
+/// unchanged. It says which, for the caller to say. What is offered as an app's current report, by
+/// the MCP server or from the app's own report folder, asks `proven` (backlog 0286).
+pub fn proven_wherever(dir: &Path) -> Result<(BTreeMap<&'static str, String>, Place), String> {
+    holds_only_svs(dir)?;
+    check(dir)
+}
+
+/// The marker is one `sv` writes and the folder holds nothing else (H6).
+fn holds_only_svs(dir: &Path) -> Result<(), String> {
     let marker = sv_scan::ecosystems::report_marker_in(dir)
         .ok_or_else(|| "the folder holds no marker of sv's".to_owned())?;
     let meta = std::fs::symlink_metadata(&marker)
@@ -176,7 +201,7 @@ pub fn proven(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
     if !sv_scan::ecosystems::is_sv_output(dir) {
         return Err("the folder holds files sv does not write in a report folder".to_owned());
     }
-    sealed_here(dir)
+    Ok(())
 }
 
 /// The SHA-256 of each sealed file in `dir`, when its marker's seal holds for them under this
@@ -187,6 +212,18 @@ pub fn proven(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
 /// item 4): a marker can be planted in any of the app's folders, and a seal cannot be made without
 /// the key.
 pub fn sealed_here(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
+    match check(dir)? {
+        (digests, Place::Here) => Ok(digests),
+        (_, Place::Elsewhere) => Err(
+            "it was sealed for another folder: it was copied or moved here from where sv wrote it"
+                .to_owned(),
+        ),
+    }
+}
+
+/// The SHA-256 of each sealed file in `dir` when its seal holds under this computer's report key,
+/// and whether it was sealed in this folder or another.
+fn check(dir: &Path) -> Result<(BTreeMap<&'static str, String>, Place), String> {
     let marker = sv_scan::ecosystems::report_marker_in(dir)
         .ok_or_else(|| "the folder holds no marker of sv's".to_owned())?;
     let meta = std::fs::symlink_metadata(&marker)
@@ -230,13 +267,12 @@ pub fn sealed_here(dir: &Path) -> Result<BTreeMap<&'static str, String>, String>
     let digests = digests(dir)?;
     let fields = fields(sealed_in, &digests);
     key.report_seal_holds(seal, &fields.iter().map(String::as_str).collect::<Vec<_>>())?;
-    if sealed_in != folder_id(dir)? {
-        return Err(
-            "it was sealed for another folder: it was copied or moved here from where sv wrote it"
-                .to_owned(),
-        );
-    }
-    Ok(digests)
+    let place = if sealed_in == folder_id(dir)? {
+        Place::Here
+    } else {
+        Place::Elsewhere
+    };
+    Ok((digests, place))
 }
 
 #[cfg(test)]

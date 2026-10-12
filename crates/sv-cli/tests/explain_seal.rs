@@ -141,6 +141,9 @@ fn a_report_named_with_report_is_repeated_under_the_same_seal_rule() {
         said.contains(&format!("report at {}, {id} is", report.display())),
         "{said}"
     );
+    // Kept somewhere on purpose, it is still sv's, and is said to describe the app it was written
+    // for, then (backlog 0286).
+    assert!(said.contains("sealed in another folder"), "{said}");
     // The same copy, rewritten, is left out as the app's own would be.
     let mut json: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&report).unwrap()).unwrap();
@@ -150,4 +153,24 @@ fn a_report_named_with_report_is_repeated_under_the_same_seal_rule() {
     let said = text(&out);
     assert!(said.contains("is left out"), "{said}");
     assert!(!said.contains("A rewritten report"), "{said}");
+}
+
+#[test]
+fn a_sealed_report_put_into_another_app_s_report_folder_is_not_its_last_report() {
+    // Backlog 0286: a report sv sealed is sv's report of the folder it was written in. Put into
+    // another app's `stackvet-report/`, it was repeated as that app's last report.
+    let s = Scratch::new("planted");
+    let id = s.reported();
+    let other = s.0.join("other-app");
+    std::fs::create_dir_all(&other).unwrap();
+    copy(
+        &s.app().join("stackvet-report"),
+        &other.join("stackvet-report"),
+    );
+    let out = s.sv(&["explain", &id, "--app", other.to_str().unwrap()]);
+    let said = text(&out);
+    assert!(out.status.success(), "{said}");
+    assert!(said.contains("is left out"), "{said}");
+    assert!(said.contains("sealed for another folder"), "{said}");
+    assert!(!said.contains("last report"), "{said}");
 }
