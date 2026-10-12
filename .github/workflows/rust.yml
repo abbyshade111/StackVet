@@ -2,7 +2,8 @@
 # at its top and `sv` under `agnostic/`; v1 now lives on the `v1` branch and at the tags `v1-paper` and `v1-final`.)
 #
 # It runs on every push and pull request: the tests read `data/`, `docs/` and `examples/` as well as the crates, and a
-# change to any of them can break a guard, so nothing is filtered out by path. `sv` reads the OWASP data in `data/`,
+# change to any of them can break a guard, so nothing is filtered out by path, with one exception: a pull request
+# that changes only backlog items runs only the tests that read them, under the same required `test` check (ADR-104). `sv` reads the OWASP data in `data/`,
 # and its suite asserts things about it: that exactly two `never` rules survive the overlay, that the set of
 # conditions no rule keys on is the one we think, and that every condition named in the data files exists in the
 # Rust enum.
@@ -50,10 +51,32 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The token stays out of the checked-out folder, so nothing that runs later in the job
         # (a build script, a test, a package from outside) can read it. `sv check` reports this (AC.12.2).
+        # Two commits deep, so the step below can compare a pull request's merge commit with its first
+        # parent, the `main` it merges into.
         with:
           persist-credentials: false
+          fetch-depth: 2
+
+      - name: What the pull request changes
+        # A pull request that changes only backlog items takes the short path below: the tests that
+        # read those files, and no others (ADR-104). Anything else, and every push or nightly run on
+        # main, takes the whole suite. Every later step asks `!= 'false'`, so a missing or misspelled
+        # answer runs everything rather than nothing.
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          full=true
+          if [ "$EVENT" = pull_request ]; then
+            git diff --no-renames --name-only HEAD^1 HEAD | tee "$RUNNER_TEMP/changed.txt"
+            full=$(python3 tools/ci_scope.py < "$RUNNER_TEMP/changed.txt") || full=true
+          fi
+          [ "$full" = false ] || full=true
+          echo "full=$full" >> "$GITHUB_OUTPUT"
+          echo "The whole suite runs: $full"
 
       - name: Fetch Docker Hub's images through Google's mirror
+        if: steps.scope.outputs.full != 'false'
         # Docker Hub refuses downloads past its limits, and on 9 October 2026 refused the sign-in below
         # three times running, so the pulls went unsigned and were refused too (ADR-051, Later, 9
         # October 2026). Docker's own setting sends a Docker Hub image to mirror.gcr.io, Google's copy
@@ -67,6 +90,7 @@ jobs:
           docker info --format 'Registry mirrors: {{.RegistryConfig.Mirrors}}'
 
       - name: Fetch the images the suite starts, through the mirror
+        if: steps.scope.outputs.full != 'false'
         # Before the sign-in below, so they come from the mirror; one left off this list, or one that
         # fails here, is fetched by the suite itself, as before.
         run: |
@@ -82,13 +106,25 @@ jobs:
         # means a runner image change fails here with a clear reason rather than a syntax error in a crate.
         run: rustup toolchain install stable --profile minimal --component clippy,rustfmt && rustup default stable
 
+      - name: The tests that read the backlog, for a pull request that changes only backlog items
+        # ADR-104: the backlog's own tool checks, the board, the docs pages built from every item, the
+        # record numbers every document cites, and the numbering tool that reads every item's number. A new test that reads backlog items belongs here too.
+        # The whole suite runs again on main once this merges (ADR-051).
+        if: steps.scope.outputs.full == 'false'
+        run: >-
+          cargo test -p sv-cli --test backlog_board --test docs_page --test docs_page_tabs
+          --test decision_records --test record_numbers --test ci_scope
+
       - name: Formatting
+        if: steps.scope.outputs.full != 'false'
         run: cargo fmt --all --check
 
       - name: Lints
+        if: steps.scope.outputs.full != 'false'
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Sign in to Docker Hub
+        if: steps.scope.outputs.full != 'false'
         # The tests start containers from Docker Hub's images (the app's own, busybox, node, python). Signed out, every pull counts against Docker Hub's limit for the runner's shared
         # address, and on 9 October 2026 that limit ("429 Too Many Requests") turned main red for hours.
         # The owner's token (secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN, given 9 October
@@ -113,6 +149,7 @@ jobs:
           fi
 
       - name: Tests
+        if: steps.scope.outputs.full != 'false'
         # The fence tests need a container backend. GitHub's runners have Docker, so they run for real here;
         # where there is none they assert the honest-absence path instead and say which branch they took.
         # Every credit a check gives is written to this file (a debug build only; `Verified::new`), so
@@ -130,12 +167,13 @@ jobs:
           cargo test --workspace
 
       - name: What the suite saw credited
+        if: steps.scope.outputs.full != 'false'
         # Fails when a check listed as only ever a finding was credited, or one never credited is not
         # listed. By 6 October 2026, 23 checks had been counted as crediting when none ever did.
         run: python3 tools/coverage.py --credits "$RUNNER_TEMP/credits.log"
 
       - name: Sign out of Docker Hub
-        if: always()
+        if: always() && steps.scope.outputs.full != 'false'
         run: docker logout
 
   image:
