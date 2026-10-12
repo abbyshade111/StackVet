@@ -55,6 +55,7 @@ use std::collections::BTreeMap;
 use std::sync::LazyLock;
 use sv_manifest::{RequestTemplate, UploadSection, UsersSection};
 
+mod account_changes;
 mod activation;
 mod admin;
 mod archives;
@@ -426,6 +427,8 @@ struct Values<'a> {
     id: &'a str,
     new_password: &'a str,
     new_email: &'a str,
+    /// The new phone number, two-factor number, or recovery address (ADR-105).
+    new_value: &'a str,
     code: &'a str,
 }
 
@@ -433,6 +436,7 @@ fn fill(text: &str, v: &Values) -> String {
     text.replace("{user}", v.user)
         .replace("{new_password}", v.new_password)
         .replace("{new_email}", v.new_email)
+        .replace("{new_value}", v.new_value)
         .replace("{password}", v.password)
         .replace("{csrf}", v.csrf.as_deref().unwrap_or(""))
         .replace("{marker}", v.marker)
@@ -1213,6 +1217,24 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
             "login-email-wrong-password",
             "login-email-moved-wrong",
             "private-email-moved-wrong",
+        ],
+    ),
+    (
+        PHONE_CHANGE_WITHOUT_PASSWORD.rule_id,
+        &["change-phone-wrong-password", "shows-phone-wrong-password"],
+    ),
+    (
+        TWO_FACTOR_CHANGE_WITHOUT_PASSWORD.rule_id,
+        &[
+            "change-two-factor-wrong-password",
+            "shows-two-factor-wrong-password",
+        ],
+    ),
+    (
+        RECOVERY_CHANGE_WITHOUT_PASSWORD.rule_id,
+        &[
+            "change-recovery-wrong-password",
+            "shows-recovery-wrong-password",
         ],
     ),
     (
@@ -2317,6 +2339,13 @@ fn run_checks(
     asked!(
         out,
         http,
+        "account_change_checks",
+        &["V7.5.1"],
+        account_changes::account_change_checks(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
         "delete_account_check",
         &["V7.4.2"],
         delete_account_check(http, users, accounts, confirm.as_deref(), &mut out)
@@ -2431,6 +2460,8 @@ pub(crate) fn sign_up(
     answer
 }
 
+#[cfg(test)]
+mod account_changes_tests;
 #[cfg(test)]
 mod asked_tests;
 #[cfg(test)]
@@ -4042,6 +4073,20 @@ mod crash_tests {
                     u
                 },
                 true,
+            ),
+            // The phone, two-factor, and recovery changes, each made without the password (ADR-105):
+            // a crash at a wrong-password change, or at the page that shows its value, must not
+            // read as that change refused.
+            Scenario::new(
+                "the account changes made without the password",
+                Flaws {
+                    phone_change_without_password: true,
+                    two_factor_change_without_password: true,
+                    recovery_change_without_password: true,
+                    ..Default::default()
+                },
+                with_account_changes(with_signup()),
+                false,
             ),
             // A second create, from `creates`, taken from another site (backlog 0232, part 3): a
             // crash at `forged-create-1` must not read as that request refused.

@@ -882,6 +882,25 @@ pub fn scope_review_fields(entry: &sv_manifest::ScopeReview) -> Vec<String> {
     fields
 }
 
+/// The fields `[account-changes-review]` is sealed over: who confirmed it and when, and the changes
+/// it says the app does not offer, in a fixed order (ADR-105).
+pub fn account_changes_review_fields(entry: &sv_manifest::AccountChangesReview) -> Vec<String> {
+    let mut listed: Vec<String> = entry
+        .not_offered
+        .iter()
+        .map(|n| n.trim().to_owned())
+        .collect();
+    listed.sort();
+    listed.dedup();
+    let mut fields = vec![
+        "account-changes-review".to_owned(),
+        entry.by.trim().to_owned(),
+        entry.on.trim().to_owned(),
+    ];
+    fields.extend(listed);
+    fields
+}
+
 /// The fields a section of the security notes is sealed over: its requirement and its answer, as
 /// the report reads it.
 pub fn notes_fields(requirement: &str, prose: &str) -> Vec<String> {

@@ -61,6 +61,9 @@ mod gap_tests;
 #[cfg(test)]
 #[path = "review_left_out_tests.rs"]
 mod left_out_tests;
+#[cfg(test)]
+#[path = "review_not_offered_tests.rs"]
+mod not_offered_tests;
 
 /// One entry waiting for a person.
 enum Waiting {
@@ -84,6 +87,9 @@ enum Waiting {
     Scope,
     /// A `[[left-out]]` entry, offered for the owner to confirm (ADR-099): its place in the list.
     LeftOut(usize),
+    /// The account changes `[stack.run.users] not-offered` lists, offered for the owner to confirm
+    /// (ADR-105).
+    NotOffered,
 }
 
 pub fn cmd_review(path: Option<PathBuf>) -> Result<()> {
@@ -434,6 +440,14 @@ fn review(
     // The answers that set the level are asked about last, apart from the entries above, until
     // they are confirmed, and again once one of them changes (ADR-024, Later, 9 October 2026).
     let scope_waiting = !counts(&manifest, &Waiting::Scope, &checker);
+    // The account changes listed as not offered, asked about after the level's answers (ADR-105).
+    let not_offered_waiting = manifest
+        .stack
+        .run
+        .users
+        .as_ref()
+        .is_some_and(|u| !u.not_offered.is_empty())
+        && !counts(&manifest, &Waiting::NotOffered, &checker);
     for (which, (catalog, path)) in files.iter().enumerate() {
         if let Some(text) = notes_text(path)? {
             let answers = sv_check::notes::read_answers(catalog, &text);
@@ -477,6 +491,18 @@ fn review(
         writeln!(out, "{}", findings_without_entries(app_dir))?;
         if scope_waiting {
             confirm_scope(
+                &manifest,
+                &manifest_path,
+                &mut doc,
+                today,
+                &key,
+                &checker,
+                input,
+                out,
+            )?;
+        }
+        if not_offered_waiting {
+            confirm_not_offered(
                 &manifest,
                 &manifest_path,
                 &mut doc,
@@ -587,7 +613,9 @@ fn review(
                     None => None,
                 }
             }
-            Waiting::Scope => unreachable!("asked after the list, never in it"),
+            Waiting::Scope | Waiting::NotOffered => {
+                unreachable!("asked after the list, never in it")
+            }
             Waiting::LeftOut(i) => {
                 match record_left_out(&manifest.left_out[i], today, &key, input, out)? {
                     Some(entry) => {
@@ -675,6 +703,18 @@ fn review(
     )?;
     if scope_waiting {
         confirm_scope(
+            &manifest,
+            &manifest_path,
+            &mut doc,
+            today,
+            &key,
+            &checker,
+            input,
+            out,
+        )?;
+    }
+    if not_offered_waiting {
+        confirm_not_offered(
             &manifest,
             &manifest_path,
             &mut doc,
@@ -787,7 +827,9 @@ fn sign_again(
                 set_seal(doc, "checked-by-hand", id, &seal)?;
                 in_manifest.push(which);
             }
-            Waiting::Scope => unreachable!("asked after the list, never in it"),
+            Waiting::Scope | Waiting::NotOffered => {
+                unreachable!("asked after the list, never in it")
+            }
             Waiting::LeftOut(i) => {
                 let seal = sign(&sv_check::seal::left_out_fields(&manifest.left_out[*i]))?;
                 listed_table(doc, "left-out", *i)?.insert("seal", toml_edit::value(seal));
@@ -1276,6 +1318,126 @@ fn confirm_scope(
     Ok(())
 }
 
+/// The account changes listed as not offered, asked about after the level's answers, and saved
+/// when the owner confirms them (ADR-105).
+#[allow(clippy::too_many_arguments)]
+fn confirm_not_offered(
+    manifest: &sv_manifest::Manifest,
+    manifest_path: &Path,
+    doc: &mut toml_edit::DocumentMut,
+    today: Day,
+    key: &Signer,
+    checker: &Checker,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<()> {
+    writeln!(
+        out,
+        "\nOne more: the account changes your app does not offer."
+    )?;
+    if let Some(entry) = record_not_offered(manifest, today, key, input, out)? {
+        set_not_offered(doc, &entry);
+        save(manifest_path, doc, &|m| {
+            counts(m, &Waiting::NotOffered, checker)
+        })?;
+    }
+    Ok(())
+}
+
+/// The `not-offered` list, shown for the owner to confirm (ADR-105): the entry to write, sealed, or
+/// `None` when they leave it unconfirmed.
+fn record_not_offered(
+    manifest: &sv_manifest::Manifest,
+    today: Day,
+    key: &Signer,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<Option<sv_manifest::AccountChangesReview>> {
+    let listed = manifest
+        .stack
+        .run
+        .users
+        .as_ref()
+        .map(|u| u.not_offered.clone())
+        .unwrap_or_default();
+    let words: Vec<&str> = listed
+        .iter()
+        .map(|kind| match kind.as_str() {
+            "phone" => "a phone number",
+            "two-factor" => "two-factor settings",
+            "recovery" => "a way to recover the account, such as a recovery address",
+            other => other,
+        })
+        .collect();
+    writeln!(
+        out,
+        "stackvet.toml says nobody can change these in your app, because it has none: {}.\n  \
+         [stack.run.users] not-offered = [{}]\nYour AI coding tool usually writes this. Whether \
+         changing each needs the password again is not tried for anything listed, so the list \
+         counts only once you confirm it. If the app does let people change one, take it off the \
+         list and say how under `change-phone`, `change-two-factor`, or `change-recovery` \
+         instead: a list confirmed here and changed later is unconfirmed again.",
+        words.join("; "),
+        listed
+            .iter()
+            .map(|n| format!("\"{n}\""))
+            .collect::<Vec<_>>()
+            .join(", "),
+    )?;
+    loop {
+        let Some(answer) = ask(
+            input,
+            out,
+            "Type `owner` if this is your app and it has none of these, to confirm; or press Enter \
+             to leave the list unconfirmed.\n> ",
+        )?
+        else {
+            return Ok(None);
+        };
+        if answer.is_empty() {
+            writeln!(out, "  Left unconfirmed.")?;
+            return Ok(None);
+        }
+        if !answer.eq_ignore_ascii_case(sv_check::design::OWNER) {
+            writeln!(
+                out,
+                "  Only the app's owner knows what it lets people change. Type `owner` if that is \
+                 you."
+            )?;
+            continue;
+        }
+        let mut entry = sv_manifest::AccountChangesReview {
+            not_offered: listed,
+            by: sv_check::design::OWNER.to_owned(),
+            on: today.show(),
+            seal: None,
+        };
+        entry.seal = Some(
+            key.seal(&sv_check::seal::as_strs(
+                &sv_check::seal::account_changes_review_fields(&entry),
+            ))
+            .map_err(anyhow::Error::msg)?,
+        );
+        writeln!(out, "  Confirmed as your answer.")?;
+        return Ok(Some(entry));
+    }
+}
+
+/// `[account-changes-review]`, written whole, in place of what was there.
+fn set_not_offered(doc: &mut toml_edit::DocumentMut, entry: &sv_manifest::AccountChangesReview) {
+    let mut table = toml_edit::Table::new();
+    table.insert(
+        "not-offered",
+        toml_edit::value(entry.not_offered.iter().collect::<toml_edit::Array>()),
+    );
+    table.insert("by", toml_edit::value(&entry.by));
+    table.insert("on", toml_edit::value(&entry.on));
+    if let Some(seal) = &entry.seal {
+        table.insert("seal", toml_edit::value(seal));
+    }
+    doc.insert("account-changes-review", toml_edit::Item::Table(table));
+}
+
 /// The answers that set the level, shown for the owner to confirm (ADR-024, Later, 9 October 2026):
 /// the entry to write, sealed, or `None` when they leave the answers as they are.
 fn record_scope(
@@ -1537,6 +1699,16 @@ fn counts(manifest: &sv_manifest::Manifest, which: &Waiting, checker: &Checker) 
         }),
         Waiting::Notes(..) | Waiting::NotesConfirm(..) => false,
         Waiting::LeftOut(i) => left_out_recorded(manifest, *i, checker).is_ok(),
+        Waiting::NotOffered => manifest
+            .account_changes_review
+            .as_ref()
+            .is_some_and(|entry| {
+                let fields = sv_check::seal::account_changes_review_fields(entry);
+                entry.still_holds_for(manifest)
+                    && checker
+                        .check(entry.seal.as_deref(), &sv_check::seal::as_strs(&fields))
+                        .is_ok()
+            }),
         Waiting::Scope => manifest.scope_review.as_ref().is_some_and(|entry| {
             let fields = sv_check::seal::scope_review_fields(entry);
             entry.still_holds_for(manifest)
