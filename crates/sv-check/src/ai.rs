@@ -22,6 +22,11 @@ use crate::signed_in::{
 };
 use sv_manifest::{AiSection, UsersSection};
 
+/// Why the rest of C9.1.1 is not assessed once the tool's time limit is: named, so the report can put the run's own
+/// readings of the container beside it (ADR-093) without matching on its words.
+pub const UNSEEN_QUOTAS: &str = "Whether the app limits its tools' use of CPU, memory, disk and network: those happen \
+     inside the app or the tool, where a check from outside cannot see them, so C9.1.1 is checked in part.";
+
 const LEAKED: Rule = Rule {
     rule_id: "probe.ai-instructions-leaked",
     requirement_ids: &["C7.3.2"],
@@ -2063,13 +2068,8 @@ where
             )
             .in_part(),
         );
-        out.not_assessed.push((
-            "C9.1.1".to_owned(),
-            "Whether the app limits its tools' use of CPU, memory, disk and network: those happen \
-             inside the app or the tool, where a check from outside cannot see them, so C9.1.1 is \
-             checked in part."
-                .to_owned(),
-        ));
+        out.not_assessed
+            .push(("C9.1.1".to_owned(), UNSEEN_QUOTAS.to_owned()));
     } else {
         out.not_assessed.push((
             "C9.1.1".to_owned(),

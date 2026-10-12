@@ -1079,6 +1079,12 @@ fn running_app(
                 {
                     note.push_str(&format!(" {container}"));
                 }
+                if let Some(note) = run_note.as_mut() {
+                    note.push_str(&format!(
+                        " {}",
+                        sv_run::resources::sentence(outcome.resources.as_ref())
+                    ));
+                }
                 if let (Some(note), Some(weaker)) =
                     (run_note.as_mut(), sv_run::weakening_note(&plan.start))
                 {

@@ -1212,6 +1212,10 @@ fn cmd_run(args: &[String]) -> Result<i32> {
             if let Some(container) = outcome.container.sentences() {
                 println!("\n{container}");
             }
+            println!(
+                "\n{}",
+                sv_run::resources::sentence(outcome.resources.as_ref())
+            );
             let (findings, verified, signed_in_not_assessed) =
                 running_app_evidence(&outcome, &plan);
             println!(

@@ -251,6 +251,8 @@ fn said_without_credentials(said: &str, kind: &str, rules: Option<&SecretRules>)
 mod cannot_run_said_tests;
 #[cfg(test)]
 mod requirement_ids_tests;
+#[cfg(test)]
+mod resources_beside_quotas_tests;
 
 /// Every request the anonymous probes make: the fixed suite, and the GraphQL and WebSocket
 /// questions when stackvet.toml says where those are. One function, because `sv run` also counts
@@ -303,6 +305,15 @@ pub fn running_app_evidence(
         findings.extend(asked.findings.iter().cloned());
         verified.extend(asked.verified.iter().cloned());
         not_assessed.extend(asked.not_assessed.iter().cloned());
+    }
+    // The container's own readings go beside C9.1.1's unchecked quotas, and change nothing about them (ADR-093).
+    if outcome.resources.is_some() {
+        for (_, why) in not_assessed.iter_mut().filter(|(requirements, why)| {
+            requirements == "C9.1.1" && why == sv_check::ai::UNSEEN_QUOTAS
+        }) {
+            why.push(' ');
+            why.push_str(sv_run::resources::BESIDE_THE_QUOTAS);
+        }
     }
     (findings, verified, not_assessed)
 }
