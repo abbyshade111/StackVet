@@ -250,11 +250,11 @@ fn said_without_credentials(said: &str, kind: &str, rules: Option<&SecretRules>)
 #[cfg(test)]
 mod cannot_run_said_tests;
 #[cfg(test)]
+mod named_routes_tests;
+#[cfg(test)]
 mod requirement_ids_tests;
 #[cfg(test)]
 mod resources_beside_quotas_tests;
-#[cfg(test)]
-mod named_routes_tests;
 
 /// The routes stackvet.toml names that the anonymous probes also ask (ADR-095); none without
 /// `[stack.run.users]`.

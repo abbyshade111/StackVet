@@ -102,5 +102,9 @@ fn the_evidence_is_read_knowing_the_routes() {
     };
     assert_eq!(headers_credit(&plan(true), answers()), Some(false), "whole");
     // The same answers, with no routes named: one or two pages, so in part.
-    assert_eq!(headers_credit(&plan(false), answers()), Some(true), "in part");
+    assert_eq!(
+        headers_credit(&plan(false), answers()),
+        Some(true),
+        "in part"
+    );
 }
