@@ -308,9 +308,9 @@ can see another's data, are reported as *not assessed*, and so are your app's ow
 the app is started. That is honest, not a pass.
 
 Those checks need `sv report --run` at a terminal, with StackVet installed directly on your computer
-rather than in Docker, because starting your app means starting containers of its own. There is no
-download for that yet, so it means building StackVet yourself. The steps are at the end of this
-section, under "Installing StackVet on your computer, for `--run`".
+rather than in Docker, because starting your app means starting containers of its own. On Windows that is a
+download, installed with Scoop; on a Mac or Linux it means building StackVet, which Homebrew does for you. The steps
+are at the end of this section, under "Installing StackVet on your computer, for `--run`".
 
 If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in
 `stackvet.toml`. The app runs with no internet, so it cannot fetch its own packages; this line lets StackVet
