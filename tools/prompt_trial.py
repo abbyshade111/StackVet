@@ -60,7 +60,10 @@ def run(build, slow):
     out = dst + '-out'
     shutil.rmtree(dst, ignore_errors=True); shutil.rmtree(out, ignore_errors=True)
     shutil.copytree(src, dst, ignore=shutil.ignore_patterns('*.db', '__pycache__', 'OWNER-REQUEST.md'))
-    merge_policy(os.path.join(dst, 'stackvet.toml'))
+    # The settings by whichever name the build wrote: the club brief still says securevibe.toml, which `sv` reads
+    # until 1 January 2027 (ADR-062); a policy added only to stackvet.toml would miss a build that followed it.
+    names = [n for n in ('stackvet.toml', 'securevibe.toml') if os.path.exists(os.path.join(dst, n))]
+    merge_policy(os.path.join(dst, names[0] if names else 'stackvet.toml'))
     # --allow-empty: a build that wrote nothing is checked as it is (it has no report), not a crash of the run.
     subprocess.run('git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm build --allow-empty',
                    shell=True, cwd=dst, check=True)
