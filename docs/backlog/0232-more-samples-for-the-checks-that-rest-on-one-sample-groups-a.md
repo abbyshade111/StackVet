@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: groups B and C partly done; groups D to H open
+**Status:** partly done: groups B to E partly done; groups F to H open
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -61,7 +61,10 @@ by speaking for what its requirement names. One part per group of the inventory 
    found in the app's output with its status. The markers are made so that none is part of another, so one line
    cannot stand for two pages. The other log credits (the sign-ins, the line's metadata, format, and timestamp) are
    not in this claim. Recorded as a Later entry on ADR-053 in the pull request that builds it.
-   **Part status:** claimed by backlog-org-0232, 12 October 2026
+   **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
+   `docs/design/0373-the-authorization-failure-log-check-on-every-listed-page-12-october.md`): a marker on every listed
+   private page, whole only when two or more were refused and each refusal was found with its status.
+   **Part status:** partly done: the sign-ins, and the line's metadata, format, and timestamp
 6. **F. Each browser page and form.** The browser-driven checks run on each page and form the owner lists.
    **Part status:** open
 7. **G. Each operation the requirement names.** Phone, two-factor, and recovery changes beside the email change
