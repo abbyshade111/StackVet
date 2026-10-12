@@ -107,6 +107,10 @@ impl Http for Recording<'_> {
         self.inner.wait(seconds)
     }
 
+    fn say(&mut self, line: &str) {
+        self.inner.say(line)
+    }
+
     fn provider(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
         self.inner.provider(request)
     }

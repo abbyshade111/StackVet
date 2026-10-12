@@ -335,11 +335,17 @@ const COMMANDS: &[Command] = &[
     Command {
         name: "report",
         word: Some("PATH"),
-        flags: &["--run", "--slow", "--tools", "--keep-tool-output"],
+        flags: &[
+            "--run",
+            "--slow",
+            "--tools",
+            "--keep-tool-output",
+            "--quiet",
+        ],
         valued: &["--out", "--advisories", "--fail-on", "--baseline"],
-        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--tools [--keep-tool-output]] [--advisories DIR] [--fail-on WHAT] [--baseline DIR]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n\
+        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--tools [--keep-tool-output]] [--advisories DIR] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n\
                      --keep-tool-output, with --tools, keeps each tool's own report,\n\
-                     credentials cut out, in seen.json beside the report\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, a tool --tools could\n                     not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
+                     credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, a tool --tools could\n                     not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
     },
     Command {
         name: "review",
@@ -2470,6 +2476,8 @@ struct ReportArgs {
     run_tools: bool,
     /// With --tools, keep each tool's own report in `seen.json` (`sv report` only).
     keep_tool_output: bool,
+    /// Leave out the progress and timing lines (`sv report` only; backlog 0247).
+    quiet: bool,
     /// A folder the owner downloaded on purpose. `sv` never fetches advisories itself.
     advisories_dir: Option<PathBuf>,
 }
@@ -2482,6 +2490,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
         slow: false,
         run_tools: false,
         keep_tool_output: false,
+        quiet: false,
         advisories_dir: None,
     };
     let mut rest = args.iter();
@@ -2497,6 +2506,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             "--slow" => parsed.slow = true,
             "--tools" => parsed.run_tools = true,
             "--keep-tool-output" => parsed.keep_tool_output = true,
+            "--quiet" => parsed.quiet = true,
             "--advisories" => {
                 parsed.advisories_dir = Some(PathBuf::from(
                     rest.next().context("--advisories needs a folder")?,
@@ -2636,11 +2646,13 @@ fn report_command(
         slow,
         run_tools,
         keep_tool_output,
+        quiet,
         advisories_dir,
     } = parse_report_args(args, "a directory")?;
     if keep_tool_output && !run_tools {
         bail!("--keep-tool-output keeps what the tools wrote, so it needs --tools as well");
     }
+    sv_cli::assemble::QUIET.store(quiet, std::sync::atomic::Ordering::Relaxed);
     *app_seen = Some(app_dir.clone());
     {
         let app = app_dir.clone();
@@ -2677,6 +2689,7 @@ fn report_command(
         || {
             // Each stage as it starts, on stderr, so a long run is seen to be moving and the
             // report on stdout is left alone (backlog 226, part 2, item 15).
+            let started = std::cell::Cell::new(None);
             let mut report = assemble_report_saying(
                 &app_dir,
                 &ReportOptions {
@@ -2690,8 +2703,17 @@ fn report_command(
                     )
                 },
                 &loaded,
-                &|n, name| eprintln!("{}", sv_cli::assemble::stage_line(n, name)),
+                &|n, name| {
+                    // The stage before this one has ended: its time, when it was slow (backlog 0247).
+                    sv_cli::assemble::stage_finished(
+                        started.replace(Some((n, std::time::Instant::now()))),
+                    );
+                    if !sv_cli::assemble::quiet() {
+                        eprintln!("{}", sv_cli::assemble::stage_line(n, name));
+                    }
+                },
             )?;
+            sv_cli::assemble::stage_finished(started.take());
             if let Some(b) = &baseline {
                 b.same_app(&report.app_name)?;
                 report.baseline = Some(b.note(&report.findings));
@@ -2702,6 +2724,10 @@ fn report_command(
     )?;
     let written = written.names();
 
+    // The slowest parts, as every report page names them, said in the terminal too (backlog 0247).
+    if let Some(line) = sv_report::slowest_line(&report).filter(|_| !sv_cli::assemble::quiet()) {
+        eprintln!("{line}");
+    }
     let c = &report.counts;
     println!("Wrote {} files to {}:", written.len(), out_dir.display());
     for name in &written {

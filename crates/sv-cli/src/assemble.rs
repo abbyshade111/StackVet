@@ -42,9 +42,48 @@ pub fn step_line(what: &str) -> String {
     format!("  now: {what}")
 }
 
-/// `step_line`, on stderr, where the stage lines go and the report on stdout is left alone.
+/// `step_line`, on stderr, where the stage lines go and the report on stdout is left alone. Silent with `--quiet`.
 pub(crate) fn say_step(what: &str) {
-    eprintln!("{}", step_line(what));
+    if !quiet() {
+        eprintln!("{}", step_line(what));
+    }
+}
+
+#[cfg(test)]
+#[path = "assemble_progress_tests.rs"]
+mod progress_tests;
+
+/// Set by `sv report --quiet` (backlog 0247): the progress and timing lines are left out. Counts, warnings and errors
+/// are never silenced by it.
+pub static QUIET: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Whether `--quiet` was given.
+pub fn quiet() -> bool {
+    QUIET.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// How long a stage takes before its time is said when it ends (backlog 0247).
+pub const SLOW_STAGE_SECONDS: f64 = 5.0;
+
+/// The line said when a stage ends that took `SLOW_STAGE_SECONDS` or more; `None` for a quick one.
+pub fn took_line(n: usize, seconds: f64) -> Option<String> {
+    (seconds >= SLOW_STAGE_SECONDS).then(|| {
+        format!(
+            "sv report: {} of {} took {:.0} s",
+            n + 1,
+            REPORT_STAGES.len(),
+            seconds
+        )
+    })
+}
+
+/// Says how long the stage that just ended took, when it was slow, and not with `--quiet`.
+pub fn stage_finished(ended: Option<(usize, std::time::Instant)>) {
+    if let Some((n, since)) = ended {
+        if let Some(line) = took_line(n, since.elapsed().as_secs_f64()).filter(|_| !quiet()) {
+            eprintln!("{line}");
+        }
+    }
 }
 
 /// Runs one check of the report, and if it panics, catches it: the panic is recorded where it happened, so the
