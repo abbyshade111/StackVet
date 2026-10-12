@@ -2,7 +2,10 @@
 //! `docs/adr/ADR-061.md`, Later, 12 October 2026). `tools/coordination.py` is the only thing that writes
 //! `docs/coordination/board.md`; this runs its self-test (the commands, their refusals, the measures on a history made
 //! for the test, and the no-context clone) and its check on the real board, so a board that disagrees with the backlog
-//! fails here and not in the owner's hands.
+//! fails here and not in the owner's hands. Not on Windows: the board is the sessions' own tool for the trial, run
+//! on Mac and Linux, not part of `sv`, and its self-test failed on every Windows run from its first (#1548) while
+//! passing on both; the owner asked on 12 October 2026 that it leave the Windows build.
+#![cfg(not(windows))]
 
 use std::process::Command;
 
