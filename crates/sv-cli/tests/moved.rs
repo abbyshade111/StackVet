@@ -108,7 +108,18 @@ fn nothing_but_the_data_finder_reads_from_the_build_folder_at_run_time() {
     // Every `env!("CARGO_MANIFEST_DIR")` outside a test module would be a file read from the build
     // folder whatever `SV_DATA_DIR` or the program's place says, which is the fault this fixed. The
     // test modules and `crates/sv-frameworks/src/data.rs` itself may name it.
-    let crates = Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+    let found = build_folder_reads(&Path::new(env!("CARGO_MANIFEST_DIR")).join(".."));
+    assert!(found.len() < 1000, "the walk went somewhere it should not");
+    assert!(
+        found.is_empty(),
+        "read from the build folder at run time: {found:#?}"
+    );
+}
+
+/// Every place under `crates` (each crate's `src`) that names the build folder outside a test
+/// module, as `path:line`.
+fn build_folder_reads(crates: &Path) -> Vec<String> {
+    let crates = crates.to_path_buf();
     let mut found = Vec::new();
     let mut stack = vec![crates.clone()];
     while let Some(dir) = stack.pop() {
@@ -145,8 +156,14 @@ fn nothing_but_the_data_finder_reads_from_the_build_folder_at_run_time() {
                     })
                 })
             };
+            // A file at the top of a crate's `src/` is declared by the crate's `lib.rs` or `main.rs`
+            // (backlog 0262: `sv-cli/src/resources_beside_quotas_tests.rs` was flagged on 11 October).
+            let at_top_of_src = dir.file_name().is_some_and(|n| n == "src");
             if declared_for_tests(dir.join("mod.rs"))
                 || declared_for_tests(dir.with_extension("rs"))
+                || (at_top_of_src
+                    && (declared_for_tests(dir.join("lib.rs"))
+                        || declared_for_tests(dir.join("main.rs"))))
             {
                 continue;
             }
@@ -198,11 +215,34 @@ fn nothing_but_the_data_finder_reads_from_the_build_folder_at_run_time() {
             }
         }
     }
-    assert!(found.len() < 1000, "the walk went somewhere it should not");
-    assert!(
-        found.is_empty(),
-        "read from the build folder at run time: {found:#?}"
-    );
+    found
+}
+
+#[test]
+fn a_test_file_declared_in_lib_rs_may_name_it_and_any_other_file_may_not() {
+    // Backlog 0262: both sides of the guard, on a crate made here. A whole-file test module at the
+    // top of `src/`, declared `#[cfg(test)] mod name;` in `lib.rs` (and one in `main.rs`), may name
+    // the build folder; a file beside them that is not declared for tests may not.
+    let crates = scratch("declared-in-lib");
+    let src = crates.join("acrate/src");
+    std::fs::create_dir_all(&src).unwrap();
+    let names = "let _ = env!(\"CARGO_MANIFEST_DIR\");\n";
+    std::fs::write(
+        src.join("lib.rs"),
+        "#[cfg(test)]\nmod lib_tests;\npub mod plain;\n",
+    )
+    .unwrap();
+    std::fs::write(
+        src.join("main.rs"),
+        "#[cfg(test)]\nmod main_tests;\nfn main() {}\n",
+    )
+    .unwrap();
+    for file in ["lib_tests.rs", "main_tests.rs", "plain.rs"] {
+        std::fs::write(src.join(file), names).unwrap();
+    }
+    let found = build_folder_reads(&crates);
+    assert_eq!(found.len(), 1, "{found:#?}");
+    assert!(found[0].ends_with("plain.rs:1"), "{found:#?}");
 }
 
 #[cfg(unix)]
