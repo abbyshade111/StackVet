@@ -12,3 +12,5 @@ the trial can measure that check at the same time. Promote a draft to `data/prom
 rule; keep the rest in the drafts file with what happened.
 
 **12 October 2026:** the drafts are fourteen now, at the owner's word ("yes, add the five prompts to the drafts"): five more (10 to 14) from faults the Cursor build hit, each checked against its requirement's text. The other session's recommendations, when the owner has them, go in the same file before the trial.
+
+**12 October 2026, later:** twenty-three now: nine more (15 to 23) recommended by the other session at the owner's request, each checked here against its requirement's text in `data/frameworks`, with the merges it suggested listed for the owner in the drafts file.
