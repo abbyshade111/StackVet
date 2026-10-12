@@ -1,6 +1,6 @@
 # Leave Bandit's assert and hardcoded-string rules out of test files, with the reason shown (proposal for the owner's approval)
 
-**Status:** open
+**Status:** done, 11 October 2026
 
 From a real report (an app built in Cursor with `sv`, 11 October 2026): 89 findings, 79 of them in one test file. 62
 are Bandit's "use of assert" (B101) and 14 are its "hardcoded password string" (B105), all in the test file. Asserts
@@ -33,3 +33,7 @@ so it needs the owner's yes, and a decision record in the pull request that buil
 file holding an `assert` and a fixture password is reported as informational, not as a finding; the same code in app
 code still fires as a finding; a real-looking key in a test file still fires as a finding; and a reviewed-as-fixture
 note in `sv review` keeps its informational line (break each rule, and check each test fails).
+
+**Done, 11 October 2026:** built as proposed, at the owner's word, as ADR-091 ("Four Bandit rules in test code are
+information, not findings, and a person reviews them"). The follow-ups are their own items: 0259 (a reviewer marks one
+real) and 0260 (listing them in full in the reports).
