@@ -2512,10 +2512,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         &safe_defaults.decided,
     );
     // Rules that fired in test code and are information, not findings (ADR-091): kept apart, never counted.
-    let (findings, test_information): (Vec<_>, Vec<_>) = reviewed
-        .findings
-        .into_iter()
-        .partition(|f| !f.is_test_information());
+    let (findings, test_information) =
+        split_test_information(reviewed.findings, &reviewed.counted_in_test);
     if !safe_defaults.unreadable.is_empty() {
         gaps.push(sv_report::Gap {
             what: format!(
@@ -2795,3 +2793,18 @@ fn scope_confirmed(
 
 #[cfg(test)]
 mod timing_tests;
+
+/// Splits the findings into those that count and the test-file information that does not (ADR-091). A
+/// test-file information finding that a reviewer's sealed `counts` entry says is real counts (ADR-093).
+fn split_test_information(
+    findings: Vec<sv_check::Finding>,
+    counted_in_test: &[String],
+) -> (Vec<sv_check::Finding>, Vec<sv_check::Finding>) {
+    findings
+        .into_iter()
+        .partition(|f| !f.is_test_information() || counted_in_test.contains(&f.fingerprint))
+}
+
+#[cfg(test)]
+#[path = "assemble_counts_tests.rs"]
+mod counts_tests;
