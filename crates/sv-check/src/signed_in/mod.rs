@@ -4016,6 +4016,28 @@ mod crash_tests {
                 },
                 true,
             ),
+            // A second create, from `creates`, taken from another site (backlog 0232, part 3): a
+            // crash at `forged-create-1` must not read as that request refused.
+            Scenario::new(
+                "a second create taken from another site",
+                Flaws {
+                    comments_take_foreign: true,
+                    ..Default::default()
+                },
+                {
+                    let mut u = users();
+                    u.creates = vec![sv_manifest::CreateTemplate {
+                        method: "POST".into(),
+                        path: "/comments".into(),
+                        form: [("text".to_owned(), "{marker}".to_owned())].into(),
+                        json: Default::default(),
+                        read: None,
+                        id_field: None,
+                    }];
+                    u
+                },
+                true,
+            ),
             // Each of ADR-053's three on its own, so that crashing any one request is tried
             // against a run where that finding is the only one standing between it and a pass.
             Scenario::new(
