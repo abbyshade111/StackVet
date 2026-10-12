@@ -89,7 +89,7 @@ impl Key {
     /// Where the key is kept: `$XDG_CONFIG_HOME/stackvet`, or `~/.config/stackvet`. `None` when
     /// neither can be told. Until the rename (ADR-062) the folder was `securevibe`: while the new
     /// folder does not exist and the old one does, the old one is used, and `old_folder_in_use`
-    /// says so, for the command to tell the person; nothing moves a key.
+    /// says so; nothing moves a key. No command says it on every run (backlog 0256).
     pub fn folder() -> Option<PathBuf> {
         if let Some(folder) = FOLDER_FOR_TESTS.get() {
             return Some(folder.clone());
@@ -103,9 +103,8 @@ impl Key {
         Some(new)
     }
 
-    /// The old config folder and the new one, when the old is the one in use (`folder`): the
-    /// command says so once and names the move. `None` when the new folder is in use, or neither
-    /// can be told.
+    /// The old config folder and the new one, when the old is the one in use (`folder`). `None` when
+    /// the new folder is in use, or neither can be told.
     pub fn old_folder_in_use() -> Option<(PathBuf, PathBuf)> {
         if FOLDER_FOR_TESTS.get().is_some() {
             return None;
