@@ -416,16 +416,32 @@ fn read_holder_file(path: &Path) -> Option<serde_json::Value> {
     if !std::fs::symlink_metadata(path).ok()?.is_file() {
         return None;
     }
-    let text = std::fs::read_to_string(path).ok()?;
+    let text = read_at_most(path, HOLDER_MAX_BYTES)?;
     let value: serde_json::Value = serde_json::from_str(&text).ok()?;
     value.is_object().then_some(value)
+}
+
+/// The largest lock or holder file read: a record of one run.
+const HOLDER_MAX_BYTES: u64 = 64 * 1024;
+
+/// What the file at `path` holds, when it is text no longer than `cap`; `None` for a larger one,
+/// which is not a file `sv` wrote, without reading it whole (backlog 0309: a planted
+/// multi-gigabyte `report.json` was read into memory before anything was refused).
+fn read_at_most(path: &Path, cap: u64) -> Option<String> {
+    let mut text = String::new();
+    File::open(path)
+        .ok()?
+        .take(cap + 1)
+        .read_to_string(&mut text)
+        .ok()?;
+    (text.len() as u64 <= cap).then_some(text)
 }
 
 /// Who wrote the lock, if anyone did. An empty file, or one that does not read, is nobody yet.
 fn read_holder(file: &mut File) -> Option<serde_json::Value> {
     let mut text = String::new();
     file.seek(SeekFrom::Start(0)).ok()?;
-    file.take(64 * 1024).read_to_string(&mut text).ok()?;
+    file.take(HOLDER_MAX_BYTES).read_to_string(&mut text).ok()?;
     let value: serde_json::Value = serde_json::from_str(&text).ok()?;
     value.is_object().then_some(value)
 }
@@ -498,7 +514,9 @@ fn refuse_older_than(
     if !meta.is_file() {
         return Ok(());
     }
-    let Ok(text) = std::fs::read_to_string(&path) else {
+    // No larger than any report `sv` serves (`MAX_RESOURCE_BYTES`): a larger one is not `sv`'s, and
+    // is not read whole to find out.
+    let Some(text) = read_at_most(&path, crate::mcp::MAX_RESOURCE_BYTES) else {
         return Ok(());
     };
     let Ok(there) = serde_json::from_str::<serde_json::Value>(&text) else {
@@ -638,6 +656,66 @@ mod tests {
         assert_eq!(
             std::fs::read_to_string(dir.join("elsewhere")).unwrap(),
             "theirs"
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_report_json_or_holder_file_larger_than_any_sv_writes_is_not_read() {
+        // Backlog 0309: a planted multi-gigabyte `report.json` was read whole and parsed before
+        // anything was refused or written. One byte over the cap, it is not one `sv` wrote, and is
+        // not read: a newer run record inside it holds nothing back.
+        let dir = folder("oversized");
+        let now = 1_791_053_580_000;
+        let mine = sv_report::RunRecord {
+            started: "2026-10-03T18:52:00Z".into(),
+            started_unix_ms: now - 60_000,
+            securevibe_toml_sha256: "a".repeat(64),
+            run_id: String::new(),
+            inputs: None,
+        };
+        let newer = serde_json::json!({ "run_record": {
+            "started": "then", "started_unix_ms": now - 30_000,
+            "securevibe_toml_sha256": "a".repeat(64),
+        }})
+        .to_string();
+        let padded = |len: u64| {
+            let mut text = newer.clone();
+            text.push_str(&" ".repeat(usize::try_from(len).unwrap() - newer.len()));
+            text
+        };
+        let cap = crate::mcp::MAX_RESOURCE_BYTES;
+        std::fs::write(dir.join("report.json"), padded(cap)).unwrap();
+        assert!(
+            refuse_older_than(&mine, now, &dir, "give --out").is_err(),
+            "the setup: at the cap, the newer report is read and kept"
+        );
+        std::fs::write(dir.join("report.json"), padded(cap + 1)).unwrap();
+        assert!(
+            refuse_older_than(&mine, now, &dir, "give --out").is_ok(),
+            "one byte over the cap, it is not read"
+        );
+
+        // The holder file, capped as the lock it copies is.
+        let holder = dir.join(HOLDER_NAME);
+        let record = r#"{"command": "sv report", "process": 99999}"#;
+        std::fs::write(
+            &holder,
+            format!("{record}{}", " ".repeat(64 * 1024 - record.len())),
+        )
+        .unwrap();
+        assert!(
+            read_holder_file(&holder).is_some(),
+            "the setup: at the cap, it is read"
+        );
+        std::fs::write(
+            &holder,
+            format!("{record}{}", " ".repeat(64 * 1024 + 1 - record.len())),
+        )
+        .unwrap();
+        assert!(
+            read_holder_file(&holder).is_none(),
+            "one byte over, it is not"
         );
         std::fs::remove_dir_all(&dir).ok();
     }
