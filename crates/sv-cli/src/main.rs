@@ -2989,6 +2989,7 @@ mod tests {
             findings,
             set_aside: Vec::new(),
             not_counted: Vec::new(),
+            counted_in_test: Vec::new(),
         };
         // The review is shown the decision's finding.
         let mut seen = Vec::new();
@@ -3049,6 +3050,7 @@ mod tests {
                     findings,
                     set_aside: Vec::new(),
                     not_counted: Vec::new(),
+                    counted_in_test: Vec::new(),
                 }
             });
         assert_eq!(out.findings.len(), 1);
@@ -3064,6 +3066,7 @@ mod tests {
                 findings,
                 set_aside: Vec::new(),
                 not_counted: Vec::new(),
+                counted_in_test: Vec::new(),
             }
         });
         assert_eq!(out.findings.len(), 1);

@@ -89,7 +89,7 @@ pub fn parse_limits(text: &str) -> Option<Limits> {
     })
 }
 
-/// What the report and `sv run`'s printout say of the readings (ADR-093). They are the engine's numbers for the whole
+/// What the report and `sv run`'s printout say of the readings (ADR-094). They are the engine's numbers for the whole
 /// container at one moment, so they are said as information and decide no requirement: C9.1.1 asks for limits the app
 /// puts on its own tools, which a reading from outside does not show. `None`, the engine having not said, is said too.
 pub fn sentence(taken: Option<&Taken>) -> String {
@@ -124,7 +124,7 @@ pub fn sentence(taken: Option<&Taken>) -> String {
 }
 
 /// The words added to C9.1.1's note that the app's limits on CPU, memory, disk, and network were not checked: the run
-/// did read the container's own use, and that is not the same thing (ADR-093).
+/// did read the container's own use, and that is not the same thing (ADR-094).
 pub const BESIDE_THE_QUOTAS: &str = "The run did read the container's own CPU, memory, network, and disk use from \
      Docker (in the note on how the app was run); that is the whole container's use, not a limit the app puts on a \
      tool, so it does not change this.";

@@ -34,7 +34,7 @@ builds it, as the rules ask. Until then, the quotas stay unchecked.
 ## Built, 11 October 2026
 
 The owner approved it the same day. Built in three steps: reading the engine's words (#1464), taking one reading while
-the app runs (#1466), and saying it in the report and `sv run`'s printout (ADR-093). The report gives the container's
+the app runs (#1466), and saying it in the report and `sv run`'s printout (ADR-094). The report gives the container's
 CPU, memory, network, and disk use and its limits, or says Docker did not say, and C9.1.1's note on the tools' quotas
 says a reading was taken. No requirement's status changes: the readings are the whole container's, from outside, not
 limits the app puts on its own tools, so the quotas stay not assessed.

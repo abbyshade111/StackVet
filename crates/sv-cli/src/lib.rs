@@ -306,7 +306,7 @@ pub fn running_app_evidence(
         verified.extend(asked.verified.iter().cloned());
         not_assessed.extend(asked.not_assessed.iter().cloned());
     }
-    // The container's own readings go beside C9.1.1's unchecked quotas, and change nothing about them (ADR-093).
+    // The container's own readings go beside C9.1.1's unchecked quotas, and change nothing about them (ADR-094).
     if outcome.resources.is_some() {
         for (_, why) in not_assessed.iter_mut().filter(|(requirements, why)| {
             requirements == "C9.1.1" && why == sv_check::ai::UNSEEN_QUOTAS

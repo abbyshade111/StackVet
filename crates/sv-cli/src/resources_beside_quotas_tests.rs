@@ -1,5 +1,5 @@
 //! The container's own readings go beside C9.1.1's unchecked quotas, and only there, and only when they were taken
-//! (ADR-093). The note is matched by its name, `sv_check::ai::UNSEEN_QUOTAS`, so a change of its words cannot quietly
+//! (ADR-094). The note is matched by its name, `sv_check::ai::UNSEEN_QUOTAS`, so a change of its words cannot quietly
 //! stop the readings reaching it.
 
 use super::*;

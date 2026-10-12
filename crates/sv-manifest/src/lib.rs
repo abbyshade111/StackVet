@@ -1317,7 +1317,8 @@ pub struct FindingReview {
     pub rule: String,
     pub file: String,
     pub fingerprint: String,
-    /// `false-alarm` (the code is fine) or `accepted-risk` (a real problem, lived with for now).
+    /// `false-alarm` (the code is fine), `accepted-risk` (a real problem, lived with for now), or `counts` (a test-file
+    /// information finding a person found real, so it counts; ADR-093).
     pub verdict: String,
     /// Why, in a sentence or more: what was looked at, and what it showed.
     #[serde(default)]

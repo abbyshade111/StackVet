@@ -23,7 +23,7 @@ use crate::signed_in::{
 use sv_manifest::{AiSection, UsersSection};
 
 /// Why the rest of C9.1.1 is not assessed once the tool's time limit is: named, so the report can put the run's own
-/// readings of the container beside it (ADR-093) without matching on its words.
+/// readings of the container beside it (ADR-094) without matching on its words.
 pub const UNSEEN_QUOTAS: &str = "Whether the app limits its tools' use of CPU, memory, disk and network: those happen \
      inside the app or the tool, where a check from outside cannot see them, so C9.1.1 is checked in part.";
 

@@ -1,4 +1,4 @@
-//! What the report says of a run's resource readings (ADR-093): the engine's numbers in its own units, the limits or
+//! What the report says of a run's resource readings (ADR-094): the engine's numbers in its own units, the limits or
 //! their absence, and that they decide nothing. The reading is the one `docker stats` printed on 11 October 2026.
 
 use super::*;
