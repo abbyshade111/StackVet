@@ -1,6 +1,6 @@
 # Can sv run read the app container's CPU, memory, disk and egress from the host?
 
-**Status:** claimed by build-0243, 11 October 2026
+**Status:** claimed by backlog-org-0243, 11 October 2026 (taken over from build-0243, whose session was archived, at the owner's request)
 
 From 0029, part 9 (C9.1.1). The AI probe records CPU, memory, disk and egress quotas as unchecked, because the app is judged from outside. `sv run` starts the app's container from the host, so the host may be able to read its resource use. Research first: find out whether the container backend reports these numbers for a running container and what it costs to read them. Build nothing until the answer is in this item.
 
