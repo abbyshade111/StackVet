@@ -839,7 +839,10 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) 
     b.push_str(&format!(
         "<style>{STYLE}{DASH_STYLE}</style>\n</head>\n<body>\n"
     ));
-    b.push_str("<h1>Your apps, as their last reports left them</h1>\n");
+    b.push_str(&format!(
+        "<h1>{}Your apps, as their last reports left them</h1>\n",
+        crate::html::MARK
+    ));
     b.push_str(&health_section(
         health,
         unread_runs,

@@ -2053,6 +2053,8 @@ pub fn baseline_line(report: &Report) -> Option<String> {
     ))
 }
 
+#[cfg(test)]
+mod mark_tests;
 /// The line beside a finding a person accepted as a risk: who, when, and why. `None` for any other.
 #[cfg(test)]
 #[path = "next_step_tests.rs"]

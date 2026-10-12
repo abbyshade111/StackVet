@@ -1,6 +1,6 @@
 # Put the StackVet logo to work once the rename has landed
 
-**Status:** partly done: part 5, the mark in report.html and the dashboard, which the owner wants (12 October 2026); parts 2 and 3 are done, the sites moving to backlog 0224
+**Status:** done, 12 October 2026
 
 Asked for by the owner on 8 October 2026, the day they chose the name StackVet and its logo: "a backlog item for after
 the change is complete to deploy the logo and all that." **Waits for the rename** (ADR-062, and the backlog item the rename's
@@ -33,7 +33,7 @@ how to make them again; the owner's choice is ADR-063. Each part below can be cl
    heading and as the browser tab's icon. That changes what `sv` writes into someone's folder, which is a decision
    (CLAUDE.md), so it needs the owner's yes and a record, and the icon has to be inside the page (an inline SVG),
    since a report opens no network connection. Ask before building it.
-   **Part status:** claimed by securevibe-trial-prep, 12 October 2026
+   **Part status:** done, 12 October 2026
 
 **Parts 1 and 4 claimed 9 October 2026 by session securevibe-e2**, the rename having merged, in branch
 `claude/securevibe-e2-logo`: the logo at the top of `README.md` (and of `docs/GETTING-STARTED.md` if it reads well
