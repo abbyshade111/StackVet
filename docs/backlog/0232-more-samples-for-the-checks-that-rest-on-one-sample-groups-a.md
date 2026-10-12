@@ -73,4 +73,10 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Part status:** open
 8. **H. More than one listed page.** The owner is asked, where only one private or admin page is listed, to list
    more; `sv init` and the prompts say why.
-   **Part status:** open
+   **Scope of this claim (12 October 2026), taken before F and G:** F and G each need the manifest to name more than
+   it can now (several text forms; phone, two-factor, and recovery changes), which is a change of format with a
+   decision of its own, while H is wording, and is what groups B and E now rest on: their credits are whole only when
+   two or more pages are listed. `sv preflight` says, when only one private page or one admin page is listed, that the
+   checks asking each listed page can then only credit in part, and asks for more; the spec `sv init` writes says the
+   same beside `private` and `admin`. No check changes.
+   **Part status:** claimed by backlog-org-0232, 12 October 2026
