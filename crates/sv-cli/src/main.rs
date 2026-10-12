@@ -1212,6 +1212,10 @@ fn cmd_run(args: &[String]) -> Result<i32> {
             if let Some(container) = outcome.container.sentences() {
                 println!("\n{container}");
             }
+            println!(
+                "\n{}",
+                sv_run::resources::sentence(outcome.resources.as_ref())
+            );
             let (findings, verified, signed_in_not_assessed) =
                 running_app_evidence(&outcome, &plan);
             println!(
@@ -2985,6 +2989,7 @@ mod tests {
             findings,
             set_aside: Vec::new(),
             not_counted: Vec::new(),
+            counted_in_test: Vec::new(),
         };
         // The review is shown the decision's finding.
         let mut seen = Vec::new();
@@ -3045,6 +3050,7 @@ mod tests {
                     findings,
                     set_aside: Vec::new(),
                     not_counted: Vec::new(),
+                    counted_in_test: Vec::new(),
                 }
             });
         assert_eq!(out.findings.len(), 1);
@@ -3060,6 +3066,7 @@ mod tests {
                 findings,
                 set_aside: Vec::new(),
                 not_counted: Vec::new(),
+                counted_in_test: Vec::new(),
             }
         });
         assert_eq!(out.findings.len(), 1);

@@ -89,6 +89,72 @@ pub fn parse_limits(text: &str) -> Option<Limits> {
     })
 }
 
+/// What the report and `sv run`'s printout say of the readings (ADR-094). They are the engine's numbers for the whole
+/// container at one moment, so they are said as information and decide no requirement: C9.1.1 asks for limits the app
+/// puts on its own tools, which a reading from outside does not show. `None`, the engine having not said, is said too.
+pub fn sentence(taken: Option<&Taken>) -> String {
+    let Some(Taken { reading, limits }) = taken else {
+        return "Docker did not say how much CPU, memory, network, or disk the app's container used, so none of it \
+                is reported."
+            .to_owned();
+    };
+    let cpu_limit = if limits.nano_cpus == 0 {
+        "no CPU limit".to_owned()
+    } else {
+        format!("a limit of {} CPU", trimmed(limits.nano_cpus as f64 / 1e9))
+    };
+    let mem_limit = if limits.mem_bytes == 0 {
+        "no memory limit".to_owned()
+    } else {
+        format!("a memory limit of {}", binary(limits.mem_bytes))
+    };
+    format!(
+        "While it ran, Docker said its container was using {}% of one CPU and {} of memory (of {} it could use), \
+         and since it started had received {} and sent {} over its network and read {} and written {} on disk. It was \
+         started with {cpu_limit} and {mem_limit}. These are the whole container's numbers at one moment, taken from \
+         outside the app; they are not limits the app puts on its own tools, so they decide no requirement.",
+        trimmed(reading.cpu_percent),
+        binary(reading.mem_used),
+        binary(reading.mem_limit),
+        decimal(reading.net_in),
+        decimal(reading.net_out),
+        decimal(reading.disk_read),
+        decimal(reading.disk_write),
+    )
+}
+
+/// The words added to C9.1.1's note that the app's limits on CPU, memory, disk, and network were not checked: the run
+/// did read the container's own use, and that is not the same thing (ADR-094).
+pub const BESIDE_THE_QUOTAS: &str = "The run did read the container's own CPU, memory, network, and disk use from \
+     Docker (in the note on how the app was run); that is the whole container's use, not a limit the app puts on a \
+     tool, so it does not change this.";
+
+/// A number with at most two decimal places and no trailing zeros: 0.5, 12, 153.25.
+fn trimmed(n: f64) -> String {
+    let s = format!("{n:.2}");
+    s.trim_end_matches('0').trim_end_matches('.').to_owned()
+}
+
+/// Memory in the binary units `docker stats` uses for it.
+fn binary(bytes: u64) -> String {
+    scaled(bytes, 1024.0, &["B", "KiB", "MiB", "GiB", "TiB"])
+}
+
+/// Network and disk traffic in the decimal units `docker stats` uses for them.
+fn decimal(bytes: u64) -> String {
+    scaled(bytes, 1000.0, &["B", "kB", "MB", "GB", "TB"])
+}
+
+fn scaled(bytes: u64, step: f64, units: &[&str]) -> String {
+    let mut n = bytes as f64;
+    let mut unit = 0;
+    while n >= step && unit + 1 < units.len() {
+        n /= step;
+        unit += 1;
+    }
+    format!("{} {}", trimmed((n * 10.0).round() / 10.0), units[unit])
+}
+
 /// Two sizes joined by " / ", as `docker stats` writes its use-against-limit and in-against-out columns.
 fn pair(text: &str) -> Option<(u64, u64)> {
     let (first, second) = text.split_once(" / ")?;
@@ -122,3 +188,7 @@ fn size(text: &str) -> Option<u64> {
 #[cfg(test)]
 #[path = "resources_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "resources_sentence_tests.rs"]
+mod sentence_tests;
