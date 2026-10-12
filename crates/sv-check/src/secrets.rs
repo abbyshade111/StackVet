@@ -353,7 +353,7 @@ fn is_secret_name(name: &str) -> bool {
 /// treats as a secret's, and those that hold one in what a program prints rather than in its code,
 /// each as a whole word of the name (`x-session-id`, `Set-Cookie`, `otp_code`), so that `spinner` is
 /// not `pin` (the review of 8 October 2026, item 6: a token a failing test printed reached the report).
-fn is_masked_name(name: &str) -> bool {
+pub fn is_masked_name(name: &str) -> bool {
     const PRINTED: &[&str] = &[
         "authorization",
         "bearer",
