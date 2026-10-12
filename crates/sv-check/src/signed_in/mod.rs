@@ -1270,13 +1270,10 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     (SESSION_COOKIE.rule_id, &["login-a"]),
     (SESSION_RENEWAL.rule_id, &["login-page-a", "login-a"]),
     (DOWNLOAD_NAME_INJECTED.rule_id, &["download-hostile"]),
-    (
-        UPLOAD_EXECUTED.rule_id,
-        &["upload-code", "upload-code-fetch"],
-    ),
+    (UPLOAD_EXECUTED.rule_id, &["upload-code", "upload-code-"]),
     (
         UPLOAD_RENDERED.rule_id,
-        &["upload-page-file", "upload-page-file-fetch"],
+        &["upload-page-file", "upload-page-file-"],
     ),
 ];
 
@@ -4309,6 +4306,26 @@ mod crash_tests {
                     ..Default::default()
                 },
                 users(),
+                true,
+            ),
+            // One file of each set, the last, at fault alone (backlog 0232, part 4): a crash at its
+            // request must not read as that file served safely.
+            Scenario::new(
+                "an uploaded .php5 that runs",
+                Flaws {
+                    runs_uploaded_php5: true,
+                    ..Default::default()
+                },
+                upload_users(),
+                true,
+            ),
+            Scenario::new(
+                "an uploaded .xhtml that renders",
+                Flaws {
+                    renders_uploaded_xhtml: true,
+                    ..Default::default()
+                },
+                upload_users(),
                 true,
             ),
             Scenario::new(
