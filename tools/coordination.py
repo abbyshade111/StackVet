@@ -180,7 +180,7 @@ def title_of(folder, number):
 # ---------------------------------------------------------------------------------------------------------------
 # The commands.
 
-def cmd_open(board_path, session, when=None):
+def open_board(board_path, session, when=None):
     if Path(board_path).exists():
         raise SystemExit(f"{board_path} exists; the board is opened once, and read from then on")
     board = Board(board_path)
@@ -482,10 +482,10 @@ def self_test():
         board_path = tmp / BOARD
         when = "2026-10-13 09:00"
 
-        cmd_open(board_path, "orchestrator", when)
+        open_board(board_path, "orchestrator", when)
         failed = False
         try:
-            cmd_open(board_path, "orchestrator", when)
+            open_board(board_path, "orchestrator", when)
         except SystemExit:
             failed = True
         assert failed, "a second open is refused"
@@ -629,7 +629,7 @@ def main(argv):
     if c == "open":
         if not a.by:
             raise SystemExit("open --by <session>")
-        cmd_open(board_path, a.by)
+        open_board(board_path, a.by)
     elif c == "session":
         if len(args) != 2:
             raise SystemExit("session add|remove <name>")
