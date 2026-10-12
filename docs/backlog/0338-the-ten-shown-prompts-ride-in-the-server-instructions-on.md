@@ -15,3 +15,8 @@
 **Fix.** Give the prompts in one place a tool reads once (the spec is the natural one; the instructions keep one line saying where they are), after a trial reading that separates the two deliveries, or accept the cost and record why. The owner decides; held on the board until then.
 
 **Record.** ADR-035 governs the prompt library and ADR-066 the instructions: a Later entry on whichever the owner's decision changes.
+
+**The owner's word, 12 October 2026:** hold this one until after the loop test, "so we can weigh against the findings
+from that as well. The loop test pins to a specific sv build, but still better safe than sorry and shouldn't change while
+that test is running." So: not assigned until the loop trial (0257) has finished and its findings are in; then the owner
+decides with both in hand.
