@@ -456,11 +456,9 @@ pub fn page(report: &Report) -> String {
             crate::apart_named(&tests),
             escape(crate::TEST_CODE_SECTION)
         ));
-        let (full, low) = crate::split_low(report, tests);
-        for f in full {
+        for f in tests {
             finding_section(&mut b, report, f);
         }
-        low_lines(&mut b, &low);
     }
 
     // Split by level, level 1 first. See `crate::groups`.

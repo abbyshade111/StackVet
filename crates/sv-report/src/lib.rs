@@ -1447,9 +1447,10 @@ mod low_groups_tests;
 /// The file beside the report that holds every low-severity finding in full (ADR-095).
 pub const LOW_FINDINGS_FILE: &str = "low-findings.md";
 
-/// Whether a finding is shown grouped by rule rather than in full: low severity, and not about a key (ADR-095).
+/// Whether a finding is shown grouped by rule rather than in full: low severity, not about a key, and in the app's own
+/// list, not one of those listed apart (test code, a bundled library, worth a look, outranked) (ADR-095).
 pub fn is_grouped_low(f: &sv_check::Finding) -> bool {
-    f.severity == sv_check::Severity::Low && !about_a_secret(f)
+    f.severity == sv_check::Severity::Low && !about_a_secret(f) && !f.apart()
 }
 
 /// One rule's low-severity findings, as the reports show them in one line (ADR-095).

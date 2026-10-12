@@ -882,11 +882,9 @@ pub fn security(report: &Report) -> String {
             crate::apart_named(&tests),
             crate::TEST_CODE_SECTION
         ));
-        let (full, low) = crate::split_low(report, tests);
-        for finding in full {
+        for finding in tests {
             finding_section(&mut out, report, finding);
         }
-        low_lines(&mut out, &low);
     }
     test_information_section(&mut out, report);
     out
@@ -937,6 +935,14 @@ pub fn low_findings(report: &Report) -> String {
         "# {} — every low-severity finding\n\n",
         inert(&report.app_name).replace(['\n', '\r'], " ")
     );
+    // Every form of the report names the `sv` that wrote it, as `security.md` does.
+    match &report.generated {
+        Some(when) => out.push_str(&format!(
+            "Produced by `sv` {} on {when}.\n\n",
+            report.sv.describe()
+        )),
+        None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
+    }
     let low: Vec<&sv_check::Finding> = report
         .findings
         .iter()
