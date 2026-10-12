@@ -556,8 +556,44 @@ pub fn manifest_changed(
     report: &sv_report::Report,
     app_dir: &Path,
 ) -> Option<(String, sv_report::Gap)> {
-    let mine = report.run_record.as_ref()?;
-    let now = std::fs::read(sv_manifest::locate(app_dir).ok()??.path).ok()?;
+    manifest_changed_since(report.run_record.as_ref()?, app_dir)
+}
+
+/// `manifest_changed`, for the run with this record.
+fn manifest_changed_since(
+    mine: &sv_report::RunRecord,
+    app_dir: &Path,
+) -> Option<(String, sv_report::Gap)> {
+    // A manifest that cannot be found or read at the end is said as such, not taken as the same as
+    // at the start: a file removed or made unreadable during the run is what this guard is for
+    // (backlog 0292). A run that had none, and still has none, has nothing to say.
+    let unread = |why: String| {
+        let said = format!(
+            "could not be read at the end of the run ({why}), so whether it changed while this \
+             check ran cannot be said; this report is of the file as it was when the run started \
+             ({})",
+            mine.started
+        );
+        Some((
+            format!("Note: stackvet.toml {said}."),
+            sv_report::Gap {
+                what: "stackvet.toml as it is now".to_owned(),
+                why: format!("it {said}"),
+                reason: sv_report::GapReason::CouldNotRead,
+                requirements: Vec::new(),
+            },
+        ))
+    };
+    let located = match sv_manifest::locate(app_dir) {
+        Ok(Some(located)) => located,
+        Ok(None) if mine.securevibe_toml_sha256 == crate::bundle::sha256(b"") => return None,
+        Ok(None) => return unread("it is no longer there".to_owned()),
+        Err(e) => return unread(format!("{e:#}")),
+    };
+    let now = match std::fs::read(&located.path) {
+        Ok(now) => now,
+        Err(e) => return unread(e.to_string()),
+    };
     if crate::bundle::sha256(&now) == mine.securevibe_toml_sha256 {
         return None;
     }
@@ -717,6 +753,45 @@ mod tests {
             read_holder_file(&holder).is_none(),
             "one byte over, it is not"
         );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_manifest_that_cannot_be_read_at_the_end_is_said_and_not_taken_as_unchanged() {
+        // Backlog 0292: `manifest_changed` read a manifest it could not find or read as the same
+        // as at the start, the one case its guard exists for passing in silence.
+        let dir = folder("manifest-gone");
+        let text = b"[app]\nname = \"a test\"\n";
+        std::fs::write(dir.join(sv_frameworks::names::MANIFEST), text).unwrap();
+        let mut record = run_record(SystemTime::now(), text);
+        assert!(
+            manifest_changed_since(&record, &dir).is_none(),
+            "the setup: the same file is unchanged"
+        );
+
+        // Removed while the run went on.
+        std::fs::remove_file(dir.join(sv_frameworks::names::MANIFEST)).unwrap();
+        let (note, gap) =
+            manifest_changed_since(&record, &dir).expect("a missing manifest is said");
+        assert!(
+            note.contains("could not be read at the end of the run"),
+            "{note}"
+        );
+        assert_eq!(gap.reason, sv_report::GapReason::CouldNotRead, "{gap:?}");
+
+        // A folder where the manifest was is not a file that reads either.
+        std::fs::create_dir(dir.join(sv_frameworks::names::MANIFEST)).unwrap();
+        let (note, _) =
+            manifest_changed_since(&record, &dir).expect("an unreadable manifest is said");
+        assert!(
+            note.contains("could not be read at the end of the run"),
+            "{note}"
+        );
+
+        // A run that had no manifest, and still has none, has nothing to say.
+        std::fs::remove_dir(dir.join(sv_frameworks::names::MANIFEST)).unwrap();
+        record = run_record(SystemTime::now(), b"");
+        assert!(manifest_changed_since(&record, &dir).is_none());
         std::fs::remove_dir_all(&dir).ok();
     }
 
