@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: group B partly done; groups C to H open
+**Status:** partly done: groups B and C partly done; groups D to H open
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -38,7 +38,10 @@ by speaking for what its requirement names. One part per group of the inventory 
    manifest names no other changing request; otherwise in part, naming what was not tried. The simple-request and
    null-Origin checks, the flow, and the WebSocket are not in this claim. Recorded as a Later entry on ADR-053 in the
    pull request that builds it.
-   **Part status:** claimed by backlog-org-0232, 12 October 2026
+   **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
+   `docs/design/0371-the-cross-site-check-on-every-create-request-12-october-2026.md`): every create request named is
+   forged; whole only when two or more were refused and no other changing request is named.
+   **Part status:** partly done: the simple-request and null-Origin checks, the flow, and the WebSocket
 4. **D. Each upload route, more than one file.** Every upload route the manifest names, with a small set of files
    per check rather than one.
    **Part status:** open

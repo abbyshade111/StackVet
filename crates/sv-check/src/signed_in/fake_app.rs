@@ -427,6 +427,9 @@ pub(super) struct Flaws {
     /// A new comment's owner is the `user_id` the request sends, when it sends one (mass assignment
     /// beyond sign-up, through `creates`, backlog 0006 part 13(a)).
     pub(super) comment_owner_from_request: bool,
+    /// A comment sent from another site is taken: the second kind of record does not check where a request came
+    /// from, though the first does (backlog 0232, part 3).
+    pub(super) comments_take_foreign: bool,
     /// A note's text is written into its page and the list of notes as it is, not HTML-escaped.
     pub(super) notes_unescaped: bool,
     /// The JSON API reads a JSON body whatever its Content-Type says.
@@ -2414,6 +2417,9 @@ impl FakeApp {
                 let Some(owner) = user else {
                     return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
                 };
+                if foreign && !self.flaws.comments_take_foreign {
+                    return Some(Self::respond(403, vec![], "forged"));
+                }
                 if let Some(limit) = self.comments_per_minute {
                     let now = self.clock;
                     let times = self
