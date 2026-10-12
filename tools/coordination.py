@@ -62,7 +62,11 @@ FOOTER = """Rules that hold whatever else you know, from the owner:
 - When something is the owner's to decide, stop and ask the owner.
 - When you are done, run `python3 tools/backlog.py done <number>` and say what was built and what was not."""
 
-SESSION = re.compile(r"^- (?P<name>[A-Za-z0-9_-]+) — arm: (?P<arm>full|none) — holds: (?P<holds>nothing|\d{4} \(since \S+\))$")
+# A session's line names the item it holds and, when the orchestrator has given it one ahead, the item it takes next
+# once its pull request has merged (the owner's choice of 12 October 2026: after the first paste, sessions take their
+# work from the board, so their next item has to be there before they finish).
+SESSION = re.compile(r"^- (?P<name>[A-Za-z0-9_-]+) — arm: (?P<arm>full|none) — holds: (?P<holds>nothing|\d{4} \(since \S+\))"
+                     r"(?: — next: (?P<next>\d{4}))?$")
 QUEUE = re.compile(r"^\d+\. (?P<number>\d{4}) (?P<title>.*?) — (?P<state>ready|hold: .+)$")
 LOG = re.compile(r"^- (?P<when>\d{4}-\d{2}-\d{2} \d{2}:\d{2}) — (?P<text>.+)$")
 
@@ -83,7 +87,7 @@ class Board:
 
     def __init__(self, path):
         self.path = Path(path)
-        self.sessions = []  # {name, arm, holds (number or None), since}
+        self.sessions = []  # {name, arm, holds (number or None), since, next (number or None)}
         self.queue = []  # {number, title, hold (reason or None)}
         self.log = []  # {when, text}
 
@@ -106,7 +110,8 @@ class Board:
                 if m:
                     holds = None if m["holds"] == "nothing" else m["holds"][:4]
                     since = None if holds is None else m["holds"][12:-1]
-                    board.sessions.append({"name": m["name"], "arm": m["arm"], "holds": holds, "since": since})
+                    board.sessions.append({"name": m["name"], "arm": m["arm"], "holds": holds, "since": since,
+                                           "next": m["next"]})
                 elif line.startswith("- "):
                     raise SystemExit(f"{path}: a session line in no form the board knows: {line}")
             elif section == "Queue":
@@ -130,7 +135,8 @@ class Board:
             out.append("(none yet: `session add <name> --arm full|none`)")
         for s in self.sessions:
             holds = "nothing" if s["holds"] is None else f"{s['holds']} (since {s['since']})"
-            out.append(f"- {s['name']} — arm: {s['arm']} — holds: {holds}")
+            ahead = f" — next: {s['next']}" if s.get("next") else ""
+            out.append(f"- {s['name']} — arm: {s['arm']} — holds: {holds}{ahead}")
         out += ["", "## Queue", ""]
         if not self.queue:
             out.append("(empty)")
@@ -166,6 +172,13 @@ class Board:
                 return s
         return None
 
+    def taker(self, number):
+        """The session that holds `number`, or has it next."""
+        for s in self.sessions:
+            if number in (s["holds"], s.get("next")):
+                return s
+        return None
+
 
 def key_of(number):
     """A backlog number as the board writes it: four digits."""
@@ -197,12 +210,12 @@ def cmd_session(board_path, action, name, arm=None, when=None):
             raise SystemExit(f"--arm is one of {', '.join(ARMS)}: full keeps the standing context, none has only the repository")
         if any(s["name"] == name for s in board.sessions):
             raise SystemExit(f"{name} is on the board already")
-        board.sessions.append({"name": name, "arm": arm, "holds": None, "since": None})
+        board.sessions.append({"name": name, "arm": arm, "holds": None, "since": None, "next": None})
         board.note(f"session {name} added, arm {arm}", when)
     elif action == "remove":
         s = board.session(name)
-        if s["holds"]:
-            raise SystemExit(f"{name} holds {s['holds']}; `finish {s['holds']}` first")
+        if s["holds"] or s.get("next"):
+            raise SystemExit(f"{name} holds {s['holds'] or s['next']}; `finish` it first")
         board.sessions.remove(s)
         board.note(f"session {name} removed", when)
     else:
@@ -217,8 +230,8 @@ def cmd_queue(board_path, folder, action, number, hold=None, when=None):
     if action == "add":
         if board.queued(number):
             raise SystemExit(f"{number} is in the queue already")
-        if board.holder(number):
-            raise SystemExit(f"{number} is held by {board.holder(number)['name']}")
+        if board.taker(number):
+            raise SystemExit(f"{number} is held by {board.taker(number)['name']}")
         item = backlog.find(folder, number)
         if item.kind == "done":
             raise SystemExit(f"{number} is done; nothing to queue")
@@ -241,7 +254,8 @@ def cmd_queue(board_path, folder, action, number, hold=None, when=None):
 
 
 def cmd_assign(board_path, folder, number, to, why, when=None, date=None):
-    """Gives a queued item to a free session: the claim first (the record), then the board."""
+    """Gives a queued item to a session: the claim first (the record), then the board. A free session holds it at
+    once; a session already holding one gets it as its next, which `finish` moves into its hands; one ahead at most."""
     board = Board.read(board_path)
     number = key_of(number)
     if not why or len(why.strip()) < 10:
@@ -252,15 +266,19 @@ def cmd_assign(board_path, folder, number, to, why, when=None, date=None):
     if q["hold"]:
         raise SystemExit(f"{number} is on hold: {q['hold']}; `queue release {number}` first")
     s = board.session(to)
-    if s["holds"]:
-        raise SystemExit(f"{to} holds {s['holds']}; one item at a time, `finish {s['holds']}` first")
+    if s["holds"] and s.get("next"):
+        raise SystemExit(f"{to} holds {s['holds']} and has {s['next']} next; one ahead at most, `finish {s['holds']}` first")
     date = date or backlog.today()
     if not backlog.claim(folder, number, to, date):
         raise SystemExit(f"the claim of {number} for {to} was refused; the board is unchanged")
     board.queue.remove(q)
-    s["holds"] = number
-    s["since"] = (when or now())[:10]
-    board.note(f"assigned {number} to {to} ({s['arm']}): {why.strip()}", when)
+    if s["holds"]:
+        s["next"] = number
+        board.note(f"assigned {number} to {to} ({s['arm']}) as next: {why.strip()}", when)
+    else:
+        s["holds"] = number
+        s["since"] = (when or now())[:10]
+        board.note(f"assigned {number} to {to} ({s['arm']}): {why.strip()}", when)
     board.write()
     arms = {arm: sum(1 for e in board.log if f"({arm})" in e["text"] and e["text"].startswith("assigned")) for arm in ARMS}
     print(board.log[-1]["text"])
@@ -294,8 +312,10 @@ def cmd_finish(board_path, number, pr=None, when=None):
     s = board.holder(number)
     if s is None:
         raise SystemExit(f"nobody holds {number}")
-    s["holds"], s["since"] = None, None
-    board.note(f"finished {number} by {s['name']} ({s['arm']})" + (f": {pr}" if pr else ""), when)
+    following = s.get("next")
+    s["holds"], s["since"], s["next"] = following, ((when or now())[:10] if following else None), None
+    board.note(f"finished {number} by {s['name']} ({s['arm']})" + (f": {pr}" if pr else "")
+               + (f"; now holds {following}" if following else ""), when)
     board.write()
     print(board.log[-1]["text"])
 
@@ -316,20 +336,24 @@ def problems(board, folder):
     for s in board.sessions:
         if s["arm"] not in ARMS:
             out.append(f"{s['name']}: arm {s['arm']!r} is neither full nor none")
-        if s["holds"]:
-            if s["holds"] in seen:
-                out.append(f"{s['holds']} is held twice")
-            seen.add(s["holds"])
-            item = numbers.get(s["holds"])
+        if s.get("next") and not s["holds"]:
+            out.append(f"{s['name']} has {s['next']} next and holds nothing")
+        for slot, number in (("holds", s["holds"]), ("has next", s.get("next"))):
+            if not number:
+                continue
+            if number in seen:
+                out.append(f"{number} is held twice")
+            seen.add(number)
+            item = numbers.get(number)
             if item is None:
-                out.append(f"{s['name']} holds {s['holds']}, which is no item")
+                out.append(f"{s['name']} {slot} {number}, which is no item")
             elif item.kind == "done":
                 # The builder's own `done` is the last step its hand-out names, and it lands in the builder's pull
                 # request before the orchestrator's `finish`: the normal hand-back, not a disagreement (found on the
                 # trial's first finished item, 0280, whose pull request this check turned red).
                 continue
             elif item.kind != "claimed" or s["name"] not in item.sessions:
-                out.append(f"{s['name']} holds {s['holds']}, but the item says: {item.status_text}")
+                out.append(f"{s['name']} {slot} {number}, but the item says: {item.status_text}")
     for q in board.queue:
         if q["number"] in seen:
             out.append(f"{q['number']} is both queued and held")
@@ -398,7 +422,7 @@ def arms_measure(board, gh=shutil.which("gh")):
         m = re.match(r"^assigned \d{4} to \S+ \((full|none)\)", e["text"])
         if m:
             per[m.group(1)]["assigned"] += 1
-        m = re.match(r"^finished \d{4} by \S+ \((full|none)\)(?:: (\S+))?", e["text"])
+        m = re.match(r"^finished \d{4} by \S+ \((full|none)\)(?:: ([^\s;]+))?", e["text"])
         if m:
             per[m.group(1)]["finished"] += 1
             if m.group(2):
@@ -509,7 +533,7 @@ def self_test():
         tmp = Path(tmp)
         folder = tmp / "docs" / "backlog"
         folder.mkdir(parents=True)
-        for n, title in ((1, "First item"), (2, "Second item"), (3, "Third item"), (4, "Done item")):
+        for n, title in ((1, "First item"), (2, "Second item"), (3, "Third item"), (4, "Done item"), (5, "Fifth item")):
             backlog.write(folder, n, title, "done, 1 October 2026" if n == 4 else "open", "Its text.\n")
         board_path = tmp / BOARD
         when = "2026-10-13 09:00"
@@ -532,6 +556,7 @@ def self_test():
         cmd_queue(board_path, folder, "add", "1", None, when)
         cmd_queue(board_path, folder, "add", "2", "the loop trials", when)
         cmd_queue(board_path, folder, "add", "3", None, when)
+        cmd_queue(board_path, folder, "add", "5", None, when)
         try:
             cmd_queue(board_path, folder, "add", "4", None, when)
             assert False, "a done item is refused"
@@ -545,18 +570,28 @@ def self_test():
                 pass
         cmd_assign(board_path, folder, "1", "a", "the first ready item, pair of 0003", when=when, date="13 October 2026")
         assert backlog.find(folder, "1").status_text == "claimed by a, 13 October 2026", "assign claimed the item"
+        # A busy session is given its next item ahead, claimed for it, and one ahead at most.
+        cmd_assign(board_path, folder, "3", "a", "a's next, so it is there when a finishes", when=when, date="13 October 2026")
+        assert backlog.find(folder, "3").status_text == "claimed by a, 13 October 2026", "a next item is claimed too"
         try:
-            cmd_assign(board_path, folder, "3", "a", "a second item for a busy session", when=when, date="13 October 2026")
-            assert False, "one item at a time"
+            cmd_assign(board_path, folder, "5", "a", "a second one ahead for a busy session", when=when, date="13 October 2026")
+            assert False, "one ahead at most"
         except SystemExit:
             pass
-        assert backlog.find(folder, "3").kind == "open", "a refused assign claims nothing"
+        assert backlog.find(folder, "5").kind == "open", "a refused assign claims nothing"
         cmd_queue(board_path, folder, "release", "2", None, when)
         cmd_assign(board_path, folder, "2", "b", "the pair of 0001, to the other arm", when=when, date="13 October 2026")
         board = Board.read(board_path)
-        assert board.session("a")["holds"] == "0001" and board.session("b")["holds"] == "0002"
-        assert [q["number"] for q in board.queue] == ["0003"]
+        assert board.session("a")["holds"] == "0001" and board.session("a")["next"] == "0003"
+        assert board.session("b")["holds"] == "0002" and board.session("b")["next"] is None
+        assert "- a — arm: full — holds: 0001 (since 2026-10-13) — next: 0003" in board.text(), board.text()
+        assert [q["number"] for q in board.queue] == ["0005"]
         assert problems(board, folder) == [], problems(board, folder)
+        try:
+            cmd_queue(board_path, folder, "add", "3", None, when)
+            assert False, "an item a session has next is not queued again"
+        except SystemExit:
+            pass
         # The board is read back as it was written.
         again = Board(board_path)
         again.sessions, again.queue, again.log = board.sessions, board.queue, board.log
@@ -567,12 +602,18 @@ def self_test():
         backlog.mark_done(folder, "1", "13 October 2026", None)
         assert problems(Board.read(board_path), folder) == [], problems(Board.read(board_path), folder)
         # A board that disagrees for real: a session holds an item another session claimed.
-        backlog.claim(folder, "3", "someone-else", "13 October 2026")
+        backlog.claim(folder, "5", "someone-else", "13 October 2026")
         stale = Board.read(board_path)
-        stale.session("b")["holds"], stale.session("b")["since"] = "0003", "2026-10-13"
-        stale.queue = [q for q in stale.queue if q["number"] != "0003"]
+        stale.session("b")["holds"], stale.session("b")["since"] = "0005", "2026-10-13"
+        stale.queue = [q for q in stale.queue if q["number"] != "0005"]
         found = problems(stale, folder)
-        assert len(found) == 1 and "b holds 0003, but the item says: claimed by someone-else" in found[0], found
+        assert len(found) == 1 and "b holds 0005, but the item says: claimed by someone-else" in found[0], found
+        # And a next item with nothing held before it.
+        stale = Board.read(board_path)
+        stale.session("a")["holds"] = None
+        found = problems(stale, folder)
+        assert any("a has 0003 next and holds nothing" in f for f in found), found
+        # `finish` moves the next item into the session's hands.
         cmd_finish(board_path, "1", "https://example.test/pull/1", when)
         try:
             cmd_finish(board_path, "1", None, when)
@@ -580,7 +621,11 @@ def self_test():
         except SystemExit:
             pass
         board = Board.read(board_path)
-        assert board.session("a")["holds"] is None and problems(board, folder) == []
+        assert board.session("a")["holds"] == "0003" and board.session("a")["next"] is None
+        assert board.log[-1]["text"].endswith("; now holds 0003"), board.log[-1]
+        assert problems(board, folder) == [], problems(board, folder)
+        cmd_finish(board_path, "3", None, when)
+        assert Board.read(board_path).session("a")["holds"] is None
         cmd_session(board_path, "remove", "a", None, when)
         try:
             cmd_session(board_path, "remove", "b", None, when)
@@ -588,7 +633,7 @@ def self_test():
         except SystemExit:
             pass
         per, _ = arms_measure(Board.read(board_path), gh=None)
-        assert per["full"] == {"assigned": 1, "finished": 1, "prs": ["https://example.test/pull/1"], "commits": 0, "unnamed_tool": 0, "main_merges": 0}
+        assert per["full"] == {"assigned": 2, "finished": 2, "prs": ["https://example.test/pull/1"], "commits": 0, "unnamed_tool": 0, "main_merges": 0}, per["full"]
         assert per["none"]["assigned"] == 1 and per["none"]["finished"] == 0
 
         # The measures, on a history made here: three pull requests, one of them a claim only, and one merge of main

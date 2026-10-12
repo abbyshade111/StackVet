@@ -41,12 +41,16 @@ makes those collisions stop, and what it costs.
    session's first hand-out is pasted by the owner, with one more sentence: when your pull request has merged, fetch
    `main`, read the board, and take the item beside your name; if there is none, check again in 30 minutes. After that
    the board does the handing out, and nobody pastes (the owner's choice, 12 October 2026). So the orchestrator assigns
-   each session's next item while it is still building the current one, and the item's own file and this page's footer
-   are everything the session needs; the board is what counts, a message only points at it.
+   each session's next item while it is still building the current one: `assign` to a session that already holds an
+   item puts the new one in its *next* slot, shown on its line as `— next: NNNN`, claimed for it at once, one ahead at
+   most. A session whose pull request has merged takes its *next* item if it has one, and otherwise the item it holds
+   if it has not started it. The item's own file and this page's footer are everything the session needs; the board
+   is what counts, a message only points at it.
 4. The builder builds, in a new branch from `main` and a pull request of its own for each item (a cloud session may
    push a branch other than the one it started on), and runs `python3 tools/backlog.py done <number>`; it keeps
    minding an earlier pull request until that merges, but starts the next item once its own work on the last is done.
-   The orchestrator runs `finish <number> --pr <url>`, and the session is free for the next item. The two may land on
+   The orchestrator runs `finish <number> --pr <url>`, which moves the session's *next* item into its hands, or frees
+   it when it had none. The two may land on
    `main` in either order: `check` reads a held item marked done as the normal hand-back, not a disagreement (the
    first two finished items, 0280 and 0278, each turned their own pull request red before it did).
 5. A red `main` goes to exactly one session, through the same `assign`, so two never fix it together.
