@@ -10,6 +10,6 @@ container app1 is busy)` and was given `container sv-1-1-test-app (…)`. A re-r
 `main`'s runs of the same hour passed.
 
 Look first at whether the test reads a container list, or a stand-in's output, that another test running at the same
-time can add to: the name it was given is the form a real run's container takes (`sv-<run>-<n>-<app>`). If so, the
+time can add to: the name it was given looks like one a run gives its own container, which was not checked. If so, the
 test's own setup should name only what it made, so it cannot be handed another test's container.
 
