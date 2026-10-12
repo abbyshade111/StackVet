@@ -3,15 +3,18 @@
 //! stop the readings reaching it.
 
 use super::*;
-use std::path::PathBuf;
 
 const OTHER_C9: &str = "Whether the app puts a time limit on its tools: something else.";
 
+/// A plan from a manifest written here, not read from a fixture: a test in `src/` that named the build folder would
+/// read from it at run time (`crates/sv-cli/tests/moved.rs`).
 fn plan() -> RunPlan {
-    let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../sv-run/tests/fixtures/static-app");
-    let manifest =
-        sv_manifest::Manifest::load(&dir.join("stackvet.toml")).expect("fixture manifest");
-    RunPlan::from_manifest(&manifest, &dir).expect("fixture declares how to run")
+    let text = "manifest-version = 1\n[app]\nname = \"Fixture\"\naudience = \"just-me\"\n\
+                deployment = \"local-only\"\n[stack]\nlanguages = []\n[stack.run]\n\
+                image = \"busybox:1.36\"\nstart = \"httpd -f -p $PORT\"\nhealth = \"/\"\n";
+    let manifest = sv_manifest::Manifest::parse(text, Path::new("stackvet.toml"))
+        .expect("the manifest written here");
+    RunPlan::from_manifest(&manifest, Path::new(".")).expect("it declares how to run")
 }
 
 fn outcome(resources: Option<sv_run::resources::Taken>) -> sv_run::RunOutcome {
