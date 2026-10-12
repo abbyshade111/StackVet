@@ -1,6 +1,6 @@
 # The running-app checks, reviewed on 3 October 2026: one fault in the counts, and what to add
 
-**Status:** partly done: CPU, memory, disk, and egress quotas stay not assessed, with the container's own readings reported beside them (0243, ADR-093); item 13 is kept by a proxy
+**Status:** partly done: CPU, memory, disk, and egress quotas stay not assessed, with the container's own readings reported beside them (0243, ADR-094); item 13 is kept by a proxy
 
 By session
 securevibe-e9, at the owner's asking ("review them and then propose additional checks that would provide strong
@@ -354,7 +354,7 @@ ASVS and AISVS requirement no running check speaks to. **Each numbered item can 
 **Items opened from this item, 10 October 2026:** tar archives, backlog 0241; 7z and rar, 0242; the host-side resource question for the quotas, 0243; the example app's email change for the real-app run, 0244. The proxy limit (part 13) stays a known limit, with no item.
 
 **Status brought up to date, 11 October 2026:** tar is read (0241, done), and 7z and rar (0242, done), so part 15 is
-done. The run now reports what Docker read of the app's container beside C9.1.1's quotas (0243, ADR-093), which
+done. The run now reports what Docker read of the app's container beside C9.1.1's quotas (0243, ADR-094), which
 still stay not assessed, since those readings are not limits the app sets. What remains is item 14's real-app run
 (0244) and item 13's proxy.
 
