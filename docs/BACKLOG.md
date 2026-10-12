@@ -104,8 +104,10 @@ observability dashboard, once the observability review's findings are built" (02
 evening to follow them; then the website mock-ups (0224), which the owner asked to wait until the decisions made that
 day are built. The Cursor test (0222) waits for the owner, who is
 looking into what Cursor needs on their side.
-**Added 12 October 2026, at the owner's word:** "Try a coordinating session for the parallel builds" (0273) comes
-only after the next trial of the build loop (0257) and the website mock-ups (0224).
+**Added 12 October 2026, at the owner's word, and moved up the same day:** "Try a coordinating session for the
+parallel builds" (0273) is set up once the other sessions are *on* the build-loop trial (0257) and the website work
+(0224), not after them, on the owner's "go"; claimed by session stackvet-orchestrator. The findings of the deep review
+that follows it wait on the coordination board until the loop trials are done.
 
 **Process, any time, each cheap:** "Process: shorter CI, a merge queue decision, and a nightly routine on `main`",
 and the owner's decision on "One file per backlog item, with a status line", which would make the status above a

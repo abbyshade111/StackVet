@@ -1,6 +1,6 @@
 # Try a coordinating session for the parallel builds, after the next loop trials and the website mock-ups
 
-**Status:** open
+**Status:** claimed by stackvet-orchestrator, 12 October 2026
 
 Asked for by the owner on 12 October 2026, after a review of whether an orchestrator agent would help in building `sv`
 or inside `sv`'s own workflows (session stackvet-orchestrator-agent-review). **Not before** the next trial of the
@@ -36,6 +36,21 @@ changes course after seeing results is what that protocol forbids.
 **Before starting.** The owner's yes and a budget, since every extra session spends the owner's money. The record:
 written as `Status: proposed` with the claim, as a Later entry on ADR-061 (how the work is shared out), and accepted
 in the pull request that starts the trial day.
+
+**The owner's decisions, 12 October 2026 (claimed by session stackvet-orchestrator, the same day):**
+- **When:** moved up. It is set up once the two other sessions are *on* the loop trial (0257) and the website work
+  (0224), not after them, and starts on the owner's "go"; the owner tells this session, which does not poll.
+- **Who:** this session holds the role, with no fourth session; the board in git lets another take it over. It also
+  does the deep review of the documentation and the code that the owner asked for next; every finding goes on the
+  board's queue and is handed out only after the loop trials are done. The role rule holds: the orchestrator never
+  grades the builders' own work.
+- **Part 3 (merges one at a time): left out.** Auto-merge stays as it is; the trial measures hand-outs and numbers.
+- **Budget:** the trial workflow already puts its estimate to the owner for approval, so this item asks for none.
+- **Three principles, the owner's words:** keep it simple, prioritize transparency, document and test thoroughly.
+  So: no new software agent; the role is a written one (`docs/COORDINATION.md`) using the tools that exist; its whole
+  memory is a board file in git that only the orchestrator writes, with a dated log line for every hand-out and why;
+  one small tool, `tools/coordination.py`, with its own tests, that prints the board and counts the measures below
+  from git. The record is a Later entry on ADR-061, proposed with this claim.
 
 **How to judge it.** Compare the trial day with an ordinary day of the same week, counted from git: pull requests
 that only record a claim, merges of `main` into branches, numbers taken twice, the same work built twice, and pull
