@@ -1023,160 +1023,196 @@ fn served_upload_checks(
     out: &mut Outcome,
 ) {
     // Server-side code, and a page. One file answers both only if the app serves it, so each is
-    // uploaded and fetched on its own.
+    // uploaded and fetched on its own: three of each kind, so the credit speaks for more than one
+    // extension (backlog 0232, part 4; ADR-053, Later).
     const MARKER: &str = "sv-probe-upload-marker-7c31";
-    let code = Upload {
-        id: "upload-code",
-        name: "sv-probe.php",
-        contents: format!("<?php echo \"{MARKER}\"; ?>"),
-    };
-    let page = Upload {
-        id: "upload-page-file",
-        name: "sv-probe.html",
-        contents: format!("<html><body>{MARKER}<script>1</script></body></html>"),
-    };
+    let code = format!("<?php echo \"{MARKER}\"; ?>");
+    let page = format!("<html><body>{MARKER}<script>1</script></body></html>");
+    let kinds: [(&Rule, [(&str, &str); 3], &String); 2] = [
+        (
+            &UPLOAD_EXECUTED,
+            [
+                ("upload-code", "sv-probe.php"),
+                ("upload-code-1", "sv-probe.phtml"),
+                ("upload-code-2", "sv-probe.php5"),
+            ],
+            &code,
+        ),
+        (
+            &UPLOAD_RENDERED,
+            [
+                ("upload-page-file", "sv-probe.html"),
+                ("upload-page-file-1", "sv-probe.htm"),
+                ("upload-page-file-2", "sv-probe.xhtml"),
+            ],
+            &page,
+        ),
+    ];
 
-    for (file, rule) in [(&code, &UPLOAD_EXECUTED), (&page, &UPLOAD_RENDERED)] {
-        let stored = send_upload(http, upload, file, session, token);
-        if stored.as_ref().is_none_or(|r| r.status >= 400) {
-            // Refusing the file outright is a perfectly good answer, and a better one than serving
-            // it safely — but it is not evidence about how uploads are served, so it is not a pass.
-            out.not_assessed.push((
-                rule.requirement_ids.join(", "),
-                format!(
-                    "The app refused `{}` ({}), which is a sound thing to do, but it means nothing \
-                     here saw how an uploaded file of that kind is served.",
-                    file.name,
-                    status(&stored)
-                ),
-            ));
-            continue;
-        }
-        let path = serves_at.replace("{name}", file.name);
-        let Some(fetched) = http.send(&get(&format!("{}-fetch", file.id), &path, session)) else {
-            out.not_assessed.push((
-                rule.requirement_ids.join(", "),
-                format!("Fetching the uploaded file back from {path} got no answer."),
-            ));
-            continue;
-        };
-        if fetched.status >= 400 {
-            out.not_assessed.push((
-                rule.requirement_ids.join(", "),
-                format!(
-                    "The file was accepted but {path} answered {}, so `serves-at` is not where \
-                     this app serves uploads and nothing here saw one served.",
-                    fetched.status
-                ),
-            ));
-            continue;
-        }
-
-        // What came back is the uploaded file only when it carries its mark, whether as source, as
-        // output, or as a page: an app that answers every address with its own page sends back
-        // something else, which says nothing about how uploads are served (the review of 1 to 4
-        // October, item 12).
-        if !fetched.body.contains(MARKER) {
-            out.not_assessed.push((
-                rule.requirement_ids.join(", "),
-                format!(
-                    "What {path} answered is not the `{}` this check uploaded (its mark is not in \
-                     it), so `serves-at` may not be where the app keeps uploads, and nothing here \
-                     saw one served.",
-                    file.name
-                ),
-            ));
-            continue;
-        }
-
-        if std::ptr::eq(rule, &UPLOAD_EXECUTED) {
-            // The source came back: not executed. Its output alone, without the source, is.
-            let source_intact = fetched.body.contains("<?php");
-            let ran = !source_intact && fetched.body.contains(MARKER);
-            out.steps.push(format!(
-                "fetched an uploaded .php back from {path}: {}",
-                if ran {
-                    "it had been run"
-                } else {
-                    "served as-is"
-                }
-            ));
-            if ran {
-                out.findings.push(finding_on(
-                    vec![format!("{}-fetch", file.id)],
-                    &UPLOAD_EXECUTED,
-                    "An uploaded file is executed as server-side code",
-                    Severity::High,
-                    format!(
-                        "A `.php` file this check uploaded came back from {path} with its code \
-                         gone and only its output left, so the server ran it."
-                    ),
-                ));
-            } else {
-                out.verified.push(crate::Verified::new(
-                    UPLOAD_EXECUTED.rule_id,
-                    UPLOAD_EXECUTED.requirement_ids,
-                    format!(
-                        "a `.php` file uploaded and fetched back from {path}, which came back as \
-                         it was written rather than as its output"
-                    ),
-                )
-                // One file on the one upload route stackvet.toml names (ADR-053, Later).
-                .in_part());
-            }
-        } else {
-            // A page is safe when the browser is told not to render it as part of this app.
-            let disposition = fetched
-                .header("content-disposition")
-                .unwrap_or_default()
-                .to_lowercase();
-            let content_type = fetched
-                .header("content-type")
-                .unwrap_or_default()
-                .to_lowercase();
-            let csp = fetched
-                .header("content-security-policy")
-                .unwrap_or_default()
-                .to_lowercase();
-            let attachment = disposition.contains("attachment");
-            let sandboxed = csp.contains("sandbox");
-            let not_html = !content_type.contains("text/html");
-            let safe = attachment || sandboxed || not_html;
-            let how = if attachment {
-                "as an attachment"
-            } else if sandboxed {
-                "with a sandbox policy"
-            } else {
-                "as something other than a page"
+    for (rule, files, contents) in kinds {
+        // Each file judged safe, as (its name, where it was served, how); a finding for any file
+        // takes the credit away.
+        let mut safe: Vec<(&str, String, &str)> = Vec::new();
+        let mut found = false;
+        for (id, name) in files {
+            let file = Upload {
+                id,
+                name,
+                contents: contents.clone(),
             };
-            out.steps.push(format!(
-                "fetched an uploaded .html back from {path}: {}",
-                if safe { how } else { "served as a page" }
-            ));
-            if safe {
-                out.verified.push(
-                    crate::Verified::new(
-                        UPLOAD_RENDERED.rule_id,
-                        UPLOAD_RENDERED.requirement_ids,
-                        format!("an uploaded HTML file, served back from {path} {how}"),
-                    )
-                    // One file on the one upload route stackvet.toml names (ADR-053, Later).
-                    .in_part(),
-                );
-            } else {
-                out.findings.push(finding_on(
-                    vec![format!("{}-fetch", file.id)],
-                    &UPLOAD_RENDERED,
-                    "An uploaded page is served for the browser to render",
-                    Severity::High,
+            let extension = name.rsplit('.').next().unwrap_or_default();
+            let stored = send_upload(http, upload, &file, session, token);
+            if stored.as_ref().is_none_or(|r| r.status >= 400) {
+                // Refusing the file outright is a perfectly good answer, and a better one than
+                // serving it safely — but it is not evidence about how uploads are served, so it is
+                // not a pass.
+                out.not_assessed.push((
+                    rule.requirement_ids.join(", "),
                     format!(
-                        "An HTML file this check uploaded came back from {path} as \
-                         `{content_type}` with no `Content-Disposition: attachment` and no sandbox \
-                         policy, so a browser renders it as part of this app."
+                        "The app refused `{}` ({}), which is a sound thing to do, but it means \
+                         nothing here saw how an uploaded file of that kind is served.",
+                        file.name,
+                        status(&stored)
                     ),
                 ));
+                continue;
+            }
+            let path = serves_at.replace("{name}", file.name);
+            let Some(fetched) = http.send(&get(&format!("{}-fetch", file.id), &path, session))
+            else {
+                out.not_assessed.push((
+                    rule.requirement_ids.join(", "),
+                    format!("Fetching the uploaded file back from {path} got no answer."),
+                ));
+                continue;
+            };
+            if fetched.status >= 400 {
+                out.not_assessed.push((
+                    rule.requirement_ids.join(", "),
+                    format!(
+                        "The file was accepted but {path} answered {}, so `serves-at` is not where \
+                         this app serves uploads and nothing here saw one served.",
+                        fetched.status
+                    ),
+                ));
+                continue;
+            }
+
+            // What came back is the uploaded file only when it carries its mark, whether as source,
+            // as output, or as a page: an app that answers every address with its own page sends
+            // back something else, which says nothing about how uploads are served (the review of 1
+            // to 4 October, item 12).
+            if !fetched.body.contains(MARKER) {
+                out.not_assessed.push((
+                    rule.requirement_ids.join(", "),
+                    format!(
+                        "What {path} answered is not the `{}` this check uploaded (its mark is not \
+                         in it), so `serves-at` may not be where the app keeps uploads, and nothing \
+                         here saw one served.",
+                        file.name
+                    ),
+                ));
+                continue;
+            }
+
+            if std::ptr::eq(rule, &UPLOAD_EXECUTED) {
+                // The source came back: not executed. Its output alone, without the source, is.
+                let source_intact = fetched.body.contains("<?php");
+                let ran = !source_intact && fetched.body.contains(MARKER);
+                out.steps.push(format!(
+                    "fetched an uploaded .{extension} back from {path}: {}",
+                    if ran {
+                        "it had been run"
+                    } else {
+                        "served as-is"
+                    }
+                ));
+                if ran {
+                    found = true;
+                    out.findings.push(finding_on(
+                        vec![format!("{}-fetch", file.id)],
+                        &UPLOAD_EXECUTED,
+                        "An uploaded file is executed as server-side code",
+                        Severity::High,
+                        format!(
+                            "A `.{extension}` file this check uploaded came back from {path} with \
+                             its code gone and only its output left, so the server ran it."
+                        ),
+                    ));
+                } else {
+                    safe.push((name, path, "as it was written rather than as its output"));
+                }
+            } else {
+                // A page is safe when the browser is told not to render it as part of this app. A
+                // browser renders XHTML as it does HTML, so either type is a page.
+                let disposition = fetched
+                    .header("content-disposition")
+                    .unwrap_or_default()
+                    .to_lowercase();
+                let content_type = fetched
+                    .header("content-type")
+                    .unwrap_or_default()
+                    .to_lowercase();
+                let csp = fetched
+                    .header("content-security-policy")
+                    .unwrap_or_default()
+                    .to_lowercase();
+                let attachment = disposition.contains("attachment");
+                let sandboxed = csp.contains("sandbox");
+                let not_html = !content_type.contains("text/html")
+                    && !content_type.contains("application/xhtml+xml");
+                let is_safe = attachment || sandboxed || not_html;
+                let how = if attachment {
+                    "as an attachment"
+                } else if sandboxed {
+                    "with a sandbox policy"
+                } else {
+                    "as something other than a page"
+                };
+                out.steps.push(format!(
+                    "fetched an uploaded .{extension} back from {path}: {}",
+                    if is_safe { how } else { "served as a page" }
+                ));
+                if is_safe {
+                    safe.push((name, path, how));
+                } else {
+                    found = true;
+                    out.findings.push(finding_on(
+                        vec![format!("{}-fetch", file.id)],
+                        &UPLOAD_RENDERED,
+                        "An uploaded page is served for the browser to render",
+                        Severity::High,
+                        format!(
+                            "A `.{extension}` file this check uploaded came back from {path} as \
+                             `{content_type}` with no `Content-Disposition: attachment` and no \
+                             sandbox policy, so a browser renders it as part of this app."
+                        ),
+                    ));
+                }
             }
         }
+        if found || safe.is_empty() {
+            continue;
+        }
+        let served = safe
+            .iter()
+            .map(|(name, path, how)| format!("`{name}` from {path}, {how}"))
+            .collect::<Vec<_>>()
+            .join("; ");
+        out.verified.push(
+            crate::Verified::new(
+                rule.rule_id,
+                rule.requirement_ids,
+                if std::ptr::eq(rule, &UPLOAD_EXECUTED) {
+                    format!("files of server-side code uploaded and fetched back: {served}")
+                } else {
+                    format!("pages uploaded and served back: {served}")
+                },
+            )
+            // Every file of the set judged, on the one upload route stackvet.toml names; one
+            // refused or not seen leaves it in part (ADR-053, Later).
+            .in_part_if(safe.len() < files.len()),
+        );
     }
 }
 
@@ -1775,8 +1811,14 @@ mod tests {
                 !rule_ids(&o).contains(&rule),
                 "{rule} also raised a finding"
             );
-            // One file on the one upload route stackvet.toml names (ADR-053, Later).
-            assert!(credited_in_part(&o, rule), "{rule}");
+            // One file on the one upload route stackvet.toml names (ADR-053, Later), except the two
+            // served-file checks, which judge three files each and are whole when all three are safe
+            // (backlog 0232, part 4).
+            if rule == UPLOAD_EXECUTED.rule_id || rule == UPLOAD_RENDERED.rule_id {
+                assert!(credited_in_full(&o, rule), "{rule}");
+            } else {
+                assert!(credited_in_part(&o, rule), "{rule}");
+            }
         }
     }
 
@@ -2501,3 +2543,6 @@ mod tests {
         assert!(why[0].contains("did not come back unchanged"), "{}", why[0]);
     }
 }
+
+#[cfg(test)]
+mod served_set_tests;

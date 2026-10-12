@@ -405,6 +405,12 @@ pub(super) struct Flaws {
     pub(super) runs_uploaded_code: bool,
     /// Serves an uploaded .html as text/html with nothing telling the browser not to render it.
     pub(super) renders_uploaded_pages: bool,
+    /// Runs an uploaded .php5, though not a .php (backlog 0232, part 4).
+    pub(super) runs_uploaded_php5: bool,
+    /// Serves an uploaded .xhtml as `application/xhtml+xml`, which a browser renders, with nothing telling it not to.
+    pub(super) renders_uploaded_xhtml: bool,
+    /// Refuses an upload named .phtml.
+    pub(super) refuses_phtml: bool,
     /// Serves an uploaded file back with no file name in `Content-Disposition`.
     pub(super) download_no_filename: bool,
     /// Writes the uploaded name into `Content-Disposition` as it came in, unquoted.
@@ -2108,6 +2114,9 @@ impl FakeApp {
                     .nth(1)
                     .and_then(|rest| rest.split('"').next())
                     .unwrap_or("");
+                if self.flaws.refuses_phtml && file_name.ends_with(".phtml") {
+                    return Some(Self::respond(415, vec![], "not that kind of file"));
+                }
                 let start = raw
                     .windows(28)
                     .position(|w| w == b"application/octet-stream\r\n\r\n")
@@ -2273,6 +2282,21 @@ impl FakeApp {
                         headers.push(("Content-Disposition", "attachment".into()));
                     }
                     return Some(Self::respond(200, headers, contents));
+                }
+                if name.ends_with(".php5") && self.flaws.runs_uploaded_php5 {
+                    let shown = contents
+                        .split_once("echo \"")
+                        .and_then(|(_, rest)| rest.split_once('"'))
+                        .map(|(out, _)| out.to_owned())
+                        .unwrap_or_default();
+                    return Some(Self::respond(200, vec![], &shown));
+                }
+                if name.ends_with(".xhtml") && self.flaws.renders_uploaded_xhtml {
+                    return Some(Self::respond(
+                        200,
+                        vec![("Content-Type", "application/xhtml+xml".into())],
+                        contents,
+                    ));
                 }
                 if name.ends_with(".php") {
                     if self.flaws.runs_uploaded_code {
