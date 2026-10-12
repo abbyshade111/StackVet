@@ -14,7 +14,7 @@ how to make them again; the owner's choice is ADR-063. Each part below can be cl
 1. **The README.** The logo at the top, the light or dark one to match the reader's GitHub theme, with the
    `<picture>` snippet in `docs/brand/README.md`. The same at the top of `docs/GETTING-STARTED.md` if it reads well
    there.
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 2. **The repository's preview image.** `docs/brand/social-preview.png` uploaded in the repository's Settings, under
    Social preview. **The owner's to do**: it is a repository setting, which sessions do not change. Check its line
    ("A security check for apps built with AI. It says plainly what it checked, and what it didn't.") still says what
@@ -28,7 +28,7 @@ how to make them again; the owner's choice is ADR-063. Each part below can be cl
 4. **The container image.** The `org.opencontainers.image.title`, `description`, `url`, and `source` labels in the
    `Dockerfile`, if the rename has not already set them, so the image's page on GitHub's package registry shows the
    new name and links back to the repository. Check what the rename did first.
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 5. **The reports, only if the owner wants it.** `report.html` and the dashboard could carry the mark in their
    heading and as the browser tab's icon. That changes what `sv` writes into someone's folder, which is a decision
    (CLAUDE.md), so it needs the owner's yes and a record, and the icon has to be inside the page (an inline SVG),
