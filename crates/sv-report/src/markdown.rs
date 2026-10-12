@@ -910,7 +910,11 @@ fn low_lines(out: &mut String, low: &[crate::LowGroup]) {
             code(&g.rule),
             g.count,
             if g.count == 1 { "" } else { "s" },
-            g.files.iter().map(|f| code(f)).collect::<Vec<_>>().join(", ")
+            g.files
+                .iter()
+                .map(|f| code(f))
+                .collect::<Vec<_>>()
+                .join(", ")
         ));
     }
     out.push('\n');

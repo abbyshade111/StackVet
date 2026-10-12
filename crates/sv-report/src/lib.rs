@@ -1459,7 +1459,7 @@ pub struct LowGroup {
 /// Splits out the low-severity findings and groups them by rule, most first, then by rule name; the rest are
 /// returned as they were, in their order (ADR-095). Nothing is dropped: every low one is in a group, and in full in
 /// `LOW_FINDINGS_FILE`.
-pub fn split_low<'a>(findings: Vec<&'a sv_check::Finding>) -> (Vec<&'a sv_check::Finding>, Vec<LowGroup>) {
+pub fn split_low(findings: Vec<&sv_check::Finding>) -> (Vec<&sv_check::Finding>, Vec<LowGroup>) {
     let (low, rest): (Vec<_>, Vec<_>) = findings
         .into_iter()
         .partition(|f| f.severity == sv_check::Severity::Low);

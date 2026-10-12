@@ -100,7 +100,10 @@ fn low_findings_are_grouped_by_rule_most_first_and_the_rest_are_kept_whole() {
     assert_eq!(low.len(), 2);
     assert_eq!(low[0].rule, "semgrep.missing-csrf");
     assert_eq!(low[0].count, 3);
-    assert_eq!(low[0].files, vec!["app.py".to_owned(), "views.py".to_owned()]);
+    assert_eq!(
+        low[0].files,
+        vec!["app.py".to_owned(), "views.py".to_owned()]
+    );
     assert_eq!(low[1].rule, "bandit.B311");
     assert_eq!(low[1].count, 1);
     let total: usize = low.iter().map(|g| g.count).sum();
@@ -113,16 +116,31 @@ fn the_reports_show_one_line_per_rule_and_the_file_beside_them_has_every_one() {
     let md = crate::markdown::security(&report);
     assert!(md.contains("### 4 low-severity findings, by rule"), "{md}");
     assert!(md.contains("3 times, in `app.py`, `views.py`"), "{md}");
-    assert!(!md.contains("semgrep.missing-csrf at line 20"), "a grouped finding is not shown in full on the page");
-    assert!(md.contains("ast.eval at line 4"), "the high one is shown in full");
+    assert!(
+        !md.contains("semgrep.missing-csrf at line 20"),
+        "a grouped finding is not shown in full on the page"
+    );
+    assert!(
+        md.contains("ast.eval at line 4"),
+        "the high one is shown in full"
+    );
     let html = crate::html::page(&report);
-    assert!(html.contains("4 low-severity findings, by rule"), "the html page groups them too");
+    assert!(
+        html.contains("4 low-severity findings, by rule"),
+        "the html page groups them too"
+    );
     let full = crate::markdown::low_findings(&report);
     for line in [10, 20, 30] {
-        assert!(full.contains(&format!("semgrep.missing-csrf at line {line}")), "line {line} is in full in the file");
+        assert!(
+            full.contains(&format!("semgrep.missing-csrf at line {line}")),
+            "line {line} is in full in the file"
+        );
     }
     assert!(full.contains("bandit.B311 at line 7"));
-    assert!(!full.contains("ast.eval at line 4"), "the file holds the low ones only");
+    assert!(
+        !full.contains("ast.eval at line 4"),
+        "the file holds the low ones only"
+    );
 }
 
 #[test]

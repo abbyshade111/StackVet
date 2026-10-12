@@ -918,6 +918,34 @@ fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
     }
 }
 
+/// The low-severity findings, one line per rule with its count and files (ADR-095); each is in full in
+/// `LOW_FINDINGS_FILE`, beside this page.
+fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
+    if low.is_empty() {
+        return;
+    }
+    let total: usize = low.iter().map(|g| g.count).sum();
+    b.push_str(&format!(
+        "<h3>{total} low-severity finding{}, by rule</h3>\n<p>Each is in full, with where and how to fix it, in <code>{}</code>.</p>\n<ul>\n",
+        if total == 1 { "" } else { "s" },
+        escape(crate::LOW_FINDINGS_FILE)
+    ));
+    for g in low {
+        b.push_str(&format!(
+            "<li><code>{}</code> — {} time{}, in {}</li>\n",
+            escape(&g.rule),
+            g.count,
+            if g.count == 1 { "" } else { "s" },
+            g.files
+                .iter()
+                .map(|f| format!("<code>{}</code>", escape(f)))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+    }
+    b.push_str("</ul>\n");
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1214,28 +1242,4 @@ mod tests {
             }
         }
     }
-}
-
-/// The low-severity findings, one line per rule with its count and files (ADR-095); each is in full in
-/// `LOW_FINDINGS_FILE`, beside this page.
-fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
-    if low.is_empty() {
-        return;
-    }
-    let total: usize = low.iter().map(|g| g.count).sum();
-    b.push_str(&format!(
-        "<h3>{total} low-severity finding{}, by rule</h3>\n<p>Each is in full, with where and how to fix it, in <code>{}</code>.</p>\n<ul>\n",
-        if total == 1 { "" } else { "s" },
-        escape(crate::LOW_FINDINGS_FILE)
-    ));
-    for g in low {
-        b.push_str(&format!(
-            "<li><code>{}</code> — {} time{}, in {}</li>\n",
-            escape(&g.rule),
-            g.count,
-            if g.count == 1 { "" } else { "s" },
-            g.files.iter().map(|f| format!("<code>{}</code>", escape(f))).collect::<Vec<_>>().join(", ")
-        ));
-    }
-    b.push_str("</ul>\n");
 }
