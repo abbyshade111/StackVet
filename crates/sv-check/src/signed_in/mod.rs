@@ -382,7 +382,9 @@ fn csrf_token(page: &ProbeResponse, session: &Session) -> Option<String> {
 
 /// Every `<name ...>` tag in a page, as its text.
 fn tags(body: &str, name: &str) -> Vec<String> {
-    let lower = body.to_lowercase();
+    // ASCII lowering only: positions found in `lower` cut `body`, and full lowering changes some
+    // characters' length (`İ` grows from two bytes to three), which moves every position after it.
+    let lower = body.to_ascii_lowercase();
     let open = format!("<{name}");
     lower
         .match_indices(&open)
@@ -2474,6 +2476,8 @@ mod fake_app;
 mod in_part_tests;
 #[cfg(test)]
 mod in_turn_tests;
+#[cfg(test)]
+mod non_ascii_tests;
 #[cfg(test)]
 mod owner_field_tests;
 #[cfg(test)]
