@@ -27,7 +27,15 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Part status:** claimed by backlog-org-0232, 12 October 2026
 3. **C. Each form, flow, and connection.** Cross-site requests tried on each changing route the app answers, each
    step of a flow, and each WebSocket path, not one request.
-   **Part status:** open
+   **Scope of this claim (12 October 2026):** the cross-site check (`probe.cross-site-request-accepted`, V3.5.1,
+   which asks it of requests to sensitive functionality) sent for every create request stackvet.toml names, the
+   `owned` create and each `creates` entry, not one. Those alone, because a forged create that is accepted only makes
+   a record, where a forged password or email change, account deletion, or admin action would change the test
+   accounts for the rest of the run. So the credit is whole only when two or more were tried, all refused, and the
+   manifest names no other changing request; otherwise in part, naming what was not tried. The simple-request and
+   null-Origin checks, the flow, and the WebSocket are not in this claim. Recorded as a Later entry on ADR-053 in the
+   pull request that builds it.
+   **Part status:** claimed by backlog-org-0232, 12 October 2026
 4. **D. Each upload route, more than one file.** Every upload route the manifest names, with a small set of files
    per check rather than one.
    **Part status:** open
