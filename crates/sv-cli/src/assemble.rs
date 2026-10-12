@@ -2512,7 +2512,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         &safe_defaults.decided,
     );
     // Rules that fired in test code and are information, not findings (ADR-091): kept apart, never counted.
-    let (findings, test_information) = split_test_information(reviewed.findings, &reviewed.counted_in_test);
+    let (findings, test_information) =
+        split_test_information(reviewed.findings, &reviewed.counted_in_test);
     if !safe_defaults.unreadable.is_empty() {
         gaps.push(sv_report::Gap {
             what: format!(

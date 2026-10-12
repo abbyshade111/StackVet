@@ -850,7 +850,9 @@ fn record_finding(
             sv_check::review::FALSE_ALARM => "a false alarm: the code is fine",
             sv_check::review::ACCEPTED_RISK =>
                 "an accepted risk: a real problem you live with for now",
-            _ => "something that is neither a false alarm nor an accepted risk",
+            sv_check::review::COUNTS =>
+                "real: a finding in test code that counts as a finding (ADR-093)",
+            _ => "something that is neither a false alarm, an accepted risk, nor a real finding",
         },
         entry.rule,
         entry.file
@@ -908,10 +910,11 @@ fn record_finding(
     )?;
     if entry.verdict != sv_check::review::FALSE_ALARM
         && entry.verdict != sv_check::review::ACCEPTED_RISK
+        && entry.verdict != sv_check::review::COUNTS
     {
         writeln!(
             out,
-            "  Its verdict, \"{}\", is not `false-alarm` or `accepted-risk`, so it cannot count. \
+            "  Its verdict, \"{}\", is not `false-alarm`, `accepted-risk` or `counts`, so it cannot count. \
              Fix it in stackvet.toml first.",
             entry.verdict
         )?;

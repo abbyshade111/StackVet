@@ -1362,7 +1362,7 @@ mod tests {
         for (e, reason) in [
             (
                 entry("ast.a", "wontfix", Some("owner"), "2026-09-27", WHY),
-                "not one of the two",
+                "not one of the three",
             ),
             (
                 entry("ast.a", FALSE_ALARM, Some("owner"), "2026-09-27", "fine"),

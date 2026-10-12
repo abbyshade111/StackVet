@@ -364,6 +364,9 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 #                                that sets a value it uses.
 #   verdict = "accepted-risk"  — a real problem, lived with for now. It stays on the list, labeled,
 #                                and lapses after 90 days.
+#   verdict = "counts"         — a finding in test code (a test file's Bandit finding, ADR-091) that a
+#                                person has read and found real. It counts as a finding, not as
+#                                information. Refused for any other finding.
 #   why = what was looked at and what it showed, at least 40 characters (80 for a key or password,
 #         saying why it is not a real one; a key or password cannot be an accepted risk).
 #   by  = "ai-tool" for the AI tool's proposal. Every entry is only a proposal, and the finding

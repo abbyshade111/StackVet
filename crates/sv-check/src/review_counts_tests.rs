@@ -49,7 +49,11 @@ fn counts(rule: &str, file: &str, sealed: bool) -> FindingReview {
         seal: None,
     };
     if sealed {
-        e.seal = Some(key().seal(&crate::seal::as_strs(&crate::seal::finding_review_fields(&e))));
+        e.seal = Some(
+            key().seal(&crate::seal::as_strs(&crate::seal::finding_review_fields(
+                &e,
+            ))),
+        );
     }
     e
 }
@@ -96,9 +100,19 @@ fn an_unsealed_counts_is_a_proposal_and_the_information_stays_information() {
 #[test]
 fn a_sealed_counts_on_test_information_is_counted_and_is_not_an_accepted_risk() {
     let f = finding("bandit.B105", "tests/test_app.py", 3);
-    assert!(f.is_test_information(), "the fixture is test-file information (ADR-091)");
+    assert!(
+        f.is_test_information(),
+        "the fixture is test-file information (ADR-091)"
+    );
     let out = apply_with(&[counts("bandit.B105", "tests/test_app.py", true)], vec![f]);
     assert_eq!(out.counted_in_test, vec!["fp-bandit.B105".to_owned()]);
-    assert_eq!(out.findings.len(), 1, "a counted finding stays in the findings");
-    assert!(out.set_aside.is_empty(), "it is not an accepted risk, so no set-aside line");
+    assert_eq!(
+        out.findings.len(),
+        1,
+        "a counted finding stays in the findings"
+    );
+    assert!(
+        out.set_aside.is_empty(),
+        "it is not an accepted risk, so no set-aside line"
+    );
 }
