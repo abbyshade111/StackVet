@@ -39,8 +39,9 @@ You don't need to know about security either. The report explains each result in
 
 **Three steps, set up once.**
 
-1. **Connect StackVet to your AI tool.** It runs in Docker, a free program that keeps it in a box of its own. Setup
-   takes about fifteen minutes, once.
+1. **Connect StackVet to your AI tool.** On a Mac or Linux it runs in Docker, a free program that keeps it in a box of
+   its own (Docker Desktop or Colima, either works); on Windows it is installed with Scoop. Setup takes about fifteen
+   minutes, once.
 2. **Describe the app you want.** Paste the starting prompt from the guide into your AI tool, with a few sentences
    at the top about your app: who uses it, what they do, and what it keeps about them. The tool writes the code.
    After each feature it checks its work with StackVet, and it asks you the questions only you can answer.
@@ -145,8 +146,8 @@ Want to see it first? Watch a two-minute walk-through of a setup from start to f
 Buttons: *Open the setup prompts*, *Watch the walk-through*.
 
 **Used a terminal or Docker before?**
-Install Docker Desktop, fetch StackVet with one command, and connect it to your AI tool. The step-by-step guide
-covers every command.
+Install Docker Desktop or Colima, fetch StackVet with one command, and connect it to your AI tool; on Windows,
+install StackVet with Scoop instead. The step-by-step guide covers every command.
 
 For the checks that start your app, install StackVet on your computer as well:
 - **Windows:** install with Scoop, a free installer. Nothing to build.
