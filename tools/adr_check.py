@@ -191,13 +191,17 @@ def self_test():
     # The same, through a real repository: an edited file, a deleted one, and a content line that looks like a header.
     import tempfile
     with tempfile.TemporaryDirectory() as tmp:
+        def put(name, text):
+            with open(Path(tmp, name), "w", encoding="utf-8", newline="\n") as f:
+                f.write(text)
+
         def git(*a):
             subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *a], cwd=tmp, check=True, capture_output=True)
         git("init", "-q", "-b", "main")
-        Path(tmp, "big.rs").write_text("const A: u8 = 1;\nconst B: u8 = 2;\n-- not a header\n", encoding="utf-8")
-        Path(tmp, "gone.rs").write_text("const GONE: u8 = 1;\n", encoding="utf-8")
+        put("big.rs", "const A: u8 = 1;\nconst B: u8 = 2;\n-- not a header\n")
+        put("gone.rs", "const GONE: u8 = 1;\n")
         git("add", "."); git("commit", "-q", "-m", "one")
-        Path(tmp, "big.rs").write_text("const A: u8 = 1;\nconst B: u8 = 3;\n--- still not a header\n", encoding="utf-8")
+        put("big.rs", "const A: u8 = 1;\nconst B: u8 = 3;\n--- still not a header\n")
         Path(tmp, "gone.rs").unlink()
         git("add", "-A"); git("commit", "-q", "-m", "two")
         got = changed_lines("HEAD~1", "HEAD", cwd=tmp)
