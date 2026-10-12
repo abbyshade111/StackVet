@@ -1,7 +1,6 @@
 //! A run plants the authorization-failure markers on every private page stackvet.toml lists (backlog 0232, part 5).
 
 use super::super::fake_app::*;
-use super::*;
 
 #[test]
 fn a_run_plants_a_marker_on_each_listed_private_page() {
