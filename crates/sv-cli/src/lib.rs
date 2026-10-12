@@ -254,11 +254,21 @@ mod requirement_ids_tests;
 #[cfg(test)]
 mod resources_beside_quotas_tests;
 
+/// The routes stackvet.toml names that the anonymous probes also ask (ADR-095); none without
+/// `[stack.run.users]`.
+pub fn named_routes(plan: &RunPlan) -> Vec<String> {
+    plan.users
+        .as_ref()
+        .map(|users| probes::named_routes(users, &plan.health_path))
+        .unwrap_or_default()
+}
+
 /// Every request the anonymous probes make: the fixed suite, and the GraphQL and WebSocket
 /// questions when stackvet.toml says where those are. One function, because `sv run` also counts
 /// how many of these went unanswered, and a count taken from a different list is a wrong count.
 pub fn anonymous_requests(plan: &RunPlan) -> Vec<probes::ProbeRequest> {
     let mut requests = probes::requests(&plan.health_path);
+    requests.extend(probes::route_requests(&named_routes(plan)));
     requests.extend(probes::api_requests(
         plan.graphql.as_deref(),
         plan.websocket.as_deref(),
@@ -284,7 +294,7 @@ pub fn running_app_evidence(
     Vec<(String, String)>,
 ) {
     let mut findings = probes::evaluate(&outcome.probe_responses);
-    let mut verified = probes::verified(&outcome.probe_responses);
+    let mut verified = probes::verified_with_routes(&outcome.probe_responses, &named_routes(plan));
     let mut not_assessed = Vec::new();
     let (api_findings, api_verified, api_not_assessed) =
         probes::evaluate_api(&outcome.probe_responses, plan.public_api);
