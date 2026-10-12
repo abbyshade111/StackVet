@@ -356,15 +356,35 @@ pub(super) fn email_code_guessing(
     }
     // The first wrong code past the limit, whose answer says whether the app pushed back.
     let last = answers[allowed as usize];
-    let right_still_works = flow.signs_in(http, &code, &mut session, "after-guesses", out);
-    let status_changed = last.0 != first_status;
-    let refused = matches!(last.0, 0 | 423 | 429);
     // The second wrong code past the limit is read too, as in `brute_force_check` (the review of
     // 6 October, item 13): answered differently only there, the app let one more through than stated.
     let next = answers[allowed as usize + 1].0;
-    // Only from real answers, every one up to the limit the same: a crash or no answer anywhere in
-    // the run is not the app pushing back, and must not read as a status that changed.
+    // Only from real answers: a crash (5xx) or no answer past the limit is not the app pushing
+    // back, and must not read as a status that changed, a refusal, or a delay; nor can the right
+    // code refused after it, by an app that may have fallen over (backlog 0280).
     let real = |status: u16| status != 0 && status < 500;
+    if !real(last.0) || !real(next) {
+        out.steps.push(format!(
+            "sent {attempts} wrong emailed codes in a row; the app answered {first_status} at \
+             first, and {} and {next} past the limit",
+            last.0
+        ));
+        out.not_assessed.push((
+            "V6.6.3".to_owned(),
+            format!(
+                "Whether emailed sign-in codes can be guessed: past the limit of {allowed} the \
+                 app answered {} and {next}, where 0 is no answer at all and 500 or above is the \
+                 app failing. A crash or silence is not a limit, so nothing here says whether it \
+                 pushes back.",
+                last.0
+            ),
+        ));
+        return;
+    }
+    let right_still_works = flow.signs_in(http, &code, &mut session, "after-guesses", out);
+    let status_changed = last.0 != first_status;
+    let refused = matches!(last.0, 423 | 429);
+    // One more let through is read only from real answers, every one up to the limit the same.
     let alike = answers[..=allowed as usize]
         .iter()
         .all(|a| a.0 == first_status);
@@ -1305,6 +1325,34 @@ mod tests {
             "{:?}",
             o.not_assessed
         );
+    }
+
+    #[test]
+    fn an_app_that_falls_over_past_the_code_limit_is_not_credited_with_pushing_back() {
+        // Backlog 0280: past the limit the app answered 500, or not at all, to the wrong code and
+        // to the right one, and both read as pushing back. A crash never turns a finding into a
+        // pass.
+        for status in [500, 0] {
+            let flaws = Flaws {
+                code_falls_over: Some(status),
+                code_guessing_unlimited: true,
+                ..Default::default()
+            };
+            let o = run_with(flaws, &codes_policy(3));
+            assert!(
+                !code_credits(&o).contains(&EMAIL_CODE_GUESSING.rule_id),
+                "answering {status} past the limit is not pushing back: {:?}",
+                o.steps
+            );
+            assert!(!code_findings(&o).contains(&EMAIL_CODE_GUESSING.rule_id));
+            assert!(
+                o.not_assessed
+                    .iter()
+                    .any(|(ids, why)| ids == "V6.6.3" && why.contains("past the limit")),
+                "{:?}",
+                o.not_assessed
+            );
+        }
     }
 
     #[test]

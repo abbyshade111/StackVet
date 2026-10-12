@@ -532,6 +532,10 @@ pub(super) struct Flaws {
     /// leaves 423 and a dropped connection crediting the requirement, and one witness cannot
     /// tell those apart.
     pub(super) already_refusing: Option<u16>,
+    /// Counts nothing and limits nothing, but answers a wrong password past this many for one
+    /// account with the status given, as an app that falls over (500) or stops answering (0)
+    /// does. Not pushing back, however different the answer looks.
+    pub(super) falls_over_after: Option<(u32, u16)>,
     /// Private pages come back without `Cache-Control: no-store`.
     pub(super) private_page_cacheable: bool,
     /// Private pages come back as `public, max-age=300`, for shared caches to keep.
@@ -613,6 +617,9 @@ pub(super) struct Flaws {
     /// Every wrong code is answered 429 from the first, as an app whose limiter an earlier
     /// check has tripped would.
     pub(super) code_already_refusing: bool,
+    /// Past the code limit, every code, the right one included, is answered with this status, as
+    /// an app that falls over (500) or stops answering (0) does, whatever it counts.
+    pub(super) code_falls_over: Option<u16>,
     /// The WebSocket at /ws opens for anybody.
     pub(super) ws_open: bool,
     /// The WebSocket at /ws opens for any `sid` cookie at all.
@@ -1486,6 +1493,11 @@ impl FakeApp {
                     if let Some(status) = self.flaws.already_refusing {
                         return Some(Self::respond(status, vec![], "too many attempts"));
                     }
+                    if let Some((after, status)) = self.flaws.falls_over_after
+                        && self.guessed_at.iter().filter(|g| *g == email).count() > after as usize
+                    {
+                        return Some(Self::respond(status, vec![], "internal error"));
+                    }
                     if self.flaws.locks_out_after.is_some() {
                         *self.failures.entry(key).or_insert(0) += 1;
                     }
@@ -1786,6 +1798,11 @@ impl FakeApp {
                 };
                 let failures = self.code_failures.get(&session).copied().unwrap_or(0);
                 let code = form(r).get("code")?.clone();
+                if failures >= limit
+                    && let Some(status) = self.flaws.code_falls_over
+                {
+                    return Some(Self::respond(status, vec![], "internal error"));
+                }
                 if failures >= limit && !self.flaws.code_guessing_unlimited {
                     if self.flaws.code_cancels_quietly {
                         self.sign_in_codes

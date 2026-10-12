@@ -1,6 +1,6 @@
 # A crash or silence at the attempt past the limit is credited as pushing back (V6.3.1, V6.6.3)
 
-**Status:** claimed by builder-none, 12 October 2026
+**Status:** done, 12 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: checks' honesty. Severity: high. Verified against the code by the reviewing session before filing.
 
