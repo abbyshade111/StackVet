@@ -9,7 +9,7 @@ the slow stages take. Look first at what the stages already name (`STAGES`, whic
 the terminal already prints, so the progress is added to them rather than in a second place. Settle, with the
 owner, whether the progress goes to the terminal only or also to the report, and whether it is quiet with `--quiet`.
 
-**Built 12 October 2026 (ADR-100),** at the owner's word as the session organizing the backlog passed it on the same
+**Built 12 October 2026 (ADR-102),** at the owner's word as the session organizing the backlog passed it on the same
 day: all three parts, in the terminal whatever tool runs `sv`. A stage of five seconds or more says how long it took
 when it ends; the slowest parts are said at the end; a long `--slow` wait says how far it is at each step; and
 `sv report --quiet` leaves out those lines, never the counts, warnings or errors. The report and the MCP server's
