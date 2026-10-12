@@ -11,6 +11,8 @@
 set -u
 export CLAUDE_BIN="$HOME/Library/Application Support/Claude/claude-code/2.1.295/9d6405864fdc/claude.app/Contents/MacOS/claude"
 export KEY_HELPER="$SV_REPO/docs/prompts/loop-pilot/key_helper.sh"
+# sv reads its data from the same fixed copy, not from wherever it was compiled, which may change during the run.
+export SV_DATA_DIR="$SV_REPO/data"
 : "${SV:?}" "${SV_REPO:?}" "${SV_KEY_ENV_FILE:?}"
 O=~/sv-drafts
 T="$SV_REPO/docs/prompts/loop-pilot/loop_trial.py"
