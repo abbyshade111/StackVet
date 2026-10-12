@@ -440,8 +440,8 @@ pub struct OidcSection {
 ///
 /// Values may use `{user}`, `{password}`, `{csrf}` (a token read from the page first), `{marker}`
 /// (a unique string the probe can look for afterwards), in `change-password`, `{new_password}`,
-/// and, in `change-email`, `{new_email}`. A body is sent as a form unless `json` is used instead;
-/// never both.
+/// in `change-email`, `{new_email}`, and in `change-phone`, `change-two-factor`, and `change-recovery`,
+/// `{new_value}`. A body is sent as a form unless `json` is used instead; never both.
 #[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct RequestTemplate {
@@ -457,6 +457,45 @@ pub struct RequestTemplate {
 fn post() -> String {
     "POST".to_owned()
 }
+
+/// One of `change-phone`, `change-two-factor`, and `change-recovery` under `[stack.run.users]`
+/// (ADR-105): the request that changes it, with `{password}` for the current password asked for
+/// again and `{new_value}` for the new value, and `shows`, a private page that lists the value once
+/// the change has taken. The page is how a change is seen to take, or not: unlike an email address,
+/// none of these is something to sign in with.
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct AccountChange {
+    #[serde(default = "post")]
+    pub method: String,
+    pub path: String,
+    #[serde(default)]
+    pub form: std::collections::BTreeMap<String, String>,
+    #[serde(default)]
+    pub json: std::collections::BTreeMap<String, String>,
+    /// The private page where the new value shows once the change has taken.
+    pub shows: String,
+}
+
+impl AccountChange {
+    /// The request itself, as the probes send any other.
+    pub fn request(&self) -> RequestTemplate {
+        RequestTemplate {
+            method: self.method.clone(),
+            path: self.path.clone(),
+            form: self.form.clone(),
+            json: self.json.clone(),
+        }
+    }
+}
+
+/// The three account changes V7.5.1 names beside the email address, each as `not-offered` and the
+/// report call it, and its key under `[stack.run.users]` (ADR-105).
+pub const ACCOUNT_CHANGES: [(&str, &str); 3] = [
+    ("phone", "change-phone"),
+    ("two-factor", "change-two-factor"),
+    ("recovery", "change-recovery"),
+];
 
 /// One of `[stack.run.users] creates`: a request that creates a record, with where that record is
 /// read back, so the owner field can be tried on it (backlog 0006 part 13(a)). Without `read`, the
@@ -660,6 +699,24 @@ pub struct UsersSection {
     /// `signup`, and only judged when sign-in is by email address (`{user}`).
     #[serde(default)]
     pub change_email: Option<RequestTemplate>,
+    /// Changes the signed-in user's phone number (ADR-105). Only ever used on an account made for
+    /// it through `signup`.
+    #[serde(default)]
+    pub change_phone: Option<AccountChange>,
+    /// Changes the two-factor settings: `{new_value}` is something the change sets that `shows`
+    /// then lists, such as the phone number or address the codes go to (ADR-105). Only ever used on
+    /// an account made for it through `signup`.
+    #[serde(default)]
+    pub change_two_factor: Option<AccountChange>,
+    /// Changes what recovers the account, such as a recovery email address (ADR-105). Only ever
+    /// used on an account made for it through `signup`.
+    #[serde(default)]
+    pub change_recovery: Option<AccountChange>,
+    /// Which of `phone`, `two-factor`, and `recovery` the app does not let anyone change, because
+    /// it has none. It counts for V7.5.1 only once the owner confirms it through `sv review`
+    /// (`[account-changes-review]`); until then it is the AI tool's word (ADR-105).
+    #[serde(default)]
+    pub not_offered: Vec<String>,
     /// Deletes the signed-in user's own account; `{password}` if it asks for the password again.
     /// Only ever used on an account made for it through `signup`, never on A or B.
     #[serde(default)]
@@ -876,6 +933,17 @@ impl UsersSection {
         !self.admin.is_empty() || !self.admin_actions.is_empty()
     }
 
+    /// The change of this kind (`phone`, `two-factor`, or `recovery`), when stackvet.toml says how
+    /// it is made (ADR-105).
+    pub fn account_change(&self, kind: &str) -> Option<&AccountChange> {
+        match kind {
+            "phone" => self.change_phone.as_ref(),
+            "two-factor" => self.change_two_factor.as_ref(),
+            "recovery" => self.change_recovery.as_ref(),
+            _ => None,
+        }
+    }
+
     /// What is missing for the signed-in probes to run at all, in the words the report will use.
     pub fn problems(&self) -> Vec<String> {
         let mut out = Vec::new();
@@ -1040,6 +1108,46 @@ impl UsersSection {
                  to change to",
                 t.path
             ));
+        }
+        for (kind, key) in ACCOUNT_CHANGES {
+            let set = self.account_change(kind);
+            if let Some(t) = set {
+                if !t
+                    .form
+                    .values()
+                    .chain(t.json.values())
+                    .any(|v| v.contains("{new_value}"))
+                {
+                    out.push(format!(
+                        "`{key}` ({}) has no field with `{{new_value}}`, so there is no new value \
+                         to change to",
+                        t.path
+                    ));
+                }
+                if !t.shows.starts_with('/') {
+                    out.push(format!(
+                        "`{key}` has `shows = \"{}\"`, which is not a path on the app: name the \
+                         private page that lists the value",
+                        t.shows
+                    ));
+                }
+                if !t.form.is_empty() && !t.json.is_empty() {
+                    out.push(format!("{} sets both `form` and `json`; pick one", t.path));
+                }
+            }
+            if set.is_some() && self.not_offered.iter().any(|n| n == kind) {
+                out.push(format!(
+                    "`not-offered` lists `{kind}`, and `{key}` says how it is changed: keep one"
+                ));
+            }
+        }
+        for listed in &self.not_offered {
+            if !ACCOUNT_CHANGES.iter().any(|(kind, _)| kind == listed) {
+                out.push(format!(
+                    "`not-offered` lists `{listed}`, which is not one of `phone`, `two-factor`, \
+                     or `recovery`"
+                ));
+            }
         }
         for t in [
             &self.signup,
@@ -1312,6 +1420,48 @@ pub struct Manifest {
     /// folder is read as `not-the-app`. See `Manifest::left_out`.
     #[serde(default)]
     pub left_out: Vec<LeftOut>,
+    /// The owner's word, through `sv review`, on which account changes the app does not offer
+    /// (ADR-105). `None` until somebody has confirmed it.
+    #[serde(default)]
+    pub account_changes_review: Option<AccountChangesReview>,
+}
+
+/// Which account changes the app does not offer, as the owner confirmed them through `sv review`,
+/// as `[account-changes-review]` in stackvet.toml (ADR-105). It holds while `[stack.run.users]
+/// not-offered` still names the same ones.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct AccountChangesReview {
+    /// `not-offered` as it was when confirmed.
+    pub not_offered: Vec<String>,
+    /// Who confirmed it: `owner`, as `sv review` writes it.
+    pub by: String,
+    /// When, as YYYY-MM-DD.
+    pub on: String,
+    /// What `sv review` writes. Without one that holds, the list is unconfirmed. See
+    /// `sv-check::seal`.
+    #[serde(default)]
+    pub seal: Option<String>,
+}
+
+impl AccountChangesReview {
+    /// Whether `manifest` still lists the same changes as not offered, in any order.
+    pub fn still_holds_for(&self, manifest: &Manifest) -> bool {
+        let sorted = |list: &[String]| {
+            let mut names: Vec<String> = list.iter().map(|n| n.trim().to_owned()).collect();
+            names.sort();
+            names.dedup();
+            names
+        };
+        let listed = manifest
+            .stack
+            .run
+            .users
+            .as_ref()
+            .map(|u| u.not_offered.as_slice())
+            .unwrap_or_default();
+        sorted(&self.not_offered) == sorted(listed)
+    }
 }
 
 /// The two answers that set the level, the audience and the data list, as a person confirmed them
@@ -2855,3 +3005,6 @@ pub fn locate_or_bail(app_dir: &Path) -> Result<Located> {
         )
     })
 }
+
+#[cfg(test)]
+mod account_changes_tests;

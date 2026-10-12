@@ -212,7 +212,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V7.4.2 | L1 | Signed in: `probe.sessions-survive-deletion` |
 | V7.4.3 | L2 | Signed in: `probe.password-change-ends-sessions` |
 | V7.4.4 | L2 | Signed in: `probe.sign-out-control-hidden`, `probe.no-sign-out-link` |
-| V7.5.1 | L2 | Signed in: `probe.email-change-without-password` |
+| V7.5.1 | L2 | Signed in: `probe.email-change-without-password`, `probe.phone-change-without-password`, `probe.two-factor-change-without-password`, `probe.recovery-change-without-password` |
 | V8.2.1 | L1 | Reads the code: `config.firebase-rules-open`, `config.supabase-table-without-rls`, `config.supabase-policy-allows-all`; Signed in: `probe.private-page-anonymous`, `probe.admin-page-ordinary-user`, `probe.admin-action-ordinary-user` (sv only ever as a finding: `config.firebase-rules-open`, `config.supabase-policy-allows-all`, `config.supabase-table-without-rls`) |
 | V8.2.2 | L1 | Reads the code: `config.firebase-rules-open`, `config.supabase-table-without-rls`, `config.supabase-policy-allows-all`; Signed in: `probe.owner-field-trusted`, `probe.other-users-data` (sv only ever as a finding: `config.firebase-rules-open`, `config.supabase-policy-allows-all`, `config.supabase-table-without-rls`, `probe.owner-field-trusted`) |
 | V8.2.3 | L2 | Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.record-returns-secret-fields` (sv only ever as a finding: `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.record-returns-secret-fields`, `probe.role-field-trusted`) |

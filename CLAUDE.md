@@ -168,6 +168,11 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   (`gh pr ready`, then auto-merge) when the fix is in. On 9 October 2026 this happened twice in one evening: two
   sessions each built CI's Docker Hub sign-in, and then two each built the fence check saying what Docker said; each
   second one was closed unused. The owner asked for this rule the same evening.
+- **While the coordination board is open, a session told to take its work from it does so.** The board,
+  `docs/coordination/board.md`, is written only by the orchestrating session through `tools/coordination.py`
+  (the role: `docs/COORDINATION.md`; backlog 0273; ADR-061, Later). A building session named on it takes the item
+  beside its name instead of the roadmap's first unclaimed sub-item, and builds nothing else; the claim is already
+  made for it. A session not named on the board follows the roadmap as before.
 - **The roadmap at the top of `docs/BACKLOG.md` says what comes next.** With no word from the owner, take the first
   unclaimed sub-item there in its phase order, claim it, and land it before taking the next. `python3 tools/backlog.py
   list --open` prints every open item from the status line each carries, `summary` the counts, and `show <number>`
