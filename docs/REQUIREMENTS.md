@@ -704,7 +704,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **C9.2.1** Verify that the agent runtime blocks execution of privileged, high-impact, or irreversible actions until explicit human approval is received and verified. | No check | – |
 | **C9.3.1** Verify that each tool/plugin executes in a least-privilege sandbox or is otherwise isolated from model operations. | Can only be found failing | Outside tools: semgrep, 1 rule, its rules look for: an agent tool that runs arbitrary code, not isolated in a least-privilege sandbox; dynamic code execution, such as eval, on data that may be untrusted (found failing only) |
 | **C9.3.2** Verify that tool outputs are validated against schemas. | Can be checked | The running app: `probe.ai-mcp-output-unvalidated`, if it fails: A tool's result that does not match the shape the tool promised is passed to the model as if it did, so a broken or hostile MCP server decides what the model is told. |
-| **C9.6.1** Verify that a manual kill-switch mechanism exists to immediately halt AI model inference and outputs. | Can be checked | The running app: `probe.ai-kill-switch-ignored`, if it fails: A kill switch that does not stop the model is found not to work at the moment it is needed: when the feature is misbehaving and has to stop now. |
+| **C9.6.1** Verify that a manual kill-switch mechanism exists to immediately halt AI model inference and outputs. | Can be checked | The running app: `probe.ai-kill-switch-ignored`, if it fails: A kill switch that does not stop the model is found not to work at the moment it is needed: when the feature is misbehaving and has to stop now. (only ever in part) |
 
 #### C10 Model Context Protocol (MCP) Security
 
