@@ -151,6 +151,8 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-104](ADR-104.md) | A pull request that changes only backlog items runs only the tests that read them (accepted, 12 October 2026) |
 | [ADR-105](ADR-105.md) | The phone, two-factor, and recovery changes are tried as the email change is, and V7.5.1 is whole only when each is refused or confirmed not offered (accepted, 12 October 2026) |
 | [ADR-106](ADR-106.md) | The suite runs as three jobs side by side, and the required check waits for them all (accepted, 12 October 2026) |
+| [ADR-107](ADR-107.md) | The StackVet mark in the heading of `report.html` and the dashboard, drawn in the page, with the pages' policy unchanged (accepted, 12 October 2026) |
+| [ADR-108](ADR-108.md) | The Windows program is published as a signed GitHub Release when the owner pushes a version tag (accepted, 12 October 2026) |
 
 ## Names in the records
 

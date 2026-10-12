@@ -1,0 +1,119 @@
+# The Windows program of `sv`, published as a GitHub Release when the owner pushes a version tag (backlog 0120 step 2,
+# ADR-108). Homebrew builds `sv` from source on Mac and Linux, and the container image runs anywhere Docker does; this
+# is the program a Scoop install on Windows downloads (the bucket abbyshade111/scoop-stackvet).
+#
+# On a tag `v*`: built on a Windows runner, checked to start and to find its data beside it, zipped with that data and
+# the licence, signed where it was built (GitHub's keyless signing, the step the image's publishing uses, so anyone can
+# check it with `gh attestation verify`), and attached with its SHA-256 to the release of that tag. The tag must match
+# the version `sv` reports. Run by hand, or on a pull request that changes this file: the same, kept as the run's file, with nothing published or signed, so the
+# workflow can be tried before a tag.
+#
+# Every step is pinned to an exact commit fingerprint rather than a version name, as in the other workflows.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  # Also on a pull request that changes this file, as a trial: built, zipped, and checked, nothing published or
+  # signed, so a change to it is seen working before a tag ever runs it.
+  pull_request:
+    paths: [.github/workflows/release.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    permissions:
+      # The release, and the signed statement of where the zip was built (as the image's publishing has).
+      contents: write
+      id-token: write
+      attestations: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        # The token stays out of the checked-out folder (AC.12.2); the release step is handed it alone.
+        with:
+          persist-credentials: false
+
+      - name: Use the toolchain this workspace needs
+        run: rustup toolchain install stable --profile minimal && rustup default stable
+
+      - name: The tag is the version sv reports
+        if: github.event_name == 'push'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)
+          echo "Cargo.toml says $version; the tag is $TAG"
+          [ "$TAG" = "v$version" ] || { echo "::error::the tag $TAG is not v$version, the version in Cargo.toml"; exit 1; }
+
+      - name: Build sv
+        run: cargo build --release --locked -p sv-cli
+
+      - name: The zip, with the data beside the program
+        id: zip
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          name="sv-${TAG#v}-windows-x86_64"
+          [ "${{ github.event_name }}" = push ] || name="sv-trial-windows-x86_64"
+          mkdir -p "dist/$name"
+          cp target/release/sv.exe "dist/$name/"
+          cp -r data "dist/$name/data"
+          cp LICENSE "dist/$name/"
+          (cd dist && 7z a -tzip "$name.zip" "$name" > /dev/null)
+          (cd dist && sha256sum "$name.zip" > "$name.zip.sha256")
+          cat "dist/$name.zip.sha256"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: The zipped program starts and finds its own data
+        # Unzipped somewhere else, with the checkout's data moved away, so the program can only be reading the data
+        # beside it (ADR-036): the folder a Scoop install leaves.
+        env:
+          NAME: ${{ steps.zip.outputs.name }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/try"
+          (cd "$RUNNER_TEMP/try" && 7z x "$GITHUB_WORKSPACE/dist/$NAME.zip" > /dev/null)
+          mv data data.moved
+          sv="$RUNNER_TEMP/try/$NAME/sv.exe"
+          "$sv" --version
+          "$sv" check examples/flask-booking > check.txt 2>&1 || true
+          head -40 check.txt
+          grep -q "Read " check.txt || { echo "::error::the zipped sv did not read the example app"; mv data.moved data; exit 1; }
+          mv data.moved data
+
+      - name: Sign where the zip was built
+        if: github.event_name == 'push'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/${{ steps.zip.outputs.name }}.zip
+
+      - name: The release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          NAME: ${{ steps.zip.outputs.name }}
+        run: |
+          gh release create "$TAG" "dist/$NAME.zip" "dist/$NAME.zip.sha256" \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --title "sv $TAG" \
+            --notes "The Windows program of sv $TAG, zipped with its data. On Windows, install it with Scoop (see docs/GETTING-STARTED.md), or unzip it and run sv.exe from that folder. Check where it was built with: gh attestation verify $NAME.zip --repo $GITHUB_REPOSITORY. Mac and Linux: Homebrew, or the container image."
+
+      - name: Keep the trial's zip
+        if: github.event_name != 'push'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.zip.outputs.name }}
+          path: dist/${{ steps.zip.outputs.name }}.zip
+          retention-days: 3

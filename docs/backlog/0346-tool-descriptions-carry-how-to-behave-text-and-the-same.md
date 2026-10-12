@@ -15,3 +15,6 @@
 **Fix.** One or two sentences per description (what it gives, when to call it), the rules moved into the answer text or the refusal; the instructions as the flow only (which tool, in what order: ADR-066 rule 8), the descriptions as the what. Must not lose: "never says a requirement passed" and the no-safe-words test (`flow_text_tests.rs`), the readOnly and destructive annotations, and the test that holds the instructions, the guide prompt, and the spec in step.
 
 **Record.** ADR-066 governs: a Later entry.
+
+**The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
+is told, and the trial's comparisons should not move under it; the same reason as 0338.
