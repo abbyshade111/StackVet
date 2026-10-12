@@ -69,7 +69,9 @@ by speaking for what its requirement names. One part per group of the inventory 
    private page, whole only when two or more were refused and each refusal was found with its status.
    **Part status:** partly done: the sign-ins, and the line's metadata, format, and timestamp
 6. **F. Each browser page and form.** The browser-driven checks run on each page and form the owner lists.
-   **Part status:** open
+   **Scope of this claim (12 October 2026):** the typed-text check (`probe.text-rendered-as-markup`, V3.2.2) on every
+   text form the owner names. **Record, `Status: proposed`: ADR-097**, since it adds a key to stackvet.toml.
+   **Part status:** claimed by backlog-org-0232, 12 October 2026
 7. **G. Each operation the requirement names.** Phone, two-factor, and recovery changes beside the email change
    (V7.5.1); password change beside sign-up for the password checks; both TOTP and an emailed code where both
    exist (V6.5.1, V6.5.5); one manifest key per operation.
