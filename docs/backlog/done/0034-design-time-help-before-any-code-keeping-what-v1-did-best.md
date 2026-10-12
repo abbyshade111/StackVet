@@ -1,6 +1,6 @@
 # Design-time help before any code: keeping what v1 did best
 
-**Status:** partly done: part 5: the design-time prompts do not yet ask for a planned answer
+**Status:** done, 11 October 2026
 
 Proposed on 4 October 2026 by session paper-facts,
 at the owner's asking, after comparing v1 and `sv` for the paper. v1 made the decisions first (the wizard, the design
@@ -60,7 +60,7 @@ changes credits anything: a plan, a brief, or a decision is still checked only t
    `design.planned-never-built`, one that is there asks for yes or no, and one with no `where` is reported as one
    `sv` cannot follow. Nine guards broken in turn, each caught. Not done: the design-time prompts do not ask for
    `planned` (the third trial tested their present wording), and v1's per-app record of decisions is item 9.
-   **Part status:** claimed by backlog-org-0034, 11 October 2026
+   **Part status:** done, 11 October 2026
 6. **The owner's answers asked by the server itself, where the client allows it.** MCP elicitation shows the person a
    form the AI tool cannot fill, so a design brief answered that way could count as the owner's word rather than the
    tool's. DESIGN lists elicitation as unused, not rejected. Client support varies, and the stateless 2026-07-28
@@ -146,3 +146,11 @@ now recorded in ADR-028 ("Later, 6 October 2026, written 11 October 2026"). Part
 `planned` answer is in (`design.planned-never-built`, `crates/sv-check/src/design.rs`; `crates/sv-cli/tests/planned_decisions.rs`),
 but none of the design-time prompts in `data/design-prompts.json` or `docs/prompts/design-time.md` asks the AI tool to
 answer a design question `planned`, with a `where`, before the code exists. That is what remains.
+
+**Part 5 finished, 11 October 2026** (ADR-028, "Later, 11 October 2026"): `design-brief` asks the AI tool to answer
+the `[design]` questions before any code, `planned` with a `where` for each control decided on and `not-sure` for the
+rest, never yes; `design-before-changing` turns a `planned` answer into yes or no once the change builds it. Both
+prompts stay untested. `docs/prompts/design-time.md` now matches `data/design-prompts.json` (it had kept
+`securevibe.toml` in every prompt since the rename), held by `crates/sv-check/tests/design_time_page.rs`; one word
+changed on the page, the page as it was, and a prompt changed in the data file alone each fail it. With part 6
+closed by the owner's decision and the rest built, the item is done.
