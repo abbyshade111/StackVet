@@ -1004,6 +1004,35 @@ pub fn redact_text_in(rules: &SecretRules, relative: &str, text: &str) -> (Strin
             spans.push((token.start(), token.end()));
         }
     }
+    // A credential named in a web address's parameters, `?api_key=<key>` or `&token=<key>`. The
+    // name-and-value pattern above reads the address's `https:` as the name and the rest as its value,
+    // so it never reaches the parameter (backlog 0283).
+    static PARAMETER: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r#"[?&;]([A-Za-z_][A-Za-z0-9_.\-]*)=([^&#\s"'<>]+)"#).expect("static pattern")
+    });
+    for caps in PARAMETER.captures_iter(text) {
+        if let (Some(name), Some(value)) = (caps.get(1), caps.get(2))
+            && is_masked_name(name.as_str())
+            && !looks_like_placeholder(value.as_str())
+        {
+            spans.push((value.start(), value.end()));
+        }
+    }
+    // A credential after a command's flag named for it, `--token <key>` or `--api-key=<key>`, which
+    // has no `:` or `=` for the patterns above to read (backlog 0283). A value that is itself a flag
+    // is the next flag, not the credential.
+    static FLAG: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r#"(?:^|\s)--?([A-Za-z][A-Za-z0-9_\-]*)(?:=|\s+)([^\s"'\-][^\s"']*)"#)
+            .expect("static pattern")
+    });
+    for caps in FLAG.captures_iter(text) {
+        if let (Some(name), Some(value)) = (caps.get(1), caps.get(2))
+            && is_masked_name(name.as_str())
+            && !looks_like_placeholder(value.as_str())
+        {
+            spans.push((value.start(), value.end()));
+        }
+    }
     // A password in a web address, cut wherever it is, a `.env` file included.
     for caps in URL_PASSWORD.captures_iter(text) {
         if let Some(password) = url_password(&caps) {
@@ -1165,3 +1194,6 @@ fn clean_scan(rules: &SecretRules, scan: &SecretScan) -> Vec<crate::Verified> {
 /// Above this, a file is not something a person typed and reading it all costs more than it finds.
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod redact_named_tests;

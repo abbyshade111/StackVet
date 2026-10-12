@@ -16,7 +16,11 @@ fn folder(name: &str, files: &[(&str, &str)]) -> AiToolFiles {
         std::fs::write(path, text).unwrap();
     }
     std::fs::write(dir.join("app.py"), "print('hello')\n").unwrap();
-    let found = read(&Listing::of(&dir));
+    let rules = sv_check::secrets::SecretRules::load(
+        &PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
+    )
+    .expect("rules load");
+    let found = read(&Listing::of(&dir), &rules);
     std::fs::remove_dir_all(&dir).ok();
     found
 }
