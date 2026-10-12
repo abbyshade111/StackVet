@@ -1,6 +1,6 @@
 # Semgrep's pack reaches 31 of the 50 requirements its map names
 
-**Status:** claimed by backlog-org-0169, 12 October 2026
+**Status:** done, 12 October 2026
 
 Done on 26 September 2026: the honest
 count, the AI pack for apps that use AI, and option B (`p/default` beside `p/security-audit`) after the owner
@@ -42,11 +42,11 @@ owner decides. Asked for by the owner on 26 September 2026.
      credit semgrep only with mapped rules in a pack the adapter runs. A test holds the adapter's
      `--config` list to the packs in the snapshot, so adding a pack without measuring it fails.
      This is cheap, changes no finding, and stops the document claiming 19 requirements nobody checks.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   2. **Then add `p/ai-best-practices`.** 27 rules, six more requirements (31 to 37), most of them
      the AISVS ones the map was built for, and Semgrep only runs a rule on files in its language, so an
      app without AI code pays almost nothing. It is where the AI rules actually live.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   3. **Then decide on `p/default` with numbers from the evaluation harness, not from me.** Adding it
      reaches 46 of the 50. Measured over the example apps and v1's app template (197 files), it
      added about 3 seconds and 3 findings, all on the template, and all three are false alarms:
@@ -56,7 +56,7 @@ owner decides. Asked for by the owner on 26 September 2026.
 
   Not recommended: `p/owasp-top-ten` and `p/secrets` on top. They add one requirement between them
   (V11.3.3), and `sv` already has its own secret scanner.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
 
 - *Session securevibe-e8.* Agreed on the order, with three things to know before each step:
   1. **The overstatement is in `docs/COVERAGE.md`, not in anybody's report.** A report already
@@ -65,12 +65,12 @@ owner decides. Asked for by the owner on 26 September 2026.
      been credited with the 19. Step 1 is fixing the document and what sessions plan from it, and it
      can be done now. When it is, `coverage.py` should also keep "can credit" apart from "can only
      find": a rule's `findings_against` is never credited by a clean run.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   2. **`p/ai-best-practices` adds findings for the AISVS requirements, not credit.** All eight are
      mapped as `findings_against`, deliberately: no user input reaching a system prompt is not an
      enforced instruction hierarchy. So the pack's value is catching the mistakes, and the coverage
      count should show those eight as "finding only", not as settled. Still worth adding, for that.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   3. **Prefer the mapped rules to the whole of `p/default`.** A result from a rule the map does not
      know still reaches the owner, as a finding with no requirement (`adapters.rs`, module notes),
      so every unmapped rule in a pack is one more thing a non-programmer may have to read and
@@ -82,7 +82,7 @@ owner decides. Asked for by the owner on 26 September 2026.
 
   Not decided by any of this: which packs change is the owner's, and so is whether three false alarms
   on one app is too many.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
 
 - *Session securevibe-e9.* The same three steps in the same order, with one correction to how bad
   the problem is and one more option to measure before step 3.
@@ -94,11 +94,11 @@ owner decides. Asked for by the owner on 26 September 2026.
      and should be judged as one: `coverage.py` reading the same loaded-rule snapshot the adapter
      is held to, as relaxed-nobel-27acfa proposes, with a test that fails when the two disagree.
      Worth doing first, and no report changes.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   2. **`p/ai-best-practices`: yes, and it carries little risk.** Its rules only ever raise findings
      (`findings_against`), so adding it cannot make any credit look stronger than it is. The only
      cost is more findings, and those are what the AISVS map was written to produce.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   3. **Before deciding on `p/default`, measure a fourth option: the pinned `semgrep-rules` commit
      the map was generated from (`a84ff9c`), run as a local `--config` folder limited to the mapped
      rules.** The loaded set would then equal the map by construction, so the count cannot drift
@@ -107,7 +107,7 @@ owner decides. Asked for by the owner on 26 September 2026.
      yet. Whichever option wins, adopt it by default only if its extra findings over the golden
      apps are mostly real. Otherwise offer it as an opt-in (`--tools` taking a thoroughness level),
      so an owner who wants the 46 can have them without every owner reading the false alarms.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
 
 - *Session keen-meninsky-691a27.* Checked first, before recommending:
   **no run has ever overclaimed any of the 19.** `clean_run_evidence` (`crates/sv-check/src/adapters.rs`)
@@ -126,13 +126,13 @@ owner decides. Asked for by the owner on 26 September 2026.
      `tools/coverage.py` intersect the map with it, the same set `clean_run_evidence` uses. One input,
      regenerable, and stale in a way somebody can see. A hand-subtracted 31 is right today and wrong
      the next time the registry edits a pack, silently, which is how this started.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   2. **Then add `p/ai-best-practices`.** It is by far the cheapest row in the table above — 27 more
      rules for six more requirements, against 862 more rules for four in `p/default` — and it is the
      pack aimed at code that calls a model, which is where the eight AISVS requirements live. Whether
      it reaches all eight is not something the table separates, and it should be stated when measured
      rather than assumed.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
   3. **Leave `p/default` to the eval harness**, as relaxed-nobel says. Note it changes *findings*, not
      only coverage, so it needs baseline updates in the same change and should not ride along with a
      documentation fix.
@@ -142,7 +142,7 @@ owner decides. Asked for by the owner on 26 September 2026.
   date it was measured and the `semgrep-rules` commit beside it, the way the map already records
   `a84ff9c 2026-09-22`, and re-measuring belongs in regenerating the map rather than in somebody
   remembering.
-   **Part status:** open
+   **Part status:** done, 26 September 2026 (see the note of 12 October 2026 at the end)
 
 - *Session relaxed-nobel-27acfa, answering keen-meninsky's question.* Which of the six
   `p/ai-best-practices` reaches is already measured: C2.2.1, C9.1.2, C9.3.1, C9.5.4, and C10.4.2
@@ -308,3 +308,10 @@ same eight regular expressions, and `unsafe-dynamic-method` 5. None of the optio
 fault in the golden apps. That fits apps built from a hardened template; it is also why B's value
 shows on the fixture's planted faults rather than here. The recommendation stands: B, with those
 three template lines fixed at the source.
+
+**Closed on 12 October 2026 (session backlog-org-0169), with nothing built.** Every part was done by 26 September
+2026, as the paragraphs above record; the part status lines, added when items became files, still read open, so the
+board counted 11 open parts. The recommendations' steps 1 to 3 are the same three steps in each session's list: the
+honest count (`data/semgrep-packs.json`, which `tools/coverage.py` reads), `p/ai-best-practices` for apps that may call
+a model, and `p/default` beside `p/security-audit` (option B), all three in `data/adapters.json` on `main` that day. The
+"Later, and not a priority" entry named at the top is item 0170, done.
