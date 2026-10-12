@@ -1,6 +1,6 @@
 # probe.ai-kill-switch-ignored credits C9.6.1 in full while its own scope says half was not shown
 
-**Status:** claimed by builder-full, 12 October 2026
+**Status:** done, 12 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: checks' honesty. Severity: medium. Verified against the code by the reviewing session before filing.
 
