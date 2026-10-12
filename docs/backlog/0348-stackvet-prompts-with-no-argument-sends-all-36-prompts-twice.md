@@ -15,3 +15,6 @@
 **Fix.** Default to a list (id, title, status, requirements), full text by id. Estimate.
 
 **Record.** ADR-035 governs the prompt library and ADR-066 the tool: an "unchanged, because" line if only the default changes.
+
+**The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
+is told, and the trial's comparisons should not move under it; the same reason as 0338.

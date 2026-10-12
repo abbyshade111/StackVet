@@ -2,7 +2,7 @@
 
 use crate::{Counts, Report};
 
-fn empty_report(gaps: Vec<crate::Gap>) -> Report {
+pub(crate) fn empty_report(gaps: Vec<crate::Gap>) -> Report {
     Report {
         level_why: None,
         baseline: None,

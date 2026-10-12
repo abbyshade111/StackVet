@@ -15,3 +15,6 @@
 **Fix.** Always default to the count plus how to ask (the existing `counted` branch); whole only on `section: "questions"` or `all`. Must not lose: the count and the how-to-ask line in every answer. ADR-066 says "a check that comes whole with them still does", so the record changes with it.
 
 **Record.** ADR-066 governs: a Later entry.
+
+**The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
+is told, and the trial's comparisons should not move under it; the same reason as 0338.

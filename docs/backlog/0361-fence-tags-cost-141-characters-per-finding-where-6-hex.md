@@ -15,3 +15,6 @@
 **Fix.** 6 hex digits, saving 12 characters per wrap (36 per finding). Must not lose: the name absent from the draft, the header first, `sv`'s own words outside every tag; the fence tests hold these.
 
 **Record.** ADR-066 governs the fence rule: an "unchanged, because" line.
+
+**The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
+is told, and the trial's comparisons should not move under it; the same reason as 0338.

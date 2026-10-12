@@ -15,3 +15,6 @@
 **Fix.** Name all seven in README and ARCHITECTURE ("seven renderings", "the seven files") and in the catalog description; a test already holds ARCHITECTURE's paths (`architecture_map.rs`), so consider holding this count to `REPORT_FILES.len()` too.
 
 **Record.** ADR-095 and ADR-082 govern the two files; ADR-066 the catalog: "unchanged, because" lines (wording only).
+
+**The owner's word, 12 October 2026:** the description in `crates/sv-cli/src/mcp/catalog.rs` waits until the loop test (0257)
+has finished, since it is text the AI coding tool reads; the documents (README, ARCHITECTURE) can be fixed now.
