@@ -52,11 +52,15 @@ fn a_whole_session_over_stdio() {
     assert_eq!(replies[0]["result"]["serverInfo"]["name"], "stackvet");
     // What the tool is told to have the person run names this very `sv` by its full path, so it
     // works at a terminal whether or not `sv` was ever put on the search path (the owner's first
-    // build met `command not found`).
+    // build met `command not found`). A path holding a space is quoted, as a shell needs; the build
+    // folder on the owner's Mac has one, and CI's has none (backlog 0269).
     let program = sv_frameworks::paths::canonical(env!("CARGO_BIN_EXE_sv")).unwrap();
     let instructions = replies[0]["result"]["instructions"].as_str().unwrap();
     assert!(
-        instructions.contains(&format!("`{} report ", program.display())),
+        instructions.contains(&format!(
+            "`{} report ",
+            as_a_shell_reads_it(&program.to_string_lossy())
+        )),
         "{instructions}"
     );
     assert_eq!(replies[1]["result"]["tools"].as_array().unwrap().len(), 12);
@@ -133,4 +137,20 @@ fn each_error_answer_leaves_a_line_on_stderr_and_no_app_text() {
         "{stderr}"
     );
     assert!(!stderr.contains("no-such-place-outside"), "{stderr}");
+}
+
+/// A path as `sv` writes it for a shell: as it is when it holds nothing a shell treats specially,
+/// otherwise in single quotes, or on Windows in double quotes. Written out here rather than borrowed
+/// from `sv`, so the test does not agree with the code by calling it.
+fn as_a_shell_reads_it(path: &str) -> String {
+    let windows = cfg!(windows);
+    let plain =
+        |c: char| c.is_ascii_alphanumeric() || "/._-~+:,@".contains(c) || (windows && c == '\\');
+    if path.chars().all(plain) {
+        path.to_owned()
+    } else if windows {
+        format!("\"{}\"", path.replace('"', "\"\""))
+    } else {
+        format!("'{}'", path.replace('\'', "'\\''"))
+    }
 }
