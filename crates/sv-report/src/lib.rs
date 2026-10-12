@@ -929,11 +929,30 @@ pub struct DataFileHash {
 impl RunRecord {
     /// "2026-10-10T00:01:02Z, run 1a2b3c4d5e6f", for the line at the top of each page.
     pub fn describe(&self) -> String {
+        let started = utc_for_a_person(&self.started);
         if self.run_id.is_empty() {
-            self.started.clone()
+            started
         } else {
-            format!("{}, run {}", self.started, self.run_id)
+            format!("{started}, run {}", self.run_id)
         }
+    }
+}
+
+/// `2026-10-04T18:55:02Z`, as a person reads it: `2026-10-04 18:55:02 UTC`. The `Z` says UTC only to
+/// someone who knows the notation, and a report read beside a local clock looked stale (backlog 0255).
+/// Anything not in that shape is returned as it was.
+pub fn utc_for_a_person(stamp: &str) -> String {
+    let shaped = stamp.len() == 20
+        && stamp.as_bytes()[10] == b'T'
+        && stamp.ends_with('Z')
+        && stamp[..10].bytes().all(|b| b.is_ascii_digit() || b == b'-')
+        && stamp[11..19]
+            .bytes()
+            .all(|b| b.is_ascii_digit() || b == b':');
+    if shaped {
+        format!("{} {} UTC", &stamp[..10], &stamp[11..19])
+    } else {
+        stamp.to_owned()
     }
 }
 
@@ -3199,3 +3218,7 @@ mod one_line_tests {
         assert_eq!(out.lines().count(), 1, "{out:?}");
     }
 }
+
+#[cfg(test)]
+#[path = "utc_tests.rs"]
+mod utc_tests;

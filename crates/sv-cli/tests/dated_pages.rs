@@ -43,7 +43,11 @@ fn every_page_and_the_sarif_name_the_run_and_its_start() {
     for page in ["report.html", "compliance.md", "security.md"] {
         let text = std::fs::read_to_string(one.join(page)).unwrap();
         assert!(
-            text.contains(&format!("{started}, run {id}")),
+            // The time as a person reads it, with UTC named (backlog 0255).
+            text.contains(&format!(
+                "{}, run {id}",
+                sv_report::utc_for_a_person(&started)
+            )),
             "{page} does not say which run it is of"
         );
     }
