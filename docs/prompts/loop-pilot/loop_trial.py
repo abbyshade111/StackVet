@@ -2,6 +2,11 @@
 """Builds the club app with a headless AI coding tool, one build per call, for the loop trials.
 
     python3 loop_trial.py OUT ARM MODEL N [--budget USD] [--api] [--with-spec] [--prompt ID] [--allow-git]
+                          [--draft N] [--model-id ID]
+
+MODEL names the build (`haiku`, `sonnet`); `--model-id` is the exact model the build runs on (`claude-haiku-5-5`), so
+a nickname the Claude program resolves for itself cannot choose another model (the drafts trial, backlog 0257).
+`--draft N` adds draft N of docs/prompts/drafts.md, as `--prompt` adds a library prompt.
 
 Follows docs/prompts/loop-protocol.md. OUT is a folder under the home folder (Colima shares only that). Each build
 gets a fresh folder OUT/<model>-<arm>-<n>, the request (docs/prompts/trial-3/plain-brief.md) as its prompt, and,
@@ -10,7 +15,7 @@ settings is read or changed: --restricted ignores the settings files and confine
 folder, --strict-mcp-config uses no MCP server but this one, and --no-session-persistence keeps the run out of the
 session list. The transcript (stream-json) is written beside the folder, not in it, so `sv` does not read it.
 """
-import json, os, subprocess, sys, time
+import json, os, re, shlex, subprocess, sys, time
 
 CLAUDE = os.environ['CLAUDE_BIN']      # the Claude Code program to run, by its full path
 SV = os.environ['SV']                  # the sv release build every build is checked and helped by
@@ -53,10 +58,30 @@ def instructions(folder):
     return json.loads(out.splitlines()[0])['result']['instructions']
 
 
+def draft_prompt(number):
+    """The prompt text of draft `number` in docs/prompts/drafts.md: its section's quoted lines after **Prompt**."""
+    text = open(os.path.join(REPO, 'docs/prompts/drafts.md'), encoding='utf-8').read()
+    section = re.search(rf'^## {number}\. .*?(?=^## |\Z)', text, re.S | re.M)
+    if not section:
+        raise SystemExit(f'no draft {number} in docs/prompts/drafts.md')
+    after = section.group(0).split('**Prompt', 1)[1]
+    quoted = []
+    for line in after.splitlines()[1:]:
+        if line.startswith('>'):
+            quoted.append(line[1:].strip())
+        elif quoted:
+            break
+    if not quoted:
+        raise SystemExit(f'draft {number} has no quoted prompt')
+    return ' '.join(quoted)
+
+
 def build(out, arm, model, n, budget, api):
     attach, sv_tools, with_instructions = ARMS[arm]
     # A prompt arm is named after its prompt, with `_` for `-`, so a build's name still splits as model-arm-n.
     label = ('p_' + sys.argv[sys.argv.index('--prompt') + 1].replace('-', '_')) if '--prompt' in sys.argv else arm
+    if '--draft' in sys.argv:
+        label = 'd' + sys.argv[sys.argv.index('--draft') + 1]
     name = f'{model}-{label}-{n}'
     folder = os.path.join(out, name)
     os.makedirs(folder, exist_ok=False)
@@ -79,17 +104,23 @@ def build(out, arm, model, n, budget, api):
                    for q in json.load(open(os.path.join(REPO, f)))['prompts']]
         text = next(q['prompt'] for q in library if q['id'] == pid)
         request = request.rstrip('\n') + '\n\nFollow this while you build:\n\n' + text + '\n'
+    if '--draft' in sys.argv:
+        text = draft_prompt(sys.argv[sys.argv.index('--draft') + 1])
+        request = request.rstrip('\n') + '\n\nFollow this while you build:\n\n' + text + '\n'
     if with_instructions:
         request = ('These are the instructions SecureVibe gives an AI coding tool; follow them:\n\n'
                    + instructions(folder) + '\n\n---\n\n' + request)
-    cmd = [CLAUDE, '-p', request, '--model', model, '--restricted', '--strict-mcp-config',
+    model_id = sys.argv[sys.argv.index('--model-id') + 1] if '--model-id' in sys.argv else model
+    cmd = [CLAUDE, '-p', request, '--model', model_id, '--restricted', '--strict-mcp-config',
            '--tools', ','.join(FILE_TOOLS + ['Bash']),
            '--allowedTools', ' '.join(FILE_TOOLS + [SHELL] + (['Bash(git:*)'] if '--allow-git' in sys.argv else [])
                                       + sv_tools),
            '--permission-mode', 'dontAsk', '--no-session-persistence',
            '--output-format', 'stream-json', '--verbose', '--max-budget-usd', str(budget)]
     if api:
-        cmd += ['--settings', json.dumps({'apiKeyHelper': KEY_HELPER})]
+        # The Claude program runs the helper through the shell, so a path with a space in it (the USB drive's, in the
+        # drafts trial) is quoted; unquoted, every build of 12 October 2026 stopped at once with "apiKeyHelper failed".
+        cmd += ['--settings', json.dumps({'apiKeyHelper': shlex.quote(KEY_HELPER)})]
     # Never install packages on this computer: `python3 -m pip` would match `Bash(python3:*)` and write into
     # the owner's own Python. Packages reach the app only through `sv`'s install step (ADR-052).
     refused = ['Bash(python3 -m pip:*)', 'Bash(python3 -m ensurepip:*)', 'Bash(pip:*)', 'Bash(pip3:*)']

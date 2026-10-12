@@ -37,10 +37,16 @@ makes those collisions stop, and what it costs.
 2. For each free session: `assign <number> --to <session> --why "..."`. The reason is written down every time, in at
    least ten characters. The claim is made and the board updated in one go, and both go to `main` in one small pull
    request, so the hand-out is visible to every session within minutes.
-3. `handout <number>` prints the message to give the builder: the item's text and the five-line footer below. The
-   orchestrator sends it to the session, or the owner pastes it; the board is what counts, the message only points at it.
+3. `handout <number>` prints the message to give the builder: the item's text and the five-line footer below. A
+   session's first hand-out is pasted by the owner, with one more sentence: when your pull request has merged, fetch
+   `main`, read the board, and take the item beside your name; if there is none, check again in 30 minutes. After that
+   the board does the handing out, and nobody pastes (the owner's choice, 12 October 2026). So the orchestrator assigns
+   each session's next item while it is still building the current one, and the item's own file and this page's footer
+   are everything the session needs; the board is what counts, a message only points at it.
 4. The builder builds, in a branch and a pull request of its own, and runs `python3 tools/backlog.py done <number>`.
-   The orchestrator runs `finish <number> --pr <url>`, and the session is free for the next item.
+   The orchestrator runs `finish <number> --pr <url>`, and the session is free for the next item. The two may land on
+   `main` in either order: `check` reads a held item marked done as the normal hand-back, not a disagreement (the
+   first two finished items, 0280 and 0278, each turned their own pull request red before it did).
 5. A red `main` goes to exactly one session, through the same `assign`, so two never fix it together.
 6. At the end: `measure --since <day> --arms` counts what git shows, and the write-up goes in the item.
 

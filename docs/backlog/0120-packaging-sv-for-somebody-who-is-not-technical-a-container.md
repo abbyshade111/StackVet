@@ -154,19 +154,17 @@ only the old "not yet something this guide can make easy" sentence.
 
 - *Session relaxed-nobel-27acfa.* In favor, and with the plan's order. Three things the list above
   does not name yet, found while working in `agnostic/` today:
-  1. **`docs/` collides by file name.** `agnostic/docs/` and the root `docs/` both hold `BACKLOG.md`
+  - **`docs/` collides by file name.** `agnostic/docs/` and the root `docs/` both hold `BACKLOG.md`
      and `DESIGN.md`. `data/` merges cleanly (no two files share a name), and so does everything
      else except `README.md` and `.gitignore`, which the plan already covers. For `docs/`, the
      simplest honest move is to keep v1's two under a name that says so (`docs/v1/`, beside
      `docs/paper/`), since `v1-final` holds them anyway and the paper may cite their paths.
-   **Part status:** done, 26 September 2026
-  2. **Two Python tools find the shared folder the same way the Rust does.** `tools/coverage.py` and
+  - **Two Python tools find the shared folder the same way the Rust does.** `tools/coverage.py` and
      `tools/pwned_passwords.py` set `ROOT = AGNOSTIC.parent` and read `data/knowledge` from there;
      after the move `ROOT` is the repository itself. `coverage.py --check` runs in the Rust test
      suite (`coverage_doc.rs`), so a wrong path fails the build, which is the test watching this.
      `pwned_passwords.py` has no test and would only fail when somebody runs it.
-   **Part status:** done, 26 September 2026
-  3. **The evaluation harness still earns its place while `templates/` is used.** It was the only
+  - **The evaluation harness still earns its place while `templates/` is used.** It was the only
      check able to confirm today's template change (semgrep option B changed two lines of v1's
      template). If `templates/` is archived with v1, the harness goes with it; if `sv` keeps using
      the template's built apps as its measuring targets, the harness stays, and so does `server/`,
@@ -176,7 +174,6 @@ only the old "not yet something this guide can make easy" sentence.
   `templates/`, is on its checks now and lands within the hour. After it I will open nothing else
   that touches `agnostic/`, `CLAUDE.md`, or CI until the move lands, so the freeze can start any time
   after that.
-   **Part status:** done, 26 September 2026
 
 **The owner's decision, 9 October 2026**, asked by session securevibe-e2 with a recommendation for each open choice: **look at both ways to the download on a Mac, Homebrew and Apple's notarization, and bring the findings back before anything is built or paid for.** Apple's developer program charges a yearly fee, so nothing there is bought without asking again.
 
@@ -226,7 +223,7 @@ cost of fetching all of this one). What follows is the plan, each step claimed o
    container backend); its failures are fixed or written down. Only then a way to install it, Scoop or winget (both
    free), chosen with what the job found. Until then the guide keeps saying plainly that Windows is untried, and that
    the Docker route works wherever Docker Desktop does.
-   **Part status:** partly done: a way to install it on Windows (Scoop or winget), which needs a published Windows program, the owner's to decide
+   **Part status:** claimed by securevibe-trial-prep, 12 October 2026
 3. **The guide** gains "Installing with Homebrew" for Mac and Linux once step 1 is green, and a Windows section once
    step 2 is.
    **Part status:** partly done: a Windows section, once there is a way to install it there
@@ -357,3 +354,10 @@ source. Step 2's remainder waits for 0191 part 4.
 **Windows, 10 October 2026:** the guide no longer says Windows was "never built": the project builds and tests StackVet on Windows in `windows.yml`, but nobody has tried these steps on a Windows computer.
 
 **The owner's word, 12 October 2026:** go ahead with the Windows build and its Scoop install now that releases are signed (0191 part 4, done 9 October). A Scoop install reads a manifest from a bucket, a small repository of its own beside `abbyshade111/homebrew-stackvet`; the owner offered to create it if that is easier.
+
+**Step 2's remainder claimed 12 October 2026 by session securevibe-trial-prep.** Read on `main` that day: no program of `sv`'s has ever been published as a release (the repository's three releases are v1's paper tags, with no files), and 0191 part 4's signing is of the container image. So a Scoop install first needs a release to install from. **The owner's choices the same day, asked with a recommendation for each:** the release holds the Windows program only, since Homebrew covers Mac and Linux; the owner pushes the version tag (v0.1.0, the version `sv` reports today), since a release is public and permanent; and the owner creates the bucket, `abbyshade111/scoop-stackvet`, empty, for the manifest to be added there. The plan, a decision record proposed here and numbered in the pull request that builds it:
+
+- **A release workflow.** On a pushed tag `v*`, a Windows runner builds `sv` with `--release`, checks it starts (`sv --version`, and a check of an example app), zips `sv.exe` with `data/` beside it (where `sv` looks for its data, ADR-036) and the licence, signs where the zip was built with the `actions/attest` step the image's signing already uses (anyone can check it with `gh attestation verify`), and attaches the zip and its SHA-256 to a GitHub Release of that tag. Run by hand, it builds and signs nothing published: the zip is kept as a run's file, so the workflow is tried before the owner's tag.
+- **The owner's tag** publishes v0.1.0.
+- **The manifest**, `bucket/sv.json` in the bucket, with the release's address and its SHA-256 (`checkver` and `autoupdate` from the release, so a new tag updates it), added once the release exists, and tried with `scoop install` on a Windows runner.
+- **The guide's Windows section** (step 3), once that install works.

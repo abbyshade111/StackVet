@@ -18,6 +18,17 @@ pub fn escape(text: &str) -> String {
         .replace('\'', "&#39;")
 }
 
+/// The StackVet mark, the bracket mark of `docs/brand/stackvet-mark.svg`, drawn inside the page beside its
+/// heading (backlog 0219 part 5, ADR-107). Inline, it fetches nothing, so the page's policy (`CSP_META`) is
+/// unchanged; its colors are the page's style (`.mark-bracket`, `.mark-check`), so a dark page shows the
+/// colors of `stackvet-mark-dark.svg`. Decorative: the heading's own words name the page. No `xmlns`: an SVG
+/// inside an HTML page needs none, and the pages hold no web address at all.
+pub const MARK: &str = "<svg class=\"mark\" viewBox=\"0 0 64 64\" \
+                        width=\"28\" height=\"28\" aria-hidden=\"true\" focusable=\"false\">\
+                        <path class=\"mark-bracket\" d=\"M20 10 H11 V54 H20\"/>\
+                        <path class=\"mark-bracket\" d=\"M44 10 H53 V54 H44\"/>\
+                        <path class=\"mark-check\" d=\"M22 33 L29 40 L43 24\"/></svg>";
+
 pub(crate) const STYLE: &str = "\
 :root { color-scheme: light dark; --edge: #d8d8d8; --dim: #666; --bad: #a11; --unknown: #8a6d00;
   --seg-checked: #127a74; --seg-part: #6fb3ac; --seg-tested: #4b4fb8; --seg-word: #d6b34a; --seg-none: #c9ced8;
@@ -27,6 +38,11 @@ pub(crate) const STYLE: &str = "\
   --seg-none-line: #646c7a; --seg-apply: #b9c0cc; --seg-out: #2a2f38; --seg-ai: #6c5a8f; } }
 body { font: 16px/1.6 system-ui, sans-serif; margin: 0 auto; max-width: 62rem; padding: 2rem 1rem; }
 h1 { font-size: 1.7rem; margin-bottom: .2rem; }
+.mark { vertical-align: -.25em; margin-right: .5rem; }
+.mark path { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.mark-bracket { stroke: #14201C; stroke-linecap: butt; stroke-linejoin: miter; }
+.mark-check { stroke: #C2410C; }
+@media (prefers-color-scheme: dark) { .mark-bracket { stroke: #F3F4EF; } .mark-check { stroke: #FDBA74; } }
 h2 { font-size: 1.25rem; margin-top: 2.4rem; border-bottom: 1px solid var(--edge); padding-bottom: .3rem; }
 h3 { font-size: 1.05rem; margin-top: 1.8rem; }
 p.lede { font-size: 1.05rem; }
@@ -227,7 +243,7 @@ pub fn page(report: &Report) -> String {
     ));
     b.push_str(&format!("<style>{STYLE}</style>\n</head>\n<body>\n"));
 
-    b.push_str(&format!("<h1>{}</h1>\n", escape(&report.app_name)));
+    b.push_str(&format!("<h1>{MARK}{}</h1>\n", escape(&report.app_name)));
     b.push_str(&format!(
         "<p class=\"note\">Produced by <code>sv</code> {}{}. ASVS level {}.</p>\n",
         escape(&report.sv.describe()),
