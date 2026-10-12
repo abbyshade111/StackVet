@@ -117,6 +117,8 @@ fn the_list_follows_the_findings_when_there_are_findings_too() {
     let mut report = empty_report(Vec::new());
     let mut app = info("ast.eval", "app.py", 4);
     app.title = "eval of a value the user gives".into();
+    // High, so it is shown in full; a low one would be grouped by rule (ADR-095).
+    app.severity = sv_check::Severity::High;
     report.findings = vec![app];
     report.test_information = vec![info("bandit.B101", "tests/test_app.py", 12)];
     let page = security(&report);

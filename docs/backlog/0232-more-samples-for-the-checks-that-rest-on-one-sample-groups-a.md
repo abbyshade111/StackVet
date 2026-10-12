@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: groups B to H open; group A claimed (ADR-095 proposed)
+**Status:** partly done: groups B to H open; group A claimed (ADR-096 proposed)
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -11,7 +11,7 @@ by speaking for what its requirement names. One part per group of the inventory 
 
 1. **A. Every response, not one or two.** Headers, cookies, content types, and error pages asked of every page the
    app answers and every route `stackvet.toml` names, not one or two anonymous responses.
-   **Record, `Status: proposed`: ADR-095.** What group A asks, when its credit is whole, and what stays out.
+   **Record, `Status: proposed`: ADR-096.** What group A asks, when its credit is whole, and what stays out.
    **Part status:** claimed by backlog-org-0232, 11 October 2026
 2. **B. Every private page and session path.** Session handling tried on each private page the owner lists and
    after each way of signing in, not one.
