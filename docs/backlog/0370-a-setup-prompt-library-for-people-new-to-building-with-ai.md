@@ -1,6 +1,6 @@
 # A setup prompt library for people new to building with AI
 
-**Status:** open
+**Status:** claimed by securevibe-trial-prep, 12 October 2026
 
 Asked for by the owner on 12 October 2026, from the website's words (backlog 0224, `docs/website/home-page.md`,
 section 7). The site's "Get started" has two paths, and the first, for someone who has used an AI chat but never
