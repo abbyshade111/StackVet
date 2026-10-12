@@ -1,6 +1,6 @@
 # A pull request that changes only backlog items runs only the tests that read them
 
-**Status:** partly done: Measure the first claim to merge after this lands, beside #1519's 21 minutes, and how long code scanning takes on it.
+**Status:** done, 12 October 2026
 
 The owner's request of 12 October 2026: a claim waits on the whole suite before it can merge, and every build waits on
 its claim. The required checks on `main` (the ruleset "Main - ADR Check") are "Decision records", "test", and code
@@ -26,3 +26,5 @@ long code scanning (CodeQL) takes on a claim, since it is also required and this
 
 **Broken on purpose, each put back:** a pull request with one file outside `docs/backlog/` must take the long path; a
 push to `main` must take the long path; a backlog file the tools cannot read must fail the short path.
+
+**Measured, 12 October 2026.** The first pull request on the short path, #1534 (a backlog scrub, backlog files only), went from opening (16:08:39 UTC) to merged (16:14:20) in 5 minutes 41 seconds, beside #1519's 21 minutes. Its checks: `test` 2 minutes 22 seconds on the short path (about 15 on the whole suite); CodeQL's Rust analysis 5 minutes 22 seconds, which is now what a claim waits on; CodeQL's Python and JavaScript analyses about a minute each; Decision records 9 seconds. CodeQL took 6 to 6½ minutes on each of the eight pull requests before it that day, so this item does not shorten it. Whether CodeQL could skip a pull request of backlog files only, and still satisfy the code-scanning rule on `main`, is not looked into here.
