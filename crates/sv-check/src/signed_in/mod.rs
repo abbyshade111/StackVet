@@ -3878,12 +3878,11 @@ mod crash_tests {
             (out, http)
         }
 
-        /// Crashes each request the run sends, one at a time. Every rule the run without a crash
-        /// held back and the run with one credited, with the request that crashed; and the rules
-        /// held back, so the caller can see what the sweep reached. Held back is found at fault,
-        /// or, for a rule in `ONLY_CREDITED`, left open: a rule whose check never ran without the crash may be rightly credited with one,
-        /// once the crash hides a flaw that stood in its way.
-        fn sweep(&self) -> (Vec<String>, BTreeSet<String>) {
+        /// The run without a crash: what it held back, and every request it sent, for
+        /// `turned_by` to crash one at a time. Held back is found at fault, or, for a rule in
+        /// `ONLY_CREDITED`, left open: a rule whose check never ran without the crash may be rightly
+        /// credited with one, once the crash hides a flaw that stood in its way.
+        fn plain(&self) -> (BTreeSet<String>, Vec<String>) {
             let (plain, sent) = self.run(None);
             let credited: BTreeSet<String> =
                 plain.verified.iter().map(|v| v.check_id.clone()).collect();
@@ -3899,37 +3898,55 @@ mod crash_tests {
                     })
                     .map(|rule| rule.rule_id.to_owned()),
             );
-            let sent: Vec<&String> = sent.iter().collect();
-            let threads = std::thread::available_parallelism().map_or(4, |n| n.get());
-            let turned = std::thread::scope(|scope| {
-                let handles: Vec<_> = sent
-                    .chunks(sent.len().div_ceil(threads).max(1))
-                    .map(|ids| {
-                        let found = &found;
-                        scope.spawn(move || {
-                            let mut turned = Vec::new();
-                            for id in ids {
-                                let (crashed, _) = self.run(Some(id));
-                                for credit in &crashed.verified {
-                                    if found.contains(&credit.check_id) {
-                                        turned.push(format!(
-                                            "{}: {} credited when {id} crashed",
-                                            self.name, credit.check_id
-                                        ));
-                                    }
-                                }
-                            }
-                            turned
-                        })
-                    })
-                    .collect();
-                handles
-                    .into_iter()
-                    .flat_map(|h| h.join().unwrap())
-                    .collect()
-            });
-            (turned, found)
+            (found, sent.into_iter().collect())
         }
+
+        /// The run with request `id` crashed: every rule `found` held back that it credited.
+        fn turned_by(&self, id: &str, found: &BTreeSet<String>) -> Vec<String> {
+            let (crashed, _) = self.run(Some(id));
+            crashed
+                .verified
+                .iter()
+                .filter(|credit| found.contains(&credit.check_id))
+                .map(|credit| {
+                    format!(
+                        "{}: {} credited when {id} crashed",
+                        self.name, credit.check_id
+                    )
+                })
+                .collect()
+        }
+    }
+
+    /// Runs `job` on every item, a thread per core each taking the next item as it finishes (backlog
+    /// 0271). The sweeps used to give each thread a fixed share of one scenario's requests and wait
+    /// for the slowest share before the next scenario; one list of every scenario's crashed runs,
+    /// slowest scenario first, keeps every core busy to the end. Which runs are made, and what each
+    /// is judged on, is the same either way; the results are sorted, so a failure reads the same.
+    fn each_at_once<T: Sync>(items: &[T], job: impl Fn(&T) -> Vec<String> + Sync) -> Vec<String> {
+        let next = std::sync::atomic::AtomicUsize::new(0);
+        let threads = std::thread::available_parallelism().map_or(4, |n| n.get());
+        let mut out: Vec<String> = std::thread::scope(|scope| {
+            let handles: Vec<_> = (0..threads.min(items.len()).max(1))
+                .map(|_| {
+                    scope.spawn(|| {
+                        let mut out = Vec::new();
+                        while let Some(item) =
+                            items.get(next.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
+                        {
+                            out.extend(job(item));
+                        }
+                        out
+                    })
+                })
+                .collect();
+            handles
+                .into_iter()
+                .flat_map(|h| h.join().unwrap())
+                .collect()
+        });
+        out.sort();
+        out
     }
 
     /// The rules that are never a finding, only credited or left open: for these, held back is
@@ -4555,9 +4572,11 @@ mod crash_tests {
                 )
             },
         ];
-        let mut raised = Vec::new();
+        let mut jobs: Vec<(&Scenario, String, std::time::Duration)> = Vec::new();
         for scenario in &scenarios {
+            let started = std::time::Instant::now();
             let (plain, sent) = scenario.run(None);
+            let took = started.elapsed();
             // The setup is a correct app: nothing to find before anything crashes.
             assert!(
                 plain.findings.is_empty(),
@@ -4569,33 +4588,17 @@ mod crash_tests {
                     .map(|f| &f.rule_id)
                     .collect::<Vec<_>>()
             );
-            let sent: Vec<&String> = sent.iter().collect();
-            let threads = std::thread::available_parallelism().map_or(4, |n| n.get());
-            raised.extend(std::thread::scope(|scope| {
-                let handles: Vec<_> = sent
-                    .chunks(sent.len().div_ceil(threads).max(1))
-                    .map(|ids| {
-                        scope.spawn(move || {
-                            let mut raised = Vec::new();
-                            for id in ids {
-                                let (crashed, _) = scenario.run(Some(id));
-                                for f in &crashed.findings {
-                                    raised.push(format!(
-                                        "{}: {} raised when {id} crashed",
-                                        scenario.name, f.rule_id
-                                    ));
-                                }
-                            }
-                            raised
-                        })
-                    })
-                    .collect();
-                handles
-                    .into_iter()
-                    .flat_map(|h| h.join().unwrap())
-                    .collect::<Vec<_>>()
-            }));
+            jobs.extend(sent.into_iter().map(|id| (scenario, id, took)));
         }
+        jobs.sort_by_key(|(_, _, took)| std::cmp::Reverse(*took));
+        let raised = each_at_once(&jobs, |(scenario, id, _)| {
+            let (crashed, _) = scenario.run(Some(id));
+            crashed
+                .findings
+                .iter()
+                .map(|f| format!("{}: {} raised when {id} crashed", scenario.name, f.rule_id))
+                .collect()
+        });
         assert!(raised.is_empty(), "{raised:#?}");
     }
 
@@ -4621,13 +4624,28 @@ mod crash_tests {
 
     #[test]
     fn a_crash_never_turns_a_finding_into_a_pass() {
-        let mut reached = BTreeSet::new();
-        let mut turned = Vec::new();
-        for scenario in scenarios() {
-            let (t, found) = scenario.sweep();
-            turned.extend(t);
-            reached.extend(found);
-        }
+        let scenarios = scenarios();
+        // Each scenario's run without a crash, timed, so the slowest scenarios' crashed runs start
+        // first and none is left running alone at the end.
+        let plain: Vec<(BTreeSet<String>, Vec<String>, std::time::Duration)> = scenarios
+            .iter()
+            .map(|s| {
+                let started = std::time::Instant::now();
+                let (found, sent) = s.plain();
+                (found, sent, started.elapsed())
+            })
+            .collect();
+        let mut jobs: Vec<(usize, &String)> = plain
+            .iter()
+            .enumerate()
+            .flat_map(|(i, (_, sent, _))| sent.iter().map(move |id| (i, id)))
+            .collect();
+        jobs.sort_by_key(|(i, _)| std::cmp::Reverse(plain[*i].2));
+        let turned = each_at_once(&jobs, |(i, id)| scenarios[*i].turned_by(id, &plain[*i].0));
+        let reached: BTreeSet<String> = plain
+            .iter()
+            .flat_map(|(found, _, _)| found.clone())
+            .collect();
         assert!(turned.is_empty(), "{turned:#?}");
         // The sweep is only as good as the findings it starts from: a rule listed here that no
         // scenario found at fault was never tried, so it is named rather than passed quietly.
