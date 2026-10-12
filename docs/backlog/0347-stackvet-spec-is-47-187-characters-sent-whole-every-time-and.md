@@ -15,3 +15,6 @@
 **Fix.** Page it through `parts` like plan and check (first page: the manifest's `[app]` and the filling instructions; the prompts a section), and a test on its size. Must not lose: the spec, instructions, and guide agreement test.
 
 **Record.** ADR-066 governs: a Later line.
+
+**The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
+is told, and the trial's comparisons should not move under it; the same reason as 0338.
