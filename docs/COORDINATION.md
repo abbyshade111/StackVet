@@ -43,7 +43,9 @@ makes those collisions stop, and what it costs.
    the board does the handing out, and nobody pastes (the owner's choice, 12 October 2026). So the orchestrator assigns
    each session's next item while it is still building the current one, and the item's own file and this page's footer
    are everything the session needs; the board is what counts, a message only points at it.
-4. The builder builds, in a branch and a pull request of its own, and runs `python3 tools/backlog.py done <number>`.
+4. The builder builds, in a new branch from `main` and a pull request of its own for each item (a cloud session may
+   push a branch other than the one it started on), and runs `python3 tools/backlog.py done <number>`; it keeps
+   minding an earlier pull request until that merges, but starts the next item once its own work on the last is done.
    The orchestrator runs `finish <number> --pr <url>`, and the session is free for the next item. The two may land on
    `main` in either order: `check` reads a held item marked done as the normal hand-back, not a disagreement (the
    first two finished items, 0280 and 0278, each turned their own pull request red before it did).
