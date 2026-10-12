@@ -1,6 +1,6 @@
 # Process: shorter CI, a merge queue decision, and a nightly routine on `main`
 
-**Status:** partly done: part 1's shards: sv-check split across parallel jobs, which the owner wants (12 October 2026); part 1's other half, docs-only pull requests skipping the suite, is built narrower in backlog 0272 (backlog items only, ADR-104), since most documents are read by tests; part 2, the merge queue, was declined by the owner the same day
+**Status:** done, 12 October 2026
 
 From the same write-up; each
 claimable on its own, and the second is the owner's to decide.
@@ -8,7 +8,7 @@ claimable on its own, and the second is the owner's to decide.
    `sv-check` in two or three shards beside the other crates brings it to about five; docs-only pull requests skip
    the test and image jobs behind a path filter, with a job of the required name still reporting. ADR-051 governs
    `rust.yml`: a Later entry or an "unchanged, because" line.
-   **Part status:** claimed by securevibe-trial-prep, 12 October 2026
+   **Part status:** done, 12 October 2026
 2. **A merge queue** (a repository setting, the owner's). GitHub merges a pull request that was green against an
    older `main`, so the first test of the combination is `main`'s own; a queue tests each pull request on top of
    the ones ahead of it, at one more CI run each. The write-up's advice: try auto-merge alone first (on since

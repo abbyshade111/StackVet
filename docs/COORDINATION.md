@@ -62,17 +62,40 @@ write-up says so.
 ## The two arms
 
 The owner asked to test "how much context matters once there's orchestration, and whether there's an appreciable
-cost difference from bloated context files". Two fresh building sessions, both on the same model (Opus 5.5):
+cost difference from bloated context files". Two fresh building sessions, both on the same model (Opus 5.5), and both
+**cloud sessions** (the owner's word, 12 October 2026, so this computer is not loaded): each runs in Anthropic's
+environment on a clone of the repository from GitHub.
 
 | | Full context | No context |
 |---|---|---|
-| Standing instructions | `CLAUDE.md` (about 3,100 words, read every turn), the auto-memory folder, the rules and skills under `.claude` | A two-line `CLAUDE.md` that says only to take its work from the board; an empty memory folder |
-| Where it runs | A session in the usual place | A session in a separate clone, made by `python3 tools/coordination.py setup-no-context ~/stackvet-trial-noctx`: the memory folder is keyed on the path, so a new path starts empty, and git is told to ignore the stub (`update-index --skip-worktree`), so no commit can carry it |
+| Standing instructions | `CLAUDE.md` (about 3,100 words, read every turn) and the rules, skills, and settings under `.claude`, which a cloud session loads from the clone as a local one does | A two-line `CLAUDE.md` that says only to take its work from the board |
+| Where it runs | A cloud session in the ordinary cloud environment | A cloud session in a second cloud environment whose setup script, printed by `python3 tools/coordination.py cloud-setup-script`, writes the stub and tells git to ignore the change (`update-index --skip-worktree`), so no commit can carry it |
+| Memory | None of this computer's: auto-memory is machine-local and never reaches a cloud session, so both arms are without it, and the arms differ on `CLAUDE.md` alone | The same |
 | Permissions | The same `.claude/settings.json` | The same, so the difference is knowledge, not permission prompts |
 
 Both are fresh because a running session has already read the files into its conversation, and taking them away does
 not take away what it knows. The orchestrator alternates matched items between the arms and writes the arm beside each
 hand-out; `measure --arms` reads them back.
+
+**Test the no-context environment once before the trial.** The documentation does not say whether a setup script runs
+inside the clone, or whether git's index survives the environment's cache; start one session there and ask it to print
+`CLAUDE.md` and `git ls-files -v CLAUDE.md` (an `S` in front means git ignores it). If the stub is not there, the trial
+does not start until it is. On this computer, `setup-no-context ~/stackvet-trial-noctx` makes the same arm as a local
+clone, should the cloud route fail.
+
+**Tested 12 October 2026:** the owner's test session in that environment printed the stub, the `S` flag, and a clean
+tree, so the script runs inside the clone and the flag survives to the session's start. The session then read the
+committed `CLAUDE.md` with `git show` and compared, and called the substitution possible tampering. Two things follow.
+The no-context arm has no *standing* instructions, but the file stays in the repository's history, as everything does,
+so the write-up checks each of its transcripts for whether the session went and read the committed `CLAUDE.md` on its
+own, and says so; a session that does has shown how much it wants those rules. And the stub now says the replacement is
+deliberate, for the trial, so a builder does not stop to investigate it.
+
+**Reaching a cloud session.** The desktop app's session tools do not see cloud sessions, so the orchestrator cannot
+message them from here. Either the owner pastes the hand-out, or it is sent from the Terminal with
+`claude -p "<the hand-out>" --cloud <session-id>` (once `claude auth login` has been run). The board is the record
+either way; the message only points at it. Cloud sessions carry a `Claude-Session:` trailer on their commits, which the
+write-up notes beside the `Assisted-by:` count.
 
 What the no-context session still has: the repository (`docs/ARCHITECTURE.md`, the backlog, the records, the tools'
 own help text), the checks CI runs, and the hand-outs. So the useful result is line by line: a rule the no-context
@@ -83,7 +106,7 @@ only the full-context session follows is one the file earns its place with.
 
 | From git, by `measure` | By hand or from the app |
 |---|---|
-| Pull requests merged; those that only record a claim (every file under `docs/backlog/`) | The session's context size per turn (the app shows it) and tokens per item from the transcript |
+| Pull requests merged; those that only record a claim (every file under `docs/backlog/`) | Tokens per item, from each cloud session's own usage display and transcript (the desktop app's per-turn reading is for local sessions only) |
 | Merges of `main` back into a branch | American English and plain language in what each wrote |
 | Numbers taken twice in the tree | Questions to the owner per item |
 | Per arm, with `gh` present: commits without the tool's name (ADR-092), merges of `main` in each pull request | Pull requests refused after passing (GitHub only) |
