@@ -3484,7 +3484,10 @@ fn findings_only_for_and_in_part_are_refused_where_they_say_nothing_or_too_much(
     assert!(err.contains("it is `findingsOnly`"), "{err}");
 
     let with_findings_only = one_rule(r#", "findingsOnly": true, "inPart": true"#);
-    let err = rules_from(&with_findings_only).err().expect("refused").to_string();
+    let err = rules_from(&with_findings_only)
+        .err()
+        .expect("refused")
+        .to_string();
     assert!(err.contains("say nothing"), "{err}");
 
     assert!(rules_from(&one_rule(r#", "inPart": true"#)).is_ok());
