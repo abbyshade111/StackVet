@@ -2038,6 +2038,7 @@ fn run_checks(
             http,
             &a,
             confirm_path.clone().filter(|_| signed_in_works).as_deref(),
+            &users.private,
             carried,
             &mut out
         )
