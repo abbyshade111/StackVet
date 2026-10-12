@@ -1,6 +1,6 @@
 # Let the owner leave a folder out of the checks, with a stated reason shown in the report
 
-**Status:** claimed by backlog-org-0249, 12 October 2026
+**Status:** done, 12 October 2026
 
 From the same report as backlog 0248, where the owner's own test folder was the source of most of the noise. Proposal:
 a setting, in the app's `securevibe.toml`, that names a folder to leave out of the checks, with the owner's reason for it,

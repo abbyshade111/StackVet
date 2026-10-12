@@ -358,6 +358,7 @@ pub fn settle(
     loaded: &Loaded,
     seals: &sv_check::seal::Checker,
     decided: &[sv_check::decisions::Decided],
+    left_out: &[String],
 ) -> sv_check::review::Outcome {
     // The same weakness on the same line, reported by two tools, is one thing to fix.
     let mut findings = sv_check::finding::merge_same_place(findings);
@@ -377,7 +378,7 @@ pub fn settle(
         ast_rules: &loaded.ast_rules,
         secret_rules: &loaded.secret_rules,
     };
-    decisions_then_reviews(findings, decided, |mut findings| {
+    let mut outcome = decisions_then_reviews(findings, decided, |mut findings| {
         sv_check::review::fill_fingerprints(app_dir, &mut findings);
         sv_check::review::apply(
             app_dir,
@@ -387,5 +388,12 @@ pub fn settle(
             seals,
             &|rule, file| lookup.looked(rule, file),
         )
-    })
+    });
+    // Last, what lies in a folder the owner left out, with their confirmation, is set aside, keys
+    // and passwords apart (ADR-099): after the reviews, so an entry set aside by a person is
+    // reported as theirs.
+    let (findings, left) = crate::left_out::split(outcome.findings, left_out);
+    outcome.findings = findings;
+    outcome.left_out = left;
+    outcome
 }

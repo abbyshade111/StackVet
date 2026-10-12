@@ -1373,7 +1373,7 @@ fn cmd_check(args: &[String]) -> Result<i32> {
     let loaded = Loaded::load()?;
     let not_the_app = manifest
         .as_ref()
-        .map(|m| m.not_the_app().0)
+        .map(Manifest::set_apart)
         .unwrap_or_default();
     let static_scan = static_scan::StaticScan::read(&app_dir, &not_the_app, &loaded, &|_| {})?;
     let static_scan::StaticScan {
@@ -1635,6 +1635,12 @@ fn cmd_check(args: &[String]) -> Result<i32> {
         .as_ref()
         .map(|m| m.finding_review.as_slice())
         .unwrap_or_default();
+    // The folders the owner left out, as `sv report` reads them (ADR-099).
+    let left_out = manifest
+        .as_ref()
+        .map(|m| sv_cli::left_out::LeftOut::of(m, &seals))
+        .unwrap_or_default();
+    let used = &static_scan.scan_report.not_the_app;
     let settled = static_scan::settle(
         &app_dir,
         reviews,
@@ -1644,6 +1650,7 @@ fn cmd_check(args: &[String]) -> Result<i32> {
         &loaded,
         &seals,
         &[],
+        &left_out.counted_out(used),
     );
     let mut findings = settled.findings;
     findings.sort_by(|a, b| {
@@ -1691,6 +1698,17 @@ fn cmd_check(args: &[String]) -> Result<i32> {
         println!("\nNot counted in [[finding-review]], so each finding stands:");
         for why in &settled.not_counted {
             println!("  {why}");
+        }
+    }
+    // The folders left out, said as the report says them: nothing is dropped quietly (ADR-099).
+    let files: Vec<&str> = (static_scan.listing.app_files())
+        .map(|f| f.relative.as_str())
+        .collect();
+    let left_out_lines = left_out.gaps(used, &files, &settled.left_out);
+    if !left_out_lines.is_empty() {
+        println!("\nLeft out of the checks, in stackvet.toml's `[[left-out]]`:");
+        for gap in &left_out_lines {
+            println!("  {}: {}", gap.what, gap.why);
         }
     }
 
@@ -2084,7 +2102,7 @@ fn cmd_audit(args: &[String]) -> Result<i32> {
     };
     let folders = manifest
         .as_ref()
-        .map(|m| m.not_the_app().0)
+        .map(Manifest::set_apart)
         .unwrap_or_default();
     let listing = sv_scan::files::Listing::of(&app_dir);
     // A list that would set apart all the app's code is not used, as in every other command (ADR-031).
@@ -3007,6 +3025,7 @@ mod tests {
             set_aside: Vec::new(),
             not_counted: Vec::new(),
             counted_in_test: Vec::new(),
+            left_out: Vec::new(),
         };
         // The review is shown the decision's finding.
         let mut seen = Vec::new();
@@ -3068,6 +3087,7 @@ mod tests {
                     set_aside: Vec::new(),
                     not_counted: Vec::new(),
                     counted_in_test: Vec::new(),
+                    left_out: Vec::new(),
                 }
             });
         assert_eq!(out.findings.len(), 1);
@@ -3084,6 +3104,7 @@ mod tests {
                 set_aside: Vec::new(),
                 not_counted: Vec::new(),
                 counted_in_test: Vec::new(),
+                left_out: Vec::new(),
             }
         });
         assert_eq!(out.findings.len(), 1);

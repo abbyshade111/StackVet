@@ -277,6 +277,14 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # `*` stands for one folder name. The report lists them, so never put the app's own code here.
 # not-the-app = ["examples", "crates/*/tests/fixtures"]
 
+# A folder the owner leaves out of the checks, with the reason the report prints beside it. It
+# counts only once the owner confirms it in `sv review` in their own terminal; until then it is
+# read as `not-the-app`. Once confirmed, no finding there counts except a key or password, which
+# counts wherever it is. Propose one only when the owner asks, and never for the app's own code.
+# [[left-out]]
+# folder = "tests/recorded"
+# why = "Recorded answers from the payment provider, replayed in tests, not code that runs."
+
 [capabilities.ai]
 # enabled = ?                 # does the app have an AI feature at all?
 # can-act = ?                 # may it change data, not just answer?

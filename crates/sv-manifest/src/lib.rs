@@ -1307,6 +1307,11 @@ pub struct Manifest {
     /// (ADR-024, Later, 9 October 2026). `None` until somebody has.
     #[serde(default)]
     pub scope_review: Option<ScopeReview>,
+    /// Folders the owner leaves out of the checks, each with the reason the report prints beside it
+    /// (ADR-099). Only an entry a person confirmed through `sv review` is left out; until then its
+    /// folder is read as `not-the-app`. See `Manifest::left_out`.
+    #[serde(default)]
+    pub left_out: Vec<LeftOut>,
 }
 
 /// The two answers that set the level, the audience and the data list, as a person confirmed them
@@ -1376,7 +1381,102 @@ pub struct FindingReview {
     pub seal: Option<String>,
 }
 
+/// One `[[left-out]]` entry: a folder the owner leaves out of the checks, and why (ADR-099). Every
+/// check but the search for keys leaves its files out once a person has confirmed the entry
+/// through `sv review`; a key found there is still a finding, counted.
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct LeftOut {
+    /// The folder, from the app folder, as a `not-the-app` entry is written.
+    pub folder: String,
+    /// Why it is left out, in a sentence or more; the report prints it beside the folder.
+    #[serde(default)]
+    pub why: String,
+    /// Who confirmed it: `owner`, as `sv review` writes it.
+    #[serde(default)]
+    pub by: Option<String>,
+    /// When, as YYYY-MM-DD.
+    #[serde(default)]
+    pub on: Option<String>,
+    /// What `sv review` writes. Without one that holds, the entry waits and the folder is read as
+    /// `not-the-app`. See `sv-check::seal`.
+    #[serde(default)]
+    pub seal: Option<String>,
+}
+
 impl Manifest {
+    /// The `[[left-out]]` entries that can be used, by their place in the list with the folder as
+    /// a path from the app folder, and those refused, each with why (ADR-099). An entry is refused
+    /// for what refuses a `not-the-app` entry (the whole app, a path outside it, the file the start
+    /// command runs), and for giving no reason. Whether a person confirmed it is not decided here.
+    pub fn left_out(&self) -> (Vec<(usize, String)>, Vec<String>) {
+        let mut used = Vec::new();
+        let mut refused = Vec::new();
+        for (i, entry) in self.left_out.iter().enumerate() {
+            match self.folder_entry(&entry.folder) {
+                Err(why) => refused.push(format!(
+                    "`[[left-out]]` `{}`: {why}, so it is not left out",
+                    entry.folder
+                )),
+                Ok(_) if entry.why.trim().is_empty() => refused.push(format!(
+                    "`[[left-out]]` `{}`: it gives no reason in `why`, and the report prints the \
+                     reason beside the folder, so it is not left out",
+                    entry.folder
+                )),
+                Ok(folder) => used.push((i, folder)),
+            }
+        }
+        (used, refused)
+    }
+
+    /// Every folder read apart from the app: `not-the-app`'s, and each usable `[[left-out]]` folder,
+    /// confirmed or not (ADR-099). What is in them is not evidence of what the app uses, so none can
+    /// switch a requirement on or off; which of them is also left out of the count is decided where
+    /// the seals are checked.
+    pub fn set_apart(&self) -> Vec<String> {
+        let mut folders = self.not_the_app().0;
+        for (_, folder) in self.left_out().0 {
+            if !folders.contains(&folder) {
+                folders.push(folder);
+            }
+        }
+        folders
+    }
+
+    /// One folder as `not-the-app` and `[[left-out]]` write it, as a path from the app folder with
+    /// `/` separators, or why it cannot be used.
+    fn folder_entry(&self, entry: &str) -> Result<String, String> {
+        let path = entry.trim().replace('\\', "/");
+        let path = path.trim_start_matches("./").trim_end_matches('/');
+        let parts: Vec<&str> = path.split('/').collect();
+        let why = if path.is_empty() || path == "." || parts.iter().all(|p| *p == "*") {
+            Some("it names the whole app")
+        } else if path.starts_with('/') || path.contains(':') {
+            Some("it is not a path inside the app folder")
+        } else if parts
+            .iter()
+            .any(|p| *p == ".." || p.is_empty() || *p == ".")
+        {
+            Some("it is not a plain path inside the app folder")
+        } else if parts.iter().any(|p| p.contains('*') && *p != "*") {
+            Some("`*` can only stand for a whole folder name")
+        } else {
+            None
+        };
+        if let Some(why) = why {
+            return Err(why.to_owned());
+        }
+        // A folder holding the file the start command runs is the app (gap analysis, item 19).
+        match self
+            .start_files()
+            .into_iter()
+            .find(|file| within(file, &parts))
+        {
+            Some(file) => Err(format!("it holds `{file}`, which the start command runs")),
+            None => Ok(path.to_owned()),
+        }
+    }
+
     /// The folders `[repository] not-the-app` names, as paths from the app folder with `/`
     /// separators, and the entries refused, each with why. `*` stands for one whole folder name, as
     /// in `crates/*/tests`. An entry that would name the whole app, or reach outside it, is refused:
@@ -1386,34 +1486,9 @@ impl Manifest {
         let mut folders = Vec::new();
         let mut refused = Vec::new();
         for entry in &self.repository.not_the_app {
-            let path = entry.trim().replace('\\', "/");
-            let path = path.trim_start_matches("./").trim_end_matches('/');
-            let parts: Vec<&str> = path.split('/').collect();
-            let why = if path.is_empty() || path == "." || parts.iter().all(|p| *p == "*") {
-                Some("it names the whole app")
-            } else if path.starts_with('/') || path.contains(':') {
-                Some("it is not a path inside the app folder")
-            } else if parts
-                .iter()
-                .any(|p| *p == ".." || p.is_empty() || *p == ".")
-            {
-                Some("it is not a plain path inside the app folder")
-            } else if parts.iter().any(|p| p.contains('*') && *p != "*") {
-                Some("`*` can only stand for a whole folder name")
-            } else {
-                None
-            };
-            // A folder holding the file the start command runs is the app (gap analysis, item 19).
-            let starts = self
-                .start_files()
-                .into_iter()
-                .find(|file| why.is_none() && within(file, &parts));
-            match (why, starts) {
-                (Some(why), _) => refused.push(format!("`{entry}`: {why}, so it is not used")),
-                (None, Some(file)) => refused.push(format!(
-                    "`{entry}`: it holds `{file}`, which the start command runs, so it is not used"
-                )),
-                (None, None) => folders.push(path.to_owned()),
+            match self.folder_entry(entry) {
+                Ok(folder) => folders.push(folder),
+                Err(why) => refused.push(format!("`{entry}`: {why}, so it is not used")),
             }
         }
         (folders, refused)
