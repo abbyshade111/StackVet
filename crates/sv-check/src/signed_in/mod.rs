@@ -1127,7 +1127,8 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
             "owned-control-",
         ],
     ),
-    (FORGERY.rule_id, &["forged-create"]),
+    // The `owned` create, and each `creates` entry forged after it (backlog 0232, part 3).
+    (FORGERY.rule_id, &["forged-create", "forged-create-"]),
     (
         STEP_SKIPPED.rule_id,
         &["login-flow-b0", "login-flow-b1", "login-flow-b2"],
