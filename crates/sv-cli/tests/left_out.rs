@@ -225,3 +225,53 @@ fn a_seal_that_holds_counts_only_when_the_entry_is_the_owner_s() {
     );
     std::fs::remove_dir_all(&root).ok();
 }
+
+#[test]
+fn a_folder_that_holds_all_the_app_s_code_is_not_left_out() {
+    // The guard ADR-031 gives `not-the-app`, for `[[left-out]]` too: with the app's only code in
+    // the folder, leaving it out would leave nothing to grade.
+    let root = scratch("all-code");
+    let dir = app(&root, "");
+    std::fs::remove_file(dir.join("app.py")).unwrap();
+    let entry = confirmed(&root, &dir, "fixtures", WHY, "owner");
+    std::fs::write(
+        dir.join("stackvet.toml"),
+        std::fs::read_to_string(dir.join("stackvet.toml")).unwrap() + &entry,
+    )
+    .unwrap();
+    let (security, findings) = report(&root, &dir);
+    assert!(in_fixtures(&findings).0 >= 1, "still checked: {findings:?}");
+    assert!(
+        security.contains("would leave none of the app's code, so every folder is read as the app"),
+        "{security}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn what_a_folder_left_out_uses_cannot_overrule_the_manifest() {
+    // As for `not-the-app`: a package in the folder is not one the app uses, even before the owner
+    // confirms the entry. The control first: unnamed, the folder's package overrules the manifest.
+    const OVERRULED: &str = "stackvet.toml says auth is not used, but `flask-login`";
+    let scope = |entry: &str, name: &str| {
+        let root = scratch(name);
+        let dir = app(&root, entry);
+        std::fs::write(
+            dir.join("fixtures/requirements.txt"),
+            "flask-login==0.6.3\n",
+        )
+        .unwrap();
+        let out = Command::new(env!("CARGO_BIN_EXE_sv"))
+            .arg("scope")
+            .arg(&dir)
+            .env("XDG_CONFIG_HOME", root.join("config"))
+            .output()
+            .expect("sv runs");
+        std::fs::remove_dir_all(&root).ok();
+        String::from_utf8_lossy(&out.stdout).into_owned()
+    };
+    assert!(scope("", "evidence-control").contains(OVERRULED));
+    let waiting = format!("[[left-out]]\nfolder = \"fixtures\"\nwhy = \"{WHY}\"\n");
+    let said = scope(&waiting, "evidence");
+    assert!(!said.contains(OVERRULED), "{said}");
+}
