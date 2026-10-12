@@ -4,7 +4,7 @@ use super::*;
 use crate::finding::{Confidence, Location, Severity};
 
 fn finding(rule: &str, file: &str, line: usize) -> Finding {
-    Finding {
+    crate::finding::found(Finding {
         evidence: Vec::new(),
         rule_id: rule.into(),
         title: format!("found by {rule}"),
@@ -27,7 +27,7 @@ fn finding(rule: &str, file: &str, line: usize) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
-    }
+    })
 }
 
 /// This computer's key for the app these tests read, as in the review tests.

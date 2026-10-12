@@ -4,7 +4,7 @@ use super::*;
 use sv_check::{Confidence, Location, Severity};
 
 fn finding(rule: &str, file: &str) -> sv_check::Finding {
-    sv_check::Finding {
+    sv_check::finding::found(sv_check::Finding {
         evidence: Vec::new(),
         rule_id: rule.into(),
         title: format!("found by {rule}"),
@@ -27,7 +27,7 @@ fn finding(rule: &str, file: &str) -> sv_check::Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
-    }
+    })
 }
 
 #[test]
