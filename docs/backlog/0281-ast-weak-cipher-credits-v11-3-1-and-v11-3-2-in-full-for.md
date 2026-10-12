@@ -1,6 +1,6 @@
 # ast.weak-cipher credits V11.3.1 and V11.3.2 in full for finding none of six named ciphers
 
-**Status:** open
+**Status:** claimed by builder-none, 12 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: checks' honesty. Severity: high. Verified against the code by the reviewing session before filing.
 

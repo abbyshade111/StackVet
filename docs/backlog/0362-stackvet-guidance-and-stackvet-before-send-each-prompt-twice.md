@@ -15,3 +15,6 @@
 **Fix.** Leave the prompt bodies out of the structured result and keep ids and titles there, if the structured-reading client can fetch the body by id; otherwise record that the duplication is deliberate.
 
 **Record.** ADR-066 governs: an "unchanged, because" line.
+
+**The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
+is told, and the trial's comparisons should not move under it; the same reason as 0338.

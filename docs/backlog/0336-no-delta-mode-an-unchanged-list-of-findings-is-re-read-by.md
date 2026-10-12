@@ -15,3 +15,6 @@
 **Fix.** By default, findings whose fingerprint was in this session's previous answer come as one line each (fingerprint, rule, file:line) under "N unchanged since the check at <time>", new ones in full, gone ones named; `all` gives everything as now. Must not lose: the counts and the not-examined list every time; "unchanged" must say it means the same fingerprint, not the same code; nothing left out of `all`.
 
 **Record.** ADR-066 governs what the tool is told: a Later entry, since what an answer holds by default changes.
+
+**The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
+is told, and the trial's comparisons should not move under it; the same reason as 0338.
