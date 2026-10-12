@@ -1,6 +1,6 @@
 # Trial the nine draft prompts in docs/prompts/drafts.md, after the git-history check (0258)
 
-**Status:** open
+**Status:** claimed by backlog-org-0257, 12 October 2026
 
 The nine drafts in `docs/prompts/drafts.md` (design entry 0368, from the Cursor build) are written but not tested, and
 none is served by `sv`. Each draft names what its trial would measure. The trial needs the owner's yes and a budget,
@@ -21,3 +21,13 @@ rule; keep the rest in the drafts file with what happened.
 - That app's `stackvet.toml` naming `change-phone`, `change-two-factor`, and `change-recovery`, each with its `shows` page, beside `change-email`; and `signup`, since every change is tried on an account made for it.
 - One app that offers none of them, listing `not-offered`, so the trial sees both what an unconfirmed list does in the report (a gap, V7.5.1 in part) and what it does once the owner confirms it in `sv review` (V7.5.1 whole, saying which part rests on the owner's word).
 - Measured with and without draft 17: whether each change refuses a wrong password, read from `probe.phone-change-without-password`, `probe.two-factor-change-without-password`, `probe.recovery-change-without-password`, and `probe.email-change-without-password`; how often a change reads as not assessed because the page writes the value differently or the change did not take, which says whether the `shows` design holds up on real apps; and whether the AI tool writes `not-offered` for a change the app does have.
+
+**Scope of this claim (12 October 2026), the owner's choice the same day ("Group A first"):** the drafts the loop
+trials' club brief (`docs/prompts/trial-3/plain-brief.md`) gives something to act on, with no new setup: 8, 18, 19, 20
+and 22, and 10 and 12 if their checks fit the club app (to be confirmed in the protocol, before any build). The shape
+of the library trial of 6 October (`docs/prompts/library-trial/`): ten builds without any draft on each of Haiku 5.5
+(`claude-haiku-5-5`, never Haiku 4.5, at the owner's word the same day) and Sonnet 5.5 (`claude-sonnet-5-5`), shared by every draft, then ten builds for each draft on the model whose control builds show its problem; the
+library's rule decides. About 80 builds, a budget of about $20 to $25 of the owner's API credit, approved the same
+day. The protocol is written and merged before the first build (`docs/prompts/drafts-trial/protocol.md`). Drafts that
+need a second brief (10's sign-up half, 11, 13, 15, 16, 17, 21), and the process drafts (1 to 7, 9, 14, 23), are not in
+this claim; each is proposed to the owner with its own cost.
