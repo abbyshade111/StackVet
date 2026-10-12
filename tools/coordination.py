@@ -476,7 +476,7 @@ found=
 for d in "$PWD" /home/user/*/ /workspace/*/; do
   if [ -f "$d/CLAUDE.md" ] && [ -d "$d/.git" ]; then cd "$d"; found=1; break; fi
 done
-[ -n "$found" ] || { echo "no clone with a CLAUDE.md under $PWD, /home/user, or /workspace; $PWD holds: $(ls -A | tr '\n' ' ')"; exit 1; }
+[ -n "$found" ] || { echo "no clone with a CLAUDE.md under $PWD, /home/user, or /workspace; $PWD holds: $(ls -A | xargs)"; exit 1; }
 echo "clone at $PWD"
 printf '%s' '{stub}' > CLAUDE.md
 git update-index --skip-worktree CLAUDE.md
