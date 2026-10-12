@@ -209,12 +209,16 @@ jobs:
           esac
 
       - name: Pass the credits this part saw to `test`
-        # GitHub's own artifact actions, pinned to a commit like every step here (ADR-106). The log holds
-        # only check names and requirement ids, no answer the app gave.
+        # GitHub's own artifact actions, pinned to a commit like every step here (ADR-106). Two files: the
+        # credits, and beside them the census of what checks withheld (`finding::found`), which
+        # tools/coverage.py reads with them. They hold only check names, requirement ids, and places in
+        # sv's own code, no answer the app gave.
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: credits-${{ matrix.part }}
-          path: ${{ runner.temp }}/credits.log
+          path: |
+            ${{ runner.temp }}/credits.log
+            ${{ runner.temp }}/credits.log.withheld
           if-no-files-found: error
           retention-days: 3
 
@@ -277,12 +281,14 @@ jobs:
         if: needs.scope.outputs.full != 'false'
         # Fails when a check listed as only ever a finding was credited, or one never credited is not
         # listed. By 6 October 2026, 23 checks had been counted as crediting when none ever did. The three
-        # parts' logs are read as one, and each must be there.
+        # parts' logs are read as one, credits and withheld each joined, and every part's two must be there.
         run: |
           for part in rest cli-1 cli-2; do
             [ -s "$RUNNER_TEMP/credits/credits-$part/credits.log" ] || { echo "::error::no credit log from $part"; exit 1; }
+            [ -f "$RUNNER_TEMP/credits/credits-$part/credits.log.withheld" ] || { echo "::error::no withheld log from $part"; exit 1; }
           done
           cat "$RUNNER_TEMP"/credits/credits-*/credits.log > "$RUNNER_TEMP/credits.log"
+          cat "$RUNNER_TEMP"/credits/credits-*/credits.log.withheld > "$RUNNER_TEMP/credits.log.withheld"
           python3 tools/coverage.py --credits "$RUNNER_TEMP/credits.log"
 
   image:
