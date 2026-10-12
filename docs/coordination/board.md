@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: 0315 (since 2026-10-12) — next: 0304
-- builder-none — arm: none — holds: 0292 (since 2026-10-12) — next: 0306
+- builder-none — arm: none — holds: 0306 (since 2026-10-12) — next: 0312
 
 ## Queue
 
@@ -34,59 +34,58 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 21. 0308 resources/read answers differently for a folder that does not exist and one outside the root, which confine.rs deliberately avoids — ready
 22. 0310 The build-loop record's hash chain does not catch lines cut from the end, and the report's wording says removal is caught — ready
 23. 0311 stackvet_prompts with a path follows a symlinked stackvet-report folder outside the root — ready
-24. 0312 The run note goes into compliance.md unescaped, and the health path in it is not validated — ready
-25. 0316 windows.yml leaves the checkout's token in .git/config while the branch's build scripts and tests run — ready
-26. 0317 The images the suite starts are pinned by tag, not digest, in the workflow — ready
-27. 0318 The publish step puts the registry token in the shell script text instead of the environment — ready
-28. 0319 backlog.py done rewrites files through any symlink inside the repository — ready
-29. 0320 fuzz/seed.sh breaks on a file name with a space — ready
-30. 0321 prompt_trial.py has the one shell=True in tools/ — ready
-31. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
-32. 0323 An unused dependency in each of two crates — ready
-33. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
-34. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
-35. 0326 The name server's builder carries its own copy of the hardening, against ADR-019's record, and the chokepoint test does not cover it — ready
-36. 0327 sv probe reads curl's output with no size cap — ready
-37. 0328 sv probe's one DNS question accepts an answer from any sender — ready
-38. 0329 Host paths go to docker -v in the short form, so an app folder whose path holds a colon cannot be mounted and the run does not say why — ready
-39. 0330 A --tools run is not network-free: Semgrep downloads its packs from semgrep.dev at run time, and no document beside the no-network rule says so — ready
-40. 0331 config.secrets-file-committed is a full credit where its sibling check is in part — ready
-41. 0332 resolve's comment overstates its safety: an owner's no with no corroboration excludes requirements — ready
-42. 0333 A threat reads checked in part when one of its requirements is checked and the rest are not verified — ready
-43. 0334 probe.error-detail-leak's debug-mode credit rests on a finite marker list that misses ASP.NET Core and Laravel — ready
-44. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
-45. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-46. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
-47. 0343 The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove — ready
-48. 0344 Dependencies carry full debug information in every debug build and in each of about 81 grammar-laden test binaries — ready
-49. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
-50. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
-51. 0351 Every file of the app is read from disk and decoded five to six times across the static stage — ready
-52. 0352 Thirty-odd separate regex passes per file in the secrets scan — ready
-53. 0353 One tree-sitter query walk per rule per file: up to 31 walks of each Python file — ready
-54. 0354 sv report --run walks the app folder twice more, only to compute the private files — ready
-55. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
-56. 0356 Incremental compilation is on in CI, where every build is fresh — ready
-57. 0357 The Dockerfile has no dependency layer, and copies examples/ into the build stage — ready
-58. 0358 The native comparison build is the one release build without --locked — ready
-59. 0359 The no-cache comment in rust.yml is duplicated and gives two different build times — ready
-60. 0360 fuzz/Cargo.lock no longer matches the manifests it locks — ready
-61. 0363 Every CI part fetches all five container images, 16 to 25 s per part, where each part starts only some — ready
-62. 0364 The crash sweeps' time grows with the square of the request count, and is not measured since 0271 — ready
-63. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
-64. 0366 git log --all --diff-filter=A --name-only walks every commit's diff for the secrets-file check — ready
-65. 0367 Quadratic grouping over findings in settle and in the report build — ready
-66. 0368 Outside tools run one after another, their start-ups never overlapping — ready
-67. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-68. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-69. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-70. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-71. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-72. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-73. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-74. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-75. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-76. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+24. 0316 windows.yml leaves the checkout's token in .git/config while the branch's build scripts and tests run — ready
+25. 0317 The images the suite starts are pinned by tag, not digest, in the workflow — ready
+26. 0318 The publish step puts the registry token in the shell script text instead of the environment — ready
+27. 0319 backlog.py done rewrites files through any symlink inside the repository — ready
+28. 0320 fuzz/seed.sh breaks on a file name with a space — ready
+29. 0321 prompt_trial.py has the one shell=True in tools/ — ready
+30. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
+31. 0323 An unused dependency in each of two crates — ready
+32. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
+33. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
+34. 0326 The name server's builder carries its own copy of the hardening, against ADR-019's record, and the chokepoint test does not cover it — ready
+35. 0327 sv probe reads curl's output with no size cap — ready
+36. 0328 sv probe's one DNS question accepts an answer from any sender — ready
+37. 0329 Host paths go to docker -v in the short form, so an app folder whose path holds a colon cannot be mounted and the run does not say why — ready
+38. 0330 A --tools run is not network-free: Semgrep downloads its packs from semgrep.dev at run time, and no document beside the no-network rule says so — ready
+39. 0331 config.secrets-file-committed is a full credit where its sibling check is in part — ready
+40. 0332 resolve's comment overstates its safety: an owner's no with no corroboration excludes requirements — ready
+41. 0333 A threat reads checked in part when one of its requirements is checked and the rest are not verified — ready
+42. 0334 probe.error-detail-leak's debug-mode credit rests on a finite marker list that misses ASP.NET Core and Laravel — ready
+43. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
+44. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+45. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
+46. 0343 The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove — ready
+47. 0344 Dependencies carry full debug information in every debug build and in each of about 81 grammar-laden test binaries — ready
+48. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
+49. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
+50. 0351 Every file of the app is read from disk and decoded five to six times across the static stage — ready
+51. 0352 Thirty-odd separate regex passes per file in the secrets scan — ready
+52. 0353 One tree-sitter query walk per rule per file: up to 31 walks of each Python file — ready
+53. 0354 sv report --run walks the app folder twice more, only to compute the private files — ready
+54. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
+55. 0356 Incremental compilation is on in CI, where every build is fresh — ready
+56. 0357 The Dockerfile has no dependency layer, and copies examples/ into the build stage — ready
+57. 0358 The native comparison build is the one release build without --locked — ready
+58. 0359 The no-cache comment in rust.yml is duplicated and gives two different build times — ready
+59. 0360 fuzz/Cargo.lock no longer matches the manifests it locks — ready
+60. 0363 Every CI part fetches all five container images, 16 to 25 s per part, where each part starts only some — ready
+61. 0364 The crash sweeps' time grows with the square of the request count, and is not measured since 0271 — ready
+62. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
+63. 0366 git log --all --diff-filter=A --name-only walks every commit's diff for the secrets-file check — ready
+64. 0367 Quadratic grouping over findings in settle and in the report build — ready
+65. 0368 Outside tools run one after another, their start-ups never overlapping — ready
+66. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+67. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+68. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+69. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+70. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+71. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+72. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+73. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+74. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+75. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
 
 ## Log
 
@@ -230,3 +229,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-12 18:47 — assigned 0304 to builder-full (full) as next: pair 8 with 0302 (for builder-none later): each marks a credit in part and regenerates the coverage files, so the two run one after the other, never at once
 - 2026-10-12 18:55 — finished 0309 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1586; now holds 0292
 - 2026-10-12 18:55 — assigned 0306 to builder-none (none) as next: pair 7 with 0315 (builder-full): each a small detection fix with a red-first test, no coverage files touched; uploads.rs, which nobody else holds
+- 2026-10-12 19:27 — finished 0292 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1588; now holds 0306
+- 2026-10-12 19:27 — assigned 0312 to builder-none (none) as next: pair 9 with 0310 (for builder-full later): each makes report text say no more than it should, with a test; markdown.rs and sv-run's manifest check, which nobody else holds
