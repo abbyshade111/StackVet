@@ -87,11 +87,23 @@ fn each_test_file_information_finding_is_listed_with_its_rule_place_and_fingerpr
         info("bandit.B105", "tests/test_app.py", 30),
     ];
     let page = security(&report);
-    assert!(page.contains("## 2 things in test code, information only"), "{page}");
-    for (rule, line, fp) in [("bandit.B101", 12, "v2-bandit.B101-12"), ("bandit.B105", 30, "v2-bandit.B105-30")] {
-        assert!(page.contains(rule) && page.contains(&format!("line {line}")) && page.contains(fp), "{rule} is listed in full");
+    assert!(
+        page.contains("## 2 things in test code, information only"),
+        "{page}"
+    );
+    for (rule, line, fp) in [
+        ("bandit.B101", 12, "v2-bandit.B101-12"),
+        ("bandit.B105", 30, "v2-bandit.B105-30"),
+    ] {
+        assert!(
+            page.contains(rule) && page.contains(&format!("line {line}")) && page.contains(fp),
+            "{rule} is listed in full"
+        );
     }
-    assert!(page.contains("`counts`"), "the page says how to make a real one count");
+    assert!(
+        page.contains("`counts`"),
+        "the page says how to make a real one count"
+    );
 }
 
 #[test]
@@ -108,7 +120,9 @@ fn the_list_follows_the_findings_when_there_are_findings_too() {
     report.findings = vec![app];
     report.test_information = vec![info("bandit.B101", "tests/test_app.py", 12)];
     let page = security(&report);
-    let found = page.find("eval of a value the user gives").expect("the finding is on the page");
+    let found = page
+        .find("eval of a value the user gives")
+        .expect("the finding is on the page");
     let listed = page
         .find("## 1 thing in test code, information only")
         .expect("the information is listed when there are findings too");
