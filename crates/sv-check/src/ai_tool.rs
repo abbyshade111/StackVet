@@ -24,6 +24,7 @@
 
 use crate::config::ConfigReport;
 use crate::finding::{Confidence, Finding, Location, Severity};
+use crate::secrets::SecretRules;
 use serde::Serialize;
 use serde_json::Value;
 use sv_scan::files::{Entry, Listing};
@@ -56,7 +57,11 @@ pub struct ToolNote {
 /// The longest stretch of a file's own text a note quotes.
 const QUOTE: usize = 160;
 
-fn quote(text: &str) -> String {
+/// A stretch of a file's own text as a note quotes it: any key in it cut first, as the secrets scan
+/// shows one (its first four characters and its length), and before the stretch is shortened, so a
+/// key across the cut is still known (backlog 0283); then on one line, at most `QUOTE` characters.
+fn quote(rules: &SecretRules, text: &str) -> String {
+    let (text, _) = crate::secrets::redact_text(rules, text);
     let one_line: String = text
         .chars()
         .map(|c| if c.is_control() { ' ' } else { c })
@@ -76,7 +81,7 @@ fn is(relative: &str, name: &str) -> bool {
 }
 
 /// Reads every AI coding tool file `sv` knows the format of.
-pub fn read(listing: &Listing) -> AiToolFiles {
+pub fn read(listing: &Listing, rules: &SecretRules) -> AiToolFiles {
     let mut out = AiToolFiles::default();
     // Every file, editor folders included: VS Code keeps its MCP servers in `.vscode/mcp.json`,
     // which `app_files` leaves out as not the app, and so is everything this reads.
@@ -116,7 +121,7 @@ pub fn read(listing: &Listing) -> AiToolFiles {
         };
         if let Kind::Instructions = kind {
             out.read.push(relative.to_owned());
-            marks_named(relative, &text, &mut out.notes);
+            marks_named(relative, &text, &mut out.notes, rules);
             continue;
         }
         let Ok(json) = serde_json::from_str::<Value>(&text) else {
@@ -126,8 +131,8 @@ pub fn read(listing: &Listing) -> AiToolFiles {
         };
         out.read.push(relative.to_owned());
         match kind {
-            Kind::ClaudeSettings => claude_settings(relative, &json, &mut out.notes),
-            Kind::Servers(key, tool) => servers(relative, tool, &json[key], &mut out.notes),
+            Kind::ClaudeSettings => claude_settings(relative, &json, &mut out.notes, rules),
+            Kind::Servers(key, tool) => servers(relative, tool, &json[key], &mut out.notes, rules),
             Kind::Instructions => {}
         }
     }
@@ -144,7 +149,7 @@ enum Kind {
 
 /// Claude Code's settings, as its settings reference describes them. Every key read here is one
 /// that reference says takes effect from a project's settings, once the folder is trusted.
-fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>) {
+fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>, rules: &SecretRules) {
     const TOOL: &str = "Claude Code";
     let mut note = |what: String, risk: &'static str| {
         notes.push(ToolNote {
@@ -162,20 +167,20 @@ fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>) {
                 let matcher = group["matcher"]
                     .as_str()
                     .filter(|m| !m.trim().is_empty())
-                    .map(|m| format!(" for `{}`", quote(m)))
+                    .map(|m| format!(" for `{}`", quote(rules, m)))
                     .unwrap_or_default();
                 for hook in group["hooks"].as_array().into_iter().flatten() {
                     let when = format!("on `{event}`{matcher}");
                     match hook["type"].as_str() {
                         Some("command") => {
                             if let Some(command) = hook["command"].as_str() {
-                                note(format!("runs `{}` {when}", quote(command)), "AST02");
+                                note(format!("runs `{}` {when}", quote(rules, command)), "AST02");
                             }
                         }
                         Some("http") => {
                             if let Some(url) = hook["url"].as_str() {
                                 note(
-                                    format!("sends what happens {when} to `{}`", quote(url)),
+                                    format!("sends what happens {when} to `{}`", quote(rules, url)),
                                     "AST02",
                                 );
                             }
@@ -184,8 +189,8 @@ fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>) {
                             note(
                                 format!(
                                     "calls the tool `{}` of the MCP server `{}` {when}",
-                                    quote(hook["tool"].as_str().unwrap_or("?")),
-                                    quote(hook["server"].as_str().unwrap_or("?"))
+                                    quote(rules, hook["tool"].as_str().unwrap_or("?")),
+                                    quote(rules, hook["server"].as_str().unwrap_or("?"))
                                 ),
                                 "AST02",
                             );
@@ -214,7 +219,10 @@ fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>) {
             _ => None,
         };
         if let Some(command) = command.filter(|c| !c.trim().is_empty()) {
-            note(format!("runs `{}` {purpose}", quote(command)), "AST02");
+            note(
+                format!("runs `{}` {purpose}", quote(rules, command)),
+                "AST02",
+            );
         }
     }
 
@@ -230,7 +238,7 @@ fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>) {
                     format!(
                         "sends everything it sends the model, your code and its key among it, to \
                          `{}` (`{name}`)",
-                        quote(value)
+                        quote(rules, value)
                     ),
                     "AST02",
                 );
@@ -239,7 +247,10 @@ fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>) {
                 || upper == "HTTP_PROXY"
             {
                 note(
-                    format!("sends its requests through `{}` (`{name}`)", quote(value)),
+                    format!(
+                        "sends its requests through `{}` (`{name}`)",
+                        quote(rules, value)
+                    ),
                     "AST02",
                 );
             }
@@ -273,7 +284,13 @@ fn claude_settings(file: &str, json: &Value, notes: &mut Vec<ToolNote>) {
 }
 
 /// A file of MCP servers: each one the tool starts or connects to.
-fn servers(file: &str, tool: &str, servers: &Value, notes: &mut Vec<ToolNote>) {
+fn servers(
+    file: &str,
+    tool: &str,
+    servers: &Value,
+    notes: &mut Vec<ToolNote>,
+    rules: &SecretRules,
+) {
     let Some(servers) = servers.as_object() else {
         return;
     };
@@ -294,23 +311,23 @@ fn servers(file: &str, tool: &str, servers: &Value, notes: &mut Vec<ToolNote>) {
             if unpinned.is_empty() {
                 format!(
                     "starts the MCP server `{}` with `{}`",
-                    quote(name),
-                    quote(&line)
+                    quote(rules, name),
+                    quote(rules, &line)
                 )
             } else {
                 format!(
                     "starts the MCP server `{}` with `{}`, which names no exact version of `{}`: \
                      each start runs whatever was published last",
-                    quote(name),
-                    quote(&line),
+                    quote(rules, name),
+                    quote(rules, &line),
                     unpinned.join("`, `")
                 )
             }
         } else if let Some(url) = server["url"].as_str() {
             format!(
                 "connects to the MCP server `{}` at `{}`",
-                quote(name),
-                quote(url)
+                quote(rules, name),
+                quote(rules, url)
             )
         } else {
             continue;
@@ -347,7 +364,7 @@ const OWNER_MARKS: [(&str, &str); 5] = [
 /// the tool to write a mark that is the owner's alone, or just as well tell it never to, so it is a
 /// note for the owner to read and never a finding. One note per file, naming its first such line
 /// and every mark the file names.
-fn marks_named(file: &str, text: &str, notes: &mut Vec<ToolNote>) {
+fn marks_named(file: &str, text: &str, notes: &mut Vec<ToolNote>, rules: &SecretRules) {
     let mut first = None;
     let mut named: Vec<&str> = Vec::new();
     for (number, line) in text.lines().enumerate() {
@@ -370,7 +387,7 @@ fn marks_named(file: &str, text: &str, notes: &mut Vec<ToolNote>) {
             "names {}, which `sv` reads as yours alone, first on line {line}: \"{}\". Read it to \
              make sure it does not tell your AI tool to write it for you",
             named.join(", "),
-            quote(said)
+            quote(rules, said)
         ),
         risk: "AST03",
     });
@@ -521,6 +538,14 @@ mod tests {
     use super::*;
     use std::fs;
 
+    pub(super) fn rules() -> SecretRules {
+        SecretRules::load(
+            &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../data/secret-rules.json"),
+        )
+        .expect("rules load")
+    }
+
     fn scratch(name: &str) -> std::path::PathBuf {
         let dir = std::env::temp_dir().join(format!(
             "sv-ai-tool-{name}-{}-{:?}",
@@ -563,7 +588,7 @@ mod tests {
               "enableAllProjectMcpServers": true
             }"#,
         );
-        let files = read(&Listing::of(&dir));
+        let files = read(&Listing::of(&dir), &rules());
         assert_eq!(files.read, vec![".claude/settings.json"]);
         let all = whats(&files).join("\n");
         for expected in [
@@ -603,7 +628,7 @@ mod tests {
             ".vscode/mcp.json",
             r#"{"servers": {"fetch": {"type": "stdio", "command": "uvx", "args": ["mcp-server-fetch"]}}}"#,
         );
-        let files = read(&Listing::of(&dir));
+        let files = read(&Listing::of(&dir), &rules());
         let all = whats(&files).join("\n");
         assert!(
             all.contains("`gh` with `npx -y @modelcontextprotocol/server-github`, which names no exact version"),
@@ -643,7 +668,7 @@ mod tests {
             r#"{"mcpServers": {"gh": {"command": "npx", "args": ["x"]}}}"#,
         );
         write(&dir, ".claude/settings.json", "{ not json");
-        let files = read(&Listing::of(&dir));
+        let files = read(&Listing::of(&dir), &rules());
         assert!(files.notes.is_empty(), "{:?}", files.notes);
         assert!(files.read.is_empty());
         let all = files.not_read.join("\n");
@@ -670,7 +695,7 @@ mod tests {
             "mcp.json",
             r#"{"mcpServers": {"gh": {"command": "npx", "args": ["-y", "pkg"]}}}"#,
         );
-        let files = read(&Listing::of(&dir));
+        let files = read(&Listing::of(&dir), &rules());
         assert!(files.notes.is_empty() && files.read.is_empty(), "{files:?}");
     }
 
@@ -760,3 +785,7 @@ mod tests {
         assert!(report.findings.is_empty(), "{:?}", report.findings);
     }
 }
+
+#[cfg(test)]
+#[path = "ai_tool_redact_tests.rs"]
+mod redact_tests;
