@@ -222,6 +222,10 @@ health = "/"              # a path that returns 200 once the app is up
 #   the page that shows it (`shows`, or wherever the form leads when that is left out). It also
 #   lists what the signed-in pages try to send to other sites, and looks in it for the test
 #   account's own details. `browser = {}` asks all but the typed text.
+#   Where the app shows a person's text in more than one place, name each form instead:
+#   `browser = { text-forms = [{ form = "/notes/new", shows = "/notes" }, { form = "/profile" }] }`.
+#   Each is typed into and its page read; with one form named, the result can only be "checked in
+#   part", one sample of the places text is shown. Give either `text-form` or `text-forms`, not both.
 # private-websocket = "/ws"
 #   A WebSocket that only a signed-in user should be able to open. The handshake is sent with the
 #   first user's session, then with no session, with one the probes made up, and after signing out.
