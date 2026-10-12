@@ -83,6 +83,14 @@ inside the clone, or whether git's index survives the environment's cache; start
 does not start until it is. On this computer, `setup-no-context ~/stackvet-trial-noctx` makes the same arm as a local
 clone, should the cloud route fail.
 
+**Tested 12 October 2026:** the owner's test session in that environment printed the stub, the `S` flag, and a clean
+tree, so the script runs inside the clone and the flag survives to the session's start. The session then read the
+committed `CLAUDE.md` with `git show` and compared, and called the substitution possible tampering. Two things follow.
+The no-context arm has no *standing* instructions, but the file stays in the repository's history, as everything does,
+so the write-up checks each of its transcripts for whether the session went and read the committed `CLAUDE.md` on its
+own, and says so; a session that does has shown how much it wants those rules. And the stub now says the replacement is
+deliberate, for the trial, so a builder does not stop to investigate it.
+
 **Reaching a cloud session.** The desktop app's session tools do not see cloud sessions, so the orchestrator cannot
 message them from here. Either the owner pastes the hand-out, or it is sent from the Terminal with
 `claude -p "<the hand-out>" --cloud <session-id>` (once `claude auth login` has been run). The board is the record

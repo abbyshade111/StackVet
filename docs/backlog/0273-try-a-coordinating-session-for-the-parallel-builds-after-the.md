@@ -106,3 +106,8 @@ with the setup script `tools/coordination.py cloud-setup-script` prints (tested 
 the documentation does not say the script runs inside the clone); neither arm has this computer's memory, so they
 differ on `CLAUDE.md` alone; hand-outs are pasted by the owner or sent with `claude -p ... --cloud <id>`; the cost
 reading comes from the sessions' own usage display, not the desktop app. `docs/COORDINATION.md` says the same.
+
+**The cloud environment tested, 12 October 2026:** the owner's test session printed the stub, the `S` flag, and a clean
+tree. It then read the committed `CLAUDE.md` from history and called the substitution possible tampering: so the
+no-context arm's transcripts are checked for whether the session read the committed file on its own, and the stub says
+the replacement is deliberate.

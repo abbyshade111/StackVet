@@ -441,7 +441,8 @@ def cmd_measure(repo, board_path, since, until, arms):
 # ---------------------------------------------------------------------------------------------------------------
 # The no-context arm's clone.
 
-STUB = "# StackVet\n\nTake your work from the coordination board, `docs/coordination/board.md`, and nothing else is said here.\n"
+STUB = ("# StackVet\n\nTake your work from the coordination board, `docs/coordination/board.md`, and nothing else is said here.\n"
+        "This file stands in for the project guide on purpose, for the coordination trial (backlog 0273); nothing was tampered with.\n")
 
 
 def setup_no_context(source, target, origin_url=None):
