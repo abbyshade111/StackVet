@@ -464,13 +464,20 @@ def setup_no_context(source, target, origin_url=None):
 
 
 # The owner chose cloud sessions for both arms (12 October 2026), so the no-context arm is a cloud environment of its own
-# whose setup script does what setup_no_context does here. Whether that script runs inside the clone, and whether git's
-# index survives the environment cache, is not in the documentation: a test session that prints CLAUDE.md comes first.
+# whose setup script does what setup_no_context does here. The script starts in /home/user, not in the clone (the owner's
+# first test, 12 October 2026), so it looks for the clone; whether the clone exists when it runs, and whether git's index
+# survives the environment cache, is not in the documentation: a test session that prints CLAUDE.md comes first.
 CLOUD_SCRIPT = """#!/bin/bash
 # The no-context arm of the coordination trial (backlog 0273; docs/COORDINATION.md): CLAUDE.md is a two-line stub,
 # and git is told to ignore the change, so no commit can carry it. Runs once, before the session starts.
 set -e
-cd "$(git rev-parse --show-toplevel)" || { echo "not inside the clone; the trial's record says to test this first"; exit 1; }
+# The script starts in /home/user, not in the clone (seen on 12 October 2026), so it looks for the clone itself.
+found=
+for d in "$PWD" /home/user/*/ /workspace/*/; do
+  if [ -f "$d/CLAUDE.md" ] && [ -d "$d/.git" ]; then cd "$d"; found=1; break; fi
+done
+[ -n "$found" ] || { echo "no clone with a CLAUDE.md under $PWD, /home/user, or /workspace; $PWD holds: $(ls -A | tr '\n' ' ')"; exit 1; }
+echo "clone at $PWD"
 printf '%s' '{stub}' > CLAUDE.md
 git update-index --skip-worktree CLAUDE.md
 echo "no-context arm: CLAUDE.md is the stub, and git ignores the change"
