@@ -55,7 +55,13 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Part status:** claimed by backlog-org-0232, 12 October 2026
 5. **E. Each kind of event.** Each event the requirement names made to happen and looked for in the log, not one
    line.
-   **Part status:** open
+   **Scope of this claim (12 October 2026):** the authorization-failure log check (`probe.authorization-failure-logged`,
+   V16.3.2) planted on every private page the owner lists, not the first: each page asked for by a stranger with a
+   marker in its address, and the credit whole only when two or more pages were refused and every one's refusal was
+   found in the app's output with its status. The markers are made so that none is part of another, so one line
+   cannot stand for two pages. The other log credits (the sign-ins, the line's metadata, format, and timestamp) are
+   not in this claim. Recorded as a Later entry on ADR-053 in the pull request that builds it.
+   **Part status:** claimed by backlog-org-0232, 12 October 2026
 6. **F. Each browser page and form.** The browser-driven checks run on each page and form the owner lists.
    **Part status:** open
 7. **G. Each operation the requirement names.** Phone, two-factor, and recovery changes beside the email change
