@@ -42,9 +42,49 @@ pub fn step_line(what: &str) -> String {
     format!("  now: {what}")
 }
 
-/// `step_line`, on stderr, where the stage lines go and the report on stdout is left alone.
+/// `step_line`, on stderr, where the stage lines go and the report on stdout is left alone. Silent with `--quiet`.
 pub(crate) fn say_step(what: &str) {
-    eprintln!("{}", step_line(what));
+    if !quiet() {
+        eprintln!("{}", step_line(what));
+    }
+}
+
+#[cfg(test)]
+#[path = "assemble_progress_tests.rs"]
+mod progress_tests;
+
+/// Set by `sv report --quiet` (backlog 0247): the progress and timing lines are left out. Counts, warnings and errors
+/// are never silenced by it.
+pub static QUIET: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Whether `--quiet` was given.
+pub fn quiet() -> bool {
+    QUIET.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// How long a stage takes before its time is said when it ends (backlog 0247).
+pub const SLOW_STAGE_SECONDS: f64 = 5.0;
+
+/// The line said when a stage ends that took `SLOW_STAGE_SECONDS` or more; `None` for a quick one.
+pub fn took_line(n: usize, seconds: f64) -> Option<String> {
+    (seconds >= SLOW_STAGE_SECONDS).then(|| {
+        format!(
+            "sv report: {} of {} took {:.0} s",
+            n + 1,
+            REPORT_STAGES.len(),
+            seconds
+        )
+    })
+}
+
+/// Says how long the stage that just ended took, when it was slow, and not with `--quiet`.
+pub fn stage_finished(ended: Option<(usize, std::time::Instant)>) {
+    if let Some(line) = ended
+        .and_then(|(n, since)| took_line(n, since.elapsed().as_secs_f64()))
+        .filter(|_| !quiet())
+    {
+        eprintln!("{line}");
+    }
 }
 
 /// Runs one check of the report, and if it panics, catches it: the panic is recorded where it happened, so the
@@ -244,7 +284,7 @@ pub fn assemble_report_saying(
     // approximate" and "this list is empty"; built once and handed to the lockfile check and the
     // findings below.
     let static_scan =
-        static_scan::StaticScan::read(app_dir, &manifest.not_the_app().0, loaded, &stage)?;
+        static_scan::StaticScan::read(app_dir, &manifest.set_apart(), loaded, &stage)?;
     let (ctx, resolved) =
         sv_manifest::resolve(&manifest, &static_scan.scan_report.as_corroborator());
     let buckets = bucket(
@@ -2507,6 +2547,9 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     // `examined` is complete before this.
     // Merged, marked, the decisions and then the reviews applied, one per line: as `sv check`
     // counts them too (`static_scan::settle`).
+    // The folders the owner left out, and which of them count as left out here (ADR-099).
+    let left_out = crate::left_out::LeftOut::of(manifest, seals);
+    let used = &static_scan.scan_report.not_the_app;
     let reviewed = static_scan::settle(
         app_dir,
         &manifest.finding_review,
@@ -2516,7 +2559,12 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         loaded,
         seals,
         &safe_defaults.decided,
+        &left_out.counted_out(used),
     );
+    let files: Vec<&str> = (static_scan.listing.app_files())
+        .map(|f| f.relative.as_str())
+        .collect();
+    gaps.extend(left_out.gaps(used, &files, &reviewed.left_out));
     // Rules that fired in test code and are information, not findings (ADR-091): kept apart, never counted.
     let (findings, test_information) =
         split_test_information(reviewed.findings, &reviewed.counted_in_test);

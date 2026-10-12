@@ -1027,6 +1027,7 @@ impl sv_check::script::Services for DockerRun<'_> {
                     .filter(|host| self.backend.model_ready(self.via, host)),
                 Model::AsStarted => self.model,
             },
+            on_step: self.plan.on_step,
         })
     }
 
@@ -1095,6 +1096,8 @@ struct DockerHttp<'a> {
     browser: Option<&'a str>,
     /// The test model's name on the fenced network, when the run has one that answered.
     model: Option<&'a str>,
+    /// Where a long wait says how far it is: the run's own `on_step`, none in a test (backlog 0247).
+    on_step: Option<crate::OnStep>,
 }
 
 /// Now, in seconds since 1970, by this computer's clock.
@@ -1134,6 +1137,12 @@ impl sv_check::signed_in::Http for DockerHttp<'_> {
                 break;
             }
             std::thread::sleep(left.min(Duration::from_millis(200)));
+        }
+    }
+
+    fn say(&mut self, line: &str) {
+        if let Some(crate::OnStep(say)) = self.on_step {
+            say(line);
         }
     }
 
@@ -3906,6 +3915,7 @@ mod probe_tests {
                     provider: None,
                     browser: None,
                     model: None,
+                    on_step: None,
                 },
                 alone: 0,
                 in_one_go: 0,
@@ -4068,6 +4078,7 @@ http.createServer((q, s) => {
                 provider: None,
                 browser: Some(&browser),
                 model: None,
+                on_step: None,
             };
             use sv_check::browser::{Action, BrowserCookie, Job};
             use sv_check::signed_in::Http;
@@ -4160,6 +4171,7 @@ http.createServer((q, s) => {
             provider: None,
             browser: None,
             model: None,
+            on_step: None,
         };
         use sv_check::signed_in::Http;
         let (ours, theirs) = (host_now(), http.now());
@@ -4336,6 +4348,7 @@ http.createServer((q, s) => {
                 provider: None,
                 browser: Some(&browser),
                 model: None,
+                on_step: None,
             };
             use sv_check::browser::{Action, Job};
             use sv_check::signed_in::Http;
@@ -4438,6 +4451,7 @@ http.createServer((q, s) => {
                 provider: None,
                 browser: Some(&browser),
                 model: None,
+                on_step: None,
             };
             use sv_check::browser::{Action, Job};
             use sv_check::signed_in::Http;
@@ -4586,6 +4600,7 @@ http.createServer((q, s) => {
                 provider: None,
                 browser: Some(&browser),
                 model: None,
+                on_step: None,
             };
             jobs.iter().map(|job| http.browser(job)).collect()
         } else {

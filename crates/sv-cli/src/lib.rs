@@ -33,6 +33,7 @@ pub mod crash;
 pub mod crash_notes;
 // The opt-in log of stages, named by SV_LOG (backlog 0237).
 pub mod exit;
+pub mod left_out;
 pub mod own_log;
 pub mod report_lock;
 pub mod static_scan;
@@ -571,12 +572,20 @@ pub fn dependency_gaps(sbom: &sbom::Sbom) -> Vec<sv_report::Gap> {
 /// evidence, and a list nobody sees could hide the app's own code from the check.
 pub fn not_the_app_gaps(manifest: &Manifest, scan: &sv_scan::ScanReport) -> Vec<sv_report::Gap> {
     let (folders, mut refused) = manifest.not_the_app();
+    // The scan set apart `[[left-out]]`'s folders too (ADR-099); their own lines say so
+    // (`left_out::LeftOut::gaps`), so these name only `not-the-app`'s.
+    let left_out: Vec<String> = manifest.left_out().0.into_iter().map(|(_, f)| f).collect();
     let mut gaps = Vec::new();
     if let Some(why) = &scan.not_the_app_refused {
-        let named: Vec<String> = folders.iter().map(|f| format!("`{f}`")).collect();
+        let named: Vec<String> = (folders.iter().chain(&left_out))
+            .map(|f| format!("`{f}`"))
+            .collect();
         refused.push(format!("{}: {why}", named.join(", ")));
     } else if !folders.is_empty() {
-        let found: Vec<String> = scan.set_apart.iter().map(|f| format!("`{f}`")).collect();
+        let found: Vec<String> = (scan.set_apart.iter())
+            .filter(|p| left_out.is_empty() || sv_scan::under_any(p, &folders))
+            .map(|f| format!("`{f}`"))
+            .collect();
         let missing: Vec<String> = folders
             .iter()
             .filter(|f| {
@@ -598,8 +607,13 @@ pub fn not_the_app_gaps(manifest: &Manifest, scan: &sv_scan::ScanReport) -> Vec<
             } else {
                 let (apart, total) = scan.code_set_apart;
                 format!(
-                    "{}, holding {apart} of the app's {total} code file{}",
+                    "{}, holding{} {apart} of the app's {total} code file{}",
                     found.join(", "),
+                    if left_out.is_empty() {
+                        ""
+                    } else {
+                        ", with the folders left out of the checks,"
+                    },
                     if total == 1 { "" } else { "s" }
                 )
             }
@@ -634,8 +648,13 @@ pub fn not_the_app_gaps(manifest: &Manifest, scan: &sv_scan::ScanReport) -> Vec<
         gaps.push(sv_report::Gap {
             what: format!("whether the app itself has `{}`", condition.name()),
             why: format!(
-                "The only sign of it is {shown_by}, in a folder stackvet.toml says is not the app \
-                 (`[repository] not-the-app`), so it is not counted as a \"no\": {answer}."
+                "The only sign of it is {shown_by}, in a folder stackvet.toml {}, so it is not \
+                 counted as a \"no\": {answer}.",
+                if left_out.is_empty() {
+                    "says is not the app (`[repository] not-the-app`)"
+                } else {
+                    "sets apart (`[repository] not-the-app` or `[[left-out]]`)"
+                }
             ),
             reason: sv_report::GapReason::PersonOnly,
             requirements: Vec::new(),
@@ -1846,7 +1865,7 @@ pub fn scan_for(
     listing: &sv_scan::files::Listing,
     signatures: &Signatures,
 ) -> Result<sv_scan::ScanReport> {
-    sv_scan::scan_listing_app(listing, signatures, &manifest.not_the_app().0)
+    sv_scan::scan_listing_app(listing, signatures, &manifest.set_apart())
 }
 
 /// What `sv` found that belongs in the notes, so the owner starts from their app, not a blank page.

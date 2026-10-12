@@ -142,6 +142,10 @@ pub trait Http {
         std::thread::sleep(std::time::Duration::from_secs(seconds));
     }
 
+    /// A line for the person watching a long wait, such as `--slow`'s, so a run that is waiting does not look stuck
+    /// (backlog 0247). Nothing by default: a test's fake app has no one watching, and the real run prints it.
+    fn say(&mut self, _line: &str) {}
+
     /// Sends a request to the run's test OpenID Connect provider rather than to the app: `None`
     /// when the run has no provider. The path is the provider's own, query included.
     fn provider(&mut self, _request: &ProbeRequest) -> Option<ProbeResponse> {
@@ -905,6 +909,10 @@ impl Http for Counted<'_> {
 
     fn wait(&mut self, seconds: u64) {
         self.inner.wait(seconds)
+    }
+
+    fn say(&mut self, line: &str) {
+        self.inner.say(line)
     }
 
     fn provider(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
@@ -1684,6 +1692,10 @@ impl Http for Patient<'_> {
 
     fn wait(&mut self, seconds: u64) {
         self.inner.wait(seconds);
+    }
+
+    fn say(&mut self, line: &str) {
+        self.inner.say(line)
     }
 
     fn provider(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {

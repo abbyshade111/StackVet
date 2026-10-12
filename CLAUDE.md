@@ -118,6 +118,11 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   merge until it passes, so add the line, or change the record, before asking for the merge. A pull request opened
   before 21:55 that day ran the check under its old name, `check`, and waits for "Decision records" until it is
   pushed to again or its description is edited.
+- **In a record's Governs paragraph, put backticks around real file paths only.** Write commands, flags, check ids,
+  rule names and function names there as plain text: the decision-records test reads every backticked word in that
+  paragraph as a file and fails on any that is not one (`--quiet`, `sv review`, and a check id each failed it on
+  11 and 12 October 2026). **Take a record's number only after looking at every open branch**, and ask the other
+  sessions running if any holds one not yet pushed: ADR-094, 096 and 100 were each taken twice in two days.
 - **A design entry is a new file, never a section added to `docs/DESIGN.md`.** Write it with
   `python3 tools/design_entry.py new "Its title (date)"`, which makes `docs/design/NNNN-its-title.md`; a test fails on
   a section in `DESIGN.md`. Until 8 October 2026 every session added to the end of one file, and any two open pull

@@ -137,6 +137,12 @@ pub(super) fn session_timeout_checks(
     let wait_until = |http: &mut dyn Http, until: u64| {
         while http.now() < until {
             let left = until - http.now();
+            // Said each step, so an hour's wait reads as one and not as a run that stopped (backlog 0247).
+            let line = waiting_line(
+                http.now().saturating_sub(began),
+                until.saturating_sub(began),
+            );
+            http.say(&line);
             http.wait(every.min(left));
             ok(&http.send(&get("timeout-keep-busy", confirm, &busy)));
         }
@@ -1599,6 +1605,20 @@ pub(super) fn identity_header_check(
             ),
         ));
     }
+}
+
+#[cfg(test)]
+#[path = "sessions_wait_tests.rs"]
+mod wait_tests;
+
+/// The line `sv report --run --slow` says while it waits out the session timeouts: how far it is, in whole minutes, of
+/// how long the wait is (backlog 0247).
+fn waiting_line(so_far: u64, of: u64) -> String {
+    format!(
+        "waiting out the session timeouts: {} of {} minutes",
+        so_far / 60,
+        of.div_ceil(60)
+    )
 }
 
 #[cfg(test)]
