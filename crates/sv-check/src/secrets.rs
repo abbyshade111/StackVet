@@ -1196,5 +1196,4 @@ fn clean_scan(rules: &SecretRules, scan: &SecretScan) -> Vec<crate::Verified> {
 mod tests;
 
 #[cfg(test)]
-#[path = "secrets/redact_named_tests.rs"]
 mod redact_named_tests;
