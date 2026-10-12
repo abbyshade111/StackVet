@@ -1,6 +1,6 @@
 # The deep review of `sv` at `eff3f17`, part 2 of 3: honesty, false cleans and coverage overclaims (H1 to H25)
 
-**Status:** partly done: see its done note; what remains is not yet written, as its markers read on 8 October 2026
+**Status:** done, 11 October 2026
 
 Same sender, method, and labels as part 1. **Each item can be claimed on its own.** The sender's order:
 H1 to H5, then H12 to H15, then H8 to H11.
@@ -264,3 +264,9 @@ H1 to H5, then H12 to H15, then H8 to H11.
   **Done the same day** (DESIGN, "A broken file holds back only the rules it could hide something from"; ADR-018,
   Later): a file that did not parse cleanly now holds back only the rules whose call it names anywhere, judged
   word by word and only for name patterns made of words; everything else is held back as before.
+
+**Closed, 11 October 2026:** every finding, H1 to H25, has its done note. The status check of 11 October said a
+test was still needed to show that range events are read in version order (H18); it exists, as
+`range_events_are_read_in_version_order_not_file_order` in `crates/sv-check/src/advisories.rs`. H2's "Not read" (Vue
+templates in Pug or another language) is a stated limit, not open work. The status line said "what remains is not yet
+written" only because the earlier markers read as open.
