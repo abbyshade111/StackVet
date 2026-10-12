@@ -787,6 +787,18 @@ pub fn finding_review_fields(entry: &sv_manifest::FindingReview) -> Vec<String> 
     ]
 }
 
+/// The fields a `[[left-out]]` entry is sealed over (ADR-099): the folder as written, the reason, who
+/// and when, so changing the folder or its reason breaks the seal.
+pub fn left_out_fields(entry: &sv_manifest::LeftOut) -> Vec<String> {
+    vec![
+        "left-out".to_owned(),
+        entry.folder.trim().to_owned(),
+        entry.why.trim().to_owned(),
+        entry.by.as_deref().unwrap_or("").trim().to_owned(),
+        entry.on.as_deref().unwrap_or("").trim().to_owned(),
+    ]
+}
+
 /// The fields a confirmation is sealed over: what it is under (`design` or `checked-by-hand`), the
 /// requirement, and everything the confirmation says: `by`, `on`, `how`, `answer`, `where`, and
 /// `result`, in that order.
