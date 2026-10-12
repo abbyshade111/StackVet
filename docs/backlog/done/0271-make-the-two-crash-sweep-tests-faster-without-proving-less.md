@@ -1,6 +1,6 @@
 # Make the two crash-sweep tests faster without proving less, measured first
 
-**Status:** open
+**Status:** done, 12 October 2026
 
 Found on 12 October 2026 while timing the suite for `docs/paper/LOCAL-TEST-FAILURES.md`, and filed at the owner's
 request. `a_crash_never_turns_a_finding_into_a_pass` and `a_crash_on_a_correct_app_raises_no_finding`
