@@ -87,4 +87,6 @@ by speaking for what its requirement names. One part per group of the inventory 
    two or more pages are listed. `sv preflight` says, when only one private page or one admin page is listed, that the
    checks asking each listed page can then only credit in part, and asks for more; the spec `sv init` writes says the
    same beside `private` and `admin`. No check changes.
-   **Part status:** claimed by backlog-org-0232, 12 October 2026
+   **Done the same day** (`docs/design/0374-ask-for-more-than-one-private-page-12-october-2026.md`): `sv preflight`
+   says when one private page is listed and why it caps the credits; the spec says to list every private and admin page.
+   **Part status:** done, 12 October 2026

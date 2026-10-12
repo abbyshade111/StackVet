@@ -129,6 +129,9 @@ health = "/"              # a path that returns 200 once the app is up
 #   A request sent the wrong way is answered as an unknown route, and a check that needed it says
 #   it could not tell.
 # private = ["/account"]    # pages only a signed-in user should see
+#                           # List every one, not one: several checks ask each page listed here, and
+#                           # with only one they can credit only in part, one sample of the pages a
+#                           # requirement names.
 #                           # A single-page app (React, Vite, and the like) sends every visitor the
 #                           # same page and fetches the data after: list the addresses it fetches
 #                           # from (`"/api/me"`) too, or that page alone cannot show anything is private.
@@ -140,7 +143,7 @@ health = "/"              # a path that returns 200 once the app is up
 #                           # sign-in page's own return address is asked without being listed; any
 #                           # other page that sends people on is asked only if it is listed here.
 # admin = ["/admin"]        # pages only an admin should see (needs `seed`); the admin account is
-#                           # made only when this is listed
+#                           # made only when this is listed. List every one, as for `private`.
 # admin-actions = [{ path = "/admin/announce", form = { text = "{marker}", csrf_token = "{csrf}" }, check = "/announcements" }]
 #   Requests only an admin should be able to make (needs `seed`, and `admin` listed, since that is
 #   what makes the admin account). Each is sent by the first ordinary

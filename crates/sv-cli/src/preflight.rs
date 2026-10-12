@@ -56,7 +56,8 @@ pub enum Part {
 /// One thing `sv run` needs, and what was found about it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Item {
-    /// What was looked at: `start`, `listen`, `port`, `seed`, `accounts`, `tables`, `path`, `field`, `users`.
+    /// What was looked at: `start`, `listen`, `port`, `seed`, `accounts`, `tables`, `path`, `field`, `users`,
+    /// `pages`.
     pub topic: &'static str,
     pub answer: Answer,
     pub says: Vec<Part>,
@@ -440,6 +441,33 @@ pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
     for (what, path) in paths {
         if seen.insert(path.clone()) {
             items.push(path_item(what, &path, source));
+        }
+    }
+    // One private page listed: the checks that ask each listed private page can then only credit in
+    // part, one sample of the pages the requirement names (backlog 0232, part 8; ADR-053, Later).
+    // Not said of admin pages, which many apps have one of and the settings cannot say so.
+    {
+        let (what, listed, asked) = (
+            "private",
+            &users.private,
+            "a session value `sv` makes up, the logging of a refused request, caching, and the \
+             sign-out control",
+        );
+        let pages: Vec<&String> = listed.iter().filter(|p| !p.contains('{')).collect();
+        if let [only] = pages.as_slice() {
+            items.push(Item::new(
+                "pages",
+                Answer::Look,
+                vec![
+                    sv(format!("Only one {what} page is listed, ")),
+                    app((*only).clone()),
+                    sv(format!(
+                        ". The checks that ask each listed {what} page ({asked}) can then credit \
+                         only in part: one page is one sample of every page the requirement names. \
+                         List the app's other {what} pages under `{what}` in [stack.run.users]."
+                    )),
+                ],
+            ));
         }
     }
     for (what, template) in [("sign-in", &users.login), ("sign-up", &users.signup)] {
@@ -889,9 +917,9 @@ mod tests {
         Manifest::parse(&text, Path::new("stackvet.toml")).expect("the test's manifest parses")
     }
 
-    const RUN: &str = "[stack.run]\nimage = \"python:3.12-slim\"\nstart = \"python app.py\"\nhealth = \"/health\"\n[stack.run.users]\nseed = \"python seed.py\"\nlogin = { path = \"/login\", form = { email = \"{user}\", password = \"{password}\", csrf_token = \"{csrf}\" } }\nprivate = [\"/account\"]\nadmin = [\"/admin\"]\n";
+    const RUN: &str = "[stack.run]\nimage = \"python:3.12-slim\"\nstart = \"python app.py\"\nhealth = \"/health\"\n[stack.run.users]\nseed = \"python seed.py\"\nlogin = { path = \"/login\", form = { email = \"{user}\", password = \"{password}\", csrf_token = \"{csrf}\" } }\nprivate = [\"/account\", \"/notes\"]\nadmin = [\"/admin\"]\n";
 
-    const GOOD_APP: &str = "import os, sqlite3\nPORT = int(os.environ.get('PORT', 8080))\ndb.execute('CREATE TABLE IF NOT EXISTS users (id)')\nroutes = {'/health': h, '/login': login, '/account': acct, '/admin': admin}\nfields = ('email', 'password', 'csrf_token')\nserve(('0.0.0.0', PORT))\n";
+    const GOOD_APP: &str = "import os, sqlite3\nPORT = int(os.environ.get('PORT', 8080))\ndb.execute('CREATE TABLE IF NOT EXISTS users (id)')\nroutes = {'/health': h, '/login': login, '/account': acct, '/notes': notes, '/admin': admin}\nfields = ('email', 'password', 'csrf_token')\nserve(('0.0.0.0', PORT))\n";
     const GOOD_SEED: &str = "import os\nfor u, p in (('SV_USER_A','SV_PASSWORD_A'),('SV_USER_B','SV_PASSWORD_B'),('SV_ADMIN','SV_ADMIN_PASSWORD')):\n    add(os.environ[u], os.environ[p])\n";
 
     fn answers(items: &[Item], topic: &str) -> Vec<Answer> {
@@ -1488,3 +1516,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod pages_tests;

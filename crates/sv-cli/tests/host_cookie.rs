@@ -136,7 +136,7 @@ fn a_host_prefixed_cookie_signs_the_browser_in_and_a_weakened_start_is_warned_ab
     // The browser was signed in with it, and the cookie it refused is named.
     assert!(
         report.contains(&format!(
-            "signed in a real browser with the first user's cookies: 1 private page opened in it, \
+            "signed in a real browser with the first user's cookies: 4 private pages opened in it, \
              though the browser refused the cookie {BIG_COOKIE} ("
         )),
         "{report}"
