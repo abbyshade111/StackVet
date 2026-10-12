@@ -12,7 +12,7 @@ the saving it is expected to bring stated in plain terms and marked as a measure
 
 **Run against `main` at 99e888b0, 12 October 2026, evening.** Four reviewers, about 630,000 tokens of reading; every
 finding read against the code by this session before filing. 34 items, 0336 to 0369, in severity order, all queued on
-the coordination board behind 0277's; two held for the owner's decision (0338, 0340). Each item says whether its saving
+the coordination board behind 0277's; one held for the owner's decision (0338; 0340 was declined the same evening, leaving its comment fix, 0359). Each item says whether its saving
 is measured or an estimate, and what the fix must not lose.
 
 **The measurements the review rests on.** CI, from the last six runs on `main`: before the three-part split the Tests

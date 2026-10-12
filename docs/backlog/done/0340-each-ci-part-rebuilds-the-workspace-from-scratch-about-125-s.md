@@ -1,6 +1,6 @@
 # Each CI part rebuilds the workspace from scratch, about 125 s each, and the no-cache reason no longer distinguishes a cache (the owner's decision)
 
-**Status:** open
+**Status:** done, 12 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: test and CI time. Severity: high. Verified against the code by the reviewing session before filing.
 
@@ -15,3 +15,8 @@
 **Fix.** The owner decides whether a dependency-only cache keyed on `Cargo.lock` is worth one more input to the build. If yes: `actions/cache` pinned to a SHA, restricted to `~/.cargo/registry` and `target/debug/deps` for dependencies, measured on one trial run; a Later entry on ADR-106. If no: keep one copy of the comment with the measured number and the reason as it now stands (the fewest inputs in the job that holds the Docker Hub token).
 
 **Record.** ADR-106 governs `rust.yml`: a Later entry either way, since the reason given changes.
+
+**The owner's decision, 12 October 2026:** no cache for now ("I agree with your assessment and recommendation"). The
+required check already fell from 15 to about 7.5 minutes with the three-part split; the container-test item (0353) saves
+as much again with no new input; and the Docker Hub token sits in the job a cache would feed. What remains is to fix the
+no-cache comment's reason and number, which is item 0359. Reconsidered only if the ceiling stops falling.
