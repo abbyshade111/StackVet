@@ -45,9 +45,17 @@ fn every_create_refused_from_another_site_with_nothing_else_named_is_whole() {
     let (out, _) = run_seeded(FakeApp::new(Flaws::default()), &creates_only());
     let credit = credit(&out).expect("credited");
     assert!(!credit.in_part, "{credit:?}");
-    assert!(credit.scope.contains("2 requests that create records"), "{}", credit.scope);
+    assert!(
+        credit.scope.contains("2 requests that create records"),
+        "{}",
+        credit.scope
+    );
     assert!(credit.scope.contains("/comments"), "{}", credit.scope);
-    assert!(!credit.scope.contains("not sent this way"), "{}", credit.scope);
+    assert!(
+        !credit.scope.contains("not sent this way"),
+        "{}",
+        credit.scope
+    );
 }
 
 #[test]
@@ -63,7 +71,11 @@ fn a_second_create_taken_from_another_site_is_found_naming_it() {
         .find(|f| f.rule_id == FORGERY.rule_id)
         .expect("the finding");
     assert_eq!(found.evidence, ["forged-create-1"]);
-    assert!(found.description.contains("/comments"), "{}", found.description);
+    assert!(
+        found.description.contains("/comments"),
+        "{}",
+        found.description
+    );
     assert!(credit(&out).is_none(), "credited beside its own finding");
 }
 
@@ -75,7 +87,9 @@ fn a_changing_request_not_forged_keeps_the_credit_in_part_and_is_named() {
     let credit = credit(&out).expect("credited");
     assert!(credit.in_part, "{credit:?}");
     assert!(
-        credit.scope.contains("not sent this way: the password change"),
+        credit
+            .scope
+            .contains("not sent this way: the password change"),
         "{}",
         credit.scope
     );
