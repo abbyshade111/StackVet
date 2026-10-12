@@ -1,6 +1,6 @@
 # The old-name notice says where the new folder is, once, and does not read as an error
 
-**Status:** claimed by backlog-org-0256, 12 October 2026
+**Status:** done, 12 October 2026
 
 Found by the feedback on the Cursor build (11 October 2026). After the SecureVibe-to-StackVet rename (backlog 0218), `sv`
 prints a note on every invocation when a config folder still has the old name: "`/Users/.../.config/securevibe` was read
@@ -12,3 +12,8 @@ needs one mention and no note on every run. The README already has that mention,
 per-run note. The owner decided, 11 October 2026, to keep the report's one-time line; the README and the report both say the
 same thing once, and nothing else mentions it. The notice is described in the rename decision (ADR-062); check whether removing the per-run note alters
 that record before building it.
+
+**Done 12 October 2026** (ADR-062, "Later, 12 October 2026"): the per-run note in `sv review` is removed; the old key
+folder is still read, and nothing moves a key. The README's paragraph and the report's one-time line stay.
+`crates/sv-cli/tests/review_old_folder.rs` now asserts the old folder in use is read and not said, and that the review
+really ran at a terminal, so its silence means something.

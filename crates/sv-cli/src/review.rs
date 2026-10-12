@@ -52,17 +52,9 @@ pub fn cmd_review(path: Option<PathBuf>) -> Result<()> {
              terminal yourself and run `sv review` there."
         );
     }
-    if let Some((old, new)) = Key::old_folder_in_use() {
-        println!(
-            "Note: {} Move it with `mv {} {}`.\n",
-            sv_frameworks::names::read_under_old_name(
-                &old.display().to_string(),
-                &new.display().to_string()
-            ),
-            old.display(),
-            new.display()
-        );
-    }
+    // The key folder under its old name is still read (ADR-062), and no longer said on every review:
+    // the owner, the only person who ran `sv` under the old name, read it as an error (backlog
+    // 0256). The README says it once, and a report says it once for the settings file.
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
     let mut out = Visible(std::io::stdout());
