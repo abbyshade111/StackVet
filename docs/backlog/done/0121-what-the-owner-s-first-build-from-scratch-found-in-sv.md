@@ -1,6 +1,6 @@
 # What the owner's first build from scratch found in `sv`
 
-**Status:** partly done: 6 of 9 parts done, 0 claimed, 3 open, as its markers read on 8 October 2026
+**Status:** done, 12 October 2026
 
 All nine numbered items done by 27 September
 2026; what each one left over is noted under it. 26 September 2026: the owner built

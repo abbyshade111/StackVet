@@ -1,6 +1,6 @@
 # The third weekly review of the decision records (week to 12 October 2026)
 
-**Status:** partly done: owner's questions in the item
+**Status:** partly done: the owner's answer on #1291: whether keeping a printed credential out of the report's crash line needs a record
 
 The scheduled routine "Weekly decision-record review" (Monday 12 October 2026, 8:45 Eastern). The earlier entry,
 "A weekly review of the decision records" (0091), was marked done on 10 October with the routine continuing outside
@@ -88,3 +88,11 @@ are v1, or are another's title: `README.md` (v1, the rename note, the old key fo
 Alliance's "Secure Vibe Coding Guide", session names (securevibe-e9), and the dated history in `docs/adr`, `docs/design`,
 `docs/backlog`, `docs/paper`. Not swept: the code's own strings (user-visible text in `crates/`); about 40 files name
 `securevibe`, mostly the old names `sv` still reads until 1 January 2027, and which are intended is a separate pass.
+
+**The owner's answers, 12 October 2026** (gathered here on the same day, since they were recorded only in the items
+they became):
+- *The large shared files left ungoverned:* answered by a new form of Governs pattern, a named part of a file
+  (backlog 0268, ADR-103), done.
+- *The index in thirteen records' Governs lists:* taken out (backlog 0267), done.
+- *#1291, a credential the app printed kept out of the report's crash line, written without a record:* no answer is
+  recorded in any item, record, or design entry, as read on 12 October 2026. Asked again the same day.
