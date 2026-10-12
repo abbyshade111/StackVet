@@ -56,3 +56,5 @@ sweeps merged). Two jobs on the same commit, each on an ordinary GitHub runner w
 
 **Nothing adopted.** Whether to adopt cargo-nextest, and how it is installed, is the owner's decision, asked on
 12 October 2026. The trial branch stays until the owner says it may be deleted.
+
+**The owner's decision, 12 October 2026:** cargo-nextest is not adopted. The job split of backlog 0192 part 1 is built instead.
