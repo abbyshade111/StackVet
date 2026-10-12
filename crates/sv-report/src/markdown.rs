@@ -892,7 +892,7 @@ pub fn security(report: &Report) -> String {
     out
 }
 
-/// The low-severity findings, one line per rule with its count and files (ADR-094). Every one is in full in
+/// The low-severity findings, one line per rule with its count and files (ADR-095). Every one is in full in
 /// `LOW_FINDINGS_FILE`, beside this report.
 fn low_lines(out: &mut String, low: &[crate::LowGroup]) {
     if low.is_empty() {
@@ -916,7 +916,7 @@ fn low_lines(out: &mut String, low: &[crate::LowGroup]) {
     out.push('\n');
 }
 
-/// Every low-severity finding in full, each as `security.md` would show it (ADR-094). The reports show them grouped
+/// Every low-severity finding in full, each as `security.md` would show it (ADR-095). The reports show them grouped
 /// by rule and point here.
 pub fn low_findings(report: &Report) -> String {
     let mut out = format!(

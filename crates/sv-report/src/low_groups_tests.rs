@@ -1,4 +1,4 @@
-//! Low-severity findings grouped by rule in the reports, and listed in full beside them (backlog 0250, ADR-094).
+//! Low-severity findings grouped by rule in the reports, and listed in full beside them (backlog 0250, ADR-095).
 
 use crate::{Counts, Report};
 

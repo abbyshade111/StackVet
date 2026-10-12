@@ -1444,10 +1444,10 @@ pub fn app_then_tests(report: &Report) -> (Vec<&sv_check::Finding>, Vec<&sv_chec
 #[path = "low_groups_tests.rs"]
 mod low_groups_tests;
 
-/// The file beside the report that holds every low-severity finding in full (ADR-094).
+/// The file beside the report that holds every low-severity finding in full (ADR-095).
 pub const LOW_FINDINGS_FILE: &str = "low-findings.md";
 
-/// One rule's low-severity findings, as the reports show them in one line (ADR-094).
+/// One rule's low-severity findings, as the reports show them in one line (ADR-095).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LowGroup {
     pub rule: String,
@@ -1457,7 +1457,7 @@ pub struct LowGroup {
 }
 
 /// Splits out the low-severity findings and groups them by rule, most first, then by rule name; the rest are
-/// returned as they were, in their order (ADR-094). Nothing is dropped: every low one is in a group, and in full in
+/// returned as they were, in their order (ADR-095). Nothing is dropped: every low one is in a group, and in full in
 /// `LOW_FINDINGS_FILE`.
 pub fn split_low<'a>(findings: Vec<&'a sv_check::Finding>) -> (Vec<&'a sv_check::Finding>, Vec<LowGroup>) {
     let (low, rest): (Vec<_>, Vec<_>) = findings

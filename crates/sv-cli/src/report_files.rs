@@ -36,7 +36,7 @@ pub const REPORT_FILES: [ReportFile; 7] = [
         mime: "text/markdown",
         render: sv_report::markdown::security,
     },
-    // Every low-severity finding in full; the reports group them by rule (ADR-094).
+    // Every low-severity finding in full; the reports group them by rule (ADR-095).
     ReportFile {
         name: sv_report::LOW_FINDINGS_FILE,
         mime: "text/markdown",

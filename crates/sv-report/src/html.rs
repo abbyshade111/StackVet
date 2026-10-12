@@ -1216,7 +1216,7 @@ mod tests {
     }
 }
 
-/// The low-severity findings, one line per rule with its count and files (ADR-094); each is in full in
+/// The low-severity findings, one line per rule with its count and files (ADR-095); each is in full in
 /// `LOW_FINDINGS_FILE`, beside this page.
 fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
     if low.is_empty() {
