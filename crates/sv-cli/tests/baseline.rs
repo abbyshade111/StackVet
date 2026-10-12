@@ -300,7 +300,8 @@ fn compared(tag: &str) -> Scratch {
 #[test]
 fn security_md_marks_the_old_findings_and_not_the_new_one() {
     let s = compared("md");
-    let text = s.read("after", "security.md");
+    // A low-severity finding is in full in low-findings.md, and its mark with it (ADR-095).
+    let text = s.read("after", "security.md") + &s.read("after", "low-findings.md");
     let held = text.matches("Also in the baseline (").count();
     let findings = s.json("after")["findings"].as_array().unwrap().len();
     assert_eq!(held, findings - 1, "{text}");
@@ -309,7 +310,8 @@ fn security_md_marks_the_old_findings_and_not_the_new_one() {
 #[test]
 fn report_html_marks_the_old_findings_and_not_the_new_one() {
     let s = compared("html");
-    let text = s.read("after", "report.html");
+    // A low-severity finding is in full in low-findings.md, and its mark with it (ADR-095).
+    let text = s.read("after", "report.html") + &s.read("after", "low-findings.md");
     let held = text.matches("Also in the baseline (").count();
     let findings = s.json("after")["findings"].as_array().unwrap().len();
     assert_eq!(held, findings - 1);
