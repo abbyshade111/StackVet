@@ -1,6 +1,6 @@
 # Two pull requests can take the same ADR number, and only one of them finds out
 
-**Status:** claimed by backlog-org-0265, 12 October 2026
+**Status:** done, 12 October 2026
 
 Asked for by the owner on 12 October 2026, in place of a merge queue (backlog 0192, part 2, declined): "might be worth
 adding protections for ADR number collisions". On 11 and 12 October 2026 a session took ADR-094 and then ADR-096 for a

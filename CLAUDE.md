@@ -28,7 +28,7 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   threat modeling, and `docs/paper/`.
 - `tools/` — Python scripts (`coverage.py`, `pwned_passwords.py`, `semgrep_packs.py`, `semgrep_rule_map.py`, `codeql_suites.py`,
   `atlas_references.py`, `image_smoke.py`, `prompt_trial.py`, `adr_check.py`, `cvss4_tables.py`,
-  `docs_page.py`, `design_entry.py`, `merge_main.py`, `backlog.py`) and one shell script,
+  `docs_page.py`, `design_entry.py`, `merge_main.py`, `backlog.py`, `record_numbers.py`) and one shell script,
   `install.sh`, which installs `sv` with its data outside the build folder; each with its purpose at the top. `examples/` — sample apps. `Dockerfile` — the container image.
 
 ## Commands
@@ -110,7 +110,9 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   counts as evidence or at which tier, what `sv` runs or connects to, what it writes into someone's folder, the network
   fence, a dependency, or a default that changes what a report concludes, and every choice the owner makes when asked.
   Its record is a new ADR in `docs/adr/` or a dated "Later" entry on an existing one, with its **Governs:** list kept
-  true. For anything substantial, write the record first, as `Status: proposed` in the backlog claim, and make it
+  true. Take a new record's number from `python3 tools/record_numbers.py next adr` after `git fetch`, and push
+  the claim that holds it soon: the "Decision records" check fails a number another open pull request took first.
+  For anything substantial, write the record first, as `Status: proposed` in the backlog claim, and make it
   accepted in the pull request that builds it. A pull request that touches a governed file and does not change its
   record says why on a line `ADR-0NN: unchanged, because ...`; the "Decision records" check fails without it. Until
   4 October 2026 every one of `sv`'s records was written one to seven days after the decision, and only when a review
@@ -131,7 +133,7 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
 - **Claim a backlog item before starting it, and commit that claim on its own.** An item is a file under
   `docs/backlog/` whose third line is its status (ADR-061): `python3 tools/backlog.py claim <number> --by <session>`
   sets it and refuses an item another session holds; `done <number>` marks it finished (`--remains "..."` when part
-  stays open); `new "Its title"` adds one; `list --open` prints what is open. A numbered part of an item is claimed
+  stays open); `new "Its title"` adds one, numbered past every pushed branch's; `list --open` prints what is open. A numbered part of an item is claimed
   and finished the same way, `claim 0226.3 --by <session>` and `done 0226.3`, which set the part's own status line;
   the board reads parts from those lines alone, so a claim or done note written only in prose is not seen (backlog
   0228). A done item moves to `docs/backlog/done/` by itself. **A review writes each of its findings as an item of

@@ -175,6 +175,22 @@ def self_test():
     print("design_entry self-test: ok")
 
 
+def pushed_next(kind, folder, real):
+    """The next number free on every branch pushed to origin as well as here (backlog 0265,
+    `tools/record_numbers.py`), for the real folder only: a test's own folder has no branches. 0 when git cannot
+    say, so the number is then the local one, as before."""
+    if Path(folder).resolve() != Path(real).resolve():
+        return 0
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("record_numbers", ROOT / "tools" / "record_numbers.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.next_free(kind)[0]
+    except (SystemExit, OSError):
+        return 0
+
+
 def main(argv):
     design, folder = ROOT / "docs" / "DESIGN.md", ROOT / "docs" / "design"
     if argv[:1] == ["--self-test"]:
@@ -191,6 +207,7 @@ def main(argv):
         return 0
     if len(argv) == 2 and argv[0] == "new":
         number = max((n for n, _, _ in entries(folder)), default=0) + 1
+        number = max(number, pushed_next("design", folder, ROOT / "docs" / "design"))
         title = argv[1].strip()
         if any(t == title for _, _, t in entries(folder)):
             print(f"an entry is already titled \"{title}\"")

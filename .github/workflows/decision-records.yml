@@ -8,6 +8,10 @@
 # It runs again when the description is edited, so adding the line is enough to turn the check green. The
 # description is read from the event file by the script, never put into a shell command. Steps are pinned to an exact
 # commit fingerprint, as in rust.yml.
+#
+# It also fails a pull request that takes a record, backlog, or design-entry number another file already has: on the
+# base branch, twice in the branch, or added by another open pull request opened before it (backlog 0265; ADR-061,
+# Later). For the last it reads the open pull requests' file lists from GitHub, which is why it may read pull requests.
 
 name: Decision records
 
@@ -17,6 +21,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: decision-records-${{ github.event.pull_request.number }}
@@ -40,3 +45,14 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 tools/adr_check.py --base "$BASE_SHA" --head "$HEAD_SHA" --event "$GITHUB_EVENT_PATH"
+      - name: The numbers' own test
+        # Said even when the records step above failed, so both are fixed in one push.
+        if: ${{ !cancelled() }}
+        run: python3 -I tools/record_numbers.py --self-test
+      - name: No number taken twice
+        if: ${{ !cancelled() }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -I tools/record_numbers.py check --base "$BASE_SHA" --head "$HEAD_SHA" --event "$GITHUB_EVENT_PATH" --github
