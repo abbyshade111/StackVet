@@ -366,7 +366,7 @@ running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's
 - C9.3.7: found failing by sv's `probe.ai-output-fetched`.
 - C9.5.3: settled by `probe.ai-tool-reads-others-records`.
 - C9.5.4: found failing by semgrep's `mcp-credential-in-response`.
-- C9.6.1: settled by `probe.ai-kill-switch-ignored`.
+- C9.6.1: checked in part only, by `probe.ai-kill-switch-ignored`.
 - C10.1.1: found failing by sv's `config.mcp-server-unpinned`.
 - C10.2.1: settled by `probe.mcp-server-token-unchecked`.
 - C10.2.6: settled by `probe.mcp-session-survives-end`.

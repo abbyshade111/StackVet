@@ -2,7 +2,7 @@
 """Builds the club app with a headless AI coding tool, one build per call, for the loop trials.
 
     python3 loop_trial.py OUT ARM MODEL N [--budget USD] [--api] [--with-spec] [--prompt ID] [--allow-git]
-                          [--draft N] [--model-id ID]
+                          [--draft N] [--model-id ID] [--label NAME] [--brief PATH]
 
 MODEL names the build (`haiku`, `sonnet`); `--model-id` is the exact model the build runs on (`claude-haiku-5-5`), so
 a nickname the Claude program resolves for itself cannot choose another model (the drafts trial, backlog 0257).
@@ -24,15 +24,18 @@ REPO = os.environ['SV_REPO']           # a checkout of SecureVibe at that build'
 ARMS = {
     # arm: (attach the server, the server's tools it may use, put the instructions in the request)
     'none': (False, [], False),
-    'loop': (True, ['mcp__securevibe'], False),
+    'loop': (True, ['mcp__stackvet'], False),
     'instructions': (False, [], True),
-    'check': (True, ['mcp__securevibe__securevibe_spec', 'mcp__securevibe__securevibe_check'], False),
-    'plan': (True, ['mcp__securevibe__securevibe_spec', 'mcp__securevibe__securevibe_plan'], False),
+    'check': (True, ['mcp__stackvet__stackvet_spec', 'mcp__stackvet__stackvet_check'], False),
+    'plan': (True, ['mcp__stackvet__stackvet_spec', 'mcp__stackvet__stackvet_plan'], False),
     # Amendment 4 (item 6): the same two arms with the server's other tools hidden (--disallowedTools), not only
     # refused, after the refused builders gave up on every SecureVibe tool, the allowed ones included.
-    'checkhidden': (True, ['mcp__securevibe__securevibe_spec', 'mcp__securevibe__securevibe_check'], False),
-    'planhidden': (True, ['mcp__securevibe__securevibe_spec', 'mcp__securevibe__securevibe_plan'], False),
+    'checkhidden': (True, ['mcp__stackvet__stackvet_spec', 'mcp__stackvet__stackvet_check'], False),
+    'planhidden': (True, ['mcp__stackvet__stackvet_spec', 'mcp__stackvet__stackvet_plan'], False),
 }
+# The server is attached as `stackvet`, and its tools are `stackvet_*` (ADR-062). Until the second loop trial
+# (ADR-109) it was attached as `securevibe` and the arms named `securevibe_*` tools, which the server answers as
+# old names: the trials before then are read with both (loop_measures.py).
 SV_TOOLS = ['before', 'bundle', 'check', 'explain', 'guidance', 'notes_file', 'plan', 'preflight', 'prompts',
             'questions', 'record_answer', 'spec', 'write_report']
 # Amendment 1 (5 October 2026, after the pilot): a headless build has no owner to answer it, and the Haiku pilot
@@ -82,6 +85,12 @@ def build(out, arm, model, n, budget, api):
     label = ('p_' + sys.argv[sys.argv.index('--prompt') + 1].replace('-', '_')) if '--prompt' in sys.argv else arm
     if '--draft' in sys.argv:
         label = 'd' + sys.argv[sys.argv.index('--draft') + 1]
+    # `--label` names the build's part of a trial when two parts share an arm (the second loop trial's `a` and `b2`
+    # are both the loop arm, on two briefs): letters and digits only, so the name still splits as model-label-n.
+    if '--label' in sys.argv:
+        label = sys.argv[sys.argv.index('--label') + 1]
+        if not label.isalnum():
+            raise SystemExit(f'--label {label!r}: letters and digits only')
     name = f'{model}-{label}-{n}'
     folder = os.path.join(out, name)
     os.makedirs(folder, exist_ok=False)
@@ -95,7 +104,9 @@ def build(out, arm, model, n, budget, api):
     # Amendment 3 (item 6): every arm's request starts with `sv init`'s output, the specification.
     if '--with-spec' in sys.argv:
         spec = subprocess.run([SV, 'init'], capture_output=True, text=True, timeout=60, check=True).stdout
-        request = ("This is SecureVibe's specification for the securevibe.toml my apps need:\n\n" + spec
+        # Named for the file `sv init` writes; until the second loop trial (ADR-109) this said securevibe.toml,
+        # and so did the club brief, and one drafts-trial build wrote both files, which `sv` refuses.
+        request = ("This is StackVet's specification for the stackvet.toml my apps need:\n\n" + spec
                    + '\n\n---\n\n' + request)
     # The prompt-library trial (docs/prompts/library-trial/protocol.md): one library prompt added at the end.
     if '--prompt' in sys.argv:
@@ -125,11 +136,11 @@ def build(out, arm, model, n, budget, api):
     # the owner's own Python. Packages reach the app only through `sv`'s install step (ADR-052).
     refused = ['Bash(python3 -m pip:*)', 'Bash(python3 -m ensurepip:*)', 'Bash(pip:*)', 'Bash(pip3:*)']
     if arm.endswith('hidden'):
-        refused += [f'mcp__securevibe__securevibe_{t}' for t in SV_TOOLS
-                    if f'mcp__securevibe__securevibe_{t}' not in sv_tools]
+        refused += [f'mcp__stackvet__stackvet_{t}' for t in SV_TOOLS
+                    if f'mcp__stackvet__stackvet_{t}' not in sv_tools]
     cmd += ['--disallowedTools', ' '.join(refused)]
     if attach:
-        config = {'mcpServers': {'securevibe': {'command': SV, 'args': ['mcp', '--root', folder]}}}
+        config = {'mcpServers': {'stackvet': {'command': SV, 'args': ['mcp', '--root', folder]}}}
         cfg = os.path.join(out, name + '.mcp.json')
         json.dump(config, open(cfg, 'w'))
         cmd += ['--mcp-config', cfg]

@@ -1,6 +1,6 @@
 # The build-loop record's hash chain does not catch lines cut from the end, and the report's wording says removal is caught
 
-**Status:** open
+**Status:** claimed by builder-full, 12 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: MCP server. Severity: low. Verified against the code by the reviewing session before filing.
 
