@@ -869,9 +869,11 @@ pub fn security(report: &Report) -> String {
             app.len(),
             if app.len() == 1 { "" } else { "s" }
         ));
-        for finding in app {
+        let (full, low) = crate::split_low(app);
+        for finding in full {
             finding_section(&mut out, report, finding);
         }
+        low_lines(&mut out, &low);
     }
     if !tests.is_empty() {
         out.push_str(&format!(
@@ -880,11 +882,64 @@ pub fn security(report: &Report) -> String {
             crate::apart_named(&tests),
             crate::TEST_CODE_SECTION
         ));
-        for finding in tests {
+        let (full, low) = crate::split_low(tests);
+        for finding in full {
             finding_section(&mut out, report, finding);
         }
+        low_lines(&mut out, &low);
     }
     test_information_section(&mut out, report);
+    out
+}
+
+/// The low-severity findings, one line per rule with its count and files (ADR-094). Every one is in full in
+/// `LOW_FINDINGS_FILE`, beside this report.
+fn low_lines(out: &mut String, low: &[crate::LowGroup]) {
+    if low.is_empty() {
+        return;
+    }
+    let total: usize = low.iter().map(|g| g.count).sum();
+    out.push_str(&format!(
+        "### {total} low-severity finding{}, by rule\n\nEach is in full, with where and how to fix it, in {}.\n\n",
+        if total == 1 { "" } else { "s" },
+        code(crate::LOW_FINDINGS_FILE)
+    ));
+    for g in low {
+        out.push_str(&format!(
+            "- {} — {} time{}, in {}\n",
+            code(&g.rule),
+            g.count,
+            if g.count == 1 { "" } else { "s" },
+            g.files.iter().map(|f| code(f)).collect::<Vec<_>>().join(", ")
+        ));
+    }
+    out.push('\n');
+}
+
+/// Every low-severity finding in full, each as `security.md` would show it (ADR-094). The reports show them grouped
+/// by rule and point here.
+pub fn low_findings(report: &Report) -> String {
+    let mut out = format!(
+        "# {} — every low-severity finding\n\n",
+        inert(&report.app_name).replace(['\n', '\r'], " ")
+    );
+    let low: Vec<&sv_check::Finding> = report
+        .findings
+        .iter()
+        .filter(|f| f.severity == sv_check::Severity::Low)
+        .collect();
+    if low.is_empty() {
+        out.push_str("There are none. The findings that were found are in `security.md`.\n");
+        return out;
+    }
+    out.push_str(&format!(
+        "{} finding{}, grouped by rule in `security.md` and the report page. Each counts as a finding.\n\n",
+        low.len(),
+        if low.len() == 1 { "" } else { "s" }
+    ));
+    for finding in low {
+        finding_section(&mut out, report, finding);
+    }
     out
 }
 

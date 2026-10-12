@@ -1440,6 +1440,52 @@ pub fn app_then_tests(report: &Report) -> (Vec<&sv_check::Finding>, Vec<&sv_chec
     report.findings.iter().partition(|f| !f.apart())
 }
 
+#[cfg(test)]
+#[path = "low_groups_tests.rs"]
+mod low_groups_tests;
+
+/// The file beside the report that holds every low-severity finding in full (ADR-094).
+pub const LOW_FINDINGS_FILE: &str = "low-findings.md";
+
+/// One rule's low-severity findings, as the reports show them in one line (ADR-094).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LowGroup {
+    pub rule: String,
+    pub count: usize,
+    /// The files it fired in, each once, in order.
+    pub files: Vec<String>,
+}
+
+/// Splits out the low-severity findings and groups them by rule, most first, then by rule name; the rest are
+/// returned as they were, in their order (ADR-094). Nothing is dropped: every low one is in a group, and in full in
+/// `LOW_FINDINGS_FILE`.
+pub fn split_low<'a>(findings: Vec<&'a sv_check::Finding>) -> (Vec<&'a sv_check::Finding>, Vec<LowGroup>) {
+    let (low, rest): (Vec<_>, Vec<_>) = findings
+        .into_iter()
+        .partition(|f| f.severity == sv_check::Severity::Low);
+    let mut groups: Vec<LowGroup> = Vec::new();
+    for f in low {
+        match groups.iter_mut().find(|g| g.rule == f.rule_id) {
+            Some(g) => {
+                g.count += 1;
+                if !g.files.contains(&f.location.file) {
+                    g.files.push(f.location.file.clone());
+                }
+            }
+            None => groups.push(LowGroup {
+                rule: f.rule_id.clone(),
+                count: 1,
+                files: vec![f.location.file.clone()],
+            }),
+        }
+    }
+    for g in &mut groups {
+        g.files.sort();
+    }
+    groups.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.rule.cmp(&b.rule)));
+    (rest, groups)
+}
+
 /// What the reports say beside a finding, besides the finding itself: how sure `sv` is, whether it
 /// is in test code, and which other tools reported the same thing. One wording for every report, so
 /// the owner and the AI coding tool read the same caution. None of it lowers or hides the finding.
