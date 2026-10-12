@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: group B partly done; groups C to H open; group A built in #1483
+**Status:** partly done: group B partly done; groups C to H open
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -12,15 +12,18 @@ by speaking for what its requirement names. One part per group of the inventory 
 1. **A. Every response, not one or two.** Headers, cookies, content types, and error pages asked of every page the
    app answers and every route `stackvet.toml` names, not one or two anonymous responses.
    **Record, `Status: proposed`: ADR-096.** What group A asks, when its credit is whole, and what stays out.
+   **Done the same day** (ADR-096; `docs/design/0369-group-a-the-header-checks-ask-every-route-stackvet-toml.md`):
+   each route stackvet.toml names is asked as a stranger, and the header, cookie, and content-type credits are whole
+   only when every one answered and passed. The error-page check stays in part.
+   **Part status:** done, 11 October 2026
+2. **B. Every private page and session path.** Session handling tried on each private page the owner lists and
+   after each way of signing in, not one.
    **Scope of this claim (12 October 2026):** the made-up session check (`probe.session-token-unverified`, V7.2.1,
    whose requirement says *all* session-token verification) tried on every private page the owner lists, not one;
    whole only when two or more were tried and every one refused. The other session credits marked in part (the
    cookies, renewal, and fixed session of one sign-in, and the one sign-out) wait for "each way of signing in", which
    needs the manifest to say what the ways are; idle timeout and lifetime were left out of the inventory as app-wide.
    Recorded as a Later entry on ADR-053 in the pull request that builds it.
-   **Part status:** claimed by backlog-org-0232, 11 October 2026
-2. **B. Every private page and session path.** Session handling tried on each private page the owner lists and
-   after each way of signing in, not one.
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0370-the-made-up-session-on-every-listed-private-page-12-october.md`): the made-up session is tried on
    every listed private page, and its credit is whole only when two or more were tried and all refused.
