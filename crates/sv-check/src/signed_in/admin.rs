@@ -1050,7 +1050,7 @@ pub(super) fn owned_checks(
     // Whether what a user saves is written back into a page unencoded (finding 13(b)).
     stored_markup_check(http, users, owned, &session, out);
 
-    forgery_check(http, owned, &session, a, out);
+    forgery_check(http, users, owned, &session, a, out);
     simple_request_check(http, owned, &session, a, out);
     null_origin_check(http, owned, &users.private, a, out);
     Some(read_path)
