@@ -183,6 +183,16 @@ health = "/"              # a path that returns 200 once the app is up
 # change-email = { path = "/account/email", form = { password = "{password}", email = "{new_email}", csrf_token = "{csrf}" } }
 #   Changing the signed-in user's email address, with `{password}` where the app asks for the
 #   password again. Only ever done to an account made for it through `signup`.
+# change-phone = { path = "/account/phone", form = { password = "{password}", phone = "{new_value}", csrf_token = "{csrf}" }, shows = "/account" }
+# change-two-factor = { path = "/account/two-factor", form = { password = "{password}", phone = "{new_value}", csrf_token = "{csrf}" }, shows = "/account/security" }
+# change-recovery = { path = "/account/recovery", form = { password = "{password}", email = "{new_value}", csrf_token = "{csrf}" }, shows = "/account" }
+#   Changing the phone number, the two-factor settings (`{new_value}` is the phone number the codes
+#   go to), and what recovers the account (a recovery address), each with `{password}` where the
+#   app asks for the password again, and `shows`, the private page that lists the new value once
+#   the change takes. Only ever done to an account made for it through `signup` (ADR-105).
+# not-offered = ["two-factor"]
+#   Any of `phone`, `two-factor`, and `recovery` the app has none of, in place of its `change-`
+#   entry. It counts only once the owner confirms it with `sv review`; until then it is your word.
 # delete-account = { path = "/account/delete", form = { password = "{password}", csrf_token = "{csrf}" } }
 # upload = { path = "/upload", field = "file", form = { csrf_token = "{csrf}" }, serves-at = "/files/{name}", max-bytes = 1048576 }
 #   Declare every upload the app takes: an upload not declared here is never tried, and the report

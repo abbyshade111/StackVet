@@ -430,6 +430,7 @@ pub fn assemble_report_saying(
     // which tier it rests on (`sv_check::Tier`, set where it was made); the report reads the tier,
     // not the list (8 October 2026).
     verified.extend(word.verified.iter().cloned());
+    account_changes_whole(scene.manifest, scene.seals, &mut verified, &mut gaps);
     let coding_rules_cited = coding_rules_cited(&buckets)?;
     let mut report = put_together(
         &scene,
@@ -2813,6 +2814,79 @@ fn level_hints(
         },
         set_apart,
     ))
+}
+
+/// V7.5.1 met whole, or not (ADR-105): whole only when the email change and each of the phone,
+/// two-factor, and recovery changes was refused with a wrong password where the right one took, or
+/// is confirmed through `sv review` as not offered. Until then every credit stays in part. A
+/// `not-offered` list nobody confirmed is said as a gap, since it counts for nothing until then.
+pub fn account_changes_whole(
+    manifest: &Manifest,
+    seals: &sv_check::seal::Checker,
+    verified: &mut [sv_check::Verified],
+    gaps: &mut Vec<sv_report::Gap>,
+) {
+    let Some(users) = manifest.stack.run.users.as_ref() else {
+        return;
+    };
+    let confirmed = manifest
+        .account_changes_review
+        .as_ref()
+        .is_some_and(|entry| {
+            let fields = sv_check::seal::account_changes_review_fields(entry);
+            entry.still_holds_for(manifest)
+                && seals
+                    .recorded(entry.seal.as_deref(), &sv_check::seal::as_strs(&fields))
+                    .is_ok()
+        });
+    if !users.not_offered.is_empty() && !confirmed {
+        gaps.push(sv_report::Gap {
+            what: "Account changes listed as not offered, not confirmed by the owner".to_owned(),
+            why: format!(
+                "stackvet.toml lists {} under [stack.run.users] `not-offered`, and nobody has \
+                 confirmed it through `sv review`, so it is the AI coding tool's word or a file \
+                 edited by hand, and counts for nothing. Until the owner confirms it, V7.5.1 is at \
+                 most checked in part: run `sv review` and confirm the list if it is right.",
+                users
+                    .not_offered
+                    .iter()
+                    .map(|n| format!("`{n}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            reason: sv_report::GapReason::PersonOnly,
+            requirements: vec!["V7.5.1".to_owned()],
+        });
+    }
+    let credited =
+        |verified: &[sv_check::Verified], rule: &str| verified.iter().any(|v| v.check_id == rule);
+    if !credited(verified, "probe.email-change-without-password") {
+        return;
+    }
+    let mut on_the_owners_word = Vec::new();
+    for (kind, _) in sv_manifest::ACCOUNT_CHANGES {
+        if credited(verified, &format!("probe.{kind}-change-without-password")) {
+            continue;
+        }
+        if confirmed && users.not_offered.iter().any(|n| n == kind) {
+            on_the_owners_word.push(kind);
+            continue;
+        }
+        return;
+    }
+    for credit in verified
+        .iter_mut()
+        .filter(|v| v.requirement_ids.iter().any(|r| r == "V7.5.1"))
+    {
+        credit.in_part = false;
+        if !on_the_owners_word.is_empty() {
+            credit.scope = format!(
+                "{}; with {} not offered, on the owner's word through `sv review`",
+                credit.scope,
+                on_the_owners_word.join(" and ")
+            );
+        }
+    }
 }
 
 /// Whether the answers that set the level were confirmed through `sv review`, and whether that
