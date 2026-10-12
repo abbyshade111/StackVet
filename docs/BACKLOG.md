@@ -104,6 +104,8 @@ observability dashboard, once the observability review's findings are built" (02
 evening to follow them; then the website mock-ups (0224), which the owner asked to wait until the decisions made that
 day are built. The Cursor test (0222) waits for the owner, who is
 looking into what Cursor needs on their side.
+**Added 12 October 2026, at the owner's word:** "Try a coordinating session for the parallel builds" (0273) comes
+only after the next trial of the build loop (0257) and the website mock-ups (0224).
 
 **Process, any time, each cheap:** "Process: shorter CI, a merge queue decision, and a nightly routine on `main`",
 and the owner's decision on "One file per backlog item, with a status line", which would make the status above a
