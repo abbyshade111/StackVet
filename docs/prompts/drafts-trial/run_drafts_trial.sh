@@ -16,7 +16,7 @@ O=~/sv-drafts
 T="$SV_REPO/docs/prompts/loop-pilot/loop_trial.py"
 S="$SV_REPO/docs/prompts/drafts-trial/score_drafts_trial.py"
 CHECK="$SV_REPO/tools/prompt_trial.py"
-BUDGET=25        # dollars, the owner's for this trial
+BUDGET=25        # dollars, the estimate; passing it warns and goes on (the owner, 12 October 2026)
 mkdir -p "$O" && cp "$SV_REPO/docs/prompts/trial/policy.toml" "$O/"
 
 model_id() { case $1 in haiku) echo claude-haiku-5-5;; sonnet) echo claude-sonnet-5-5;; esac; }
@@ -25,18 +25,19 @@ spent() {
 import json,glob
 print(round(sum(json.loads(l).get('total_cost_usd') or 0 for f in glob.glob('$O/*.jsonl') for l in open(f) if '\"type\":\"result\"' in l),2))"
 }
-# Before each batch of ten: stop when what is spent, and ten more builds at $0.60 each (the most the first ten may
-# average, below), would pass the budget. Each build is also capped at $1.50 by the Claude program itself.
+# Before each batch of ten: say so when what is spent, and ten more builds at $0.60 each, would pass the estimate. It
+# warns and goes on: the owner, 12 October 2026, "builds shouldn't be canceled if they have to go over the estimated
+# cost". Each build is capped at $5 by the Claude program, against a build that runs away, not against the estimate.
 guard() {
   now=$(spent)
   python3 -c "import sys; sys.exit(0 if $now + 10 * 0.60 <= $BUDGET else 1)" \
-    || { echo "STOPPED: \$$now spent; ten more could pass the \$$BUDGET budget. Ask the owner."; exit 1; }
+    || echo "NOTE: \$$now spent; ten more may pass the \$$BUDGET estimate. Going on, as the owner asked."
 }
 batch() {   # batch MODEL ARM_ARGS LABEL: ten builds at once, then each checked with sv report --run
   model=$1; args=$2; label=$3
   guard
   for n in 1 2 3 4 5 6 7 8 9 10; do
-    python3 "$T" "$O" none "$model" "$n" --model-id "$(model_id "$model")" --budget 1.5 --api --with-spec $args &
+    python3 "$T" "$O" none "$model" "$n" --model-id "$(model_id "$model")" --budget 5 --api --with-spec $args &
   done
   wait
   echo "key-in-transcripts: $(cat "$O"/*.jsonl | grep -c 'sk-ant-')"
@@ -48,10 +49,10 @@ case "${1:-}" in
   controls)
     for m in haiku sonnet; do
       batch "$m" "" none
-      # The first ten builds' cost guard of the library trial: an average above $0.60 stops the trial.
+      # The first ten builds' cost check of the library trial: an average above $0.60 is said, and the trial goes on.
       avg=$(python3 -c "print(round($(spent) / 10, 3))")
       [ "$m" = haiku ] && { python3 -c "import sys; sys.exit(0 if $avg <= 0.60 else 1)" \
-        || { echo "STOPPED: the first ten builds averaged \$$avg"; exit 1; }; }
+        || echo "NOTE: the first ten builds averaged \$$avg, above the \$0.60 expected. Going on, as the owner asked."; }
     done
     python3 "$S" controls "$O" --json "$O/controls.json" > /dev/null
     echo "CONTROLS DONE"

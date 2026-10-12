@@ -35,7 +35,7 @@ As in the library trial of 6 October (`docs/prompts/library-trial/protocol.md`):
 (`docs/prompts/trial-3/plain-brief.md`), `sv init`'s output at the top (`--with-spec`), the owner-away sentence of
 amendment 5 (`loop-protocol.md`), no MCP server, and in a draft's builds the draft's quoted prompt added at the end,
 "Follow this while you build:". Each build in a fresh folder under `~/sv-drafts` (Colima shares only the home folder),
-capped at $1.50, with the owner's API key through the key helper, and every transcript searched for the key afterwards.
+capped at $5 ("Cost", below), with the owner's API key through the key helper, and every transcript searched for the key afterwards.
 
 **Models, by exact id: `claude-haiku-5-5` and `claude-sonnet-5-5`** (`--model-id`), at the owner's word of 12 October 2026
 that Haiku is 5.5, never 4.5. The builder is Claude Code 2.1.295. A build whose transcript says it ran on any other model
@@ -65,9 +65,12 @@ its own; a draft not shown stays in `drafts.md` with what happened.
 
 ## Cost
 
-About eighty builds: twenty controls and up to seventy draft builds. The owner's budget for this trial is **$25**
-(12 October 2026). Two guards in `run_drafts_trial.sh`: the first ten builds averaging more than $0.60 stops the trial;
-and before each batch of ten, a total that ten more builds at $0.60 could take past $25 stops it, to ask the owner.
+About eighty builds: twenty controls and up to seventy draft builds, estimated at **$25** of the owner's API credit.
+The owner, 12 October 2026, before any build: there is more than $200 of credit, so "while optimizing cost is still
+important, builds shouldn't be canceled if they have to go over the estimated cost". So nothing stops a build or the
+trial for cost: each build is capped at **$5** by the Claude program, against a build that runs away, not against the
+estimate; the first ten builds averaging more than $0.60, and a total that ten more builds could take past $25, are each
+said in the run's output, and the trial goes on. The owner is told the total as it goes.
 
 ## Amendments
 
