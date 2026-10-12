@@ -50,6 +50,9 @@ permissions:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
+    # A test for backlog 0275, never merged: does main's code-scanning rule let a pull request merge when
+    # CodeQL's analysis was skipped?
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
