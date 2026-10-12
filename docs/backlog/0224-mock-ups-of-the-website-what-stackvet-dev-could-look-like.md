@@ -9,3 +9,5 @@ does, the honest report as the thing to show, getting started in the fewest step
 is. Then mock-ups: a few pages as artifacts or plain HTML the owner can open, using the logo files from item 0219,
 with two or three directions to choose between rather than one finished design. The owner picks; nothing goes
 live from this item.
+
+**From backlog 0219, 12 October 2026:** the two sites, stackvet.dev and stackvet.app (0219 part 3), are part of this item, at the owner's word; a session can take it while another builds the loop trial.
