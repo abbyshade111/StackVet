@@ -1281,12 +1281,21 @@ pub(crate) fn missing_headers(response: &ProbeResponse) -> Vec<&'static str> {
     if response.header("x-content-type-options").is_none() {
         missing.push("X-Content-Type-Options, which stops a browser guessing a file's type");
     }
-    let framing_denied = response.header("x-frame-options").is_some_and(|v| {
-        v.to_lowercase().contains("deny") || v.to_lowercase().contains("sameorigin")
-    }) || response
+    // V3.4.6 asks for the policy's `frame-ancestors`, and says `X-Frame-Options` "is obsolete and
+    // may not be relied upon": it alone is short of the requirement, and said so rather than
+    // missing (backlog 0264; ADR-047, Later).
+    let frame_ancestors = response
         .header("content-security-policy")
         .is_some_and(|v| v.to_lowercase().contains("frame-ancestors"));
-    if !framing_denied {
+    let frame_options = response.header("x-frame-options").is_some_and(|v| {
+        v.to_lowercase().contains("deny") || v.to_lowercase().contains("sameorigin")
+    });
+    if !frame_ancestors && frame_options {
+        missing.push(
+            "a `frame-ancestors` directive in its Content-Security-Policy (it sends \
+             X-Frame-Options, which V3.4.6 calls obsolete and not to be relied upon)",
+        );
+    } else if !frame_ancestors {
         missing.push("a rule against being shown inside somebody else's page");
     }
     if response.header("referrer-policy").is_none() {
@@ -2383,3 +2392,6 @@ mod routes_tests;
 #[cfg(test)]
 #[path = "probes_evidence_tests.rs"]
 mod probes_evidence_tests;
+
+#[cfg(test)]
+mod framing_tests;
