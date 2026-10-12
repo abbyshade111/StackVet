@@ -77,5 +77,7 @@ v1's records on the `v1` branch are archived and are out of scope. A correction 
     should not be.
   - **Decisions with no record,** and two questions for the owner: the entry "Records owed, from the second weekly
     review" below.
+- **The third, for the week to 12 October 2026: claimed that day by session securevibe-weekly-adr-3**, the scheduled routine's
+  first firing, in backlog 0266 (this item was already done). Done the same day; the account is in 0266.
 
 **Decided by the owner, 10 October 2026:** done. Two weekly reviews are on main (week to 30 September, and week to 5 October). The routine continues outside the backlog.

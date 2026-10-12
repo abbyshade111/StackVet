@@ -1,6 +1,6 @@
 # A walk-through for building an app from scratch in any AI coding tool, with `sv` alongside
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** done, 12 October 2026
 
 Asked for by the owner on 26 September 2026: "it can't be too difficult, since the whole idea is
 making it easy for people who aren't technical or security experts to vibe code safely." **Claimed
@@ -32,7 +32,7 @@ from an empty folder in Claude Code; each of these stopped the attempt:
    then `cargo build`. Nobody the product is for has a Rust toolchain, a git checkout, or a reason to
    get either. This is the real obstacle, and the walk-through should not be written until it is
    gone: a download for each platform, built by CI.
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 2. **A built `sv` cannot be moved.** It reads a dozen of its own data files at run time —
    `ast-rules.json`, `applicability-v2.json`, `sbd-asvs-crosswalk.json`, `tech-signatures.json` and
    others — from the folder it was built in, found through `env!("CARGO_MANIFEST_DIR")`, which is
@@ -67,25 +67,25 @@ from an empty folder in Claude Code; each of these stopped the attempt:
    claude`. A `.mcp.json` in the app's folder works instead and needs nothing installed. Other tools
    keep their MCP settings in other files, and not all under the same key, so the walk-through needs
    one short, checked section per tool — each one tried, not written from memory.
-   **Part status:** partly done: one short checked section per tool, each one tried
+   **Part status:** done, 12 October 2026
 4. **`--root` has to exist, and the app has to be inside it.** Nothing says so until the tool is
    refused. The walk-through should create the folder in its first step.
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 5. **The starter manifest answers "no" to everything** — every capability in `sv init` reads
    `false`, so a tool that leaves a line as it found it has told `sv` the app has no sign-in, no
    uploads, no email. See "Hand the three question lists to the AI coding tool", above, where it is
    recorded and left for its own decision. For this audience it is the most dangerous line in the
    product: a beginner's tool will leave most of them alone. Until it changes, the starter prompt has
    to say "delete a capability you are not sure of rather than leaving it `false`."
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 6. **The deepest checks need Docker.** `sv report --run` starts the app behind the fence, and that
    needs Docker or Colima — a second install for somebody who is not technical, and on a Mac, a
    virtual machine. Without it the running-app and signed-in checks are *not assessed*, which is
    honest; the walk-through has to say plainly what is missed without it, not bury it.
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 7. **Smaller: the README says `sv mcp` offers four** tools; it offers six (`securevibe_questions` and
    `securevibe_notes_file` were added the same day).
-   **Part status:** open
+   **Part status:** done, 12 October 2026
 
 So the order is: `sv` in a container, which settles 1 and 2 with no change to the code (decided the
 same day; see "Packaging `sv`", below), then the walk-through, with
@@ -94,3 +94,16 @@ tool without MCP can still follow it by pasting `sv init` and `sv questions` int
 walk-through should say so, since that is the path that works in every tool.
 
 **Part 3, 10 October 2026:** the README now says the `claude mcp add` command needs the `claude` command installed, and points desktop-app users to the `.mcp.json` in `docs/GETTING-STARTED.md`. The one-section-per-tool walk-through, each tool tried, is not written.
+
+**Checked against `main`, 12 October 2026, by session securevibe-trial-prep, and closed.** Each open part was already
+covered by later work, and this note says where:
+- Part 1, building from source: nobody needs Rust now. `sv` installs as the container image (`ghcr.io/abbyshade111/stackvet-sv`)
+  or through Homebrew (backlog 0120); a Windows program follows signed releases (0120, the owner's word of 12 October).
+- Part 3, a checked section per tool: `docs/GETTING-STARTED.md` section 3 has a tried section for Claude (the desktop app and
+  Claude Code) and for VS Code, and Cursor was tried on a whole build (0222, design entry 0368). Any other tool is labeled
+  untried there, with the same settings block to start from.
+- Part 4, `--root`: the guide's step 2 makes the app's folder first, and every settings block names that folder.
+- Part 5, the starter manifest: `sv init`'s capability lines start commented out, and the build prompt says to leave a
+  line commented rather than guess `false`.
+- Part 6, Docker: the guide's step 1 installs it, and section 6 says plainly what is not assessed without it.
+- Part 7, the tool count: the README lists twelve tools.

@@ -126,10 +126,10 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-080](ADR-080.md) | The published image signed with GitHub's own keyless signing, and what it was built from published with it |
 | [ADR-081](ADR-081.md) | A GitHub Action that runs the published image on an app's pull requests |
 | [ADR-082](ADR-082.md) | What `sv` saw of the running app kept beside the report, with credentials removed (accepted) |
-| [ADR-083](ADR-083.md) | History that can show a trend: each requirement's status in each run, and why two runs differ (proposed) |
-| [ADR-084](ADR-084.md) | More in the build-loop record: each call's outcome, what was handed over, and what changed between checks (proposed) |
+| [ADR-083](ADR-083.md) | History that can show a trend: each requirement's status in each run, and why two runs differ (accepted, 11 October 2026) |
+| [ADR-084](ADR-084.md) | More in the build-loop record: each call's outcome, what was handed over, and what changed between checks (accepted, 11 October 2026) |
 | [ADR-085](ADR-085.md) | A stand-in name server on the fenced network records the names an app asks for (accepted) |
-| [ADR-086](ADR-086.md) | The observability dashboard adds five things to `sv dashboard`, as the owner chose on 11 October 2026 (proposed) |
+| [ADR-086](ADR-086.md) | The observability dashboard adds five things to `sv dashboard`, as the owner chose on 11 October 2026 (accepted, 11 October 2026) |
 | [ADR-087](ADR-087.md) | A `creates` entry may name where its record is read back, so the owner field is tried on it (accepted, 11 October 2026) |
 | [ADR-088](ADR-088.md) | Four credits and gaps the part 4 audit found wrong, corrected (kill-switch status, skipped private pages, admin-action credit, model files not read whole); accepted 11 October 2026 |
 | [ADR-089](ADR-089.md) | A test-only 7z reader, `py7zr` pinned to one version, to check the 7z archives the upload check sends (accepted, 11 October 2026) |
@@ -143,6 +143,17 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-097](ADR-097.md) | The browser's typed-text check on every text form stackvet.toml names (accepted, 12 October 2026) |
 | [ADR-098](ADR-098.md) | `sv review` says which findings it never offers, and each finding in the report names its next step (accepted, 11 October 2026) |
 | [ADR-099](ADR-099.md) | The owner can leave a folder out of the checks, with a reason the report prints, and keys are still looked for there (accepted, 12 October 2026) |
+| [ADR-100](ADR-100.md) | `sv` keeps two files of its own, an opt-in log and a crash file, and never puts an argument or a path in either (accepted, 12 October 2026) |
+| [ADR-101](ADR-101.md) | `sv connect` prints the settings an AI coding tool needs and writes nothing, and one prompt sets StackVet up (accepted, 12 October 2026) |
+| [ADR-103](ADR-103.md) | A record can govern a named part of a large file, and the check asks only when that part changes (proposed, 12 October 2026) |
+
+## Names in the records
+
+Records written before 8 October 2026 name the files and tools as they were called then: `securevibe.toml`,
+`securevibe_*` tools, `~/.config/securevibe`, `.securevibe-report.lock`, `org.securevibe.run`. Since the rename (ADR-062)
+the code writes and reads `stackvet.toml`, `stackvet_*`, `~/.config/stackvet`, `.stackvet-report.lock` and
+`org.stackvet.*`, and still reads the old names until 1 January 2027. The records are not rewritten for this; the third
+weekly review (12 October 2026) noted it here once instead of in every record.
 
 ## Where v1's records disagree with what v1 built
 
