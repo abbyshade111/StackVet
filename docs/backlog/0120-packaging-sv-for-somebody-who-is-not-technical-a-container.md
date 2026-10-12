@@ -1,6 +1,6 @@
 # Packaging `sv` for somebody who is not technical: a container now, a download later
 
-**Status:** partly done: Scoop and winget routes are not built; the Homebrew formula is in abbyshade111/homebrew-stackvet, outside this repository
+**Status:** partly done: winget is not built; the Scoop and Homebrew installs are tried only in CI, not yet by hand on a person's own computer; the Homebrew tap and the Homebrew README still build the latest main rather than the v0.1.0 release
 
 **The
 owner's decision, 26 September 2026: build the container now, and keep the downloadable program
@@ -223,10 +223,10 @@ cost of fetching all of this one). What follows is the plan, each step claimed o
    container backend); its failures are fixed or written down. Only then a way to install it, Scoop or winget (both
    free), chosen with what the job found. Until then the guide keeps saying plainly that Windows is untried, and that
    the Docker route works wherever Docker Desktop does.
-   **Part status:** claimed by securevibe-trial-prep, 12 October 2026
+   **Part status:** done, 12 October 2026
 3. **The guide** gains "Installing with Homebrew" for Mac and Linux once step 1 is green, and a Windows section once
    step 2 is.
-   **Part status:** partly done: a Windows section, once there is a way to install it there
+   **Part status:** done, 12 October 2026
 
 **Step 1 done 9 October 2026 by session securevibe-e2:** the formula is in `abbyshade111/homebrew-stackvet`
 (`Formula/sv.rb`, head-only until the first release), and its CI installs it from source, audits it, and runs its test
@@ -361,3 +361,11 @@ source. Step 2's remainder waits for 0191 part 4.
 - **The owner's tag** publishes v0.1.0.
 - **The manifest**, `bucket/sv.json` in the bucket, with the release's address and its SHA-256 (`checkver` and `autoupdate` from the release, so a new tag updates it), added once the release exists, and tried with `scoop install` on a Windows runner.
 - **The guide's Windows section** (step 3), once that install works.
+
+**Steps 2 and 3 done 12 October 2026 by session securevibe-trial-prep** (ADR-108 and its Later entry). The release
+workflow (#1566) published `v0.1.0` on the owner's tag, with the Windows zip and its SHA-256. The bucket is
+`abbyshade111/scoop-stack-vet`, which the owner made: `bucket/sv.json` and a weekly Windows workflow that installs
+`sv` through Scoop and checks an example app, green on its fifth run. Found on the way: in PowerShell `sv` is an alias
+for `Set-Variable`, so the program is installed as `stackvet` too, at the owner's choice. The guide's "Installing
+StackVet on your computer" now has its Windows section. Still open: winget; a try by hand on a Windows computer; and
+the Homebrew formula and its README, which still build the latest `main` and say Windows is untried.
