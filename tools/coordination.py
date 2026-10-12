@@ -323,6 +323,11 @@ def problems(board, folder):
             item = numbers.get(s["holds"])
             if item is None:
                 out.append(f"{s['name']} holds {s['holds']}, which is no item")
+            elif item.kind == "done":
+                # The builder's own `done` is the last step its hand-out names, and it lands in the builder's pull
+                # request before the orchestrator's `finish`: the normal hand-back, not a disagreement (found on the
+                # trial's first finished item, 0280, whose pull request this check turned red).
+                continue
             elif item.kind != "claimed" or s["name"] not in item.sessions:
                 out.append(f"{s['name']} holds {s['holds']}, but the item says: {item.status_text}")
     for q in board.queue:
@@ -558,10 +563,16 @@ def self_test():
         assert again.text() == board.text()
         text = handout_text(folder, "1", board)
         assert "backlog 0001: First item" in text and "Its text." in text and FOOTER in text and "Session on the board: a." in text
-        # A stale board: the item was closed under the session.
+        # The builder marks its item done before the orchestrator records the finish: the normal hand-back.
         backlog.mark_done(folder, "1", "13 October 2026", None)
-        found = problems(Board.read(board_path), folder)
-        assert len(found) == 1 and "a holds 0001, but the item says: done" in found[0], found
+        assert problems(Board.read(board_path), folder) == [], problems(Board.read(board_path), folder)
+        # A board that disagrees for real: a session holds an item another session claimed.
+        backlog.claim(folder, "3", "someone-else", "13 October 2026")
+        stale = Board.read(board_path)
+        stale.session("b")["holds"], stale.session("b")["since"] = "0003", "2026-10-13"
+        stale.queue = [q for q in stale.queue if q["number"] != "0003"]
+        found = problems(stale, folder)
+        assert len(found) == 1 and "b holds 0003, but the item says: claimed by someone-else" in found[0], found
         cmd_finish(board_path, "1", "https://example.test/pull/1", when)
         try:
             cmd_finish(board_path, "1", None, when)
