@@ -42,7 +42,12 @@ fn a_rule_is_left_out_only_when_everything_it_cites_does_not_apply() {
         "{given:?}"
     );
     assert!(given.contains(&"keys-stay-out-of-the-chat".to_owned()));
-    assert_eq!(given.len(), r.rules.len() - 2);
+    // Its only citation is AC.12.8, a pipeline requirement, so it is set aside with the others.
+    assert!(
+        !given.contains(&"say-which-prs-predate-a-fix".to_owned()),
+        "{given:?}"
+    );
+    assert_eq!(given.len(), r.rules.len() - 3);
 }
 
 #[test]
