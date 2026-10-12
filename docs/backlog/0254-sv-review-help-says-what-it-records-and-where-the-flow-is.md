@@ -1,6 +1,6 @@
 # sv review --help says what it records and where the flow is written down
 
-**Status:** open
+**Status:** claimed by backlog-org-0254, 12 October 2026
 
 Found by the feedback on the Cursor build (11 October 2026). `sv review --help` prints one usage line and nothing on what
 the review records. The report refers to `[[finding-review]]` entries and to set-asides, and the help does not explain
