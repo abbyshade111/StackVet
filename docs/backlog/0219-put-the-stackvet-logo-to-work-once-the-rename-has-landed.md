@@ -1,6 +1,6 @@
 # Put the StackVet logo to work once the rename has landed
 
-**Status:** partly done: parts 2 (the repository's preview image, a setting), 3 (the two sites), and 5 (the mark in the reports), each the owner's to decide
+**Status:** partly done: part 5, the mark in report.html and the dashboard, which the owner wants (12 October 2026); parts 2 and 3 are done, the sites moving to backlog 0224
 
 Asked for by the owner on 8 October 2026, the day they chose the name StackVet and its logo: "a backlog item for after
 the change is complete to deploy the logo and all that." **Waits for the rename** (ADR-062, and the backlog item the rename's

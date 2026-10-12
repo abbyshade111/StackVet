@@ -1,6 +1,6 @@
 # Process: shorter CI, a merge queue decision, and a nightly routine on `main`
 
-**Status:** partly done: parts 1 (shorter CI) and 2 (a merge queue, a repository setting and the owner's to decide)
+**Status:** partly done: part 1's shards: sv-check split across parallel jobs, which the owner wants (12 October 2026); part 1's other half, docs-only pull requests skipping the suite, is built narrower in backlog 0272 (backlog items only, ADR-104), since most documents are read by tests; part 2, the merge queue, was declined by the owner the same day
 
 From the same write-up; each
 claimable on its own, and the second is the owner's to decide.
@@ -31,3 +31,5 @@ claimable on its own, and the second is the owner's to decide.
 **The owner's decision, 9 October 2026**, asked by session securevibe-e2 with a recommendation for each open choice: **part 2, the merge queue: hold off for now, as recommended.** Auto-merge alone stays; the queue is reconsidered only if `main` goes red from an untested combination of pull requests more than once a week. (On 9 October one such combination, #1246 with #1248, turned `main` red once; #1255 fixed it.)
 
 **The owner's word, 12 October 2026:** part 1, the slow test job split for a shorter CI, is to be built ("definitely want the slow test job split"). Part 2, the merge queue, is declined ("we can do without the merge queue"), and part 2 is done on that word; the owner asked instead for protection against two pull requests taking the same ADR number, filed as an item of its own.
+
+**12 October 2026, later:** part 1's second half, a docs-only pull request skipping the suite with a job of the required name still reporting, is built in backlog 0272 (ADR-104) for backlog items only. Other documents stay on the whole suite: `docs/adr`, the design entries, `CLAUDE.md`, and `data/` are read by tests across it. What part 1 still needs is the shards.
