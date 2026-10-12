@@ -1,4 +1,4 @@
-//! What `sv review` says when nothing is waiting (ADR-096): findings with no entry are never offered here.
+//! What `sv review` says when nothing is waiting (ADR-098): findings with no entry are never offered here.
 
 use super::*;
 

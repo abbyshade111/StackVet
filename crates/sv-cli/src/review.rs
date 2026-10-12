@@ -22,7 +22,7 @@ use sv_check::seal::{App, Checker, Key, Sealed};
 use sv_check::signed::{Signer, SigningKey, Stored};
 use zeroize::Zeroizing;
 
-/// What `sv review` adds when nothing is waiting (ADR-096): it goes through entries only, so a finding that has none is
+/// What `sv review` adds when nothing is waiting (ADR-098): it goes through entries only, so a finding that has none is
 /// never offered, and a person may read "nothing waiting" beside a report that still lists findings. Says what to do
 /// with such a finding, and how many the last report in the default report folder lists, when one can be read. It
 /// offers no way to set one aside: only an entry a person confirms here does that.
@@ -88,17 +88,9 @@ pub fn cmd_review(path: Option<PathBuf>) -> Result<()> {
              terminal yourself and run `sv review` there."
         );
     }
-    if let Some((old, new)) = Key::old_folder_in_use() {
-        println!(
-            "Note: {} Move it with `mv {} {}`.\n",
-            sv_frameworks::names::read_under_old_name(
-                &old.display().to_string(),
-                &new.display().to_string()
-            ),
-            old.display(),
-            new.display()
-        );
-    }
+    // The key folder under its old name is still read (ADR-062), and no longer said on every review:
+    // the owner, the only person who ran `sv` under the old name, read it as an error (backlog
+    // 0256). The README says it once, and a report says it once for the settings file.
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
     let mut out = Visible(std::io::stdout());

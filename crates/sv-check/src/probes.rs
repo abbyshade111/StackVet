@@ -474,9 +474,7 @@ pub fn evaluate(responses: &[ProbeResponse]) -> Vec<Finding> {
     out.extend(development_console(responses));
     out.extend(version_disclosed(responses));
     out.extend(opener_policy(responses));
-    if let Some(home) = find("home") {
-        out.extend(csp_reporting(home));
-    }
+    out.extend(csp_reporting(&policy_answers(responses)));
     out.sort_by(|a, b| {
         a.severity
             .cmp(&b.severity)
@@ -508,7 +506,17 @@ const SECURITY_HEADERS: Rule = Rule {
 /// and a rule whose response is absent is skipped rather than credited — which is why each arm
 /// looks up its own response instead of assuming the suite ran.
 pub fn verified(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
-    name_credits(verified_unnamed(responses))
+    verified_with_routes(responses, &[])
+}
+
+/// The same, knowing which routes stackvet.toml names and were asked (ADR-096): the header, cookie,
+/// and content-type credits are whole only when there were such routes, every one answered, and every
+/// answer passed. With none, or one unanswered, they stay in part.
+pub fn verified_with_routes(
+    responses: &[ProbeResponse],
+    routes: &[String],
+) -> Vec<crate::Verified> {
+    name_credits(verified_unnamed(responses, routes))
 }
 
 /// The answers each probe credit was read from, by their ids (ADR-082, backlog 0229, part 1): the same
@@ -547,14 +555,31 @@ fn name_credits(credits: Vec<crate::Verified>) -> Vec<crate::Verified> {
         .collect()
 }
 
-fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
+fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate::Verified> {
     let mut out = Vec::new();
     let find = |id: &str| responses.iter().find(|r| r.id == id);
+    // Every route stackvet.toml names was asked and answered: the only way these credits speak for
+    // more than one or two answers a stranger sees (ADR-096).
+    let every_route = !routes.is_empty()
+        && routes
+            .iter()
+            .all(|path| find(&format!("{ROUTE_ID}{path}")).is_some());
+    let and_routes = if every_route {
+        format!(
+            ", and on all {} route{} stackvet.toml names",
+            routes.len(),
+            if routes.len() == 1 { "" } else { "s" }
+        )
+    } else {
+        String::new()
+    };
 
-    // Every judged page has to pass for the credit, which names them.
+    // Every judged page has to pass for the credit, which names them. The named routes are counted
+    // rather than listed, since there may be many.
     let judged = pages(responses);
     let names = judged
         .iter()
+        .filter(|p| !p.id.starts_with(ROUTE_ID))
         .map(|p| page_name(p))
         .collect::<Vec<_>>()
         .join(" and ");
@@ -563,10 +588,11 @@ fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
             crate::Verified::new(
                 SECURITY_HEADERS.rule_id,
                 SECURITY_HEADERS.requirement_ids,
-                format!("the app's answers on {names}, as somebody not signed in"),
+                format!("the app's answers on {names}{and_routes}, as somebody not signed in"),
             )
-            // One or two pages a stranger sees, not every response (ADR-053, Later).
-            .in_part(),
+            // One or two pages a stranger sees, unless every named route was asked too (ADR-053,
+            // Later; ADR-096).
+            .in_part_if(!every_route),
         );
     }
     // Only when there was a cookie to judge. No cookie is not a correct cookie.
@@ -578,10 +604,11 @@ fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
             crate::Verified::new(
                 COOKIE_ATTRIBUTES.rule_id,
                 COOKIE_ATTRIBUTES.requirement_ids,
-                format!("every cookie the app set on {names}"),
+                format!("every cookie the app set on {names}{and_routes}"),
             )
-            // The cookies of one or two pages a stranger sees (ADR-053, Later).
-            .in_part(),
+            // The cookies of one or two pages a stranger sees, unless every named route was asked
+            // too (ADR-053, Later; ADR-096).
+            .in_part_if(!every_route),
         );
     }
     if let Some(cors) = find("cors") {
@@ -651,11 +678,13 @@ fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
             .in_part(),
         );
     }
-    // Only over the page and the error, both of which have to have answered with a body: one
-    // answer judged is not the app's responses judged.
+    // Only over the page and the error, both of which have to have answered with a body, and each
+    // named route that did: one answer judged is not the app's responses judged.
     let judged: Vec<&ProbeResponse> = with_bodies(responses)
         .into_iter()
-        .filter(|r| r.id == "home" || r.id == "missing" || r.id == "root")
+        .filter(|r| {
+            r.id == "home" || r.id == "missing" || r.id == "root" || r.id.starts_with(ROUTE_ID)
+        })
         .collect();
     if judged.iter().any(|r| r.id == "home")
         && judged.iter().any(|r| r.id == "missing")
@@ -665,10 +694,11 @@ fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
             crate::Verified::new(
                 CONTENT_TYPE.rule_id,
                 CONTENT_TYPE.requirement_ids,
-                "the app's page and its answer for a page that is not there".to_owned(),
+                format!("the app's page and its answer for a page that is not there{and_routes}"),
             )
-            // Two answers stand for no other response V4.1.1 names (ADR-053, Later).
-            .in_part(),
+            // Two answers stand for no other response V4.1.1 names, unless every named route was
+            // asked too (ADR-053, Later; ADR-096).
+            .in_part_if(!every_route),
         );
     }
     // Only over pages that start a document, and only when there was one.
@@ -679,28 +709,31 @@ fn verified_unnamed(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
                 OPENER_POLICY.rule_id,
                 OPENER_POLICY.requirement_ids,
                 format!(
-                    "{} page{} the app answered with, as somebody not signed in",
+                    "{} page{} the app answered with, as somebody not signed in{and_routes}",
                     documents.len(),
                     if documents.len() == 1 { "" } else { "s" }
                 ),
             )
-            // The pages a stranger sees, not every page the app renders (ADR-053, Later).
-            .in_part(),
+            // The pages a stranger sees, not every page the app renders, unless every named route
+            // was asked too (ADR-053, Later; ADR-096).
+            .in_part_if(!every_route),
         );
     }
-    // Only when there was a policy to read. No policy is the security-headers finding, not this.
-    if let Some(home) = find("home")
-        && home.header("content-security-policy").is_some()
-        && csp_reporting(home).is_none()
-    {
+    // Only when there was a policy to read on the health path. No policy is the security-headers
+    // finding, not this.
+    let policies = policy_answers(responses);
+    if policies.iter().any(|r| r.id == "home") && csp_reporting(&policies).is_none() {
         out.push(
             crate::Verified::new(
                 CSP_REPORTING.rule_id,
                 CSP_REPORTING.requirement_ids,
-                "the Content-Security-Policy on the app's answer on its health path".to_owned(),
+                format!(
+                    "the Content-Security-Policy on the app's answer on its health path{and_routes}"
+                ),
             )
-            // The policy on one answer stands for no other page's (ADR-053, Later).
-            .in_part(),
+            // The policy on one answer stands for no other page's, unless every named route was
+            // asked too (ADR-053, Later; ADR-096).
+            .in_part_if(!every_route),
         );
     }
     // Both asked and both answered, or nothing is shown about the folder.
@@ -1115,23 +1148,83 @@ const WS_ORIGIN: Rule = Rule {
 };
 
 /// Headers a browser needs in order to protect the people using the app.
-/// The answers the page checks judge: the health path's always, and the root's when it answered
-/// with a page of its own. Each is named in what the checks say, so a credit says which pages it
-/// covers and a finding which page fell short.
+/// The answers the page checks judge: the health path's always, the root's when it answered with a
+/// page of its own, and each route stackvet.toml names, whatever its status, since V3.4.4 and V3.4.6
+/// name every response (ADR-096). Each is named in what the checks say, so a credit says which
+/// pages it covers and a finding which page fell short.
 fn pages(responses: &[ProbeResponse]) -> Vec<&ProbeResponse> {
     responses
         .iter()
-        .filter(|r| r.id == "home" || (r.id == "root" && (200..300).contains(&r.status)))
+        .filter(|r| {
+            r.id == "home"
+                || (r.id == "root" && (200..300).contains(&r.status))
+                || r.id.starts_with(ROUTE_ID)
+        })
         .collect()
 }
 
 /// Which page a judged answer was, for saying so.
-fn page_name(response: &ProbeResponse) -> &'static str {
-    if response.id == "root" {
-        "the root page"
-    } else {
-        "the health path"
+fn page_name(response: &ProbeResponse) -> String {
+    match response.id.strip_prefix(ROUTE_ID) {
+        Some(path) => format!("the answer for {path}"),
+        None if response.id == "root" => "the root page".to_owned(),
+        None => "the health path".to_owned(),
     }
+}
+
+/// The id of the anonymous request for a route stackvet.toml names, before its path (ADR-096).
+pub const ROUTE_ID: &str = "route:";
+
+/// The routes stackvet.toml names under `[stack.run.users]` that a stranger can ask for: sign-in,
+/// sign-up, sign-out, the private and admin pages, the password and email changes, account deletion,
+/// the upload route, and where owned records are made. Each once, in that order, leaving out a path
+/// with a placeholder in it and the health path and root, which the suite already asks (ADR-096).
+pub fn named_routes(users: &sv_manifest::UsersSection, health_path: &str) -> Vec<String> {
+    let templates = [
+        &users.login,
+        &users.signup,
+        &users.logout,
+        &users.change_password,
+        &users.change_email,
+        &users.delete_account,
+    ];
+    let mut routes: Vec<String> = Vec::new();
+    let candidates = templates
+        .into_iter()
+        .flatten()
+        .map(|t| t.path.clone())
+        .chain(users.private.iter().cloned())
+        .chain(users.admin.iter().cloned())
+        .chain(users.upload.as_ref().map(|u| u.path.clone()))
+        .chain(users.owned.as_ref().map(|o| o.create.path.clone()));
+    for path in candidates {
+        let path = path.split('?').next().unwrap_or_default().to_owned();
+        if path.is_empty()
+            || path.contains('{')
+            || path == "/"
+            || path == health_path
+            || routes.contains(&path)
+        {
+            continue;
+        }
+        routes.push(path);
+    }
+    routes
+}
+
+/// One anonymous GET for each route stackvet.toml names (ADR-096): with no session, so it can change
+/// nothing that belongs to anybody.
+pub fn route_requests(routes: &[String]) -> Vec<ProbeRequest> {
+    routes
+        .iter()
+        .map(|path| ProbeRequest {
+            id: format!("{ROUTE_ID}{path}"),
+            method: "GET".into(),
+            path: path.clone(),
+            headers: Vec::new(),
+            body: None,
+        })
+        .collect()
 }
 
 /// What a Content-Security-Policy lacks of the minimum V3.4.3 names: `object-src 'none'`,
@@ -1188,12 +1281,21 @@ pub(crate) fn missing_headers(response: &ProbeResponse) -> Vec<&'static str> {
     if response.header("x-content-type-options").is_none() {
         missing.push("X-Content-Type-Options, which stops a browser guessing a file's type");
     }
-    let framing_denied = response.header("x-frame-options").is_some_and(|v| {
-        v.to_lowercase().contains("deny") || v.to_lowercase().contains("sameorigin")
-    }) || response
+    // V3.4.6 asks for the policy's `frame-ancestors`, and says `X-Frame-Options` "is obsolete and
+    // may not be relied upon": it alone is short of the requirement, and said so rather than
+    // missing (backlog 0264; ADR-047, Later).
+    let frame_ancestors = response
         .header("content-security-policy")
         .is_some_and(|v| v.to_lowercase().contains("frame-ancestors"));
-    if !framing_denied {
+    let frame_options = response.header("x-frame-options").is_some_and(|v| {
+        v.to_lowercase().contains("deny") || v.to_lowercase().contains("sameorigin")
+    });
+    if !frame_ancestors && frame_options {
+        missing.push(
+            "a `frame-ancestors` directive in its Content-Security-Policy (it sends \
+             X-Frame-Options, which V3.4.6 calls obsolete and not to be relied upon)",
+        );
+    } else if !frame_ancestors {
         missing.push("a rule against being shown inside somebody else's page");
     }
     if response.header("referrer-policy").is_none() {
@@ -2185,7 +2287,9 @@ const OPENER_POLICY: Rule = Rule {
 fn html_documents(responses: &[ProbeResponse]) -> Vec<&ProbeResponse> {
     responses
         .iter()
-        .filter(|r| r.id == "home" || r.id == "missing" || r.id == "root")
+        .filter(|r| {
+            r.id == "home" || r.id == "missing" || r.id == "root" || r.id.starts_with(ROUTE_ID)
+        })
         .filter(|r| {
             r.header("content-type")
                 .is_some_and(|t| t.to_lowercase().starts_with("text/html"))
@@ -2235,19 +2339,44 @@ const CSP_REPORTING: Rule = Rule {
           pointing at somewhere the reports are read.",
 };
 
-/// A Content-Security-Policy that names where to report what it blocks. Nothing is said when there
-/// is no policy at all: that is the security-headers finding.
-fn csp_reporting(home: &ProbeResponse) -> Option<Finding> {
-    let policy = home.header("content-security-policy")?.to_lowercase();
-    if policy.contains("report-to") || policy.contains("report-uri") {
+/// The answers whose Content-Security-Policy is read for where it reports: the health path's and each
+/// named route's (ADR-096).
+fn policy_answers(responses: &[ProbeResponse]) -> Vec<&ProbeResponse> {
+    responses
+        .iter()
+        .filter(|r| r.id == "home" || r.id.starts_with(ROUTE_ID))
+        .filter(|r| r.header("content-security-policy").is_some())
+        .collect()
+}
+
+/// A Content-Security-Policy that names where to report what it blocks, on every answer that has
+/// one. Nothing is said when there is no policy at all: that is the security-headers finding.
+fn csp_reporting(answers: &[&ProbeResponse]) -> Option<Finding> {
+    let silent: Vec<&&ProbeResponse> = answers
+        .iter()
+        .filter(|r| {
+            r.header("content-security-policy").is_some_and(|policy| {
+                let policy = policy.to_lowercase();
+                !(policy.contains("report-to") || policy.contains("report-uri"))
+            })
+        })
+        .collect();
+    if silent.is_empty() {
         return None;
     }
     Some(finding_on(
-        vec!["home".to_owned()],
+        silent.iter().map(|r| r.id.clone()).collect(),
         &CSP_REPORTING,
         "The Content-Security-Policy reports nowhere",
         Severity::Low,
-        "The app's Content-Security-Policy has neither `report-to` nor `report-uri`.".to_owned(),
+        format!(
+            "The Content-Security-Policy on {} has neither `report-to` nor `report-uri`.",
+            silent
+                .iter()
+                .map(|r| page_name(r))
+                .collect::<Vec<_>>()
+                .join(" and ")
+        ),
     ))
 }
 
@@ -2258,5 +2387,11 @@ mod tests;
 mod quoted_tests;
 
 #[cfg(test)]
+mod routes_tests;
+
+#[cfg(test)]
 #[path = "probes_evidence_tests.rs"]
 mod probes_evidence_tests;
+
+#[cfg(test)]
+mod framing_tests;

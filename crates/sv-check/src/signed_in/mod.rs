@@ -1127,7 +1127,8 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
             "owned-control-",
         ],
     ),
-    (FORGERY.rule_id, &["forged-create"]),
+    // The `owned` create, and each `creates` entry forged after it (backlog 0232, part 3).
+    (FORGERY.rule_id, &["forged-create", "forged-create-"]),
     (
         STEP_SKIPPED.rule_id,
         &["login-flow-b0", "login-flow-b1", "login-flow-b2"],
@@ -1269,13 +1270,10 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     (SESSION_COOKIE.rule_id, &["login-a"]),
     (SESSION_RENEWAL.rule_id, &["login-page-a", "login-a"]),
     (DOWNLOAD_NAME_INJECTED.rule_id, &["download-hostile"]),
-    (
-        UPLOAD_EXECUTED.rule_id,
-        &["upload-code", "upload-code-fetch"],
-    ),
+    (UPLOAD_EXECUTED.rule_id, &["upload-code", "upload-code-"]),
     (
         UPLOAD_RENDERED.rule_id,
-        &["upload-page-file", "upload-page-file-fetch"],
+        &["upload-page-file", "upload-page-file-"],
     ),
 ];
 
@@ -2037,6 +2035,7 @@ fn run_checks(
             http,
             &a,
             confirm_path.clone().filter(|_| signed_in_works).as_deref(),
+            &users.private,
             carried,
             &mut out
         )
@@ -4015,6 +4014,28 @@ mod crash_tests {
                 },
                 true,
             ),
+            // A second create, from `creates`, taken from another site (backlog 0232, part 3): a
+            // crash at `forged-create-1` must not read as that request refused.
+            Scenario::new(
+                "a second create taken from another site",
+                Flaws {
+                    comments_take_foreign: true,
+                    ..Default::default()
+                },
+                {
+                    let mut u = users();
+                    u.creates = vec![sv_manifest::CreateTemplate {
+                        method: "POST".into(),
+                        path: "/comments".into(),
+                        form: [("text".to_owned(), "{marker}".to_owned())].into(),
+                        json: Default::default(),
+                        read: None,
+                        id_field: None,
+                    }];
+                    u
+                },
+                true,
+            ),
             // Each of ADR-053's three on its own, so that crashing any one request is tried
             // against a run where that finding is the only one standing between it and a pass.
             Scenario::new(
@@ -4285,6 +4306,26 @@ mod crash_tests {
                     ..Default::default()
                 },
                 users(),
+                true,
+            ),
+            // One file of each set, the last, at fault alone (backlog 0232, part 4): a crash at its
+            // request must not read as that file served safely.
+            Scenario::new(
+                "an uploaded .php5 that runs",
+                Flaws {
+                    runs_uploaded_php5: true,
+                    ..Default::default()
+                },
+                upload_users(),
+                true,
+            ),
+            Scenario::new(
+                "an uploaded .xhtml that renders",
+                Flaws {
+                    renders_uploaded_xhtml: true,
+                    ..Default::default()
+                },
+                upload_users(),
                 true,
             ),
             Scenario::new(

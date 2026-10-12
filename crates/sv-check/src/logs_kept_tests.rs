@@ -7,7 +7,7 @@ fn markers() -> Markers {
     Markers {
         failed_sign_in: Some("sv-log-nobody-4a91@example.test".into()),
         successful_sign_in: Some("sv-log-ok-4a91@example.test".into()),
-        refused_requests: vec![("sv-log-refused-4a91".into(), 403)],
+        refused_requests: vec![("sv-log-refused-4a91".into(), 403, 0)],
         ..Default::default()
     }
 }

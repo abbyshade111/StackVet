@@ -26,18 +26,46 @@ fn refused_without_the_token(answer: &str) -> String {
     )
 }
 
+/// The changing requests stackvet.toml names that the cross-site check does not forge, by what they
+/// do: forging one that was accepted would change the test accounts for the rest of the run. While
+/// any is named, the credit is in part (backlog 0232, part 3; ADR-053, Later).
+fn not_forged(users: &sv_manifest::UsersSection) -> Vec<&'static str> {
+    [
+        (users.change_password.is_some(), "the password change"),
+        (users.change_email.is_some(), "the email change"),
+        (users.delete_account.is_some(), "account deletion"),
+        (users.upload.is_some(), "the upload"),
+        (users.once.is_some(), "the action done once"),
+        (!users.admin_actions.is_empty(), "the admin actions"),
+        (
+            users.owned.as_ref().is_some_and(|o| o.update.is_some()),
+            "changing a record",
+        ),
+        (
+            users.owned.as_ref().is_some_and(|o| o.delete.is_some()),
+            "deleting a record",
+        ),
+    ]
+    .into_iter()
+    .filter_map(|(named, what)| named.then_some(what))
+    .collect()
+}
+
 pub(super) fn forgery_check(
     http: &mut dyn Http,
+    users: &sv_manifest::UsersSection,
     owned: &sv_manifest::OwnedSection,
     session: &Session,
     a: &SignedIn,
     out: &mut Outcome,
 ) {
-    // The same request A just made, as a page on another site would make it: A's cookies go with
-    // it (that is what a browser does), the Origin is somebody else's, and there is no token,
+    // The same requests A makes, as a page on another site would make them: A's cookies go with
+    // them (that is what a browser does), the Origin is somebody else's, and there is no token,
     // because another site cannot read one. Nor does the `Authorization` header go: until 7 October
     // 2026 it did, and an app signed in by a token was reported accepting a request no other site
-    // could have sent (gap analysis 2.1).
+    // could have sent (gap analysis 2.1). Every create request stackvet.toml names is sent this
+    // way, the `owned` one first: V3.5.1 asks it of sensitive functionality, not of one request
+    // (backlog 0232, part 3).
     let Some(cross) = as_another_site_sends(session) else {
         out.not_assessed
             .push((FORGERY.requirement_ids.join(", "), TOKEN_ONLY.to_owned()));
@@ -48,18 +76,37 @@ pub(super) fn forgery_check(
         csrf: Some(String::new()),
         ..Default::default()
     };
-    let mut forged = request("forged-create", &owned.create, &values, &cross);
-    forged
-        .headers
-        .retain(|(n, _)| !n.to_lowercase().contains("csrf") && !n.to_lowercase().contains("xsrf"));
-    forged
-        .headers
-        .push(("Origin".to_owned(), STRANGER.to_owned()));
-    forged
-        .headers
-        .push(("Referer".to_owned(), format!("{STRANGER}/")));
-    let response = http.send(&forged);
-    if accepted(&response) {
+    let creates: Vec<(String, sv_manifest::RequestTemplate)> =
+        std::iter::once(("forged-create".to_owned(), owned.create.clone()))
+            .chain(
+                users
+                    .creates
+                    .iter()
+                    .enumerate()
+                    .map(|(i, c)| (format!("forged-create-{}", i + 1), c.request())),
+            )
+            .collect();
+    let (mut accepted_at, mut refused_at, mut answers) = (Vec::new(), Vec::new(), Vec::new());
+    for (id, template) in &creates {
+        let mut forged = request(id, template, &values, &cross);
+        forged.headers.retain(|(n, _)| {
+            !n.to_lowercase().contains("csrf") && !n.to_lowercase().contains("xsrf")
+        });
+        forged
+            .headers
+            .push(("Origin".to_owned(), STRANGER.to_owned()));
+        forged
+            .headers
+            .push(("Referer".to_owned(), format!("{STRANGER}/")));
+        let response = http.send(&forged);
+        answers.push(format!("{} ({})", template.path, status(&response)));
+        if accepted(&response) {
+            accepted_at.push((id.clone(), template.path.clone(), status(&response)));
+        } else {
+            refused_at.push(template.path.clone());
+        }
+    }
+    if !accepted_at.is_empty() {
         // SameSite on the session cookie means a browser would not have sent it from another site,
         // which is a real defense — but not the check V3.5.1 asks for, so it lowers the severity
         // rather than removing the finding.
@@ -68,7 +115,7 @@ pub(super) fn forgery_check(
                 .iter()
                 .all(|c| matches!(c.same_site.as_deref(), Some("lax") | Some("strict")));
         out.findings.push(finding_on(
-            vec!["forged-create".to_owned()],
+            accepted_at.iter().map(|(id, _, _)| id.clone()).collect(),
             &FORGERY,
             "A request from another site is accepted",
             if protected_by_same_site {
@@ -77,9 +124,13 @@ pub(super) fn forgery_check(
                 Severity::High
             },
             format!(
-                "Creating a record was accepted ({}) when sent with the signed-in user's cookies, an \
-                 Origin of {STRANGER} and no anti-forgery token.{}",
-                status(&response),
+                "Creating a record was accepted at {} when sent with the signed-in user's cookies, \
+                 an Origin of {STRANGER} and no anti-forgery token.{}",
+                accepted_at
+                    .iter()
+                    .map(|(_, path, answer)| format!("{path} ({answer})"))
+                    .collect::<Vec<_>>()
+                    .join(", "),
                 if protected_by_same_site {
                     " The session cookie's SameSite would stop a browser sending it from another \
                      site, which is why this is not rated higher."
@@ -91,18 +142,34 @@ pub(super) fn forgery_check(
     } else if session.bearer.is_some() {
         out.not_assessed.push((
             FORGERY.requirement_ids.join(", "),
-            refused_without_the_token(&status(&response)),
+            refused_without_the_token(&answers.join(", ")),
         ));
     } else {
-        out.verified.push(crate::Verified::new(
-            FORGERY.rule_id,
-            FORGERY.requirement_ids,
-            "a request that creates a record, sent with a signed-in user's cookies from another \
-             origin and without a token, and refused"
-                .to_owned(),
-        )
-        // One request, the one creating the `owned` record (ADR-053, Later).
-        .in_part());
+        let untried = not_forged(users);
+        out.verified.push(
+            crate::Verified::new(
+                FORGERY.rule_id,
+                FORGERY.requirement_ids,
+                format!(
+                    "{} sent with a signed-in user's cookies from another origin and without a \
+                     token, and refused at {}{}",
+                    if refused_at.len() == 1 {
+                        "a request that creates a record,".to_owned()
+                    } else {
+                        format!("{} requests that create records, each", refused_at.len())
+                    },
+                    refused_at.join(", "),
+                    if untried.is_empty() {
+                        String::new()
+                    } else {
+                        format!("; not sent this way: {}", untried.join(", "))
+                    }
+                ),
+            )
+            // Every create request named; one, or a changing request not sent this way, is in
+            // part (ADR-053, Later).
+            .in_part_if(refused_at.len() == 1 || !untried.is_empty()),
+        );
     }
 }
 
@@ -955,3 +1022,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod creates_tests;

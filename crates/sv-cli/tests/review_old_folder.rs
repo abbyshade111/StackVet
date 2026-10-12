@@ -1,5 +1,6 @@
-//! `sv review` says once, before anything else, when the key folder in use is the old one,
-//! `~/.config/securevibe` (ADR-062), and names the move; it says nothing of it otherwise.
+//! `sv review` reads the key folder under its old name, `~/.config/securevibe` (ADR-062), and says
+//! nothing of it: a note on every review read as an error (backlog 0256; ADR-062, Later). It moves
+//! nothing and makes nothing under the new name.
 //!
 //! Unix only: these tests type into `sv review` through a pseudo-terminal (Python's `pty`), which
 //! Windows does not have; there they would not run `sv` at all, and the test that looks for nothing
@@ -65,21 +66,20 @@ fn review(dir: &Path) -> String {
 }
 
 #[test]
-fn the_old_key_folder_in_use_is_said_once_with_the_move() {
+fn the_old_key_folder_in_use_is_read_and_not_said() {
     let dir = scratch("old");
     let old = dir.join("config").join(OLD_CONFIG_DIR);
     let new = dir.join("config").join(CONFIG_DIR);
     std::fs::create_dir_all(&old).unwrap();
     let said = review(&dir);
-    assert_eq!(
-        said.matches("read under its old name").count(),
-        1,
-        "said once: {said}"
-    );
+    // The setup: the review really ran at a terminal, so its silence means something.
+    assert!(!said.trim().is_empty(), "nothing came back from the review");
     assert!(
-        said.contains(&format!("mv {} {}", old.display(), new.display())),
-        "the move is named: {said}"
+        !said.contains("runs only in a terminal"),
+        "no terminal: {said}"
     );
+    assert!(!said.contains("read under its old name"), "{said}");
+    assert!(!said.contains("mv "), "{said}");
     assert!(
         !new.exists(),
         "nothing was moved or made under the new name"

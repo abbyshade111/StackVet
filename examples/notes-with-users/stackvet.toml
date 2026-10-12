@@ -30,7 +30,7 @@ seed = "python seed.py"
 signup = { path = "/signup", form = { email = "{user}", password = "{password}", csrf_token = "{csrf}" } }
 login = { path = "/login", form = { email = "{user}", password = "{password}", csrf_token = "{csrf}" } }
 logout = { path = "/logout", form = { csrf_token = "{csrf}" } }
-private = ["/account"]
+private = ["/account", "/notes", "/password", "/account/email"]
 admin = ["/admin"]
 owned = { create = { path = "/notes", form = { text = "{marker}", csrf_token = "{csrf}" } } }
 change-password = { path = "/password", form = { current = "{password}", new = "{new_password}", csrf_token = "{csrf}" } }

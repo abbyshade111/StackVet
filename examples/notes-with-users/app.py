@@ -68,7 +68,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         if not any(name == "Content-Type" for name, _ in headers):
             self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Security-Policy", "default-src 'self'; object-src 'none'; base-uri 'none'")
+        self.send_header("Content-Security-Policy", "default-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
         # `same-origin`, not `no-referrer`: both keep this app's addresses from other sites, but
@@ -219,7 +219,7 @@ class Handler(BaseHTTPRequestHandler):
                 "<label>Note <textarea name=text maxlength=2000></textarea></label>"
                 "<button>Save</button></form>"
             )
-            return self.send(200, page("New note", form))
+            return self.send(200, page("New note", form + self.sign_out(csrf)), self.private())
         if self.path == "/account/email":
             form = (
                 f"<form method=post><input type=hidden name=csrf_token value='{csrf}'>"
@@ -227,7 +227,7 @@ class Handler(BaseHTTPRequestHandler):
                 "<label>Password <input type=password name=password></label>"
                 "<button>Change</button></form>"
             )
-            return self.send(200, page("Change email address", form))
+            return self.send(200, page("Change email address", form + self.sign_out(csrf)), self.private())
         if self.path == "/password":
             form = (
                 f"<form method=post><input type=hidden name=csrf_token value='{csrf}'>"
@@ -235,7 +235,7 @@ class Handler(BaseHTTPRequestHandler):
                 "<label>New password <input type=password name=new></label>"
                 "<button>Change</button></form>"
             )
-            return self.send(200, page("Change password", form))
+            return self.send(200, page("Change password", form + self.sign_out(csrf)), self.private())
         if self.path.startswith("/notes/"):
             note = db().execute(
                 "select text from notes where id = ? and owner = ?",

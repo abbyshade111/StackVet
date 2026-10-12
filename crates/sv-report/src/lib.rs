@@ -929,11 +929,30 @@ pub struct DataFileHash {
 impl RunRecord {
     /// "2026-10-10T00:01:02Z, run 1a2b3c4d5e6f", for the line at the top of each page.
     pub fn describe(&self) -> String {
+        let started = utc_for_a_person(&self.started);
         if self.run_id.is_empty() {
-            self.started.clone()
+            started
         } else {
-            format!("{}, run {}", self.started, self.run_id)
+            format!("{started}, run {}", self.run_id)
         }
+    }
+}
+
+/// `2026-10-04T18:55:02Z`, as a person reads it: `2026-10-04 18:55:02 UTC`. The `Z` says UTC only to
+/// someone who knows the notation, and a report read beside a local clock looked stale (backlog 0255).
+/// Anything not in that shape is returned as it was.
+pub fn utc_for_a_person(stamp: &str) -> String {
+    let shaped = stamp.len() == 20
+        && stamp.as_bytes()[10] == b'T'
+        && stamp.ends_with('Z')
+        && stamp[..10].bytes().all(|b| b.is_ascii_digit() || b == b'-')
+        && stamp[11..19]
+            .bytes()
+            .all(|b| b.is_ascii_digit() || b == b':');
+    if shaped {
+        format!("{} {} UTC", &stamp[..10], &stamp[11..19])
+    } else {
+        stamp.to_owned()
     }
 }
 
@@ -1438,6 +1457,71 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
 /// requirements they are about; this changes where a finding is listed, never whether it counts.
 pub fn app_then_tests(report: &Report) -> (Vec<&sv_check::Finding>, Vec<&sv_check::Finding>) {
     report.findings.iter().partition(|f| !f.apart())
+}
+
+#[cfg(test)]
+#[path = "low_groups_tests.rs"]
+mod low_groups_tests;
+
+/// The file beside the report that holds every low-severity finding in full (ADR-095).
+pub const LOW_FINDINGS_FILE: &str = "low-findings.md";
+
+/// Whether a finding is shown grouped by rule rather than in full: low severity, not about a key, and in the app's own
+/// list, not one of those listed apart (test code, a bundled library, worth a look, outranked) (ADR-095).
+pub fn is_grouped_low(f: &sv_check::Finding) -> bool {
+    f.severity == sv_check::Severity::Low && !about_a_secret(f) && !f.apart()
+}
+
+/// One rule's low-severity findings, as the reports show them in one line (ADR-095).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LowGroup {
+    pub rule: String,
+    pub count: usize,
+    /// The files it fired in, each once, in order.
+    pub files: Vec<String>,
+    /// How many of them the baseline holds: they were there before (`baseline_note`).
+    pub in_baseline: usize,
+}
+
+/// Whether a finding is about a key or password. Those are never grouped, whatever their severity: the note on each
+/// says whether it reads like a real key, and a line per rule would hide it (ADR-095).
+fn about_a_secret(f: &sv_check::Finding) -> bool {
+    f.secret.is_some()
+        || f.rule_id.starts_with("secrets.")
+        || f.also_reported_by.iter().any(|r| r.starts_with("secrets."))
+}
+
+/// Splits out the low-severity findings and groups them by rule, most first, then by rule name; the rest are
+/// returned as they were, in their order (ADR-095). Nothing is dropped: every low one is in a group, and in full in
+/// `LOW_FINDINGS_FILE`.
+pub fn split_low<'a>(
+    report: &Report,
+    findings: Vec<&'a sv_check::Finding>,
+) -> (Vec<&'a sv_check::Finding>, Vec<LowGroup>) {
+    let (low, rest): (Vec<_>, Vec<_>) = findings.into_iter().partition(|f| is_grouped_low(f));
+    let mut groups: Vec<LowGroup> = Vec::new();
+    for f in low {
+        match groups.iter_mut().find(|g| g.rule == f.rule_id) {
+            Some(g) => {
+                g.count += 1;
+                g.in_baseline += usize::from(report.in_baseline(f));
+                if !g.files.contains(&f.location.file) {
+                    g.files.push(f.location.file.clone());
+                }
+            }
+            None => groups.push(LowGroup {
+                rule: f.rule_id.clone(),
+                count: 1,
+                files: vec![f.location.file.clone()],
+                in_baseline: usize::from(report.in_baseline(f)),
+            }),
+        }
+    }
+    for g in &mut groups {
+        g.files.sort();
+    }
+    groups.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.rule.cmp(&b.rule)));
+    (rest, groups)
 }
 
 /// What the reports say beside a finding, besides the finding itself: how sure `sv` is, whether it
@@ -1974,7 +2058,7 @@ pub fn baseline_line(report: &Report) -> Option<String> {
 #[path = "next_step_tests.rs"]
 mod next_step_tests;
 
-/// The next step for a finding no review answers for (ADR-096): fix it, or, if it is a false alarm, give it an entry and
+/// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
 /// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already.
 pub fn next_step(report: &Report, f: &sv_check::Finding) -> Option<String> {
     accepted_note(report, f).is_none().then(|| {
@@ -3149,3 +3233,7 @@ mod one_line_tests {
         assert_eq!(out.lines().count(), 1, "{out:?}");
     }
 }
+
+#[cfg(test)]
+#[path = "utc_tests.rs"]
+mod utc_tests;
