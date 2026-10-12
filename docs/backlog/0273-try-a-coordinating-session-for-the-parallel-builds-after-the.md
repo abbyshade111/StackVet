@@ -99,3 +99,10 @@ do not; write down what happened either way, in this item and the record.
 (open, session, queue, assign, handout, finish, board, check, measure, setup-no-context, and a self-test),
 `crates/sv-cli/tests/coordination.rs`, a line in `CLAUDE.md`, and a row in `docs/ARCHITECTURE.md`. The item stays
 claimed until the trial day is run and written up here with `measure`'s counts.
+
+**The owner's word, 12 October 2026, evening: both arms are cloud sessions** ("can we make the two fresh sessions
+Cloud sessions so my computer doesn't get overloaded?"). What changes: the no-context arm is a second cloud environment
+with the setup script `tools/coordination.py cloud-setup-script` prints (tested once in a session before the trial, since
+the documentation does not say the script runs inside the clone); neither arm has this computer's memory, so they
+differ on `CLAUDE.md` alone; hand-outs are pasted by the owner or sent with `claude -p ... --cloud <id>`; the cost
+reading comes from the sessions' own usage display, not the desktop app. `docs/COORDINATION.md` says the same.

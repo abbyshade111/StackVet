@@ -20,7 +20,8 @@ makes it on the builder's behalf, so the backlog stays the record and the board 
     python3 tools/coordination.py board                                  # prints the board
     python3 tools/coordination.py check                                  # the board agrees with the backlog (a test runs it)
     python3 tools/coordination.py measure --since 2026-10-13 [--until 2026-10-14] [--arms]
-    python3 tools/coordination.py setup-no-context ~/stackvet-trial-noctx  # the clone for the no-context arm
+    python3 tools/coordination.py setup-no-context ~/stackvet-trial-noctx  # the clone for the no-context arm, on this computer
+    python3 tools/coordination.py cloud-setup-script                     # the same for a cloud environment: paste it in its dialog
     python3 tools/coordination.py --self-test
 
 `measure` counts from git what backlog 0273 says to judge the trial by: pull requests merged, those that only record a
@@ -462,6 +463,24 @@ def setup_no_context(source, target, origin_url=None):
     return target
 
 
+# The owner chose cloud sessions for both arms (12 October 2026), so the no-context arm is a cloud environment of its own
+# whose setup script does what setup_no_context does here. Whether that script runs inside the clone, and whether git's
+# index survives the environment cache, is not in the documentation: a test session that prints CLAUDE.md comes first.
+CLOUD_SCRIPT = """#!/bin/bash
+# The no-context arm of the coordination trial (backlog 0273; docs/COORDINATION.md): CLAUDE.md is a two-line stub,
+# and git is told to ignore the change, so no commit can carry it. Runs once, before the session starts.
+set -e
+cd "$(git rev-parse --show-toplevel)" || { echo "not inside the clone; the trial's record says to test this first"; exit 1; }
+printf '%s' '{stub}' > CLAUDE.md
+git update-index --skip-worktree CLAUDE.md
+echo "no-context arm: CLAUDE.md is the stub, and git ignores the change"
+"""
+
+
+def cloud_setup_script():
+    return CLOUD_SCRIPT.replace("{stub}", STUB.replace("\n", "\\n").replace("'", "'\\''")).replace("printf '%s'", "printf '%b'")
+
+
 def cmd_setup_no_context(target):
     url = git(ROOT, "remote", "get-url", "origin").strip()
     target = setup_no_context(ROOT, target, url)
@@ -600,6 +619,18 @@ def self_test():
         assert flags.startswith("S "), flags
         status = subprocess.run(["git", "-C", str(clone), "status", "--porcelain"], capture_output=True, text=True, encoding="utf-8").stdout
         assert status == "", status
+        # The cloud script writes the same stub and the same git flag, and runs as a shell would run it.
+        script = cloud_setup_script()
+        assert "update-index --skip-worktree CLAUDE.md" in script and "set -e" in script
+        shell = tmp / "shell"
+        shell.mkdir()
+        subprocess.run(["git", "clone", "-q", str(repo), str(shell)], check=True)
+        run = subprocess.run(["bash", "-c", script], cwd=shell, capture_output=True, text=True, encoding="utf-8")
+        assert run.returncode == 0, run.stderr
+        with open(shell / "CLAUDE.md", encoding="utf-8") as f:
+            assert f.read() == STUB, repr(f.read())
+        flags = subprocess.run(["git", "-C", str(shell), "ls-files", "-v", "CLAUDE.md"], capture_output=True, text=True, encoding="utf-8").stdout
+        assert flags.startswith("S "), flags
     print("coordination self-test: ok")
 
 
@@ -658,6 +689,8 @@ def main(argv):
         if not a.since:
             raise SystemExit("measure --since 2026-10-13 [--until 2026-10-14] [--arms]")
         cmd_measure(root, board_path, a.since, a.until, a.arms)
+    elif c == "cloud-setup-script":
+        print(cloud_setup_script(), end="")
     elif c == "setup-no-context":
         if len(args) != 1:
             raise SystemExit("setup-no-context <new folder>")
