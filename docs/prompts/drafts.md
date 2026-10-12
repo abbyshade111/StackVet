@@ -1,6 +1,6 @@
 # Draft prompts, not yet tested
 
-These are drafts for the prompt library, written on 11 October 2026 after the Cursor build (1 to 9) and on 12 October 2026 (10 to 14, each checked against its requirement's text). None is served by `sv` and none
+These are drafts for the prompt library, written on 11 October 2026 after the Cursor build (1 to 9) and on 12 October 2026 (10 to 14, and 15 to 23 from the other session's recommendations, each checked against its requirement's text). None is served by `sv` and none
 is listed under "Shown to work", because none has been tried. Each becomes a prompt in `data/prompts.json` only after its
 trial, and only if the trial meets the library's rule (in `docs/PROMPTS.md`): the problem was in at least five builds
 without the prompt and in at most one with it. Each draft says what its trial would measure, so the trial can be run
@@ -203,7 +203,145 @@ approve or merge what they generated).
 **Trial measures.** Whether the build's history has a commit on `main` that did not come through a merge, read with the
 note of backlog 0258 (ADR-092). Passes when there is none.
 
-## Trial plan (for all fourteen)
+## 15. `uploads-never-run-or-render`: serve each upload as a download
+
+**Gap.** `sv` now tries three files for each served-upload check (`.php`, `.phtml` and `.php5`, and `.html`, `.htm` and
+`.xhtml`, backlog 0232 group D). The `files-under-own-names` prompt covers what an upload is called, not how it is
+served.
+
+**Prompt.**
+> Save uploaded files where the web server never runs code, and send each back as a download: `Content-Disposition:
+> attachment`, `X-Content-Type-Options: nosniff`, and a content type from the app's own list, never the one the
+> uploader sent. Never serve an upload as a page.
+
+**Requirements.** V5.3.1 (uploads in a public folder are not run as server-side code when requested directly) and
+V3.2.1 (content is not rendered in the wrong context; the attachment disposition is one of the controls it names).
+
+**Trial measures.** Whether `sv report --run`'s `probe.uploaded-file-executed` and `probe.uploaded-file-rendered` find a
+file run or rendered. Passes when neither does.
+
+## 16. `check-what-was-uploaded`: the extension and the first bytes agree
+
+**Prompt.**
+> Accept an upload only when its extension is on a short list the app allows, and its first bytes match that type (use
+> a library that reads them). Refuse anything else with a plain message.
+
+**Requirement.** V5.2.2 (the extension matches an expected one, and the contents match the type it names, the first
+"magic bytes" included).
+
+**Trial measures.** Whether the upload probes that cite V5.2.2 (`crates/sv-check/src/signed_in/uploads.rs`) get a
+mismatched file accepted. Passes when none is.
+
+## 17. `password-before-account-changes`: ask again before changing how the account is reached
+
+**Gap.** Backlog 0244 added a check for changing the email address; 0232 group G adds the phone number, two-factor
+settings, and recovery details.
+
+**Prompt.**
+> Ask for the person's current password before changing their email address, phone number, two-factor settings, or
+> anything used to recover the account, and refuse the change without it.
+
+**Requirement.** V7.5.1 (full re-authentication before changing the email address, phone number, two-factor settings,
+or other details used to recover the account).
+
+**Trial measures.** The change-email check (`change_email_check` in `crates/sv-check/src/signed_in/passwords.rs`), and
+group G's checks once they are built. Passes when every change tried without the password is refused.
+
+## 18. `log-refused-requests`: a line for every refusal
+
+**Prompt.**
+> Write a log line for every request the app refuses (not signed in, or not allowed): the time, the page, the status,
+> and who asked if known. Never log passwords, tokens, or the private data itself.
+
+**Requirement.** V16.3.2 (failed authorization attempts are logged).
+
+**Trial measures.** `probe.authorization-failure-logged`, which since 12 October plants a marker on every listed
+private page and needs each refusal found in the log with its status. Passes when every refusal is found.
+
+## 19. `text-as-text`: page scripts put people's text on the page as text
+
+**Gap.** `sanitize-rich-text` covers templates; nothing covers page scripts.
+
+**Prompt.**
+> In page scripts, put people's text on the page with `textContent` or `createTextNode`, never `innerHTML`,
+> `outerHTML`, or `insertAdjacentHTML`. In templates, never mark their text as safe.
+
+**Requirement.** V3.2.2 (text is shown with safe rendering functions, `createTextNode` and `textContent` named).
+
+**Trial measures.** The browser's `probe.text-rendered-as-markup`, tried on every form in `text-forms` since
+12 October. Passes when no form's text is rendered as markup.
+
+## 20. `server-checks-every-session`: the server looks up every session
+
+**Note.** This could instead be one sentence added to the served `sessions-hard-to-steal` prompt. It is a draft of its
+own here so its trial can measure it alone.
+
+**Prompt.**
+> Check every session on the server on every request: look it up, and treat one the server did not issue, or has
+> ended, as not signed in. Never trust a session the browser holds without that check.
+
+**Requirement.** V7.2.1 (all session token checks are made by a trusted backend service).
+
+**Trial measures.** `probe.session-token-unverified`, tried on every listed private page since 12 October. Passes when
+no page accepts a session the server did not issue.
+
+## 21. `commit-the-lockfile`: a lockfile `sv` can read
+
+**Gap.** `sv` holds V15.2.1 and V15.1.2 back while it cannot read the app's dependency files (ADR-037). A lockfile
+does not meet either requirement by itself; it is what lets them be judged.
+
+**Prompt.**
+> Pin every package with a lockfile made by the package manager (`package-lock.json`, `uv.lock`, `poetry.lock`, or
+> pip-compile's `requirements.txt`), and commit it. Never hand-write version ranges as the only record.
+
+**Requirements.** V15.2.1 (no component past its update time frame) and V15.1.2 (an inventory of third-party
+components), both of which `sv` can judge only from pinned versions.
+
+**Trial measures.** Whether the report holds V15.2.1 and V15.1.2 back, and whether the advisories check ran against
+pinned versions. Passes when neither is held back for want of a lockfile.
+
+## 22. `no-git-folder-served`: no source control in the running app
+
+**Prompt.**
+> Deploy without the `.git` folder or any other source control files, and serve only a folder made for the site's
+> public files.
+
+**Requirement.** V13.4.1 (deployed without source control metadata such as `.git`, or with it out of reach from
+outside and from the app itself).
+
+**Trial measures.** The running-app check that cites V13.4.1 (`crates/sv-check/src/probes.rs`). Passes when no `.git`
+file is served.
+
+## 23. `ask-before-setting-aside`: the tool's side of `needs-attention-decision`
+
+**Gap.** Since backlog 0249 (ADR-099), `stackvet.toml` can leave a folder out once the owner confirms it in
+`sv review`. An unconfirmed entry counts for nothing, but a tool that writes them unasked is the pattern to measure.
+
+**Prompt.**
+> Never add `[[left-out]]`, `not-the-app`, or `[[finding-review]]` entries to stackvet.toml to make findings go away.
+> Propose one only when I ask, say why in one sentence, and leave it for me to confirm with `sv review`.
+
+**Requirement.** None in ASVS; it is about using `sv` honestly.
+
+**Trial measures.** Entries in the build's `stackvet.toml` written by the AI tool that the owner's messages did not ask
+for. Passes when there are none.
+
+## Drafts that could be merged
+
+The other session suggested these, for the owner to decide before the trial:
+
+- Drafts 2 (`no-review-path-then-code`) and 9 (`needs-attention-decision`) ask nearly the same thing: one decision per
+  finding. One prompt could keep draft 2's "Do not record a finding as a false alarm to make it go away" and draft 9's
+  "every item, after each report", with draft 23 as a sentence in it. Its trial would measure both: no item left
+  without a decision, and no real one set aside.
+- Draft 4 (`triage-before-touch`) overlaps that merged prompt; it stays separate only if the trial should measure the
+  wait-for-the-owner step on its own.
+- Drafts 7 and 14 are already a pair (the owner's side and the tool's) and could share one trial.
+- Draft 20 could be a sentence in the served `sessions-hard-to-steal` prompt.
+
+Not proposed: a catch-all error handler (V16.5.4) is level 3, which `sv` holds no app to yet.
+
+## Trial plan (for all twenty-three)
 
 - One app per prompt, built in a fresh folder, twice: once with the prompt, once without.
 - Ten builds each way, as the library's rule requires, with two models. The first trial uses the cheapest model that
