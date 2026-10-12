@@ -117,6 +117,8 @@ history is a file the tool can read.
 **Trial measures.** Whether any password appears in a command the build ran, in its shell history, or in its output.
 Passes when none does. Fails when one does.
 
+*Tried, no reading (12 October 2026, the club brief, `docs/prompts/drafts-trial/results.md`):* 0 of 10 Haiku 5.5 builds and 1 of 10 Sonnet 5.5 builds without it typed a password into a command, so no builds were made with it. Kept as a draft.
+
 ## 9. `needs-attention-decision`: say what each needs-attention item needs
 
 **Gap.** The report listed one needs-attention item, the f-string finding, after `sv review` had reported nothing waiting.
@@ -145,6 +147,8 @@ forgotten password included).
 **Trial measures.** Whether `sv report --run`'s probes find a different answer for a registered and an unregistered
 address. Passes when none differs. Fails when one does.
 
+*Tried, no reading (12 October 2026, the club brief, `docs/prompts/drafts-trial/results.md`):* no build could be read, since the club app has no password reset and every report named V6.3.8 as not assessed; it needs a brief with sign-up and reset, so no builds were made with it. Kept as a draft.
+
 ## 11. `long-passwords-allowed`: take long passwords, and never crash on one
 
 **Gap.** The Cursor build's sign-up crashed with a server error on a very long password: the strength check had no cap.
@@ -171,6 +175,8 @@ accepted. Passes when there is no error and the 64-character one is taken.
 
 **Trial measures.** Whether any answer the run collects holds a password hash or another field its page does not show,
 and whether the code has a `select *`. Passes when neither is found.
+
+*Tried, no reading (12 October 2026, the club brief, `docs/prompts/drafts-trial/results.md`):* `probe.record-returns-secret-fields` found in 0 of 9 Haiku 5.5 builds and 0 of 9 Sonnet 5.5 builds without it, so no builds were made with it. Kept as a draft.
 
 ## 13. `ci-checkout-no-credentials`: a workflow that leaves no token behind
 
@@ -258,6 +264,8 @@ group G's checks once they are built. Passes when every change tried without the
 **Trial measures.** `probe.authorization-failure-logged`, which since 12 October plants a marker on every listed
 private page and needs each refusal found in the log with its status. Passes when every refusal is found.
 
+*Tried, no reading (12 October 2026, the club brief, `docs/prompts/drafts-trial/results.md`):* `probe.authorization-failure-logged` found in 0 of 9 Haiku 5.5 builds and 0 of 8 Sonnet 5.5 builds without it, credited in the rest, so no builds were made with it. Kept as a draft.
+
 ## 19. `text-as-text`: page scripts put people's text on the page as text
 
 **Gap.** `sanitize-rich-text` covers templates; nothing covers page scripts.
@@ -270,6 +278,8 @@ private page and needs each refusal found in the log with its status. Passes whe
 
 **Trial measures.** The browser's `probe.text-rendered-as-markup`, tried on every form in `text-forms` since
 12 October. Passes when no form's text is rendered as markup.
+
+*Tried, no reading (12 October 2026, the club brief, `docs/prompts/drafts-trial/results.md`):* `probe.text-rendered-as-markup` found in 0 of 6 Haiku 5.5 builds and 0 of 8 Sonnet 5.5 builds without it, credited in the rest, so no builds were made with it. Kept as a draft.
 
 ## 20. `server-checks-every-session`: the server looks up every session
 
@@ -284,6 +294,8 @@ own here so its trial can measure it alone.
 
 **Trial measures.** `probe.session-token-unverified`, tried on every listed private page since 12 October. Passes when
 no page accepts a session the server did not issue.
+
+*Tried, no reading (12 October 2026, the club brief, `docs/prompts/drafts-trial/results.md`):* `probe.session-token-unverified` found in 0 of 8 Haiku 5.5 builds and 0 of 9 Sonnet 5.5 builds without it, credited in the rest, so no builds were made with it. Kept as a draft.
 
 ## 21. `commit-the-lockfile`: a lockfile `sv` can read
 
@@ -311,6 +323,8 @@ outside and from the app itself).
 
 **Trial measures.** The running-app check that cites V13.4.1 (`crates/sv-check/src/probes.rs`). Passes when no `.git`
 file is served.
+
+*Tried, no reading (12 October 2026, the club brief, `docs/prompts/drafts-trial/results.md`):* `probe.source-control-exposed` found in 0 of 9 Haiku 5.5 builds and 0 of 9 Sonnet 5.5 builds without it, credited in the rest, so no builds were made with it. Kept as a draft.
 
 ## 23. `ask-before-setting-aside`: the tool's side of `needs-attention-decision`
 
