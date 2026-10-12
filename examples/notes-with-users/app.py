@@ -220,6 +220,14 @@ class Handler(BaseHTTPRequestHandler):
                 "<button>Save</button></form>"
             )
             return self.send(200, page("New note", form))
+        if self.path == "/account/email":
+            form = (
+                f"<form method=post><input type=hidden name=csrf_token value='{csrf}'>"
+                "<label>New email address <input type=email name=email maxlength=60></label>"
+                "<label>Password <input type=password name=password></label>"
+                "<button>Change</button></form>"
+            )
+            return self.send(200, page("Change email address", form))
         if self.path == "/password":
             form = (
                 f"<form method=post><input type=hidden name=csrf_token value='{csrf}'>"
@@ -310,6 +318,27 @@ class Handler(BaseHTTPRequestHandler):
                 # Every session of the account, not only this one: V7.4.2.
                 conn.execute("delete from sessions where email = ?", (email,))
             return self.send(303, headers=[("Location", "/"), ("Set-Cookie", "sid=; Max-Age=0")])
+        if self.path == "/account/email":
+            # Changing the address asks for the password again, as changing the password does: a
+            # session left open, or taken, cannot move the account to another address (V7.5.1). Only
+            # the new address is read from the form; nothing else in it is written (V15.3.3).
+            row = db().execute("select hash, salt from users where email = ?", (email,)).fetchone()
+            if not row or not hmac.compare_digest(
+                row[0], hash_password(form.get("password", ""), row[1])
+            ):
+                return self.send(403, page("No", "That is not your password."))
+            new_email = form.get("email", "")
+            if not new_email or len(new_email) > 60:
+                return self.send(422, page("No", "Give an email address of up to 60 characters."))
+            try:
+                with db() as conn:
+                    conn.execute("update users set email = ? where email = ?", (new_email, email))
+                    conn.execute("update notes set owner = ? where owner = ?", (new_email, email))
+                    conn.execute("update sessions set email = ? where email = ?", (new_email, email))
+            except sqlite3.IntegrityError:
+                return self.send(422, page("No", "That address has an account already."))
+            self.event("email-changed", account=new_email, status=303)
+            return self.send(303, headers=[("Location", "/account")])
         if self.path == "/password":
             row = db().execute("select hash, salt from users where email = ?", (email,)).fetchone()
             if not row or not hmac.compare_digest(
