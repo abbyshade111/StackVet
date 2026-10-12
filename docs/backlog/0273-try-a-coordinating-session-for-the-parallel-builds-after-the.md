@@ -64,10 +64,12 @@ and without the standing text.
   is replaced in that clone by a two-line stub that says only to take its work from the coordination board, and git
   is told to ignore that one local change (`git update-index --skip-worktree CLAUDE.md`), so no commit can carry it.
   The `.claude/settings.json` permissions are the same in both arms, so the difference is knowledge, not prompts.
-- **Both fresh,** the owner's choice ("fresh session too"): a running session has already read the files into its
-  conversation, and taking the files away does not take away what it knows, so the no-context arm has to be new; the
-  full-context arm is new as well, so the only difference between them is the standing instructions, not one
-  session's history.
+- **Both fresh, and both Opus 5.5,** the owner's choice ("fresh session too"; "Both Opus 5.5, please"): a running
+  session has already read the files into its conversation, and taking the files away does not take away what it
+  knows, so the no-context arm has to be new; the full-context arm is new as well, so the only difference between
+  them is the standing instructions, not one session's history or its model. Two fresh sessions also mean the trial
+  no longer waits on the two running sessions finishing their work, as the owner noted the same day; the "when"
+  above is overtaken by this, and the start is still the owner's "go".
 - **What the no-context session still has:** the repository (`docs/ARCHITECTURE.md`, the backlog, the records, the
   tools' own help text), the CI checks that enforce many of the rules, and the board's hand-out. Every hand-out, to
   either arm, ends with the same five-line safety footer (no deleting, no force-push, no spending, no change to the
