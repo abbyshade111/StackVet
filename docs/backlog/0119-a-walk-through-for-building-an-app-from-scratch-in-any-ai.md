@@ -1,6 +1,6 @@
 # A walk-through for building an app from scratch in any AI coding tool, with `sv` alongside
 
-**Status:** partly done: part 3 (a checked section per tool); part 7 (the README says `sv mcp` offers four tools; the catalog lists twelve)
+**Status:** claimed by securevibe-trial-prep, 12 October 2026
 
 Asked for by the owner on 26 September 2026: "it can't be too difficult, since the whole idea is
 making it easy for people who aren't technical or security experts to vibe code safely." **Claimed

@@ -355,3 +355,5 @@ Windows program is published, and Scoop (and later winget) offered, only once re
 part 4). Until then the guide keeps saying Windows is built and tested in CI and installs through Docker or from
 source. Step 2's remainder waits for 0191 part 4.
 **Windows, 10 October 2026:** the guide no longer says Windows was "never built": the project builds and tests StackVet on Windows in `windows.yml`, but nobody has tried these steps on a Windows computer.
+
+**The owner's word, 12 October 2026:** go ahead with the Windows build and its Scoop install now that releases are signed (0191 part 4, done 9 October). A Scoop install reads a manifest from a bucket, a small repository of its own beside `abbyshade111/homebrew-stackvet`; the owner offered to create it if that is easier.
