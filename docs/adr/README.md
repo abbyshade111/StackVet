@@ -145,6 +145,7 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-099](ADR-099.md) | The owner can leave a folder out of the checks, with a reason the report prints, and keys are still looked for there (proposed, 12 October 2026) |
 | [ADR-100](ADR-100.md) | `sv` keeps two files of its own, an opt-in log and a crash file, and never puts an argument or a path in either (accepted, 12 October 2026) |
 | [ADR-101](ADR-101.md) | `sv connect` prints the settings an AI coding tool needs and writes nothing, and one prompt sets StackVet up (accepted, 12 October 2026) |
+| [ADR-103](ADR-103.md) | A record can govern a named part of a large file, and the check asks only when that part changes (proposed, 12 October 2026) |
 
 ## Names in the records
 
