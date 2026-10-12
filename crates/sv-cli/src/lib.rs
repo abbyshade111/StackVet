@@ -253,6 +253,8 @@ mod cannot_run_said_tests;
 mod requirement_ids_tests;
 #[cfg(test)]
 mod resources_beside_quotas_tests;
+#[cfg(test)]
+mod named_routes_tests;
 
 /// The routes stackvet.toml names that the anonymous probes also ask (ADR-095); none without
 /// `[stack.run.users]`.
