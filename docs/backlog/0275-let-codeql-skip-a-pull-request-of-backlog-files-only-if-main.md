@@ -1,6 +1,6 @@
 # Let CodeQL skip a pull request of backlog files only, if main's code-scanning rule allows it
 
-**Status:** open
+**Status:** claimed by backlog-org-0275, 12 October 2026
 
 Filed on 12 October 2026 at the owner's request, after backlog 0272's measurement. With the short path of ADR-104, a
 pull request of backlog files only merged in 5 minutes 41 seconds (#1534). Its `test` check took 2 minutes 22 seconds.
