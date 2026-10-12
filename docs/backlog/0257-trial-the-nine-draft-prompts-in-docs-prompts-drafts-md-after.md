@@ -10,3 +10,5 @@ Run it after the noise work (the three items the other session adds on the high 
 asked for on 11 October 2026), and after the check of the repository's own history (0248 in the git-history item, which is first on the roadmap), so
 the trial can measure that check at the same time. Promote a draft to `data/prompts.json` only if its trial meets the
 rule; keep the rest in the drafts file with what happened.
+
+**12 October 2026:** the drafts are fourteen now, at the owner's word ("yes, add the five prompts to the drafts"): five more (10 to 14) from faults the Cursor build hit, each checked against its requirement's text. The other session's recommendations, when the owner has them, go in the same file before the trial.
