@@ -142,6 +142,7 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-096](ADR-096.md) | The header, cookie, and content-type checks ask every route stackvet.toml names (accepted, 11 October 2026) |
 | [ADR-097](ADR-097.md) | The browser's typed-text check on every text form stackvet.toml names (accepted, 12 October 2026) |
 | [ADR-098](ADR-098.md) | `sv review` says which findings it never offers, and each finding in the report names its next step (accepted, 11 October 2026) |
+| [ADR-100](ADR-100.md) | `sv report` says how long its slow stages take, how far a long wait is, and the slowest parts, unless `--quiet` (accepted, 12 October 2026) |
 
 ## Where v1's records disagree with what v1 built
 
