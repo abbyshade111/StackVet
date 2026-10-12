@@ -976,12 +976,29 @@ def convert(folder):
     return changed
 
 
+def pushed_next(kind, folder, real):
+    """The next number free on every branch pushed to origin as well as here (backlog 0265,
+    `tools/record_numbers.py`), for the real folder only: a test's own folder has no branches. 0 when git cannot
+    say, so the number is then the local one, as before."""
+    if Path(folder).resolve() != Path(real).resolve():
+        return 0
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("record_numbers", ROOT / "tools" / "record_numbers.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.next_free(kind)[0]
+    except (SystemExit, OSError):
+        return 0
+
+
 def new(folder, title):
     title = title.strip()
     if any(i.title == title for i in items(folder)):
         raise SystemExit(f"an item is already titled {title!r}")
     folder.mkdir(parents=True, exist_ok=True)
     number = max((i.number for i in items(folder) if i.number), default=0) + 1
+    number = max(number, pushed_next("backlog", folder, FOLDER))
     return write(folder, number, title, "open", "")
 
 
