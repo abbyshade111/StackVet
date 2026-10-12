@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: groups B to E partly done; groups F to H open
+**Status:** partly done: groups B to F partly done; group G open; group H done
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -71,7 +71,10 @@ by speaking for what its requirement names. One part per group of the inventory 
 6. **F. Each browser page and form.** The browser-driven checks run on each page and form the owner lists.
    **Scope of this claim (12 October 2026):** the typed-text check (`probe.text-rendered-as-markup`, V3.2.2) on every
    text form the owner names. **Record, `Status: proposed`: ADR-097**, since it adds a key to stackvet.toml.
-   **Part status:** claimed by backlog-org-0232, 12 October 2026
+   **Built 12 October 2026** (ADR-097; `docs/design/0375-the-typed-text-check-on-every-text-form-12-october-2026.md`):
+   `browser.text-forms` names several text forms; each is typed into, and the credit is whole only when every one is
+   shown as text.
+   **Part status:** partly done: the storage check after signing out (one sign-in, one sign-out)
 7. **G. Each operation the requirement names.** Phone, two-factor, and recovery changes beside the email change
    (V7.5.1); password change beside sign-up for the password checks; both TOTP and an emailed code where both
    exist (V6.5.1, V6.5.5); one manifest key per operation.
