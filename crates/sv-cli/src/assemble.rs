@@ -79,10 +79,11 @@ pub fn took_line(n: usize, seconds: f64) -> Option<String> {
 
 /// Says how long the stage that just ended took, when it was slow, and not with `--quiet`.
 pub fn stage_finished(ended: Option<(usize, std::time::Instant)>) {
-    if let Some((n, since)) = ended {
-        if let Some(line) = took_line(n, since.elapsed().as_secs_f64()).filter(|_| !quiet()) {
-            eprintln!("{line}");
-        }
+    if let Some(line) = ended
+        .and_then(|(n, since)| took_line(n, since.elapsed().as_secs_f64()))
+        .filter(|_| !quiet())
+    {
+        eprintln!("{line}");
     }
 }
 
