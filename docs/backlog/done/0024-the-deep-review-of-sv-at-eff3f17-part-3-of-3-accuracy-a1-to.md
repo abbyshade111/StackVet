@@ -1,6 +1,6 @@
 # The deep review of `sv` at `eff3f17`, part 3 of 3: accuracy (A1 to A6), reviews and reports (R3 to R14), and improvements
 
-**Status:** partly done: see its done note; what remains is not yet written, as its markers read on 8 October 2026
+**Status:** done, 11 October 2026
 
 Same sender. **Each item can be claimed on its own.** R1 and R2 are in part 1.
 - **A1. Medium, Reproduced, and the pattern in the owner's study.** The SQL, redirect, and file-path rules cannot
@@ -264,3 +264,13 @@ Same sender. **Each item can be claimed on its own.** R1 and R2 are in part 1.
   `--`; MCP path confinement, size caps, and batch refusal; helper containers' hardening; `sv probe`'s cap and
   TLS; the CVSS v3 arithmetic, alias grouping, withdrawn records, and version ordering; linear-time regular
   expressions.
+
+**Closed, 11 October 2026, after a check against the code on `main`:** every finding (A1 to A6, R3 to R14) and every
+improvement (1 to 7) has its done note. The status check of 11 October could not confirm two parts of improvement 5;
+both are in the code. The marker that splits helper output is random for each call (`at_once_mark` in
+`crates/sv-run/src/docker.rs`, held by `an_answer_cannot_forge_the_marker_of_the_next`; `sv probe`'s `certs_mark` in
+`crates/sv-check/src/production.rs` likewise). The seed's passwords and two-factor secrets are given through the
+`docker` process's environment, with only the names on its command line (`docker_with_secrets`, held by
+`no_password_or_secret_stands_on_docker_s_command_line`), rather than standard input as the review suggested; design
+entry 0191 gives the reason, and the aim, keeping them off the command line, is met. Design entry 0193 still says three
+parts are "not done here", which was true the day it was written; 0191, 0192 and 0194 built them.

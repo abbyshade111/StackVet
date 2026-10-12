@@ -1,6 +1,6 @@
 # From the gap analysis of 7 October 2026: findings for any session to pick up
 
-**Status:** partly done: part 4 (the rest of the one-sample inventory: groups A to G and H built, the credit-by-credit audit not finished), part 13's (a) on `creates`, and part 21's outside-tool half, folded into the owner's next loop trial
+**Status:** partly done: part 21's outside-tool half, folded into the owner's next loop trial
 
 Asked for by the owner on 7
 October 2026 ("please include everything else on the backlog for other sessions to pick up as they can"). Each
@@ -946,3 +946,12 @@ of 305 branches, 259 merged, 16 whose every commit is already in `main` under an
 holding commits `main` does not have, `v1` among them, which stays. Deleting any is the owner's to decide; nothing was
 deleted.
 
+**Status checked against the code, 11 October 2026.** The status line still named parts 4 and 13(a) as open; both are
+built, and each part's own line already said so. Part 4: the credit-by-credit audit that the note on part 4 above calls "not finished"
+was finished as ADR-090 ("With these, part 4 of backlog 0006 is done"). Part 13(a) on `creates`, which the text above
+leaves at "`creates` stays open": built on 11 October 2026 as `owner_field_creates`
+(`crates/sv-check/src/signed_in/owner_field.rs`, ADR-087), which sends an owner field with each `creates` entry that
+names a `read`; held by `an_owner_taken_from_the_request_on_a_create_is_found` and three more tests in
+`owner_field_tests.rs`. It is not in `burst.rs`, which one review had named. Parts 18, 22(d), and 22(e) were read too,
+and are built. What remains is part 21's outside-tool run, which is a trial rather than code. The work of sending more
+samples, so that checks marked "checked in part" can earn a plain credit, is 0232, which is not built.

@@ -1,6 +1,6 @@
 # Partial checks for the requirements no check speaks to, from the review of 28 September 2026
 
-**Status:** partly done: 3 of 12 parts done, 0 claimed, 2 open, as its markers read on 8 October 2026
+**Status:** done, 11 October 2026
 
 The owner asked
 on 28 September 2026 for every requirement with no check to be reviewed for a partial check: a signal that tells the
@@ -48,7 +48,7 @@ any proposal in `docs/PARTIAL-CHECKS.md` can be added here as an item and claime
    a private page whose `Cache-Control` has `public` or an `s-maxage` with neither `private` nor `no-store`. Found
    on the way: `probe.record-returns-secret-fields` never credits anything, yet `tools/coverage.py` did not list it as
    finding-only, so V15.3.1 read as checkable by a clean run; it is listed now. Each guard broken turned its tests red.
-   **Part status:** open
+   **Part status:** done, 11 October 2026
 3. **Small new checks, the reviewers' first picks. Not verified.** Details for each are in `docs/PARTIAL-CHECKS.md`.
    Reads the code: V1.3.1 (a rich-text editor with no known sanitizer), V11.2.4 (a digest compared with `==`),
    V15.2.3 (a development server as the start command), C6.1.3 (model downloads not pinned to a commit),
@@ -211,7 +211,7 @@ any proposal in `docs/PARTIAL-CHECKS.md` can be added here as an item and claime
    V6.3.3 stays supporting: an account that opens with its password alone may be a test account whose two-factor setup
    failed. Most checks of an app that is itself an MCP server, or itself a sign-in service, need a new securevibe.toml
    section, and apply to few apps.
-   **Part status:** open
+   **Part status:** done, 11 October 2026
 7. **Two running-app halves left from item 3.** C3.2.3: the model name the app really sent the test model,
    finding when it floats (`latest`, or a name ending `-latest`). V15.2.3: a development debug console that
    answers on the running app (Werkzeug's console and the like), judged by the page's own content, never by its
@@ -527,3 +527,14 @@ any proposal in `docs/PARTIAL-CHECKS.md` can be added here as an item and claime
     recorded as caught and kept from the model, and finds it when it is recorded as caught and passed on anyway. Not
     done: other kinds of anomalous input.
    **Part status:** done, 9 October 2026
+
+**Closed, 11 October 2026, after a check against the code on `main`:** the status line counted 12 parts and two open;
+the item has 23, and the two marked open are built. Part 2: each requirement is on the check it names, with a test
+(V8.2.3 on `probe.role-field-trusted` and `probe.record-returns-secret-fields`, C9.3.2 on
+`probe.ai-mcp-output-unvalidated`, C9.3.7 on `probe.ai-output-fetched`, V14.2.2 on
+`probe.private-page-shared-cache`, and V9.2.3 on `ast.token-audience-not-checked` as the owner chose). Part 6's
+cautions were followed: `probe.ocsp-not-stapled` is a finding only when the certificate names a responder and the
+server does not staple; V6.3.3 has no automated check, so nothing credits it; an app that is an MCP server has its own
+section, `[stack.run.mcp-server]`; one that is itself a sign-in service has none yet, and that caution stands for
+whoever first builds a check of one. What part 3 left undone, the static error-handler signals for V16.5.4, is now its
+own item, 0263.
