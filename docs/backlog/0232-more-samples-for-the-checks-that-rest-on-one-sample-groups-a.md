@@ -41,7 +41,15 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Part status:** claimed by backlog-org-0232, 12 October 2026
 4. **D. Each upload route, more than one file.** Every upload route the manifest names, with a small set of files
    per check rather than one.
-   **Part status:** open
+   **Scope of this claim (12 October 2026):** a small set of files for the two served-file checks, on the one
+   upload route the manifest can name: `.php`, `.phtml`, and `.php5` for `probe.uploaded-file-executed` (V5.3.1), and
+   `.html`, `.htm`, and `.xhtml` for `probe.uploaded-file-rendered` (V3.2.1), each whole only when every file was
+   accepted, fetched back with its mark, and judged safe. `.xhtml` served as `application/xhtml+xml` is rendered by a
+   browser, so the render check counts that type as a page too. More than one upload route needs the manifest's
+   `upload` to become a list, which is not in this claim; nor are the checks about one specific file (the size, the
+   antivirus test file, the SVG) or the archives. Recorded as a Later entry on ADR-053 in the pull request that
+   builds it.
+   **Part status:** claimed by backlog-org-0232, 12 October 2026
 5. **E. Each kind of event.** Each event the requirement names made to happen and looked for in the log, not one
    line.
    **Part status:** open
