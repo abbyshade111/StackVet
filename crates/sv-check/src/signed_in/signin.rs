@@ -618,46 +618,62 @@ pub(super) fn plant_log_markers(
         }
     }
 
-    // 3. A private page asked for by nobody, with a marker in the address, which the app should
-    //    refuse. Only planted once the page is known to be private at all.
-    if signed_in_works && let Some(path) = users.private.first() {
+    // 3. Each private page asked for by nobody, with a marker in the address, which the app should
+    //    refuse. Only planted once the pages are known to be private at all. Every listed page, not
+    //    the first: V16.3.2 is about authorization failures, and one page's being logged says
+    //    nothing of the next (backlog 0232, part 5). Page `i`'s markers carry `i` before their
+    //    hyphen, so none is part of another and one line cannot stand for two pages.
+    if !signed_in_works {
+        return;
+    }
+    let pages = users.private.iter().filter(|p| !p.contains('{'));
+    for (i, path) in pages.enumerate() {
         let (bare, query) = match path.split_once('?') {
             Some((bare, query)) => (bare, Some(query)),
             None => (path.as_str(), None),
         };
+        let n = if i == 0 { String::new() } else { i.to_string() };
         // a. After `?`, on the private page itself, so the request means exactly what it did.
-        let marker = format!("sv-log-refused-{tag}");
+        let marker = format!("sv-log-refused{n}-{tag}");
         let asked = match query {
             Some(q) => format!("{bare}?{q}&{marker}=1"),
             None => format!("{bare}?{marker}=1"),
         };
         let refused = http
-            .send(&get("log-marker-refused", &asked, &Session::default()))
+            .send(&get(
+                &format!("log-marker-refused{n}"),
+                &asked,
+                &Session::default(),
+            ))
             .map(|r| r.status);
         // Only a marker the app actually refused is evidence about a refusal being recorded, and
         // the status it refused with travels with it: a redirect to the sign-in page is a refusal
         // too, and no fixed list of "refused" codes would have contained it.
         if let Some(status) = refused.filter(|s| *s >= 300) {
-            out.log_markers.refused_requests.push((marker, status));
+            out.log_markers.refused_requests.push((marker, status, i));
         }
         // b. As the last part of the path, which an app that strips query strings still logs.
         //    That address is not the private page, so its answer only counts as an authorization
         //    refusal when it is the very refusal the private page got, and not a 404: "no such
         //    page" answers a different question, and so does an app that hides private pages
         //    behind a 404 (then the two cannot be told apart, and only `a` is planted).
-        let marker = format!("sv-log-denied-{tag}");
+        let marker = format!("sv-log-denied{n}-{tag}");
         let asked = format!(
             "{}/{marker}{}",
             bare.trim_end_matches('/'),
             query.map(|q| format!("?{q}")).unwrap_or_default()
         );
         let answered = http
-            .send(&get("log-marker-denied", &asked, &Session::default()))
+            .send(&get(
+                &format!("log-marker-denied{n}"),
+                &asked,
+                &Session::default(),
+            ))
             .map(|r| r.status);
         if let Some(status) = refused.filter(|s| *s >= 300 && *s != 404)
             && answered == Some(status)
         {
-            out.log_markers.refused_requests.push((marker, status));
+            out.log_markers.refused_requests.push((marker, status, i));
         }
     }
 }
@@ -1572,7 +1588,7 @@ mod tests {
         assert_eq!(
             m.refused_requests
                 .iter()
-                .map(|(_, s)| *s)
+                .map(|(_, s, _)| *s)
                 .collect::<Vec<_>>(),
             vec![302, 302],
             "{:?}",
@@ -1662,7 +1678,7 @@ mod tests {
             .log_markers
             .refused_requests
             .iter()
-            .map(|(m, _)| m.as_str())
+            .map(|(m, _, _)| m.as_str())
             .collect();
         assert_eq!(planted.len(), 1, "{planted:?}");
         assert!(planted[0].starts_with("sv-log-refused-"), "{planted:?}");
@@ -1963,3 +1979,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod log_pages_tests;
