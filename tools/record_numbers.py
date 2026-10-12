@@ -200,15 +200,19 @@ def self_test():
     # What a branch adds, read from git: an item moved to done/ is not new, one written is.
     import tempfile
     with tempfile.TemporaryDirectory() as tmp:
+        def write(path, text):
+            with open(Path(tmp) / path, "w", encoding="utf-8", newline="\n") as f:
+                f.write(text)
+
         def g(*args):
             return git("-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", *args, cwd=tmp)
         g("init", "-q", "-b", "main")
         (Path(tmp) / "docs/backlog/done").mkdir(parents=True)
-        (Path(tmp) / "docs/backlog/0001-a.md").write_text("# a\n")
+        write("docs/backlog/0001-a.md", "# a\n")
         g("add", "-A"); g("commit", "-q", "-m", "base")
         g("switch", "-q", "-c", "work")
         g("mv", "docs/backlog/0001-a.md", "docs/backlog/done/0001-a.md")
-        (Path(tmp) / "docs/backlog/0002-b.md").write_text("# b\n")
+        write("docs/backlog/0002-b.md", "# b\n")
         g("add", "-A"); g("commit", "-q", "-m", "work")
         got = new_numbers("main", "work", cwd=tmp)
         assert got == {("backlog", 2)}, got
