@@ -2054,6 +2054,21 @@ pub fn baseline_line(report: &Report) -> Option<String> {
 }
 
 /// The line beside a finding a person accepted as a risk: who, when, and why. `None` for any other.
+#[cfg(test)]
+#[path = "next_step_tests.rs"]
+mod next_step_tests;
+
+/// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
+/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already.
+pub fn next_step(report: &Report, f: &sv_check::Finding) -> Option<String> {
+    accepted_note(report, f).is_none().then(|| {
+        "Fix it in the code and check again. If it is a false alarm, write a `[[finding-review]]` entry for it, \
+         naming its rule, file and fingerprint, and confirm it with `sv review` in your own terminal; until then it \
+         counts."
+            .to_owned()
+    })
+}
+
 pub fn accepted_note(report: &Report, f: &sv_check::Finding) -> Option<String> {
     report
         .set_aside
