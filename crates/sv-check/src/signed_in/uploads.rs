@@ -1013,6 +1013,9 @@ fn download_name_checks(
     }
 }
 
+/// A served-file check, the three files it uploads (each its request id and name), and what they hold.
+type FileSet<'a> = (&'a Rule, [(&'a str, &'a str); 3], &'a String);
+
 /// The two questions that need the file fetched back again.
 fn served_upload_checks(
     http: &mut dyn Http,
@@ -1028,7 +1031,7 @@ fn served_upload_checks(
     const MARKER: &str = "sv-probe-upload-marker-7c31";
     let code = format!("<?php echo \"{MARKER}\"; ?>");
     let page = format!("<html><body>{MARKER}<script>1</script></body></html>");
-    let kinds: [(&Rule, [(&str, &str); 3], &String); 2] = [
+    let kinds: [FileSet; 2] = [
         (
             &UPLOAD_EXECUTED,
             [
