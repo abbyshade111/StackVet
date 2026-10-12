@@ -69,8 +69,9 @@ pub struct Markers {
     /// A marker put in the address of a private page requested by somebody not signed in, with
     /// the status the app actually answered. Carrying the real status beats guessing at a list of
     /// refusal codes: an app that sends people to the sign-in page answers 302, which no list of
-    /// "refused" codes would have included, and it is a refusal all the same.
-    pub refused_requests: Vec<(String, u16)>,
+    /// "refused" codes would have included, and it is a refusal all the same. The last number is
+    /// which listed private page the marker was planted on, from 0 (backlog 0232, part 5).
+    pub refused_requests: Vec<(String, u16, usize)>,
     /// The two marked requests sent just before and just after the refused sign-in.
     pub failed_window: Option<Window>,
     /// The two marked requests sent just before and just after the successful sign-in, set only
@@ -384,20 +385,32 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
     // The marker alone shows the request reached a log; the refusal status on the same line is
     // what makes it a record of the *authorization* decision rather than of traffic. Both, or
     // nothing.
-    let found: Vec<(&str, u16, bool)> = markers
+    let found: Vec<(&str, u16, bool, usize)> = markers
         .refused_requests
         .iter()
-        .filter_map(|(marker, status)| {
+        .filter_map(|(marker, status, page)| {
             log.lines().find(|l| l.contains(marker.as_str())).map(|l| {
                 out.lines.push(KeptLine::new(
                     &format!("the refused private-page request, answered {status} (V16.3.2)"),
                     l,
                 ));
-                (marker.as_str(), *status, records_status(l, *status))
+                (marker.as_str(), *status, records_status(l, *status), *page)
             })
         })
         .collect();
-    let recorded = found.iter().find(|(_, _, with_status)| *with_status);
+    let recorded = found.iter().find(|(_, _, with_status, _)| *with_status);
+    // Every page a marker was planted on, and those whose refusal was found with its status: the
+    // credit is whole only when there were two or more and every one was (backlog 0232, part 5).
+    let planted: std::collections::BTreeSet<usize> = markers
+        .refused_requests
+        .iter()
+        .map(|(_, _, page)| *page)
+        .collect();
+    let logged: std::collections::BTreeSet<usize> = found
+        .iter()
+        .filter(|(_, _, with_status, _)| *with_status)
+        .map(|(_, _, _, page)| *page)
+        .collect();
     out.steps.push(format!(
         "the app's output recorded the refused private-page request: {}",
         match (recorded, found.first()) {
@@ -406,24 +419,34 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
             _ => "no",
         }
     ));
-    if let Some((marker, status, _)) = recorded {
+    if let Some((marker, status, _, _)) = recorded {
         let place = if marker.contains("-denied-") {
             "as the last part of its path"
         } else {
             "after `?` in its address"
         };
-        out.verified.push(crate::Verified::new(
-            "probe.authorization-failure-logged",
-            &["V16.3.2"],
-            format!(
-                "a private page requested by somebody not signed in, with a marker {place}, which \
-                 the app refused with {status}: its output carried that marker on a line that also \
-                 carried {status}"
-            ),
-        )
-        // One refused request to one private page (ADR-053, Later).
-        .in_part());
-    } else if let Some((_, status, _)) = found.first() {
+        out.verified.push(
+            crate::Verified::new(
+                "probe.authorization-failure-logged",
+                &["V16.3.2"],
+                format!(
+                    "{} private page{} requested by somebody not signed in, with a marker {place}, \
+                 which the app refused with {status}: its output carried {} marker on a line that \
+                 also carried the refusal's status",
+                    logged.len(),
+                    if logged.len() == 1 { "" } else { "s" },
+                    if logged.len() == 1 {
+                        "that".to_owned()
+                    } else {
+                        format!("each page's, of the {} refused,", planted.len())
+                    }
+                ),
+            )
+            // Each private page listed is planted; one, or one whose refusal was not found recorded,
+            // is in part (ADR-053, Later).
+            .in_part_if(planted.len() < 2 || logged.len() < planted.len()),
+        );
+    } else if let Some((_, status, _, _)) = found.first() {
         out.not_assessed.push((
             "V16.3.2".to_owned(),
             format!(
@@ -695,7 +718,7 @@ mod tests {
         Markers {
             failed_sign_in: Some("sv-log-nobody-4a91@example.test".into()),
             successful_sign_in: Some("sv-log-ok-4a91@example.test".into()),
-            refused_requests: vec![("sv-log-refused-4a91".into(), 403)],
+            refused_requests: vec![("sv-log-refused-4a91".into(), 403, 0)],
             ..Default::default()
         }
     }
@@ -1045,8 +1068,8 @@ sign-in failed for sv-log-nobody-4a91@example.test
             failed_window: Some(window("failed")),
             successful_window: Some(window("ok")),
             refused_requests: vec![
-                ("sv-log-refused-4a91".into(), 302),
-                ("sv-log-denied-4a91".into(), 302),
+                ("sv-log-refused-4a91".into(), 302, 0),
+                ("sv-log-denied-4a91".into(), 302, 0),
             ],
             ..markers()
         }
@@ -1271,3 +1294,7 @@ GET /sv-log-after-ok-4a91 404
 #[cfg(test)]
 #[path = "logs_kept_tests.rs"]
 mod logs_kept_tests;
+
+#[cfg(test)]
+#[path = "logs_pages_tests.rs"]
+mod logs_pages_tests;
