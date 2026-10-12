@@ -292,6 +292,7 @@ pub(super) fn invented_session_check(
     http: &mut dyn Http,
     signed_in: &SignedIn,
     confirm: Option<&str>,
+    private: &[String],
     carried: Option<bool>,
     out: &mut Outcome,
 ) {
@@ -355,15 +356,48 @@ pub(super) fn invented_session_check(
     } else {
         "of the same length"
     };
-    let control = ok(&http.send(&get(
-        "invented-session-control",
-        confirm,
-        &signed_in.session,
-    )));
-    if !control {
+    // Every private page the owner lists, `confirm` first, each tried with the real session and
+    // then the made-up one: V7.2.1 asks that *all* session-token verification happen on the server,
+    // and one page refusing says nothing of the next (backlog 0232, part 2; ADR-053, Later).
+    let mut pages: Vec<&str> = vec![confirm];
+    for page in private {
+        if !page.contains('{') && !pages.contains(&page.as_str()) {
+            pages.push(page);
+        }
+    }
+    let (mut refused, mut opened, mut skipped) = (Vec::new(), Vec::new(), Vec::new());
+    for (i, page) in pages.iter().enumerate() {
+        let id = |what: &str| {
+            if i == 0 {
+                what.to_owned()
+            } else {
+                format!("{what}-{i}")
+            }
+        };
+        if !ok(&http.send(&get(
+            &id("invented-session-control"),
+            page,
+            &signed_in.session,
+        ))) {
+            out.steps.push(format!(
+                "asked for {page} with the real session, before making one up: refused"
+            ));
+            skipped.push(*page);
+            continue;
+        }
+        let took = ok(&http.send(&get(&id("invented-session"), page, &session)));
         out.steps.push(format!(
-            "asked for {confirm} with the real session, before making one up: refused"
+            "asked for {page} with the real session (opened), then with a session value this \
+             check invented in {altered} and every other cookie kept: {}",
+            if took { "opened" } else { "refused" }
         ));
+        if took {
+            opened.push((*page, id("invented-session")));
+        } else {
+            refused.push(*page);
+        }
+    }
+    if refused.is_empty() && opened.is_empty() {
         say(
             format!(
                 "Whether a made-up session value is refused: the real session did not open \
@@ -373,20 +407,17 @@ pub(super) fn invented_session_check(
         );
         return;
     }
-    let opened = ok(&http.send(&get("invented-session", confirm, &session)));
-    out.steps.push(format!(
-        "asked for {confirm} with the real session (opened), then with a session value this \
-         check invented in {altered} and every other cookie kept: {}",
-        if opened { "opened" } else { "refused" }
-    ));
-    if opened && carried != Some(true) {
+    let listed = |pages: &[&str]| pages.join(", ");
+    if !opened.is_empty() && carried != Some(true) {
         // The page opening with a made-up value says the app took it only when the cookies changed
         // are what carries the session; without them it may never have looked at them.
+        let pages: Vec<&str> = opened.iter().map(|(p, _)| *p).collect();
         say(
             format!(
-                "Whether a made-up session value is refused: {confirm} opened with {altered} made \
+                "Whether a made-up session value is refused: {} opened with {altered} made \
                  up, but nothing showed those cookies carry the session ({}), so that it opened \
                  says nothing about whether the session is checked.",
+                listed(&pages),
                 match carried {
                     Some(false) => "the page opened without them too",
                     _ => "the page could not be asked without them",
@@ -394,16 +425,17 @@ pub(super) fn invented_session_check(
             ),
             out,
         );
-    } else if opened {
+    } else if !opened.is_empty() {
+        let pages: Vec<&str> = opened.iter().map(|(p, _)| *p).collect();
         out.findings.push(finding_on(
-            vec!["invented-session".to_owned()],
+            opened.iter().map(|(_, id)| id.clone()).collect(),
             &SESSION_TOKEN_UNVERIFIED,
             "A made-up session value opens a private page",
             Severity::High,
             format!(
                 "With {altered}, the cookies set at sign-in, given values {same_length} that \
-                 this check made up, and the app's other cookies as they were, {confirm} still \
-                 opened."
+                 this check made up, and the app's other cookies as they were, {} still opened.",
+                listed(&pages)
             ),
         ));
     } else {
@@ -413,11 +445,14 @@ pub(super) fn invented_session_check(
                 SESSION_TOKEN_UNVERIFIED.requirement_ids,
                 format!(
                     "{altered}, set at sign-in, given made-up values {same_length} with the app's \
-                 other cookies kept, refused {confirm}, where the real session had just opened it"
+                 other cookies kept, refused at {}, where the real session had just opened {}",
+                    listed(&refused),
+                    if refused.len() == 1 { "it" } else { "each" }
                 ),
             )
-            // One session, altered, at one private page (ADR-053, Later).
-            .in_part(),
+            // Each private page listed is asked; one refused, or one the real session could not
+            // open, is one sample (ADR-053, Later).
+            .in_part_if(refused.len() == 1 || !skipped.is_empty()),
         );
     }
 }
@@ -1883,6 +1918,7 @@ mod tests {
                 &mut app,
                 &signed_in_with(None, &["sid"]),
                 Some("/account"),
+                &[],
                 carried,
                 &mut out,
             );
@@ -1905,6 +1941,7 @@ mod tests {
             &mut app,
             &signed_in_with(None, &["sid"]),
             Some("/account"),
+            &[],
             Some(true),
             &mut out,
         );
@@ -1924,6 +1961,7 @@ mod tests {
             &mut app,
             &signed_in_with(None, &["sid"]),
             Some("/account"),
+            &[],
             Some(true),
             &mut out,
         );
@@ -1956,6 +1994,7 @@ mod tests {
             &mut app,
             &signed_in_with(None, &["sid"]),
             Some("/account"),
+            &[],
             Some(true),
             &mut out,
         );
@@ -1980,7 +2019,14 @@ mod tests {
                 sent: Vec::new(),
             };
             let mut out = Outcome::default();
-            invented_session_check(&mut app, &signed_in, Some("/account"), Some(true), &mut out);
+            invented_session_check(
+                &mut app,
+                &signed_in,
+                Some("/account"),
+                &[],
+                Some(true),
+                &mut out,
+            );
             assert!(app.sent.is_empty(), "{:?}", app.sent);
             assert!(
                 out.verified.is_empty() && out.findings.is_empty(),
@@ -3204,3 +3250,6 @@ mod answer_ids_tests {
         assert_eq!(finding.evidence, ["owned-a"], "{finding:?}");
     }
 }
+
+#[cfg(test)]
+mod invented_pages_tests;
