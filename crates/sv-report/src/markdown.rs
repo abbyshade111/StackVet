@@ -869,7 +869,7 @@ pub fn security(report: &Report) -> String {
             app.len(),
             if app.len() == 1 { "" } else { "s" }
         ));
-        let (full, low) = crate::split_low(app);
+        let (full, low) = crate::split_low(report, app);
         for finding in full {
             finding_section(&mut out, report, finding);
         }
@@ -882,7 +882,7 @@ pub fn security(report: &Report) -> String {
             crate::apart_named(&tests),
             crate::TEST_CODE_SECTION
         ));
-        let (full, low) = crate::split_low(tests);
+        let (full, low) = crate::split_low(report, tests);
         for finding in full {
             finding_section(&mut out, report, finding);
         }
@@ -906,7 +906,7 @@ fn low_lines(out: &mut String, low: &[crate::LowGroup]) {
     ));
     for g in low {
         out.push_str(&format!(
-            "- {} — {} time{}, in {}\n",
+            "- {} — {} time{}, in {}{}\n",
             code(&g.rule),
             g.count,
             if g.count == 1 { "" } else { "s" },
@@ -914,10 +914,20 @@ fn low_lines(out: &mut String, low: &[crate::LowGroup]) {
                 .iter()
                 .map(|f| code(f))
                 .collect::<Vec<_>>()
-                .join(", ")
+                .join(", "),
+            in_baseline_words(g)
         ));
     }
     out.push('\n');
+}
+
+/// How many of a group the baseline holds, said after its files; nothing when none or there is no baseline.
+pub(crate) fn in_baseline_words(g: &crate::LowGroup) -> String {
+    match g.in_baseline {
+        0 => String::new(),
+        n if n == g.count => " (all of them also in the baseline)".to_owned(),
+        n => format!(" ({n} of them also in the baseline)"),
+    }
 }
 
 /// Every low-severity finding in full, each as `security.md` would show it (ADR-095). The reports show them grouped
@@ -930,7 +940,7 @@ pub fn low_findings(report: &Report) -> String {
     let low: Vec<&sv_check::Finding> = report
         .findings
         .iter()
-        .filter(|f| f.severity == sv_check::Severity::Low)
+        .filter(|f| crate::is_grouped_low(f))
         .collect();
     if low.is_empty() {
         out.push_str("There are none. The findings that were found are in `security.md`.\n");

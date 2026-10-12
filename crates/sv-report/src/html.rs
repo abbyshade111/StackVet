@@ -443,7 +443,7 @@ pub fn page(report: &Report) -> String {
             app.len(),
             if app.len() == 1 { "" } else { "s" }
         ));
-        let (full, low) = crate::split_low(app);
+        let (full, low) = crate::split_low(report, app);
         for f in full {
             finding_section(&mut b, report, f);
         }
@@ -456,7 +456,7 @@ pub fn page(report: &Report) -> String {
             crate::apart_named(&tests),
             escape(crate::TEST_CODE_SECTION)
         ));
-        let (full, low) = crate::split_low(tests);
+        let (full, low) = crate::split_low(report, tests);
         for f in full {
             finding_section(&mut b, report, f);
         }
@@ -932,7 +932,7 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
     ));
     for g in low {
         b.push_str(&format!(
-            "<li><code>{}</code> — {} time{}, in {}</li>\n",
+            "<li><code>{}</code> — {} time{}, in {}{}</li>\n",
             escape(&g.rule),
             g.count,
             if g.count == 1 { "" } else { "s" },
@@ -940,7 +940,8 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
                 .iter()
                 .map(|f| format!("<code>{}</code>", escape(f)))
                 .collect::<Vec<_>>()
-                .join(", ")
+                .join(", "),
+            escape(&crate::markdown::in_baseline_words(g))
         ));
     }
     b.push_str("</ul>\n");

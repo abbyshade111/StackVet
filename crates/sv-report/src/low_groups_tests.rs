@@ -94,7 +94,7 @@ fn report_with_low() -> Report {
 #[test]
 fn low_findings_are_grouped_by_rule_most_first_and_the_rest_are_kept_whole() {
     let report = report_with_low();
-    let (rest, low) = crate::split_low(report.findings.iter().collect());
+    let (rest, low) = crate::split_low(&report, report.findings.iter().collect());
     assert_eq!(rest.len(), 1, "the high one is kept as it was");
     assert_eq!(rest[0].rule_id, "ast.eval");
     assert_eq!(low.len(), 2);
@@ -149,4 +149,22 @@ fn with_no_low_findings_the_reports_are_as_before_and_the_file_says_none() {
     report.findings = vec![finding("ast.eval", "app.py", 4, sv_check::Severity::High)];
     assert!(!crate::markdown::security(&report).contains("low-severity finding"));
     assert!(crate::markdown::low_findings(&report).contains("There are none"));
+}
+
+#[test]
+fn a_low_finding_about_a_key_is_never_grouped() {
+    let mut key = finding("secrets.generic", "config.py", 3, sv_check::Severity::Low);
+    // A placeholder built from pieces, so the file holds nothing that looks like a key.
+    key.secret = Some(sv_check::Secret::redact(
+        &["example", "-placeholder", "-value"].concat(),
+    ));
+    let mut report = empty_report(Vec::new());
+    report.findings = vec![
+        key,
+        finding("bandit.B311", "util.py", 7, sv_check::Severity::Low),
+    ];
+    let (rest, low) = crate::split_low(&report, report.findings.iter().collect());
+    assert_eq!(rest.len(), 1, "the key stays in full");
+    assert_eq!(rest[0].rule_id, "secrets.generic");
+    assert_eq!(low.len(), 1, "the other low one is grouped");
 }

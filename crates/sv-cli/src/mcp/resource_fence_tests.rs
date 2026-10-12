@@ -56,5 +56,8 @@ fn the_apps_text_in_a_report_read_back_is_inside_the_fence() {
             "{name}: {outside}"
         );
     }
-    assert_eq!(fenced, 3, "the page and the two Markdown files are fenced");
+    assert_eq!(
+        fenced, 4,
+        "the page and the three Markdown files are fenced"
+    );
 }

@@ -1447,6 +1447,11 @@ mod low_groups_tests;
 /// The file beside the report that holds every low-severity finding in full (ADR-095).
 pub const LOW_FINDINGS_FILE: &str = "low-findings.md";
 
+/// Whether a finding is shown grouped by rule rather than in full: low severity, and not about a key (ADR-095).
+pub fn is_grouped_low(f: &sv_check::Finding) -> bool {
+    f.severity == sv_check::Severity::Low && !about_a_secret(f)
+}
+
 /// One rule's low-severity findings, as the reports show them in one line (ADR-095).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LowGroup {
@@ -1454,20 +1459,32 @@ pub struct LowGroup {
     pub count: usize,
     /// The files it fired in, each once, in order.
     pub files: Vec<String>,
+    /// How many of them the baseline holds: they were there before (`baseline_note`).
+    pub in_baseline: usize,
+}
+
+/// Whether a finding is about a key or password. Those are never grouped, whatever their severity: the note on each
+/// says whether it reads like a real key, and a line per rule would hide it (ADR-095).
+fn about_a_secret(f: &sv_check::Finding) -> bool {
+    f.secret.is_some()
+        || f.rule_id.starts_with("secrets.")
+        || f.also_reported_by.iter().any(|r| r.starts_with("secrets."))
 }
 
 /// Splits out the low-severity findings and groups them by rule, most first, then by rule name; the rest are
 /// returned as they were, in their order (ADR-095). Nothing is dropped: every low one is in a group, and in full in
 /// `LOW_FINDINGS_FILE`.
-pub fn split_low(findings: Vec<&sv_check::Finding>) -> (Vec<&sv_check::Finding>, Vec<LowGroup>) {
-    let (low, rest): (Vec<_>, Vec<_>) = findings
-        .into_iter()
-        .partition(|f| f.severity == sv_check::Severity::Low);
+pub fn split_low<'a>(
+    report: &Report,
+    findings: Vec<&'a sv_check::Finding>,
+) -> (Vec<&'a sv_check::Finding>, Vec<LowGroup>) {
+    let (low, rest): (Vec<_>, Vec<_>) = findings.into_iter().partition(|f| is_grouped_low(f));
     let mut groups: Vec<LowGroup> = Vec::new();
     for f in low {
         match groups.iter_mut().find(|g| g.rule == f.rule_id) {
             Some(g) => {
                 g.count += 1;
+                g.in_baseline += usize::from(report.in_baseline(f));
                 if !g.files.contains(&f.location.file) {
                     g.files.push(f.location.file.clone());
                 }
@@ -1476,6 +1493,7 @@ pub fn split_low(findings: Vec<&sv_check::Finding>) -> (Vec<&sv_check::Finding>,
                 rule: f.rule_id.clone(),
                 count: 1,
                 files: vec![f.location.file.clone()],
+                in_baseline: usize::from(report.in_baseline(f)),
             }),
         }
     }
