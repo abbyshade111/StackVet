@@ -74,7 +74,8 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
 
 ## Working style the owner expects
 
-- Plain language in reports and documents: the owner is not a programmer. No jargon without an explanation.
+- Plain language in reports and documents: the people `sv` is for are not programmers (the owner is one, and reads
+  drafts as a test user standing in for them). No jargon without an explanation.
 - One spelling standard: American English (color, behavior, organization, recognize) with the Oxford comma, in
   everything a person reads. Identifiers and JSON keys keep their names.
 - Say what was verified and what was not. Report test results as they are.
