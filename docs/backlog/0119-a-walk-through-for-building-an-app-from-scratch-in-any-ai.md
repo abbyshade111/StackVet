@@ -22,7 +22,9 @@ patched the path findings and re-ran the check to confirm, with `sv` installed d
 form is untried in VS Code). The answers were saved in the app's folder, and a fresh `sv report` showed
 both them and the fix. The one stumble was setup: a hand-made
 `.vscode/mcp.json` was not listed under *MCP: List Servers*, so the guide now has VS Code write it
-(*MCP: Add Server…*). Cursor is still untried. **What is not short is getting to step one**,
+(*MCP: Add Server…*). Cursor was still untried then; **it was tried on 11 October 2026** (backlog 0222,
+`docs/design/0368-the-app-built-in-cursor-from-an-empty-folder-11-october-2026.md`), and the guide's Cursor section
+now says so. **What is not short is getting to step one**,
 and a page of instructions cannot fix that on its own. Found by trying it the same day, as the owner,
 from an empty folder in Claude Code; each of these stopped the attempt:
 

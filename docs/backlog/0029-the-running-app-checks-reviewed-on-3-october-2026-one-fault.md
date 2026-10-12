@@ -1,6 +1,6 @@
 # The running-app checks, reviewed on 3 October 2026: one fault in the counts, and what to add
 
-**Status:** partly done: tar, 7z and rar archives are not read; CPU, memory, disk and egress quotas are recorded unchecked; item 13 by a proxy; item 14 needs a real-app run
+**Status:** partly done: item 14 needs a real-app run (backlog 0244); CPU, memory, disk, and egress quotas stay not assessed, with the container's own readings reported beside them (0243, ADR-093); item 13 is kept by a proxy
 
 By session
 securevibe-e9, at the owner's asking ("review them and then propose additional checks that would provide strong
@@ -336,7 +336,7 @@ ASVS and AISVS requirement no running check speaks to. **Each numbered item can 
     **Done the same day** (`docs/design/0316-a-zip-whose-stated-sizes-are-false-9-october.md`; ADR-046, later,
     accepted): the zip is sent and judged as described, and V5.2.3's credit for zip needs it refused. Tar, 7z, and
     rar are what remains of this part.
-   **Part status:** partly done: tar, 7z, and rar archives (read on 10 October 2026)
+   **Part status:** done, 11 October 2026
 16. **Old TLS versions on the live site (V12.1.1, level 1).** A handshake held to TLS 1.0 or 1.1 by `sv probe`.
     **The owner's decision first:** it raises `sv probe`'s limit of four requests, which `CLAUDE.md` states.
     **Done on 3 October 2026** (DESIGN, "Old TLS versions on the live site"): one handshake offering only TLS 1.0
@@ -352,3 +352,8 @@ ASVS and AISVS requirement no running check speaks to. **Each numbered item can 
 **Decided by the owner, 10 October 2026:** kept partly done, with the gaps listed. Remaining: tar, 7z and rar archives are not read (zip and gzip are); CPU, memory, disk and egress quotas are recorded as unchecked in `crates/sv-check/src/ai.rs`; item 13 is kept by a proxy; item 14 needs a real-app run.
 
 **Items opened from this item, 10 October 2026:** tar archives, backlog 0241; 7z and rar, 0242; the host-side resource question for the quotas, 0243; the example app's email change for the real-app run, 0244. The proxy limit (part 13) stays a known limit, with no item.
+
+**Status brought up to date, 11 October 2026:** tar is read (0241, done), and 7z and rar (0242, done), so part 15 is
+done. The run now reports what Docker read of the app's container beside C9.1.1's quotas (0243, ADR-093), which
+still stay not assessed, since those readings are not limits the app sets. What remains is item 14's real-app run
+(0244) and item 13's proxy.
