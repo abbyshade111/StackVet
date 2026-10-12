@@ -12,6 +12,9 @@ const PRE_LOGIN_COOKIE: &str = "csrftoken";
 #[derive(Default)]
 pub(super) struct FakeApp {
     flaws: Flaws,
+    /// Per account: its phone number, two-factor number, and recovery address, as
+    /// `/account/details` shows them (ADR-105).
+    account_details: BTreeMap<String, BTreeMap<String, String>>,
     /// Sign-up emails an activation code, and sign-in waits for it.
     pub(super) activation: bool,
     /// Activation codes: code -> (account, used).
@@ -371,6 +374,14 @@ pub(super) struct Flaws {
     pub(super) email_change_without_password: bool,
     /// An email change answers as if it worked and changes nothing.
     pub(super) email_change_does_nothing: bool,
+    /// A phone number change does not check the password (ADR-105).
+    pub(super) phone_change_without_password: bool,
+    /// A two-factor change does not check the password.
+    pub(super) two_factor_change_without_password: bool,
+    /// A change of the recovery address does not check the password.
+    pub(super) recovery_change_without_password: bool,
+    /// The phone, two-factor, and recovery changes answer as if they worked and change nothing.
+    pub(super) account_change_does_nothing: bool,
     /// Booking reads how many seats are taken and writes the booking afterwards, so copies sent at
     /// the same instant all see the seat free (V2.3.4).
     pub(super) booking_races: bool,
@@ -1581,6 +1592,53 @@ impl FakeApp {
                     }
                 }
                 Self::respond(303, vec![("Location", "/account".into())], "")
+            }
+            ("POST", "/account/phone" | "/account/two-factor" | "/account/recovery") => {
+                let Some(who) = user else {
+                    return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
+                };
+                if !token_ok {
+                    return Some(Self::respond(403, vec![], "refused"));
+                }
+                let kind = path.trim_start_matches("/account/").to_owned();
+                let f = form(r);
+                let (password, value) = (f.get("password")?.clone(), f.get("value")?.clone());
+                let stored = self.users.get(&who)?.clone();
+                let unchecked = match kind.as_str() {
+                    "phone" => self.flaws.phone_change_without_password,
+                    "two-factor" => self.flaws.two_factor_change_without_password,
+                    _ => self.flaws.recovery_change_without_password,
+                };
+                if !unchecked && !self.password_matches(&stored.0, &password) {
+                    return Some(Self::respond(403, vec![], "wrong password"));
+                }
+                if !self.flaws.account_change_does_nothing {
+                    self.account_details
+                        .entry(who)
+                        .or_default()
+                        .insert(kind, value);
+                }
+                Self::respond(303, vec![("Location", "/account/details".into())], "")
+            }
+            ("GET", "/account/details") => {
+                let Some(who) = user else {
+                    return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
+                };
+                let details = self.account_details.get(&who).cloned().unwrap_or_default();
+                let lines: Vec<String> = ["phone", "two-factor", "recovery"]
+                    .iter()
+                    .map(|kind| {
+                        format!(
+                            "<p>{kind}: {}</p>",
+                            details.get(*kind).map_or("not set", String::as_str)
+                        )
+                    })
+                    .collect();
+                Self::respond(
+                    200,
+                    vec![("Cache-Control", "no-store".into())],
+                    &format!("<html><body>{}</body></html>", lines.join("")),
+                )
             }
             ("POST", "/account/email") => {
                 let Some(who) = user else {
@@ -2895,6 +2953,11 @@ pub(super) fn users() -> UsersSection {
                 ("csrf_token", "{csrf}"),
             ],
         )),
+        // Left out here, so every other test runs as before; `with_account_changes` adds them.
+        change_phone: None,
+        change_two_factor: None,
+        change_recovery: None,
+        not_offered: Vec::new(),
         once: Some(sv_manifest::OnceAction {
             method: "POST".into(),
             path: "/book".into(),
@@ -3040,4 +3103,27 @@ pub(super) fn credited_in_part(o: &Outcome, id: &str) -> bool {
 pub(super) fn credited_in_full(o: &Outcome, id: &str) -> bool {
     let mut credits = o.verified.iter().filter(|v| v.check_id == id).peekable();
     credits.peek().is_some() && credits.all(|v| !v.in_part)
+}
+
+/// `users` with the phone, two-factor, and recovery changes this app makes, each shown on
+/// `/account/details` (ADR-105).
+pub(super) fn with_account_changes(mut users: UsersSection) -> UsersSection {
+    let change = |path: &str| sv_manifest::AccountChange {
+        method: "POST".into(),
+        path: path.into(),
+        form: [
+            ("password", "{password}"),
+            ("value", "{new_value}"),
+            ("csrf_token", "{csrf}"),
+        ]
+        .iter()
+        .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+        .collect(),
+        json: BTreeMap::new(),
+        shows: "/account/details".into(),
+    };
+    users.change_phone = Some(change("/account/phone"));
+    users.change_two_factor = Some(change("/account/two-factor"));
+    users.change_recovery = Some(change("/account/recovery"));
+    users
 }

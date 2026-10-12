@@ -1990,6 +1990,24 @@
     "run": "Signed in",
     "looks_for": "Anybody who gets hold of a signed-in session for a moment can move the account to an email address of their own, then reset the password through it and keep the account.",
     "finding_only": false
+   },
+   {
+    "id": "probe.phone-change-without-password",
+    "run": "Signed in",
+    "looks_for": "Anybody who gets hold of a signed-in session for a moment can put a phone number of their own on the account, and then receive what the app sends to it, sign-in and reset codes among them.",
+    "finding_only": false
+   },
+   {
+    "id": "probe.two-factor-change-without-password",
+    "run": "Signed in",
+    "looks_for": "Anybody who gets hold of a signed-in session for a moment can send the account's two-factor codes somewhere of their own, so the second factor no longer keeps them out.",
+    "finding_only": false
+   },
+   {
+    "id": "probe.recovery-change-without-password",
+    "run": "Signed in",
+    "looks_for": "Anybody who gets hold of a signed-in session for a moment can make the account recoverable through an address of their own, then reset the password through it and keep the account.",
+    "finding_only": false
    }
   ],
   "V8.2.1": [
