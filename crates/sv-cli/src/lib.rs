@@ -256,7 +256,7 @@ mod requirement_ids_tests;
 #[cfg(test)]
 mod resources_beside_quotas_tests;
 
-/// The routes stackvet.toml names that the anonymous probes also ask (ADR-095); none without
+/// The routes stackvet.toml names that the anonymous probes also ask (ADR-096); none without
 /// `[stack.run.users]`.
 pub fn named_routes(plan: &RunPlan) -> Vec<String> {
     plan.users

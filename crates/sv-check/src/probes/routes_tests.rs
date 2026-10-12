@@ -1,5 +1,5 @@
 //! The header, cookie, and content-type checks also read the anonymous answer for each route stackvet.toml names,
-//! whatever its status, and their credits are whole only when every named route answered and passed (ADR-095,
+//! whatever its status, and their credits are whole only when every named route answered and passed (ADR-096,
 //! backlog 0232 part 1).
 
 use super::*;

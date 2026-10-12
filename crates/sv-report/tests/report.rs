@@ -2679,7 +2679,9 @@ fn findings_in_test_code_are_listed_after_the_apps_own_and_still_count() {
     };
     let mut in_app = finding("ast.app", &["V1.3.1"]);
     in_app.title = "Found in the app".into();
-    in_app.severity = Severity::Low;
+    // Below the critical one in a test, so the order is not by severity; medium, not low, so it is shown in
+    // full rather than grouped by rule (ADR-095).
+    in_app.severity = Severity::Medium;
     let mut by_path = finding("ast.path", &["V1.2.1"]);
     by_path.title = "Found in a test file".into();
     by_path.severity = Severity::Critical;
@@ -2767,7 +2769,8 @@ fn a_finding_only_worth_a_look_is_listed_apart_in_full_and_still_counts() {
         &["V1.3.1"],
     );
     own.title = "Found by a rule that is usually right".into();
-    own.severity = Severity::Low;
+    // Medium, not low, so it is shown in full rather than grouped by rule (ADR-095).
+    own.severity = Severity::Medium;
     let mut look = finding(
         "semgrep.javascript.lang.security.audit.unsafe-dynamic-method.unsafe-dynamic-method",
         &["V1.2.1"],

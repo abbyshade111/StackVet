@@ -509,7 +509,7 @@ pub fn verified(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
     verified_with_routes(responses, &[])
 }
 
-/// The same, knowing which routes stackvet.toml names and were asked (ADR-095): the header, cookie,
+/// The same, knowing which routes stackvet.toml names and were asked (ADR-096): the header, cookie,
 /// and content-type credits are whole only when there were such routes, every one answered, and every
 /// answer passed. With none, or one unanswered, they stay in part.
 pub fn verified_with_routes(
@@ -559,7 +559,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
     let mut out = Vec::new();
     let find = |id: &str| responses.iter().find(|r| r.id == id);
     // Every route stackvet.toml names was asked and answered: the only way these credits speak for
-    // more than one or two answers a stranger sees (ADR-095).
+    // more than one or two answers a stranger sees (ADR-096).
     let every_route = !routes.is_empty()
         && routes
             .iter()
@@ -591,7 +591,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
                 format!("the app's answers on {names}{and_routes}, as somebody not signed in"),
             )
             // One or two pages a stranger sees, unless every named route was asked too (ADR-053,
-            // Later; ADR-095).
+            // Later; ADR-096).
             .in_part_if(!every_route),
         );
     }
@@ -607,7 +607,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
                 format!("every cookie the app set on {names}{and_routes}"),
             )
             // The cookies of one or two pages a stranger sees, unless every named route was asked
-            // too (ADR-053, Later; ADR-095).
+            // too (ADR-053, Later; ADR-096).
             .in_part_if(!every_route),
         );
     }
@@ -697,7 +697,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
                 format!("the app's page and its answer for a page that is not there{and_routes}"),
             )
             // Two answers stand for no other response V4.1.1 names, unless every named route was
-            // asked too (ADR-053, Later; ADR-095).
+            // asked too (ADR-053, Later; ADR-096).
             .in_part_if(!every_route),
         );
     }
@@ -715,7 +715,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
                 ),
             )
             // The pages a stranger sees, not every page the app renders, unless every named route
-            // was asked too (ADR-053, Later; ADR-095).
+            // was asked too (ADR-053, Later; ADR-096).
             .in_part_if(!every_route),
         );
     }
@@ -732,7 +732,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
                 ),
             )
             // The policy on one answer stands for no other page's, unless every named route was
-            // asked too (ADR-053, Later; ADR-095).
+            // asked too (ADR-053, Later; ADR-096).
             .in_part_if(!every_route),
         );
     }
@@ -1150,7 +1150,7 @@ const WS_ORIGIN: Rule = Rule {
 /// Headers a browser needs in order to protect the people using the app.
 /// The answers the page checks judge: the health path's always, the root's when it answered with a
 /// page of its own, and each route stackvet.toml names, whatever its status, since V3.4.4 and V3.4.6
-/// name every response (ADR-095). Each is named in what the checks say, so a credit says which
+/// name every response (ADR-096). Each is named in what the checks say, so a credit says which
 /// pages it covers and a finding which page fell short.
 fn pages(responses: &[ProbeResponse]) -> Vec<&ProbeResponse> {
     responses
@@ -1172,13 +1172,13 @@ fn page_name(response: &ProbeResponse) -> String {
     }
 }
 
-/// The id of the anonymous request for a route stackvet.toml names, before its path (ADR-095).
+/// The id of the anonymous request for a route stackvet.toml names, before its path (ADR-096).
 pub const ROUTE_ID: &str = "route:";
 
 /// The routes stackvet.toml names under `[stack.run.users]` that a stranger can ask for: sign-in,
 /// sign-up, sign-out, the private and admin pages, the password and email changes, account deletion,
 /// the upload route, and where owned records are made. Each once, in that order, leaving out a path
-/// with a placeholder in it and the health path and root, which the suite already asks (ADR-095).
+/// with a placeholder in it and the health path and root, which the suite already asks (ADR-096).
 pub fn named_routes(users: &sv_manifest::UsersSection, health_path: &str) -> Vec<String> {
     let templates = [
         &users.login,
@@ -1212,7 +1212,7 @@ pub fn named_routes(users: &sv_manifest::UsersSection, health_path: &str) -> Vec
     routes
 }
 
-/// One anonymous GET for each route stackvet.toml names (ADR-095): with no session, so it can change
+/// One anonymous GET for each route stackvet.toml names (ADR-096): with no session, so it can change
 /// nothing that belongs to anybody.
 pub fn route_requests(routes: &[String]) -> Vec<ProbeRequest> {
     routes
@@ -2331,7 +2331,7 @@ const CSP_REPORTING: Rule = Rule {
 };
 
 /// The answers whose Content-Security-Policy is read for where it reports: the health path's and each
-/// named route's (ADR-095).
+/// named route's (ADR-096).
 fn policy_answers(responses: &[ProbeResponse]) -> Vec<&ProbeResponse> {
     responses
         .iter()

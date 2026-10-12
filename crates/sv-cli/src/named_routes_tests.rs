@@ -1,5 +1,5 @@
 //! A run asks each route stackvet.toml names, and the evidence is read knowing them, so the header credits can be
-//! whole (ADR-095, backlog 0232 part 1). The plans are written here, not read from a fixture (`moved.rs`).
+//! whole (ADR-096, backlog 0232 part 1). The plans are written here, not read from a fixture (`moved.rs`).
 
 use super::*;
 use sv_check::probes::ProbeResponse;
