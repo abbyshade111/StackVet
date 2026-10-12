@@ -14,15 +14,15 @@ the ASVS requirements the control is paired with, which `sv` can test on the run
 sign-in, private notes, one seat to book, an assistant that calls an AI service, and an admin page for
 announcements. Fresh helper agents of the same Claude model built it twice without any prompt and once with each
 prompt, each in a folder of its own, and `sv report --run` checked every build behind its network fence (with
-`--slow` where sessions are timed). `securevibe.toml` held no limits or session times: where a build wrote its
+`--slow` where sessions are timed). `stackvet.toml` held no limits or session times: where a build wrote its
 own, `sv` held it to those, and where it wrote none, `sv` used numbers standing in for the owner's (5 wrong
 passwords in 15 minutes, 10 records a minute, 2 minutes unused, 4 minutes in all). A prompt is listed under "Shown
 to work" only when the build with it passed its check and the builds without it failed. For a check that only ever
 gives credit, failing means not credited. One build each is a small sample.
 
-An earlier round, in which `securevibe.toml` already held those numbers, showed why they were taken out: builds
+An earlier round, in which `stackvet.toml` already held those numbers, showed why they were taken out: builds
 without any prompt read them and enforced them, so the file itself was acting as the prompt. Writing your numbers
-into `securevibe.toml` is worth doing for that reason alone.
+into `stackvet.toml` is worth doing for that reason alone.
 
 **Tried again with two more models (5 October 2026).** Claude Sonnet 5.5 and Claude Haiku 4.5, two builds with each
 prompt and two without, on the same brief ([the third trial](trial-3/README.md)). With Sonnet, the three prompts below
@@ -39,8 +39,8 @@ builds without them were already safe on what `sv` checks. One tool, two models:
 >
 > 1. Ask me how many wrong passwords in a row the app should allow before it pushes back, and how many
 >    records (notes, posts, messages) one person may create in a minute. Suggest sensible numbers if I
->    am not sure. If securevibe.toml already has them under [policy], use those.
-> 2. Write the numbers into securevibe.toml under [policy] as `failed-sign-ins`, `within-minutes`, and
+>    am not sure. If stackvet.toml already has them under [policy], use those.
+> 2. Write the numbers into stackvet.toml under [policy] as `failed-sign-ins`, `within-minutes`, and
 >    `requests-per-minute`, and into security-notes.md under "Business limits" and "How sign-in is
 >    protected against guessing".
 > 3. Enforce them on the server, counted per account (an IP address is easy to change, so not only by
@@ -52,9 +52,9 @@ builds without them were already safe on what `sv` checks. One tool, two models:
 
 *Helps you answer:* Secure by Design RR-07. *Checked through:* ASVS V2.4.1, V6.3.1.
 
-*What it showed:* With the prompt the build wrote 5 wrong passwords in 15 minutes and 10 records a minute into securevibe.toml, enforced both, and was credited on both. Both builds without it were found on both. Neither limited new records at all. Each did lock an account after wrong passwords, but after 10, a number it chose and wrote down nowhere, so `sv` held it to the 5 standing in for the owner's: for wrong passwords, what the prompt changed is that the number was decided and written down.
+*What it showed:* With the prompt the build wrote 5 wrong passwords in 15 minutes and 10 records a minute into stackvet.toml, enforced both, and was credited on both. Both builds without it were found on both. Neither limited new records at all. Each did lock an account after wrong passwords, but after 10, a number it chose and wrote down nowhere, so `sv` held it to the 5 standing in for the owner's: for wrong passwords, what the prompt changed is that the number was decided and written down.
 
-*A warning, from 6 October 2026:* this prompt asks you for the limits, and an AI tool given it with nobody to answer stops to ask. Tried with Claude Haiku 4.5 and a request saying the owner was away, six of ten builds asked their questions and wrote nothing at all (`docs/prompts/library-trial/`). Give it when you are there to answer, or put the numbers in securevibe.toml under [policy] first, which the prompt then uses. *Since 7 October 2026* the prompt ends with what to do when nobody is there (the last paragraph above: 5 in 15 minutes and 10 a minute, marked "default, to confirm"); that wording has not yet been tried, so the warning stands until it is.
+*A warning, from 6 October 2026:* this prompt asks you for the limits, and an AI tool given it with nobody to answer stops to ask. Tried with Claude Haiku 4.5 and a request saying the owner was away, six of ten builds asked their questions and wrote nothing at all (`docs/prompts/library-trial/`). Give it when you are there to answer, or put the numbers in stackvet.toml under [policy] first, which the prompt then uses. *Since 7 October 2026* the prompt ends with what to do when nobody is there (the last paragraph above: 5 in 15 minutes and 10 a minute, marked "default, to confirm"); that wording has not yet been tried, so the warning stands until it is.
 
 ### Decide what the app logs, and how each line reads
 
@@ -91,8 +91,8 @@ builds without them were already safe on what `sv` checks. One tool, two models:
 >   (Argon2, bcrypt, scrypt, or PBKDF2 with at least 600,000 rounds of SHA-256).
 > - How long a session may sit unused before the password is asked for again, and the longest a session
 >   may last however busy it is. Ask me; suggest 30 minutes unused and 12 hours at most if I am not
->   sure. If securevibe.toml already has them under [policy], use those. Put both numbers in
->   securevibe.toml under [policy] as `idle-timeout-minutes` and `session-lifetime-minutes`, and enforce
+>   sure. If stackvet.toml already has them under [policy], use those. Put both numbers in
+>   stackvet.toml under [policy] as `idle-timeout-minutes` and `session-lifetime-minutes`, and enforce
 >   both on the server: how long the browser keeps the cookie is not enough.
 > - If the app issues its own sign-in tokens (such as JWTs), keep them short-lived, check the signature
 >   and the expiry on every request, and accept only the one signing method you use.
@@ -102,11 +102,11 @@ builds without them were already safe on what `sv` checks. One tool, two models:
 > Write a test for each: a session unused past the limit is refused, one older than the lifetime is
 > refused, and an expired or altered token is refused.
 >
-> If admins sign in with a second step, enroll the admin in the seed with the secret in `SV_ADMIN_TOTP_SECRET`, and fill in the `totp` entry under [stack.run.users] in securevibe.toml, so SecureVibe can sign in as the admin. If I am not here to answer, use 30 minutes unused and 12 hours at most, write them down marked "default, to confirm", and carry on.
+> If admins sign in with a second step, enroll the admin in the seed with the secret in `SV_ADMIN_TOTP_SECRET`, and fill in the `totp` entry under [stack.run.users] in stackvet.toml, so StackVet can sign in as the admin. If I am not here to answer, use 30 minutes unused and 12 hours at most, write them down marked "default, to confirm", and carry on.
 
 *Helps you answer:* Secure by Design AC-02. *Checked through:* ASVS V7.3.1.
 
-*What it showed:* With the prompt the build wrote 30 minutes unused and 12 hours in all into securevibe.toml and enforced both; after 31 minutes `sv run --slow` found the unused session refused and a busy one still open, and credited it. The 12 hours is longer than the 90 minutes `--slow` waits, so V7.3.2 was not assessed and the prompt does not claim it. The build without the prompt that was run with `--slow` was found on both: it also ended sessions after 30 minutes and 12 hours, but wrote neither down, so `sv` held it to the 2 and 4 minutes standing in for the owner's. What the prompt was shown to change is that the decision is written where it can be held to, not that sessions end at all. The admin's second sign-in step the prompt asks for is not what this shows, and it stopped `sv`'s admin checks, whose settings then had no field for the code. *Since then* a `totp` entry under [stack.run.users] lets `sv` make the code and sign in as the admin, and the prompt's last paragraph asks the build to fill it in; that has not yet been tried with this prompt.
+*What it showed:* With the prompt the build wrote 30 minutes unused and 12 hours in all into stackvet.toml and enforced both; after 31 minutes `sv run --slow` found the unused session refused and a busy one still open, and credited it. The 12 hours is longer than the 90 minutes `--slow` waits, so V7.3.2 was not assessed and the prompt does not claim it. The build without the prompt that was run with `--slow` was found on both: it also ended sessions after 30 minutes and 12 hours, but wrote neither down, so `sv` held it to the 2 and 4 minutes standing in for the owner's. What the prompt was shown to change is that the decision is written where it can be held to, not that sessions end at all. The admin's second sign-in step the prompt asks for is not what this shows, and it stopped `sv`'s admin checks, whose settings then had no field for the code. *Since then* a `totp` entry under [stack.run.users] lets `sv` make the code and sign in as the admin, and the prompt's last paragraph asks the build to fill it in; that has not yet been tried with this prompt.
 
 ## Not yet shown to work
 
@@ -196,9 +196,9 @@ server's prompts, where the tool shows them (for example as a slash command); `s
 
 ### Write the design brief before any code
 
-> Before you write any code, write the design brief with me, as securevibe.toml.
+> Before you write any code, write the design brief with me, as stackvet.toml.
 >
-> 1. Run `sv init` (or ask SecureVibe for its spec) and fill in securevibe.toml for the app as it will be,
+> 1. Run `sv init` (or ask StackVet for its spec) and fill in stackvet.toml for the app as it will be,
 >    not as it is now: there is no code yet. Ask me each question you cannot answer from what I have
 >    told you: what the app is for, who will use it (just me, my team, customers, or the public),
 >    whether it faces the internet, how people sign in, what it keeps about people, whether it takes
@@ -206,24 +206,30 @@ server's prompts, where the tool shows them (for example as a slash command); `s
 > 2. If I am not sure whether the app will have something, write true (this is the design-time answer; once there is code and it is still unsure, leave the line out, as `settings-file-first` says): a capability planned and never
 >    built costs a requirement that did not need meeting, and one left out is how a real requirement
 >    gets switched off.
-> 3. Ask me for the limits now, and write them under [policy]: how many wrong passwords in a row, how
+> 3. Answer the design questions under [design]: `sv report` lists the ones that apply to this app.
+>    There is no code yet, so nothing can be yes. For each control we decide to build, answer planned,
+>    with `where` naming the file it will be in, and by = "ai-tool" (an answer becomes mine only
+>    when I record it with `sv review`); answer not-sure where we have not decided. Once the code
+>    exists, StackVet holds each planned answer to it, and reports one whose file never appeared as
+>    decided, never built.
+> 4. Ask me for the limits now, and write them under [policy]: how many wrong passwords in a row, how
 >    many records one person may create in a minute, how long a session may sit unused, and the
 >    longest it may last. Suggest sensible numbers if I am not sure.
-> 4. Read the brief back to me in plain words, and change it until I agree with it.
-> 5. Plan the tests the app will need: for each requirement the brief makes apply that a test could
+> 5. Read the brief back to me in plain words, and change it until I agree with it.
+> 6. Plan the tests the app will need: for each requirement the brief makes apply that a test could
 >    show, a test whose name carries the requirement's id (such as `test_V8_2_1_...`).
 >
 > Do not start on the code until I have agreed the brief. When I later ask for something the brief
-> does not have, update securevibe.toml first.
+> does not have, update stackvet.toml first.
 >
 > If I am not here, write the brief from what I have said, mark each guess as a guess, and go on.
 
-*Helps you answer:* Secure by Design MT-03. *Not tried:* No check in sv shows this prompt working. securevibe.toml is checked against the code once there is code, and a claim the code contradicts is reported, but that checks the file, not whether it was written first.
+*Helps you answer:* Secure by Design MT-03. *Not tried:* No check in sv shows this prompt working. stackvet.toml is checked against the code once there is code, and a claim the code contradicts is reported, but that checks the file, not whether it was written first.
 
 ### Say when the app needs a person's review
 
 > Before we build, tell me plainly whether this app needs a person's security review as well as
-> SecureVibe's checks. Say yes, and why, if any of these is true:
+> StackVet's checks. Say yes, and why, if any of these is true:
 >
 > - it keeps sensitive or regulated data: health, money, children's data, government ids, or
 >   anything people would be harmed by if it leaked;
@@ -251,7 +257,7 @@ server's prompts, where the tool shows them (for example as a slash command); `s
 > - how it is protected: who can see it, and whether it is encrypted where it is stored.
 >
 > Leave out anything the app does not need. Write the list in security-notes.md, under "How each kind
-> of sensitive data is protected", and write the categories into securevibe.toml under [data], using only the names the specification lists (contact, financial, payment-card, health, government-id, credentials, children, location, files, business-confidential, other-personal). Then
+> of sensitive data is protected", and write the categories into stackvet.toml under [data], using only the names the specification lists (contact, financial, payment-card, health, government-id, credentials, children, location, files, business-confidential, other-personal). Then
 > build the app to match the list: if I later ask for something that keeps a new kind of data, add it
 > to the list first.
 >
@@ -347,12 +353,15 @@ server's prompts, where the tool shows them (for example as a slash command); `s
 
 > Whenever I ask for a new feature, or a change to how something works, before you write the code:
 >
-> 1. Re-read securevibe.toml, security-notes.md, and design-decisions.md.
+> 1. Re-read stackvet.toml, security-notes.md, and design-decisions.md.
 > 2. Tell me which of the decisions written there the change touches: who may do what, the limits,
 >    the data kept, what the app talks to, how sign-in works, what is logged.
-> 3. Update those first, with me, and only then change the code.
+> 3. Update those first, with me, and only then change the code. A new decision made before its
+>    code is answered planned under [design], with `where` naming the file it will be in; when the
+>    change builds something answered planned, change that answer to yes or no, with `where`
+>    pointing at the file that does it.
 > 4. If the change goes against a decision, say so plainly and ask me before going ahead.
 >
-> After the change, run SecureVibe's check again.
+> After the change, run StackVet's check again.
 
-*Helps you answer:* Secure by Design MT-05. *Not tried:* No check in sv shows this prompt working. A claim in securevibe.toml that the code contradicts is reported, but whether the decisions were re-read before the change is not something sv can see.
+*Helps you answer:* Secure by Design MT-05. *Not tried:* No check in sv shows this prompt working. A claim in stackvet.toml that the code contradicts is reported, but whether the decisions were re-read before the change is not something sv can see.
