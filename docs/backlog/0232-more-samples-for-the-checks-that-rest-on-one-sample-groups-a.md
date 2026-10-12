@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: group B claimed; groups C to H open; group A built in #1483
+**Status:** partly done: group B partly done; groups C to H open; group A built in #1483
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -21,7 +21,10 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Part status:** claimed by backlog-org-0232, 11 October 2026
 2. **B. Every private page and session path.** Session handling tried on each private page the owner lists and
    after each way of signing in, not one.
-   **Part status:** claimed by backlog-org-0232, 12 October 2026
+   **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
+   `docs/design/0370-the-made-up-session-on-every-listed-private-page-12-october.md`): the made-up session is tried on
+   every listed private page, and its credit is whole only when two or more were tried and all refused.
+   **Part status:** partly done: the cookies, renewal, and fixed session of one sign-in, and the one sign-out, wait for the manifest to name each way of signing in
 3. **C. Each form, flow, and connection.** Cross-site requests tried on each changing route the app answers, each
    step of a flow, and each WebSocket path, not one request.
    **Part status:** open
