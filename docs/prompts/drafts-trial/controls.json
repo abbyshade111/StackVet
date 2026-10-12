@@ -1,0 +1,171 @@
+{
+ "controls": {
+  "haiku": {
+   "8": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 10,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 0.97
+   },
+   "10": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 0,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 0.97
+   },
+   "12": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 9,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 0.97
+   },
+   "18": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 9,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 0.97
+   },
+   "19": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 6,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 0.97
+   },
+   "20": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 8,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 0.97
+   },
+   "22": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 9,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 0.97
+   }
+  },
+  "sonnet": {
+   "8": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 10,
+    "problem": 1,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 5.02
+   },
+   "10": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 0,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 5.02
+   },
+   "12": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 9,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 5.02
+   },
+   "18": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 8,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 5.02
+   },
+   "19": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 8,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 5.02
+   },
+   "20": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 9,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 5.02
+   },
+   "22": {
+    "wrong_model": [],
+    "usable": 10,
+    "asked": 9,
+    "problem": 0,
+    "started": 9,
+    "signed_in": 9,
+    "answered_median": 33.0,
+    "answered_median_started": 33,
+    "cost_usd": 5.02
+   }
+  }
+ },
+ "choice": {
+  "8": null,
+  "10": null,
+  "12": null,
+  "18": null,
+  "19": null,
+  "20": null,
+  "22": null
+ }
+}
