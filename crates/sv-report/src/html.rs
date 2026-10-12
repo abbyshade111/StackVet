@@ -21,8 +21,9 @@ pub fn escape(text: &str) -> String {
 /// The StackVet mark, the bracket mark of `docs/brand/stackvet-mark.svg`, drawn inside the page beside its
 /// heading (backlog 0219 part 5, ADR-107). Inline, it fetches nothing, so the page's policy (`CSP_META`) is
 /// unchanged; its colors are the page's style (`.mark-bracket`, `.mark-check`), so a dark page shows the
-/// colors of `stackvet-mark-dark.svg`. Decorative: the heading's own words name the page.
-pub const MARK: &str = "<svg class=\"mark\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\" \
+/// colors of `stackvet-mark-dark.svg`. Decorative: the heading's own words name the page. No `xmlns`: an SVG
+/// inside an HTML page needs none, and the pages hold no web address at all.
+pub const MARK: &str = "<svg class=\"mark\" viewBox=\"0 0 64 64\" \
                         width=\"28\" height=\"28\" aria-hidden=\"true\" focusable=\"false\">\
                         <path class=\"mark-bracket\" d=\"M20 10 H11 V54 H20\"/>\
                         <path class=\"mark-bracket\" d=\"M44 10 H53 V54 H44\"/>\

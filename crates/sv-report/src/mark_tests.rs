@@ -71,6 +71,9 @@ fn both_pages_draw_it_in_their_heading_and_fetch_nothing_for_it() {
         assert!(!page.contains("<img") && !page.contains("<link"), "{page}");
         assert!(page.contains(CSP_META.trim_end()));
     }
-    assert!(!MARK.contains("href") && !MARK.contains("url("), "{MARK}");
+    assert!(
+        !MARK.contains("href") && !MARK.contains("url(") && !MARK.contains("http"),
+        "{MARK}"
+    );
     assert!(MARK.contains("aria-hidden=\"true\""));
 }
