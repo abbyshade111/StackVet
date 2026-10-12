@@ -148,6 +148,7 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-101](ADR-101.md) | `sv connect` prints the settings an AI coding tool needs and writes nothing, and one prompt sets StackVet up (accepted, 12 October 2026) |
 | [ADR-102](ADR-102.md) | `sv report` says how long its slow stages take, how far a long wait is, and the slowest parts, unless `--quiet` (accepted, 12 October 2026) |
 | [ADR-103](ADR-103.md) | A record can govern a named part of a large file, and the check asks only when that part changes (accepted, 12 October 2026) |
+| [ADR-104](ADR-104.md) | A pull request that changes only backlog items runs only the tests that read them (accepted, 12 October 2026) |
 
 ## Names in the records
 

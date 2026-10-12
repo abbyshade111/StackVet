@@ -13,3 +13,12 @@ Express error middleware with four arguments, Flask `errorhandler(Exception)`, F
 middleware. Supporting only: a handler found is a sign, not proof that it works, so it may add to what the running
 half says but never credit V16.5.4 alone, and its absence is not a finding (a framework may supply one by default).
 Read the requirement's own text before citing it. Builds on `data/ast-rules.json` and `crates/sv-check/src/ast.rs`.
+
+**Set aside on 12 October 2026, the owner's choice when asked.** Claimed that day to build the signs as information
+beside V16.5.4, and found before any code was written that there is nowhere to put them: V16.5.4 is a level 3
+requirement, and `sv` holds every app to level 1 or 2, so no report has a line for it (requirement lines are built only
+for the app's level). A finding at `info` would land in the list of things to fix, which reads as a fault for what is
+good news, and the section for findings above the app's level is for faults too. The running half shows the same
+shape today: a stop is an ordinary finding, and a clean run's credit names no requirement. Build this when `sv` first
+holds an app to level 3, where the signs can sit beside the V16.5.4 line as supporting evidence
+(`RequirementLine.supported_by`), never a credit.

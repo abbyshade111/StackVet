@@ -1,6 +1,6 @@
 # What a new tool, service, or process would reach
 
-**Status:** partly done: 4 of 10 parts done, 3 claimed, 1 open, as its markers read on 8 October 2026
+**Status:** done, 12 October 2026
 
 The follow-on question to the sweep above,
 asked by the owner on 26 September 2026 and answered by session securevibe-e9. After the Level 1
@@ -108,7 +108,7 @@ claimed.
    September 2026 by session securevibe-e9, and done the same day:** `idle-timeout-minutes` and
    `session-lifetime-minutes` under `[policy]`, held to by `sv run --slow`. Level 2 gains V7.3.1
    and V7.3.2. See DESIGN, "Session timeouts, waited out".
-   **Part status:** claimed by securevibe-e9, date not recorded
+   **Part status:** done, 26 September 2026
 6. **A real browser (~6, and two existing checks made stronger).** Headless Chromium, run as a
    container inside the fence. It can see what only a browser decides: whether a request needs a
    CORS preflight (V3.5.2), whether markup submitted through a form executes when the page renders
@@ -162,7 +162,7 @@ claimed.
    nothing the app planted; on a Rails controller it found nine problems, and 24 of its suite's 50 queries cite
    requirements. Java's build-less mode ran Maven, which reached for Maven Central, and ran a `gradlew` planted in the
    app, so there is no Java entry. Go stays out, as the owner decided. Nothing of item 7 is left to build.
-   **Part status:** claimed by securevibe-e9, 9 October 2026
+   **Part status:** done, 9 October 2026; the leftover the owner approved that day, reading a SARIF file from the owner's own CI, moved to backlog 0274 when this item closed on 12 October 2026
 8. **The live site, with a TLS scanner (~5, mostly Level 3).** Beside `sv probe`: testssl.sh or
    sslyze for OCSP stapling and Encrypted Client Hello (V12.1.4, V12.1.5), the HSTS preload list
    (V3.7.4), a spoofed `X-Forwarded-For` to see whether rate limiting trusts it (V15.3.4), and,
@@ -257,3 +257,5 @@ Items 2, 3, and 6 are containers on the fenced network, so they keep `sv`'s rule
 reaches outside; only item 8 does, and only to the owner's own address.
 
 **The owner's decision, 9 October 2026**, asked by session securevibe-e2 with a recommendation for each open choice: **yes to part 7's leftover, reading a CodeQL SARIF file from the owner's own CI, as recommended:** a clean result is credited only when the file's commit is the commit of the code being checked; any other file is reported and credits nothing. Not claimed yet.
+
+**Closed on 12 October 2026**, at the owner's word ("I'm pretty sure 0147 can be closed - the e9 session has been archived"). Read against `main` that day: all nine parts are built. Parts 5 and 7 were still marked as claimed by securevibe-e9, though each says it was done (part 5's `--slow` and `idle-timeout-minutes` are in the code; part 7 ends "Nothing of item 7 is left to build"). The one approved leftover, a SARIF file from the owner's own CI, is now backlog 0274.
