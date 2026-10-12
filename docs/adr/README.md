@@ -141,6 +141,9 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-095](ADR-095.md) | Low-severity findings are grouped by rule in the reports, and listed in full in a file beside them (accepted, 11 October 2026) |
 | [ADR-096](ADR-096.md) | The header, cookie, and content-type checks ask every route stackvet.toml names (accepted, 11 October 2026) |
 | [ADR-097](ADR-097.md) | The browser's typed-text check on every text form stackvet.toml names (accepted, 12 October 2026) |
+| [ADR-099](ADR-099.md) | The owner can leave a folder out of the checks, with a reason the report prints, and keys are still looked for there (proposed, 12 October 2026) |
+| [ADR-100](ADR-100.md) | `sv report` says how long each slow stage took as it ends, and `--quiet` silences the progress (proposed, 12 October 2026) |
+| [ADR-101](ADR-101.md) | The phone, two-factor, and recovery changes beside the email change, and the owner's word on which the app offers (proposed, 12 October 2026) |
 
 ## Where v1's records disagree with what v1 built
 

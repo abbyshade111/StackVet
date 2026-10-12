@@ -82,7 +82,11 @@ by speaking for what its requirement names. One part per group of the inventory 
    stackvet.toml for features few apps have, a change of format for a decision of its own; and the password checks
    tried at a password change as well as sign-up stay in part either way, since ADR-090 keeps every password rule probe
    in part (one password is one sample of every password). Left open for the owner to weigh.
-   **Part status:** open
+   **Scope of this claim (12 October 2026), the owner's word the same day:** `change-phone`, `change-two-factor`, and
+   `change-recovery` beside `change-email`, and a `not-offered` list the owner confirms in `sv review`, so V7.5.1 can be
+   whole. The password change and TOTP beside an emailed code are not in this claim.
+   **Record, `Status: proposed`: ADR-101.**
+   **Part status:** claimed by backlog-org-0232g, 12 October 2026
 8. **H. More than one listed page.** The owner is asked, where only one private or admin page is listed, to list
    more; `sv init` and the prompts say why.
    **Scope of this claim (12 October 2026), taken before F and G:** F and G each need the manifest to name more than
