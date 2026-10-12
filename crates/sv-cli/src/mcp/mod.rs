@@ -112,7 +112,7 @@ const RESOURCE_NOT_FOUND: i64 = -32002;
 
 /// The largest report file that is read back. A report of a very large app is a few megabytes; a file
 /// larger than this was not written by `sv`, or not lately.
-const MAX_RESOURCE_BYTES: u64 = 16 * 1024 * 1024;
+pub(crate) const MAX_RESOURCE_BYTES: u64 = 16 * 1024 * 1024;
 
 /// How many folders down from the root reports are looked for, and how many report folders are listed.
 const REPORT_SEARCH_DEPTH: usize = 6;
