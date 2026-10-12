@@ -1,6 +1,6 @@
 # Print progress to the terminal while a scan runs, so the person can see what is happening
 
-**Status:** open
+**Status:** claimed by securevibe-trial-prep, 12 October 2026
 
 Asked for by the owner on 11 October 2026: while `sv` runs, the terminal is quiet until the report is written, so
 the person cannot tell whether it is working, stuck, or waiting on something. Look into printing progress as each
