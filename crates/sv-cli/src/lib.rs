@@ -1346,8 +1346,6 @@ pub fn write_bundle(
         .context("making a private folder for the report on its way into the zip")?;
     let scratch = private.path().to_path_buf();
     let written = write_report_files(report, &scratch);
-    let sbom_json =
-        serde_json::to_string_pretty(&sbom::to_cyclonedx(&sbom::build(app_abs)))? + "\n";
     let report_files: Result<Vec<(String, Vec<u8>)>> = written.and_then(|names| {
         names
             .iter()
@@ -1363,10 +1361,7 @@ pub fn write_bundle(
     let report_files = report_files?;
     refuse_a_credential_in_the_report(&rules, &report_files)?;
     entries.extend(report_files);
-    entries.push((
-        format!("{folder}/report/sbom.cdx.json"),
-        sbom_json.into_bytes(),
-    ));
+    // The bill of materials is a report file now (backlog 0382), so it is among those, and was checked with them.
 
     let made_at = bundle::utc_time(
         std::time::SystemTime::now()

@@ -1041,6 +1041,10 @@ pub struct Report {
     /// line (backlog 0378, part 2). Never in `report.json`: it holds the app's code, and the report pages show it.
     #[serde(skip)]
     pub code_lines: std::collections::BTreeMap<(String, usize), Vec<(usize, String)>>,
+    /// The app's software bill of materials, as `sbom.cdx.json` beside the report holds it (backlog 0382). Never in
+    /// `report.json`: it is a file of its own. `None` in a report made without one.
+    #[serde(skip)]
+    pub sbom: Option<SbomFile>,
     /// Passed in rather than read from a clock, so the same app twice produces the same bytes.
     pub generated: Option<String>,
     /// Which `sv` made this report, so whoever reads it can tell which checks it had. Without it, a
@@ -1588,6 +1592,47 @@ pub fn no_outside_tool_ran(rows: &[ToolRow]) -> bool {
 pub const OUTSIDE_TOOLS_SECTION: &str = "The security tools each language already has, run beside StackVet's own \
      checks with `sv report --tools`. Their findings are among the things to fix above, each marked with the tool's \
      rule; one that found the same as StackVet on the same line is counted here as agreeing.";
+
+/// The name of the bill of materials beside the report (backlog 0382).
+pub const SBOM_FILE: &str = "sbom.cdx.json";
+
+/// The app's software bill of materials, written beside the report as CycloneDX JSON (backlog 0382).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SbomFile {
+    /// The document, as `sv sbom` prints it.
+    pub json: String,
+    /// How many packages it lists.
+    pub components: usize,
+    /// Whether every package manifest and lockfile was read.
+    pub complete: bool,
+}
+
+/// `sbom.cdx.json`: the bill of materials, as `sv sbom` prints it (backlog 0382). An empty CycloneDX document, saying
+/// so, for a report made without one.
+pub fn sbom_document(report: &Report) -> String {
+    match &report.sbom {
+        Some(s) => s.json.clone(),
+        None => "{\"bomFormat\": \"CycloneDX\", \"specVersion\": \"1.5\", \"version\": 1, \"components\": []}\n"
+            .to_owned(),
+    }
+}
+
+/// The line near the top of the report naming the bill of materials beside it (backlog 0382): how many packages it
+/// lists, and whether it is complete. `None` without one.
+pub fn sbom_line(report: &Report) -> Option<String> {
+    let s = report.sbom.as_ref()?;
+    Some(format!(
+        "The app's software bill of materials, every package it ships, is in {SBOM_FILE} beside this report: {} \
+         package{}, {}.",
+        s.components,
+        if s.components == 1 { "" } else { "s" },
+        if s.complete {
+            "from every package list and lockfile the app has"
+        } else {
+            "not complete: some of the app's package lists could not be read, and the report says which"
+        }
+    ))
+}
 
 /// The lines of the app's code a finding is on, with the one before and after, as `sv` kept them redacted (backlog
 /// 0378, part 2); `None` for a finding that is not on a line of code, or whose file could not be read.
@@ -3138,6 +3183,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         timings: Vec::new(),
         seen: None,
         code_lines: Default::default(),
+        sbom: None,
         app_name: inputs.app_name.to_owned(),
         target_level: inputs.target_level,
         generated: inputs.generated,
