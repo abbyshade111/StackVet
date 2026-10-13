@@ -1,6 +1,6 @@
 # A threat reads checked in part when one of its requirements is checked and the rest are not verified
 
-**Status:** open
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: checks' honesty. Severity: low. Verified against the code by the reviewing session before filing.
 
