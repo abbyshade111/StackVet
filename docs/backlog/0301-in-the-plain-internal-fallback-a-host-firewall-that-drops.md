@@ -1,6 +1,6 @@
 # In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable
 
-**Status:** open
+**Status:** claimed by builder-none, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: the fence. Severity: medium. Verified against the code by the reviewing session before filing.
 

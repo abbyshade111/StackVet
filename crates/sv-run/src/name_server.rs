@@ -25,10 +25,11 @@ pub struct Lookup {
     pub at: String,
 }
 
-/// The arguments that start the name server on `network` under `name`: no published port, and the
-/// hardening every helper gets. Node runs the script as an ES module, with its built-in modules only.
+/// The arguments that start the name server on `network` under `name`: no published port. The
+/// hardening every container gets is added where all of them are sent, `DockerBackend::prepared`,
+/// not here (ADR-019). Node runs the script as an ES module, with its built-in modules only.
 pub fn start_args(network: &str, name: &str) -> Vec<String> {
-    let args = [
+    [
         "run",
         "-d",
         "--rm",
@@ -41,8 +42,10 @@ pub fn start_args(network: &str, name: &str) -> Vec<String> {
         "--input-type=module",
         "-e",
         SCRIPT,
-    ];
-    crate::docker::hardened(args.iter().map(|arg| (*arg).to_owned()).collect())
+    ]
+    .iter()
+    .map(|arg| (*arg).to_owned())
+    .collect()
 }
 
 /// The lines the name server wrote, read back. Each question is a JSON object with a `name`, a

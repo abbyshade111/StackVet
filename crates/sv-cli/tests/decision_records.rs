@@ -5,7 +5,7 @@
 //! test, moving a file, or citing a record that was never written would make it quietly wrong; each of those fails
 //! here instead. `sv`'s records are ADR-015 onward; v1's, ADR-001 to ADR-014, are on the `v1` branch.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 fn root() -> PathBuf {
@@ -295,6 +295,40 @@ fn the_index_lists_every_record() {
         rows.len(),
         "something other than a row breaks the index's table"
     );
+    // A row's status word is the record's own. ADR-057, ADR-062, and ADR-086 were each shown proposed in
+    // one and accepted in the other until 13 October 2026 (backlog 0297).
+    let statuses: BTreeMap<u32, String> = records()
+        .into_iter()
+        .filter_map(|(n, text)| {
+            let line = text.lines().find(|l| l.starts_with("**Status:**"))?;
+            let word = line["**Status:**".len()..].trim_start();
+            let word: String = word.chars().take_while(char::is_ascii_alphabetic).collect();
+            Some((n, word.to_ascii_lowercase()))
+        })
+        .collect();
+    let mut differ = Vec::new();
+    for (i, n) in &rows {
+        let row = lines[*i].to_ascii_lowercase();
+        let Some(status) = statuses.get(n) else {
+            continue;
+        };
+        // The word is in brackets at the row's end, or after a semicolon; "accepted risks" in ADR-023's title is neither.
+        let says =
+            |word: &str| row.contains(&format!("({word}")) || row.contains(&format!("; {word}"));
+        for word in ["proposed", "accepted"] {
+            if says(word) && status != word {
+                differ.push(format!(
+                    "ADR-{n:03}: the index says {word}, the record {status}"
+                ));
+            }
+        }
+        if status == "proposed" && !says("proposed") {
+            differ.push(format!(
+                "ADR-{n:03}: the record is proposed, and the index does not say so"
+            ));
+        }
+    }
+    assert!(differ.is_empty(), "{}", differ.join("\n"));
 }
 
 #[test]

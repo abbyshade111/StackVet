@@ -45,6 +45,11 @@ strip = true
 # Measured on 8 October 2026 (BACKLOG, "From the architecture assessment of 8 October 2026", item 1):
 # the 46 tree-sitter rule tests took 126 s with everything unoptimized and 32 s with this, since the
 # parse tables, the regular expressions, and the hashing all live in dependencies that never change
-# between test runs. The one-time cost is a longer first build of the dependencies.
+# between test runs. The one-time cost is a longer first build of the dependencies. Their debug
+# information is left out (backlog 0344): about 81 test binaries link the grammars, and each copied it.
+# A clean `cargo test --workspace --no-run` on 13 October 2026 (4 cores, one run each): 128 s and 9.7 GB
+# unoptimized, 193 s and 14 GB with this optimization, 172 s and 9.9 GB with it and no debug information.
+# `sv`'s own crates keep theirs, so a failing test's backtrace still names their files and lines.
 [profile.dev.package."*"]
 opt-level = 2
+debug = false

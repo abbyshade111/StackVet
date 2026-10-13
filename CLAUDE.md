@@ -69,12 +69,15 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   (ADR-027). Advisory data is something the user downloads and points it at. A second exception, only when the owner
   sets `install = true`: `sv run` starts a container, given only the app's dependency files and made from one of
   Docker's own `python` or `node` images and no other, that downloads its packages from PyPI or npm without running
-  any of their code (ADR-052); the app itself stays fenced. Keep it that way.
+  any of their code (ADR-052); the app itself stays fenced. One more, which is Semgrep's and not `sv`'s, by the
+  owner's decision of 13 October 2026 (ADR-111): the outside tools run with every `sv report` and `sv bundle` unless
+  `--no-tools` is given, and Semgrep fetches its rules from semgrep.dev each time it runs. Keep it that way.
 - A citation is a claim: cite a requirement only when the check really speaks to it.
 
 ## Working style the owner expects
 
-- Plain language in reports and documents: the owner is not a programmer. No jargon without an explanation.
+- Plain language in reports and documents: the people `sv` is for are not programmers (the owner is one, and reads
+  drafts as a test user standing in for them). No jargon without an explanation.
 - One spelling standard: American English (color, behavior, organization, recognize) with the Oxford comma, in
   everything a person reads. Identifiers and JSON keys keep their names.
 - Say what was verified and what was not. Report test results as they are.

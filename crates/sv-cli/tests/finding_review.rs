@@ -581,7 +581,7 @@ fn an_entry_that_matches_nothing_says_whether_its_rule_looked_and_an_earlier_one
                 "owner",
                 why
             ),
-            // An outside tool, which runs only with --tools: not looked for.
+            // An outside tool, which the tests leave out (SV_NO_TOOLS_FOR_TEST): not looked for.
             entry(
                 &dir,
                 "bandit.B608",
@@ -656,7 +656,7 @@ fn an_entry_that_matches_nothing_says_whether_its_rule_looked_and_an_earlier_one
             (
                 "bandit.B608",
                 "app.py",
-                "not looked for this time (outside tools run only with --tools)",
+                "not looked for this time (outside tools left out with --no-tools)",
             ),
             (
                 "ast.sql-built-by-hand",

@@ -1162,7 +1162,12 @@ fn served_upload_checks(
                     .to_lowercase();
                 let attachment = disposition.contains("attachment");
                 let sandboxed = csp.contains("sandbox");
-                let not_html = !content_type.contains("text/html")
+                // No type, or an empty one, is not "something other than a page": a browser
+                // sniffs such a response and renders the HTML in it (backlog 0306). A typed
+                // answer that is not a page is one, whether or not it says `nosniff`.
+                let typed = !content_type.trim().is_empty();
+                let not_html = typed
+                    && !content_type.contains("text/html")
                     && !content_type.contains("application/xhtml+xml");
                 let is_safe = attachment || sandboxed || not_html;
                 let how = if attachment {
@@ -1186,9 +1191,15 @@ fn served_upload_checks(
                         "An uploaded page is served for the browser to render",
                         Severity::High,
                         format!(
-                            "A `.{extension}` file this check uploaded came back from {path} as \
-                             `{content_type}` with no `Content-Disposition: attachment` and no \
-                             sandbox policy, so a browser renders it as part of this app."
+                            "A `.{extension}` file this check uploaded came back from {path} {} \
+                             with no `Content-Disposition: attachment` and no sandbox policy, so a \
+                             browser renders it as part of this app.",
+                            if typed {
+                                format!("as `{content_type}`")
+                            } else {
+                                "with no `Content-Type`, which a browser sniffs as a page"
+                                    .to_owned()
+                            }
                         ),
                     ));
                 }
@@ -1497,6 +1508,30 @@ mod tests {
             rule_ids(&rendered)
         );
         assert!(!verified_ids(&rendered).contains(&UPLOAD_RENDERED.rule_id));
+    }
+
+    #[test]
+    fn an_uploaded_page_served_back_with_no_content_type_is_not_credited() {
+        // Backlog 0306: a missing `Content-Type` read as an empty string, which
+        // `not_html` took for "something other than a page". A browser sniffs a response with no
+        // type and renders the HTML in it: the case V3.2.1 names, credited.
+        let untyped = run_against(
+            Flaws {
+                uploaded_pages_untyped: true,
+                ..Default::default()
+            },
+            &with_upload(Some("/files/{name}"), Some(UPLOAD_LIMIT as u64)),
+        );
+        assert!(
+            !verified_ids(&untyped).contains(&UPLOAD_RENDERED.rule_id),
+            "a page served with no type is rendered by a browser, so it is not credited: {:?}",
+            untyped.steps
+        );
+        assert!(
+            rule_ids(&untyped).contains(&UPLOAD_RENDERED.rule_id),
+            "and it is the finding a page served as text/html is: {:?}",
+            rule_ids(&untyped)
+        );
     }
 
     #[test]

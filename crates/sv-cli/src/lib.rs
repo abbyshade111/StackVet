@@ -28,6 +28,7 @@ pub mod assemble;
 // One copy, in the library: the report's stages catch a panic through it, and the binary's hook records into it (0234).
 pub mod board_link;
 pub mod bundle;
+pub mod code_lines;
 pub mod compare;
 pub mod crash;
 pub mod crash_notes;
@@ -156,6 +157,7 @@ pub fn probe_the_running_app(
     manifest: &Manifest,
     app_dir: &Path,
     slow: bool,
+    private_files: &[sv_check::running::PrivateFile],
 ) -> std::result::Result<(sv_run::RunOutcome, sv_run::RunPlan), (String, sv_report::GapReason)> {
     let mut plan = RunPlan::from_manifest(manifest, app_dir)
         .map_err(|e| (cannot_run_said(&e.explain(), e.kind()), run_gap_reason(&e)))?;
@@ -172,7 +174,7 @@ pub fn probe_the_running_app(
     if let Some(warning) = sv_run::weakening_warning(&plan.start) {
         eprintln!("{warning}");
     }
-    let requests = anonymous_requests(&plan);
+    let requests = anonymous_requests(&plan, private_files);
     let outcome = backend.run(&plan, &requests);
     // Stopped with Ctrl-C: the run has removed its containers and network on the way out. What it
     // got to before then is not a report of the app, so nothing is written.
@@ -201,7 +203,7 @@ fn run_gap_reason(why: &sv_run::CannotRun) -> sv_report::GapReason {
     match why {
         CannotRun::NoBackend { .. } => GapReason::NotInstalled,
         CannotRun::NoRunCommand { .. } => GapReason::NotAsked,
-        CannotRun::BadImage { .. } => GapReason::CouldNotRead,
+        CannotRun::BadImage { .. } | CannotRun::BadHealth { .. } => GapReason::CouldNotRead,
         CannotRun::BackendFailed { .. }
         | CannotRun::NeverReady { .. }
         | CannotRun::AppFolderUnseen { .. }
@@ -256,6 +258,8 @@ mod named_routes_tests;
 mod requirement_ids_tests;
 #[cfg(test)]
 mod resources_beside_quotas_tests;
+#[cfg(test)]
+mod run_walk_tests;
 
 /// The routes stackvet.toml names that the anonymous probes also ask (ADR-096); none without
 /// `[stack.run.users]`.
@@ -269,15 +273,20 @@ pub fn named_routes(plan: &RunPlan) -> Vec<String> {
 /// Every request the anonymous probes make: the fixed suite, and the GraphQL and WebSocket
 /// questions when stackvet.toml says where those are. One function, because `sv run` also counts
 /// how many of these went unanswered, and a count taken from a different list is a wrong count.
-pub fn anonymous_requests(plan: &RunPlan) -> Vec<probes::ProbeRequest> {
+pub fn anonymous_requests(
+    plan: &RunPlan,
+    private_files: &[sv_check::running::PrivateFile],
+) -> Vec<probes::ProbeRequest> {
     let mut requests = probes::requests(&plan.health_path);
     requests.extend(probes::route_requests(&named_routes(plan)));
     requests.extend(probes::api_requests(
         plan.graphql.as_deref(),
         plan.websocket.as_deref(),
     ));
-    let (admin_pages, private_files) = more_questions(plan);
-    requests.extend(sv_check::running::requests(&admin_pages, &private_files));
+    requests.extend(sv_check::running::requests(
+        &admin_pages(plan),
+        private_files,
+    ));
     requests.extend(probes::error_requests(
         &plan.health_path,
         &body_routes(plan.users.as_ref()),
@@ -291,6 +300,7 @@ pub fn anonymous_requests(plan: &RunPlan) -> Vec<probes::ProbeRequest> {
 pub fn running_app_evidence(
     outcome: &sv_run::RunOutcome,
     plan: &RunPlan,
+    private_files: &[sv_check::running::PrivateFile],
 ) -> (
     Vec<sv_check::Finding>,
     Vec<sv_check::Verified>,
@@ -304,11 +314,10 @@ pub fn running_app_evidence(
     findings.extend(api_findings);
     verified.extend(api_verified);
     not_assessed.extend(api_not_assessed);
-    let (admin_pages, private_files) = more_questions(plan);
     let more = sv_check::running::evaluate(
         &outcome.probe_responses,
-        &admin_pages,
-        &private_files,
+        &admin_pages(plan),
+        private_files,
         &outcome.liveness,
     );
     findings.extend(more.findings);
@@ -378,7 +387,8 @@ pub struct ReportOptions {
     pub run_the_app: bool,
     /// And wait out the session timeouts the owner states. Opt-in: it takes as long as they are.
     pub slow: bool,
-    /// Run the language's own security tool. Opt-in: these are other people's programs.
+    /// Run the language's own security tools: on for `sv report` and `sv bundle` unless `--no-tools` (ADR-111), and
+    /// never from the MCP server (ADR-066).
     pub run_tools: bool,
     /// Said in the report when the app was not started, in the words of whoever built it.
     pub why_not_run: String,
@@ -428,7 +438,7 @@ impl ReportOptions {
             run_tools,
             why_not_run: format!("{caller} does not start the app unless you pass --run."),
             why_no_tools: format!(
-                "{caller} does not run other people's tools unless you pass --tools."
+                "{caller} ran none of the outside tools, because --no-tools was given; without it they run."
             ),
             advisories,
             why_no_advisories: format!(
@@ -719,12 +729,14 @@ pub fn adapters_examined(
         })
         .zip(adapters.all())
         .map(|(entry, adapter)| {
-            entry.with_tool(
-                run.tools
-                    .iter()
-                    .find(|(id, _)| id == &adapter.id)
-                    .map(|(_, tool)| tool.clone()),
-            )
+            entry
+                .with_tool(
+                    run.tools
+                        .iter()
+                        .find(|(id, _)| id == &adapter.id)
+                        .map(|(_, tool)| tool.clone()),
+                )
+                .as_outside_tool(&adapter.name)
         })
         .collect()
 }
@@ -859,17 +871,21 @@ pub fn body_routes(users: Option<&sv_manifest::UsersSection>) -> Vec<(String, St
         .collect()
 }
 
-/// The admin pages stackvet.toml names, and the files in the app's folder that should never be
-/// served, for the questions in `sv_check::running`. Worked out the same way for the requests and
-/// for reading the answers, so the two agree on what was asked.
-pub fn more_questions(plan: &RunPlan) -> (Vec<String>, Vec<sv_check::running::PrivateFile>) {
-    let admin_pages = plan
-        .users
+/// The admin pages stackvet.toml names, for the questions in `sv_check::running`.
+fn admin_pages(plan: &RunPlan) -> Vec<String> {
+    plan.users
         .as_ref()
         .map(|users| users.admin.clone())
-        .unwrap_or_default();
-    let listing = sv_scan::files::Listing::of(&plan.app_dir);
-    (admin_pages, sv_check::running::private_files(&listing))
+        .unwrap_or_default()
+}
+
+/// The files in the app's folder that should never be served, for the questions in
+/// `sv_check::running`, worked out from a walk the caller has already made. Worked out once per run
+/// and given to both the requests and the reading of the answers, so the two agree on what was asked
+/// and the folder is not walked again for each (backlog 0354: `sv report --run` walked it four more
+/// times, `sv run` three).
+pub fn private_files(listing: &sv_scan::files::Listing) -> Vec<sv_check::running::PrivateFile> {
+    sv_check::running::private_files(listing)
 }
 
 /// The Secure by Design checklist's controls against the ASVS requirements that ask the same thing.
@@ -1343,8 +1359,6 @@ pub fn write_bundle(
         .context("making a private folder for the report on its way into the zip")?;
     let scratch = private.path().to_path_buf();
     let written = write_report_files(report, &scratch);
-    let sbom_json =
-        serde_json::to_string_pretty(&sbom::to_cyclonedx(&sbom::build(app_abs)))? + "\n";
     let report_files: Result<Vec<(String, Vec<u8>)>> = written.and_then(|names| {
         names
             .iter()
@@ -1360,10 +1374,7 @@ pub fn write_bundle(
     let report_files = report_files?;
     refuse_a_credential_in_the_report(&rules, &report_files)?;
     entries.extend(report_files);
-    entries.push((
-        format!("{folder}/report/sbom.cdx.json"),
-        sbom_json.into_bytes(),
-    ));
+    // The bill of materials is a report file now (backlog 0382), so it is among those, and was checked with them.
 
     let made_at = bundle::utc_time(
         std::time::SystemTime::now()

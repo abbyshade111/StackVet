@@ -164,7 +164,6 @@ fn inside_the_container_it_asks_for_docker_rather_than_print_a_path_that_means_n
 fn what_it_cannot_use_is_refused_with_the_reason() {
     let dir = folder("refused");
     for (args, reason) in [
-        (vec!["connect"], "name the AI coding tool"),
         (
             vec!["connect", "copilot"],
             "is not a tool `sv connect` knows",
@@ -195,8 +194,14 @@ fn what_it_cannot_use_is_refused_with_the_reason() {
     ] {
         refused(&dir, &args, false, reason);
     }
-    // Inside the container, its own path is refused too.
+    // Inside the container, its own path is refused too, with a tool named or none.
     refused(&dir, &["connect", "vscode"], true, "--docker");
+    refused(
+        &dir,
+        &["connect"],
+        true,
+        "sv connect --docker /usr/local/bin/docker",
+    );
 }
 
 fn refused(dir: &Path, args: &[&str], in_container: bool, reason: &str) {
@@ -234,14 +239,17 @@ fn the_setup_prompt_fetches_and_runs_the_image_stackvet_is_published_as() {
         "-v \"$PWD\":\"$PWD\"",
         "-w \"$PWD\"",
         image,
-        " connect TOOL --docker DOCKER_PATH",
+        " connect --docker DOCKER_PATH",
     ] {
         assert!(run.contains(part), "{part} in {run}");
     }
 }
 
+/// The setup prompt asks StackVet for its server in no app's format, and the AI tool adds it to its own app's
+/// settings its own way (backlog 0396): run here exactly as the prompt words it, it prints that server, and the prompt
+/// names no app or app's settings file for the tool to choose between.
 #[test]
-fn the_setup_prompts_command_is_one_sv_connect_takes_for_each_tool_and_file_it_names() {
+fn the_setup_prompts_command_prints_stackvets_server_in_no_apps_format() {
     let prompt = setup_prompt();
     let run = prompt.lines().find(|l| l.contains("docker run")).unwrap();
     let after_image = run
@@ -251,51 +259,58 @@ fn the_setup_prompts_command_is_one_sv_connect_takes_for_each_tool_and_file_it_n
         .trim()
         .trim_end_matches('`');
     let words: Vec<&str> = after_image.split_whitespace().collect();
-    assert_eq!(words, ["connect", "TOOL", "--docker", "DOCKER_PATH"]);
+    assert_eq!(words, ["connect", "--docker", "DOCKER_PATH"]);
     let dir = folder("prompt");
-    for (tool, file) in [
-        ("claude", ".mcp.json"),
-        ("vscode", ".vscode/mcp.json"),
-        ("cursor", ".cursor/mcp.json"),
+    // The prompt's own words, with a path put in, as the AI tool would.
+    let args: Vec<&str> = words
+        .iter()
+        .map(|w| match *w {
+            "DOCKER_PATH" => "/usr/local/bin/docker",
+            other => other,
+        })
+        .collect();
+    let out = sv(&dir, &args, true);
+    let server = parsed(&out);
+    assert_eq!(server["name"], "stackvet", "{server}");
+    assert_eq!(server["transport"], "stdio", "{server}");
+    assert_eq!(server["command"], "/usr/local/bin/docker", "{server}");
+    let given = strings(&server["args"]);
+    for part in [
+        "--network",
+        "none",
+        sv_frameworks::names::IMAGE,
+        "mcp",
+        "--root",
     ] {
-        assert!(prompt.contains(&format!("`{tool}`")), "{tool}");
-        assert!(prompt.contains(&format!("`{file}`")), "{file}");
-        // The prompt's own words, with the tool and a path put in, as the AI tool would.
-        let args: Vec<&str> = words
-            .iter()
-            .map(|w| match *w {
-                "TOOL" => tool,
-                "DOCKER_PATH" => "/usr/local/bin/docker",
-                other => other,
-            })
-            .collect();
-        let out = sv(&dir, &args, true);
-        parsed(&out);
-        assert!(
-            said(&out).contains(&format!("Put this in {file}")),
-            "{tool}"
-        );
-        // And with the Linux line's --user, in the form `id` prints.
-        let mut linux = args.clone();
-        linux.extend(["--user", "1000:1000"]);
-        assert!(prompt.contains("--user \"$(id -u):$(id -g)\""));
-        let block = parsed(&sv(&dir, &linux, true));
-        let given = strings(
-            &block[if tool == "vscode" {
-                "servers"
-            } else {
-                "mcpServers"
-            }]["stackvet"]["args"],
-        );
-        let user = given.iter().position(|a| a == "--user").expect("--user");
-        let image = given
-            .iter()
-            .position(|a| a == sv_frameworks::names::IMAGE)
-            .unwrap();
-        assert!(
-            user < image,
-            "docker reads --user only before the image: {given:?}"
-        );
+        assert!(given.iter().any(|a| a == part), "{part}: {given:?}");
+    }
+    assert_eq!(given.last().map(String::as_str), dir.to_str(), "{given:?}");
+    assert!(said(&out).contains("in no app's format"), "{}", said(&out));
+    // And with the Linux line's --user, in the form `id` prints, before the image, where docker reads it.
+    assert!(prompt.contains("--user \"$(id -u):$(id -g)\""));
+    let mut linux = args.clone();
+    linux.extend(["--user", "1000:1000"]);
+    let given = strings(&parsed(&sv(&dir, &linux, true))["args"]);
+    let user = given.iter().position(|a| a == "--user").expect("--user");
+    let image = given
+        .iter()
+        .position(|a| a == sv_frameworks::names::IMAGE)
+        .unwrap();
+    assert!(
+        user < image,
+        "docker reads --user only before the image: {given:?}"
+    );
+    // No app is named for the tool to pick, and no app's settings file.
+    for app in [
+        "`claude`",
+        "`vscode`",
+        "`cursor`",
+        ".mcp.json",
+        ".vscode/",
+        ".cursor/",
+        "connect TOOL",
+    ] {
+        assert!(!prompt.contains(app), "{app} in the prompt");
     }
 }
 

@@ -473,7 +473,9 @@ impl Shared {
     }
 }
 
-/// The brief as data, for the MCP tool's structured result.
+/// The brief as data, for the MCP tool's structured result. Each prompt keeps its text here as well as in the
+/// brief's words, on purpose (backlog 0362): a client reads one answer or the other, and a coding prompt cannot be
+/// fetched by its id, so leaving the text out would lose it for a client reading this one.
 pub fn to_json(brief: &Brief) -> Value {
     json!({
         "waiting": brief.waiting,
