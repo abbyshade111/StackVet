@@ -53,7 +53,9 @@ batch() {
   done
   wait
   echo "key-in-transcripts: $(cat "$O"/*.jsonl | grep -c 'sk-ant-')"
-  (cd "$O" && env SV="$SV" PT_TOOLS=1 $extra python3 "$CHECK" "$O" $(ls | grep -E "^$model-$label-[0-9]+\$") > /dev/null)
+  # $extra is one NAME=VALUE whose value may hold a space (the USB drive's name): passed whole, never split. Split, it
+  # stopped every check of phase C on 13 October 2026 (protocol, amendment 1).
+  (cd "$O" && env SV="$SV" PT_TOOLS=1 ${extra:+"$extra"} python3 "$CHECK" "$O" $(ls | grep -E "^$model-$label-[0-9]+\$") > /dev/null)
   echo "$model $label checked; spent so far: \$$(spent)"
   note_budget
 }

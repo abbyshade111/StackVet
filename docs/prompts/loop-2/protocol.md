@@ -126,3 +126,19 @@ total after each phase.
    cost, and every build's transcript searched for the key.
 
 ## Amendments
+
+1. **13 October 2026, after phases A, B1, and B2 were checked and before any of phase C's was: phase C's checks run
+   apart.** In the run script, the scripted review's setting was passed unquoted, and its path holds the USB drive's
+   name, which has a space; `env` split it, and none of phase C's ten builds was checked ("env: USB/...: No such file
+   or directory"). The builds were made as the protocol says and are unchanged; their checks were run afterwards by
+   `prompt_trial.py` with the same settings, the same `sv`, and the setting passed whole, and the scoring was run again.
+   The run script now passes it whole, tried with a path holding a space. Checking spends no model money.
+2. **13 October 2026, after phase A's Haiku builds were checked: the build-loop record is held to the calls made once
+   the settings file existed.** The record begins only when the app has its settings file (the MCP server writes no
+   line before, `crates/sv-cli/src/mcp/mod.rs`), so measure 10's comparison with every call in the transcript
+   disagreed in all ten builds by design. It is now held to the calls made after the build first wrote the file
+   (`score_loop2.py`, `calls_after_settings`), with a self-test.
+3. **13 October 2026, after phases A and B were seen: two more readings, added because of what was seen and said as
+   such.** The environment settings a build's `start` command gives the copy `sv` runs (`start_settings`), since
+   eleven builds lowered their own sign-in limits or cookie settings there; and requirement ids in tests' names written
+   with underscores (`test_V6_3_1_...`), which `loop_dodging.py` counted only when written with dots.

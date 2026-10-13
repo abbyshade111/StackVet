@@ -1,6 +1,6 @@
 # Trial the nine draft prompts in docs/prompts/drafts.md, after the git-history check (0258)
 
-**Status:** claimed by backlog-org-0257, 12 October 2026
+**Status:** partly done: the second loop trial ran on 12 and 13 October 2026 (docs/prompts/loop-2/results.md); what remains is the process drafts (1 to 7, 9, 14, 23) and those needing another brief (11, 13, 15, 16, 21), each proposed to the owner with its cost
 
 The nine drafts in `docs/prompts/drafts.md` (design entry 0368, from the Cursor build) are written but not tested, and
 none is served by `sv`. Each draft names what its trial would measure. The trial needs the owner's yes and a budget,
