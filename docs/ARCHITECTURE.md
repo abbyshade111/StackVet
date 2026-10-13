@@ -49,7 +49,7 @@ it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a 
 4. **Which requirements apply**: the manifest's claims resolved against what the scan saw (`sv_manifest::resolve`),
    then the frameworks' applicability rules (`sv_frameworks`). A claim the code contradicts is reported as such.
 5. **What else was asked for**, each opt-in and each saying in the report when it did not run: a local advisory
-   database (`--advisories`), the language's own security tools (`--tools`, ADR-032: never a program inside the app),
+   database (`--advisories`), the language's own security tools (on unless `--no-tools`, ADR-111; ADR-032: never a program inside the app),
    and the running app (`--run`): the fence, the helpers, the anonymous questions, the signed-in suites as two users
    and an admin, sign-in through a test provider, the AI feature through a test model, the app's own tests inside its
    container (ADR-050), and whether the app was still up at the end (ADR-021).

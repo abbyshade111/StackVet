@@ -339,12 +339,15 @@ const COMMANDS: &[Command] = &[
             "--run",
             "--slow",
             "--tools",
+            "--no-tools",
             "--keep-tool-output",
             "--quiet",
         ],
         valued: &["--out", "--advisories", "--fail-on", "--baseline"],
-        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--tools [--keep-tool-output]] [--advisories DIR] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n\
-                     --keep-tool-output, with --tools, keeps each tool's own report,\n\
+        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--no-tools | --keep-tool-output] [--advisories DIR] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n\
+                     the outside tools (Semgrep, Bandit, CodeQL, and the rest) run unless\n\
+                     --no-tools; Semgrep fetches its rules from semgrep.dev as it runs\n\
+                     --keep-tool-output keeps each tool's own report,\n\
                      credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, a tool --tools could\n                     not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
     },
     Command {
@@ -357,9 +360,9 @@ const COMMANDS: &[Command] = &[
     Command {
         name: "bundle",
         word: Some("PATH"),
-        flags: &["--run", "--slow", "--tools"],
+        flags: &["--run", "--slow", "--tools", "--no-tools"],
         valued: &["--out", "--advisories"],
-        help: "  sv bundle [PATH] [--out FILE.zip] [--run [--slow]] [--tools] [--advisories DIR]\n                     the app, its report and a SHA-256 for every file in one zip, beside\n                     the app unless --out says where, with anything that could hold a\n                     secret left out and listed\n",
+        help: "  sv bundle [PATH] [--out FILE.zip] [--run [--slow]] [--no-tools] [--advisories DIR]\n                     the app, its report and a SHA-256 for every file in one zip, beside\n                     the app unless --out says where, with anything that could hold a\n                     secret left out and listed\n",
     },
     Command {
         name: "dashboard",
@@ -2485,8 +2488,9 @@ struct ReportArgs {
     run_the_app: bool,
     /// With --run: wait out the session timeouts too.
     slow: bool,
-    /// Opt-in for the same reason as --run, and one more: these are other people's programs, and one
-    /// of them fetches its rules over the network the first time it runs.
+    /// On unless --no-tools (ADR-111, the owner's decision of 13 October 2026): their findings are the ones the owner
+    /// has found matter most. They are other people's programs, run with the guards ADR-032 records, and Semgrep
+    /// fetches its rules from semgrep.dev as it runs; `--no-tools` is the run that starts none of them.
     run_tools: bool,
     /// With --tools, keep each tool's own report in `seen.json` (`sv report` only).
     keep_tool_output: bool,
@@ -2502,11 +2506,12 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
         out: None,
         run_the_app: false,
         slow: false,
-        run_tools: false,
+        run_tools: tools_by_default(),
         keep_tool_output: false,
         quiet: false,
         advisories_dir: None,
     };
+    let mut no_tools = false;
     let mut rest = args.iter();
     while let Some(arg) = rest.next() {
         match arg.as_str() {
@@ -2518,7 +2523,9 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             }
             "--run" => parsed.run_the_app = true,
             "--slow" => parsed.slow = true,
+            // Still accepted, and the default since ADR-111: scripts and prompts that pass it keep working.
             "--tools" => parsed.run_tools = true,
+            "--no-tools" => no_tools = true,
             "--keep-tool-output" => parsed.keep_tool_output = true,
             "--quiet" => parsed.quiet = true,
             "--advisories" => {
@@ -2530,7 +2537,25 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             other => parsed.app_dir = sv_check::adapters::clean_folder(Path::new(other)),
         }
     }
+    if no_tools {
+        if args.iter().any(|a| a == "--tools") {
+            bail!("--tools and --no-tools say opposite things: give one of them");
+        }
+        parsed.run_tools = false;
+    }
     Ok(parsed)
+}
+
+/// Whether the outside tools run when neither --tools nor --no-tools is given: yes (ADR-111). Only in a debug build,
+/// `SV_NO_TOOLS_FOR_TEST` turns them off, which `.cargo/config.toml` sets for every test, so a test runs the same on a
+/// computer with Semgrep installed as on CI without it, and never reaches semgrep.dev; the tests of the default take
+/// it away. A released `sv` has no such switch.
+fn tools_by_default() -> bool {
+    #[cfg(debug_assertions)]
+    if std::env::var_os("SV_NO_TOOLS_FOR_TEST").is_some() {
+        return false;
+    }
+    true
 }
 
 /// `sv report`, ending with its exit status (`exit`, and DESIGN, "Exit codes for CI").
@@ -2664,7 +2689,7 @@ fn report_command(
         advisories_dir,
     } = parse_report_args(args, "a directory")?;
     if keep_tool_output && !run_tools {
-        bail!("--keep-tool-output keeps what the tools wrote, so it needs --tools as well");
+        bail!("--keep-tool-output keeps what the tools wrote, so it cannot go with --no-tools");
     }
     sv_cli::assemble::QUIET.store(quiet, std::sync::atomic::Ordering::Relaxed);
     *app_seen = Some(app_dir.clone());

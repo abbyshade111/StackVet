@@ -68,7 +68,7 @@ run cannot see by its nature, such as requirements nothing verified or a check t
 lacks, does not count, or every run would exit 2. Add `--fail-on attention` to exit 1 for any finding of low
 severity or worse, leaving out those marked only for information (or `attention:high` for high and critical
 only), `--fail-on not-assessed` to exit 2 also for a symbolic link not
-followed, a `--tools` tool that did not run, or an `--advisories` comparison that did not cover the app, or
+followed, an outside tool that did not run, or an `--advisories` comparison that did not cover the app, or
 `--fail-on any` for both; 1 outranks 2. To start using `sv` on an app that already has findings you know
 about, add `--baseline <an older report folder>`: `--fail-on attention` then exits 1 only for a finding that
 report did not have. Every finding is still listed and counted, and the ones already there are marked, so
@@ -96,9 +96,12 @@ sends at most four read-only requests to the address you type (five with `--api`
 DNS resolver one question about that name. And with `install = true`, the install step above downloads the app's
 packages from PyPI or npm before the run; the report says when it did. Advisory data is something you download and point it at; the list
 of packages your app depends on is yours, and a check that quietly phones out is one you did not agree to.
-Outside tools you turn on with `--tools` are other people's programs, and semgrep fetches its rule packs
+The outside tools, which `sv report` and `sv bundle` run unless you pass `--no-tools` (ADR-111), are other people's
+programs, and semgrep fetches its rule packs
 (`p/security-audit`, `p/default`, and `p/ai-best-practices` for an app that may call a model) from semgrep.dev every
-time it runs, so a `--tools` run reaches that third party though `sv` itself opens no connection; gosec is started
+time it runs, so a report reaches that third party though `sv` itself opens no connection, unless you pass
+`--no-tools` or semgrep is not installed. Those rules are under the Semgrep Rules License, which allows them for
+internal use and not for resale; `sv` uses them only while nothing built on them is sold. gosec is started
 so that it cannot download your app's modules or run a C compiler, and a tool that
 would read through a link in your app is not run while the link is there. `sv run` starts containers, and Docker downloads any image it does not have yet.
 
@@ -129,8 +132,9 @@ somebody chose for other reasons. A test that names nothing is not evidence abou
 which is a perfectly fair thing for a test to be — most tests are.
 
 `sv report` writes the whole thing out, into a folder named `stackvet-report` inside the app's folder
-unless you give `--out` (add `--run` to start the app behind the fence and include what it answers, and
-`--tools` to run the outside security tools that are installed: Bandit, gosec, Brakeman, Semgrep, and CodeQL):
+unless you give `--out` (add `--run` to start the app behind the fence and include what it answers; the outside
+security tools that are installed, Bandit, gosec, Brakeman, Semgrep, and CodeQL, run unless you add `--no-tools`,
+which is the quick run, since CodeQL can take minutes on a large app):
 `report.html`, one file you can open by double-clicking it; `compliance.md` and `security.md`, the same in
 Markdown; the findings as SARIF (`findings.sarif`) for editors and CI; and the data as JSON (`report.json`). The reports lead with
 what was **not** examined, say what each check covered when it found nothing wrong, and nothing in them
@@ -408,7 +412,7 @@ nor which tools read `AGENTS.md` on their own has been tried here yet.
 
 `sv bundle ./my-app` writes one zip beside the app folder (`--out FILE.zip` puts it elsewhere, but never inside the app):
 the app's files under `app/`, the report and the list of what the app ships under `report/`, a `BUNDLE.json` with which
-`sv` made it, when, and a SHA-256 for every file, and a `README.txt` in plain words. It takes the same `--run`, `--tools` and
+`sv` made it, when, and a SHA-256 for every file, and a `README.txt` in plain words. It takes the same `--run`, `--no-tools` and
 `--advisories` options as `sv report`.
 
 **It leaves out anything that could hold a secret, and says so.** Left out, and listed with the reason in the zip and on
@@ -591,8 +595,9 @@ report folder kept with the run as an artifact.
 - **Code scanning is free on a public repository.** On a private one it needs GitHub's paid code security,
   so the Action skips the upload there unless you set `upload-sarif: 'true'`; the summary and the report
   are kept either way. A pull request from a fork cannot upload either, since its token cannot write.
-- **It never starts your app and never runs other people's tools** (`--run` and `--tools`): on a pull
-  request, that would run code you have not read yet. Run those at a terminal.
+- **It never starts your app and never runs other people's tools** (it leaves out `--run`, and passes
+  `--no-tools`): on a pull request, starting the app would run code you have not read yet, and the image carries
+  none of the tools. Run those at a terminal.
 - **The app needs its `stackvet.toml` committed.** Without one, the Action stops and says how to make it.
 - **It sees only the history the checkout fetched.** `actions/checkout` fetches one commit unless told
   otherwise (`fetch-depth: 0` for all of it), and the check for secrets files committed in the past reads

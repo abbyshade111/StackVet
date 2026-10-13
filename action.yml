@@ -5,9 +5,10 @@
 #     with:
 #       path: .            # the folder holding the app's stackvet.toml
 #
-# What it does not do, by the owner's decision of 9 October 2026: run the outside tools (`--tools`; the image carries
-# none) or start the app (`--run`; that would run the code in the pull request, a stranger's on one from a fork). It
-# fails the check only when a check could not run (exit 2), unless `fail-on` asks for more.
+# What it does not do, by the owner's decision of 9 October 2026: run the outside tools (it passes `--no-tools`, as they
+# run by default since ADR-111, and the image carries none) or start the app (`--run`; that would run the code in the
+# pull request, a stranger's on one from a fork). It fails the check only when a check could not run (exit 2), unless
+# `fail-on` asks for more.
 #
 # The image is checked before it runs: the published one carries a signed statement of what built it (ADR-080), and
 # `gh attestation verify` refuses an image this repository's workflow did not build. It runs with no network, as the
@@ -106,6 +107,11 @@ runs:
         mkdir -p "$out"
         echo "report-dir=$out" >> "$GITHUB_OUTPUT"
         args=(report "$APP" --out "$out")
+        # The image carries none of the outside tools, which run by default since ADR-111, so they are left out; an
+        # image from before then never ran them and does not know the option, so it is asked first.
+        if docker run --rm --network none "$REF" report --help 2>/dev/null | grep -q -- '--no-tools'; then
+          args+=(--no-tools)
+        fi
         if [ -n "$FAIL_ON" ]; then args+=(--fail-on "$FAIL_ON"); fi
         set +e
         # HOME inside the container only: sv makes the key it seals reports with there, which is thrown away with

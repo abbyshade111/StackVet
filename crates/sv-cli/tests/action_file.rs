@@ -33,19 +33,24 @@ fn published_image() -> String {
 
 /// The `docker run` command of the step that runs `sv`, joined across its continued lines.
 fn docker_run(action: &str) -> String {
-    let start = action
-        .find("docker run ")
-        .expect("the Action runs the image");
-    let mut command = String::new();
-    for line in action[start..].lines() {
-        let line = line.trim();
-        command.push_str(line.trim_end_matches('\\'));
-        command.push(' ');
-        if !line.ends_with('\\') {
-            break;
-        }
-    }
-    command
+    // The one that runs the report: since ADR-111 the Action first asks the image's own help whether it knows
+    // `--no-tools`, which is another `docker run`.
+    action
+        .match_indices("docker run ")
+        .map(|(start, _)| {
+            let mut command = String::new();
+            for line in action[start..].lines() {
+                let line = line.trim();
+                command.push_str(line.trim_end_matches('\\'));
+                command.push(' ');
+                if !line.ends_with('\\') {
+                    break;
+                }
+            }
+            command
+        })
+        .find(|command| command.contains("\"${args[@]}\""))
+        .expect("the Action runs the image with sv's arguments")
 }
 
 #[test]
@@ -105,9 +110,18 @@ fn the_action_never_starts_the_app_or_runs_other_tools() {
         code.contains("args=(report "),
         "the setup: the Action builds sv's arguments"
     );
+    // Word by word: `--no-tools` holds `--tools`.
+    let words: Vec<&str> = code
+        .split(|c: char| c.is_whitespace() || "()'\"".contains(c))
+        .collect();
     for flag in ["--run", "--tools", "--slow"] {
-        assert!(!code.contains(flag), "the Action passes {flag}");
+        assert!(!words.contains(&flag), "the Action passes {flag}");
     }
+    // The tools run by default since ADR-111, so leaving them out is something it now says.
+    assert!(
+        code.contains("args+=(--no-tools)"),
+        "the Action does not pass --no-tools"
+    );
 }
 
 #[test]
