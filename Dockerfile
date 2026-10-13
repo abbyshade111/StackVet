@@ -24,16 +24,35 @@
 
 FROM rust:1-slim-trixie@sha256:4cd829461bd5c4d511c32e269da9cb8929223b666519d8004e35fc8d1d771ab7 AS build
 WORKDIR /src
+# The dependencies first, in a layer of their own (backlog 0357): the manifests and the lock, each crate with
+# an empty source, built once. A change to `sv`'s own code then rebuilds only `sv`'s crates on a machine that
+# kept this layer, rather than every outside crate and the grammars' C. CI starts from nothing each time, so
+# there it is the same work in two steps. The hand-rolled form of `cargo chef`, with no tool added.
 COPY Cargo.toml Cargo.lock ./
+COPY crates/sv-check/Cargo.toml crates/sv-check/
+COPY crates/sv-cli/Cargo.toml crates/sv-cli/
+COPY crates/sv-frameworks/Cargo.toml crates/sv-frameworks/
+COPY crates/sv-manifest/Cargo.toml crates/sv-manifest/
+COPY crates/sv-report/Cargo.toml crates/sv-report/
+COPY crates/sv-run/Cargo.toml crates/sv-run/
+COPY crates/sv-scan/Cargo.toml crates/sv-scan/
+RUN for c in sv-check sv-cli sv-frameworks sv-manifest sv-report sv-run sv-scan; do \
+      mkdir -p "crates/$c/src" && : > "crates/$c/src/lib.rs"; \
+    done \
+ && echo 'fn main() {}' > crates/sv-cli/src/main.rs \
+ && cargo build --release --locked -p sv-cli \
+ && rm -rf crates
+# Then `sv`'s own sources and the data they compile in. Every source file is touched, since a copied file can
+# carry a time older than the empty build above, and `cargo` would then keep the empty crates.
 COPY crates ./crates
 COPY data ./data
-COPY examples ./examples
 # The build context has no `.git`, so the commit is given here for `sv --version` and the reports to name
 # (crates/sv-cli/build.rs). The workflows pass `github.sha`; built by hand without it, `sv` says `unknown`.
 ARG SV_GIT_COMMIT=
-RUN SV_GIT_COMMIT="$SV_GIT_COMMIT" cargo build --release --locked -p sv-cli
+RUN find crates -type f -exec touch {} + \
+ && SV_GIT_COMMIT="$SV_GIT_COMMIT" cargo build --release --locked -p sv-cli
 
-FROM debian:trixie-slim@sha256:a99cfc517144bc59b1978475ec53b46ecabec7e43635402ee5b77cc54cd1b20a
+FROM debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
 # git answers whether a secrets file was ever committed. It refuses a repository owned by another
 # user, which a mounted folder often is on Linux, and then that check is quietly not assessed.
 RUN apt-get update \
@@ -42,7 +61,9 @@ RUN apt-get update \
  && git config --system --add safe.directory '*'
 COPY --from=build /src/crates /src/crates
 COPY --from=build /src/data /src/data
-COPY --from=build /src/examples /src/examples
+# The examples are read at run time, never compiled in, so they come from the build context straight into this
+# stage, and a change to one rebuilds nothing.
+COPY examples /src/examples
 COPY --from=build /src/target/release/sv /usr/local/bin/sv
 # Tells `sv` it is in this container, so what it tells an AI coding tool to have the person run
 # (`--run`, which cannot work from in here) names `sv` installed on the computer instead.

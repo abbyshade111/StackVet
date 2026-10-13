@@ -331,6 +331,10 @@ impl Server {
             );
         }
         let a = &found.rules.attribution;
+        // Each prompt's text is in both answers on purpose (backlog 0362): a client reads the text or the
+        // structured result, not both, and a coding prompt cannot be fetched by its id (`prompts/get` serves
+        // the design prompts alone), so a client reading the structured result would lose it. The cost is bytes
+        // on the wire, not tokens. Held by `mcp/prompts_twice_tests.rs`.
         Ok(json!({
             "content": [{ "type": "text", "text": text }],
             "structuredContent": {
@@ -371,7 +375,14 @@ impl Server {
                 .unwrap_or_else(|| sv_scan::ecosystems::DEFAULT_REPORT_DIR.to_owned());
             let report_name = format!("{folder_name}/report.json");
             let report = folder.join("report.json");
-            // A link could point outside the root, as for every other file read here.
+            // A link could point outside the root, as for every other file read here: the folder as well as
+            // the file, since a linked folder is read through like any other (backlog 0311).
+            if let Ok(meta) = std::fs::symlink_metadata(&folder) {
+                anyhow::ensure!(
+                    !meta.file_type().is_symlink(),
+                    "{folder_name} is a link to somewhere else, so it is not read"
+                );
+            }
             if let Ok(meta) = std::fs::symlink_metadata(&report) {
                 anyhow::ensure!(
                     !meta.file_type().is_symlink(),

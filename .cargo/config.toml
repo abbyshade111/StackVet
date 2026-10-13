@@ -1,0 +1,6 @@
+# For every process cargo starts, tests included. `sv` reads this only in a debug build (`tools_by_default` in
+# crates/sv-cli/src/main.rs): it keeps the outside tools, on by default since ADR-111, from running in the tests, so a
+# test runs the same with Semgrep installed as without it, and never reaches semgrep.dev. The tests of the default
+# remove it.
+[env]
+SV_NO_TOOLS_FOR_TEST = "1"

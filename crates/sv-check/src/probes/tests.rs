@@ -340,6 +340,31 @@ fn django_s_debug_404_is_a_leak_though_it_prints_no_trace() {
 }
 
 #[test]
+fn the_debug_pages_of_asp_net_core_and_laravel_are_leaks() {
+    // Neither prints a trace any older marker reads: ASP.NET Core's developer exception page writes its
+    // frames in HTML elements, and Laravel's names its own classes (backlog 0334).
+    for (framework, body) in [
+        (
+            "ASP.NET Core",
+            "<h1>An unhandled exception occurred while processing the request.</h1>\n\
+             <div class=\"titleerror\">InvalidOperationException: Sequence contains no elements</div>",
+        ),
+        (
+            "Laravel",
+            "<script>window.data = {\"report\":{\"exception_class\":\
+             \"Illuminate\\\\Database\\\\QueryException\"}};</script>",
+        ),
+    ] {
+        let findings = evaluate(&[response("missing", 500, &[], body)]);
+        assert_eq!(
+            ids(&findings),
+            vec!["probe.error-detail-leak"],
+            "{framework}"
+        );
+    }
+}
+
+#[test]
 fn a_go_panic_is_a_leak_too() {
     // Second witness of a different shape: the marker list exists because apps are not all
     // written in Python, and a check exercised by one language is a check for one language.
@@ -670,6 +695,14 @@ fn an_error_answer_is_credited_only_when_the_app_was_made_to_give_one() {
         .unwrap()
         .scope;
     assert!(scope.contains("`POST /login` (500)"), "{scope}");
+    // The scope says how far the reading went: a finite list of known debug pages (backlog 0334).
+    assert!(
+        scope.contains(&format!(
+            "{} known signs of a debug page",
+            TRACE_MARKERS.len()
+        )),
+        "{scope}"
+    );
     assert!(credited_in_part(&answers, ERROR_DETAIL_LEAK.rule_id));
 
     // A trace in the error answer is a finding, and credits nothing.

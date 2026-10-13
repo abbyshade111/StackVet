@@ -47,7 +47,10 @@ fn tools_that_did_not_run_are_named_on_screen_with_how_to_install_them() {
         Some(0),
         "not running a tool is not a failure by default: {said}"
     );
-    assert!(said.contains("Asked for, and not all of it ran"), "{said}");
+    assert!(
+        said.contains("Not everything this run tried could run"),
+        "{said}"
+    );
     for tool in ["bandit", "semgrep", "codeql-python"] {
         assert!(
             said.contains(&format!("{tool} did not run")),

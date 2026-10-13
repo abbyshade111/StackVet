@@ -20,10 +20,81 @@ use std::time::Duration;
 
 /// How long to wait for the app to answer before calling it not assessed.
 const READY_TIMEOUT_SECONDS: u64 = 60;
-/// The image the probes run from. Tiny, and already needed for the health check. Named by its digest as well as its tag,
-/// so a moved tag cannot change what runs (backlog 0238); the digest is the multi-platform one the tag points to.
-const PROBE_IMAGE: &str =
-    "busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662";
+/// The helper images, each named by its digest as well as its tag, so a moved tag cannot change what runs (backlog
+/// 0238). They are written in one file, `images/Dockerfile`, which CI reads to fetch them and Dependabot moves (backlog
+/// 0317); each is found there when `sv` is compiled, so a name missing from the file stops the build.
+const IMAGES: &str = include_str!("../images/Dockerfile");
+
+/// The image on the line `FROM <image> AS <stage>` of `images/Dockerfile`.
+const fn helper_image(stage: &str) -> &'static str {
+    let bytes = IMAGES.as_bytes();
+    let mut start = 0;
+    while start < bytes.len() {
+        let mut end = start;
+        while end < bytes.len() && bytes[end] != b'\n' {
+            end += 1;
+        }
+        let (_, rest) = bytes.split_at(start);
+        let (line, _) = rest.split_at(end - start);
+        if let Some(image) = image_of_line(line, stage.as_bytes()) {
+            return match std::str::from_utf8(image) {
+                Ok(image) => image,
+                Err(_) => panic!("images/Dockerfile: an image name that is not UTF-8"),
+            };
+        }
+        start = end + 1;
+    }
+    panic!("images/Dockerfile: no line FROM <image> AS <stage> for one of the helper images")
+}
+
+/// The image of one line, when the line is exactly `FROM <image> AS <stage>` (a trailing `\r` or space allowed).
+const fn image_of_line<'a>(line: &'a [u8], stage: &[u8]) -> Option<&'a [u8]> {
+    let mut line = line;
+    while let [rest @ .., b'\r' | b' ' | b'\t'] = line {
+        line = rest;
+    }
+    let Some(rest) = strip(line, b"FROM ") else {
+        return None;
+    };
+    let mut at = 0;
+    while at < rest.len() && rest[at] != b' ' {
+        at += 1;
+    }
+    let (image, tail) = rest.split_at(at);
+    let Some(name) = strip(tail, b" AS ") else {
+        return None;
+    };
+    if image.is_empty() || name.len() != stage.len() {
+        return None;
+    }
+    let mut i = 0;
+    while i < name.len() {
+        if name[i] != stage[i] {
+            return None;
+        }
+        i += 1;
+    }
+    Some(image)
+}
+
+/// `bytes` without `prefix`, if it starts with it.
+const fn strip<'a>(bytes: &'a [u8], prefix: &[u8]) -> Option<&'a [u8]> {
+    if bytes.len() < prefix.len() {
+        return None;
+    }
+    let mut i = 0;
+    while i < prefix.len() {
+        if bytes[i] != prefix[i] {
+            return None;
+        }
+        i += 1;
+    }
+    Some(bytes.split_at(prefix.len()).1)
+}
+
+/// The image the probes run from. Tiny, and already needed for the health check. The digest is the multi-platform one
+/// the tag points to.
+const PROBE_IMAGE: &str = helper_image("probe");
 
 /// The one place a container that talks to the app may write: in memory, where nothing written can
 /// be run, and only big enough for the request it is about to send.
@@ -44,12 +115,10 @@ const GATEWAY_PORT: &str = "9";
 /// The mail server the app is given when the probes need to read its email: Mailpit, which keeps
 /// every message it is sent and answers questions about them over HTTP. Pinned to a minor release,
 /// as the probe image is, so a run does not change under the owner because a new one came out.
-const MAIL_IMAGE: &str =
-    "axllent/mailpit:v1.31@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48";
+const MAIL_IMAGE: &str = helper_image("mail");
 /// The test OpenID Connect provider runs in a stock Node image: its script uses built-in modules
-/// only, because the fence has no route to a package registry. Named by digest (backlog 0238).
-pub(crate) const PROVIDER_IMAGE: &str =
-    "node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402";
+/// only, because the fence has no route to a package registry.
+pub(crate) const PROVIDER_IMAGE: &str = helper_image("provider");
 const PROVIDER_PORT: u16 = 9000;
 const PROVIDER_SCRIPT: &str = include_str!("../assets/oidc-provider.mjs");
 /// The test model the app's AI feature is pointed at, in the same stock Node image. See
@@ -64,7 +133,7 @@ const MODEL_KEY: &str = "sv-test-model-key-not-a-real-key";
 const PROVIDER_CLIENT_ID: &str = "sv-test-client";
 /// The headless browser, pinned to one version so a run today and a run next month draw pages the
 /// same way. Its DevTools port is reached only from the driver, which shares its network.
-const BROWSER_IMAGE: &str = "chromedp/headless-shell:151.0.7922.109@sha256:2d349b544a1ea6b5b5fd7c0fe99215ff662339c57407ee2e8c0a11af93516b04";
+const BROWSER_IMAGE: &str = helper_image("browser");
 /// Every helper image `sv` runs, by name and digest, in the run record so a report says what ran (backlog 0238).
 pub const HELPER_IMAGES: &[&str] = &[PROBE_IMAGE, MAIL_IMAGE, PROVIDER_IMAGE, BROWSER_IMAGE];
 
@@ -100,6 +169,9 @@ pub fn digest_of(text: &str) -> Option<String> {
     .then(|| digest.to_owned())
 }
 
+#[cfg(test)]
+#[path = "docker_images_file_tests.rs"]
+mod images_file_tests;
 #[cfg(test)]
 #[path = "docker_images_tests.rs"]
 mod images_tests;
@@ -820,7 +892,7 @@ impl DockerBackend {
             oidc,
             mcp_server,
             fetch,
-            ai,
+            mut ai,
             liveness,
             timings: mut suite_timings,
         } = sv_check::script::run(
@@ -852,6 +924,11 @@ impl DockerBackend {
         // And from the lines of the app's own output the log checks read, kept the same way: an
         // app that logs a sign-in with its password logs the test account's.
         if let Some(asked) = signed_in.as_mut() {
+            crate::stand_ins::blank_log(asked, &secrets);
+        }
+        // The AI suite's the same way (backlog 0381): its exchanges are kept now, and the account it signs in as is
+        // the test account.
+        if let Some(asked) = ai.as_mut() {
             crate::stand_ins::blank_log(asked, &secrets);
         }
 
@@ -1343,7 +1420,7 @@ pub(crate) const HARDENING: [&str; 5] = [
 ];
 
 /// `args` with `HARDENING` just after the command word.
-pub(crate) fn hardened(args: Vec<String>) -> Vec<String> {
+fn hardened(args: Vec<String>) -> Vec<String> {
     let mut out = args;
     let at = 1.min(out.len());
     out.splice(at..at, HARDENING.iter().map(|s| (*s).to_owned()));
@@ -3383,6 +3460,10 @@ mod probe_tests {
             volume: "sv-deps-py-x".to_owned(),
         };
         let args = install.args("sv-1-install", "python:3.12-slim");
+        let refs: Vec<&str> = args.iter().map(String::as_str).collect();
+        hardened_by_prepared(&refs);
+        // The stand-in name server (ADR-085) the same: its builder writes none of the five.
+        let args = crate::name_server::start_args("sv-1-net", "sv-1-dns");
         let refs: Vec<&str> = args.iter().map(String::as_str).collect();
         hardened_by_prepared(&refs);
     }

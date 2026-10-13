@@ -67,7 +67,7 @@ fn outcome(probe_responses: Vec<ProbeResponse>) -> sv_run::RunOutcome {
 
 /// Whether the security-headers credit was given, and whether in part.
 fn headers_credit(plan: &RunPlan, answers: Vec<ProbeResponse>) -> Option<bool> {
-    let (_, verified, _) = running_app_evidence(&outcome(answers), plan);
+    let (_, verified, _) = running_app_evidence(&outcome(answers), plan, &[]);
     verified
         .iter()
         .find(|v| v.check_id == "probe.security-headers")
@@ -76,14 +76,14 @@ fn headers_credit(plan: &RunPlan, answers: Vec<ProbeResponse>) -> Option<bool> {
 
 #[test]
 fn a_run_asks_each_route_the_manifest_names_as_a_stranger() {
-    let asked: Vec<String> = anonymous_requests(&plan(true))
+    let asked: Vec<String> = anonymous_requests(&plan(true), &[])
         .into_iter()
         .filter(|r| r.id.starts_with(sv_check::probes::ROUTE_ID))
         .map(|r| format!("{} {}", r.method, r.path))
         .collect();
     assert_eq!(asked, ["GET /login", "GET /account"]);
     assert!(
-        !anonymous_requests(&plan(false))
+        !anonymous_requests(&plan(false), &[])
             .iter()
             .any(|r| r.id.starts_with(sv_check::probes::ROUTE_ID)),
         "a route asked though the manifest names none"

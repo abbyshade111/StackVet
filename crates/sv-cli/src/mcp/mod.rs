@@ -63,6 +63,10 @@ mod fold_tests;
 mod marker_tests;
 #[cfg(test)]
 mod old_names_tests;
+#[cfg(test)]
+mod outside_or_missing_tests;
+#[cfg(test)]
+mod prompts_twice_tests;
 mod protocol;
 #[cfg(test)]
 mod quoted_tests;
