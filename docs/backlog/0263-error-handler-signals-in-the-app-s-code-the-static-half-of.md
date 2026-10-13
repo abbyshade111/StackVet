@@ -1,6 +1,6 @@
 # Error-handler signals in the app's code, the static half of V16.5.4
 
-**Status:** claimed by builder-none, 13 October 2026
+**Status:** open
 
 From 0085, part 3, whose done note lists this as "not done from the proposals"; split out on 11 October 2026 when
 0085 was closed, so it stays visible. The running half of V16.5.4 is built: `probe.app-stopped-during-questions`
