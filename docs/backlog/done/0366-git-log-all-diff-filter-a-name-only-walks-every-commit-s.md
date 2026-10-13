@@ -1,6 +1,6 @@
 # git log --all --diff-filter=A --name-only walks every commit's diff for the secrets-file check
 
-**Status:** claimed by builder-full, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: sv run speed. Severity: low. Verified against the code by the reviewing session before filing.
 

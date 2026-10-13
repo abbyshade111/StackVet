@@ -150,6 +150,18 @@ fn is_secret_file(name: &str) -> bool {
             || (name.contains("-firebase-adminsdk-") && name.ends_with(".json")))
 }
 
+/// The git pathspecs that reach every name `is_secret_file` accepts, at any depth, so reading
+/// the history compares only those paths in each commit. They may reach more (an `.env.example`),
+/// never less: the names git returns are still filtered by `is_secret_file`.
+fn secret_file_pathspecs() -> Vec<String> {
+    SECRET_FILES
+        .iter()
+        .copied()
+        .chain([".env.*", "*-firebase-adminsdk-*.json"])
+        .map(|name| format!(":(glob)**/{name}"))
+        .collect()
+}
+
 /// Names that are meant to be committed: a template showing which settings exist, with no values in it.
 fn is_example_file(name: &str) -> bool {
     name.ends_with(".example") || name.ends_with(".sample") || name.ends_with(".template")
@@ -223,7 +235,7 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
     // finding's own fix says to do) is still in every copy of the history. Until 7 October 2026 only
     // the tracked files were read, and V13.3.1 was credited after the fix (the gap analysis, 1.3).
     if committed.is_empty() {
-        let Some(added) = crate::git::ever_added(app_dir) else {
+        let Some(added) = crate::git::ever_added(app_dir, &secret_file_pathspecs()) else {
             return Outcome::NotAssessed(
                 "git could not read this repository's history, so `sv` cannot say whether a \
                  secrets file was committed in the past and untracked since."
@@ -940,6 +952,10 @@ fn security_contact(app_dir: &Path) -> Outcome {
 #[cfg(test)]
 #[path = "config_ai_tests.rs"]
 mod ai_tests;
+
+#[cfg(test)]
+#[path = "config_history_tests.rs"]
+mod history_tests;
 
 #[cfg(test)]
 mod tests {
