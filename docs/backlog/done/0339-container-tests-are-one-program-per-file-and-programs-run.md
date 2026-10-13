@@ -1,6 +1,6 @@
 # Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence
 
-**Status:** claimed by builder-full, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: test and CI time. Severity: high. Verified against the code by the reviewing session before filing.
 
