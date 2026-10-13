@@ -326,17 +326,30 @@ pub fn page(report: &Report) -> String {
     // The order of the sections below the short version (ADR-110): the things to fix first, worst first, then
     // what was set aside, then how this report was made, then what was not examined, directly after.
     let (app, tests) = crate::app_then_tests(report);
-    if !app.is_empty() {
+    let (fix, notes) = crate::fix_then_notes(app);
+    if !fix.is_empty() {
         b.push_str(&format!(
             "<h2>{} thing{} to fix</h2>\n",
-            app.len(),
-            if app.len() == 1 { "" } else { "s" }
+            fix.len(),
+            if fix.len() == 1 { "" } else { "s" }
         ));
-        let (full, low) = crate::split_low(report, app);
+        let (full, low) = crate::split_low(report, fix);
         for f in full {
             finding_section(&mut b, report, f);
         }
         low_lines(&mut b, &low);
+    }
+    // After the things to fix, and never counted with them (ADR-110, Later).
+    if !notes.is_empty() {
+        b.push_str(&format!(
+            "<h2>Worth knowing: {} note{}</h2>\n<p>{}</p>\n",
+            notes.len(),
+            if notes.len() == 1 { "" } else { "s" },
+            escape(crate::NOTES_SECTION)
+        ));
+        for f in notes {
+            finding_section(&mut b, report, f);
+        }
     }
     if !tests.is_empty() {
         b.push_str(&format!(

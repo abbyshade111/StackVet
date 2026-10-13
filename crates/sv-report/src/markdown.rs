@@ -246,13 +246,19 @@ pub fn compliance(report: &Report) -> String {
     // The things to fix lead, worst first, before how the report was made and what was not examined (ADR-110).
     // Each is set out in full in security.md; here a line each, so the reader of this file meets them first.
     let (app, _) = crate::app_then_tests(report);
-    if !app.is_empty() {
+    let (fix, notes) = crate::fix_then_notes(app);
+    if !fix.is_empty() {
         out.push_str(&format!(
-            "## {} thing{} to fix\n\nWorst first. Each is in security.md, with why it matters and what to do.\n\n",
-            app.len(),
-            if app.len() == 1 { "" } else { "s" }
+            "## {} thing{} to fix\n\nWorst first. Each is in security.md, with why it matters and what to do.{}\n\n",
+            fix.len(),
+            if fix.len() == 1 { "" } else { "s" },
+            match notes.len() {
+                0 => String::new(),
+                1 => " One more is a note worth knowing, not a thing to fix: it is under \"Worth knowing\" in security.md.".to_owned(),
+                k => format!(" {k} more are notes worth knowing, not things to fix: they are under \"Worth knowing\" in security.md."),
+            }
         ));
-        for f in &app {
+        for f in &fix {
             out.push_str(&format!(
                 "- **{}** {} — `{}` line {}\n",
                 f.severity.name(),
@@ -895,16 +901,31 @@ fn security_findings(out: &mut String, report: &Report) {
              nothing in the app's own code, not that the app is secure.\n\n",
         );
     } else {
-        out.push_str(&format!(
-            "## {} thing{} to fix\n\nWorst first.\n\n",
-            app.len(),
-            if app.len() == 1 { "" } else { "s" }
-        ));
-        let (full, low) = crate::split_low(report, app);
-        for finding in full {
-            finding_section(out, report, finding);
+        let (fix, notes) = crate::fix_then_notes(app);
+        if !fix.is_empty() {
+            out.push_str(&format!(
+                "## {} thing{} to fix\n\nWorst first.\n\n",
+                fix.len(),
+                if fix.len() == 1 { "" } else { "s" }
+            ));
+            let (full, low) = crate::split_low(report, fix);
+            for finding in full {
+                finding_section(out, report, finding);
+            }
+            low_lines(out, &low);
         }
-        low_lines(out, &low);
+        // After the things to fix, and never counted with them (ADR-110, Later).
+        if !notes.is_empty() {
+            out.push_str(&format!(
+                "## Worth knowing: {} note{}\n\n{}\n\n",
+                notes.len(),
+                if notes.len() == 1 { "" } else { "s" },
+                crate::NOTES_SECTION
+            ));
+            for finding in notes {
+                finding_section(out, report, finding);
+            }
+        }
     }
     if !tests.is_empty() {
         out.push_str(&format!(

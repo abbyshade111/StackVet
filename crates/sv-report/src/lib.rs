@@ -1459,6 +1459,25 @@ pub fn app_then_tests(report: &Report) -> (Vec<&sv_check::Finding>, Vec<&sv_chec
     report.findings.iter().partition(|f| !f.apart())
 }
 
+/// The app's own findings split into the things to fix and the notes worth knowing (ADR-110, Later). A note is an
+/// `Info` finding: it says something about how the app is built and asks for nothing, so it is never counted, named,
+/// or advised on as a thing to fix. The order within each is kept.
+pub fn fix_then_notes(
+    app: Vec<&sv_check::Finding>,
+) -> (Vec<&sv_check::Finding>, Vec<&sv_check::Finding>) {
+    app.into_iter().partition(|f| !is_note(f))
+}
+
+/// An information note in the app's own code: worth knowing, never a thing to fix (ADR-110, Later). One listed apart
+/// (in test code, a bundled library) keeps its place in that section.
+pub fn is_note(f: &sv_check::Finding) -> bool {
+    f.severity == sv_check::Severity::Info && !f.apart()
+}
+
+/// What the reports say above the notes worth knowing.
+pub const NOTES_SECTION: &str = "Not things to fix. Each says something about how the app is built that is worth \
+     knowing, and asks for nothing unless you decide it matters; if you do, its \"What to do\" says how.";
+
 #[cfg(test)]
 #[path = "low_groups_tests.rs"]
 mod low_groups_tests;
@@ -2068,8 +2087,13 @@ mod next_step_tests;
 mod build_loop_tail_tests;
 
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
-/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already.
+/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already, and for a note worth
+/// knowing, which asks for nothing.
 pub fn next_step(report: &Report, f: &sv_check::Finding) -> Option<String> {
+    // A note worth knowing asks for nothing, so it is not told to be fixed (ADR-110, Later).
+    if is_note(f) {
+        return None;
+    }
     accepted_note(report, f).is_none().then(|| {
         "Fix it in the code and check again. If it is a false alarm, write a `[[finding-review]]` entry for it, \
          naming its rule, file and fingerprint, and confirm it with `sv review` in your own terminal; until then it \
