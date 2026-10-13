@@ -8,6 +8,14 @@ docs/prompts/trial/brief.md, with or without one prompt from data/design-prompts
 (docs/prompts/trial/policy.toml): the numbers standing in for the owner's, added to a build's [policy] only where
 it wrote none of its own. Each build is copied to TRIAL_DIR/runs/, made a git repository, and run behind the
 fence, so it needs Docker or Colima; `:slow` adds `--slow` for the session timeouts. Used for docs/prompts/design-time.md.
+
+Two more steps for the second loop trial (ADR-109), each only when its variable is set, so an earlier trial's run is
+unchanged:
+- `PT_REVIEW` names a script that stands in for the owner in `sv review` (docs/prompts/loop-2/scripted_review.py). It
+  runs on the copy before it is committed, and only when the build's settings list `not-offered`; every result that
+  rests on it is labeled as confirmed by a script, not by a person.
+- `PT_TOOLS=1` checks each build a second time, with `--tools --keep-tool-output` and without `--run`, into
+  TRIAL_DIR/runs/<build>-tools-out: the outside tools' view, which the builder never saw.
 """
 import json, os, shutil, subprocess, sys
 HERE = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.getcwd()
@@ -64,6 +72,11 @@ def run(build, slow):
     # until 1 January 2027 (ADR-062); a policy added only to stackvet.toml would miss a build that followed it.
     names = [n for n in ('stackvet.toml', 'securevibe.toml') if os.path.exists(os.path.join(dst, n))]
     merge_policy(os.path.join(dst, names[0] if names else 'stackvet.toml'))
+    # The scripted review (ADR-109) writes its confirmation into the settings, so it comes before the commit.
+    if os.environ.get('PT_REVIEW') and names and 'not-offered' in open(os.path.join(dst, names[0]), encoding='utf-8').read():
+        with open(dst + '.review.log', 'w', encoding='utf-8', newline='\n') as log:
+            subprocess.run([sys.executable, os.environ['PT_REVIEW'], SV, dst], stdout=log, stderr=subprocess.STDOUT,
+                           timeout=600)
     # --allow-empty: a build that wrote nothing is checked as it is (it has no report), not a crash of the run.
     # Three list-form calls, no shell (backlog 0321), as image_smoke.py does.
     git = ['git', '-C', dst, '-c', 'user.email=t@t', '-c', 'user.name=t']
@@ -73,6 +86,12 @@ def run(build, slow):
     cmd = [SV, 'report', dst, '--run', '--out', out] + (['--slow'] if slow else [])
     with open(dst + '.log', 'w', encoding='utf-8', newline='\n') as log:
         code = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT, timeout=3600).returncode
+    if os.environ.get('PT_TOOLS') == '1':
+        tools_out = dst + '-tools-out'
+        shutil.rmtree(tools_out, ignore_errors=True)
+        with open(dst + '.tools.log', 'w', encoding='utf-8', newline='\n') as log:
+            subprocess.run([SV, 'report', dst, '--tools', '--keep-tool-output', '--out', tools_out], stdout=log,
+                           stderr=subprocess.STDOUT, timeout=3600)
     path = os.path.join(out, 'report.json')
     return code, (json.load(open(path, encoding="utf-8")) if os.path.exists(path) else None)
 

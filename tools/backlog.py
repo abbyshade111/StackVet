@@ -288,7 +288,10 @@ def moved(folder, item, root=None):
     item.path = to
     rewritten = []
     for path in root.rglob("*"):
-        if (not path.is_file() or path.suffix not in (".md", ".rs", ".py", ".toml", ".json", ".yml", ".html", ".txt")
+        # A link is never followed: one to a file outside the repository would be rewritten there (backlog 0319), and
+        # one inside points at a file this walk rewrites anyway.
+        if (path.is_symlink() or not path.resolve().is_relative_to(root.resolve()) or not path.is_file()
+                or path.suffix not in (".md", ".rs", ".py", ".toml", ".json", ".yml", ".html", ".txt")
                 or {".git", "target", "node_modules"} & set(path.relative_to(root).parts)):
             continue
         try:
@@ -847,14 +850,22 @@ rules
         assert part_problems(find(folder, "1")) and not any("lines; keep one" in p for p in part_problems(find(folder, "1")))
     # The done folder (backlog 0228, part 6): `done` moves an item there and rewrites the paths to it; an item given
     # what remains moves back; the check names one in the wrong folder; a long item draws a warning, never a failure.
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as away:
         root = Path(tmp)
         folder = root / "backlog"
         folder.mkdir()
         write_text(folder / "0001-a-thing.md", "# A thing\n\n**Status:** open\n\nText.\n")
         cites = root / "notes.md"
         write_text(cites, "See `backlog/0001-a-thing.md` for it.\n")
+        # A link to a file outside the repository, and one to a folder outside it, are not followed (backlog 0319).
+        outside = Path(away) / "outside.md"
+        write_text(outside, "See `backlog/0001-a-thing.md` for it.\n")
+        (root / "linked.md").symlink_to(outside)
+        (root / "linked-folder").symlink_to(Path(away), target_is_directory=True)
         assert mark_done(folder, "1", "10 October 2026", None) is True
+        assert outside.read_text(encoding="utf-8") == "See `backlog/0001-a-thing.md` for it.\n", "a link was followed"
+        (root / "linked.md").unlink()
+        (root / "linked-folder").unlink()
         assert (folder / DONE_DIR / "0001-a-thing.md").exists() and not (folder / "0001-a-thing.md").exists()
         assert cites.read_text(encoding="utf-8") == "See `backlog/done/0001-a-thing.md` for it.\n", cites.read_text(encoding="utf-8")
         assert find(folder, "1").kind == "done" and [i.number for i in items(folder)] == [1]

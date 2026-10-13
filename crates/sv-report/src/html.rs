@@ -323,7 +323,84 @@ pub fn page(report: &Report) -> String {
     }
     b.push_str("</section>\n");
 
-    b.push_str("<h2>Read this first</h2>\n");
+    // The order of the sections below the short version (ADR-110): the things to fix first, worst first, then
+    // what was set aside, then how this report was made, then what was not examined, directly after.
+    let (app, tests) = crate::app_then_tests(report);
+    let (fix, notes) = crate::fix_then_notes(app);
+    if !fix.is_empty() {
+        b.push_str(&format!(
+            "<h2>{} thing{} to fix</h2>\n",
+            fix.len(),
+            if fix.len() == 1 { "" } else { "s" }
+        ));
+        let (full, low) = crate::split_low(report, fix);
+        for f in full {
+            finding_section(&mut b, report, f);
+        }
+        low_lines(&mut b, &low);
+    }
+    // After the things to fix, and never counted with them (ADR-110, Later).
+    if !notes.is_empty() {
+        b.push_str(&format!(
+            "<h2>Worth knowing: {} note{}</h2>\n<p>{}</p>\n",
+            notes.len(),
+            if notes.len() == 1 { "" } else { "s" },
+            escape(crate::NOTES_SECTION)
+        ));
+        for f in notes {
+            finding_section(&mut b, report, f);
+        }
+    }
+    if !tests.is_empty() {
+        b.push_str(&format!(
+            "<h2>{} {}</h2>\n<p>{}</p>\n",
+            tests.len(),
+            crate::apart_named(&tests),
+            escape(crate::TEST_CODE_SECTION)
+        ));
+        for f in tests {
+            finding_section(&mut b, report, f);
+        }
+    }
+
+    let set_aside = crate::false_alarm_entries(report);
+    if !set_aside.is_empty() || !report.reviews_not_counted.is_empty() {
+        b.push_str("<h2>Set aside in stackvet.toml</h2>\n");
+        if !set_aside.is_empty() {
+            b.push_str(&format!(
+                "<p>Found by a check, and set aside as a false alarm in stackvet.toml through \
+                 <code>sv review</code>. {} They are not counted below, and a requirement one of them was about is never \
+                 shown as checked because of it.</p>\n<ul>\n",
+                escape(crate::SEALED_WHY)
+            ));
+            for (line, report_it) in &set_aside {
+                b.push_str(&format!(
+                    "<li>{} <a href=\"{}\">Report it against the rule</a></li>\n",
+                    escape(line),
+                    escape(report_it)
+                ));
+            }
+            b.push_str(&format!(
+                "</ul>\n<p>{}</p>\n",
+                escape(crate::FALSE_ALARM_WHY)
+            ));
+        }
+        if !report.reviews_not_counted.is_empty() {
+            b.push_str(
+                "<p>These entries in <code>[[finding-review]]</code> do not count, so the findings \
+                 they name still do. Each says why. One whose finding was not looked for this time, \
+                 or whose rule this version of <code>sv</code> does not have, is not a sign the \
+                 finding was fixed. To record one as your decision, run <code>sv review</code> in \
+                 your own terminal.</p>\n<ul>\n",
+            );
+            for line in &report.reviews_not_counted {
+                b.push_str(&format!("<li>{}</li>\n", escape(line)));
+            }
+            b.push_str("</ul>\n");
+        }
+    }
+
+    b.push_str("<h2>How this report was made</h2>\n");
     if let Some(note) = &report.run_note {
         b.push_str(&format!("<p>{}</p>\n", escape(note)));
     }
@@ -413,68 +490,6 @@ pub fn page(report: &Report) -> String {
             ));
         }
         b.push_str("</table>\n");
-    }
-
-    let set_aside = crate::false_alarm_entries(report);
-    if !set_aside.is_empty() || !report.reviews_not_counted.is_empty() {
-        b.push_str("<h2>Set aside in stackvet.toml</h2>\n");
-        if !set_aside.is_empty() {
-            b.push_str(&format!(
-                "<p>Found by a check, and set aside as a false alarm in stackvet.toml through \
-                 <code>sv review</code>. {} They are not counted below, and a requirement one of them was about is never \
-                 shown as checked because of it.</p>\n<ul>\n",
-                escape(crate::SEALED_WHY)
-            ));
-            for (line, report_it) in &set_aside {
-                b.push_str(&format!(
-                    "<li>{} <a href=\"{}\">Report it against the rule</a></li>\n",
-                    escape(line),
-                    escape(report_it)
-                ));
-            }
-            b.push_str(&format!(
-                "</ul>\n<p>{}</p>\n",
-                escape(crate::FALSE_ALARM_WHY)
-            ));
-        }
-        if !report.reviews_not_counted.is_empty() {
-            b.push_str(
-                "<p>These entries in <code>[[finding-review]]</code> do not count, so the findings \
-                 they name still do. Each says why. One whose finding was not looked for this time, \
-                 or whose rule this version of <code>sv</code> does not have, is not a sign the \
-                 finding was fixed. To record one as your decision, run <code>sv review</code> in \
-                 your own terminal.</p>\n<ul>\n",
-            );
-            for line in &report.reviews_not_counted {
-                b.push_str(&format!("<li>{}</li>\n", escape(line)));
-            }
-            b.push_str("</ul>\n");
-        }
-    }
-
-    let (app, tests) = crate::app_then_tests(report);
-    if !app.is_empty() {
-        b.push_str(&format!(
-            "<h2>{} thing{} to fix</h2>\n",
-            app.len(),
-            if app.len() == 1 { "" } else { "s" }
-        ));
-        let (full, low) = crate::split_low(report, app);
-        for f in full {
-            finding_section(&mut b, report, f);
-        }
-        low_lines(&mut b, &low);
-    }
-    if !tests.is_empty() {
-        b.push_str(&format!(
-            "<h2>{} {}</h2>\n<p>{}</p>\n",
-            tests.len(),
-            crate::apart_named(&tests),
-            escape(crate::TEST_CODE_SECTION)
-        ));
-        for f in tests {
-            finding_section(&mut b, report, f);
-        }
     }
 
     // Split by level, level 1 first. See `crate::groups`.
@@ -922,6 +937,15 @@ fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
         ));
     }
     b.push_str(&format!("<p>{}</p>\n", escape(&f.description)));
+    // What the finding rests on, from what `sv` kept of the running app (backlog 0378).
+    let saw = crate::what_was_seen(report, f);
+    if let Some((last, shown)) = saw.split_last() {
+        b.push_str("<p><strong>What StackVet saw.</strong></p>\n<ul class=\"saw\">\n");
+        for line in shown {
+            b.push_str(&format!("<li><code>{}</code></li>\n", escape(line)));
+        }
+        b.push_str(&format!("</ul>\n<p class=\"note\">{}</p>\n", escape(last)));
+    }
     b.push_str(&format!(
         "<p><strong>Why it matters.</strong> {}</p>\n",
         escape(&f.impact)
