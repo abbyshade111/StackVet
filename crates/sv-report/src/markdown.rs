@@ -245,7 +245,9 @@ pub fn compliance(report: &Report) -> String {
 
     out.push_str("## Read this first\n\n");
     if let Some(note) = &report.run_note {
-        out.push_str(&format!("{note}\n\n"));
+        // The note quotes stackvet.toml (the health path) and what the app sent back, so it is
+        // app text, as `report.html` already treats it (backlog 0312).
+        out.push_str(&format!("{}\n\n", inert(note)));
     }
     if !report.run_steps.is_empty() {
         out.push_str(&format!(
@@ -1087,7 +1089,8 @@ mod tests {
             sv: Default::default(),
             run_record: None,
             manifest_file: crate::default_manifest_file(),
-            run_note: None,
+            // Backlog 0312: the run note carries the health path stackvet.toml names.
+            run_note: Some(format!("the run asked {live}")),
             run_steps: Vec::new(),
             test_output: None,
             run_status: None,
@@ -1133,6 +1136,12 @@ mod tests {
         }
         for live in ["![x](", "<img", "[click]("] {
             assert!(!md.contains(live), "{live} is live in:\n{md}");
+        }
+        // compliance.md's "Read this first" carries the run note (backlog 0312).
+        let md = compliance(&report);
+        assert!(md.contains("the run asked"), "the note missing:\n{md}");
+        for live in ["![x](", "<img", "[click]("] {
+            assert!(!md.contains(live), "{live} is live in compliance.md:\n{md}");
         }
     }
 

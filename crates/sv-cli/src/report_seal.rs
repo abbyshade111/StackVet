@@ -7,9 +7,10 @@
 //! marker from hiding code, but a forged report is exactly such a folder.
 //!
 //! So `sv report` and `stackvet_write_report` seal what they wrote: the marker gains a line
-//! `seal: v1:<key id>:<mac>`, an HMAC-SHA-256 of each report file's name and SHA-256, under a key of this
-//! computer's kept beside the review key (`sv_check::seal::REPORT_KEY_FILE`), outside every app, made
-//! the first time a report is written. A folder is offered as `sv`'s only when it holds nothing but
+//! `seal: v1:<key id>:<mac>`, an HMAC-SHA-256 of the folder it is in and each report file's name and
+//! SHA-256, under a key of this computer's kept beside the review key (`sv_check::seal::REPORT_KEY_FILE`),
+//! outside every app, made the first time a report is written. A report copied or moved to another
+//! folder is not `sv`'s report of that folder (backlog 0286). A folder is offered as `sv`'s only when it holds nothing but
 //! `sv`'s files (H6) and its seal holds for the files as they are now, and a file is handed over only
 //! when what was read is what was sealed.
 //!
@@ -30,19 +31,31 @@ pub const SEALED: [&str; crate::report_files::NAMES.len()] = crate::report_files
 /// How the seal's line in the marker starts.
 const SEAL_LINE: &str = "seal: ";
 
+/// How the marker's line naming the folder the report was sealed in starts: the id `seal::App` gives
+/// that folder, sealed with the files, so a report copied or moved to another folder is refused
+/// (backlog 0286; the review seal was bound to its app for the same reason, ADR-026 item 11).
+const FOLDER_LINE: &str = "sealed-in: ";
+
 /// The largest file sealed or checked. A report of a very large app is a few megabytes.
 const MAX_BYTES: u64 = 16 * 1024 * 1024;
 
 /// The largest marker read: a sentence and a seal.
 const MAX_MARKER_BYTES: u64 = 4096;
 
-/// What the marker says once the folder is sealed: the sentence it always said, then the seal.
-pub fn marker_text(sentence: &str, seal: &str) -> String {
-    format!("{sentence}{SEAL_LINE}{seal}\n")
+/// What the marker says once the folder is sealed: the sentence it always said, the folder it was
+/// sealed in, then the seal.
+pub fn marker_text(sentence: &str, folder: &str, seal: &str) -> String {
+    format!("{sentence}{FOLDER_LINE}{folder}\n{SEAL_LINE}{seal}\n")
 }
 
-fn fields(digests: &BTreeMap<&'static str, String>) -> Vec<String> {
-    let mut fields = vec!["report-folder".to_owned()];
+/// The id of the folder `dir` is, as the seal names it: the same folder reached by another path is
+/// the same folder.
+fn folder_id(dir: &Path) -> Result<String, String> {
+    Ok(sv_check::seal::App::of(dir)?.id().to_owned())
+}
+
+fn fields(folder: &str, digests: &BTreeMap<&'static str, String>) -> Vec<String> {
+    let mut fields = vec!["report-folder".to_owned(), folder.to_owned()];
     for name in SEALED {
         fields.push(name.to_owned());
         fields.push(digests.get(name).cloned().unwrap_or_default());
@@ -129,12 +142,13 @@ fn seal_in(
 ) -> Result<Sealed, String> {
     let (key, made) = Key::load_or_make_named(folder, REPORT_KEY_FILE)?;
     let digests = digests_of(written)?;
-    let fields = fields(&digests);
+    let here = folder_id(dir)?;
+    let fields = fields(&here, &digests);
     let seal = key.report_seal(&fields.iter().map(String::as_str).collect::<Vec<_>>());
     crate::write_without_following(
         dir,
         sv_scan::ecosystems::REPORT_MARKER,
-        marker_text(sentence, &seal).as_bytes(),
+        marker_text(sentence, &here, &seal).as_bytes(),
     )
     .map_err(|e| format!("{e:#}"))?;
     // A marker under the old name (ADR-062) is `sv`'s own file, replaced by the one just written.
@@ -151,6 +165,31 @@ fn seal_in(
 /// computer and nothing has changed them since; otherwise why not, as the end of a sentence
 /// beginning "sv cannot show it wrote this report:".
 pub fn proven(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
+    holds_only_svs(dir)?;
+    sealed_here(dir)
+}
+
+/// Where a report whose seal holds was sealed, as against where its folder is now.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Place {
+    /// In the folder it is in.
+    Here,
+    /// In another folder, and copied or moved here since: still `sv`'s report and unchanged, but of
+    /// the folder it was written in, at the time its run record says.
+    Elsewhere,
+}
+
+/// `proven`, for a report the person names by its place (`sv explain --report`, `sv compare`): a
+/// report kept somewhere on purpose was sealed where it was written, and is still `sv`'s and
+/// unchanged. It says which, for the caller to say. What is offered as an app's current report, by
+/// the MCP server or from the app's own report folder, asks `proven` (backlog 0286).
+pub fn proven_wherever(dir: &Path) -> Result<(BTreeMap<&'static str, String>, Place), String> {
+    holds_only_svs(dir)?;
+    check(dir)
+}
+
+/// The marker is one `sv` writes and the folder holds nothing else (H6).
+fn holds_only_svs(dir: &Path) -> Result<(), String> {
     let marker = sv_scan::ecosystems::report_marker_in(dir)
         .ok_or_else(|| "the folder holds no marker of sv's".to_owned())?;
     let meta = std::fs::symlink_metadata(&marker)
@@ -162,7 +201,7 @@ pub fn proven(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
     if !sv_scan::ecosystems::is_sv_output(dir) {
         return Err("the folder holds files sv does not write in a report folder".to_owned());
     }
-    sealed_here(dir)
+    Ok(())
 }
 
 /// The SHA-256 of each sealed file in `dir`, when its marker's seal holds for them under this
@@ -173,6 +212,18 @@ pub fn proven(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
 /// item 4): a marker can be planted in any of the app's folders, and a seal cannot be made without
 /// the key.
 pub fn sealed_here(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
+    match check(dir)? {
+        (digests, Place::Here) => Ok(digests),
+        (_, Place::Elsewhere) => Err(
+            "it was sealed for another folder: it was copied or moved here from where sv wrote it"
+                .to_owned(),
+        ),
+    }
+}
+
+/// The SHA-256 of each sealed file in `dir` when its seal holds under this computer's report key,
+/// and whether it was sealed in this folder or another.
+fn check(dir: &Path) -> Result<(BTreeMap<&'static str, String>, Place), String> {
     let marker = sv_scan::ecosystems::report_marker_in(dir)
         .ok_or_else(|| "the folder holds no marker of sv's".to_owned())?;
     let meta = std::fs::symlink_metadata(&marker)
@@ -200,10 +251,28 @@ pub fn sealed_here(dir: &Path) -> Result<BTreeMap<&'static str, String>, String>
             );
         }
     };
+    // The folder it was sealed in, said in the marker and sealed with the files: a report copied
+    // from another app, or put back from somewhere it was kept, was sealed for another folder.
+    let sealed_in = text
+        .lines()
+        .find_map(|line| line.strip_prefix(FOLDER_LINE))
+        .ok_or_else(|| {
+            "its seal does not say which folder it was written in, as a report written by an sv \
+             from before reports were sealed to their folder; write the report again"
+                .to_owned()
+        })?;
+    // The seal is checked against the folder the marker names first, so a seal made with another
+    // key, or files changed since, are said as such; then a seal that holds, for another folder.
+    let sealed_in = sealed_in.trim();
     let digests = digests(dir)?;
-    let fields = fields(&digests);
+    let fields = fields(sealed_in, &digests);
     key.report_seal_holds(seal, &fields.iter().map(String::as_str).collect::<Vec<_>>())?;
-    Ok(digests)
+    let place = if sealed_in == folder_id(dir)? {
+        Place::Here
+    } else {
+        Place::Elsewhere
+    };
+    Ok((digests, place))
 }
 
 #[cfg(test)]
@@ -258,8 +327,9 @@ mod tests {
         let key = Key::load_named(&keys, REPORT_KEY_FILE)
             .unwrap()
             .expect("the key");
+        let here = folder_id(&dir).unwrap();
         let holds = |digests: &BTreeMap<&'static str, String>| {
-            let fields = fields(digests);
+            let fields = fields(&here, digests);
             key.report_seal_holds(
                 &seal,
                 &fields.iter().map(String::as_str).collect::<Vec<_>>(),

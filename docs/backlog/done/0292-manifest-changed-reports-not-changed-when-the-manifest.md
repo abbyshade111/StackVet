@@ -1,6 +1,6 @@
 # manifest_changed reports not changed when the manifest cannot be read at the end of the run
 
-**Status:** open
+**Status:** done, 12 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: medium. Verified against the code by the reviewing session before filing.
 
