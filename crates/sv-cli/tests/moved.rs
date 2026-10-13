@@ -135,7 +135,7 @@ fn scan_src(crates: &Path) -> Scan {
     let crates = crates.to_path_buf();
     let data = crates
         .join("../data")
-        .canonicalize()
+        .canonical()
         .unwrap_or_else(|_| crates.join("../data"));
     let mut found = Vec::new();
     let mut compiled_data = Vec::new();
@@ -241,7 +241,7 @@ fn scan_src(crates: &Path) -> Scan {
                             continue;
                         };
                         let file = path.parent().unwrap().join(named);
-                        let file = file.canonicalize().unwrap_or(file);
+                        let file = file.canonical().unwrap_or(file);
                         if let Ok(inside) = file.strip_prefix(&data) {
                             compiled_data.push((
                                 inside.to_string_lossy().replace('\\', "/"),
