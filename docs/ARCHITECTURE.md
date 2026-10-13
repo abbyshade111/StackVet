@@ -2,7 +2,8 @@
 
 What `sv` is made of, how a run goes through it, and where each rule is held. Written 8 October 2026 for a session
 or a person opening the repository cold. `docs/design/` is the dated record of every decision as it was made, one file per
-entry (nearly 300, some 13,000 lines in all); `docs/adr/` holds the 44 decisions that matter most, each with the files it governs; this page is the map that
+entry (437 entries, some 17,800 lines in all, on 13 October 2026); `docs/adr/` holds the decisions that matter most, each with the files it
+governs (96 records, ADR-015 to ADR-110, on the same day); this page is the map that
 neither of them is. When this page and the code disagree, the code is right and this page is out of date: say so in
 the pull request that finds it.
 
@@ -17,15 +18,19 @@ as it builds. `sv` never says an app is secure; it says what it checked and what
 
 ## The crates, in the order a run passes through them
 
+Lines are the Rust under each crate's `src/`, with files named `tests.rs` or `*_tests.rs` left out (a test module
+written inside another file is counted), rounded to the hundred, on 13 October 2026. They move with every merge:
+`find crates/<crate>/src -name '*.rs' ! -name '*tests.rs' | xargs cat | wc -l` counts them again.
+
 | Crate | Lines | What it is |
 |---|---|---|
-| `sv-frameworks` | 1,200 | The standards as data (`data/frameworks/*.json`), and which requirements apply to an app with these conditions (`data/applicability-v2.json`). Also `data::file`, the one way any run-time read finds `data/` (ADR-036). |
-| `sv-manifest` | 4,100 | `stackvet.toml`: what the app claims. Nothing in it is a fact; `resolve` corroborates each claim against the code, and corroboration only ever adds requirements, never removes them. |
-| `sv-scan` | 4,100 | One walk of the app's folder (`files::Listing`), its languages and frameworks by signature, what the manifest sets apart as not the app (ADR-031), and the names of a report folder so the walk leaves it out. |
-| `sv-check` | 97,700 | Every check: keys and passwords (`secrets`), configuration (`config`), rules that read code with tree-sitter (`ast`, `data/ast-rules.json`), the bill of materials (`sbom`) and advisories, outside tools through adapters, and the checks of a running app (`signed_in`, `probes`, `oidc`, `ai`, `mcp_server`, `fetch`, `live`) written against a trait `Http`, so each runs against a fake app in its unit tests. Also what a person's word is worth: `design`, `hand`, `notes`, `confirm`, `review`, and the seals (`seal`). Produces `Finding` and `Verified`, never a verdict. |
-| `sv-run` | 6,900 | Starts the app behind the fence: a Docker network with no gateway, a sidecar that sends every request from inside it, the helpers a run needs (a mail server, a test identity provider, a test model, a headless browser), every container read-only with every capability dropped (ADR-019, `prepared`), the install step for the app's packages (ADR-052), and the run's script (`run_after_cleanup`). Implements `Http` for the checks. Depends on `sv-check` today, the reverse of this layering (BACKLOG, 8 October, item 4). |
-| `sv-report` | 8,100 | From findings and credits to a status per requirement (`status_of`), the counts, the gaps, and the five renderings: `report.html`, `compliance.md`, `security.md`, `findings.sarif`, `report.json`. The one place a conclusion is drawn. |
-| `sv-cli` | 21,300 | The `sv` binary and a library under it. The library (`lib.rs`) holds everything a run, a report, a plan, a brief, or a preflight does: the stages of a run (`static_scan`, then `assemble`, one function per stage of putting the report together), what they read (`Loaded`, `ReportOptions`), `report_folder`, the report folder's lock and seal, the exit codes, the bundle, and the MCP server (`mcp/`), which can reach nothing of the command line. The binary (`main.rs`) reads the arguments, runs the commands, and prints. |
+| `sv-frameworks` | 1,400 | The standards as data (`data/frameworks/*.json`), and which requirements apply to an app with these conditions (`data/applicability-v2.json`). Also `data::file`, the one way any run-time read finds `data/` (ADR-036). |
+| `sv-manifest` | 4,600 | `stackvet.toml`: what the app claims. Nothing in it is a fact; `resolve` corroborates each claim against the code, and corroboration only ever adds requirements, never removes them. |
+| `sv-scan` | 4,300 | One walk of the app's folder (`files::Listing`), its languages and frameworks by signature, what the manifest sets apart as not the app (ADR-031), and the names of a report folder so the walk leaves it out. |
+| `sv-check` | 93,500 | Every check: keys and passwords (`secrets`), configuration (`config`), rules that read code with tree-sitter (`ast`, `data/ast-rules.json`), the bill of materials (`sbom`) and advisories, outside tools through adapters, and the checks of a running app (`signed_in`, `probes`, `oidc`, `ai`, `mcp_server`, `fetch`, `live`) written against a trait `Http`, so each runs against a fake app in its unit tests. Also what a person's word is worth: `design`, `hand`, `notes`, `confirm`, `review`, and the seals (`seal`). Produces `Finding` and `Verified`, never a verdict. |
+| `sv-run` | 8,700 | Starts the app behind the fence: a Docker network with no gateway, a sidecar that sends every request from inside it, the helpers a run needs (a mail server, a test identity provider, a test model, a headless browser), every container read-only with every capability dropped (ADR-019, `prepared`), the install step for the app's packages (ADR-052), and the run's script (`run_after_cleanup`). Implements `Http` for the checks. Depends on `sv-check` today, the reverse of this layering (BACKLOG, 8 October, item 4). |
+| `sv-report` | 10,400 | From findings and credits to a status per requirement (`status_of`), the counts, the gaps, and the five renderings: `report.html`, `compliance.md`, `security.md`, `findings.sarif`, `report.json`. The one place a conclusion is drawn. |
+| `sv-cli` | 24,600 | The `sv` binary and a library under it. The library (`lib.rs`) holds everything a run, a report, a plan, a brief, or a preflight does: the stages of a run (`static_scan`, then `assemble`, one function per stage of putting the report together), what they read (`Loaded`, `ReportOptions`), `report_folder`, the report folder's lock and seal, the exit codes, the bundle, and the MCP server (`mcp/`), which can reach nothing of the command line. The binary (`main.rs`) reads the arguments, runs the commands, and prints. |
 
 The rule of the layering: a crate below decides nothing a crate above would want to overrule. `sv-check` says what
 it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a tool.
