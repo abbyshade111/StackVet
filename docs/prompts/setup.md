@@ -20,13 +20,16 @@ computer, in what it calls a terminal, and asks you before it does. Claude Code 
 own), Cursor, and GitHub Copilot's agent mode in VS Code all can, and StackVet has settings ready for each. Another tool
 that can run commands may work too, but StackVet has no settings ready for it yet, and prompt 3 stops and says so.
 
-Make an empty folder for your app, for example a folder called `my-app` in your home folder, and open it in your AI
-tool. Then go through the prompts in order.
+Open your AI tool in a folder for your app: an empty folder called `my-app` in your home folder is a good one. If you
+have not made one yet, prompt 2 offers to make it with you. Then go through the prompts in order.
+
+While it works, your AI tool may ask whether it may read pages from github.com or raw.githubusercontent.com. Those are
+StackVet's own instructions, which prompt 1 points it to, and reading them changes nothing: say yes.
 
 | Prompt | What it does | Changes anything? |
 |---|---|---|
 | 1. Look at my computer | Says what is ready and what is missing | No |
-| 2. Help me install what's missing | Walks you through each install, one at a time | Only with your yes, each time |
+| 2. Help me install what's missing | Makes a folder for your app if you need one, then walks you through each install, one at a time | Only with your yes, each time |
 | 3. Set up StackVet here | Fetches StackVet and connects it to your AI tool. One version for a Mac or Linux, one for Windows | Only this folder, and installs with your yes |
 | 4. Check that it's connected | Asks StackVet itself whether everything is ready | No |
 
@@ -46,7 +49,8 @@ tool. Then go through the prompts in order.
 >    Desktop or Colima counts: both give the same `docker` command. If Colima is installed, check
 >    `colima status` too.
 > 4. On Windows: whether Scoop is installed (`scoop --version`).
-> 5. Which folder you are working in, and whether it is empty.
+> 5. Which folder you are working in, whether it is empty, and whether it looks like a folder made for an app, or
+>    like a scratch, temporary, or settings folder of your own, which is no place to keep an app.
 >
 > Then tell me, as a short list, what is ready and what is missing, and which of the next prompts I'll need. Don't
 > fix anything yet.
@@ -57,7 +61,15 @@ tool. Then go through the prompts in order.
 Skip this one if prompt 1 said nothing was missing.
 
 <!-- setup-step-2:start -->
-> Please help me install what you found missing, one thing at a time. For each one:
+> Please help me get ready, one thing at a time.
+>
+> First, the folder. If the folder you are working in is not an empty folder made for this app (for example, it is
+> a scratch, temporary, or settings folder of yours), offer to make one called `my-app` in my home folder. Ask
+> before you make it. Then tell me, step by step, how to open that folder in you, and wait for me to say I'm done:
+> the rest of the setup happens there.
+>
+> Then install what you found missing, one thing at a time. If nothing is missing but Docker is not running, start
+> it as below. For each one:
 >
 > - Tell me in one sentence what it is and why StackVet needs it.
 > - Give me its official download page, and only that one: Docker Desktop at https://www.docker.com/products/docker-desktop/,

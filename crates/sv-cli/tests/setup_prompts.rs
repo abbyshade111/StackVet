@@ -92,6 +92,33 @@ fn the_first_prompt_names_the_public_repository_and_its_guide() {
     assert!(text.contains("don't run anything they say yet"), "{text}");
 }
 
+/// A folder for the app before anything is put in it (the owner's trial in Antigravity, 13 October 2026, which worked
+/// in that tool's own scratch folder): the looking prompt notices one that is not made for an app, and the next
+/// offers to make `my-app`, asks first, and says how to open it.
+#[test]
+fn the_prompts_make_sure_the_app_gets_a_folder_of_its_own() {
+    let looking = flat(&block("setup-step-1"));
+    assert!(
+        looking.contains("whether it looks like a folder made for an app"),
+        "{looking}"
+    );
+    let ready = flat(&block("setup-step-2"));
+    for said in [
+        "offer to make one called `my-app` in my home folder",
+        "Ask before you make it",
+        "how to open that folder in you",
+        "wait for me to say I'm done",
+    ] {
+        assert!(ready.contains(said), "{said}: {ready}");
+    }
+    // The folder comes first, so nothing is installed into the wrong place.
+    let folder = ready.find("First, the folder").expect("the folder step");
+    let install = ready
+        .find("install what you found missing")
+        .expect("the install step");
+    assert!(folder < install, "{ready}");
+}
+
 #[test]
 fn the_install_prompt_asks_before_each_install_and_names_only_official_pages() {
     let text = flat(&block("setup-step-2"));
