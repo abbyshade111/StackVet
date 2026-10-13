@@ -587,6 +587,11 @@ def rust_literals():
 # Requirement id -> {(tool, rule)}: rules that are only ever a finding against it.
 FINDINGS_ONLY = defaultdict(set)
 # Checks whose every credit is in part: the Rust ones listed above, and the AST rules marked `inPart`.
+# V15.1.2 asks for an inventory and that its libraries come from trusted, continually maintained repositories:
+# a pinned lockfile and a complete bill of materials are the inventory, and the repositories are not read
+# (backlog 0307).
+RUST_IN_PART |= {"config.versions-pinned", "sbom"}
+
 IN_PART = set(RUST_IN_PART)
 # Requirement id -> {tool}: tools with some rule a clean run credits to it.
 CREDITED_BY_TOOL = defaultdict(set)
