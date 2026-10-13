@@ -1,6 +1,6 @@
 # Thirty-odd separate regex passes per file in the secrets scan
 
-**Status:** open
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: sv run speed. Severity: medium. Verified against the code by the reviewing session before filing.
 
@@ -22,8 +22,8 @@ this repository's own `crates/`, `data/`, `docs/` and `examples/` (1,762 files):
 - The 21 vendor patterns, run one by one with `find_iter`: 41 ms in all. As one `RegexSet`, only to say which can
   match: 1.34 s.
 - The six quoted assignment shapes, run one by one: 205 to 230 ms. As one `RegexSet`: 7.67 s.
-- A whole scan with both sets as pre-filters: 8.6 to 9.1 s, against 7.4 to 7.6 s without them (45 findings either
-  way).
+- A whole scan (`scan_text` over every file) with both sets as pre-filters: 8.6 to 9.1 s. Without either: 0.47 to
+  0.49 s. 45 findings either way.
 
 Each pattern starts with a literal (`AKIA`, `sk-ant-`, `ghp_`) that the regex engine finds with a fast substring
 search, so thirty passes cost little; a set loses that. The pre-filter was not built. What was: `line_of`, which
