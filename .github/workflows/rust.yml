@@ -388,7 +388,7 @@ jobs:
         run: docker build --build-arg SV_GIT_COMMIT=${{ github.sha }} -t stackvet/sv .
 
       - name: Build sv natively, to compare with
-        run: rustup toolchain install stable --profile minimal && rustup default stable && cargo build --release -p sv-cli
+        run: rustup toolchain install stable --profile minimal && rustup default stable && cargo build --release --locked -p sv-cli
 
       - name: Drive the image as an AI coding tool would
         run: python3 tools/image_smoke.py stackvet/sv --native target/release/sv --commit ${{ github.sha }}
