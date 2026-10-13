@@ -1,6 +1,6 @@
 # The plain-network fence rule, after review: decide plain from what Docker built, per address family, and restore the reached-or-silent test
 
-**Status:** open
+**Status:** claimed by builder-none, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the separate security review of 0301 (pull request #1739, commit 7e0eb5db) that the owner asked for on 13 October 2026. The review's verdict: sound with gaps; the new rule is correct and fails closed where it applies. It read the code and did not run Docker or cargo; points marked [inference] depend on how Docker behaves.
 
