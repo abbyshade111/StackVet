@@ -1,6 +1,6 @@
 # When an outside tool agrees with StackVet on a line, keep the tool's words
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** done, 12 October 2026
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
