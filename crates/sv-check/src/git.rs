@@ -64,8 +64,10 @@ const LOG_OVERRIDES: [&str; 4] = ["-c", "log.showSignature=false", "-c", "gpg.pr
 
 /// Every file ever added to the repository in any commit on any branch, under `app_dir` and named
 /// from it, as `ls_files` names them: `None` when git could not say. A file committed once and
-/// untracked since is in this list, and in no `ls_files` list after.
-pub fn ever_added(app_dir: &Path) -> Option<Vec<String>> {
+/// untracked since is in this list, and in no `ls_files` list after. `only` holds git pathspecs
+/// that narrow the files git compares in each commit (backlog 0366: without them git diffs every
+/// file of every commit); an empty `only` lists every file.
+pub fn ever_added(app_dir: &Path, only: &[String]) -> Option<Vec<String>> {
     let out = git(app_dir)
         .args(LOG_OVERRIDES)
         .args([
@@ -80,6 +82,8 @@ pub fn ever_added(app_dir: &Path) -> Option<Vec<String>> {
             "--relative",
             "-z",
         ])
+        .args(if only.is_empty() { None } else { Some("--") })
+        .args(only)
         .output()
         .ok()?;
     if !out.status.success() {
@@ -427,7 +431,7 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
 
         let (dir, mark) = planted_for_log("log-guarded");
-        let added = ever_added(&dir).expect("git answers");
+        let added = ever_added(&dir, &[]).expect("git answers");
         let tracked = ls_files(&dir).expect("git answers");
         let shallow = is_shallow(&dir);
         let ran = mark.exists();
