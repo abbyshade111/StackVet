@@ -1624,6 +1624,14 @@ pub fn sbom_document(report: &Report) -> String {
 /// lists, and whether it is complete. `None` without one.
 pub fn sbom_line(report: &Report) -> Option<String> {
     let s = report.sbom.as_ref()?;
+    if s.components == 0 && s.complete {
+        // An app on its language's own library alone: "0 packages, from every package list the app has" read as if it
+        // had lists that were empty, when most often it has none.
+        return Some(format!(
+            "The app's software bill of materials is in {SBOM_FILE} beside this report. It lists no packages: the app \
+             declares none, in a package list or a lockfile."
+        ));
+    }
     Some(format!(
         "The app's software bill of materials, every package it ships, is in {SBOM_FILE} beside this report: {} \
          package{}, {}.",

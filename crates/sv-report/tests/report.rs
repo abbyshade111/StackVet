@@ -905,6 +905,18 @@ fn the_reports_name_the_bill_of_materials_beside_them_and_the_page_links_it() {
         compliance.find("sbom.cdx.json") < compliance.find("## How this report was made"),
         "{compliance}"
     );
+    // An app that declares no package is told so, not given a count of none from lists it does not have.
+    report.sbom = Some(sv_report::SbomFile {
+        json: "{}".into(),
+        components: 0,
+        complete: true,
+    });
+    let html = sv_report::html::page(&report);
+    assert!(
+        html.contains("It lists no packages: the app declares none"),
+        "{html}"
+    );
+    assert!(!html.contains("0 packages"), "{html}");
     // Without a bill, nothing is said of one.
     report.sbom = None;
     assert!(!sv_report::html::page(&report).contains("sbom.cdx.json"));

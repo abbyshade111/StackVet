@@ -379,7 +379,8 @@ pub struct ReportOptions {
     pub run_the_app: bool,
     /// And wait out the session timeouts the owner states. Opt-in: it takes as long as they are.
     pub slow: bool,
-    /// Run the language's own security tool. Opt-in: these are other people's programs.
+    /// Run the language's own security tools: on for `sv report` and `sv bundle` unless `--no-tools` (ADR-111), and
+    /// never from the MCP server (ADR-066).
     pub run_tools: bool,
     /// Said in the report when the app was not started, in the words of whoever built it.
     pub why_not_run: String,
@@ -429,7 +430,7 @@ impl ReportOptions {
             run_tools,
             why_not_run: format!("{caller} does not start the app unless you pass --run."),
             why_no_tools: format!(
-                "{caller} does not run other people's tools unless you pass --tools."
+                "{caller} ran none of the outside tools, because --no-tools was given; without it they run."
             ),
             advisories,
             why_no_advisories: format!(

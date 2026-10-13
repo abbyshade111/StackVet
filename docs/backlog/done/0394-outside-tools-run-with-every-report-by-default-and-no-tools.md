@@ -1,6 +1,6 @@
 # Outside tools run with every report by default, and --no-tools skips them
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** done, 13 October 2026
 
 The owner's decision, 13 October 2026: "yes, please file it and build after the report", after being told the
 outside tools (Semgrep, Bandit, CodeQL, and the rest) added about 20 seconds to a report of the haiku-a-5 trial app,
