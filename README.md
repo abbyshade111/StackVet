@@ -136,7 +136,10 @@ unless you give `--out` (add `--run` to start the app behind the fence and inclu
 security tools that are installed, Bandit, gosec, Brakeman, Semgrep, and CodeQL, run unless you add `--no-tools`,
 which is the quick run, since CodeQL can take minutes on a large app):
 `report.html`, one file you can open by double-clicking it; `compliance.md` and `security.md`, the same in
-Markdown; the findings as SARIF (`findings.sarif`) for editors and CI; and the data as JSON (`report.json`). The reports lead with
+Markdown; the findings as SARIF (`findings.sarif`) for editors and CI; and the data as JSON (`report.json`). Beside them
+are three more: `low-findings.md`, every low-severity finding in full, where the reports group them by rule;
+`seen.json`, what `sv` saw of the running app, with credentials cut out; and `sbom.cdx.json`, the app's bill of
+materials as CycloneDX JSON, as `sv sbom` prints it. Eight files in all. The reports lead with
 what was **not** examined, say what each check covered when it found nothing wrong, and nothing in them
 says a requirement passed — `sv` is not able to establish
 that, so it does not claim it.

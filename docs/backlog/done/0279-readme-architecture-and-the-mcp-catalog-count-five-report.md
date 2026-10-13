@@ -1,6 +1,6 @@
 # README, ARCHITECTURE, and the MCP catalog count five report files where sv writes seven
 
-**Status:** claimed by builder-none, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: documentation. Severity: high. Verified against the code by the reviewing session before filing.
 
@@ -18,5 +18,3 @@
 
 **The owner's word, 12 October 2026:** the description in `crates/sv-cli/src/mcp/catalog.rs` waits until the loop test (0257)
 has finished, since it is text the AI coding tool reads; the documents (README, ARCHITECTURE) can be fixed now.
-
-**Released, 13 October 2026, the owner's word** ("I'm fine releasing those items"): the loop test's second trial has its results (#1669), and the hold above is lifted, the catalog description included. 0338 stays held.
