@@ -1620,6 +1620,30 @@ pub fn sbom_document(report: &Report) -> String {
     }
 }
 
+/// The name of the findings as SARIF beside the report.
+pub const SARIF_FILE: &str = "findings.sarif";
+
+/// The line near the top of the report saying what the SARIF file beside it is, and what it holds (backlog 0408): its
+/// name reads to a person as "problems with the app" even when it holds none, so the page says how many findings it
+/// holds and how many notes on what was not examined, counted from the file itself.
+pub fn sarif_line(report: &Report) -> String {
+    let document: serde_json::Value =
+        serde_json::from_str(&crate::sarif::render(report)).unwrap_or_default();
+    let run = &document["runs"][0];
+    let findings = run["results"].as_array().map_or(0, Vec::len);
+    let notes = run["invocations"][0]["toolExecutionNotifications"]
+        .as_array()
+        .map_or(0, Vec::len);
+    let plural =
+        |n: usize, one: &str, many: &str| format!("{n} {}", if n == 1 { one } else { many });
+    format!(
+        "{SARIF_FILE} beside this report is for code editors and GitHub's code scanning, not for reading: it holds {}, \
+         and {} on what was not examined.",
+        plural(findings, "finding", "findings"),
+        plural(notes, "note", "notes"),
+    )
+}
+
 /// The line near the top of the report naming the bill of materials beside it (backlog 0382): how many packages it
 /// lists, and whether it is complete. `None` without one.
 pub fn sbom_line(report: &Report) -> Option<String> {
