@@ -113,15 +113,17 @@ jobs:
     needs: scope
     if: needs.scope.outputs.full != 'false'
     runs-on: ubuntu-latest
-    # The whole suite took 14 to 15 minutes in one job by 5 October 2026; each part is about a third.
+    # The whole suite took 14 to 15 minutes in one job by 5 October 2026; each part runs a share of it.
     timeout-minutes: 30
     strategy:
       # Each part runs to its end even when another fails, so one run shows every failure.
       fail-fast: false
       matrix:
-        # `rest`: every crate but sv-cli, and sv-cli's own unit tests. `cli-1` and `cli-2`: sv-cli's test
-        # files, dealt between them by tools/ci_shards.py, which a test holds to every file exactly once.
-        part: [rest, cli-1, cli-2]
+        # `check`: sv-check alone, its 1,500 unit tests and 40 test files, which made `rest` the longest
+        # part (backlog 0350). `rest`: every other crate but sv-cli, and sv-cli's own unit tests. `cli-1`
+        # and `cli-2`: sv-cli's test files, dealt between them by tools/ci_shards.py, which a test holds to
+        # every file exactly once.
+        part: [rest, check, cli-1, cli-2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The token stays out of the checked-out folder, so nothing that runs later in the job
@@ -209,7 +211,7 @@ jobs:
         # The fence tests need a container backend. GitHub's runners have Docker, so they run for real here;
         # where there is none they assert the honest-absence path instead and say which branch they took.
         # Every credit a check gives is written to this file (a debug build only; `Verified::new`), and
-        # `test` below holds the findings-only lists in tools/coverage.py to what the three parts saw.
+        # `test` below holds the findings-only lists in tools/coverage.py to what the four parts saw.
         # SV_REQUIRE_BACKEND makes Docker's absence a failure here (crates/sv-run/tests/fence.rs), so a
         # runner whose Docker broke turns this red rather than every fence test passing on the
         # no-backend path.
@@ -218,7 +220,7 @@ jobs:
           SV_REQUIRE_BACKEND: "1"
           PART: ${{ matrix.part }}
         # The archive tests read the 7z files they make with py7zr, a test-only package pinned to one version
-        # (ADR-089); without it they fail, rather than passing without reading. They are in sv-check, so `rest`.
+        # (ADR-089); without it they fail, rather than passing without reading. They are in sv-check, so `check`.
         # py7zr and each package it pulls in are pinned to their files' hashes, so pip installs nothing it was
         # not told of (tools/py7zr-requirements.txt, backlog 0288).
         # Docker's own record of every container the tests create is kept while they run, and the images
@@ -233,10 +235,13 @@ jobs:
             set -e
             case "$PART" in
               rest)
-                python3 -m pip install --require-hashes -r tools/py7zr-requirements.txt
-                cargo test --workspace --exclude sv-cli
+                cargo test --workspace --exclude sv-cli --exclude sv-check
                 cargo test -p sv-cli --lib --bins
                 cargo test -p sv-cli --doc
+                ;;
+              check)
+                python3 -m pip install --require-hashes -r tools/py7zr-requirements.txt
+                cargo test -p sv-check
                 ;;
               cli-1) cargo test -p sv-cli $(python3 tools/ci_shards.py args 1 2) ;;
               cli-2) cargo test -p sv-cli $(python3 tools/ci_shards.py args 2 2) ;;
@@ -311,7 +316,7 @@ jobs:
           cargo test -p sv-cli --test backlog_board --test docs_page --test docs_page_tabs
           --test decision_records --test record_numbers --test ci_scope --test ci_shards
 
-      - name: The credits the three parts saw
+      - name: The credits the four parts saw
         if: needs.scope.outputs.full != 'false'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -321,10 +326,10 @@ jobs:
       - name: What the suite saw credited
         if: needs.scope.outputs.full != 'false'
         # Fails when a check listed as only ever a finding was credited, or one never credited is not
-        # listed. By 6 October 2026, 23 checks had been counted as crediting when none ever did. The three
+        # listed. By 6 October 2026, 23 checks had been counted as crediting when none ever did. The four
         # parts' logs are read as one, credits and withheld each joined, and every part's two must be there.
         run: |
-          for part in rest cli-1 cli-2; do
+          for part in rest check cli-1 cli-2; do
             [ -s "$RUNNER_TEMP/credits/credits-$part/credits.log" ] || { echo "::error::no credit log from $part"; exit 1; }
             [ -f "$RUNNER_TEMP/credits/credits-$part/credits.log.withheld" ] || { echo "::error::no withheld log from $part"; exit 1; }
           done
