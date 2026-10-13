@@ -96,14 +96,20 @@ impl Server {
         else {
             return Err(not_found("only the files of a report sv wrote are offered"));
         };
+        // One answer for a folder that does not exist and one outside the root, as `app_dir` gives
+        // (confine.rs): two would tell whoever asks which folders exist anywhere on this computer
+        // (backlog 0308).
+        let refused = || {
+            not_found(
+                "that is outside the folder this server was started for, or there is no such folder",
+            )
+        };
         let folder = path
             .parent()
             .and_then(|p| p.canonical().ok())
-            .ok_or_else(|| not_found("no such folder"))?;
+            .ok_or_else(refused)?;
         if !folder.starts_with(&self.root) {
-            return Err(not_found(
-                "that is outside the folder this server was started for",
-            ));
+            return Err(refused());
         }
         if !is_report_folder(&folder) {
             return Err(not_found("that folder does not hold a report sv wrote"));
