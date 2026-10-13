@@ -740,14 +740,31 @@ fn every_requirement_a_check_cites_is_a_requirement_that_exists() {
     // `secret-rules.json` went unchecked. A guard that silently covers half of what it names is
     // worse than none, because the half it misses now looks guarded.
     collect_cited(&workspace.join("crates"), &mut cited);
-    collect_cited(&workspace.join("data"), &mut cited);
+    let mut from_data: BTreeSet<String> = BTreeSet::new();
+    collect_cited(&workspace.join("data"), &mut from_data);
+    // The credential formats cite only ids the Rust code cites too, since V11.1.1 left them (backlog 0305), so
+    // the walk of `data/` is held to every id the formats cite, read on its own.
+    let mut credential_formats: BTreeSet<String> = BTreeSet::new();
+    let formats = std::fs::read_to_string(workspace.join("data/secret-rules.json")).unwrap();
+    collect_json(
+        &serde_json::from_str(&formats).unwrap(),
+        &mut credential_formats,
+    );
+    assert!(
+        !credential_formats.is_empty(),
+        "the credential formats cite nothing"
+    );
+    assert!(
+        credential_formats.is_subset(&from_data),
+        "the collector never reached the credential formats, in JSON: {credential_formats:?} against {from_data:?}"
+    );
+    cited.extend(from_data);
 
     // The sanity check is that both sources were really reached, rather than a count that says
     // nothing about which files it came from.
     for (id, whose) in [
         ("V13.4.4", "the probes, in Rust"),
         ("V1.5.2", "the rules that read code, in JSON"),
-        ("V11.1.1", "the credential formats, in JSON"),
     ] {
         assert!(
             cited.contains(id),
