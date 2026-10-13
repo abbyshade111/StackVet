@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0320 (since 2026-10-12) — next: 0359, 0332, 0358, 0363, 0323, 0326
-- builder-none — arm: none — holds: 0311 (since 2026-10-12) — next: 0328, 0360, 0331, 0334, 0333, 0330
+- builder-full — arm: full — holds: 0358 (since 2026-10-12) — next: 0363, 0323, 0326
+- builder-none — arm: none — holds: 0360 (since 2026-10-12) — next: 0331, 0334, 0333, 0330
 
 ## Queue
 
@@ -255,3 +255,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-12 23:23 — assigned 0334 to builder-none (none) as next: lane 3: debug-mode marker list in probes.rs; coverage files stay in this lane
 - 2026-10-12 23:23 — assigned 0333 to builder-none (none) as next: lane 3: threat wording in sv-report threats.rs
 - 2026-10-12 23:23 — assigned 0330 to builder-none (none) as next: lane 3: Semgrep packs fetched at run time, say so beside the no-network rule
+- 2026-10-12 23:53 — finished 0320 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1644; now holds 0359
+- 2026-10-12 23:53 — finished 0359 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1647; now holds 0332
+- 2026-10-12 23:53 — finished 0332 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1649; now holds 0358
+- 2026-10-12 23:53 — finished 0311 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1642; now holds 0328
+- 2026-10-12 23:53 — finished 0328 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1648; now holds 0360
