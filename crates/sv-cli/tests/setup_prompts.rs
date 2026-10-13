@@ -56,6 +56,7 @@ fn every_prompt_of_the_library_is_there_in_order() {
         at("setup-prompt"),
         at("setup-windows"),
         at("setup-step-4"),
+        at("setup-step-5"),
     ];
     assert!(
         order.windows(2).all(|w| w[0] < w[1]),
@@ -133,9 +134,10 @@ fn no_prompt_names_an_apps_buttons_or_menus() {
         "setup-prompt",
         "setup-windows",
         "setup-step-4",
+        "setup-step-5",
     ];
     // The setup: every prompt is read, or a renamed marker would leave one out unseen.
-    assert_eq!(names.len(), 5);
+    assert_eq!(names.len(), 6);
     for name in names {
         let text = flat(&block(name));
         assert!(!text.is_empty(), "{name}");
@@ -200,7 +202,7 @@ fn the_windows_prompt_installs_sv_from_the_bucket_and_types_stackvet_in_powershe
         "`scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet`",
         "`scoop install stackvet/sv`",
         "`stackvet --version`",
-        "`stackvet connect TOOL`",
+        "`stackvet connect`",
     ] {
         assert!(text.contains(command), "{command}");
     }
@@ -216,7 +218,7 @@ fn the_windows_prompt_installs_sv_from_the_bucket_and_types_stackvet_in_powershe
 }
 
 #[test]
-fn the_windows_prompts_connect_command_is_one_sv_takes_for_each_tool_and_file_it_names() {
+fn the_windows_prompts_connect_command_prints_stackvets_server_in_no_apps_format() {
     let text = block("setup-windows");
     let dir = {
         let dir: PathBuf =
@@ -225,45 +227,101 @@ fn the_windows_prompts_connect_command_is_one_sv_takes_for_each_tool_and_file_it
         std::fs::create_dir_all(&dir).unwrap();
         dir.canonical().unwrap()
     };
-    for (tool, file) in [
-        ("claude", ".mcp.json"),
-        ("vscode", ".vscode/mcp.json"),
-        ("cursor", ".cursor/mcp.json"),
+    assert!(text.contains("`stackvet connect`."), "{text}");
+    // `stackvet` is the same program as `sv`, installed under a second name (ADR-108, Later).
+    let out = Command::new(env!("CARGO_BIN_EXE_sv"))
+        .current_dir(&dir)
+        .args(["connect"])
+        .env_remove("SV_CONNECT_IN_CONTAINER")
+        .output()
+        .expect("sv runs");
+    let said = format!(
+        "{}{}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert!(out.status.success(), "{said}");
+    let server: serde_json::Value =
+        serde_json::from_slice(&out.stdout).expect("the server alone on standard output");
+    assert_eq!(server["name"], "stackvet", "{server}");
+    assert_eq!(server["transport"], "stdio", "{server}");
+    let command = server["command"].as_str().expect("a command");
+    assert!(
+        !command.contains("docker"),
+        "the installed copy, not Docker: {command}"
+    );
+    for app in [
+        "`claude`",
+        "`vscode`",
+        "`cursor`",
+        ".mcp.json",
+        ".vscode/",
+        ".cursor/",
+        "connect TOOL",
     ] {
-        assert!(text.contains(&format!("`{tool}`")), "{tool}");
-        assert!(text.contains(&format!("`{file}`")), "{file}");
-        // `stackvet` is the same program as `sv`, installed under a second name (ADR-108, Later).
-        let out = Command::new(env!("CARGO_BIN_EXE_sv"))
-            .current_dir(&dir)
-            .args(["connect", tool])
-            .env_remove("SV_CONNECT_IN_CONTAINER")
-            .output()
-            .expect("sv runs");
-        let said = format!(
-            "{}{}",
-            String::from_utf8_lossy(&out.stdout),
-            String::from_utf8_lossy(&out.stderr)
-        );
-        assert!(out.status.success(), "{tool}: {said}");
-        assert!(
-            said.contains(&format!("Put this in {file}")),
-            "{tool}: {said}"
-        );
-        let block: serde_json::Value =
-            serde_json::from_slice(&out.stdout).expect("the settings block alone");
-        let key = if tool == "vscode" {
-            "servers"
-        } else {
-            "mcpServers"
-        };
-        let command = block[key]["stackvet"]["command"]
-            .as_str()
-            .expect("a command");
-        assert!(
-            !command.contains("docker"),
-            "the installed copy, not Docker: {command}"
-        );
+        assert!(!text.contains(app), "{app} in the Windows prompt");
     }
+}
+
+/// What the trial in Antigravity (13 October 2026) showed prompt 3 needs, whichever app it is pasted into: the app's
+/// own documentation, not a guess; a settings file kept for the whole account named, and asked about before it is
+/// read or changed; what is already in it kept; and the file it wrote said, since a new chat may not remember it.
+#[test]
+fn prompt_three_has_the_tool_add_stackvet_its_own_way_and_keep_what_is_there() {
+    for name in ["setup-prompt", "setup-windows"] {
+        let text = flat(&block(name));
+        for said in [
+            "from your own app's documentation, how this app is given a local MCP server",
+            "If you are not sure, say so and stop",
+            "one file for my whole account",
+            "ask me before you read it or change it",
+            "Read the file once",
+            "exactly as printed",
+            "keeping all of it",
+            "Write it only after I say yes",
+            "paste prompt 4, \"Check that it's connected\", from the setup page",
+            "which settings file you wrote",
+        ] {
+            assert!(text.contains(said), "{name}: {said}");
+        }
+    }
+    let check = flat(&block("setup-step-4"));
+    assert!(
+        check.contains("don't search my computer for others"),
+        "{check}"
+    );
+    assert!(
+        check.contains("rather than telling me to start Docker"),
+        "{check}"
+    );
+}
+
+/// The build prompt on the setup page is the guide's, word for word, so the two cannot drift apart.
+#[test]
+fn the_setup_pages_build_prompt_is_the_guides() {
+    let quoted = |text: &str| -> String {
+        text.lines()
+            .filter(|l| l.starts_with('>'))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    let ours = flat(&quoted(&block("setup-step-5")));
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let guide = std::fs::read_to_string(root.join("docs/GETTING-STARTED.md")).unwrap();
+    let start = guide
+        .find("## 4. Start the build with this prompt")
+        .expect("the guide's step 4");
+    let theirs: String = quoted(
+        &guide[start..]
+            .lines()
+            .skip_while(|l| !l.starts_with('>'))
+            .take_while(|l| l.starts_with('>'))
+            .collect::<Vec<_>>()
+            .join("\n"),
+    );
+    // The setup: the guide's prompt was found, and is the build prompt.
+    assert!(theirs.contains("Call `stackvet_spec`"), "{theirs}");
+    assert_eq!(ours, flat(&theirs));
 }
 
 #[test]
