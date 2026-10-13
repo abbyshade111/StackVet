@@ -1,6 +1,6 @@
 # An efficiency review of sv (12 October 2026): run speed, test and CI time, MCP answer size, build time
 
-**Status:** claimed by stackvet-orchestrator, 12 October 2026
+**Status:** done, 13 October 2026
 
 Asked for by the owner on 12 October 2026, after the deep review (0277): "a follow-on review ... this time focusing on
 potential efficiency gains", before this session's switch to Opus 5.5. Run by session stackvet-orchestrator, on Mythos
@@ -89,3 +89,5 @@ counted once, never a duration or a count of reads or execs, so none would catch
 counting fakes already in the tree (`docker.rs:3832`, `tests/one_walk.rs`) are the right shape for holding the fixes.
 Not done: nothing was run or timed by the reviewers themselves; `sv` records per-stage, per-suite, and per-request
 timings in `report.json`, so each estimate can be checked against a real report before its fix is built.
+
+**Done, 13 October 2026:** the review is complete and each of its 34 findings is an item of its own (0336 to 0369); 0340 was declined by the owner; the ones still open are taken the normal way.
