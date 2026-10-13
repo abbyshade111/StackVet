@@ -1001,13 +1001,15 @@ fn running_app(
     let run_status;
 
     if options.run_the_app {
-        match probe_the_running_app(manifest, app_dir, options.slow) {
+        // Worked out once, from the static scan's walk of the folder (backlog 0354).
+        let private_files = crate::private_files(listing);
+        match probe_the_running_app(manifest, app_dir, options.slow, &private_files) {
             Ok((outcome, plan)) => {
                 suite_timings.clone_from(&outcome.suite_timings);
                 request_timings.clone_from(&outcome.request_timings);
                 run_status = sv_report::RunStatus::Started {
                     image: plan.image.clone(),
-                    asked: anonymous_requests(&plan).len(),
+                    asked: anonymous_requests(&plan, &private_files).len(),
                     answered: outcome.probe_responses.len(),
                     signed_in: outcome.signed_in.is_some(),
                     tests: match &outcome.tests {
@@ -1019,10 +1021,10 @@ fn running_app(
                     .to_owned(),
                 };
                 let (running_findings, running_verified, signed_in_not_assessed) =
-                    running_app_evidence(&outcome, &plan);
+                    running_app_evidence(&outcome, &plan, &private_files);
                 let mut record = crate::seen::record(
                     secret_rules,
-                    &anonymous_requests(&plan),
+                    &anonymous_requests(&plan, &private_files),
                     &outcome.probe_responses,
                     &outcome.probes_rate_limited,
                 );

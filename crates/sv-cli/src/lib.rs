@@ -157,6 +157,7 @@ pub fn probe_the_running_app(
     manifest: &Manifest,
     app_dir: &Path,
     slow: bool,
+    private_files: &[sv_check::running::PrivateFile],
 ) -> std::result::Result<(sv_run::RunOutcome, sv_run::RunPlan), (String, sv_report::GapReason)> {
     let mut plan = RunPlan::from_manifest(manifest, app_dir)
         .map_err(|e| (cannot_run_said(&e.explain(), e.kind()), run_gap_reason(&e)))?;
@@ -173,7 +174,7 @@ pub fn probe_the_running_app(
     if let Some(warning) = sv_run::weakening_warning(&plan.start) {
         eprintln!("{warning}");
     }
-    let requests = anonymous_requests(&plan);
+    let requests = anonymous_requests(&plan, private_files);
     let outcome = backend.run(&plan, &requests);
     // Stopped with Ctrl-C: the run has removed its containers and network on the way out. What it
     // got to before then is not a report of the app, so nothing is written.
@@ -257,6 +258,8 @@ mod named_routes_tests;
 mod requirement_ids_tests;
 #[cfg(test)]
 mod resources_beside_quotas_tests;
+#[cfg(test)]
+mod run_walk_tests;
 
 /// The routes stackvet.toml names that the anonymous probes also ask (ADR-096); none without
 /// `[stack.run.users]`.
@@ -270,15 +273,20 @@ pub fn named_routes(plan: &RunPlan) -> Vec<String> {
 /// Every request the anonymous probes make: the fixed suite, and the GraphQL and WebSocket
 /// questions when stackvet.toml says where those are. One function, because `sv run` also counts
 /// how many of these went unanswered, and a count taken from a different list is a wrong count.
-pub fn anonymous_requests(plan: &RunPlan) -> Vec<probes::ProbeRequest> {
+pub fn anonymous_requests(
+    plan: &RunPlan,
+    private_files: &[sv_check::running::PrivateFile],
+) -> Vec<probes::ProbeRequest> {
     let mut requests = probes::requests(&plan.health_path);
     requests.extend(probes::route_requests(&named_routes(plan)));
     requests.extend(probes::api_requests(
         plan.graphql.as_deref(),
         plan.websocket.as_deref(),
     ));
-    let (admin_pages, private_files) = more_questions(plan);
-    requests.extend(sv_check::running::requests(&admin_pages, &private_files));
+    requests.extend(sv_check::running::requests(
+        &admin_pages(plan),
+        private_files,
+    ));
     requests.extend(probes::error_requests(
         &plan.health_path,
         &body_routes(plan.users.as_ref()),
@@ -292,6 +300,7 @@ pub fn anonymous_requests(plan: &RunPlan) -> Vec<probes::ProbeRequest> {
 pub fn running_app_evidence(
     outcome: &sv_run::RunOutcome,
     plan: &RunPlan,
+    private_files: &[sv_check::running::PrivateFile],
 ) -> (
     Vec<sv_check::Finding>,
     Vec<sv_check::Verified>,
@@ -305,11 +314,10 @@ pub fn running_app_evidence(
     findings.extend(api_findings);
     verified.extend(api_verified);
     not_assessed.extend(api_not_assessed);
-    let (admin_pages, private_files) = more_questions(plan);
     let more = sv_check::running::evaluate(
         &outcome.probe_responses,
-        &admin_pages,
-        &private_files,
+        &admin_pages(plan),
+        private_files,
         &outcome.liveness,
     );
     findings.extend(more.findings);
@@ -863,17 +871,21 @@ pub fn body_routes(users: Option<&sv_manifest::UsersSection>) -> Vec<(String, St
         .collect()
 }
 
-/// The admin pages stackvet.toml names, and the files in the app's folder that should never be
-/// served, for the questions in `sv_check::running`. Worked out the same way for the requests and
-/// for reading the answers, so the two agree on what was asked.
-pub fn more_questions(plan: &RunPlan) -> (Vec<String>, Vec<sv_check::running::PrivateFile>) {
-    let admin_pages = plan
-        .users
+/// The admin pages stackvet.toml names, for the questions in `sv_check::running`.
+fn admin_pages(plan: &RunPlan) -> Vec<String> {
+    plan.users
         .as_ref()
         .map(|users| users.admin.clone())
-        .unwrap_or_default();
-    let listing = sv_scan::files::Listing::of(&plan.app_dir);
-    (admin_pages, sv_check::running::private_files(&listing))
+        .unwrap_or_default()
+}
+
+/// The files in the app's folder that should never be served, for the questions in
+/// `sv_check::running`, worked out from a walk the caller has already made. Worked out once per run
+/// and given to both the requests and the reading of the answers, so the two agree on what was asked
+/// and the folder is not walked again for each (backlog 0354: `sv report --run` walked it four more
+/// times, `sv run` three).
+pub fn private_files(listing: &sv_scan::files::Listing) -> Vec<sv_check::running::PrivateFile> {
+    sv_check::running::private_files(listing)
 }
 
 /// The Secure by Design checklist's controls against the ASVS requirements that ask the same thing.

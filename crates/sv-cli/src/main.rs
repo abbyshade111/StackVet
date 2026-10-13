@@ -1206,8 +1206,10 @@ fn cmd_run(args: &[String]) -> Result<i32> {
     let manifest = Manifest::load_in(&app_dir)?.0;
 
     println!("Starting {} behind the network fence…", manifest.app.name);
+    // One walk of the folder for the whole run (backlog 0354).
+    let private_files = private_files(&sv_scan::files::Listing::of(&app_dir));
     let requests = RunPlan::from_manifest(&manifest, &app_dir)
-        .map(|plan| anonymous_requests(&plan))
+        .map(|plan| anonymous_requests(&plan, &private_files))
         .unwrap_or_default();
     if slow {
         println!(
@@ -1215,7 +1217,7 @@ fn cmd_run(args: &[String]) -> Result<i32> {
              minutes before using an emailed sign-in code, so it can take as long as they are."
         );
     }
-    match probe_the_running_app(&manifest, &app_dir, slow) {
+    match probe_the_running_app(&manifest, &app_dir, slow, &private_files) {
         Err((reason, _)) => {
             println!("\nNot assessed.\n\n{reason}");
             // Nothing about the running app was checked, which ADR-029 says with a 2, as `sv check` and
@@ -1239,7 +1241,7 @@ fn cmd_run(args: &[String]) -> Result<i32> {
                 sv_run::resources::sentence(outcome.resources.as_ref())
             );
             let (findings, verified, signed_in_not_assessed) =
-                running_app_evidence(&outcome, &plan);
+                running_app_evidence(&outcome, &plan, &private_files);
             println!(
                 "\nAsked it {} question{}, as somebody who has not signed in.",
                 outcome.probe_responses.len(),
