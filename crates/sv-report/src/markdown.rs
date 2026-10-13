@@ -1070,6 +1070,15 @@ fn finding_section(out: &mut String, report: &Report, finding: &sv_check::Findin
         out.push_str(&format!("**Next step.** {}\n\n", inert(&step)));
     }
     out.push_str(&format!("{}\n\n", inert(&finding.description)));
+    // What the finding rests on, from what `sv` kept of the running app (backlog 0378). The app's own text, so inert.
+    let saw = crate::what_was_seen(report, finding);
+    if let Some((last, shown)) = saw.split_last() {
+        out.push_str("**What StackVet saw.**\n\n");
+        for line in shown {
+            out.push_str(&format!("- {}\n", code(line)));
+        }
+        out.push_str(&format!("\n{last}\n\n"));
+    }
     out.push_str(&format!(
         "**Why it matters.** {}\n\n",
         inert(&finding.impact)

@@ -387,6 +387,9 @@ pub fn is_masked_name(name: &str) -> bool {
         "otp",
         "pin",
         "passcode",
+        // A form's anti-forgery token, `_csrf` in Express, whose name holds no "token" (backlog 0378).
+        "csrf",
+        "xsrf",
     ];
     is_secret_name(name)
         || name
@@ -1047,6 +1050,36 @@ pub fn redact_text_in(rules: &SecretRules, relative: &str, text: &str) -> (Strin
             spans.push((value.start(), value.end()));
         }
     }
+    // A form field named for a credential, `<input type="hidden" name="csrf_token" value="<token>">`, whose value is
+    // an attribute the patterns above do not read as a name and a value: a page `sv` kept would show it whole
+    // (backlog 0378, found in a loop trial's `seen.json`). The attributes come in either order.
+    static INPUT: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"(?is)<input\b[^>]*>").expect("static pattern"));
+    static ATTRIBUTE: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r#"(?i)\b(name|value)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))"#)
+            .expect("static pattern")
+    });
+    for tag in INPUT.find_iter(text) {
+        let mut name = None;
+        let mut value = None;
+        for caps in ATTRIBUTE.captures_iter(tag.as_str()) {
+            let Some(v) = caps.get(2).or(caps.get(3)).or(caps.get(4)) else {
+                continue;
+            };
+            if caps[1].eq_ignore_ascii_case("name") {
+                name = Some(v.as_str());
+            } else {
+                value = Some((tag.start() + v.start(), tag.start() + v.end(), v.as_str()));
+            }
+        }
+        if let (Some(name), Some((start, end, v))) = (name, value)
+            && is_masked_name(name)
+            && !v.is_empty()
+            && !looks_like_placeholder(v)
+        {
+            spans.push((start, end));
+        }
+    }
     // A credential after a command's flag named for it, `--token <key>` or `--api-key=<key>`, which
     // has no `:` or `=` for the patterns above to read (backlog 0283). A value that is itself a flag
     // is the next flag, not the credential.
@@ -1247,3 +1280,6 @@ mod redact_named_tests;
 
 #[cfg(test)]
 mod pass_name_tests;
+
+#[cfg(test)]
+mod redact_form_tests;

@@ -937,6 +937,15 @@ fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
         ));
     }
     b.push_str(&format!("<p>{}</p>\n", escape(&f.description)));
+    // What the finding rests on, from what `sv` kept of the running app (backlog 0378).
+    let saw = crate::what_was_seen(report, f);
+    if let Some((last, shown)) = saw.split_last() {
+        b.push_str("<p><strong>What StackVet saw.</strong></p>\n<ul class=\"saw\">\n");
+        for line in shown {
+            b.push_str(&format!("<li><code>{}</code></li>\n", escape(line)));
+        }
+        b.push_str(&format!("</ul>\n<p class=\"note\">{}</p>\n", escape(last)));
+    }
     b.push_str(&format!(
         "<p><strong>Why it matters.</strong> {}</p>\n",
         escape(&f.impact)

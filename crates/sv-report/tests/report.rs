@@ -630,6 +630,74 @@ fn a_note_worth_knowing_is_never_counted_named_or_advised_on_as_a_thing_to_fix()
 }
 
 #[test]
+fn a_finding_from_the_running_app_shows_what_stackvet_saw() {
+    // `Finding.evidence` names the exchanges a check recorded, and `seen.json` keeps them; until backlog 0378 no report
+    // read either, so a finding said what was wrong and nothing of what showed it.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut guessed = finding("probe.failed-sign-ins-unlimited", &[]);
+    guessed.title = "Failed sign-ins are not limited".into();
+    guessed.evidence = (0..5).map(|i| format!("guess-{i}")).collect();
+    let mut quiet = finding("ast.sql", &[]);
+    quiet.title = "A query built by hand".into();
+    let mut report = build(inputs(&f, &buckets, vec![guessed, quiet], &[]));
+    report.seen = Some(sv_report::seen::Seen {
+        exchanges: (0..5)
+            .map(|i| sv_report::seen::Exchange {
+                id: format!("guess-{i}"),
+                method: "POST".into(),
+                path: "/login".into(),
+                status: 401,
+                headers: Vec::new(),
+                body: "<html><head><title>Sign in</title></head><body><p>Wrong email or password.</p></body></html>"
+                    .into(),
+            })
+            .collect(),
+        ..Default::default()
+    });
+    for (name, page, quoted) in [
+        (
+            "report.html",
+            sv_report::html::page(&report),
+            "POST /login answered 401: &quot;Wrong email or password.&quot;",
+        ),
+        (
+            "security.md",
+            sv_report::markdown::security(&report),
+            "POST /login answered 401: \"Wrong email or password.\"",
+        ),
+    ] {
+        // The last time each title appears is its own section: the short version names the worst first.
+        let at = page
+            .rfind("Failed sign-ins are not limited")
+            .unwrap_or_else(|| panic!("{name}: the finding\n{page}"));
+        let next = page
+            .rfind("A query built by hand")
+            .unwrap_or_else(|| panic!("{name}: the other finding"));
+        let (first, second) = if at < next {
+            (&page[at..next], &page[next..])
+        } else {
+            (&page[at..], &page[next..at])
+        };
+        assert!(first.contains("What StackVet saw"), "{name}: {first}");
+        assert_eq!(
+            first.matches(quoted).count(),
+            sv_report::SAW_SHOWN,
+            "{name}: the first few, quoted by their visible words: {first}"
+        );
+        assert!(first.contains("And 2 more like them"), "{name}: {first}");
+        assert!(
+            first.contains("seen.json"),
+            "{name}: where all of them are: {first}"
+        );
+        assert!(
+            !second.contains("What StackVet saw"),
+            "{name}: a finding that names nothing shows nothing: {second}"
+        );
+    }
+}
+
+#[test]
 fn the_reports_lead_with_what_to_fix_and_say_what_was_not_examined_right_after() {
     // Order is the message (ADR-110): the things to fix first, worst first, then how the report was made, then
     // what was not examined, before anything else. Findings read without the gaps read as the whole truth about

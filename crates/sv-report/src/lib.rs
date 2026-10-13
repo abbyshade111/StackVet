@@ -1474,6 +1474,148 @@ pub fn is_note(f: &sv_check::Finding) -> bool {
     f.severity == sv_check::Severity::Info && !f.apart()
 }
 
+/// How many of a finding's exchanges "What StackVet saw" quotes before it counts the rest.
+pub const SAW_SHOWN: usize = 3;
+
+/// How much of a reply's visible text "What StackVet saw" quotes.
+const SAW_CHARS: usize = 140;
+
+/// What a finding rests on, from what `sv` kept of the running app (`seen.json`), a line each (backlog 0378): the
+/// request and what came back for an exchange, what the container was doing for a reading. At most `SAW_SHOWN`, then
+/// how many more, then where all of them are. Empty when the finding names nothing that was kept.
+///
+/// Only a reply's visible words are quoted, never its markup: a hidden field's value, where a form's token lives, is
+/// an attribute, so it cannot reach the report this way, and the record itself is redacted when it is made.
+pub fn what_was_seen(report: &Report, f: &sv_check::Finding) -> Vec<String> {
+    let Some(seen) = &report.seen else {
+        return Vec::new();
+    };
+    let lines: Vec<String> = f
+        .evidence
+        .iter()
+        .filter_map(|id| {
+            if let Some(e) = seen
+                .exchanges
+                .iter()
+                .chain(&seen.signed_in)
+                .find(|e| &e.id == id)
+            {
+                return Some(exchange_line(e));
+            }
+            seen.liveness.iter().find(|r| &r.id == id).map(reading_line)
+        })
+        .collect();
+    if lines.is_empty() {
+        return Vec::new();
+    }
+    let more = lines.len().saturating_sub(SAW_SHOWN);
+    let mut out: Vec<String> = lines.into_iter().take(SAW_SHOWN).collect();
+    out.push(match more {
+        0 => format!("Each is in full in {}, beside this report.", seen::FILE),
+        1 => format!(
+            "And 1 more like them. All are in full in {}, beside this report.",
+            seen::FILE
+        ),
+        n => format!(
+            "And {n} more like them. All are in full in {}, beside this report.",
+            seen::FILE
+        ),
+    });
+    out
+}
+
+fn exchange_line(e: &seen::Exchange) -> String {
+    let to = if (300..400).contains(&e.status) {
+        e.headers
+            .iter()
+            .find(|(name, _)| name == "location")
+            .map(|(_, at)| format!(", sending the browser to {at}"))
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+    let words = visible_words(&e.body);
+    let said = if words.is_empty() {
+        String::new()
+    } else if words.chars().count() > SAW_CHARS {
+        let head: String = words.chars().take(SAW_CHARS).collect();
+        format!(": \"{}…\"", head.trim_end())
+    } else {
+        format!(": \"{words}\"")
+    };
+    format!("{} {} answered {}{to}{said}", e.method, e.path, e.status)
+}
+
+fn reading_line(r: &seen::Reading) -> String {
+    let mut state = if r.status.is_empty() {
+        "could not be read".to_owned()
+    } else {
+        format!("was {}", r.status)
+    };
+    if r.restarts > 0 {
+        state.push_str(&format!(
+            ", restarted {} time{}",
+            r.restarts,
+            if r.restarts == 1 { "" } else { "s" }
+        ));
+    }
+    if r.out_of_memory {
+        state.push_str(", out of memory");
+    }
+    format!(
+        "The app's container, {}: it {state}, and {} its health path",
+        r.after,
+        if r.answered {
+            "answered"
+        } else {
+            "did not answer"
+        }
+    )
+}
+
+/// The words a person would read on a page, one space between them: the head, scripts, and styles left out, every
+/// tag taken away with its attributes, and the common entities read.
+fn visible_words(body: &str) -> String {
+    let lower = body.to_ascii_lowercase();
+    let mut text = String::with_capacity(body.len());
+    let mut i = 0;
+    while i < body.len() {
+        let rest = &lower[i..];
+        let skip_to = ["head", "script", "style"].iter().find_map(|tag| {
+            rest.starts_with(&format!("<{tag}"))
+                .then(|| {
+                    rest.find(&format!("</{tag}>"))
+                        .map(|end| end + tag.len() + 3)
+                })
+                .flatten()
+        });
+        if let Some(n) = skip_to {
+            i += n;
+            continue;
+        }
+        if rest.starts_with('<') {
+            i += rest.find('>').map_or(rest.len(), |end| end + 1);
+            text.push(' ');
+            continue;
+        }
+        let c = body[i..].chars().next().expect("a character");
+        text.push(c);
+        i += c.len_utf8();
+    }
+    let text = text
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#x27;", "'")
+        .replace("&#39;", "'")
+        .replace("&nbsp;", " ");
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+#[cfg(test)]
+mod what_was_seen_tests;
+
 /// What the reports say above the notes worth knowing.
 pub const NOTES_SECTION: &str = "Not things to fix. Each says something about how the app is built that is worth \
      knowing, and asks for nothing unless you decide it matters; if you do, its \"What to do\" says how.";
