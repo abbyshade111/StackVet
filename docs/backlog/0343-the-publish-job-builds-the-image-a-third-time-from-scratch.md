@@ -1,6 +1,6 @@
 # The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove
 
-**Status:** open
+**Status:** claimed by builder-full, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: build time. Severity: medium. Verified against the code by the reviewing session before filing.
 

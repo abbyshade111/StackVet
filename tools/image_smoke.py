@@ -11,7 +11,7 @@ to git, and starts the image the way `.mcp.json` would (`docker run -i --rm --ne
 <folder>:<folder> <image> mcp --root <folder>`). Then, over MCP:
 
 - the twelve tools are offered, and `stackvet_spec` answers;
-- `stackvet_prompts` gives the prompt library, each marked, so the prompts file is in the image;
+- `stackvet_prompts` lists the prompt library, each marked, so the prompts file is in the image;
 - `stackvet_guidance` gives the coding rules with their credit and license, so the rules file is in the image;
 - `stackvet_check` ran the committed-secrets check and found the `.env`. **This is asserted before
   anything is compared.** The first local test compared the image with the native `sv` on an app with
@@ -145,9 +145,9 @@ def main():
         check(names == TOOLS, f"the {len(TOOLS)} tools offered: {names}")
         prompts = replies[6]["result"]
         prompts_text = prompts["content"][0]["text"]
-        check(prompts["isError"] is False and "**Shown to work, on " in prompts_text
-              and "**Tried, not shown to work.**" in prompts_text,
-              "stackvet_prompts gives the prompt library, each prompt marked")
+        check(prompts["isError"] is False and "Shown to work, on " in prompts_text
+              and "Tried, not shown to work." in prompts_text,
+              "stackvet_prompts lists the prompt library, each prompt marked")
         guidance = replies[5]["result"]
         rules_text = guidance["content"][0]["text"]
         check(guidance["isError"] is False and "CC BY-SA 4.0" in rules_text and "OWASP AISVS" in rules_text,

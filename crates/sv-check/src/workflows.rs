@@ -455,6 +455,7 @@ fn finding(
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: rule_id.into(),
         title,
         severity,
