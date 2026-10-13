@@ -2225,6 +2225,7 @@ impl DockerBackend {
             after_seconds: started.elapsed().as_secs(),
             exited,
         };
+        let mut tries = 0;
         while std::time::Instant::now() < deadline {
             // If the app has already given up, waiting the full minute tells nobody anything; how
             // it ended is kept, so the person is told the wait was short and why (backlog 226,
@@ -2243,10 +2244,18 @@ impl DockerBackend {
             {
                 return ended(true, None);
             }
-            std::thread::sleep(std::time::Duration::from_secs(2));
+            std::thread::sleep(ready_pause(tries));
+            tries += 1;
         }
         ended(false, None)
     }
+}
+
+/// The pause after the readiness try numbered `tries` (from 0): a quarter of a second, doubling to two
+/// seconds. A fixed two seconds saw an app up in one second at about four (backlog 0355); the same
+/// checks, sooner, and no more often than every two seconds once an app is slow to start.
+fn ready_pause(tries: u32) -> std::time::Duration {
+    std::time::Duration::from_millis((250u64 << tries.min(3)).min(2_000))
 }
 
 /// How long the sidecar may live: the usual limit, and with `--slow` long enough to wait out the
@@ -5553,3 +5562,17 @@ mod backend_tests;
 
 #[cfg(test)]
 mod gateway_said_tests;
+
+#[cfg(test)]
+mod ready_pause_tests {
+    use super::*;
+
+    #[test]
+    fn the_readiness_poll_starts_at_a_quarter_second_and_doubles_to_two() {
+        let ms: Vec<u128> = (0..6).map(|n| ready_pause(n).as_millis()).collect();
+        assert_eq!(ms, [250, 500, 1_000, 2_000, 2_000, 2_000]);
+        // Over the minute a start may take, that is still a try every two seconds at most.
+        let first_four: u128 = ms[..4].iter().sum();
+        assert_eq!(first_four, 3_750);
+    }
+}

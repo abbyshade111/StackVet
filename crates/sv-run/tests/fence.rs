@@ -60,6 +60,14 @@ fn an_app_runs_inside_the_fence_or_sv_says_it_was_not_assessed() {
                 .run(&plan(), &[])
                 .expect("the fixture app should come up");
             assert!(outcome.healthy, "the app answered its health path");
+            // A static server up at once is seen within a second or so, not at the next two-second
+            // try (backlog 0355).
+            let ready = outcome
+                .container
+                .ready_after_seconds
+                .expect("a healthy app says when it was ready");
+            println!("the fixture app was seen ready after {ready}s");
+            assert!(ready <= 1, "seen ready after {ready}s");
             assert_eq!(outcome.fence, Fence::DockerInternalNetwork);
             assert_eq!(outcome.tests, None, "the fixture declares no test command");
         }
