@@ -877,6 +877,39 @@ fn a_code_finding_shows_the_lines_it_is_on() {
 }
 
 #[test]
+fn the_reports_name_the_bill_of_materials_beside_them_and_the_page_links_it() {
+    // `sv report` built the app's bill of materials to check it and wrote it nowhere (backlog 0382).
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut report = build(inputs(&f, &buckets, vec![], &[]));
+    report.sbom = Some(sv_report::SbomFile {
+        json: "{}".into(),
+        components: 12,
+        complete: false,
+    });
+    let html = sv_report::html::page(&report);
+    assert!(
+        html.contains("<a href=\"sbom.cdx.json\">sbom.cdx.json</a>"),
+        "{html}"
+    );
+    assert!(html.contains("12 packages, not complete"), "{html}");
+    let compliance = sv_report::markdown::compliance(&report);
+    let line = compliance
+        .lines()
+        .find(|l| l.contains("sbom.cdx.json"))
+        .expect("the line");
+    assert!(line.contains("12 packages, not complete"), "{line}");
+    // Near the top: before the first section after the short version.
+    assert!(
+        compliance.find("sbom.cdx.json") < compliance.find("## How this report was made"),
+        "{compliance}"
+    );
+    // Without a bill, nothing is said of one.
+    report.sbom = None;
+    assert!(!sv_report::html::page(&report).contains("sbom.cdx.json"));
+}
+
+#[test]
 fn the_reports_lead_with_what_to_fix_and_say_what_was_not_examined_right_after() {
     // Order is the message (ADR-110): the things to fix first, worst first, then how the report was made, then
     // what was not examined, before anything else. Findings read without the gaps read as the whole truth about

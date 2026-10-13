@@ -2733,6 +2733,12 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     });
     report.run_record = Some(run_record);
     report.seen = seen;
+    // The bill of materials, written beside the report as `sv sbom` prints it (backlog 0382).
+    report.sbom = Some(sv_report::SbomFile {
+        json: serde_json::to_string_pretty(&sbom::to_cyclonedx(bill_of_materials))? + "\n",
+        components: bill_of_materials.components.len(),
+        complete: bill_of_materials.is_complete(),
+    });
     // The lines each code finding is on, for "The code" under it (backlog 0378, part 2).
     report.code_lines = crate::code_lines::read(app_dir, &report.findings, secret_rules);
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped

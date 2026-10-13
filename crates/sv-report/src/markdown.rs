@@ -200,6 +200,10 @@ pub fn compliance(report: &Report) -> String {
     if let Some(line) = crate::slowest_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
+    // The bill of materials beside the report (backlog 0382).
+    if let Some(line) = crate::sbom_line(report) {
+        out.push_str(&format!("{line}\n\n"));
+    }
     if let Some(line) = crate::advisories_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
@@ -1194,6 +1198,7 @@ mod tests {
             build_loop: None,
             seen: None,
             code_lines: Default::default(),
+            sbom: None,
             timings: Vec::new(),
             app_name: "test".into(),
             target_level: 1,

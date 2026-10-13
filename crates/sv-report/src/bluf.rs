@@ -430,6 +430,7 @@ mod tests {
             build_loop: None,
             seen: None,
             code_lines: Default::default(),
+            sbom: None,
             timings: Vec::new(),
             app_name: "Test".into(),
             target_level: 1,
