@@ -1459,6 +1459,25 @@ pub fn app_then_tests(report: &Report) -> (Vec<&sv_check::Finding>, Vec<&sv_chec
     report.findings.iter().partition(|f| !f.apart())
 }
 
+/// The app's own findings split into the things to fix and the notes worth knowing (ADR-110, Later). A note is an
+/// `Info` finding: it says something about how the app is built and asks for nothing, so it is never counted, named,
+/// or advised on as a thing to fix. The order within each is kept.
+pub fn fix_then_notes(
+    app: Vec<&sv_check::Finding>,
+) -> (Vec<&sv_check::Finding>, Vec<&sv_check::Finding>) {
+    app.into_iter().partition(|f| !is_note(f))
+}
+
+/// An information note in the app's own code: worth knowing, never a thing to fix (ADR-110, Later). One listed apart
+/// (in test code, a bundled library) keeps its place in that section.
+pub fn is_note(f: &sv_check::Finding) -> bool {
+    f.severity == sv_check::Severity::Info && !f.apart()
+}
+
+/// What the reports say above the notes worth knowing.
+pub const NOTES_SECTION: &str = "Not things to fix. Each says something about how the app is built that is worth \
+     knowing, and asks for nothing unless you decide it matters; if you do, its \"What to do\" says how.";
+
 #[cfg(test)]
 #[path = "low_groups_tests.rs"]
 mod low_groups_tests;
@@ -1991,17 +2010,20 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
     }
     text.push_str(&unreadable);
     text.push_str(&gaps);
-    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not.
+    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not. A
+    // chain that holds says nothing of lines cut from the end, and the sentence says so (backlog 0310).
     if let Some(at) = b.chain_broken_at {
         text.push_str(&format!(
-            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added after it \
-             was written, so that line and the lines after it are not vouched for."
+            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added there \
+             after it was written, so that line and the lines after it are not vouched for."
         ));
     } else if let (true, Some(head)) = (b.chained > 0, &b.chain_head) {
         let short: String = head.chars().take(12).collect();
         text.push_str(&format!(
             " Each of the record's {} chained lines checks out against the one before it, ending at the hash {short}. \
-             A rewrite of the whole record would keep a valid chain, so compare that hash with an earlier report's.",
+             Lines cut from the end, or a rewrite of the whole record, would leave a valid chain all the same, \
+             so compare that hash with an earlier report's: if the record has only grown since, its chain still \
+             passes through the hash that report showed.",
             b.chained
         ));
     }
@@ -2060,9 +2082,22 @@ mod mark_tests;
 #[path = "next_step_tests.rs"]
 mod next_step_tests;
 
+#[cfg(test)]
+#[path = "build_loop_tail_tests.rs"]
+mod build_loop_tail_tests;
+
+#[cfg(test)]
+#[path = "outranked_in_part_tests.rs"]
+mod outranked_in_part_tests;
+
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
-/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already.
+/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already, and for a note worth
+/// knowing, which asks for nothing.
 pub fn next_step(report: &Report, f: &sv_check::Finding) -> Option<String> {
+    // A note worth knowing asks for nothing, so it is not told to be fixed (ADR-110, Later).
+    if is_note(f) {
+        return None;
+    }
     accepted_note(report, f).is_none().then(|| {
         "Fix it in the code and check again. If it is a false alarm, write a `[[finding-review]]` entry for it, \
          naming its rule, file and fingerprint, and confirm it with `sv review` in your own terminal; until then it \
@@ -2289,9 +2324,12 @@ pub fn mark_outranked(
         if !outside || applies.is_empty() {
             continue;
         }
+        // Only a credit that verified the requirement whole: one in part rests, by its own words, on
+        // one sample, and says nothing of the route or file the tool's finding is about (backlog 0303).
         let run_check = |r: &String| {
             verified.iter().find(|v| {
                 v.check_id.starts_with("probe.")
+                    && !v.in_part
                     && !manual_only.contains(r.as_str())
                     && v.requirement_ids.iter().any(|id| id == r)
             })

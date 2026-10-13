@@ -116,9 +116,9 @@ fn a_host_prefixed_cookie_signs_the_browser_in_and_a_weakened_start_is_warned_ab
         "{stderr}"
     );
     let first = report
-        .split("## Read this first")
+        .split("## How this report was made")
         .nth(1)
-        .expect("the report has its first section");
+        .expect("the report has the section with the run note");
     assert!(
         first.contains(
             "Warning: its start command sets `FAMILY_HUB_INSECURE_COOKIES=1`, which looks like it \

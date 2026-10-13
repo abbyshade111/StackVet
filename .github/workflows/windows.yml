@@ -35,6 +35,10 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        # The token stays out of the checked-out folder, so nothing that runs later in the job
+        # (a build script, a test, a package from outside) can read it. `sv check` reports this (AC.12.2).
+        with:
+          persist-credentials: false
       - name: Use the toolchain this workspace needs
         run: rustup toolchain install stable --profile minimal && rustup default stable
       - name: Build sv

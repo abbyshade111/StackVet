@@ -27,7 +27,8 @@ A vulnerability in `sv` is something that lets it be used against the person run
 
 - it reads or writes a file outside the folder it was given (the MCP server refuses `..` and symbolic links that lead
   outside it);
-- it opens a network connection of its own (it is designed to open none);
+- it opens a network connection of its own (it is designed to open none, apart from `sv probe <address>` and the
+  install step with `install = true`, each asked for by name);
 - it runs code from the app it is checking, when it was not asked to (`--run` and `--tools` are the only ways it does);
 - a report, or a message to the AI tool, shows a whole key or password (secrets are shown as their first four
   characters and their length);

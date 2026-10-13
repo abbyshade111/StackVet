@@ -1967,13 +1967,9 @@ fn cmd_dashboard(args: &[String]) -> Result<()> {
         board.as_deref(),
         &health,
     );
-    let staging = parent.join(format!(
-        ".{}.sv-{}",
-        name.to_string_lossy(),
-        std::process::id()
-    ));
-    std::fs::write(&staging, page).with_context(|| format!("writing {}", staging.display()))?;
-    std::fs::rename(&staging, &target).with_context(|| format!("writing {}", target.display()))?;
+    // Staged and moved into place by the one writer that follows no link (backlog 0314): the
+    // folder may be one others can write to, and a link planted at the staging name is refused.
+    write_without_following(&parent, &name.to_string_lossy(), page.as_bytes())?;
 
     let missing: Vec<&sv_report::dashboard::App> =
         apps.iter().filter(|a| a.summary.is_err()).collect();
@@ -3574,3 +3570,6 @@ mod bundle_backstop_tests {
 
 #[cfg(test)]
 mod adapters_once_tests;
+
+#[cfg(all(test, unix))]
+mod dashboard_link_tests;
