@@ -18,20 +18,8 @@ fn the_apps_text_in_a_report_read_back_is_inside_the_fence() {
         let path = path_from_uri(uri).unwrap();
         let name = path.file_name().unwrap().to_str().unwrap();
         let on_disk = std::fs::read_to_string(&path).unwrap();
-        if name == sv_report::SBOM_FILE {
-            // The bill of materials names the app's packages, never the app (backlog 0382), so it has no planted
-            // name to fence; it comes back as written, like the other JSON files, and still parses.
-            assert!(!resources::fenced_when_read(name));
-            assert!(!on_disk.contains(INJECTION), "{name}");
-            let said = read(&server, uri)["result"]["contents"][0]["text"]
-                .as_str()
-                .unwrap()
-                .to_owned();
-            assert_eq!(said, on_disk, "{name}");
-            serde_json::from_str::<Value>(&said).unwrap_or_else(|e| panic!("{name}: {e}"));
-            continue;
-        }
-        // The setup: the planted name has to be in the report, or its absence below proves nothing.
+        // The setup: the planted name has to be in the report, or its absence below proves nothing. Every file
+        // names the app, the bill of materials too since it lists the app itself (backlog 0402).
         assert!(
             on_disk.contains(INJECTION),
             "{name} does not quote the app's name"
