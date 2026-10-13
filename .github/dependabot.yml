@@ -47,3 +47,17 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7
+
+  # py7zr, which only the CI steps that run the archive tests install (ADR-089), and each package it pulls in, pinned
+  # with their files' hashes in tools/py7zr-requirements.txt (backlog 0288). Each update moves a version and its hashes
+  # together; the suite on Linux and the Windows workflow both run on a pull request that changes the file.
+  - package-ecosystem: pip
+    directory: /tools
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      py7zr:
+        patterns: ['*']
