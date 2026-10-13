@@ -1636,11 +1636,17 @@ fn note_callers(
     if parser.set_language(&grammar).is_err() {
         return;
     }
+    // Only a file whose text holds a function's name can call it: `calls_of` reads the identifiers spelled
+    // that way, and nothing else. The rest are not parsed again (backlog 0351); in most apps that is nearly all.
+    let names: Vec<&str> = pending.iter().map(|d| d.function.as_str()).collect();
     let files: Vec<(String, String, tree_sitter::Tree)> = listing
         .app_files()
         .filter(|e| e.language == Some("python"))
         .filter_map(|e| {
             let text = e.read_text().ok()?;
+            if !names.iter().any(|name| text.contains(name)) {
+                return None;
+            }
             let tree = parser.parse(&text, None)?;
             Some((e.relative.clone(), text, tree))
         })
@@ -2332,6 +2338,9 @@ fn read_page(rules: &AstRules, relative: &str, source: &str, scan: &mut AstScan)
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod callers_tests;
 
 #[cfg(test)]
 mod body_whole_tests;
