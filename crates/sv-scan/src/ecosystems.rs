@@ -939,11 +939,11 @@ pub const REPORT_LOCK: &str = sv_frameworks::names::REPORT_LOCK;
 /// Who holds `REPORT_LOCK`, beside it: the one file of the lock another run can read on Windows.
 pub const REPORT_HOLDER: &str = sv_frameworks::names::REPORT_HOLDER;
 
-/// The six files a report is written as, in the order they are written and sealed. The one list
+/// The files a report is written as, in the order they are written and sealed. The one list
 /// the names of a report folder derive from: `REPORT_FOLDER_NAMES` here, and in `sv-cli` the table
 /// that says how each is rendered and what kind of file it is (`report_files`), which the compiler
 /// holds to this one, the seal (`report_seal::SEALED`), and the MCP server's resources.
-pub const REPORT_FILES: [&str; 7] = [
+pub const REPORT_FILES: [&str; 8] = [
     "report.html",
     "compliance.md",
     "security.md",
@@ -951,6 +951,7 @@ pub const REPORT_FILES: [&str; 7] = [
     "findings.sarif",
     "report.json",
     "seen.json",
+    "sbom.cdx.json",
 ];
 
 /// The record of the build loop (ADR-076): one line for each call the AI coding tool made to `sv`'s
