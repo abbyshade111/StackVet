@@ -1141,7 +1141,22 @@ fn report_for_folder(files: &[(&str, &str)]) -> sv_report::Report {
 #[test]
 fn end_to_end_a_clean_scan_supports_the_secrets_controls_and_checks_none_of_them() {
     let report = report_for_folder(&[("app.py", "import os\nKEY = os.environ['STRIPE_KEY']\n")]);
-    for id in ["SBD-AC-05", "V13.3.1", "V11.1.1"] {
+    // V11.1.1 asks for a documented key-management policy, which no file scan can speak to, so the scan does not
+    // cite it, even in support (backlog 0305).
+    let policy = report
+        .requirements
+        .iter()
+        .find(|l| l.id == "V11.1.1")
+        .expect("V11.1.1 should apply");
+    assert!(
+        !policy
+            .supported_by
+            .iter()
+            .any(|c| c.check_id == "secrets.scan"),
+        "{:?}",
+        policy.supported_by
+    );
+    for id in ["SBD-AC-05", "V13.3.1"] {
         let line = report
             .requirements
             .iter()

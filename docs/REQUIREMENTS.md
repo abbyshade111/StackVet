@@ -36,7 +36,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 122 can be checked, 52 can only be found failing, 10 where a check helps but a person decides, and 161 with no check.
+345 requirements: 122 can be checked, 52 can only be found failing, 9 where a check helps but a person decides, and 162 with no check.
 
 ### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
 
@@ -355,7 +355,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 | Requirement | Coverage | Checks |
 |---|---|---|
-| **V11.1.1** Verify that there is a documented policy for management of cryptographic keys and a cryptographic key lifecycle that follows a key management standard such as NIST SP 800-57. This should include ensuring that keys are not overshared (for example, with more than two entities for shared secrets and more than one entity for private keys). | A check helps; a person decides | Reads the code: `secrets.private-key-block`, looks for: Private key found in a file |
+| **V11.1.1** Verify that there is a documented policy for management of cryptographic keys and a cryptographic key lifecycle that follows a key management standard such as NIST SP 800-57. This should include ensuring that keys are not overshared (for example, with more than two entities for shared secrets and more than one entity for private keys). | No check | – |
 | **V11.1.2** Verify that a cryptographic inventory is performed, maintained, regularly updated, and includes all cryptographic keys, algorithms, and certificates used by the application. It must also document where keys can and cannot be used in the system, and the types of data that can and cannot be protected using the keys. | No check | – |
 | **V11.2.1** Verify that industry-validated implementations (including libraries and hardware-accelerated implementations) are used for cryptographic operations. | No check | – |
 | **V11.2.2** Verify that the application is designed with crypto agility such that random number, authenticated encryption, MAC, or hashing algorithms, key lengths, rounds, ciphers and modes can be reconfigured, upgraded, or swapped at any time, to protect against cryptographic breaks. Similarly, it must also be possible to replace keys and passwords and re-encrypt data. This will allow for seamless upgrades to post-quantum cryptography (PQC), once high-assurance implementations of approved PQC schemes or standards are widely available. | No check | – |
