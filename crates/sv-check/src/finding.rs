@@ -488,8 +488,9 @@ pub fn is_test_path(path: &str) -> bool {
 /// make either more certain. It takes every requirement and CWE of the others, names their rules in
 /// `also_reported_by`, carries the redacted value if it had none, and says, in one line each, how
 /// `sv`'s own rules among the others rated the line, so nothing the others were evidence about and
-/// no reason for `sv`'s own rating is lost. A tool's text is not copied over: it can quote the value
-/// it found (S8), and it is named instead. (BACKLOG, family-hub item 7, 4 October 2026.)
+/// no reason for `sv`'s own rating is lost. An outside tool's title, its rule's short description, is said the
+/// same way (backlog 0380, 12 October 2026), so a second opinion is read as one; its message is not copied over,
+/// since it can quote the value it found (S8). (BACKLOG, family-hub item 7, 4 October 2026.)
 pub fn merge_same_place(findings: Vec<Finding>) -> Vec<Finding> {
     let rank = |c: Confidence| match c {
         Confidence::High => 0,
@@ -533,17 +534,26 @@ pub fn merge_same_place(findings: Vec<Finding>) -> Vec<Finding> {
         .map(|(mut members, kept, _)| {
             let mut keep = members.remove(kept);
             for other in members {
-                if !other.rule_id.is_empty()
-                    && other.rule_id != keep.rule_id
-                    && is_svs_own(&other.rule_id)
-                {
-                    let said = format!(
-                        "`sv`'s own rule `{}` reported this line too, as {} and {}: {}",
-                        other.rule_id,
-                        other.severity.name(),
-                        other.certainty(),
-                        other.title
-                    );
+                if !other.rule_id.is_empty() && other.rule_id != keep.rule_id {
+                    // An outside tool's title, its rule's own short description, is said as `sv`'s own are
+                    // (backlog 0380): its message is not, since it can quote the value it found (S8). The title is
+                    // already redacted, as all of a tool's text is when its report is read.
+                    let said = if is_svs_own(&other.rule_id) {
+                        format!(
+                            "`sv`'s own rule `{}` reported this line too, as {} and {}: {}",
+                            other.rule_id,
+                            other.severity.name(),
+                            other.certainty(),
+                            other.title
+                        )
+                    } else {
+                        format!(
+                            "The outside tool's rule `{}` reported this line too, as {}: {}",
+                            other.rule_id,
+                            other.severity.name(),
+                            other.title
+                        )
+                    };
                     keep.description = if keep.description.is_empty() {
                         said
                     } else {
@@ -677,6 +687,9 @@ mod quoted_tests;
 
 #[cfg(test)]
 mod test_information_tests;
+
+#[cfg(test)]
+mod tool_words_tests;
 
 #[cfg(test)]
 mod tests {
@@ -963,9 +976,18 @@ mod tests {
         assert_eq!(merged[0].rule_id, "ast.x");
         assert_eq!(merged[0].confidence, Confidence::Low);
         assert_eq!(merged[0].also_reported_by, vec!["semgrep.y".to_owned()]);
-        // A tool merged into `sv`'s finding adds no words of its own.
+        // A tool merged into `sv`'s finding adds one line, naming its rule by its title, and nothing of its message
+        // (backlog 0380; until 12 October 2026 it added nothing at all).
         assert!(
-            merged[0].description.is_empty(),
+            merged[0].description.starts_with(
+                "The outside tool's rule `semgrep.y` reported this line too, as medium: "
+            ),
+            "{}",
+            merged[0].description
+        );
+        assert_eq!(
+            merged[0].description.lines().count(),
+            1,
             "{}",
             merged[0].description
         );

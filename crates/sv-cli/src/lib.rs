@@ -201,7 +201,7 @@ fn run_gap_reason(why: &sv_run::CannotRun) -> sv_report::GapReason {
     match why {
         CannotRun::NoBackend { .. } => GapReason::NotInstalled,
         CannotRun::NoRunCommand { .. } => GapReason::NotAsked,
-        CannotRun::BadImage { .. } => GapReason::CouldNotRead,
+        CannotRun::BadImage { .. } | CannotRun::BadHealth { .. } => GapReason::CouldNotRead,
         CannotRun::BackendFailed { .. }
         | CannotRun::NeverReady { .. }
         | CannotRun::AppFolderUnseen { .. }
@@ -719,12 +719,14 @@ pub fn adapters_examined(
         })
         .zip(adapters.all())
         .map(|(entry, adapter)| {
-            entry.with_tool(
-                run.tools
-                    .iter()
-                    .find(|(id, _)| id == &adapter.id)
-                    .map(|(_, tool)| tool.clone()),
-            )
+            entry
+                .with_tool(
+                    run.tools
+                        .iter()
+                        .find(|(id, _)| id == &adapter.id)
+                        .map(|(_, tool)| tool.clone()),
+                )
+                .as_outside_tool(&adapter.name)
         })
         .collect()
 }

@@ -346,7 +346,31 @@ fn is_secret_name(name: &str) -> bool {
         "salt",
         "hmac",
     ];
-    NAMES.iter().any(|k| n.ends_with(k) || n.contains(k))
+    NAMES.iter().any(|k| n.ends_with(k) || n.contains(k)) || name_words(name).any(|w| w == "pass")
+}
+
+/// The words of a name, lowered: split at anything not a letter or digit and where a lower-case
+/// letter meets a capital, so `DB_PASS`, `smtp-pass`, and `dbPass` each hold the word `pass` and
+/// `BYPASS_MODE`, `passport`, and `passengerCount` do not (backlog 0315). A word only a substring
+/// would find is a whole word here or nothing.
+fn name_words(name: &str) -> impl Iterator<Item = String> + '_ {
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let mut previous_lower = false;
+    for c in name.chars() {
+        if !c.is_ascii_alphanumeric() {
+            words.push(std::mem::take(&mut word));
+            previous_lower = false;
+            continue;
+        }
+        if c.is_ascii_uppercase() && previous_lower {
+            words.push(std::mem::take(&mut word));
+        }
+        previous_lower = c.is_ascii_lowercase();
+        word.push(c.to_ascii_lowercase());
+    }
+    words.push(word);
+    words.into_iter().filter(|w| !w.is_empty())
 }
 
 /// A name whose value is masked wherever `sv` repeats text it did not write: every name the scan
@@ -363,6 +387,9 @@ pub fn is_masked_name(name: &str) -> bool {
         "otp",
         "pin",
         "passcode",
+        // A form's anti-forgery token, `_csrf` in Express, whose name holds no "token" (backlog 0378).
+        "csrf",
+        "xsrf",
     ];
     is_secret_name(name)
         || name
@@ -1023,6 +1050,36 @@ pub fn redact_text_in(rules: &SecretRules, relative: &str, text: &str) -> (Strin
             spans.push((value.start(), value.end()));
         }
     }
+    // A form field named for a credential, `<input type="hidden" name="csrf_token" value="<token>">`, whose value is
+    // an attribute the patterns above do not read as a name and a value: a page `sv` kept would show it whole
+    // (backlog 0378, found in a loop trial's `seen.json`). The attributes come in either order.
+    static INPUT: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"(?is)<input\b[^>]*>").expect("static pattern"));
+    static ATTRIBUTE: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r#"(?i)\b(name|value)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))"#)
+            .expect("static pattern")
+    });
+    for tag in INPUT.find_iter(text) {
+        let mut name = None;
+        let mut value = None;
+        for caps in ATTRIBUTE.captures_iter(tag.as_str()) {
+            let Some(v) = caps.get(2).or(caps.get(3)).or(caps.get(4)) else {
+                continue;
+            };
+            if caps[1].eq_ignore_ascii_case("name") {
+                name = Some(v.as_str());
+            } else {
+                value = Some((tag.start() + v.start(), tag.start() + v.end(), v.as_str()));
+            }
+        }
+        if let (Some(name), Some((start, end, v))) = (name, value)
+            && is_masked_name(name)
+            && !v.is_empty()
+            && !looks_like_placeholder(v)
+        {
+            spans.push((start, end));
+        }
+    }
     // A credential after a command's flag named for it, `--token <key>` or `--api-key=<key>`, which
     // has no `:` or `=` for the patterns above to read (backlog 0283). A value that is itself a flag
     // is the next flag, not the credential.
@@ -1220,3 +1277,9 @@ mod tests;
 
 #[cfg(test)]
 mod redact_named_tests;
+
+#[cfg(test)]
+mod pass_name_tests;
+
+#[cfg(test)]
+mod redact_form_tests;
