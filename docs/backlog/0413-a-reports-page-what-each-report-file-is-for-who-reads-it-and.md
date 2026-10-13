@@ -27,3 +27,18 @@ To build, after 0412 (the PDF), so the page can show the PDF too:
   at the real examples.
 - **A test** that the README's table names every file `sv report` writes, so a new file cannot be left out (break:
   drop a row and see it fail).
+- **Two diagrams on the page,** added at the owner's request the same day. Both were drawn on 13 October in the
+  website palette (`docs/brand/README.md`) and are kept for now outside the repository, on the owner's USB drive
+  (`whitepaper_claude/diagrams`: an SVG and a PNG of each, and `make_diagrams.py`, which draws them):
+  - **The software development lifecycle:** OWASP's six phases as a ring (Planning, Analysis, Design,
+    Implementation, Testing & Integration, Maintenance), after the diagram on OWASP's Integration Standards page,
+    with "SDLC" in the middle.
+  - **Where Secure by Design, ASVS, and AISVS touch the lifecycle:** each framework against the six phases, each
+    cell tagged **Main** (a phase the framework is chiefly for) or **In part** (one it reaches into for part of its
+    work), with the sections it rests on. The owner chose those two words. The cells were placed from the
+    frameworks' own text in `data/frameworks`; check each again against it before the page is settled, since a
+    citation is a claim.
+
+  They go in `docs/website/diagrams/`, with the script under `docs/website/diagrams/source/` as the logo's is kept
+  (`docs/brand/source/`), and `docs/brand/README.md` gains the two tags and what each means, so later diagrams
+  use the same words.
