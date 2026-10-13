@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: 0323 (since 2026-10-13) — next: 0326, 0344, 0366, 0354, 0356
-- builder-none — arm: none — holds: 0333 (since 2026-10-13) — next: 0330, 0357, 0368, 0367, 0364
+- builder-none — arm: none — holds: 0357 (since 2026-10-13) — next: 0368, 0367, 0364
 
 ## Queue
 
@@ -265,3 +265,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 00:23 — assigned 0364 to builder-none (none) as next: lane 4: time the crash sweeps once and write the number down
 - 2026-10-13 00:53 — finished 0363 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1658; now holds 0323
 - 2026-10-13 00:53 — finished 0334 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1660; now holds 0333
+- 2026-10-13 01:23 — finished 0333 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1664; now holds 0330
+- 2026-10-13 01:23 — finished 0330 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1666; now holds 0357
