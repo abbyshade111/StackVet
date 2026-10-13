@@ -545,8 +545,10 @@ fn nothing_is_ever_labelled_a_pass() {
 }
 
 #[test]
-fn the_reports_say_how_much_was_not_examined_before_they_say_what_was_found() {
-    // Order is the message. Findings read first are read as the whole truth about the app.
+fn the_reports_lead_with_what_to_fix_and_say_what_was_not_examined_right_after() {
+    // Order is the message (ADR-110): the things to fix first, worst first, then how the report was made, then
+    // what was not examined, before anything else. Findings read without the gaps read as the whole truth about
+    // the app, so the gaps come straight after them, ahead of every table.
     let f = frameworks();
     let buckets = Buckets::default();
     let mut i = inputs(&f, &buckets, vec![finding("ast.sql", &[])], &[]);
@@ -557,14 +559,43 @@ fn the_reports_say_how_much_was_not_examined_before_they_say_what_was_found() {
         requirements: Vec::new(),
     }];
     let report = build(i);
-    let security = sv_report::markdown::security(&report);
-    let gaps_at = security
-        .find("What was not examined")
-        .expect("the gaps section");
-    let findings_at = security.find("to fix").expect("the findings section");
-    assert!(
-        gaps_at < findings_at,
-        "the gaps must come first:\n{security}"
+    let in_order = |name: &str, page: &str, headings: &[&str]| {
+        let at: Vec<usize> = headings
+            .iter()
+            .map(|h| {
+                page.find(h)
+                    .unwrap_or_else(|| panic!("{name}: no {h:?} in\n{page}"))
+            })
+            .collect();
+        assert!(
+            at.windows(2).all(|w| w[0] < w[1]),
+            "{name}: the sections must come in the order {headings:?}:\n{page}"
+        );
+    };
+    in_order(
+        "security.md",
+        &sv_report::markdown::security(&report),
+        &["1 thing to fix", "## What was not examined"],
+    );
+    in_order(
+        "compliance.md",
+        &sv_report::markdown::compliance(&report),
+        &[
+            "## 1 thing to fix",
+            "## How this report was made",
+            "## What was not examined",
+            "## Requirements that apply",
+        ],
+    );
+    in_order(
+        "report.html",
+        &sv_report::html::page(&report),
+        &[
+            "<h2>1 thing to fix</h2>",
+            "<h2>How this report was made</h2>",
+            "<h2>What was not examined</h2>",
+            "<h2>Requirements that apply</h2>",
+        ],
     );
 }
 
@@ -1881,7 +1912,7 @@ mod same_story {
         // exists; and a claim, so the "what the app says about itself" section does.
         let mut i = inputs(&f, &buckets, vec![finding("some.rule", &["V17.1.1"])], &[]);
         // So "What was not examined" is emitted too: it is one of the sections whose order matters
-        // most, being the one the reports lead with.
+        // most, being the one that follows the things to fix (ADR-110).
         i.gaps = vec![sv_report::Gap {
             what: "the app while it was running".into(),
             why: "it was not started".into(),
