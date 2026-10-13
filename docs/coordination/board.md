@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: 0323 (since 2026-10-13) — next: 0326, 0344, 0366, 0354, 0356
-- builder-none — arm: none — holds: 0351 (since 2026-10-13) — next: 0263
+- builder-none — arm: none — holds: 0263 (since 2026-10-13)
 
 ## Queue
 
@@ -273,3 +273,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 03:23 — finished 0364 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1674; now holds 0352
 - 2026-10-13 03:53 — finished 0352 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1677; now holds 0353
 - 2026-10-13 04:53 — finished 0353 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1679; now holds 0351
+- 2026-10-13 05:53 — finished 0351 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1681; now holds 0263
