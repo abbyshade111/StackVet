@@ -473,6 +473,7 @@ fn finding_on(requirement: &str) -> sv_check::Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "probe.short-password-accepted".into(),
         title: "t".into(),
         severity: sv_check::Severity::Medium,

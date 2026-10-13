@@ -187,6 +187,11 @@ pub struct Finding {
     /// fingerprint here. Empty until the report gathers them.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub also_on_this_line: Vec<Finding>,
+    /// The outside tool's own page about the rule that fired, from its SARIF `helpUri`, when that is a plain web
+    /// address (`crate::adapters::kept_help_uri`); `None` for `sv`'s own rules and a tool that gives none (backlog
+    /// 0378).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub help_uri: Option<String>,
     /// Why the report lists the finding apart though nothing about its file or rule says so: it is
     /// about requirements the app is not held to, or an outside tool's finding about requirements
     /// `sv`'s own check of the running app verified in the same run (`Outranked`). `None` until the
@@ -726,6 +731,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         }
     }
 
@@ -1309,6 +1315,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: "secrets.anthropic-key".into(),
             title: "Anthropic API key found in a file".into(),
             severity: Severity::Critical,

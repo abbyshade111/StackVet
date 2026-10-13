@@ -304,7 +304,7 @@ fn rule_entry(id: &str, findings: &[&sv_check::Finding]) -> Value {
         all.dedup();
         all
     };
-    json!({
+    let mut entry = json!({
         "id": id,
         "name": id,
         "shortDescription": { "text": short },
@@ -314,7 +314,12 @@ fn rule_entry(id: &str, findings: &[&sv_check::Finding]) -> Value {
             "tags": union(|f| &f.cwe),
             "requirements": union(|f| &f.requirement_ids),
         }
-    })
+    });
+    // The outside tool's own page about the rule, passed on as the tool gave it (backlog 0378).
+    if let Some(uri) = findings.iter().find_map(|f| f.help_uri.as_deref()) {
+        entry["helpUri"] = json!(uri);
+    }
+    entry
 }
 
 #[cfg(test)]
@@ -419,6 +424,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         }
     }
 

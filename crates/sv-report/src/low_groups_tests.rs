@@ -77,6 +77,7 @@ fn finding(rule: &str, file: &str, line: usize, severity: sv_check::Severity) ->
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
     })
 }
 

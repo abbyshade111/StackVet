@@ -712,6 +712,7 @@ pub fn incompleteness_finding(sbom: &Sbom) -> Option<Finding> {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         rule_id: "sbom.incomplete".into(),
         title: "The list of what this app ships is not complete".into(),
         severity: Severity::Medium,

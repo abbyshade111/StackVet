@@ -78,6 +78,7 @@ fn info(rule: &str, file: &str, line: usize) -> sv_check::Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
     })
 }
 

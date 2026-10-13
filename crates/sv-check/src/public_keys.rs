@@ -200,6 +200,7 @@ fn finding(file: &str, line: usize, name: &str, held: Option<&str>) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: SECRET_UNDER_PUBLIC_NAME.to_owned(),
         title: "A server's key is under a name the browser is given".to_owned(),
         severity: Severity::High,

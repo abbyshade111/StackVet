@@ -1099,6 +1099,10 @@ fn finding_section(out: &mut String, report: &Report, finding: &sv_check::Findin
     if let Some(by) = crate::found_by(report, finding) {
         out.push_str(&format!("*{}*\n\n", inert(&by)));
     }
+    if let Some(uri) = finding.help_uri.as_deref() {
+        // A plain address only (`kept_help_uri`): no space, bracket, or parenthesis to end the link early.
+        out.push_str(&format!("[{}]({uri})\n\n", crate::RULE_PAGE));
+    }
     for note in crate::finding_notes(finding) {
         out.push_str(&format!("*{}*\n\n", inert(&note)));
     }

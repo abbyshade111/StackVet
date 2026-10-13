@@ -3027,6 +3027,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: decided[0].switch.rule_id.to_owned(),
             title: "open".to_owned(),
             severity: sv_check::Severity::High,
@@ -3095,6 +3096,7 @@ mod tests {
                 bundled_library: None,
                 outranked: None,
                 also_on_this_line: Vec::new(),
+                help_uri: None,
             };
             f.fingerprint = format!("fp-{rule}");
             f

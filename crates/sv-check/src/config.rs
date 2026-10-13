@@ -255,6 +255,7 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: "config.secrets-file-committed".into(),
             title: format!("A file that holds credentials is in version control (`{first}`)"),
             severity: Severity::Critical,
@@ -341,6 +342,7 @@ fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: AI_COMMITS_OFF_MERGE.into(),
         title,
         severity: Severity::Info,
@@ -376,6 +378,7 @@ fn in_history_finding(first: &str, count: usize) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.secrets-file-committed".into(),
         title: format!(
             "A file that holds credentials was committed, and is still in the history (`{first}`)"
@@ -610,6 +613,7 @@ fn env_not_ignored_finding(file: &str, description: String) -> Finding {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         rule_id: "config.gitignore-covers-env".into(),
         title: "Nothing stops the environment file being committed".into(),
         severity: Severity::High,
@@ -747,6 +751,7 @@ fn versions_pinned(
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: "config.versions-pinned".into(),
             title: if names.len() == 1 {
                 format!("{} does not pin the versions it installs", names[0])
@@ -910,6 +915,7 @@ fn security_contact(app_dir: &Path) -> Outcome {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.security-contact".into(),
         title: "There is no way to report a security problem".into(),
         severity: Severity::Low,

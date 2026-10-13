@@ -696,6 +696,7 @@ fn finding(rule: &Rule, description: String, host: &str) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: rule.rule_id.to_owned(),
         title: rule.title.to_owned(),
         severity: rule.severity,

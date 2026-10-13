@@ -29,6 +29,7 @@ fn finding(rule_id: &str, requirement_ids: &[&str]) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: rule_id.into(),
         title: "something".into(),
         severity: Severity::High,
@@ -4055,4 +4056,56 @@ fn report_json_says_whose_word_each_row_and_each_yes_rests_on() {
         row("V1.3.1")["attested_by"][0]["whose"],
         "the AI coding tool"
     );
+}
+
+#[test]
+fn an_outside_tools_finding_links_the_tools_own_page_about_its_rule() {
+    // The tools' SARIF names a page for each rule, and the adapters dropped it until backlog 0378.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut linked = finding("bandit.B105", &[]);
+    linked.title = "A password written in the code".into();
+    linked.help_uri =
+        Some("https://bandit.readthedocs.io/en/1.9.4/plugins/b105.html?a=1&b=2".into());
+    let report = build(inputs(
+        &f,
+        &buckets,
+        vec![linked, finding("ast.sql", &[])],
+        &[],
+    ));
+    let html = sv_report::html::page(&report);
+    assert!(
+        html.contains(&format!(
+            "<a href=\"https://bandit.readthedocs.io/en/1.9.4/plugins/b105.html?a=1&amp;b=2\" rel=\"noopener noreferrer\">{}</a>.",
+            sv_report::RULE_PAGE
+        )),
+        "{html}"
+    );
+    let security = sv_report::markdown::security(&report);
+    assert!(
+        security.contains(&format!(
+            "[{}](https://bandit.readthedocs.io/en/1.9.4/plugins/b105.html?a=1&b=2)",
+            sv_report::RULE_PAGE
+        )),
+        "{security}"
+    );
+    // Once each: the finding without a page is not given one.
+    assert_eq!(html.matches(sv_report::RULE_PAGE).count(), 1, "{html}");
+    assert_eq!(
+        security.matches(sv_report::RULE_PAGE).count(),
+        1,
+        "{security}"
+    );
+    // And findings.sarif passes it on, for a code-scanning page to link.
+    let sarif: serde_json::Value =
+        serde_json::from_str(&sv_report::sarif::render(&report)).unwrap();
+    let rules = sarif["runs"][0]["tool"]["driver"]["rules"]
+        .as_array()
+        .unwrap();
+    let uri = |id: &str| rules.iter().find(|r| r["id"] == id).unwrap()["helpUri"].clone();
+    assert_eq!(
+        uri("bandit.B105"),
+        "https://bandit.readthedocs.io/en/1.9.4/plugins/b105.html?a=1&b=2"
+    );
+    assert_eq!(uri("ast.sql"), serde_json::Value::Null);
 }
