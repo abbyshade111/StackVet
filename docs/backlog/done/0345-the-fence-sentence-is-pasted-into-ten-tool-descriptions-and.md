@@ -1,6 +1,6 @@
 # The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer
 
-**Status:** claimed by builder-none, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: MCP token cost. Severity: medium. Verified against the code by the reviewing session before filing.
 
