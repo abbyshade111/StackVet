@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: 0323 (since 2026-10-13) — next: 0326, 0344, 0366, 0354, 0356
-- builder-none — arm: none — holds: 0263 (since 2026-10-13)
+- builder-none — arm: none — holds: nothing
 
 ## Queue
 
@@ -40,6 +40,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 27. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
 28. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
 29. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+30. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
 
 ## Log
 
@@ -274,3 +275,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 03:53 — finished 0352 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1677; now holds 0353
 - 2026-10-13 04:53 — finished 0353 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1679; now holds 0351
 - 2026-10-13 05:53 — finished 0351 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1681; now holds 0263
+- 2026-10-13 07:37 — withdrew 0263 from builder-none (none), on hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
