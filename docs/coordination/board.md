@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: 0323 (since 2026-10-13) — next: 0326, 0344, 0366, 0354, 0356
-- builder-none — arm: none — holds: 0364 (since 2026-10-13) — next: 0352, 0353, 0351, 0263
+- builder-none — arm: none — holds: 0352 (since 2026-10-13) — next: 0353, 0351, 0263
 
 ## Queue
 
@@ -270,3 +270,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 02:53 — finished 0367 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1673; now holds 0364
 - 2026-10-13 02:53 — assigned 0351 to builder-none (none) as next: lane 6: read each file once in the static stage; sv-scan and the sv-check readers, after 0352 and 0353 in the same files; none in builder-full's lane
 - 2026-10-13 02:53 — assigned 0263 to builder-none (none) as next: lane 6: static half of V16.5.4, supporting only; ast.rs and the coverage files, which stay in this lane
+- 2026-10-13 03:23 — finished 0364 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1674; now holds 0352
