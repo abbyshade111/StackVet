@@ -4322,7 +4322,7 @@ fn unfenced(text: &str) -> String {
         let name = at + sv_report::fence::TAG.len();
         out.push_str(&rest[..name]);
         out.push('X');
-        rest = &rest[name + 12..];
+        rest = rest[name..].trim_start_matches(|c: char| c.is_ascii_hexdigit());
     }
     out.push_str(rest);
     out
