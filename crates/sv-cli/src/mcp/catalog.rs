@@ -479,7 +479,10 @@ pub(super) fn tool_list() -> Value {
             "name": "stackvet_spec",
             "title": "How to describe the app",
             "description": "The stackvet.toml the app needs before it can be checked, with instructions for filling it in. Write it into the app's folder: before any code, for the app as it will be, decided with the person; once there is code, from what the app really does. A claim the code contradicts is reported, and requirements only ever apply more because of it, never less.",
-            "inputSchema": { "type": "object", "properties": {} },
+            "inputSchema": { "type": "object", "properties": {
+                "section": section(SPEC_SECTIONS),
+                "page": page.clone(),
+            } },
             "annotations": { "readOnlyHint": true, "openWorldHint": false }
         },
         {
@@ -626,19 +629,93 @@ pub(super) fn tool_list() -> Value {
     ])
 }
 
-pub(super) fn spec() -> Value {
-    json!({
-        "content": [{
-            "type": "text",
-            "text": format!(
-                "{}\n{}{}",
-                sv_manifest::spec::STARTER_MANIFEST,
-                sv_manifest::spec::INSTRUCTIONS,
-                crate::prompts_at_start()
-            ),
-        }],
-        "isError": false,
-    })
+/// The spec's sections, in the order of the whole spec, by the names `section` asks for them.
+pub(super) const SPEC_SECTIONS: &[&str] = &["app", "manifest", "instructions", "prompts"];
+
+/// The starter stackvet.toml, how to fill it in, and the prompts shown to work: whole when it fits
+/// what an AI coding tool takes in whole, and otherwise in parts (`crate::parts`), first the start
+/// of the file and how to fill it in. Measured on 12 October 2026 at 47,187 characters, over the
+/// 40,000 an answer is kept to, and each prompt shown to work adds about 800 (backlog 0347).
+///
+/// It answers in text only, as it always has: the list of parts is in the text, and the
+/// structured result `parts` makes for it is not sent, so the tool declares no output shape.
+pub(super) fn spec(args: &Value) -> Result<Value> {
+    let ask = crate::parts::ask(args, "stackvet_spec", SPEC_SECTIONS)?;
+    let whole = spec_text();
+    let mut result = crate::parts::respond(
+        &crate::parts::Answer {
+            tool: "stackvet_spec",
+            what: "spec",
+            sections: &|_| spec_sections(),
+            first: &["app", "instructions"],
+            always: serde_json::Map::new(),
+            whole_text: &|_| whole.clone(),
+            whole_structured: Value::Null,
+        },
+        &ask,
+    )?;
+    if let Some(result) = result.as_object_mut() {
+        result.remove("structuredContent");
+    }
+    Ok(result)
+}
+
+/// The whole spec, as `sv init` prints it and the tool gave it before it came in parts.
+pub(super) fn spec_text() -> String {
+    format!(
+        "{}\n{}{}",
+        sv_manifest::spec::STARTER_MANIFEST,
+        sv_manifest::spec::INSTRUCTIONS,
+        crate::prompts_at_start()
+    )
+}
+
+/// The spec cut into sections that join to exactly [`spec_text`]: the start of the file through
+/// `[app]`, the rest of it a table to an item, how to fill it in a paragraph to an item, and the
+/// prompts one to an item.
+fn spec_sections() -> Vec<crate::parts::Section> {
+    use crate::parts::{Item, Section};
+    /// `text` in items, a new one at each line `starts` says begins one.
+    fn cut(text: &str, starts: impl Fn(&str) -> bool) -> Vec<Item> {
+        let mut items: Vec<String> = Vec::new();
+        for line in text.split_inclusive('\n') {
+            match items.last_mut() {
+                Some(item) if !starts(line) => item.push_str(line),
+                _ => items.push(line.to_owned()),
+            }
+        }
+        items.into_iter().map(Item::text).collect()
+    }
+    let manifest = format!("{}\n", sv_manifest::spec::STARTER_MANIFEST);
+    let at = manifest
+        .find("\n[stack]\n")
+        .map_or(manifest.len(), |i| i + 1);
+    let mut app = Section::new(
+        "app",
+        "The start of stackvet.toml, through what the app is".to_owned(),
+        &[],
+    );
+    app.lead = manifest[..at].to_owned();
+    let mut rest = Section::new(
+        "manifest",
+        "The rest of stackvet.toml, a table at a time".to_owned(),
+        &[],
+    );
+    rest.items = cut(&manifest[at..], |line| {
+        line.starts_with('[') || line.starts_with("# [")
+    });
+    let mut instructions = Section::new(
+        "instructions",
+        "How to fill stackvet.toml in".to_owned(),
+        &[],
+    );
+    instructions.items = sv_manifest::spec::INSTRUCTIONS
+        .split_inclusive("\n\n")
+        .map(|p| Item::text(p.to_owned()))
+        .collect();
+    let mut prompts = Section::new("prompts", "The prompts shown to work".to_owned(), &[]);
+    prompts.items = cut(&crate::prompts_at_start(), |line| line.starts_with("### "));
+    vec![app, rest, instructions, prompts]
 }
 
 pub(super) fn explain(frameworks: &sv_frameworks::Frameworks, args: &Value) -> Result<Value> {

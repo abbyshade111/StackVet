@@ -79,6 +79,8 @@ mod resources;
 #[cfg(test)]
 mod smoke_list_tests;
 #[cfg(test)]
+mod spec_parts_tests;
+#[cfg(test)]
 mod status_tests;
 #[cfg(test)]
 mod tests;
@@ -827,7 +829,7 @@ impl Server {
             .unwrap_or_else(|| name.to_owned());
         let name = name.as_str();
         let result = match name {
-            "stackvet_spec" => Ok(spec()),
+            "stackvet_spec" => spec(&args),
             "stackvet_explain" => explain(&self.loaded.frameworks, &args),
             "stackvet_check" => self.check(&args, progress),
             "stackvet_write_report" => self.write_report(&args, progress),
