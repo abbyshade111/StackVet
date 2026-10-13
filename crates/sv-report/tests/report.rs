@@ -545,8 +545,163 @@ fn nothing_is_ever_labelled_a_pass() {
 }
 
 #[test]
-fn the_reports_say_how_much_was_not_examined_before_they_say_what_was_found() {
-    // Order is the message. Findings read first are read as the whole truth about the app.
+fn a_note_worth_knowing_is_never_counted_named_or_advised_on_as_a_thing_to_fix() {
+    // An `Info` finding in the app's own code says something worth knowing and asks for nothing (ADR-110, Later).
+    // Found in a real report: one counted among "4 things to fix", told "Fix it in the code", while "What to do next"
+    // said "Fix the 3 things"; the counts disagreed and good news read as a problem.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut real = finding("ast.sql", &[]);
+    real.title = "A query built by hand".into();
+    let mut note = finding("config.ai-commits-off-merge", &[]);
+    note.title =
+        "2 commit(s) on the default branch were made by an AI coding tool and not merged in".into();
+    note.severity = Severity::Info;
+    note.location.file = ".git".into();
+    let report = build(inputs(&f, &buckets, vec![real, note], &[]));
+    // The setup: both are findings of the report, and the note is the information one.
+    assert_eq!(report.findings.len(), 2);
+    assert!(report.findings.iter().any(|f| f.severity == Severity::Info));
+
+    let (worst, _) = sv_report::bluf::worst_findings(&report);
+    assert_eq!(worst.len(), 1, "the note is not among the worst");
+    let headline = sv_report::bluf::headline(&report);
+    assert!(headline.starts_with("1 thing was found"), "{headline}");
+    assert!(
+        headline.contains("1 more is a note worth knowing"),
+        "{headline}"
+    );
+    let steps = sv_report::bluf::next_steps(&report);
+    assert!(
+        steps[0].what.starts_with("Fix the 1 thing that was found"),
+        "counted as the section counts them: {}",
+        steps[0].what
+    );
+    for (name, page, fix_heading, notes_heading) in [
+        (
+            "report.html",
+            sv_report::html::page(&report),
+            "<h2>1 thing to fix</h2>",
+            "<h2>Worth knowing: 1 note</h2>",
+        ),
+        (
+            "security.md",
+            sv_report::markdown::security(&report),
+            "## 1 thing to fix",
+            "## Worth knowing: 1 note",
+        ),
+    ] {
+        let fix_at = page
+            .find(fix_heading)
+            .unwrap_or_else(|| panic!("{name}: no {fix_heading:?}\n{page}"));
+        let notes_at = page
+            .find(notes_heading)
+            .unwrap_or_else(|| panic!("{name}: no {notes_heading:?}\n{page}"));
+        assert!(
+            fix_at < notes_at,
+            "{name}: the notes come after the things to fix"
+        );
+        let notes_part = &page[notes_at..];
+        assert!(
+            notes_part.contains("not merged in"),
+            "{name}: the note is under its own heading"
+        );
+        let fix_part = &page[fix_at..notes_at];
+        assert!(
+            !fix_part.contains("not merged in"),
+            "{name}: the note is not among the things to fix"
+        );
+        // A note is never told to be fixed.
+        assert!(
+            fix_part.contains("Fix it in the code"),
+            "{name}: the setup: a thing to fix is given the fix advice"
+        );
+        assert!(
+            !notes_part.contains("Fix it in the code"),
+            "{name}: a note is not given the fix advice"
+        );
+    }
+    let compliance = sv_report::markdown::compliance(&report);
+    assert!(compliance.contains("## 1 thing to fix"), "{compliance}");
+    assert!(
+        compliance.contains("One more is a note worth knowing"),
+        "{compliance}"
+    );
+}
+
+#[test]
+fn a_finding_from_the_running_app_shows_what_stackvet_saw() {
+    // `Finding.evidence` names the exchanges a check recorded, and `seen.json` keeps them; until backlog 0378 no report
+    // read either, so a finding said what was wrong and nothing of what showed it.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut guessed = finding("probe.failed-sign-ins-unlimited", &[]);
+    guessed.title = "Failed sign-ins are not limited".into();
+    guessed.evidence = (0..5).map(|i| format!("guess-{i}")).collect();
+    let mut quiet = finding("ast.sql", &[]);
+    quiet.title = "A query built by hand".into();
+    let mut report = build(inputs(&f, &buckets, vec![guessed, quiet], &[]));
+    report.seen = Some(sv_report::seen::Seen {
+        exchanges: (0..5)
+            .map(|i| sv_report::seen::Exchange {
+                id: format!("guess-{i}"),
+                method: "POST".into(),
+                path: "/login".into(),
+                status: 401,
+                headers: Vec::new(),
+                body: "<html><head><title>Sign in</title></head><body><p>Wrong email or password.</p></body></html>"
+                    .into(),
+            })
+            .collect(),
+        ..Default::default()
+    });
+    for (name, page, quoted) in [
+        (
+            "report.html",
+            sv_report::html::page(&report),
+            "POST /login answered 401: &quot;Wrong email or password.&quot;",
+        ),
+        (
+            "security.md",
+            sv_report::markdown::security(&report),
+            "POST /login answered 401: \"Wrong email or password.\"",
+        ),
+    ] {
+        // The last time each title appears is its own section: the short version names the worst first.
+        let at = page
+            .rfind("Failed sign-ins are not limited")
+            .unwrap_or_else(|| panic!("{name}: the finding\n{page}"));
+        let next = page
+            .rfind("A query built by hand")
+            .unwrap_or_else(|| panic!("{name}: the other finding"));
+        let (first, second) = if at < next {
+            (&page[at..next], &page[next..])
+        } else {
+            (&page[at..], &page[next..at])
+        };
+        assert!(first.contains("What StackVet saw"), "{name}: {first}");
+        assert_eq!(
+            first.matches(quoted).count(),
+            sv_report::SAW_SHOWN,
+            "{name}: the first few, quoted by their visible words: {first}"
+        );
+        assert!(first.contains("And 2 more like them"), "{name}: {first}");
+        assert!(
+            first.contains("seen.json"),
+            "{name}: where all of them are: {first}"
+        );
+        assert!(
+            !second.contains("What StackVet saw"),
+            "{name}: a finding that names nothing shows nothing: {second}"
+        );
+    }
+}
+
+#[test]
+fn the_reports_lead_with_what_to_fix_and_say_what_was_not_examined_right_after() {
+    // Order is the message (ADR-110): the things to fix first, worst first, then how the report was made, then
+    // what was not examined, before anything else. Findings read without the gaps read as the whole truth about
+    // the app, so the gaps come straight after them, ahead of every table.
     let f = frameworks();
     let buckets = Buckets::default();
     let mut i = inputs(&f, &buckets, vec![finding("ast.sql", &[])], &[]);
@@ -557,14 +712,43 @@ fn the_reports_say_how_much_was_not_examined_before_they_say_what_was_found() {
         requirements: Vec::new(),
     }];
     let report = build(i);
-    let security = sv_report::markdown::security(&report);
-    let gaps_at = security
-        .find("What was not examined")
-        .expect("the gaps section");
-    let findings_at = security.find("to fix").expect("the findings section");
-    assert!(
-        gaps_at < findings_at,
-        "the gaps must come first:\n{security}"
+    let in_order = |name: &str, page: &str, headings: &[&str]| {
+        let at: Vec<usize> = headings
+            .iter()
+            .map(|h| {
+                page.find(h)
+                    .unwrap_or_else(|| panic!("{name}: no {h:?} in\n{page}"))
+            })
+            .collect();
+        assert!(
+            at.windows(2).all(|w| w[0] < w[1]),
+            "{name}: the sections must come in the order {headings:?}:\n{page}"
+        );
+    };
+    in_order(
+        "security.md",
+        &sv_report::markdown::security(&report),
+        &["1 thing to fix", "## What was not examined"],
+    );
+    in_order(
+        "compliance.md",
+        &sv_report::markdown::compliance(&report),
+        &[
+            "## 1 thing to fix",
+            "## How this report was made",
+            "## What was not examined",
+            "## Requirements that apply",
+        ],
+    );
+    in_order(
+        "report.html",
+        &sv_report::html::page(&report),
+        &[
+            "<h2>1 thing to fix</h2>",
+            "<h2>How this report was made</h2>",
+            "<h2>What was not examined</h2>",
+            "<h2>Requirements that apply</h2>",
+        ],
     );
 }
 
@@ -1913,7 +2097,7 @@ mod same_story {
         // exists; and a claim, so the "what the app says about itself" section does.
         let mut i = inputs(&f, &buckets, vec![finding("some.rule", &["V17.1.1"])], &[]);
         // So "What was not examined" is emitted too: it is one of the sections whose order matters
-        // most, being the one the reports lead with.
+        // most, being the one that follows the things to fix (ADR-110).
         i.gaps = vec![sv_report::Gap {
             what: "the app while it was running".into(),
             why: "it was not started".into(),
