@@ -615,36 +615,38 @@ impl AstRules {
 
     /// Every rule's query for `key` (a language, or `tsx`) as one, compiled the first time it is asked for.
     fn together(&self, key: &str) -> Option<&Together> {
-        self.together.get(key)?.get_or_init(|| {
-            let mut source = String::new();
-            let mut starts = Vec::new();
-            for (at, c) in self.compiled.iter().enumerate() {
-                let query = if key == "tsx" {
-                    c.tsx.as_ref()
-                } else {
-                    c.queries.get(key)
-                };
-                if let Some(query) = query {
-                    starts.push((source.len(), at));
-                    source.push_str(&query.source);
-                    source.push('\n');
+        self.together
+            .get(key)?
+            .get_or_init(|| {
+                let mut source = String::new();
+                let mut starts = Vec::new();
+                for (at, c) in self.compiled.iter().enumerate() {
+                    let query = if key == "tsx" {
+                        c.tsx.as_ref()
+                    } else {
+                        c.queries.get(key)
+                    };
+                    if let Some(query) = query {
+                        starts.push((source.len(), at));
+                        source.push_str(&query.source);
+                        source.push('\n');
+                    }
                 }
-            }
-            let query = Query::new(&grammar(key)?, &source).ok()?;
-            // Each pattern belongs to the rule whose text it starts in.
-            let rule_of_pattern = (0..query.pattern_count())
-                .map(|pattern| {
-                    let start = query.start_byte_for_pattern(pattern);
-                    let segment = starts.partition_point(|(from, _)| *from <= start) - 1;
-                    starts[segment].1
+                let query = Query::new(&grammar(key)?, &source).ok()?;
+                // Each pattern belongs to the rule whose text it starts in.
+                let rule_of_pattern = (0..query.pattern_count())
+                    .map(|pattern| {
+                        let start = query.start_byte_for_pattern(pattern);
+                        let segment = starts.partition_point(|(from, _)| *from <= start) - 1;
+                        starts[segment].1
+                    })
+                    .collect();
+                Some(Together {
+                    query,
+                    rule_of_pattern,
                 })
-                .collect();
-            Some(Together {
-                query,
-                rule_of_pattern,
             })
-        })
-        .as_ref()
+            .as_ref()
     }
 
     pub fn len(&self) -> usize {
@@ -660,12 +662,6 @@ impl AstRules {
     /// For the test that guards the data file. A command compiles only the languages it meets, so
     /// without this a query written wrong would first fail on someone's app in that language.
     pub fn compile_all(&self) -> Result<()> {
-        for key in self.together.keys() {
-            anyhow::ensure!(
-                self.together(key).is_some(),
-                "the {key} queries do not compile as one query, so each file would be walked once per rule"
-            );
-        }
         for c in &self.compiled {
             for (language, query) in &c.queries {
                 query.get().map_err(|why| {
@@ -683,6 +679,14 @@ impl AstRules {
                     )
                 })?;
             }
+        }
+        // Each language's queries as one, which every file is walked with (backlog 0353): refused, it would
+        // cost a walk per rule again, quietly.
+        for key in self.together.keys() {
+            anyhow::ensure!(
+                self.together(key).is_some(),
+                "the {key} queries do not compile as one query, so each file would be walked once per rule"
+            );
         }
         Ok(())
     }
@@ -2352,3 +2356,6 @@ mod orm_supabase_tests;
 
 #[cfg(test)]
 mod token_none_tests;
+
+#[cfg(test)]
+mod one_walk_tests;
