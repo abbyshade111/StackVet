@@ -157,6 +157,7 @@ source files, and in two tests:
 | [ADR-108](ADR-108.md) | The Windows program is published as a signed GitHub Release when the owner pushes a version tag (accepted, 12 October 2026) |
 | [ADR-109](ADR-109.md) | The second loop trial tests `sv`'s waiting features on two briefs, with an outside check the builder never sees (accepted, 12 October 2026) |
 | [ADR-110](ADR-110.md) | The reports lead with the things to fix, and say what was not examined right after (accepted, 12 October 2026) |
+| [ADR-111](ADR-111.md) | The outside tools run with every `sv report` and `sv bundle` unless `--no-tools` is given (proposed, 13 October 2026) |
 
 ## Names in the records
 
