@@ -380,6 +380,7 @@ fn dev_server_finding(file: &str, line: usize, what: &str, command: &str) -> Fin
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.development-server-started".into(),
         title: "The app is started with a development server".into(),
         severity: Severity::Medium,
@@ -494,6 +495,7 @@ fn plain_http_finding(file: &str, line: usize, address: &str) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.mcp-transport-unencrypted".into(),
         title: "An MCP server on another computer is reached over plain HTTP".into(),
         severity: Severity::Medium,
@@ -858,6 +860,7 @@ fn mcp_finding(file: &str, line: usize, launch: &Launch) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.mcp-server-unpinned".into(),
         title:
             "An MCP server is downloaded fresh, at whatever version is newest, every time it starts"

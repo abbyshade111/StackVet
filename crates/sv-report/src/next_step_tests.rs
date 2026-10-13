@@ -8,6 +8,8 @@ pub(crate) fn empty_report(gaps: Vec<crate::Gap>) -> Report {
         baseline: None,
         build_loop: None,
         seen: None,
+        code_lines: Default::default(),
+        sbom: None,
         timings: Vec::new(),
         app_name: "test".into(),
         target_level: 1,
@@ -75,6 +77,7 @@ fn finding() -> sv_check::Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
     })
 }
 

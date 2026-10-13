@@ -28,7 +28,7 @@ use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::OnceLock;
-use tree_sitter::{Language, Parser, Query, QueryCursor, StreamingIterator};
+use tree_sitter::{Language, Node, Parser, Query, QueryCapture, QueryCursor, StreamingIterator};
 
 mod fixed;
 mod html;
@@ -302,6 +302,41 @@ struct Compiled {
 
 pub struct AstRules {
     compiled: Vec<Compiled>,
+    /// Every rule's query in one language (or `tsx`) as one query, so a file is walked once for all its
+    /// rules rather than once per rule (backlog 0353). Compiled on first use, like each rule's own; `None`
+    /// inside if tree-sitter refuses it, and then each rule's query is walked on its own, as before.
+    together: BTreeMap<String, OnceLock<Option<Together>>>,
+}
+
+/// A language's queries as one, and the rule each of its patterns came from (an index into `compiled`).
+struct Together {
+    query: Query,
+    rule_of_pattern: Vec<usize>,
+}
+
+/// One match of a rule's query: its captures, kept so the rule can judge them after the one walk of the
+/// file that found them for every rule.
+struct Caught<'tree> {
+    captures: Vec<QueryCapture<'tree>>,
+}
+
+impl<'tree> Caught<'tree> {
+    fn captures(&self) -> &[QueryCapture<'tree>] {
+        &self.captures
+    }
+}
+
+/// Every match of `query` in the tree under `root`, in the order tree-sitter gives them.
+fn caught<'tree>(query: &Query, root: Node<'tree>, source: &str) -> Vec<Caught<'tree>> {
+    let mut cursor = QueryCursor::new();
+    let mut matches = cursor.matches(query, root, source.as_bytes());
+    let mut out = Vec::new();
+    while let Some(m) = matches.next() {
+        out.push(Caught {
+            captures: m.captures().to_vec(),
+        });
+    }
+    out
 }
 
 impl AstRules {
@@ -566,7 +601,52 @@ impl AstRules {
                 by_hash,
             });
         }
-        Ok(AstRules { compiled })
+        let mut together = BTreeMap::new();
+        for c in &compiled {
+            for language in c.queries.keys() {
+                together.insert(language.clone(), OnceLock::new());
+            }
+            if c.tsx.is_some() {
+                together.insert("tsx".to_owned(), OnceLock::new());
+            }
+        }
+        Ok(AstRules { compiled, together })
+    }
+
+    /// Every rule's query for `key` (a language, or `tsx`) as one, compiled the first time it is asked for.
+    fn together(&self, key: &str) -> Option<&Together> {
+        self.together
+            .get(key)?
+            .get_or_init(|| {
+                let mut source = String::new();
+                let mut starts = Vec::new();
+                for (at, c) in self.compiled.iter().enumerate() {
+                    let query = if key == "tsx" {
+                        c.tsx.as_ref()
+                    } else {
+                        c.queries.get(key)
+                    };
+                    if let Some(query) = query {
+                        starts.push((source.len(), at));
+                        source.push_str(&query.source);
+                        source.push('\n');
+                    }
+                }
+                let query = Query::new(&grammar(key)?, &source).ok()?;
+                // Each pattern belongs to the rule whose text it starts in.
+                let rule_of_pattern = (0..query.pattern_count())
+                    .map(|pattern| {
+                        let start = query.start_byte_for_pattern(pattern);
+                        let segment = starts.partition_point(|(from, _)| *from <= start) - 1;
+                        starts[segment].1
+                    })
+                    .collect();
+                Some(Together {
+                    query,
+                    rule_of_pattern,
+                })
+            })
+            .as_ref()
     }
 
     pub fn len(&self) -> usize {
@@ -599,6 +679,14 @@ impl AstRules {
                     )
                 })?;
             }
+        }
+        // Each language's queries as one, which every file is walked with (backlog 0353): refused, it would
+        // cost a walk per rule again, quietly.
+        for key in self.together.keys() {
+            anyhow::ensure!(
+                self.together(key).is_some(),
+                "the {key} queries do not compile as one query, so each file would be walked once per rule"
+            );
         }
         Ok(())
     }
@@ -768,7 +856,20 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
 
     let mut out = Vec::new();
     let mut parameter_destinations = Vec::new();
-    for compiled in &rules.compiled {
+    // Every rule's matches from one walk of the file (backlog 0353), sorted by rule. Each rule then judges its
+    // own, in the order they were found, as it did when it walked the file itself.
+    let together = rules.together(if tsx { "tsx" } else { language });
+    let mut by_rule: Vec<Vec<Caught>> = rules.compiled.iter().map(|_| Vec::new()).collect();
+    if let Some(together) = together {
+        let mut cursor = QueryCursor::new();
+        let mut matches = cursor.matches(&together.query, tree.root_node(), source.as_bytes());
+        while let Some(m) = matches.next() {
+            by_rule[together.rule_of_pattern[m.pattern_index]].push(Caught {
+                captures: m.captures().to_vec(),
+            });
+        }
+    }
+    for (at, compiled) in rules.compiled.iter().enumerate() {
         let query = if tsx {
             compiled.tsx.as_ref()
         } else {
@@ -777,7 +878,11 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
         let Some(query) = query else {
             continue;
         };
-        let query = match query.get() {
+        let query = match together {
+            Some(together) => Ok(&together.query),
+            None => query.get(),
+        };
+        let query = match query {
             Ok(query) => query,
             // The rule is not run on this file, and says so, rather than quietly reading as clean.
             Err(why) => {
@@ -795,7 +900,7 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
         let mod_index = query.capture_index_for_name("mod");
         let kw_index = query.capture_index_for_name("kw");
         let hash_index = query.capture_index_for_name("hash");
-        let text_of = |m: &tree_sitter::QueryMatch, index: Option<u32>| -> Option<String> {
+        let text_of = |m: &Caught, index: Option<u32>| -> Option<String> {
             let index = index?;
             let capture = m.captures().iter().find(|c| c.index == index)?;
             capture
@@ -804,9 +909,11 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                 .ok()
                 .map(str::to_owned)
         };
-        let mut cursor = QueryCursor::new();
-        let mut matches = cursor.matches(query, tree.root_node(), source.as_bytes());
-        while let Some(m) = matches.next() {
+        let matches = match together {
+            Some(_) => std::mem::take(&mut by_rule[at]),
+            None => caught(query, tree.root_node(), source),
+        };
+        for m in &matches {
             // The name filters the query cannot apply for itself.
             if let Some(pattern) = compiled.function.get(language) {
                 match text_of(m, fn_index) {
@@ -1016,6 +1123,7 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                 bundled_library: None,
                 outranked: None,
                 also_on_this_line: Vec::new(),
+                help_uri: None,
                 rule_id: compiled.rule.id.clone(),
                 title: compiled.rule.title.clone(),
                 severity: compiled.rule.severity,
@@ -1528,11 +1636,17 @@ fn note_callers(
     if parser.set_language(&grammar).is_err() {
         return;
     }
+    // Only a file whose text holds a function's name can call it: `calls_of` reads the identifiers spelled
+    // that way, and nothing else. The rest are not parsed again (backlog 0351); in most apps that is nearly all.
+    let names: Vec<&str> = pending.iter().map(|d| d.function.as_str()).collect();
     let files: Vec<(String, String, tree_sitter::Tree)> = listing
         .app_files()
         .filter(|e| e.language == Some("python"))
         .filter_map(|e| {
             let text = e.read_text().ok()?;
+            if !names.iter().any(|name| text.contains(name)) {
+                return None;
+            }
             let tree = parser.parse(&text, None)?;
             Some((e.relative.clone(), text, tree))
         })
@@ -2226,6 +2340,9 @@ fn read_page(rules: &AstRules, relative: &str, source: &str, scan: &mut AstScan)
 mod tests;
 
 #[cfg(test)]
+mod callers_tests;
+
+#[cfg(test)]
 mod body_whole_tests;
 #[cfg(test)]
 mod fetch_tests;
@@ -2249,3 +2366,6 @@ mod orm_supabase_tests;
 
 #[cfg(test)]
 mod token_none_tests;
+
+#[cfg(test)]
+mod one_walk_tests;

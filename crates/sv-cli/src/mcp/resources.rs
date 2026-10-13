@@ -22,6 +22,7 @@ impl Server {
             if crate::report_seal::proven(&folder).is_err() {
                 continue;
             }
+            let when = written_when(&folder);
             // Its parts joined by `/` on every system, so the name reads the same on Windows,
             // where the folder's own form has `\` (backlog 0120).
             let shown = folder
@@ -50,9 +51,9 @@ impl Server {
                     "uri": uri,
                     "name": format!("{}/{name}", sv_report::one_line(&shown)),
                     "description": format!(
-                        "{} A report sv wrote on this computer, sealed when it was written and \
-                         unchanged since; it describes the app as it was when written, not \
-                         necessarily as it is now. {REPORT_QUOTES_THE_APP} {}",
+                        "{} A report sv wrote in this folder on this computer, {when}, sealed \
+                         when it was written and unchanged since; it describes the app as it was \
+                         then, not necessarily as it is now. {REPORT_QUOTES_THE_APP} {}",
                         report_file_description(name),
                         if fenced_when_read(name) {
                             "Read, it comes back whole between <app-text-…> tags named for that \
@@ -95,14 +96,20 @@ impl Server {
         else {
             return Err(not_found("only the files of a report sv wrote are offered"));
         };
+        // One answer for a folder that does not exist and one outside the root, as `app_dir` gives
+        // (confine.rs): two would tell whoever asks which folders exist anywhere on this computer
+        // (backlog 0308).
+        let refused = || {
+            not_found(
+                "that is outside the folder this server was started for, or there is no such folder",
+            )
+        };
         let folder = path
             .parent()
             .and_then(|p| p.canonical().ok())
-            .ok_or_else(|| not_found("no such folder"))?;
+            .ok_or_else(refused)?;
         if !folder.starts_with(&self.root) {
-            return Err(not_found(
-                "that is outside the folder this server was started for",
-            ));
+            return Err(refused());
         }
         if !is_report_folder(&folder) {
             return Err(not_found("that folder does not hold a report sv wrote"));
@@ -208,6 +215,30 @@ pub(super) fn fenced_when_read(name: &str) -> bool {
 }
 
 /// What each report file is, for a person or a model choosing which to open.
+/// When the run that wrote the report in `folder` started, as the description of each of its files
+/// says it, so a report kept from an earlier run reads as that run's and not as the current one
+/// (backlog 0286). Read from `report.json`, whose bytes the seal was just checked against.
+fn written_when(folder: &Path) -> String {
+    let started = std::fs::read(folder.join("report.json"))
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok())
+        .and_then(|report| report["run_record"]["started_unix_ms"].as_u64());
+    let Some(ms) = started else {
+        return "at a time its report does not record".to_owned();
+    };
+    let at = std::time::UNIX_EPOCH + std::time::Duration::from_millis(ms);
+    let Some(day) = sv_check::advisories::Day::of(at) else {
+        return "at a time its report does not record".to_owned();
+    };
+    let of_day = (ms / 1000) % 86_400;
+    format!(
+        "by a run that started {} at {:02}:{:02} UTC",
+        day.show(),
+        of_day / 3600,
+        (of_day % 3600) / 60
+    )
+}
+
 pub(super) fn report_file_description(name: &str) -> &'static str {
     match name {
         "report.html" => "The report for a person to read.",
@@ -219,6 +250,9 @@ pub(super) fn report_file_description(name: &str) -> &'static str {
         "findings.sarif" => "The findings in SARIF, for code-scanning tools.",
         "seen.json" => {
             "What the running app answered when sv asked it, credentials cut out: the app's own text."
+        }
+        "sbom.cdx.json" => {
+            "The app's software bill of materials, every package it ships, in CycloneDX JSON."
         }
         _ => "The whole report, for a program to read.",
     }

@@ -14,7 +14,8 @@ use super::*;
 /// server passes them on, so a long check does not look stuck.
 ///
 /// Every stage is announced on every run, in this order, so a count of them means the same each
-/// time; the three that run only when asked say so in their names. They were one stage, "Putting
+/// time; the three that do not always run say when in their names (the outside tools run unless
+/// --no-tools, ADR-111). They were one stage, "Putting
 /// the report together", until `sv report --run --tools` sat in it for minutes without a word
 /// (backlog 226, part 2, item 15).
 pub const REPORT_STAGES: [&str; 10] = [
@@ -25,7 +26,7 @@ pub const REPORT_STAGES: [&str; 10] = [
     "Reading its configuration",
     "Reading its code",
     "Comparing its packages with known vulnerabilities, when there is a database",
-    "Running the outside tools, when asked with --tools",
+    "Running the outside tools, unless --no-tools",
     "Running the app, when asked with --run",
     "Putting the report together",
 ];
@@ -885,10 +886,13 @@ fn outside_tools(
         match adapters {
             Ok(adapters) => {
                 for adapter in adapters.all() {
-                    examined.push(sv_report::Examined::not_run(
-                        format!("{}.", adapter.id),
-                        "outside tools run only with --tools",
-                    ));
+                    examined.push(
+                        sv_report::Examined::not_run(
+                            format!("{}.", adapter.id),
+                            "outside tools left out with --no-tools",
+                        )
+                        .as_outside_tool(&adapter.name),
+                    );
                 }
                 tool_gaps.push(sv_report::Gap {
                     what: "the security tool this language already has".to_owned(),
@@ -1030,6 +1034,8 @@ fn running_app(
                     &mut record,
                 );
                 crate::seen::signed_in(secret_rules, outcome.signed_in.as_ref(), &mut record);
+                // The AI suite's questions, with ids `ai-<kind>-<n>`, kept beside the signed-in suite's (backlog 0381).
+                crate::seen::signed_in(secret_rules, outcome.ai.as_ref(), &mut record);
                 crate::seen::liveness(secret_rules, &outcome.liveness, &mut record);
                 seen = Some(record);
                 findings.extend(running_findings);
@@ -2728,6 +2734,14 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     });
     report.run_record = Some(run_record);
     report.seen = seen;
+    // The bill of materials, written beside the report as `sv sbom` prints it (backlog 0382).
+    report.sbom = Some(sv_report::SbomFile {
+        json: serde_json::to_string_pretty(&sbom::to_cyclonedx(bill_of_materials))? + "\n",
+        components: bill_of_materials.components.len(),
+        complete: bill_of_materials.is_complete(),
+    });
+    // The lines each code finding is on, for "The code" under it (backlog 0378, part 2).
+    report.code_lines = crate::code_lines::read(app_dir, &report.findings, secret_rules);
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped
     // here, so nothing past this point holds the app's code twice.
     if options.keep_tool_output {

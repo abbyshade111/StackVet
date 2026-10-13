@@ -215,6 +215,7 @@ fn problem(check: &crate::human::HumanCheck, how: &str, on: Day, who: &str) -> F
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "hand.problem".to_owned(),
         title: format!(
             "Checked by hand, and it failed: {}",

@@ -1184,6 +1184,28 @@ pub(super) fn ask(flaws: Flaws) -> Outcome {
     run(&mut app, &section(), &context(None, &NO_POLICY)).0
 }
 
+/// One fault the fake app can have, by name, for the tests in other files (backlog 0381).
+pub(super) fn one_flaw(name: &str) -> Flaws {
+    let mut flaws = Flaws::default();
+    match name {
+        "unbounded" => flaws.unbounded = true,
+        "passes_replies_on" => flaws.passes_replies_on = true,
+        "fetches_images" => flaws.fetches_images = true,
+        other => panic!("no fault named {other}"),
+    }
+    flaws
+}
+
+/// `ask`, with the questions recorded as the run records them (backlog 0381).
+pub(super) fn ask_recorded(flaws: Flaws) -> (Outcome, Vec<crate::signed_in::recording::Recorded>) {
+    let mut http = crate::signed_in::recording::Recording::new(Box::new(FakeChat {
+        flaws,
+        ..Default::default()
+    }));
+    let (outcome, _) = run(&mut http, &section(), &context(None, &NO_POLICY));
+    (outcome, http.finish())
+}
+
 static NO_POLICY: std::sync::LazyLock<sv_manifest::PolicySection> =
     std::sync::LazyLock::new(Default::default);
 
@@ -3420,7 +3442,7 @@ fn with_switch() -> AiSection {
 
 /// Runs the questions against the first copy, then the kill switch against a second started
 /// with it, the way the run does.
-fn ask_switched(first: Flaws, second: Flaws, started: bool) -> Outcome {
+pub(super) fn ask_switched(first: Flaws, second: Flaws, started: bool) -> Outcome {
     let s = with_switch();
     let ctx = context(None, &NO_POLICY);
     let mut app = FakeChat {
