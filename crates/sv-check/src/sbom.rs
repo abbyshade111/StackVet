@@ -686,7 +686,10 @@ pub fn completeness_verified(sbom: &Sbom) -> Option<crate::verified::Verified> {
             },
             sbom.what_was_read()
         ),
-    ))
+    )
+    // The list is the inventory V15.1.2 asks for; that each library comes from a trusted, continually
+    // maintained repository is not read, so the credit is in part (backlog 0307; ADR-053).
+    .in_part())
 }
 
 pub fn incompleteness_finding(sbom: &Sbom) -> Option<Finding> {
