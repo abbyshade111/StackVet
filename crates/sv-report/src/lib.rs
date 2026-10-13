@@ -34,7 +34,7 @@ pub mod seen;
 pub mod threats;
 
 use serde::Serialize;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use sv_check::Finding;
 use sv_frameworks::applicability::Buckets;
 use sv_frameworks::{Condition, Frameworks, Source};
@@ -494,6 +494,10 @@ pub struct Examined {
     /// same as one against today's unless the report says which it was.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub advisories: Option<AdvisoryDatabase>,
+    /// The outside tool this entry is, by its name (`Semgrep`, `Bandit`), so the report can say what each one did
+    /// (backlog 0379). `None` for `sv`'s own checks.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outside_tool: Option<String>,
 }
 
 /// The advisory database a report compared the app's packages with.
@@ -550,6 +554,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -561,6 +566,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -572,6 +578,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -584,6 +591,12 @@ impl Examined {
     /// The same entry, with what the outside tool was and how its run went.
     pub fn with_tool(mut self, tool: Option<sv_check::adapters::ToolRun>) -> Self {
         self.tool = tool;
+        self
+    }
+
+    /// The same entry, marked as the outside tool it is, by its name (backlog 0379).
+    pub fn as_outside_tool(mut self, name: impl Into<String>) -> Self {
+        self.outside_tool = Some(name.into());
         self
     }
 
@@ -601,6 +614,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -1023,6 +1037,14 @@ pub struct Report {
     /// out of `report.json`. `None` when the app was not asked anything.
     #[serde(skip)]
     pub seen: Option<seen::Seen>,
+    /// The lines of the app's code each code finding is on, the one before and after with it, redacted, by file and
+    /// line (backlog 0378, part 2). Never in `report.json`: it holds the app's code, and the report pages show it.
+    #[serde(skip)]
+    pub code_lines: std::collections::BTreeMap<(String, usize), Vec<(usize, String)>>,
+    /// The app's software bill of materials, as `sbom.cdx.json` beside the report holds it (backlog 0382). Never in
+    /// `report.json`: it is a file of its own. `None` in a report made without one.
+    #[serde(skip)]
+    pub sbom: Option<SbomFile>,
     /// Passed in rather than read from a clock, so the same app twice produces the same bytes.
     pub generated: Option<String>,
     /// Which `sv` made this report, so whoever reads it can tell which checks it had. Without it, a
@@ -1458,6 +1480,326 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
 pub fn app_then_tests(report: &Report) -> (Vec<&sv_check::Finding>, Vec<&sv_check::Finding>) {
     report.findings.iter().partition(|f| !f.apart())
 }
+
+/// The app's own findings split into the things to fix and the notes worth knowing (ADR-110, Later). A note is an
+/// `Info` finding: it says something about how the app is built and asks for nothing, so it is never counted, named,
+/// or advised on as a thing to fix. The order within each is kept.
+pub fn fix_then_notes(
+    app: Vec<&sv_check::Finding>,
+) -> (Vec<&sv_check::Finding>, Vec<&sv_check::Finding>) {
+    app.into_iter().partition(|f| !is_note(f))
+}
+
+/// An information note in the app's own code: worth knowing, never a thing to fix (ADR-110, Later). One listed apart
+/// (in test code, a bundled library) keeps its place in that section.
+pub fn is_note(f: &sv_check::Finding) -> bool {
+    f.severity == sv_check::Severity::Info && !f.apart()
+}
+
+/// One outside tool's run, as the "Outside tools" section shows it (backlog 0379).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ToolRow {
+    /// The tool, by its name, with the program that stood in for it when one did.
+    pub name: String,
+    /// Whether it ran, and why not when it did not, in a sentence.
+    pub what: String,
+    /// The version it answered, when it ran.
+    pub version: Option<String>,
+    /// The findings in this report that are its own.
+    pub found: usize,
+    /// The findings of `sv`'s own, or another tool's, it also reported on the same line.
+    pub agreed: usize,
+    /// How long it took, when it ran.
+    pub took: Option<String>,
+}
+
+/// Every outside tool `sv` knows, in the order it knows them, with what each did this run (backlog 0379). Empty when
+/// the report names none.
+pub fn outside_tools(report: &Report) -> Vec<ToolRow> {
+    report
+        .examined
+        .iter()
+        .filter_map(|e| {
+            let name = e.outside_tool.as_ref()?;
+            let ran = matches!(e.state, ExaminedState::Ran | ExaminedState::Partly);
+            let why = e.why.clone().unwrap_or_default();
+            let what = match e.state {
+                ExaminedState::Ran => match &e.stand_in {
+                    Some(stood) => format!("Ran. {stood}"),
+                    None => "Ran.".to_owned(),
+                },
+                ExaminedState::Partly => format!("Ran on part of the app: {why}"),
+                ExaminedState::NotRun => format!("Did not run: {why}"),
+                ExaminedState::NothingToExamine => format!("Nothing for it to read: {why}"),
+            };
+            let tool = e.tool.as_ref();
+            Some(ToolRow {
+                name: match tool {
+                    Some(t) if ran && !t.program.is_empty() && &t.program != name => {
+                        format!("{name} ({} in its place)", t.program)
+                    }
+                    _ => name.clone(),
+                },
+                what,
+                version: tool.filter(|_| ran).and_then(|t| t.version.clone()),
+                found: report
+                    .findings
+                    .iter()
+                    .filter(|f| f.rule_id.starts_with(&e.rules))
+                    .count(),
+                agreed: report
+                    .findings
+                    .iter()
+                    .filter(|f| f.also_reported_by.iter().any(|r| r.starts_with(&e.rules)))
+                    .count(),
+                took: tool
+                    .filter(|_| ran)
+                    .map(|t| format!("{:.1} s", t.took_ms as f64 / 1000.0)),
+            })
+        })
+        .collect()
+}
+
+/// "Found by Bandit, rule `B613`." for a finding an outside tool raised, by the tool's name and its own rule id; `None`
+/// for `sv`'s own (backlog 0379). The longest matching entry decides, as it does for `Examined`.
+/// The words of the link to an outside tool's own page about its rule (backlog 0378).
+pub const RULE_PAGE: &str = "The tool's own page about this rule";
+
+pub fn found_by(report: &Report, f: &sv_check::Finding) -> Option<String> {
+    let e = report
+        .examined
+        .iter()
+        .filter(|e| e.outside_tool.is_some() && f.rule_id.starts_with(&e.rules))
+        .max_by_key(|e| e.rules.len())?;
+    let rule = &f.rule_id[e.rules.len()..];
+    // With the version it answered, when it ran (backlog 0378, part 2): a rule's meaning can change between versions.
+    let version = e
+        .tool
+        .as_ref()
+        .and_then(|t| t.version.as_deref())
+        .map(|v| format!(" ({v})"))
+        .unwrap_or_default();
+    Some(format!(
+        "Found by {}{version}, rule `{rule}`.",
+        e.outside_tool.as_deref().unwrap_or_default()
+    ))
+}
+
+/// Whether no outside tool ran at all this time, as in a plain `sv report`: the section is then a sentence, not a
+/// table of the same "did not run" (backlog 0379).
+pub fn no_outside_tool_ran(rows: &[ToolRow]) -> bool {
+    rows.iter().all(|r| r.version.is_none() && r.took.is_none())
+}
+
+/// What the "Outside tools" section says above its table.
+pub const OUTSIDE_TOOLS_SECTION: &str = "The security tools each language already has, run beside StackVet's own \
+     checks with `sv report --tools`. Their findings are among the things to fix above, each marked with the tool's \
+     rule; one that found the same as StackVet on the same line is counted here as agreeing.";
+
+/// The name of the bill of materials beside the report (backlog 0382).
+pub const SBOM_FILE: &str = "sbom.cdx.json";
+
+/// The app's software bill of materials, written beside the report as CycloneDX JSON (backlog 0382).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SbomFile {
+    /// The document, as `sv sbom` prints it.
+    pub json: String,
+    /// How many packages it lists.
+    pub components: usize,
+    /// Whether every package manifest and lockfile was read.
+    pub complete: bool,
+}
+
+/// `sbom.cdx.json`: the bill of materials, as `sv sbom` prints it (backlog 0382). An empty CycloneDX document, saying
+/// so, for a report made without one.
+pub fn sbom_document(report: &Report) -> String {
+    match &report.sbom {
+        Some(s) => s.json.clone(),
+        None => "{\"bomFormat\": \"CycloneDX\", \"specVersion\": \"1.5\", \"version\": 1, \"components\": []}\n"
+            .to_owned(),
+    }
+}
+
+/// The line near the top of the report naming the bill of materials beside it (backlog 0382): how many packages it
+/// lists, and whether it is complete. `None` without one.
+pub fn sbom_line(report: &Report) -> Option<String> {
+    let s = report.sbom.as_ref()?;
+    if s.components == 0 && s.complete {
+        // An app on its language's own library alone: "0 packages, from every package list the app has" read as if it
+        // had lists that were empty, when most often it has none.
+        return Some(format!(
+            "The app's software bill of materials is in {SBOM_FILE} beside this report. It lists no packages: the app \
+             declares none, in a package list or a lockfile."
+        ));
+    }
+    Some(format!(
+        "The app's software bill of materials, every package it ships, is in {SBOM_FILE} beside this report: {} \
+         package{}, {}.",
+        s.components,
+        if s.components == 1 { "" } else { "s" },
+        if s.complete {
+            "from every package list and lockfile the app has"
+        } else {
+            "not complete: some of the app's package lists could not be read, and the report says which"
+        }
+    ))
+}
+
+/// The lines of the app's code a finding is on, with the one before and after, as `sv` kept them redacted (backlog
+/// 0378, part 2); `None` for a finding that is not on a line of code, or whose file could not be read.
+pub fn code_of<'a>(report: &'a Report, f: &sv_check::Finding) -> Option<&'a [(usize, String)]> {
+    report
+        .code_lines
+        .get(&(f.location.file.clone(), f.location.line))
+        .map(Vec::as_slice)
+        .filter(|lines| !lines.is_empty())
+}
+
+/// How many of a finding's exchanges "What StackVet saw" quotes before it counts the rest.
+pub const SAW_SHOWN: usize = 3;
+
+/// How much of a reply's visible text "What StackVet saw" quotes.
+const SAW_CHARS: usize = 140;
+
+/// What a finding rests on, from what `sv` kept of the running app (`seen.json`), a line each (backlog 0378): the
+/// request and what came back for an exchange, what the container was doing for a reading. At most `SAW_SHOWN`, then
+/// how many more, then where all of them are. Empty when the finding names nothing that was kept.
+///
+/// Only a reply's visible words are quoted, never its markup: a hidden field's value, where a form's token lives, is
+/// an attribute, so it cannot reach the report this way, and the record itself is redacted when it is made.
+pub fn what_was_seen(report: &Report, f: &sv_check::Finding) -> Vec<String> {
+    let Some(seen) = &report.seen else {
+        return Vec::new();
+    };
+    let lines: Vec<String> = f
+        .evidence
+        .iter()
+        .filter_map(|id| {
+            if let Some(e) = seen
+                .exchanges
+                .iter()
+                .chain(&seen.signed_in)
+                .find(|e| &e.id == id)
+            {
+                return Some(exchange_line(e));
+            }
+            seen.liveness.iter().find(|r| &r.id == id).map(reading_line)
+        })
+        .collect();
+    if lines.is_empty() {
+        return Vec::new();
+    }
+    let more = lines.len().saturating_sub(SAW_SHOWN);
+    let mut out: Vec<String> = lines.into_iter().take(SAW_SHOWN).collect();
+    out.push(match more {
+        0 => format!("Each is in full in {}, beside this report.", seen::FILE),
+        1 => format!(
+            "And 1 more like them. All are in full in {}, beside this report.",
+            seen::FILE
+        ),
+        n => format!(
+            "And {n} more like them. All are in full in {}, beside this report.",
+            seen::FILE
+        ),
+    });
+    out
+}
+
+fn exchange_line(e: &seen::Exchange) -> String {
+    let to = if (300..400).contains(&e.status) {
+        e.headers
+            .iter()
+            .find(|(name, _)| name == "location")
+            .map(|(_, at)| format!(", sending the browser to {at}"))
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+    let words = visible_words(&e.body);
+    let said = if words.is_empty() {
+        String::new()
+    } else if words.chars().count() > SAW_CHARS {
+        let head: String = words.chars().take(SAW_CHARS).collect();
+        format!(": \"{}…\"", head.trim_end())
+    } else {
+        format!(": \"{words}\"")
+    };
+    format!("{} {} answered {}{to}{said}", e.method, e.path, e.status)
+}
+
+fn reading_line(r: &seen::Reading) -> String {
+    let mut state = if r.status.is_empty() {
+        "could not be read".to_owned()
+    } else {
+        format!("was {}", r.status)
+    };
+    if r.restarts > 0 {
+        state.push_str(&format!(
+            ", restarted {} time{}",
+            r.restarts,
+            if r.restarts == 1 { "" } else { "s" }
+        ));
+    }
+    if r.out_of_memory {
+        state.push_str(", out of memory");
+    }
+    format!(
+        "The app's container, {}: it {state}, and {} its health path",
+        r.after,
+        if r.answered {
+            "answered"
+        } else {
+            "did not answer"
+        }
+    )
+}
+
+/// The words a person would read on a page, one space between them: the head, scripts, and styles left out, every
+/// tag taken away with its attributes, and the common entities read.
+fn visible_words(body: &str) -> String {
+    let lower = body.to_ascii_lowercase();
+    let mut text = String::with_capacity(body.len());
+    let mut i = 0;
+    while i < body.len() {
+        let rest = &lower[i..];
+        let skip_to = ["head", "script", "style"].iter().find_map(|tag| {
+            rest.starts_with(&format!("<{tag}"))
+                .then(|| {
+                    rest.find(&format!("</{tag}>"))
+                        .map(|end| end + tag.len() + 3)
+                })
+                .flatten()
+        });
+        if let Some(n) = skip_to {
+            i += n;
+            continue;
+        }
+        if rest.starts_with('<') {
+            i += rest.find('>').map_or(rest.len(), |end| end + 1);
+            text.push(' ');
+            continue;
+        }
+        let c = body[i..].chars().next().expect("a character");
+        text.push(c);
+        i += c.len_utf8();
+    }
+    let text = text
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", "\"")
+        .replace("&#x27;", "'")
+        .replace("&#39;", "'")
+        .replace("&nbsp;", " ");
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+#[cfg(test)]
+mod what_was_seen_tests;
+
+/// What the reports say above the notes worth knowing.
+pub const NOTES_SECTION: &str = "Not things to fix. Each says something about how the app is built that is worth \
+     knowing, and asks for nothing unless you decide it matters; if you do, its \"What to do\" says how.";
 
 #[cfg(test)]
 #[path = "low_groups_tests.rs"]
@@ -1991,17 +2333,20 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
     }
     text.push_str(&unreadable);
     text.push_str(&gaps);
-    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not.
+    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not. A
+    // chain that holds says nothing of lines cut from the end, and the sentence says so (backlog 0310).
     if let Some(at) = b.chain_broken_at {
         text.push_str(&format!(
-            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added after it \
-             was written, so that line and the lines after it are not vouched for."
+            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added there \
+             after it was written, so that line and the lines after it are not vouched for."
         ));
     } else if let (true, Some(head)) = (b.chained > 0, &b.chain_head) {
         let short: String = head.chars().take(12).collect();
         text.push_str(&format!(
             " Each of the record's {} chained lines checks out against the one before it, ending at the hash {short}. \
-             A rewrite of the whole record would keep a valid chain, so compare that hash with an earlier report's.",
+             Lines cut from the end, or a rewrite of the whole record, would leave a valid chain all the same, \
+             so compare that hash with an earlier report's: if the record has only grown since, its chain still \
+             passes through the hash that report showed.",
             b.chained
         ));
     }
@@ -2060,9 +2405,22 @@ mod mark_tests;
 #[path = "next_step_tests.rs"]
 mod next_step_tests;
 
+#[cfg(test)]
+#[path = "build_loop_tail_tests.rs"]
+mod build_loop_tail_tests;
+
+#[cfg(test)]
+#[path = "outranked_in_part_tests.rs"]
+mod outranked_in_part_tests;
+
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
-/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already.
+/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already, and for a note worth
+/// knowing, which asks for nothing.
 pub fn next_step(report: &Report, f: &sv_check::Finding) -> Option<String> {
+    // A note worth knowing asks for nothing, so it is not told to be fixed (ADR-110, Later).
+    if is_note(f) {
+        return None;
+    }
     accepted_note(report, f).is_none().then(|| {
         "Fix it in the code and check again. If it is a false alarm, write a `[[finding-review]]` entry for it, \
          naming its rule, file and fingerprint, and confirm it with `sv review` in your own terminal; until then it \
@@ -2289,9 +2647,12 @@ pub fn mark_outranked(
         if !outside || applies.is_empty() {
             continue;
         }
+        // Only a credit that verified the requirement whole: one in part rests, by its own words, on
+        // one sample, and says nothing of the route or file the tool's finding is about (backlog 0303).
         let run_check = |r: &String| {
             verified.iter().find(|v| {
                 v.check_id.starts_with("probe.")
+                    && !v.in_part
                     && !manual_only.contains(r.as_str())
                     && v.requirement_ids.iter().any(|id| id == r)
             })
@@ -2345,6 +2706,33 @@ pub fn status_of(
     }
 }
 
+/// Where each requirement is named among `items`: for each id, the place of every item that names it, once each, in
+/// the items' order.
+fn about_each<'a, T>(
+    items: &'a [T],
+    ids: impl Fn(&'a T) -> &'a Vec<String>,
+) -> HashMap<&'a str, Vec<usize>> {
+    let mut about: HashMap<&str, Vec<usize>> = HashMap::new();
+    for (at, item) in items.iter().enumerate() {
+        for id in ids(item) {
+            let places = about.entry(id.as_str()).or_default();
+            if places.last() != Some(&at) {
+                places.push(at);
+            }
+        }
+    }
+    about
+}
+
+/// The items `about_each` found naming `id`.
+fn about<'a, T>(
+    about: &'a HashMap<&str, Vec<usize>>,
+    id: &str,
+    items: &'a [T],
+) -> impl Iterator<Item = &'a T> {
+    about.get(id).into_iter().flatten().map(|&at| &items[at])
+}
+
 pub fn build(inputs: Inputs<'_>) -> Report {
     // A machine's reading of the app and a person's word, apart: the first is what the checks,
     // the counterparts, and the requirements set aside are read from; the second is read by tier.
@@ -2370,37 +2758,35 @@ pub fn build(inputs: Inputs<'_>) -> Report {
             .unwrap_or_else(|| (String::new(), String::new()))
     };
 
+    // The findings, checks and a person's word about each requirement, found once here rather than by a scan of
+    // every one of them for each requirement (backlog 0367). Each list keeps its own order.
+    let findings_about = about_each(&inputs.findings, |f| &f.requirement_ids);
+    let checks_about = about_each(checks, |v| &v.requirement_ids);
+    let word_about = about_each(&by_word, |v| &v.requirement_ids);
+
     let mut requirements = Vec::new();
     for id in &inputs.buckets.applicable {
         // A finding whose own text says it leaves the credit alone is shown beside the status, not
         // made into it (BACKLOG, family-hub item 6). Every other finding still decides it.
-        let (findings, information): (Vec<&Finding>, Vec<&Finding>) = inputs
-            .findings
-            .iter()
-            .filter(|f| f.requirement_ids.iter().any(|r| r == id))
-            .partition(|f| f.withholds_credit());
+        let (findings, information): (Vec<&Finding>, Vec<&Finding>) =
+            about(&findings_about, id, &inputs.findings).partition(|f| f.withholds_credit());
         let findings: Vec<String> = findings.iter().map(|f| f.rule_id.clone()).collect();
         let mut information: Vec<String> = information.iter().map(|f| f.rule_id.clone()).collect();
         information.sort();
         information.dedup();
         // The app's own tests are kept apart from `sv`'s checks (ADR-050): written by the AI coding
         // tool, they are a tier of their own, never *checked*.
-        let about_this = |v: &&sv_check::Verified| v.requirement_ids.iter().any(|r| r == id);
         let as_checked_by = |v: &sv_check::Verified| CheckedBy {
             check_id: v.check_id.clone(),
             scope: v.scope.clone(),
             in_part: v.in_part,
             whose: None,
         };
-        let tested: Vec<CheckedBy> = checks
-            .iter()
-            .filter(about_this)
+        let tested: Vec<CheckedBy> = about(&checks_about, id, checks)
             .filter(|v| v.tier == sv_check::Tier::AppTested)
             .map(as_checked_by)
             .collect();
-        let satisfied: Vec<CheckedBy> = checks
-            .iter()
-            .filter(about_this)
+        let satisfied: Vec<CheckedBy> = about(&checks_about, id, checks)
             .filter(|v| v.tier == sv_check::Tier::Checked)
             .map(as_checked_by)
             .collect();
@@ -2425,7 +2811,14 @@ pub fn build(inputs: Inputs<'_>) -> Report {
             .get(id)
             .map(|r| r.counterparts.as_slice())
             .unwrap_or_default();
-        for v in checks {
+        // Only the checks about a counterpart, in the checks' own order.
+        let mut about_counterparts: Vec<usize> = counterparts
+            .iter()
+            .flat_map(|c| checks_about.get(c.as_str()).into_iter().flatten().copied())
+            .collect();
+        about_counterparts.sort_unstable();
+        about_counterparts.dedup();
+        for v in about_counterparts.into_iter().map(|i| &checks[i]) {
             for counterpart in counterparts {
                 if v.requirement_ids.iter().any(|r| r == counterpart)
                     && !supported_by.iter().any(|c| c.check_id == v.check_id)
@@ -2443,10 +2836,8 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         }
         // A person's word about this requirement, by the tier each credit says it rests on.
         let word = |tiers: &[sv_check::Tier]| -> Vec<(sv_check::Tier, CheckedBy)> {
-            by_word
-                .iter()
+            about(&word_about, id, &by_word)
                 .filter(|v| tiers.contains(&v.tier))
-                .filter(|v| v.requirement_ids.iter().any(|r| r == id))
                 .map(|v| {
                     (
                         v.tier,
@@ -2832,6 +3223,8 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         build_loop: None,
         timings: Vec::new(),
         seen: None,
+        code_lines: Default::default(),
+        sbom: None,
         app_name: inputs.app_name.to_owned(),
         target_level: inputs.target_level,
         generated: inputs.generated,

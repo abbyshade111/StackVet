@@ -43,6 +43,8 @@ fn app(root: &Path) -> PathBuf {
     .unwrap();
     std::fs::write(dir.join("stackvet.toml"), manifest).unwrap();
     std::fs::write(dir.join("src/main.py"), "print('hello')\n").unwrap();
+    // One pinned package, so the bill of materials the bundle carries lists something (backlog 0382).
+    std::fs::write(dir.join("requirements.txt"), "flask==3.0.0\n").unwrap();
     std::fs::write(
         dir.join("src/config.py"),
         format!("API_KEY = \"{}\"\n", planted_key()),
@@ -273,6 +275,15 @@ fn the_bundle_holds_the_app_the_report_the_bill_of_materials_and_the_listing() {
             made.names()
         );
     }
+    // The bill is the report folder's, which lists the app's one package: a bundle no longer builds its own.
+    let bill = &made
+        .entries
+        .iter()
+        .find(|(n, _)| n == "notes-app/report/sbom.cdx.json")
+        .unwrap()
+        .1;
+    let bill: Value = serde_json::from_slice(bill).unwrap();
+    assert!(bill["components"].to_string().contains("flask"), "{bill}");
 }
 
 #[test]

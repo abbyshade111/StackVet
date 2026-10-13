@@ -263,4 +263,72 @@ mod tests {
         );
         std::fs::remove_dir_all(&dir).ok();
     }
+
+    #[test]
+    fn a_sealed_report_copied_or_moved_to_another_folder_is_not_proven_sv_s() {
+        // Backlog 0286. The seal covered the files and nothing of where they were, so a clean report
+        // kept from an earlier run, or another app's, put into `stackvet-report/` was offered by the
+        // MCP server as `sv`'s current report.
+        sv_check::seal::key_folder_for_tests(std::env::temp_dir().join(format!(
+            "sv-report-folder-copied-test-keys-{}",
+            std::process::id()
+        )));
+        let app = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/flask-booking");
+        let dir = scratch("copied");
+        let out = dir.join("stackvet-report");
+        let mut quiet = |_: &str| {};
+        let report = report_of(&app);
+        write_report_folder(
+            &app,
+            &out,
+            "a test",
+            "elsewhere",
+            false,
+            || Ok(report),
+            &mut quiet,
+        )
+        .unwrap();
+        assert!(
+            crate::report_seal::proven(&out).is_ok(),
+            "the setup: sealed where it was written"
+        );
+
+        // Every file as it is, in another app's report folder.
+        let elsewhere = dir.join("another-app").join("stackvet-report");
+        std::fs::create_dir_all(&elsewhere).unwrap();
+        let marker_name = sv_scan::ecosystems::REPORT_MARKER;
+        for name in crate::report_files::NAMES.iter().chain([&marker_name]) {
+            std::fs::copy(out.join(name), elsewhere.join(name)).unwrap();
+        }
+        let why = crate::report_seal::proven(&elsewhere).expect_err("a copy is not proven sv's");
+        assert!(why.contains("sealed for another folder"), "{why}");
+
+        // Nor does naming the new folder in the marker help: the folder is sealed with the files.
+        let marker = std::fs::read_to_string(elsewhere.join(marker_name)).unwrap();
+        let here = sv_check::seal::App::of(&elsewhere).unwrap().id().to_owned();
+        let renamed: String = marker
+            .lines()
+            .map(|l| match l.strip_prefix("sealed-in: ") {
+                Some(_) => format!("sealed-in: {here}\n"),
+                None => format!("{l}\n"),
+            })
+            .collect();
+        assert_ne!(renamed, marker, "the setup: the marker names a folder");
+        std::fs::write(elsewhere.join(marker_name), renamed).unwrap();
+        let why = crate::report_seal::proven(&elsewhere).expect_err("a renamed copy is not proven");
+        assert!(why.contains("does not match"), "{why}");
+        // A seal that names the folder it was made in is not edited to name this one.
+        assert!(!why.contains("another folder"), "{why}");
+
+        // A report sealed before seals named their folder is asked to be written again.
+        let unnamed: String = marker
+            .lines()
+            .filter(|l| !l.starts_with("sealed-in: "))
+            .map(|l| format!("{l}\n"))
+            .collect();
+        std::fs::write(out.join(marker_name), unnamed).unwrap();
+        let why = crate::report_seal::proven(&out).expect_err("an unnamed seal is not proven");
+        assert!(why.contains("write the report again"), "{why}");
+        std::fs::remove_dir_all(&dir).ok();
+    }
 }

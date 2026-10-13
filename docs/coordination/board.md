@@ -6,91 +6,26 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0314 (since 2026-10-12) — next: 0313
-- builder-none — arm: none — holds: 0286 (since 2026-10-12) — next: 0309
+- builder-full — arm: full — holds: 0350 (since 2026-10-13) — next: 0329, 0300, 0342, 0293, 0291
+- builder-none — arm: none — holds: 0361 (since 2026-10-13) — next: 0345, 0346, 0347
 
 ## Queue
 
-1. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — ready
-2. 0279 README, ARCHITECTURE, and the MCP catalog count five report files where sv writes seven — ready
-3. 0287 The Docker Hub token is on the runner's disk while a branch's own tests and build scripts run — ready
-4. 0288 py7zr is pinned by version only, so its eight dependencies float in the job that holds the Docker Hub token — ready
-5. 0289 A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting) — hold: the owner's decision first; see the item
-6. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
-7. 0291 Four readers of requirements.txt, each with its own comment and option rules, and no test holding them to one another — ready
-8. 0292 manifest_changed reports not changed when the manifest cannot be read at the end of the run — ready
-9. 0293 Two data files are compiled in, bypassing the one data path, and the guard test cannot see them — ready
-10. 0294 ARCHITECTURE's rule of what sv writes into somebody's folder leaves out stackvet.toml and design-decisions.md, which sv review writes — ready
-11. 0295 ARCHITECTURE's counts are stale: 435 design entries, 91 records, and every crate's line count has moved — ready
-12. 0296 CONTRIBUTING.md states the no-network rule without its two exceptions, and three of its instructions are overtaken by the 8 October layout — ready
-13. 0297 The decision-record index and ADR-057's status line disagree with the records' own status lines — ready
-14. 0298 GAP-ANALYSIS.md is a dated reading with no since note, so twelve headline faults read as open when they are built — ready
-15. 0299 BACKLOG.md's roadmap still describes the one-file-per-item decision as open — ready
-16. 0300 The gateway fence is IPv4-only: an IPv6 gateway on the fenced network is neither removed nor knocked on — ready
-17. 0301 In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable — ready
-18. 0302 ast.weak-hash-function (V11.4.1) and ast.unsafe-deserialization (V1.5.2) credit whole requirements from a deny-list — ready
-19. 0303 An in-part probe credit outranks an outside tool's finding — ready
-20. 0304 probe.ai-kill-switch-ignored credits C9.6.1 in full while its own scope says half was not shown — ready
-21. 0305 The secrets scan credits V11.1.1 (a documented key-management policy) for finding no PEM block — ready
-22. 0306 probe.uploaded-file-rendered calls an answer with no Content-Type safe — ready
-23. 0307 config.versions-pinned and the SBOM complete credit give V15.1.2 whole for a lockfile — ready
-24. 0308 resources/read answers differently for a folder that does not exist and one outside the root, which confine.rs deliberately avoids — ready
-25. 0310 The build-loop record's hash chain does not catch lines cut from the end, and the report's wording says removal is caught — ready
-26. 0311 stackvet_prompts with a path follows a symlinked stackvet-report folder outside the root — ready
-27. 0312 The run note goes into compliance.md unescaped, and the health path in it is not validated — ready
-28. 0315 Names ending in _PASS are neither scanned nor masked — ready
-29. 0316 windows.yml leaves the checkout's token in .git/config while the branch's build scripts and tests run — ready
-30. 0317 The images the suite starts are pinned by tag, not digest, in the workflow — ready
-31. 0318 The publish step puts the registry token in the shell script text instead of the environment — ready
-32. 0319 backlog.py done rewrites files through any symlink inside the repository — ready
-33. 0320 fuzz/seed.sh breaks on a file name with a space — ready
-34. 0321 prompt_trial.py has the one shell=True in tools/ — ready
-35. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
-36. 0323 An unused dependency in each of two crates — ready
-37. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
-38. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
-39. 0326 The name server's builder carries its own copy of the hardening, against ADR-019's record, and the chokepoint test does not cover it — ready
-40. 0327 sv probe reads curl's output with no size cap — ready
-41. 0328 sv probe's one DNS question accepts an answer from any sender — ready
-42. 0329 Host paths go to docker -v in the short form, so an app folder whose path holds a colon cannot be mounted and the run does not say why — ready
-43. 0330 A --tools run is not network-free: Semgrep downloads its packs from semgrep.dev at run time, and no document beside the no-network rule says so — ready
-44. 0331 config.secrets-file-committed is a full credit where its sibling check is in part — ready
-45. 0332 resolve's comment overstates its safety: an owner's no with no corroboration excludes requirements — ready
-46. 0333 A threat reads checked in part when one of its requirements is checked and the rest are not verified — ready
-47. 0334 probe.error-detail-leak's debug-mode credit rests on a finite marker list that misses ASP.NET Core and Laravel — ready
-48. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
-49. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-50. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
-51. 0343 The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove — ready
-52. 0344 Dependencies carry full debug information in every debug build and in each of about 81 grammar-laden test binaries — ready
-53. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
-54. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
-55. 0351 Every file of the app is read from disk and decoded five to six times across the static stage — ready
-56. 0352 Thirty-odd separate regex passes per file in the secrets scan — ready
-57. 0353 One tree-sitter query walk per rule per file: up to 31 walks of each Python file — ready
-58. 0354 sv report --run walks the app folder twice more, only to compute the private files — ready
-59. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
-60. 0356 Incremental compilation is on in CI, where every build is fresh — ready
-61. 0357 The Dockerfile has no dependency layer, and copies examples/ into the build stage — ready
-62. 0358 The native comparison build is the one release build without --locked — ready
-63. 0359 The no-cache comment in rust.yml is duplicated and gives two different build times — ready
-64. 0360 fuzz/Cargo.lock no longer matches the manifests it locks — ready
-65. 0363 Every CI part fetches all five container images, 16 to 25 s per part, where each part starts only some — ready
-66. 0364 The crash sweeps' time grows with the square of the request count, and is not measured since 0271 — ready
-67. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
-68. 0366 git log --all --diff-filter=A --name-only walks every commit's diff for the secrets-file check — ready
-69. 0367 Quadratic grouping over findings in settle and in the report build — ready
-70. 0368 Outside tools run one after another, their start-ups never overlapping — ready
-71. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-72. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-73. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-74. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-75. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-76. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-77. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-78. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-79. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-80. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+1. 0289 A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting) — hold: the owner's decision first; see the item
+2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
+3. 0301 In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable — ready
+4. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
+5. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
+6. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
+7. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
+8. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+9. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
+10. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
+11. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+12. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+13. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — ready
+14. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — ready
+15. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
 
 ## Log
 
@@ -226,3 +161,137 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-12 17:49 — assigned 0314 to builder-full (full): pair 5 with 0309 (builder-none, next after 0286, which shares its files): each a small fix to how sv-cli reads or writes a file it does not own
 - 2026-10-12 17:49 — assigned 0313 to builder-full (full) as next: pair 6 with 0292 (for builder-none later): each makes a reader of git or the manifest say what it could not read, with a test
 - 2026-10-12 17:49 — assigned 0309 to builder-none (none) as next: pair 5 with 0314 (builder-full): each a small fix to how sv-cli reads or writes a file it does not own; after 0286, which touches the same report_seal.rs
+- 2026-10-12 18:28 — finished 0286 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1581; now holds 0309
+- 2026-10-12 18:28 — assigned 0292 to builder-none (none) as next: pair 6 with 0313 (builder-full): each makes a reader of git or the manifest say what it could not read; after 0309, which shares report_lock.rs, in the same session
+- 2026-10-12 18:47 — finished 0314 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1582; now holds 0313
+- 2026-10-12 18:47 — finished 0313 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1585
+- 2026-10-12 18:47 — assigned 0315 to builder-full (full): pair 7 with 0306 (for builder-none later): each a small detection fix with a red-first test, no coverage files touched
+- 2026-10-12 18:47 — assigned 0304 to builder-full (full) as next: pair 8 with 0302 (for builder-none later): each marks a credit in part and regenerates the coverage files, so the two run one after the other, never at once
+- 2026-10-12 18:55 — finished 0309 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1586; now holds 0292
+- 2026-10-12 18:55 — assigned 0306 to builder-none (none) as next: pair 7 with 0315 (builder-full): each a small detection fix with a red-first test, no coverage files touched; uploads.rs, which nobody else holds
+- 2026-10-12 19:27 — finished 0292 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1588; now holds 0306
+- 2026-10-12 19:27 — assigned 0312 to builder-none (none) as next: pair 9 with 0310 (for builder-full later): each makes report text say no more than it should, with a test; markdown.rs and sv-run's manifest check, which nobody else holds
+- 2026-10-12 19:46 — finished 0315 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1592; now holds 0304
+- 2026-10-12 19:46 — finished 0306 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1591; now holds 0312
+- 2026-10-12 19:46 — assigned 0310 to builder-full (full) as next: pair 9 with 0312 (builder-none): each makes report text say no more than it should, with a test; build_loop.rs and the report's wording, which nobody else holds
+- 2026-10-12 19:46 — assigned 0316 to builder-none (none) as next: pair 10 with 0318 (for builder-full later): each a one-line CI fix keeping a token out of reach of a branch's code, in different workflow files (windows.yml, rust.yml)
+- 2026-10-12 19:54 — finished 0304 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1594; now holds 0310
+- 2026-10-12 19:54 — assigned 0318 to builder-full (full) as next: pair 10 with 0316 (builder-none): each a one-line CI fix keeping a token out of reach of a branch's code; rust.yml, apart from builder-none's windows.yml
+- 2026-10-12 20:07 — finished 0312 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1597; now holds 0316
+- 2026-10-12 20:07 — assigned 0302 to builder-none (none) as next: pair 8 with 0304 (builder-full, merged): each marks credits in part and regenerates the coverage files; builder-full holds no coverage item now (0310, then 0318)
+- 2026-10-12 20:25 — finished 0316 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1598; now holds 0302
+- 2026-10-12 20:26 — assigned 0296 to builder-none (none) as next: pair 11 with 0298 (for builder-full later): each a documentation fix that brings a page in line with the code and records, in files nobody else holds; no coverage files
+- 2026-10-12 20:46 — finished 0310 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1601; now holds 0318
+- 2026-10-12 20:46 — assigned 0298 to builder-full (full) as next: pair 11 with 0296 (builder-none): each a documentation fix that brings a page in line with the code and records; GAP-ANALYSIS.md, which nobody else holds; no coverage files
+- 2026-10-12 21:04 — finished 0318 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1605; now holds 0298
+- 2026-10-12 21:04 — assigned 0294 to builder-full (full) as next: pair 12 with 0297 (for builder-none later): each a documentation fix where a page contradicts the records it cites; docs/ARCHITECTURE.md, which nobody else holds; no coverage files
+- 2026-10-12 21:14 — assigned 0295 to builder-full (full) as next: lane of six, pair 13 with 0299 (builder-none): documentation fixes where a page has drifted from the code; ARCHITECTURE.md after 0294, in this lane only
+- 2026-10-12 21:14 — assigned 0303 to builder-full (full) as next: lane of six, pair 14 with 0307 (builder-none): each corrects how a partial credit is treated, with a test; finding.rs and sv-report's lib.rs, in this lane only
+- 2026-10-12 21:14 — assigned 0287 to builder-full (full) as next: lane of six, pair 15 with 0319 (builder-none): each keeps a credential or a write out of reach of untrusted code; rust.yml, in this lane only
+- 2026-10-12 21:14 — assigned 0288 to builder-full (full) as next: lane of six, pair 16 with 0305 (builder-none): each a supply-chain or citation fix the record names; rust.yml and windows.yml, in this lane only
+- 2026-10-12 21:14 — assigned 0317 to builder-full (full) as next: lane of six, pair 17 with 0321 (for builder-none's next lane): small CI and tooling tidies; rust.yml, in this lane only
+- 2026-10-12 21:14 — assigned 0297 to builder-none (none) as next: lane of six, pair 12 with 0294 (builder-full): each a documentation fix where a page contradicts the records it cites; docs/adr/README.md and ADR-057, in this lane only
+- 2026-10-12 21:14 — assigned 0299 to builder-none (none) as next: lane of six, pair 13 with 0295 (builder-full): documentation fixes where a page has drifted from the code; docs/BACKLOG.md, in this lane only
+- 2026-10-12 21:14 — assigned 0307 to builder-none (none) as next: lane of six, pair 14 with 0303 (builder-full): each corrects how a partial credit is treated, with a test; regenerates the coverage files, which only this lane touches
+- 2026-10-12 21:14 — assigned 0319 to builder-none (none) as next: lane of six, pair 15 with 0287 (builder-full): each keeps a credential or a write out of reach of untrusted code; tools/backlog.py, in this lane only
+- 2026-10-12 21:14 — assigned 0305 to builder-none (none) as next: lane of six, pair 16 with 0288 (builder-full): each a supply-chain or citation fix the record names; secret-rules.json and the coverage files, in this lane only
+- 2026-10-12 21:24 — finished 0302 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1607; now holds 0296
+- 2026-10-12 21:53 — finished 0298 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1612; now holds 0294
+- 2026-10-12 21:53 — finished 0294 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1615; now holds 0295
+- 2026-10-12 21:53 — finished 0296 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1610; now holds 0297
+- 2026-10-12 21:53 — finished 0297 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1613; now holds 0299
+- 2026-10-12 22:24 — finished 0295 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1617; now holds 0303
+- 2026-10-12 22:24 — finished 0303 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1619; now holds 0287
+- 2026-10-12 22:24 — finished 0287 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1621; now holds 0288
+- 2026-10-12 22:24 — finished 0299 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1616; now holds 0307
+- 2026-10-12 22:24 — assigned 0308 to builder-full (full) as next: lane 2, pair 18 with 0311: MCP confinement gap, resources.rs only
+- 2026-10-12 22:24 — assigned 0327 to builder-full (full) as next: lane 2, pair 19 with 0328: probe input limits, production.rs only
+- 2026-10-12 22:24 — assigned 0320 to builder-full (full) as next: lane 2, pair 20 with 0360: fuzz folder fixes, seed.sh only
+- 2026-10-12 22:24 — assigned 0359 to builder-full (full) as next: lane 2: rust.yml comment fix; CI workflow files stay in this lane
+- 2026-10-12 22:24 — assigned 0332 to builder-full (full) as next: lane 2: comment overstates safety in sv-manifest; no file shared with the other lane
+- 2026-10-12 22:24 — assigned 0321 to builder-none (none) as next: lane 2, pair 17 with 0317: one shell=True in tools/prompt_trial.py
+- 2026-10-12 22:24 — assigned 0311 to builder-none (none) as next: lane 2, pair 18 with 0308: symlinked report folder, ecosystems.rs and tools.rs
+- 2026-10-12 22:24 — assigned 0328 to builder-none (none) as next: lane 2, pair 19 with 0327: DNS answer from any sender, live_tls.rs only
+- 2026-10-12 22:24 — assigned 0360 to builder-none (none) as next: lane 2, pair 20 with 0320: fuzz/Cargo.lock out of date
+- 2026-10-12 22:54 — finished 0288 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1623; now holds 0317
+- 2026-10-12 22:54 — finished 0317 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1630; now holds 0308
+- 2026-10-12 22:54 — finished 0307 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1622; now holds 0319
+- 2026-10-12 22:54 — finished 0319 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1626; now holds 0305
+- 2026-10-12 23:23 — finished 0308 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1635; now holds 0327
+- 2026-10-12 23:23 — finished 0327 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1641; now holds 0320
+- 2026-10-12 23:23 — finished 0305 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1637; now holds 0321
+- 2026-10-12 23:23 — finished 0321 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1640; now holds 0311
+- 2026-10-12 23:23 — assigned 0358 to builder-full (full) as next: lane 3: rust.yml build without --locked; CI files stay in this lane
+- 2026-10-12 23:23 — assigned 0363 to builder-full (full) as next: lane 3: rust.yml image fetches; CI files stay in this lane
+- 2026-10-12 23:23 — assigned 0323 to builder-full (full) as next: lane 3: unused dependency in sv-report and sv-run manifests
+- 2026-10-12 23:23 — assigned 0326 to builder-full (full) as next: lane 3: name server hardening copy, sv-run name_server.rs and its test
+- 2026-10-12 23:23 — assigned 0331 to builder-none (none) as next: lane 3: partial credit for the secrets-file check; coverage files stay in this lane
+- 2026-10-12 23:23 — assigned 0334 to builder-none (none) as next: lane 3: debug-mode marker list in probes.rs; coverage files stay in this lane
+- 2026-10-12 23:23 — assigned 0333 to builder-none (none) as next: lane 3: threat wording in sv-report threats.rs
+- 2026-10-12 23:23 — assigned 0330 to builder-none (none) as next: lane 3: Semgrep packs fetched at run time, say so beside the no-network rule
+- 2026-10-12 23:53 — finished 0320 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1644; now holds 0359
+- 2026-10-12 23:53 — finished 0359 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1647; now holds 0332
+- 2026-10-12 23:53 — finished 0332 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1649; now holds 0358
+- 2026-10-12 23:53 — finished 0311 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1642; now holds 0328
+- 2026-10-12 23:53 — finished 0328 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1648; now holds 0360
+- 2026-10-13 00:23 — finished 0358 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1653; now holds 0363
+- 2026-10-13 00:23 — finished 0360 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1652; now holds 0331
+- 2026-10-13 00:23 — finished 0331 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1657; now holds 0334
+- 2026-10-13 00:23 — assigned 0344 to builder-full (full) as next: lane 4, pair 21 with 0357: build speed, root Cargo.toml profile only
+- 2026-10-13 00:23 — assigned 0366 to builder-full (full) as next: lane 4, pair 22 with 0368: run speed in sv-check, git.rs only
+- 2026-10-13 00:23 — assigned 0354 to builder-full (full) as next: lane 4, pair 23 with 0367: repeated walks, sv-cli lib.rs
+- 2026-10-13 00:23 — assigned 0356 to builder-full (full) as next: lane 4: CI incremental compilation; CI files stay in this lane
+- 2026-10-13 00:23 — assigned 0357 to builder-none (none) as next: lane 4, pair 21 with 0344: build speed, Dockerfile only
+- 2026-10-13 00:23 — assigned 0368 to builder-none (none) as next: lane 4, pair 22 with 0366: run speed in sv-check, adapters.rs
+- 2026-10-13 00:23 — assigned 0367 to builder-none (none) as next: lane 4, pair 23 with 0354: quadratic grouping, finding.rs and sv-report
+- 2026-10-13 00:23 — assigned 0364 to builder-none (none) as next: lane 4: time the crash sweeps once and write the number down
+- 2026-10-13 00:53 — finished 0363 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1658; now holds 0323
+- 2026-10-13 00:53 — finished 0334 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1660; now holds 0333
+- 2026-10-13 01:23 — finished 0333 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1664; now holds 0330
+- 2026-10-13 01:23 — finished 0330 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1666; now holds 0357
+- 2026-10-13 01:53 — finished 0357 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1667; now holds 0368
+- 2026-10-13 01:53 — assigned 0352 to builder-none (none) as next: lane 5: secrets scan regex passes, secrets.rs only; no file shared with builder-full's lane
+- 2026-10-13 01:53 — assigned 0353 to builder-none (none) as next: lane 5: one query walk per rule, ast.rs only; no file shared with builder-full's lane
+- 2026-10-13 02:23 — finished 0368 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1670; now holds 0367
+- 2026-10-13 02:53 — finished 0367 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1673; now holds 0364
+- 2026-10-13 02:53 — assigned 0351 to builder-none (none) as next: lane 6: read each file once in the static stage; sv-scan and the sv-check readers, after 0352 and 0353 in the same files; none in builder-full's lane
+- 2026-10-13 02:53 — assigned 0263 to builder-none (none) as next: lane 6: static half of V16.5.4, supporting only; ast.rs and the coverage files, which stay in this lane
+- 2026-10-13 03:23 — finished 0364 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1674; now holds 0352
+- 2026-10-13 03:53 — finished 0352 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1677; now holds 0353
+- 2026-10-13 04:53 — finished 0353 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1679; now holds 0351
+- 2026-10-13 05:53 — finished 0351 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1681; now holds 0263
+- 2026-10-13 07:37 — withdrew 0263 from builder-none (none), on hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
+- 2026-10-13 08:23 — finished 0323 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1686; now holds 0326
+- 2026-10-13 12:15 — released 0336
+- 2026-10-13 12:15 — released 0337
+- 2026-10-13 12:15 — released 0345
+- 2026-10-13 12:15 — released 0346
+- 2026-10-13 12:15 — released 0347
+- 2026-10-13 12:15 — released 0348
+- 2026-10-13 12:15 — released 0361
+- 2026-10-13 12:15 — released 0362
+- 2026-10-13 12:15 — assigned 0279 to builder-none (none): owner released the AI-tool holds for builder-none on 13 October 2026; the report-file counts in README, ARCHITECTURE, and the catalog sentence together
+- 2026-10-13 12:15 — assigned 0362 to builder-none (none) as next: lane 7: prompts sent twice by guidance and before; mcp tools.rs and catalog.rs, none in builder-full's lane
+- 2026-10-13 12:15 — assigned 0348 to builder-none (none) as next: lane 7: stackvet_prompts with no argument sends all 36 twice; mcp tools.rs
+- 2026-10-13 12:15 — assigned 0361 to builder-none (none) as next: lane 7: shorter fence tags; sv-report fence.rs and check_text.rs
+- 2026-10-13 12:15 — assigned 0345 to builder-none (none) as next: lane 7: the fence sentence repeated in ten tool descriptions; catalog.rs and mod.rs
+- 2026-10-13 12:15 — assigned 0346 to builder-none (none) as next: lane 7: tool descriptions repeat how-to-behave text; catalog.rs, after 0345 in the same file
+- 2026-10-13 12:15 — assigned 0347 to builder-none (none) as next: lane 7: stackvet_spec sent whole and never paged; catalog.rs, after 0346
+- 2026-10-13 12:49 — finished 0326 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1695; now holds 0344
+- 2026-10-13 13:19 — finished 0344 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1697; now holds 0366
+- 2026-10-13 13:19 — finished 0366 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1700; now holds 0354
+- 2026-10-13 13:19 — finished 0279 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1701; now holds 0362
+- 2026-10-13 13:19 — assigned 0349 to builder-full (full) as next: lane 8, owner released 13 Oct: the image job on every pull request; rust.yml stays in this lane
+- 2026-10-13 13:19 — assigned 0343 to builder-full (full) as next: lane 8, owner released 13 Oct: publish builds the image a third time; rust.yml, after 0349
+- 2026-10-13 13:19 — assigned 0350 to builder-full (full) as next: lane 8, owner released 13 Oct: a fourth suite part; rust.yml and tools/ci_shards.py, after 0343
+- 2026-10-13 13:19 — assigned 0329 to builder-full (full) as next: lane 8, owner released 13 Oct: a colon in the app folder's path; docker.rs and install.rs, which this lane now holds
+- 2026-10-13 13:19 — assigned 0300 to builder-full (full) as next: lane 8, owner released 13 Oct: the fence over IPv6; docker.rs, after 0329; its pair 0301 goes to builder-none when docker.rs changes lanes
+- 2026-10-13 13:49 — finished 0354 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1704; now holds 0356
+- 2026-10-13 13:49 — finished 0356 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1707; now holds 0349
+- 2026-10-13 13:49 — finished 0362 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1703; now holds 0348
+- 2026-10-13 14:19 — finished 0349 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1709; now holds 0343
+- 2026-10-13 14:19 — finished 0343 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1711; now holds 0350
+- 2026-10-13 14:19 — finished 0348 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1708; now holds 0361
+- 2026-10-13 14:19 — assigned 0342 to builder-full (full) as next: lane 9, owner released 13 Oct: advisory matching by index; advisories.rs only, after the docker.rs items so docker.rs can pass to builder-none for 0301
+- 2026-10-13 14:19 — assigned 0293 to builder-full (full) as next: lane 9, owner released 13 Oct: two data files compiled in; signed_in/passwords.rs and sv-report threats.rs
+- 2026-10-13 14:19 — assigned 0291 to builder-full (full) as next: lane 9, owner released 13 Oct: one reader of requirements.txt; sv-scan, sbom, manifest_lock, and install.rs, after 0329 in the same lane

@@ -322,7 +322,8 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                         "result": { "type": ["string", "null"] },
                         "forRequirements": strings,
                     }),
-                    &["id", "title", "prompt", "requirements", "sbdControls", "status", "result"],
+                    // With no argument the prompts are listed without their text (backlog 0348).
+                    &["id", "title", "requirements", "sbdControls", "status"],
                 ) },
                 "credit": string,
                 "report": string,
@@ -484,13 +485,17 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_prompts",
             "title": "Prompts for the person to give you",
-            "description": "Prompts from StackVet's library that ask an AI coding tool for something StackVet checks, such as keeping the app in git from the first file or building every database query with placeholders, and design-time prompts for what to decide before any code is written (who may do what, limits, logging, sign-in), each with the requirements it targets and, for a design-time prompt, the Secure by Design controls it helps the person answer. Each says whether it has been shown to work: an app built with it passed its check and the same app built without it failed. The others say whether they were tried and not shown to work, or not tried yet. Offer them to the person; following one is not evidence of anything, so check the app afterwards.",
+            "description": "Prompts from StackVet's library that ask an AI coding tool for something StackVet checks, such as keeping the app in git from the first file or building every database query with placeholders, and design-time prompts for what to decide before any code is written (who may do what, limits, logging, sign-in), each with the requirements it targets and, for a design-time prompt, the Secure by Design controls it helps the person answer. Each says whether it has been shown to work: an app built with it passed its check and the same app built without it failed. The others say whether they were tried and not shown to work, or not tried yet. With no argument it lists them, one line each with its id; ask with `id` for one in full, or with `requirement` for those that target it. Offer them to the person; following one is not evidence of anything, so check the app afterwards.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
                     "requirement": {
                         "type": "string",
-                        "description": "Only the prompts for this requirement or Secure by Design control, such as V1.2.4 or SBD-AC-03. Leave it out for all of them."
+                        "description": "Only the prompts for this requirement or Secure by Design control, such as V1.2.4 or SBD-AC-03, each in full. Leave it and `id` out for a list of all of them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "One prompt in full, by the id the list gives, such as database-placeholders."
                     },
                     "path": {
                         "type": "string",
@@ -567,7 +572,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_write_report",
             "title": "Write the full report",
-            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, findings.sarif and report.json. Same checks as stackvet_check.",
+            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, low-findings.md (every low-severity finding in full), findings.sarif, report.json, seen.json (what the running app answered, credentials cut out) and sbom.cdx.json (the bill of materials). Same checks as stackvet_check.",
             "inputSchema": {
                 "type": "object",
                 "properties": {

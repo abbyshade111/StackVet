@@ -13,6 +13,7 @@ fn finding(fingerprint: &str, earlier: &[&str]) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "ast.eval".into(),
         title: "t".into(),
         severity: Severity::High,

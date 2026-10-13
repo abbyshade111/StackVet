@@ -43,12 +43,16 @@ impl Fence {
     }
 
     /// A fence whose tag appears nowhere in `draft`, the whole result as it reads without tags.
+    ///
+    /// The name is six hex digits. Its length does not keep it unique: `named_from` makes it again
+    /// until the draft does not hold it. A longer name only cost characters in every wrap, three
+    /// to a finding (backlog 0361).
     pub fn for_draft(draft: &str) -> Fence {
         Fence::named_from(draft, |n| {
             let mut h = std::collections::hash_map::DefaultHasher::new();
             draft.hash(&mut h);
             n.hash(&mut h);
-            format!("{:012x}", h.finish() & 0xffff_ffff_ffff)
+            format!("{:06x}", h.finish() & 0xff_ffff)
         })
     }
 
@@ -185,6 +189,14 @@ mod tests {
             assert!(!draft.contains(&tag[TAG.len()..]), "{tag} is in {draft}");
             draft.push_str(&tag);
         }
+    }
+
+    #[test]
+    fn a_tag_is_named_with_six_hex_digits() {
+        let fence = Fence::for_draft("the app's name");
+        let name = &fence.tag().unwrap()[TAG.len()..];
+        assert_eq!(name.len(), 6, "{name}");
+        assert!(name.chars().all(|c| c.is_ascii_hexdigit()), "{name}");
     }
 
     #[test]

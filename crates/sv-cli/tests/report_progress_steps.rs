@@ -40,9 +40,18 @@ fn each_outside_tool_is_said_under_its_stage_on_stderr() {
         .filter(|l| l.starts_with("  now: "))
         .copied()
         .collect();
+    // Bandit runs in a lane of its own beside the others (backlog 0368), so it may be said before or
+    // after Semgrep; within the other lane, Semgrep comes before CodeQL.
+    let mut said = steps.clone();
+    said.sort_unstable();
     assert_eq!(
-        steps,
-        ["  now: Bandit", "  now: Semgrep", "  now: CodeQL (Python)"],
+        said,
+        ["  now: Bandit", "  now: CodeQL (Python)", "  now: Semgrep"],
+        "{stderr}"
+    );
+    let place = |tool: &str| steps.iter().position(|l| *l == tool).unwrap();
+    assert!(
+        place("  now: Semgrep") < place("  now: CodeQL (Python)"),
         "{stderr}"
     );
     assert!(
