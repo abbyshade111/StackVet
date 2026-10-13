@@ -40,6 +40,7 @@ nothing, such as `docker info`, allowing that one command again in the same chat
 | 3. Set up StackVet here | Fetches StackVet, and has your AI tool add it to its own settings. One version for a Mac or Linux, one for Windows | This folder; anything else, and any install, only with your yes |
 | 4. Check that it's connected | Asks StackVet itself whether everything is ready | No |
 | 5. Start building | The first prompt of your app's build, with your app described at the top | Your app's folder, as it builds |
+| 6. Make the full report | Installs or updates StackVet on your computer, then starts your app in a container and runs the security tools | Installs and runs only with your yes, each time |
 
 ## 1. Look at my computer
 
@@ -240,11 +241,51 @@ What happens next:
 - **When the first version works, ask it for the report:** "Call `stackvet_write_report`, then tell me where the report
   is and walk me through it." It writes a folder called `stackvet-report` in your app's folder; open `report.html` in
   it in your web browser. It starts with the most important things to fix. The report your AI tool writes covers your
-  code; the outside security tools and the checks that start your app run when you make the report at a terminal, as
-  [the guide](../GETTING-STARTED.md) says.
+  code; the outside security tools and the checks that start your app run in the full report, which prompt 6 walks
+  you through.
 - **If you ask it to push to GitHub, say so in these words:** "push it, and do not bypass any branch protection or
   ruleset; if the only way to push is to bypass one, stop and ask me first." Better still, ask it for a pull request,
   and merge it yourself.
+
+## 6. Make the full report
+
+The report your AI tool writes through StackVet's tools reads your code. The full report also starts your app in a
+container of its own, with no internet, signs in as test users and tries things against it, and runs the security
+tools each language already has, such as Semgrep and Bandit. It is made at the terminal, by StackVet installed on your
+computer itself; your AI tool can walk you through it. Paste this into the same chat, in your app's folder:
+
+<!-- setup-step-6:start -->
+> I'd like the full StackVet report for this app: the one that starts the app in its own container, with no
+> internet, and runs the security tools each language has. Your `stackvet_` tools can't make it: it is made at the
+> terminal, by StackVet installed on this computer itself. StackVet's guide on GitHub (`docs/GETTING-STARTED.md`, the
+> section "Installing StackVet on your computer, for `--run`") says how. Walk me through it one step at a time, and
+> ask me before you install, update, or run anything.
+>
+> 1. Check whether StackVet is installed on this computer: `sv --version` on a Mac or Linux, `stackvet --version` in
+>    PowerShell. If it is not, install it the way the guide says for this computer, and tell me what each step does
+>    and how long it takes before you run it.
+> 2. If it is installed, compare the commit `sv --version` prints with the latest on StackVet's GitHub page, and tell
+>    me how old it is: StackVet never checks for itself. If it is older, offer to update it: `brew upgrade --fetch-HEAD
+>    sv` if Homebrew installed it, `scoop update sv` on Windows, or the guide's steps for a copy built by hand.
+> 3. On a Mac or Linux, your `stackvet_` tools use a second copy, StackVet's container image. Offer to fetch its latest
+>    with `docker pull ghcr.io/abbyshade111/stackvet-sv`. Don't stop or restart any container for it: a new chat with
+>    you starts the new one.
+> 4. In this folder, run `sv doctor` (`stackvet doctor` in PowerShell) and tell me in plain words what is ready for the
+>    full report and what is not.
+> 5. Ask me, then run `sv report . --run` here (`stackvet report . --run` in PowerShell). It starts the app in a
+>    container with no internet, signs in as test users and tries things against it, and runs the security tools that
+>    are installed; Semgrep downloads its rules from semgrep.dev as it runs. It takes several minutes. It needs Docker:
+>    if your own commands are kept from Docker, say so and ask me to allow it, or tell me the command to type myself.
+>    Never give StackVet's container access to Docker, and never run commands inside a container.
+> 6. Tell me where the report is, and walk me through `report.html` from the top: the most important things to fix
+>    first, then what was not examined. Never tell me the app is secure.
+<!-- setup-step-6:end -->
+
+**Your answers count as yours only once you record them yourself.** The report shows the answers your AI tool wrote
+as the tool's word, even when it was writing down what you said, until you record them with `sv review` in your app's
+folder (`stackvet review` in PowerShell). It asks your name, shows each answer, and signs the ones you confirm with a
+key of your own, protected by a passphrase you choose, so your AI tool cannot run it for you. Then make the full report
+again, and those answers count as yours.
 
 Everything else StackVet can do, from answering its questions to keeping it up to date, is in
 [the guide](../GETTING-STARTED.md), from step 5.

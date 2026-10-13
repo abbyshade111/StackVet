@@ -1,6 +1,6 @@
 # The setup page walks the person through making the full report
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** done, 13 October 2026
 
 The owner's decision of 13 October 2026, at the end of the first build in the Antigravity trial: "users need to be able
 to run the full report. It doesn't have to be through the MCP, but the AI tool with access to the GitHub repo should be
