@@ -34,14 +34,16 @@ fn script_lines(text: &str) -> Vec<(usize, String)> {
     out
 }
 
-fn secrets_in_scripts(text: &str) -> Vec<String> {
+/// The line numbers of the script lines that name a secret. Only the numbers: what a failure prints
+/// is where to look, never the line itself.
+fn flagged_lines(text: &str) -> Vec<usize> {
     script_lines(text)
         .into_iter()
         .filter(|(_, l)| {
             let compact: String = l.chars().filter(|c| !c.is_whitespace()).collect();
             compact.contains("${{secrets.") || compact.contains("${{github.token}}")
         })
-        .map(|(n, l)| format!("line {n}: {}", l.trim()))
+        .map(|(n, _)| n)
         .collect()
 }
 
@@ -50,9 +52,7 @@ fn the_reader_finds_a_secret_written_into_a_script() {
     // The setup: the reader sees a secret in a block script and in a one-line one, and none in `env:`.
     let workflow = "jobs:\n  a:\n    steps:\n      - name: one\n        env:\n          T: ${{ secrets.X }}\n        \
                     run: |\n          echo hi\n          echo \"${{ secrets.Y }}\" | tool\n      - run: echo ${{ github.token }}\n";
-    let found = secrets_in_scripts(workflow);
-    assert_eq!(found.len(), 2, "{found:#?}");
-    assert!(found[0].starts_with("line 9:"), "{found:#?}");
+    assert_eq!(flagged_lines(workflow), [9, 10]);
 }
 
 #[test]
@@ -68,9 +68,9 @@ fn no_workflow_writes_a_secret_into_a_script() {
     let mut found = Vec::new();
     for file in &files {
         let text = std::fs::read_to_string(file).unwrap().replace("\r\n", "\n");
-        for hit in secrets_in_scripts(&text) {
+        for n in flagged_lines(&text) {
             found.push(format!(
-                "{}: {hit}",
+                "{} line {n}",
                 file.file_name().unwrap().to_string_lossy()
             ));
         }
