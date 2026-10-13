@@ -5,6 +5,9 @@
 //! requirement not-assessed, while a check that cannot run makes a finding absent — and an absent finding
 //! looks exactly like a clean result unless something says otherwise. `Coverage` is that something.
 
+/// How a pip requirements file is read, line by line, shared with `sv-run`'s install step, which reads
+/// `sv-scan` only through this crate (backlog 0291).
+pub use sv_scan::requirements;
 pub mod adapters;
 pub mod advisories;
 pub mod ai;
