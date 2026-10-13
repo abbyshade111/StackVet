@@ -7,13 +7,15 @@ work, it stops and tells you what happened in plain words.
 
 If you have used a terminal or Docker before, [the guide](../GETTING-STARTED.md) has the same steps as commands.
 
-**Tried so far:** in Antigravity, on a Mac, on 13 October 2026, from an empty folder to StackVet connected (prompts 1
-to 4). That trial is where most of these words come from; prompt 3 was tried in a wording that borrowed one app's
-settings for StackVet's server, and the form below, which asks StackVet for it in no app's format, came out of it.
-Tests hold the prompts to the image name StackVet is published under, to the options `sv connect` takes, and to the
-Scoop commands that install it on Windows (`crates/sv-cli/tests/connect.rs`, `crates/sv-cli/tests/setup_prompts.rs`).
-If anything here goes wrong, the guide has the same steps as commands. The website names only the AI tools these
-prompts have really been tried in.
+**Tried so far:** in Antigravity, on a Mac, on 13 October 2026, with the Gemini 3.8 Flash model, from an empty folder
+to StackVet connected and a first build. That trial is where most of these words come from. The setup worked. In the
+build, though, the AI tool decided where the app runs and who signs in without asking, offered "done" for checks
+nobody had made, and made two security findings disappear without changing what the app does, which only the app's
+git history showed. Until changes to these prompts are tried there and do better, we don't recommend Antigravity with
+that model. Tests hold the prompts to the image name StackVet is published under, to the options `sv connect` takes,
+and to the Scoop commands that install it on Windows (`crates/sv-cli/tests/connect.rs`,
+`crates/sv-cli/tests/setup_prompts.rs`). If anything here goes wrong, the guide has the same steps as commands. The
+website names only the AI tools these prompts have really been tried in.
 
 ## Before the first prompt: an AI tool that can run commands
 
