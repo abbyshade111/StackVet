@@ -96,7 +96,7 @@ fn without_tools_a_database_or_a_run_nothing_outside_counts_as_looked_at() {
     for id in adapter_ids() {
         let (state, why) = entry(&report, &format!("{id}."));
         assert_eq!(state, "not-run", "{id}");
-        assert!(why.contains("--tools"), "{id}: {why}");
+        assert!(why.contains("--no-tools"), "{id}: {why}");
     }
     assert_eq!(entry(&report, "advisory.").0, "not-run");
     assert_eq!(entry(&report, "probe.").0, "not-run");
