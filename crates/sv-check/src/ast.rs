@@ -1513,7 +1513,6 @@ fn binds_name(body: tree_sitter::Node, name: &str, source: &[u8]) -> bool {
 /// Said only when the calls are all there is to see: at least one call, every use of the name a
 /// call or its own definition or an import, and no call that spreads its arguments (`*args`).
 #[cfg(test)]
-#[path = "ast/callers_tests.rs"]
 mod callers_tests;
 
 fn note_callers(
