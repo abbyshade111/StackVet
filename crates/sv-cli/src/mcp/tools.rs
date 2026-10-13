@@ -354,10 +354,14 @@ impl Server {
             .get("requirement")
             .and_then(Value::as_str)
             .filter(|q| !q.is_empty());
+        let id = args
+            .get("id")
+            .and_then(Value::as_str)
+            .filter(|q| !q.is_empty());
         if args.get("path").and_then(Value::as_str).is_some() {
             anyhow::ensure!(
-                requirement.is_none(),
-                "give either requirement or path, not both"
+                requirement.is_none() && id.is_none(),
+                "give either requirement, id, or path, not two of them"
             );
             // The folder with the new name, or the old one while only it exists (ADR-062).
             let folder = sv_scan::ecosystems::default_report_dir_in(&self.app_dir(args)?);
@@ -418,18 +422,86 @@ impl Server {
                 "isError": false,
             }));
         }
+        anyhow::ensure!(
+            requirement.is_none() || id.is_none(),
+            "give either requirement or id, not both"
+        );
         let (prompts, ids, text) = crate::prompts_for(&self.loaded.frameworks, requirement)?;
+        let whole = |p: &sv_check::prompts::Prompt| {
+            json!({
+                "id": p.id, "title": p.title, "prompt": p.prompt,
+                "requirements": p.requirements, "sbdControls": p.sbd_controls,
+                "status": p.status.as_str(),
+                "result": p.tested.as_ref().map(|t| t.result.as_str()),
+            })
+        };
+        // One prompt in full, by the id the list gives.
+        if let Some(id) = id {
+            let Some(p) = prompts.prompts.iter().find(|p| p.id == id) else {
+                anyhow::bail!(
+                    "there is no prompt {id:?}; stackvet_prompts with no argument lists them, each with its id"
+                );
+            };
+            return Ok(json!({
+                "content": [{ "type": "text", "text": prompts.markdown(&[p]) }],
+                "structuredContent": { "prompts": [whole(p)], "credit": prompts.credit },
+                "isError": false,
+            }));
+        }
+        // With no argument, a list: one line a prompt, its text asked for by id (backlog 0348). Every prompt
+        // in full was about 28,000 characters, in the text and again in the structured result, for a tool
+        // that wanted one of them.
+        if requirement.is_none() {
+            let listed: Vec<&sv_check::prompts::Prompt> = ids
+                .iter()
+                .filter_map(|id| prompts.prompts.iter().find(|p| &p.id == id))
+                .collect();
+            let mut text = String::from(
+                "## Prompts for the AI coding tool\n\nThe library's prompts, one a line: ask stackvet_prompts with \
+                 `id` for one in full, or with `requirement` for those that target it. A prompt is shown to work \
+                 only when an app built with it passed its check and the same app built without it failed. A \
+                 prompt is an instruction, not evidence: check the app afterwards, whichever you use.\n\n",
+            );
+            for p in &listed {
+                let targets: Vec<&str> = p
+                    .requirements
+                    .iter()
+                    .chain(&p.sbd_controls)
+                    .map(String::as_str)
+                    .collect();
+                let targets = if targets.is_empty() {
+                    String::new()
+                } else {
+                    format!(" For {}.", targets.join(", "))
+                };
+                text.push_str(&format!(
+                    "- `{}`: {}. {}{targets}\n",
+                    p.id,
+                    p.title,
+                    p.status_sentence()
+                ));
+            }
+            text.push_str(&format!("\n{}\n", prompts.credit));
+            let listed: Vec<Value> = listed
+                .iter()
+                .map(|p| {
+                    json!({
+                        "id": p.id, "title": p.title,
+                        "requirements": p.requirements, "sbdControls": p.sbd_controls,
+                        "status": p.status.as_str(),
+                    })
+                })
+                .collect();
+            return Ok(json!({
+                "content": [{ "type": "text", "text": text }],
+                "structuredContent": { "prompts": listed, "credit": prompts.credit },
+                "isError": false,
+            }));
+        }
         let chosen: Vec<Value> = ids
             .iter()
             .filter_map(|id| prompts.prompts.iter().find(|p| &p.id == id))
-            .map(|p| {
-                json!({
-                    "id": p.id, "title": p.title, "prompt": p.prompt,
-                    "requirements": p.requirements, "sbdControls": p.sbd_controls,
-                    "status": p.status.as_str(),
-                    "result": p.tested.as_ref().map(|t| t.result.as_str()),
-                })
-            })
+            .map(whole)
             .collect();
         Ok(json!({
             "content": [{ "type": "text", "text": text }],

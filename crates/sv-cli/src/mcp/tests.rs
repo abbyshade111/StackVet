@@ -1291,6 +1291,42 @@ fn a_report_that_is_a_link_out_of_the_app_is_not_read_for_prompts() {
 }
 
 #[test]
+fn with_no_argument_the_prompts_are_listed_one_a_line_without_their_text() {
+    // Backlog 0348: every prompt in full was about 28,000 characters, sent in the text and again in the
+    // structured result, to a tool that wanted one of them.
+    let server = Server::new(&examples()).unwrap();
+    let all = call(&server, "stackvet_prompts", json!({}));
+    assert_eq!(all["isError"], false, "{all}");
+    let listed = all["structuredContent"]["prompts"].as_array().unwrap();
+    assert!(listed.len() > 10, "{all}");
+    let one = call(
+        &server,
+        "stackvet_prompts",
+        json!({ "id": "database-placeholders" }),
+    );
+    let body = one["structuredContent"]["prompts"][0]["prompt"]
+        .as_str()
+        .unwrap();
+    assert!(!body.is_empty(), "{one}");
+    // No prompt's text, in either answer; each prompt named by its id, on a line of its own.
+    assert!(
+        !text(&all).contains(body.lines().next().unwrap()),
+        "{}",
+        text(&all)
+    );
+    for p in listed {
+        assert!(p.get("prompt").is_none(), "{p}");
+        let id = p["id"].as_str().unwrap();
+        assert!(
+            text(&all).contains(&format!("- `{id}`: ")),
+            "{id}: {}",
+            text(&all)
+        );
+    }
+    assert!(text(&all).len() < 12_000, "{} characters", text(&all).len());
+}
+
+#[test]
 fn prompts_for_a_requirement_say_whether_each_was_shown_to_work() {
     let server = Server::new(&examples()).unwrap();
     let all = call(&server, "stackvet_prompts", json!({}));
@@ -1299,10 +1335,16 @@ fn prompts_for_a_requirement_say_whether_each_was_shown_to_work() {
     let status = |p: &Value| p["status"].as_str().unwrap().to_owned();
     assert!(listed.iter().any(|p| status(p) == "shown"), "{all}");
     assert!(listed.iter().any(|p| status(p) != "shown"), "{all}");
-    // Every prompt not shown to work is marked so where the person reads it, right above its text.
+    // Every prompt not shown to work is marked so where the person reads it, right above its text: each
+    // asked for by the id the list gives (backlog 0348).
     for p in listed {
         let title = p["title"].as_str().unwrap();
-        let after = text(&all)
+        let one = call(&server, "stackvet_prompts", json!({ "id": p["id"] }));
+        assert_eq!(
+            one["structuredContent"]["prompts"][0]["id"], p["id"],
+            "{one}"
+        );
+        let after = text(&one)
             .split(&format!("### {title}\n\n"))
             .nth(1)
             .unwrap_or("");
@@ -1349,6 +1391,20 @@ fn prompts_for_a_requirement_say_whether_each_was_shown_to_work() {
         "{}",
         text(&design)
     );
+
+    // A prompt asked for by an id the library does not have, or by an id and a requirement at once, is refused.
+    let unknown = call(
+        &server,
+        "stackvet_prompts",
+        json!({ "id": "no-such-prompt" }),
+    );
+    assert_eq!(unknown["isError"], true, "{unknown}");
+    let both = call(
+        &server,
+        "stackvet_prompts",
+        json!({ "id": "database-placeholders", "requirement": "V1.2.4" }),
+    );
+    assert_eq!(both["isError"], true, "{both}");
 
     // A requirement no prompt targets is said plainly; one that does not exist is refused.
     let none = call(
