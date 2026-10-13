@@ -1,10 +1,11 @@
 # A prompt that reads StackVet's report with you
 
-StackVet's report is honest, and it is long. It leads with what was not examined, it never says a requirement passed,
-and it names what only you can check. For someone who is not a programmer that can be a lot to take in at once.
+StackVet's report is honest, and it is long. It leads with the most important things to fix, says what was not
+examined right after them, never says a requirement passed, and it names what only you can check. For someone who
+is not a programmer that can be a lot to take in at once.
 
-This prompt asks your AI coding tool to read the report with you in a fixed order: first what was not checked and
-what that means for you, then at most three things to do first, then your questions. It tells the tool never to say
+This prompt asks your AI coding tool to read the report with you in a fixed order: first at most three things to
+fix, then what was not checked and what that means for you, then your questions. It tells the tool never to say
 the app is secure, safe, compliant, or that it passed, because the report does not say that and cannot, and never to
 soften what the report says. It is an instruction, not evidence: the report is the evidence, and the prompt asks the
 tool to explain it, not to add to it.
@@ -25,13 +26,12 @@ connected server's prompts among its `/` commands; whether this one shows up the
 > report would say. I am not a programmer, so explain each technical word the first time you use it. Go in this
 > order:
 >
-> 1. What was not checked, first. Read "What was not examined", the line that starts "Not run this time" if there
-> is one, and the requirements counted as not verified or not yet placed. Tell me in plain words what each means
-> for me: what could be wrong with the app that this report would not show. Do not skip this, and do not make it
-> sound minor.
-> 2. At most three things to do first. Take them from "What to do next" and the worst findings in "The short
-> version", in the report's order. For each, tell me what it is, why it matters to the people who will use the
-> app, and what to do about it. If the report gives fewer than three, say so; do not add more.
+> 1. At most three things to fix first. Take them from "What to do next" and the worst findings in "The short
+> version", in the report's order. For each, tell me what it is, why it matters to the people who will use the app,
+> and what to do about it. If the report gives fewer than three, say so; do not add more.
+> 2. Then what was not checked. Read "What was not examined", the line that starts "Not run this time" if there is
+> one, and the requirements counted as not verified or not yet placed. Tell me in plain words what each means for me:
+> what could be wrong with the app that this report would not show. Do not skip this, and do not make it sound minor.
 > 3. Then ask me what I would like to know more about.
 >
 > Never tell me the app is secure, safe, compliant, or that it passed: the report does not say that, and it cannot.
