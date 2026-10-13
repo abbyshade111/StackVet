@@ -65,8 +65,11 @@ Skip this one if prompt 1 said nothing was missing.
 >
 > First, the folder. If the folder you are working in is not an empty folder made for this app (for example, it is
 > a scratch, temporary, or settings folder of yours), offer to make one called `my-app` in my home folder. Ask
-> before you make it. Then tell me, step by step, how to open that folder in you, and wait for me to say I'm done:
-> the rest of the setup happens there.
+> before you make it. Then tell me, step by step, how to open that folder in the app I'm using now, in that app's
+> own words for its menus and buttons, and wait for me to say I'm done: the rest of the setup happens there. If you
+> are not sure how this app does it, say so and ask me what I see, rather than guessing. Opening it may start a new
+> chat with you: if it does, I'll paste the first prompt there, then this one again, and you can skip what is
+> already done.
 >
 > Then install what you found missing, one thing at a time. If nothing is missing but Docker is not running, start
 > it as below. For each one:
@@ -84,8 +87,8 @@ Skip this one if prompt 1 said nothing was missing.
 >
 > After each one, check that it worked. For Docker, it has to be running, not only installed: check with `docker info`,
 > and if it is not running, ask me to open Docker Desktop and wait, or, with Colima, ask before running
-> `colima start`. If Docker Desktop asks which kind of containers to
-> use, tell me to keep Linux containers. If anything fails, stop and tell me plainly what happened. Don't go on to the
+> `colima start`. StackVet needs Docker to run Linux containers: if I'm asked to choose, help me keep
+> that. If anything fails, stop and tell me plainly what happened. Don't go on to the
 > next thing until this one works.
 <!-- setup-step-2:end -->
 
@@ -117,8 +120,9 @@ Use the version for your computer.
 > 7. It names the settings file to put this in (`.mcp.json`, `.vscode/mcp.json`, or `.cursor/mcp.json`). Show me
 >    the file, then write it into this folder exactly as printed. If the file already exists, show me both and ask
 >    before changing it.
-> 8. Tell me to restart you (or, in VS Code, to click **Start** above `stackvet` in `.vscode/mcp.json`), and that
->    the next prompt is "Check that it's connected".
+> 8. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
+>    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
+>    so, rather than guessing. Then tell me the next prompt is "Check that it's connected".
 <!-- setup-prompt:end -->
 
 ### On Windows
@@ -151,13 +155,14 @@ that start your app.)
 > 7. It names the settings file to put this in (`.mcp.json`, `.vscode/mcp.json`, or `.cursor/mcp.json`). Show me
 >    the file, then write it into this folder exactly as printed. If the file already exists, show me both and ask
 >    before changing it.
-> 8. Tell me to restart you (or, in VS Code, to click **Start** above `stackvet` in `.vscode/mcp.json`), and that
->    the next prompt is "Check that it's connected".
+> 8. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
+>    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
+>    so, rather than guessing. Then tell me the next prompt is "Check that it's connected".
 <!-- setup-windows:end -->
 
 ## 4. Check that it's connected
 
-After your AI tool has restarted, in the same folder:
+After your AI tool has loaded the new settings, in the same folder:
 
 <!-- setup-step-4:start -->
 > Which `stackvet_` tools can you call? List their names. If you can call `stackvet_status`, call it and tell me in

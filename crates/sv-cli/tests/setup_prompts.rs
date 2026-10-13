@@ -106,7 +106,9 @@ fn the_prompts_make_sure_the_app_gets_a_folder_of_its_own() {
     for said in [
         "offer to make one called `my-app` in my home folder",
         "Ask before you make it",
-        "how to open that folder in you",
+        "how to open that folder in the app I'm using now",
+        // In the trial, opening the folder in Antigravity started a new chat that knew nothing of the first.
+        "Opening it may start a new chat with you",
         "wait for me to say I'm done",
     ] {
         assert!(ready.contains(said), "{said}: {ready}");
@@ -117,6 +119,58 @@ fn the_prompts_make_sure_the_app_gets_a_folder_of_its_own() {
         .find("install what you found missing")
         .expect("the install step");
     assert!(folder < install, "{ready}");
+}
+
+/// Every prompt says what has to happen, never which button or menu does it in a given app: an app's menus differ
+/// from one to the next and change over time, and the AI tool knows its own (the owner, 13 October 2026, after the
+/// trial in Antigravity was given a menu that app does not have). Where the person has to do something in the app,
+/// the prompt asks for the app's own words, and for the tool to say so when it is not sure.
+#[test]
+fn no_prompt_names_an_apps_buttons_or_menus() {
+    let names = [
+        "setup-step-1",
+        "setup-step-2",
+        "setup-prompt",
+        "setup-windows",
+        "setup-step-4",
+    ];
+    // The setup: every prompt is read, or a renamed marker would leave one out unseen.
+    assert_eq!(names.len(), 5);
+    for name in names {
+        let text = flat(&block(name));
+        assert!(!text.is_empty(), "{name}");
+        for app_specific in [
+            "click **",
+            "menu bar",
+            "Open Folder",
+            " → ",
+            "Docker Desktop asks",
+        ] {
+            assert!(
+                !text.contains(app_specific),
+                "{name} says {app_specific:?}: {text}"
+            );
+        }
+    }
+    let folder = flat(&block("setup-step-2"));
+    assert!(
+        folder.contains("in that app's own words for its menus and buttons"),
+        "{folder}"
+    );
+    for name in ["setup-step-2", "setup-prompt", "setup-windows"] {
+        let text = flat(&block(name));
+        assert!(
+            text.contains("If you are not sure how this app does it, say so"),
+            "{name}: {text}"
+        );
+    }
+    for name in ["setup-prompt", "setup-windows"] {
+        let text = flat(&block(name));
+        assert!(
+            text.contains("so you load the new settings, in this app's own words"),
+            "{name}: {text}"
+        );
+    }
 }
 
 #[test]
@@ -132,7 +186,7 @@ fn the_install_prompt_asks_before_each_install_and_names_only_official_pages() {
     }
     assert!(text.contains("run it only after I say yes"), "{text}");
     assert!(
-        text.contains("keep Linux containers"),
+        text.contains("StackVet needs Docker to run Linux containers"),
         "the kind `sv`'s containers need"
     );
     // Docker Desktop and Colima both give `sv` the `docker` it runs; the person chooses.
