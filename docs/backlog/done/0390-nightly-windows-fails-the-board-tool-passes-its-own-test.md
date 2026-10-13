@@ -1,6 +1,6 @@
 # Nightly: Windows fails: the_board_tool_passes_its_own_test
 
-**Status:** open
+**Status:** done, 13 October 2026
 
 Recorded by the nightly CI routine on 13 October 2026. The Windows workflow failed on 19 pushes to `main` between
 18:28 UTC and 20:50 UTC on 12 October, each time on one test, `the_board_tool_passes_its_own_test`
@@ -18,3 +18,10 @@ on the same pushes. It was not there the night before.
 Windows build at the owner's word (`3b68f06`, ADR-061, Later). **What stays open:** the board tool is not tested on
 Windows. If that is the intended end state, mark this done with that note; if not, the cause on Windows (most likely
 a path written with `\` where the tool expects `/`, not checked) is still to find.
+
+**Done, 13 October 2026:** the intended end state. The board is the sessions' own tool for the coordination trial, run on
+Mac and Linux, not part of `sv`, and the owner asked on 12 October 2026 that its test leave the Windows build
+(`crates/sv-cli/tests/coordination.rs`, `#![cfg(not(windows))]`, ADR-061 Later). The owner approved closing it with the
+trial's cleanup on 13 October 2026. If the board is used again on Windows, the cause (most likely a path written with `\`)
+is still to find.
+

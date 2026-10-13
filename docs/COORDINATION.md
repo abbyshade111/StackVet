@@ -5,8 +5,8 @@ The owner's three principles for it: keep it simple, make everything visible, an
 
 **Closed 13 October 2026.** The trial ended when builder-full's last item merged (20:43 UTC); both building sessions
 are off the board, so the rule in `CLAUDE.md` about taking work from it no longer applies, and the items left in its
-queue go the normal way. The write-up is in backlog 0273. This page and the tool stay, for a later burst if the owner
-chooses one.
+queue go the normal way. The write-up is in backlog 0273. This page and the tool stay: the owner chose to keep the coordinating session for bursts of
+independent findings, such as a review's items, once the board has the three additions in backlog 0416.
 
 ## Why
 

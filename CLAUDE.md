@@ -175,7 +175,8 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   `docs/coordination/board.md`, is written only by the orchestrating session through `tools/coordination.py`
   (the role: `docs/COORDINATION.md`; backlog 0273; ADR-061, Later). A building session named on it takes the item
   beside its name instead of the roadmap's first unclaimed sub-item, and builds nothing else; the claim is already
-  made for it. A session not named on the board follows the roadmap as before.
+  made for it. A session not named on the board follows the roadmap as before. The board closed when the trial
+  ended (13 October 2026); the owner chose to keep it for bursts of independent findings, such as a review's items.
 - **The roadmap at the top of `docs/BACKLOG.md` says what comes next.** With no word from the owner, take the first
   unclaimed sub-item there in its phase order, claim it, and land it before taking the next. `python3 tools/backlog.py
   list --open` prints every open item from the status line each carries, `summary` the counts, and `show <number>`
@@ -191,4 +192,8 @@ many documents cite commit hashes. A patch to v1 is made on the `v1` branch, nev
   each is 1 to 7 GB. When your work is finished, list what you made that can go: build folders, scratch worktrees,
   trial apps already scored and written up, logs. Then ask the owner before deleting any of it, saying what each is,
   its size, and whether it can be made again. Deleting still needs the owner's yes, every time; listing it does not.
+  **One exception: a cloud session's own build output in its own cloud container** (its `cargo` target folder, made
+  in that session and rebuilt by any build) may be deleted without asking when the disk runs low; say so afterwards.
+  Nothing else, and nothing on this computer. The owner chose this on 13 October 2026, after asking first cost the
+  coordination trial's full-context session about twelve hours (backlog 0273).
 - Never edit a user's own data or an app someone gave you to check by hand, except to repair data, and say so.
