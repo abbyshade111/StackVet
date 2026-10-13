@@ -1600,6 +1600,13 @@ pub fn run_all(
     )
 }
 
+/// The outside tools that use one core and start quickly, run beside the others (`run_all_in`).
+const SMALL_TOOLS: &[&str] = &["bandit", "gosec", "brakeman"];
+
+/// One tool's run, from a lane of `run_all_in`: its place among the adapters, its report's path, what was
+/// recorded of it, and how it ended.
+type LaneRun = (usize, PathBuf, ToolRun, Outcome);
+
 /// `run_all`, with the app's files from a listing already made, and `starting` told each tool's
 /// name as it begins, for a person watching at a terminal (backlog 226, part 2, item 15).
 pub fn run_all_in(
@@ -1609,7 +1616,7 @@ pub fn run_all_in(
     not_holding: &BTreeSet<String>,
     scratch: &Path,
     rules: &SecretRules,
-    starting: &dyn Fn(&str),
+    starting: &(dyn Fn(&str) + Sync),
 ) -> AdapterRun {
     let mut run = AdapterRun::default();
     // The reports go in a folder of this run's own, made new, readable by this user alone, and with
@@ -1633,23 +1640,58 @@ pub fn run_all_in(
             return run;
         }
     };
-    for adapter in adapters.for_languages(languages) {
-        let report_path = private.path().join(format!("{}.sarif", adapter.id));
-        let mut record = ToolRun::default();
-        starting(&adapter.name);
-        let began = std::time::Instant::now();
-        let outcome = run_one_recorded(
-            adapter,
-            listing,
-            &report_path,
-            not_holding,
-            rules,
-            &mut record,
-        );
-        record.took_ms = u64::try_from(began.elapsed().as_millis()).unwrap_or(u64::MAX);
-        if record.program.is_empty() {
-            record.program = adapter.name.clone();
-        }
+    // The small single-threaded tools run in a lane of their own, beside the others (backlog 0368): Semgrep
+    // and CodeQL use every core already, so what the overlap saves is the small tools' own time, start-up
+    // included. Each lane runs its tools one after another; their results are taken in the adapters'
+    // order below, so the report reads the same whichever lane finished first. Ctrl-C stops what each lane
+    // is running and starts nothing more in either (`finish_unless`).
+    let here: Vec<&Adapter> = adapters.for_languages(languages);
+    let (light, heavy): (Vec<_>, Vec<_>) = here
+        .iter()
+        .copied()
+        .enumerate()
+        .partition(|(_, adapter)| SMALL_TOOLS.contains(&adapter.id.as_str()));
+    let lane = |tools: Vec<(usize, &Adapter)>| -> Vec<LaneRun> {
+        tools
+            .into_iter()
+            .map(|(at, adapter)| {
+                let report_path = private.path().join(format!("{}.sarif", adapter.id));
+                let mut record = ToolRun::default();
+                starting(&adapter.name);
+                let began = std::time::Instant::now();
+                let outcome = run_one_recorded(
+                    adapter,
+                    listing,
+                    &report_path,
+                    not_holding,
+                    rules,
+                    &mut record,
+                );
+                record.took_ms = u64::try_from(began.elapsed().as_millis()).unwrap_or(u64::MAX);
+                if record.program.is_empty() {
+                    record.program = adapter.name.clone();
+                }
+                (at, report_path, record, outcome)
+            })
+            .collect()
+    };
+    let mut done = if light.is_empty() || heavy.is_empty() {
+        lane(here.iter().copied().enumerate().collect())
+    } else {
+        std::thread::scope(|scope| {
+            let beside = scope.spawn(|| lane(light));
+            let mut done = lane(heavy);
+            done.extend(
+                beside
+                    .join()
+                    .unwrap_or_else(|e| std::panic::resume_unwind(e)),
+            );
+            done
+        })
+    };
+    done.sort_by_key(|(at, ..)| *at);
+    for (at, report_path, record, outcome) in done {
+        let adapter = here[at];
         run.tools.push((adapter.id.clone(), record));
         match outcome {
             Outcome::Ran {
