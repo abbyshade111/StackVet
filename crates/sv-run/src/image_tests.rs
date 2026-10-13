@@ -46,3 +46,41 @@ fn the_names_apps_really_use_make_a_plan() {
         assert_eq!(plan.image, image);
     }
 }
+
+fn plan_with_health(health: &str) -> Result<RunPlan, CannotRun> {
+    let mut m = Manifest::default();
+    m.stack.run.image = Some("python:3.12-slim".to_owned());
+    m.stack.run.start = Some("gunicorn app:app".to_owned());
+    m.stack.run.health = Some(health.to_owned());
+    RunPlan::from_manifest(&m, Path::new("/tmp/app"))
+}
+
+#[test]
+fn a_health_path_outside_plain_path_characters_is_refused_before_the_run() {
+    // Backlog 0312: the health path goes into the run note, and from there into compliance.md. It
+    // was taken from stackvet.toml as written, so the AI coding tool could put a live link in it.
+    for health in [
+        "/health?x=[click](https://tracker.example/)",
+        "health",
+        "/a b",
+        "/<img>",
+        "//elsewhere.example/",
+    ] {
+        let err = plan_with_health(health).unwrap_err();
+        let CannotRun::BadHealth { path, why } = &err else {
+            panic!("{health:?}: {err:?}");
+        };
+        assert_eq!(path, health);
+        assert!(!why.is_empty());
+        assert!(err.explain().contains("not assessed"), "{}", err.explain());
+    }
+    for health in [
+        "/",
+        "/health",
+        "/api/v1/health-check_2.json",
+        "/healthz?full=1&probe=sv",
+    ] {
+        let plan = plan_with_health(health).unwrap_or_else(|e| panic!("{health:?}: {e:?}"));
+        assert_eq!(plan.health_path, health);
+    }
+}
