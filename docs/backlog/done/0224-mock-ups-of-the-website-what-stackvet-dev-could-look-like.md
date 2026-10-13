@@ -1,6 +1,6 @@
 # Mock-ups of the website: what stackvet.dev could look like and say
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** done, 12 October 2026
 
 Asked for by the owner on 9 October 2026, for after the roadmap: the owner holds `stackvet.dev` and `stackvet.app`,
 and nothing is on either yet. Start with what the site is for and what it says before how it looks: who arrives
@@ -42,3 +42,10 @@ content for 0224 and then I can help be the test user"). The plan, in order:
 
 The site does not go live while 0370 to 0374 are open. Next in this item: two or three mock-up directions with the
 logo, for the owner to choose between.
+
+**The look chosen 12 October 2026.** Three directions were made on a design canvas (A, the report up front, dark;
+B, the plain guide, light; C, the conversation, whose opening is a short exchange between a person and their AI tool
+with StackVet in it), and then C in five palettes side by side. The owner chose **direction C in the logo's own
+colors** ("it helped to see them side by side"); the choice, its type, and its colors are in
+`docs/website/home-page.md`, "The look". With the words and the look settled, this item is done. Building the site
+from them is backlog 0376, which waits for 0370 to 0374, since the site does not go live saying what is not yet true.
