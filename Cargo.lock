@@ -558,7 +558,6 @@ dependencies = [
  "sv-check",
  "sv-frameworks",
  "sv-manifest",
- "sv-scan",
 ]
 
 [[package]]
@@ -568,7 +567,6 @@ dependencies = [
  "anyhow",
  "getrandom",
  "libc",
- "serde",
  "serde_json",
  "sha2",
  "sv-check",
