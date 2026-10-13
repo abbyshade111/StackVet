@@ -147,11 +147,11 @@ jobs:
             docker pull --quiet "$image" || echo "::warning::Could not fetch $image ahead of the suite; it will try."
           done
 
-      # No cache step. Caching would mean pinning another third-party action, and this workspace builds from
-      # scratch in well under a minute — a smaller supply-chain surface is worth more here than the seconds.
-
-      # No cache step. Caching would mean pinning another third-party action, and this workspace builds from
-      # scratch in about two minutes — a smaller supply-chain surface is worth more here than the seconds.
+      # No cache step. The workspace builds its tests from scratch in about two minutes (126 s, measured for
+      # backlog 0270), and each suite part builds them at once beside the others, so a cache would save about
+      # that much waiting on a pull request. It would also be one more action in the job that is handed the
+      # Docker Hub token; the workflow already pins GitHub's own upload-artifact and download-artifact, so the
+      # cost is one more dependency there, not a new publisher. Whether that is worth it is the owner's call.
       - name: Use the toolchain this workspace needs
         # edition 2024 and resolver 3 need a recent stable; the runner image ships one, but saying so explicitly
         # means a runner image change fails here with a clear reason rather than a syntax error in a crate.
