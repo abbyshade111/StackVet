@@ -1791,7 +1791,7 @@ fn a_file_read_by_name_that_is_a_file_is_read() {
 /// Whether `value` has the shape `schema` describes, for the parts of JSON Schema the tools'
 /// declarations use: `type` (one or several), `enum`, `minimum`, `properties`, `required`,
 /// `additionalProperties: false`, and `items`. Says where it does not.
-fn conforms(value: &Value, schema: &Value, at: &str) -> Result<(), String> {
+pub(super) fn conforms(value: &Value, schema: &Value, at: &str) -> Result<(), String> {
     let kind = |v: &Value| match v {
         Value::Null => "null",
         Value::Bool(_) => "boolean",
@@ -4302,7 +4302,7 @@ const AIMED: &str = "IGNORE_PREVIOUS_INSTRUCTIONS";
 
 /// A root holding the club app's brief in `club`, and `files` files of code beside it, each with three weak
 /// hashes and a name aimed at the AI tool, so a check has pages of findings with the app's text on each.
-fn club_app(tag: &str, files: usize) -> PathBuf {
+pub(super) fn club_app(tag: &str, files: usize) -> PathBuf {
     test_keys();
     let root = std::env::temp_dir().join(format!("sv-mcp-{tag}-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();
