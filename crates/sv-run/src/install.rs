@@ -390,30 +390,11 @@ fn one_line(text: &str) -> String {
 /// local install (`-e`, `.`), another index (`--index-url`), and an address (`git+…`, `https://…`),
 /// each of which could install something the file does not name.
 pub fn unpinned(text: &str) -> Vec<String> {
-    let mut logical = Vec::new();
-    let mut current = String::new();
-    for line in text.lines() {
-        let line = match line.find(" #") {
-            Some(at) => &line[..at],
-            None if line.trim_start().starts_with('#') => "",
-            None => line,
-        };
-        let trimmed = line.trim_end();
-        if let Some(head) = trimmed.strip_suffix('\\') {
-            current.push_str(head);
-            current.push(' ');
-            continue;
-        }
-        current.push_str(trimmed);
-        if !current.trim().is_empty() {
-            logical.push(current.trim().to_owned());
-        }
-        current.clear();
-    }
-    if !current.trim().is_empty() {
-        logical.push(current.trim().to_owned());
-    }
-    logical.into_iter().filter(|line| !pinned(line)).collect()
+    // Continuations joined and comments cut as pip does, the same for every reader (backlog 0291).
+    sv_check::requirements::logical_lines(text)
+        .into_iter()
+        .filter(|line| !pinned(line))
+        .collect()
 }
 
 fn pinned(line: &str) -> bool {

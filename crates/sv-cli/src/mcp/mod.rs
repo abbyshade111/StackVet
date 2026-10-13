@@ -77,6 +77,8 @@ mod report_writing;
 mod resource_fence_tests;
 mod resources;
 #[cfg(test)]
+mod since_tests;
+#[cfg(test)]
 mod smoke_list_tests;
 #[cfg(test)]
 mod spec_parts_tests;
@@ -273,6 +275,10 @@ pub struct Server {
     /// The last check's findings' fingerprints, and whether some were left out for the limit,
     /// taken with `last_counts` (ADR-084, decision 6).
     last_fingerprints: std::sync::Mutex<Option<(Vec<String>, bool)>>,
+    /// For each app, the findings of the last check in this session asked for with no section or as
+    /// `all`, and when: a check asked for with no section names those it still finds in a line each
+    /// rather than in full (backlog 0336).
+    seen: std::sync::Mutex<std::collections::HashMap<PathBuf, check_text::Seen>>,
     /// Whether calls are written down in the record of the build loop. Off unless the server is the
     /// one `sv mcp` starts, or a test asks, so the tests that serve the repository's own examples
     /// leave nothing in them.
@@ -363,6 +369,7 @@ impl Server {
             check: std::sync::Arc::new(assemble),
             last_counts: std::sync::Mutex::new(None),
             last_fingerprints: std::sync::Mutex::new(None),
+            seen: std::sync::Mutex::new(std::collections::HashMap::new()),
             recording: false,
             client: std::sync::Mutex::new(None),
             last_outcome: std::sync::Mutex::new(None),

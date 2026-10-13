@@ -137,6 +137,54 @@ impl Server {
         // they do not change between edits, and in full they were about 540 characters each on
         // every check (backlog 0337).
         let counted = matches!(ask, crate::parts::Ask::First);
+        // Asked for with no section, the findings this session's last whole answer gave, and still
+        // found, come a line each, when the answer then comes whole (backlog 0336). Pages are never
+        // cut from this, so a page asked for is the same in every answer.
+        let seen = self
+            .seen
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .get(&app_dir)
+            .cloned();
+        let shown_all = || {
+            let at = crate::bundle::utc_time(
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_secs())
+                    .unwrap_or(0),
+            );
+            self.seen
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .insert(
+                    app_dir.clone(),
+                    Seen {
+                        at,
+                        findings: report.findings.iter().map(Shown::of).collect(),
+                    },
+                );
+        };
+        if let Some(seen) = seen.filter(|_| counted) {
+            let delta = Delta::of(&report, &seen);
+            let text = sv_report::fence::fenced(|fence| {
+                summary_since(&report, fence, false, Some(&delta))
+            });
+            let data = structured_since(&report, &delta);
+            // Only when it is shorter: with a finding or two, the line saying what "unchanged"
+            // means is longer than what it saves.
+            let full = sv_report::fence::fenced(|fence| summary_with(&report, fence, false));
+            if text.len() < full.len()
+                && text.len() <= crate::parts::ANSWER_BUDGET
+                && data.to_string().len() <= crate::parts::ANSWER_BUDGET
+            {
+                shown_all();
+                return Ok(json!({
+                    "content": [{ "type": "text", "text": text }],
+                    "structuredContent": data,
+                    "isError": false,
+                }));
+            }
+        }
         let whole_structured = if counted {
             structured(&report)
         } else {
@@ -144,7 +192,7 @@ impl Server {
             with_questions["questions"] = questions_in_order(&report);
             with_questions
         };
-        crate::parts::respond(
+        let result = crate::parts::respond(
             &crate::parts::Answer {
                 tool: "stackvet_check",
                 what: "check",
@@ -157,7 +205,13 @@ impl Server {
                 whole_structured,
             },
             &ask,
-        )
+        )?;
+        // An answer that gave the findings, or started them and listed the rest: asked for with no
+        // section, or as `all`. A section asked for on its own may not have shown them.
+        if !matches!(ask, crate::parts::Ask::Part { .. }) {
+            shown_all();
+        }
+        Ok(result)
     }
 
     /// The plan for an app from its brief (ADR-030): built from the same report as a check, so the

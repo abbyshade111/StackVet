@@ -2732,13 +2732,23 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
             .iter()
             .map(|image| (*image).to_owned())
             .collect(),
-        app_image_digest,
+        app_image_digest: app_image_digest.clone(),
     });
     report.run_record = Some(run_record);
     report.seen = seen;
     // The bill of materials, written beside the report as `sv sbom` prints it (backlog 0382).
     report.sbom = Some(sv_report::SbomFile {
-        json: serde_json::to_string_pretty(&sbom::to_cyclonedx(bill_of_materials))? + "\n",
+        // With what the app runs on beside its packages (backlog 0402): the app, its image, and its language with the
+        // modules of its own library the code imports.
+        json: serde_json::to_string_pretty(&sbom::to_cyclonedx_with(
+            bill_of_materials,
+            &sbom::runs_on(
+                listing,
+                &manifest.app.name,
+                manifest.stack.run.image.as_deref(),
+                app_image_digest.as_deref(),
+            ),
+        ))? + "\n",
         components: bill_of_materials.components.len(),
         complete: bill_of_materials.is_complete(),
     });

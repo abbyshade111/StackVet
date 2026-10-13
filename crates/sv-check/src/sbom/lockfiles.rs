@@ -616,18 +616,9 @@ pub(super) fn from_pinned_requirements(text: &str) -> Vec<(String, String)> {
 /// the lines that only say where pip looks install nothing.
 pub(super) fn from_requirements(text: &str) -> Pinned {
     let (mut pinned, mut rest) = (Vec::new(), Vec::new());
-    // A line ending in `\` goes on on the next one, as pip reads it.
-    let joined = text.replace("\\\r\n", " ").replace("\\\n", " ");
-    for line in joined.lines() {
-        // A comment starts at a `#` at the start of a line or after a space.
-        let line = match line.find(" #") {
-            Some(i) => &line[..i],
-            None => line,
-        };
-        let line = line.trim();
-        if line.is_empty() || line.starts_with('#') {
-            continue;
-        }
+    // Continuations joined and comments cut as pip does, the same for every reader (backlog 0291).
+    for line in sv_scan::requirements::logical_lines(text) {
+        let line = line.as_str();
         if line.starts_with('-') {
             let (option, value) = line
                 .split_once(['=', ' ', '\t'])

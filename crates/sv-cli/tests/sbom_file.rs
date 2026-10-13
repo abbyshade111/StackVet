@@ -18,10 +18,10 @@ fn the_report_folder_holds_the_bill_of_materials_sv_sbom_prints() {
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(
         dir.join("stackvet.toml"),
-        "manifest-version = 1\n[app]\nname = \"x\"\n",
+        "manifest-version = 1\n[app]\nname = \"x\"\n[stack.run]\nimage = \"python:3.12-slim\"\n",
     )
     .unwrap();
-    std::fs::write(dir.join("app.py"), "import flask\n").unwrap();
+    std::fs::write(dir.join("app.py"), "import flask\nimport sqlite3\n").unwrap();
     std::fs::write(dir.join("requirements.txt"), "flask==3.0.0\n").unwrap();
     let run = sv(&["report", dir.to_str().unwrap()]);
     assert!(
@@ -49,6 +49,20 @@ fn the_report_folder_holds_the_bill_of_materials_sv_sbom_prints() {
     assert_eq!(
         written, printed,
         "the report's bill is the one `sv sbom` prints"
+    );
+    // And what the app runs on beside its packages (backlog 0402): the app, its image, Python, and sqlite3 under it.
+    assert_eq!(written["metadata"]["component"]["name"], "x", "{written}");
+    let components = written["components"].as_array().unwrap();
+    let python = components
+        .iter()
+        .find(|c| c["type"] == "platform" && c["name"] == "python")
+        .expect("python in the report's bill");
+    assert_eq!(python["version"], "3.12", "{python}");
+    assert_eq!(python["components"][0]["name"], "sqlite3", "{python}");
+    assert!(
+        components
+            .iter()
+            .any(|c| c["type"] == "container" && c["version"] == "3.12-slim")
     );
     // Named near the top of the page, and linked.
     let page = std::fs::read_to_string(dir.join("stackvet-report/report.html")).unwrap();
