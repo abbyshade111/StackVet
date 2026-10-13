@@ -410,8 +410,14 @@ each checked in the code on 13 October; a finding not listed here is as the body
 - **5.1** `sv check` reads the manifest when it is there, and a file `sv` cannot read stops the run, as it stops
   `sv report`.
 - **5.2** GETTING-STARTED gives the address of each kind of package's OSV download.
-- **5.3, in part** GETTING-STARTED has a section, "Keeping StackVet up to date". The other setup failures 5.3 lists
-  were not checked for this note.
+- **5.3, all but one bullet.** The guide gives a check that the tool is connected, and the prompt and `AGENTS.md`
+  rules tell the tool to stop when it is not (`crates/sv-cli/tests/did_it_connect.rs`); someone with only Docker
+  records their answers through the container (`review_container.rs`); `sv report --tools` says on screen when a tool
+  is not there, and an install hint reads as a sentence (`tools_on_screen.rs`); the MCP server writes `sv`'s own next
+  step outside the fence it puts around the app's text; the guide has "Keeping StackVet up to date"
+  (`guide_update.rs`); `sv init > stackvet.toml` writes a file `sv` can read (`init_redirect.rs`); and
+  `tools/install.sh` builds with `--locked`, and the guide says the build folder can be deleted. Not checked for
+  this note: what `sv check` lists for an empty folder.
 - **6.2** The short version says which level the app was held to, and what is left out of the numbers because of it
   (`crates/sv-report/src/bluf.rs`).
 - **7.1** The tests must pass before a pull request merges into `main`, and every commit on `main` is tested
