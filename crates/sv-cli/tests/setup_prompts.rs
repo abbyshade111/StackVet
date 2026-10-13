@@ -57,6 +57,7 @@ fn every_prompt_of_the_library_is_there_in_order() {
         at("setup-windows"),
         at("setup-step-4"),
         at("setup-step-5"),
+        at("setup-step-6"),
     ];
     assert!(
         order.windows(2).all(|w| w[0] < w[1]),
@@ -135,9 +136,10 @@ fn no_prompt_names_an_apps_buttons_or_menus() {
         "setup-windows",
         "setup-step-4",
         "setup-step-5",
+        "setup-step-6",
     ];
     // The setup: every prompt is read, or a renamed marker would leave one out unseen.
-    assert_eq!(names.len(), 6);
+    assert_eq!(names.len(), 7);
     for name in names {
         let text = flat(&block(name));
         assert!(!text.is_empty(), "{name}");
@@ -328,4 +330,62 @@ fn the_setup_pages_build_prompt_is_the_guides() {
 fn the_last_prompt_asks_stackvet_itself_whether_it_is_ready() {
     let text = flat(&block("setup-step-4"));
     assert!(text.contains("`stackvet_status`"), "{text}");
+}
+
+/// Prompt 6 walks the person through the full report at the terminal (backlog 0398), which StackVet's MCP server
+/// makes neither part of (ADR-066): every `sv` command it names is one `sv` takes, the guide section it sends the tool
+/// to is there, and it holds what the trial in Antigravity showed (13 October 2026): StackVet's age checked against
+/// GitHub, both copies kept current, no container stopped or reached into, and Docker never handed to StackVet.
+#[test]
+fn prompt_six_walks_the_person_through_the_full_report() {
+    let text = flat(&block("setup-step-6"));
+    for command in ["report", "doctor", "--version"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_sv"))
+            .args(if command.starts_with('-') {
+                vec![command]
+            } else {
+                vec![command, "--help"]
+            })
+            .output()
+            .expect("sv runs");
+        assert!(
+            out.status.success(),
+            "`sv {command}` is not a command sv takes"
+        );
+    }
+    for said in [
+        "`sv --version`",
+        "`stackvet --version`",
+        "compare the commit `sv --version` prints with the latest on StackVet's GitHub page",
+        "StackVet never checks for itself",
+        "`brew upgrade --fetch-HEAD sv`",
+        "`scoop update sv`",
+        "`docker pull ghcr.io/abbyshade111/stackvet-sv`",
+        "Don't stop or restart any container",
+        "`sv doctor`",
+        "`sv report . --run`",
+        "`stackvet report . --run`",
+        "ask me to allow it, or tell me the command to type myself",
+        "Never give StackVet's container access to Docker, and never run commands inside a container",
+        "Never tell me the app is secure",
+    ] {
+        assert!(text.contains(said), "{said}: {text}");
+    }
+    for never in ["docker.sock", "docker exec", "--tools"] {
+        assert!(!text.contains(never), "{never} in prompt 6");
+    }
+    // The guide section it points to is there, by that name.
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let guide = std::fs::read_to_string(root.join("docs/GETTING-STARTED.md")).unwrap();
+    assert!(
+        text.contains("\"Installing StackVet on your computer, for `--run`\""),
+        "{text}"
+    );
+    assert!(guide.contains("### Installing StackVet on your computer, for `--run`"));
+    // And the page says answers count as the person's own only through `sv review`, typed by them.
+    let page = page();
+    assert!(
+        page.contains("until you record them with `sv review`"),
+        "the page"
+    );
 }
