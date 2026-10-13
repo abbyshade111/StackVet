@@ -1562,6 +1562,9 @@ pub fn outside_tools(report: &Report) -> Vec<ToolRow> {
 
 /// "Found by Bandit, rule `B613`." for a finding an outside tool raised, by the tool's name and its own rule id; `None`
 /// for `sv`'s own (backlog 0379). The longest matching entry decides, as it does for `Examined`.
+/// The words of the link to an outside tool's own page about its rule (backlog 0378).
+pub const RULE_PAGE: &str = "The tool's own page about this rule";
+
 pub fn found_by(report: &Report, f: &sv_check::Finding) -> Option<String> {
     let e = report
         .examined

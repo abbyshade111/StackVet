@@ -965,8 +965,18 @@ fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
             escape(&held)
         ));
     }
-    if let Some(by) = crate::found_by(report, f) {
-        b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&by)));
+    let by = crate::found_by(report, f).map(|by| escape(&by));
+    // The tool's own page about its rule, linked beside it (backlog 0378); `kept_help_uri` let only a plain address in.
+    let page = f.help_uri.as_deref().map(|uri| {
+        format!(
+            "<a href=\"{}\" rel=\"noopener noreferrer\">{}</a>.",
+            escape(uri),
+            crate::RULE_PAGE
+        )
+    });
+    let said: Vec<String> = by.into_iter().chain(page).collect();
+    if !said.is_empty() {
+        b.push_str(&format!("<p class=\"note\">{}</p>\n", said.join(" ")));
     }
     for note in crate::finding_notes(f) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&note)));

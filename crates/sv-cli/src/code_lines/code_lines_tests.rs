@@ -20,6 +20,7 @@ fn at(file: &str, line: usize) -> sv_check::Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "ast.x".into(),
         title: "t".into(),
         severity: sv_check::Severity::High,

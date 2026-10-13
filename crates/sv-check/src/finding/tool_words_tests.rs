@@ -28,6 +28,7 @@ fn finding(rule: &str, severity: Severity, title: &str, description: &str) -> Fi
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
     }
 }
 

@@ -259,6 +259,7 @@ fn base(rule_id: &str, title: &str, file: &str, line: usize, description: String
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: rule_id.to_owned(),
         title: title.to_owned(),
         severity: Severity::High,
