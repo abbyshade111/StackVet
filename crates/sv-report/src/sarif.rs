@@ -328,6 +328,7 @@ mod tests {
             baseline: None,
             build_loop: None,
             seen: None,
+            code_lines: Default::default(),
             timings: Vec::new(),
             app_name: "test".into(),
             target_level: 1,

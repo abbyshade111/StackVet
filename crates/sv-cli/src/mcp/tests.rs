@@ -1291,6 +1291,40 @@ fn a_report_that_is_a_link_out_of_the_app_is_not_read_for_prompts() {
 }
 
 #[test]
+fn a_report_folder_that_is_a_link_out_of_the_app_is_not_read_for_prompts() {
+    // The folder rather than the file: `stackvet-report` itself a link to a folder outside the root, whose
+    // `report.json` is an ordinary file (backlog 0311).
+    let root = std::env::temp_dir().join(format!("sv-mcp-gaps-folder-link-{}", std::process::id()));
+    let outside =
+        std::env::temp_dir().join(format!("sv-mcp-gaps-folder-outside-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    std::fs::remove_dir_all(&outside).ok();
+    std::fs::create_dir_all(root.join("app")).unwrap();
+    std::fs::create_dir_all(&outside).unwrap();
+    std::fs::write(
+        outside.join("report.json"),
+        json!({ "requirements": [{ "id": "V3.4.3", "status": "needs-attention" }] }).to_string(),
+    )
+    .unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(
+        &outside,
+        root.join("app")
+            .join(sv_scan::ecosystems::DEFAULT_REPORT_DIR),
+    )
+    .unwrap();
+    let server = Server::new(&root).unwrap();
+    let result = call(&server, "stackvet_prompts", json!({ "path": "app" }));
+    std::fs::remove_dir_all(&root).ok();
+    std::fs::remove_dir_all(&outside).ok();
+    #[cfg(unix)]
+    {
+        assert_eq!(result["isError"], true, "{result}");
+        assert!(text(&result).contains("is a link"), "{}", text(&result));
+    }
+}
+
+#[test]
 fn prompts_for_a_requirement_say_whether_each_was_shown_to_work() {
     let server = Server::new(&examples()).unwrap();
     let all = call(&server, "stackvet_prompts", json!({}));
@@ -2354,11 +2388,22 @@ fn a_written_report_is_offered_as_resources_and_reads_back_as_written() {
         let name = path.file_name().unwrap().to_str().unwrap();
         let mime = REPORT_FILES.iter().find(|f| f.name == name).unwrap().mime;
         assert_eq!(resource["mimeType"], mime, "{uri}");
+        let description = resource["description"].as_str().unwrap();
+        assert!(description.contains("as it was then"), "{resource}");
+        // When it was written, from the run record it carries, so a report kept from an earlier
+        // run reads as that run's (backlog 0286).
+        let report: Value = serde_json::from_str(
+            &std::fs::read_to_string(path.parent().unwrap().join("report.json")).unwrap(),
+        )
+        .unwrap();
+        let ms = report["run_record"]["started_unix_ms"].as_u64().unwrap();
+        let day = sv_check::advisories::Day::of(
+            std::time::UNIX_EPOCH + std::time::Duration::from_millis(ms),
+        )
+        .unwrap()
+        .show();
         assert!(
-            resource["description"]
-                .as_str()
-                .unwrap()
-                .contains("as it was when written"),
+            description.contains(&format!("by a run that started {day} at ")),
             "{resource}"
         );
 
@@ -4074,7 +4119,7 @@ fn a_report_is_offered_as_svs_only_when_its_seal_shows_sv_wrote_it() {
     let copied = forged("copied", &marker);
     // A seal of the right form over these very files, made with a key that is not this computer's.
     let other_key = sv_check::seal::Key::random().unwrap();
-    let mut fields = vec!["report-folder".to_owned()];
+    let mut fields = vec!["report-folder".to_owned(), "0123456789abcdef".to_owned()];
     for file in crate::report_seal::SEALED {
         fields.push(file.to_owned());
         fields.push(crate::bundle::sha256(
@@ -4084,7 +4129,10 @@ fn a_report_is_offered_as_svs_only_when_its_seal_shows_sv_wrote_it() {
     let other_seal = other_key.report_seal(&fields.iter().map(String::as_str).collect::<Vec<_>>());
     let elsewhere = forged(
         "elsewhere",
-        &format!("This folder holds a report written by sv.\nseal: {other_seal}\n"),
+        &format!(
+            "This folder holds a report written by sv.\nsealed-in: 0123456789abcdef\n\
+             seal: {other_seal}\n"
+        ),
     );
     // The real report, with one file changed after sv wrote it.
     let changed = app.join("changed");
@@ -4093,11 +4141,15 @@ fn a_report_is_offered_as_svs_only_when_its_seal_shows_sv_wrote_it() {
         let entry = entry.unwrap();
         std::fs::copy(entry.path(), changed.join(entry.file_name())).unwrap();
     }
+    // An exact copy of the real report is sv's report of another folder, not of this one
+    // (backlog 0286): it was offered here until the seal named the folder it was made in.
     assert_eq!(
-        offered(&server).len(),
-        2,
-        "the copy is the real report, so it is offered"
+        offered(&server),
+        vec![real.clone()],
+        "a copy of the real report is not offered where it was copied to"
     );
+    let message = refused(&server, &changed, "report.json").expect("the copy was read");
+    assert!(message.contains("sealed for another folder"), "{message}");
     let json = std::fs::read_to_string(changed.join("report.json")).unwrap();
     std::fs::write(changed.join("report.json"), format!("{json} ")).unwrap();
 
