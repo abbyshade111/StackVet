@@ -38,8 +38,8 @@ checked, and what nobody has looked at yet.
 Buttons: *Get started*, *See how a build goes* (a walk-through of one build from the first prompt; *not yet made*).
 
 - "Security in mind" says how the app is built, not what it ends up being: StackVet never says an app is secure.
-- The order of the last sentence, the most important things to fix first, is *not yet true* of the report (item 2
-  below).
+- The order of the last sentence, the most important things to fix first, is true of the report since 13 October
+  2026 (item 2 below, done).
 
 ## 2. Who it's for
 
@@ -67,7 +67,7 @@ You don't need to know about security either. The report explains each result in
    checked, and what nobody has looked at yet. Your AI tool can read it through with you.
 
 - Step 2 is for someone who has used an AI chat but never built an app with one.
-- Step 3's order is *not yet true* of the report (item 2).
+- Step 3's order is true of the report since 13 October 2026 (item 2, done).
 
 ## 4. The report
 
@@ -93,8 +93,9 @@ what needs attention, and help you answer the questions only you can.
 None of these words means "passed." Even *checked* means one check looked and found nothing wrong, not that the
 whole requirement is met.
 
-- "Starts with the most important things to fix" and "every requirement in plain language" are *not yet true*
-  (items 2 and 3). Today each requirement is shown in OWASP's formal wording, with checks named by internal ids.
+- "Starts with the most important things to fix" is true since 13 October 2026 (item 2, done). "Every requirement
+  in plain language" is *not yet true* (item 3): today each requirement is shown in OWASP's formal wording, with
+  checks named by internal ids.
 - The example lines are invented and say so; a real report from one of the example apps replaces them before launch.
 - The reading prompt (`sv prompts report`) has not yet been tried in an AI tool, hence "can".
 
@@ -142,10 +143,16 @@ app uses anywhere. When it starts your app to test it, the app runs with no inte
 is different: it can read every file in your app's folder, including any data or keys kept there, and it sends what
 it reads to the company that runs it.
 
-There are two exceptions, and you turn each one on yourself: a check of your live website, which makes at most a few
-requests to the address you type; and, if you ask for it, downloading your app's packages so it can start.
+There are three exceptions. Two you turn on yourself: a check of your live website, which makes at most a few
+requests to the address you type; and, if you ask for it, downloading your app's packages so it can start. The third
+is on unless you turn it off: StackVet runs the security tools each language already has, when they are installed on
+your computer, and one of them, Semgrep (or Opengrep in its place), downloads its rules from semgrep.dev each time it
+checks your app. It checks your code on your computer, with its usage reporting turned off. To check without any of
+these tools, add `--no-tools`.
 
-- The rule is CLAUDE.md's, ADR-027 (`sv probe`), and ADR-052 (`install = true`).
+- The rule is CLAUDE.md's, ADR-027 (`sv probe`), ADR-052 (`install = true`), and ADR-111 (the outside tools run by
+  default since 13 October 2026, the owner's decision, Semgrep's download included). "Usage reporting turned off" is
+  the `--metrics=off` `sv` passes Semgrep (`data/adapters.json`); Opengrep has no such option and sends no metrics.
 
 ## 7. Get started
 
@@ -202,7 +209,7 @@ tell us in a GitHub issue.
 - **OWASP Secure by Design Framework**, version 0.5.0 (draft, August 2025). OWASP Foundation. CC BY-SA 4.0.
   github.com/OWASP/www-project-secure-by-design-framework
 
-*Outside tools, used only when you turn them on:*
+*Outside tools, run with every report when they are installed (add `--no-tools` to leave them out):*
 - **Semgrep**, and **Opengrep** in its place when Semgrep isn't installed, running the Semgrep Registry rules. The
   rules are under the Semgrep Rules License, which allows use but not resale; StackVet is not sold.
 - **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby.
@@ -226,7 +233,8 @@ StackVet is not made by or endorsed by OWASP, GitHub, Semgrep, MITRE, FIRST, or 
 The site does not go live while any of these is open:
 
 1. A setup prompt library for people new to building with AI, tried by the owner, with the tools it works in named.
-2. The report, and the prompt that reads it, lead with the most important things to fix.
+2. ~~The report, and the prompt that reads it, lead with the most important things to fix.~~ Done 13 October 2026
+   (backlog 0371).
 3. Each requirement in the report stated in plain language, beside OWASP's wording, with checks named in words.
 4. A short walk-through of a setup, as a video or a click-through slide show.
 5. Every credited tool's and data source's license confirmed from its source.
