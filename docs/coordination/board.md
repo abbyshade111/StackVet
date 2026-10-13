@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0358 (since 2026-10-12) — next: 0363, 0323, 0326
-- builder-none — arm: none — holds: 0360 (since 2026-10-12) — next: 0331, 0334, 0333, 0330
+- builder-full — arm: full — holds: 0363 (since 2026-10-13) — next: 0323, 0326, 0344, 0366, 0354, 0356
+- builder-none — arm: none — holds: 0334 (since 2026-10-13) — next: 0333, 0330, 0357, 0368, 0367, 0364
 
 ## Queue
 
@@ -27,31 +27,23 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 14. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
 15. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
 16. 0343 The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove — ready
-17. 0344 Dependencies carry full debug information in every debug build and in each of about 81 grammar-laden test binaries — ready
-18. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
-19. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
-20. 0351 Every file of the app is read from disk and decoded five to six times across the static stage — ready
-21. 0352 Thirty-odd separate regex passes per file in the secrets scan — ready
-22. 0353 One tree-sitter query walk per rule per file: up to 31 walks of each Python file — ready
-23. 0354 sv report --run walks the app folder twice more, only to compute the private files — ready
-24. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
-25. 0356 Incremental compilation is on in CI, where every build is fresh — ready
-26. 0357 The Dockerfile has no dependency layer, and copies examples/ into the build stage — ready
-27. 0364 The crash sweeps' time grows with the square of the request count, and is not measured since 0271 — ready
-28. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
-29. 0366 git log --all --diff-filter=A --name-only walks every commit's diff for the secrets-file check — ready
-30. 0367 Quadratic grouping over findings in settle and in the report build — ready
-31. 0368 Outside tools run one after another, their start-ups never overlapping — ready
-32. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-33. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-34. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-35. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-36. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-37. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-38. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-39. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-40. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-41. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+17. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
+18. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
+19. 0351 Every file of the app is read from disk and decoded five to six times across the static stage — ready
+20. 0352 Thirty-odd separate regex passes per file in the secrets scan — ready
+21. 0353 One tree-sitter query walk per rule per file: up to 31 walks of each Python file — ready
+22. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
+23. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
+24. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+25. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+26. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+27. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+28. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+29. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+30. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+31. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+32. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+33. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
 
 ## Log
 
@@ -260,3 +252,14 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-12 23:53 — finished 0332 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1649; now holds 0358
 - 2026-10-12 23:53 — finished 0311 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1642; now holds 0328
 - 2026-10-12 23:53 — finished 0328 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1648; now holds 0360
+- 2026-10-13 00:23 — finished 0358 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1653; now holds 0363
+- 2026-10-13 00:23 — finished 0360 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1652; now holds 0331
+- 2026-10-13 00:23 — finished 0331 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1657; now holds 0334
+- 2026-10-13 00:23 — assigned 0344 to builder-full (full) as next: lane 4, pair 21 with 0357: build speed, root Cargo.toml profile only
+- 2026-10-13 00:23 — assigned 0366 to builder-full (full) as next: lane 4, pair 22 with 0368: run speed in sv-check, git.rs only
+- 2026-10-13 00:23 — assigned 0354 to builder-full (full) as next: lane 4, pair 23 with 0367: repeated walks, sv-cli lib.rs
+- 2026-10-13 00:23 — assigned 0356 to builder-full (full) as next: lane 4: CI incremental compilation; CI files stay in this lane
+- 2026-10-13 00:23 — assigned 0357 to builder-none (none) as next: lane 4, pair 21 with 0344: build speed, Dockerfile only
+- 2026-10-13 00:23 — assigned 0368 to builder-none (none) as next: lane 4, pair 22 with 0366: run speed in sv-check, adapters.rs
+- 2026-10-13 00:23 — assigned 0367 to builder-none (none) as next: lane 4, pair 23 with 0354: quadratic grouping, finding.rs and sv-report
+- 2026-10-13 00:23 — assigned 0364 to builder-none (none) as next: lane 4: time the crash sweeps once and write the number down
