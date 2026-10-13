@@ -41,6 +41,13 @@ concurrency:
   group: rust-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
+# Every build in CI starts from nothing, so Cargo's incremental cache is written and never read, and
+# incremental mode splits the workspace crates into more pieces to compile (backlog 0356). Measured
+# on 13 October 2026, a clean `cargo test --workspace --no-run` on 4 cores, one run each: 156 s with
+# it, 137 s without. Local builds keep it.
+env:
+  CARGO_INCREMENTAL: "0"
+
 jobs:
   # The checks before a pull request merges, as four jobs (backlog 0192 part 1, ADR-106). Until 12 October
   # 2026 one job ran formatting, lints, and the whole suite, one test program after another, in about

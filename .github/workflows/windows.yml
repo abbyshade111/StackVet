@@ -27,6 +27,13 @@ on:
 permissions:
   contents: read
 
+# Every build in CI starts from nothing, so Cargo's incremental cache is written and never read, and
+# incremental mode splits the workspace crates into more pieces to compile (backlog 0356). Measured
+# on 13 October 2026, a clean `cargo test --workspace --no-run` on 4 cores, one run each: 156 s with
+# it, 137 s without. Local builds keep it.
+env:
+  CARGO_INCREMENTAL: "0"
+
 jobs:
   windows:
     runs-on: windows-latest
