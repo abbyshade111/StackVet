@@ -1999,9 +1999,27 @@ fn cmd_sbom(path: Option<PathBuf>) -> Result<()> {
         bail!("{} is not a folder", app_dir.display());
     }
     let sbom = sbom::build(&app_dir);
+    // What the app runs on, as `sv report` lists it (backlog 0402), from stackvet.toml when there is one. No digest:
+    // the app is not started here.
+    let manifest = sv_manifest::locate(&app_dir)
+        .ok()
+        .flatten()
+        .and_then(|located| {
+            let text = std::fs::read_to_string(&located.path).ok()?;
+            sv_manifest::Manifest::parse(&text, &located.path).ok()
+        });
+    let runs_on = sbom::runs_on(
+        &sv_scan::files::Listing::of(&app_dir),
+        manifest
+            .as_ref()
+            .map(|m| m.app.name.as_str())
+            .unwrap_or_default(),
+        manifest.as_ref().and_then(|m| m.stack.run.image.as_deref()),
+        None,
+    );
     println!(
         "{}",
-        serde_json::to_string_pretty(&sbom::to_cyclonedx(&sbom))?
+        serde_json::to_string_pretty(&sbom::to_cyclonedx_with(&sbom, &runs_on))?
     );
 
     eprintln!(
