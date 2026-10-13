@@ -1,6 +1,6 @@
 # Host paths go to docker -v in the short form, so an app folder whose path holds a colon cannot be mounted and the run does not say why
 
-**Status:** open
+**Status:** claimed by builder-full, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: the fence. Severity: low. Verified against the code by the reviewing session before filing.
 
