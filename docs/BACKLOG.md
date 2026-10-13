@@ -109,9 +109,9 @@ parallel builds" (0273) is set up once the other sessions are *on* the build-loo
 (0224), not after them, on the owner's "go"; claimed by session stackvet-orchestrator. The findings of the deep review
 that follows it wait on the coordination board until the loop trials are done.
 
-**Process, any time, each cheap:** "Process: shorter CI, a merge queue decision, and a nightly routine on `main`",
-and the owner's decision on "One file per backlog item, with a status line", which would make the status above a
-line in each item's file rather than a reading of its prose.
+**Process, any time, each cheap:** "Process: shorter CI, a merge queue decision, and a nightly routine on `main`".
+The owner's decision on "One file per backlog item, with a status line" is done: made and built on 8 October 2026
+(ADR-061), so each item's status is a line in its own file, as the top of this file says.
 
 
 ### Status checked against the code, 11 October 2026

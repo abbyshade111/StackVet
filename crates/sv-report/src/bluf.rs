@@ -41,7 +41,12 @@ pub struct NextStep {
 
 /// The findings worth naming at the top, worst first, and how many were left out.
 pub fn worst_findings(report: &Report) -> (Vec<&sv_check::Finding>, usize) {
-    let mut findings: Vec<&sv_check::Finding> = report.findings.iter().collect();
+    // A note worth knowing is never among the worst (ADR-110, Later).
+    let mut findings: Vec<&sv_check::Finding> = report
+        .findings
+        .iter()
+        .filter(|f| !crate::is_note(f))
+        .collect();
     // The app's own first: a critical in a test is named after a low in the app, since the report
     // lists it apart, but it is still named when there is room.
     findings.sort_by_key(|f| (f.apart(), severity_rank(f.severity)));
@@ -70,7 +75,17 @@ pub fn headline(report: &Report) -> String {
     // app is not being assessed against, which is reported and does not make a requirement need
     // attention. The first version of this line said "1 requirement needs attention" above a list
     // of two, which is the kind of small contradiction a reader notices and cannot resolve.
-    let n = report.findings.len();
+    // The notes worth knowing are said apart, and not counted as found (ADR-110, Later).
+    let notes = report.findings.iter().filter(|f| crate::is_note(f)).count();
+    let n = report.findings.len() - notes;
+    let notes_said = match notes {
+        0 => String::new(),
+        1 => " 1 more is a note worth knowing, not a thing to fix, under \"Worth knowing\"."
+            .to_owned(),
+        k => format!(
+            " {k} more are notes worth knowing, not things to fix, under \"Worth knowing\"."
+        ),
+    };
     // False alarms left `findings` when they were set aside, so they are counted here or the
     // headline would say nothing was found when something was (deep review R2). Who set them aside
     // is only what stackvet.toml says, so the sentence says where, not who.
@@ -127,12 +142,12 @@ pub fn headline(report: &Report) -> String {
             },
             report.counts.not_verified,
             report.counts.applicable
-        );
+        ) + &notes_said;
     }
     if n == 0 {
         return format!(
             "Nothing here found a problem. That is not the same as this app being sound: {} of \
-             the {} requirements that apply have had nothing look at them at all.",
+             the {} requirements that apply have had nothing look at them at all.{notes_said}",
             report.counts.not_verified, report.counts.applicable
         );
     }
@@ -151,7 +166,7 @@ pub fn headline(report: &Report) -> String {
         ),
     };
     format!(
-        "{n} thing{} {} found, worst first.{apart}{set_aside_said}{information_said}",
+        "{n} thing{} {} found, worst first.{apart}{set_aside_said}{notes_said}{information_said}",
         if n == 1 { "" } else { "s" },
         if n == 1 { "was" } else { "were" }
     )
@@ -321,18 +336,22 @@ pub fn only_a_person_can_counts(report: &Report) -> (usize, usize) {
 pub fn next_steps(report: &Report) -> Vec<NextStep> {
     let mut steps = Vec::new();
     let c = &report.counts;
-    if c.needs_attention > 0 {
+    // The things to fix in the app's own code, counted as the section below them counts them (ADR-110, Later): the
+    // requirements that need attention are a different number, and the two side by side read as a contradiction.
+    let (app, _) = crate::app_then_tests(report);
+    let (fix, _) = crate::fix_then_notes(app);
+    if !fix.is_empty() {
         steps.push(NextStep {
             what: format!(
                 "Fix the {} {}.",
-                c.needs_attention,
-                if c.needs_attention == 1 {
-                    "thing that needs attention"
+                fix.len(),
+                if fix.len() == 1 {
+                    "thing that was found"
                 } else {
-                    "things that need attention"
+                    "things that were found"
                 }
             ),
-            where_to_look: "security.md lists each one with what to do".to_owned(),
+            where_to_look: "each is below, and in security.md with what to do".to_owned(),
         });
     }
     let (person, person_level_one) = only_a_person_can_counts(report);
@@ -410,6 +429,8 @@ mod tests {
             baseline: None,
             build_loop: None,
             seen: None,
+            code_lines: Default::default(),
+            sbom: None,
             timings: Vec::new(),
             app_name: "Test".into(),
             target_level: 1,
@@ -850,6 +871,8 @@ mod tests {
             ..Counts::default()
         });
         r.requirements = vec![unverified("V2.1.1"), unverified("V1.2.4")];
+        // The step counts the things to fix, as their section does (ADR-110, Later), not `needs_attention`.
+        r.findings = vec![a_finding("ast.sql"), a_finding("ast.shell")];
         r.tests_to_write = vec![crate::TestToWrite {
             id: "V1.2.4".into(),
             level: 1,

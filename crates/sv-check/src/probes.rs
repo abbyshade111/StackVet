@@ -659,7 +659,11 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
                     } else {
                         &["V16.5.1"]
                     },
-                    format!("the app's error answers to a body that is not JSON, at {shown}"),
+                    format!(
+                        "the app's error answers to a body that is not JSON, at {shown}, read for {} known \
+                         signs of a debug page or a stack trace",
+                        TRACE_MARKERS.len()
+                    ),
                 )
                 // One kind of error at a few routes, not every error (ADR-053, Later).
                 .in_part(),
@@ -1472,6 +1476,10 @@ pub const TRACE_MARKERS: &[&str] = &[
     "ActionController::",
     "Fatal error:",
     "Warning: mysqli",
+    // ASP.NET Core's developer exception page, whose frames are not written "    at " in its HTML, and Laravel's
+    // debug page and debug JSON, whose trace names the framework's own classes (backlog 0334).
+    "An unhandled exception occurred while processing the request.",
+    "Illuminate\\",
 ];
 
 const ERROR_DETAIL_LEAK: Rule = Rule {
