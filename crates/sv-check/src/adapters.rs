@@ -1603,6 +1603,10 @@ pub fn run_all(
 /// The outside tools that use one core and start quickly, run beside the others (`run_all_in`).
 const SMALL_TOOLS: &[&str] = &["bandit", "gosec", "brakeman"];
 
+/// One tool's run, from a lane of `run_all_in`: its place among the adapters, its report's path, what was
+/// recorded of it, and how it ended.
+type LaneRun = (usize, PathBuf, ToolRun, Outcome);
+
 /// `run_all`, with the app's files from a listing already made, and `starting` told each tool's
 /// name as it begins, for a person watching at a terminal (backlog 226, part 2, item 15).
 pub fn run_all_in(
@@ -1642,12 +1646,12 @@ pub fn run_all_in(
     // order below, so the report reads the same whichever lane finished first. Ctrl-C stops what each lane
     // is running and starts nothing more in either (`finish_unless`).
     let here: Vec<&Adapter> = adapters.for_languages(languages);
-    let (light, heavy): (Vec<(usize, &Adapter)>, Vec<(usize, &Adapter)>) = here
+    let (light, heavy): (Vec<_>, Vec<_>) = here
         .iter()
         .copied()
         .enumerate()
         .partition(|(_, adapter)| SMALL_TOOLS.contains(&adapter.id.as_str()));
-    let lane = |tools: Vec<(usize, &Adapter)>| -> Vec<(usize, PathBuf, ToolRun, Outcome)> {
+    let lane = |tools: Vec<(usize, &Adapter)>| -> Vec<LaneRun> {
         tools
             .into_iter()
             .map(|(at, adapter)| {
