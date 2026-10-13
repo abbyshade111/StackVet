@@ -471,7 +471,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_status",
             "title": "Is everything ready?",
-            "description": "Whether StackVet is ready for this app, in one plain line each, marked ready, not ready, or can't tell: which StackVet this is, whether the folder is in git, whether stackvet.toml is there and reads, whether it says how to start the app, and whether Docker can start it for `sv report --run`. Inside StackVet's container, which cannot see Docker on the computer, that last one is can't tell. The same answers as `sv doctor` at a terminal. It credits nothing, writes nothing, and opens no network connection, so it cannot say whether a newer StackVet is out. Call it when setting up, or when something does not work and you want to know what is missing.",
+            "description": "Whether StackVet is ready for this app, one plain line each, marked ready, not ready, or can't tell: which StackVet this is, git, stackvet.toml, how to start the app, and Docker for `sv report --run`. The same answers as `sv doctor` at a terminal. Call it when setting up, or when something does not work.",
             "inputSchema": { "type": "object", "properties": { "path": path.clone() } },
             "annotations": { "readOnlyHint": true, "openWorldHint": false }
         },
@@ -485,7 +485,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_prompts",
             "title": "Prompts for the person to give you",
-            "description": "Prompts from StackVet's library that ask an AI coding tool for something StackVet checks, such as keeping the app in git from the first file or building every database query with placeholders, and design-time prompts for what to decide before any code is written (who may do what, limits, logging, sign-in), each with the requirements it targets and, for a design-time prompt, the Secure by Design controls it helps the person answer. Each says whether it has been shown to work: an app built with it passed its check and the same app built without it failed. The others say whether they were tried and not shown to work, or not tried yet. With no argument it lists them, one line each with its id; ask with `id` for one in full, or with `requirement` for those that target it. Offer them to the person; following one is not evidence of anything, so check the app afterwards.",
+            "description": "Prompts from StackVet's library for the person to give you: coding prompts for something StackVet checks, and design-time prompts for what to decide before any code, each with the requirements it targets and whether it was shown to work. With no argument it lists them, one line each with its id; ask with `id` for one in full, or with `requirement` or `path` for those that apply. Following one is not evidence of anything, so check the app afterwards.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -508,7 +508,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_plan",
             "title": "Plan the app before writing it",
-            "description": "The plan for the app from its stackvet.toml, before any code and at any time after: the requirements that will apply, the design-time prompts to work through before each feature, the questions only the person can answer, the tests worth writing named by requirement id, what the app must give `sv run` in stackvet.toml so it can be tested running, and the threats the answers raise. Built from the same report as stackvet_check, so the two agree. A plan credits nothing and never says a requirement is met. Reads files only; never starts the app. A plan too long to take in whole (over about 40,000 characters) comes in parts: the first answer gives what to decide and what `sv run` needs, and ends with a list of every section and how to ask for each with `section` and `page`. Nothing is left out.",
+            "description": "The plan for the app from its stackvet.toml, before any code and at any time after: the requirements that will apply, the design-time prompts, the questions only the person can answer, the tests to write named by requirement id, what `sv run` needs in stackvet.toml, and the threats the answers raise. Built from the same report as stackvet_check; it credits nothing.",
             "inputSchema": { "type": "object", "properties": {
                 "path": path.clone(),
                 "section": section(crate::plan::SECTIONS),
@@ -519,7 +519,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_before",
             "title": "Before building one feature",
-            "description": "Before building one feature (sign-in, admin pages, uploads, payments, email, an AI feature, fetching a web address, records people own or share, API keys, background jobs, several customer organizations): the requirements it brings that apply to this app, the design-time prompts for the decisions to make first, the coding rules on the topics it touches and the coding prompts shown to work for its requirements, the tests to write named by requirement id, and the settings `sv run` needs in stackvet.toml to test it, quoted from the spec. Built from the same report as stackvet_plan. Asked before stackvet.toml exists, it gives everything the feature can bring, its decisions, prompts, rules, and settings, and says which requirements apply, and the tests, wait for the file (`waiting`). A brief credits nothing. Reads files only; never starts the app.",
+            "description": "Before building one feature: the requirements it brings that apply to this app, the decisions to make first, the coding rules and prompts for it, the tests to write named by requirement id, and the settings `sv run` needs to test it. Asked before stackvet.toml exists, it gives what the feature can bring, and says which requirements apply, and the tests, wait for the file (`waiting`). It credits nothing.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -537,7 +537,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_guidance",
             "title": "Rules to follow while coding",
-            "description": "The security rules to follow while you write this app, adapted from OWASP AISVS 1.0 Appendix C (AI-assisted secure coding), with its attribution and license (CC BY-SA 4.0): keeping keys out of the chat, treating fetched text as data, checking after each feature, adding only packages that exist, never merging your own work, writing CI workflows that keep secrets from forks. Rules that do not apply to the app, by its stackvet.toml, are left out. Call it before you start, and with a topic before work in that area. With no topic it ends with the prompts shown to work that are about the whole app. They are instructions, not a check: following them is not evidence of anything.",
+            "description": "The security rules to follow while you write this app, adapted from OWASP AISVS 1.0 Appendix C (AI-assisted secure coding), with its attribution and license (CC BY-SA 4.0); rules that do not apply to the app, by its stackvet.toml, are left out. With no topic it ends with the prompts shown to work that are about the whole app. They are instructions, not a check: following them is not evidence of anything.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -554,14 +554,14 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_preflight",
             "title": "Will `sv run` be able to test it?",
-            "description": "Once there is code: reads the app's files against what stackvet.toml tells `sv run` (the start command, listening on 0.0.0.0 at $PORT, the seed reading the SV_ accounts, tables the app makes itself, every path and sign-in field the settings name), and says for each whether it looks right, needs a look, or could not be told. Also says what `sv run` will check once the app runs (a limit on wrong passwords, the security headers, the session cookie's SameSite, a screen on what an AI feature is sent) when nothing in the code reads like a way of handling it. Reads files only and runs nothing, so \"looks right\" means the text was found, not that it works. Credits nothing.",
+            "description": "Once there is code: reads the app's files against what stackvet.toml tells `sv run` (the start command, the address and port, the seed, the tables, every path and sign-in field it names) and says for each whether it looks right, needs a look, or could not be told; and what `sv run` will check once the app runs that the code shows no sign of handling. It runs nothing, so \"looks right\" means the text was found, not that it works.",
             "inputSchema": { "type": "object", "properties": { "path": path.clone() } },
             "annotations": { "readOnlyHint": true, "openWorldHint": false }
         },
         {
             "name": "stackvet_check",
             "title": "Check an app",
-            "description": "Check the app against OWASP ASVS 5.0, AISVS 1.0 and the Secure by Design checklist: credentials in the code, configuration, rules that read the code, dependencies (listed, not compared with known vulnerabilities: that needs `--advisories` at a terminal), and which requirements apply. Reads files only; never starts the app. The result gives the counts, then what was NOT examined, then what needs attention with the file, line and fix. It never says a requirement passed, and nothing in it means the app is secure. It also gives the questions about the app that only a person can answer (how it is built, the rules it follows, and what to check by hand), in its section \"questions\": ask the person them one at a time, offering what you know of the code as a tip, and record their answers as that section says; answers you give yourself are recorded as yours and reported as weaker than the person's. A check too long to take in whole (over about 40,000 characters) comes in parts: the first answer gives what was not examined and the findings, and ends with a list of every section and how to ask for each with `section` and `page`. Nothing is left out.",
+            "description": "Check the app against OWASP ASVS 5.0, AISVS 1.0 and the Secure by Design checklist: credentials in the code, configuration, rules that read the code, dependencies (listed, not compared with known vulnerabilities), and which requirements apply. It never starts the app. The result gives the counts, then what was NOT examined, then what needs attention with the file, line and fix, then, in its section \"questions\", what only the person can answer and how to record it. It never says a requirement passed, and nothing in it means the app is secure.",
             "inputSchema": { "type": "object", "properties": {
                 "path": path.clone(),
                 "section": section(CHECK_SECTIONS),
@@ -585,7 +585,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_record_answer",
             "title": "Record an answer in the security notes",
-            "description": "Write an answer under one question in security-notes.md (making the file if it is not there), in place of what was under it. Called with no id and no answer, it only makes or refreshes security-notes.md, where the person's written decisions go, keeping everything already written in it: answers stay under their questions, and any other text is kept word for word in a section of its own near the top; it refuses, writing nothing, when the file is not UTF-8 text or has two sections for one question. sv marks every answer this records as yours, `Written by: AI coding tool`, which the report counts for less than the person's own word; there is no way to mark it as theirs. Record what the person told you, or what you found in the code if they asked you to answer; then show them. If it says what they decided, they change the line to `Written by: owner` themselves and record it by running `sv review` in their own terminal; if you worked it out from the code and they agree, they leave the line as it is and confirm it through `sv review`, and the report shows it as your words a person confirmed. It fills a question with nothing under it, or replaces an answer marked `Written by: AI coding tool`; anything else under the question may be the person's own words and is never replaced.",
+            "description": "Write an answer under one question in security-notes.md, making the file if it is not there; with no id and no answer it only makes or refreshes the file, keeping everything already written in it. sv marks every answer this records as yours (`Written by: AI coding tool`), which the report counts for less than the person's own word, and the result says how the person makes it theirs. It fills a question with nothing under it, or replaces an answer marked as yours; anything else under a question may be the person's own words and is never replaced.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -610,7 +610,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_bundle",
             "title": "Bundle the app and its report",
-            "description": "Write one zip beside the app (never inside it) holding the app's files, the full report, the bill of materials and a SHA-256 for every file, for the person to keep or hand on. It leaves out anything that could hold a secret (files the credential scan flagged, environment files, keys, databases, links, editor folders, files it could not read) and lists each with the reason. Offer it once the report is written, only if the person wants it. It cannot tell which files hold data about the app's people. The app must be a folder below the one this server was started for, since the zip goes beside it: with no `path`, it is refused.",
+            "description": "Write one zip beside the app (never inside it) holding the app's files, the full report, the bill of materials and a SHA-256 for every file, for the person to keep or hand on. Anything that could hold a secret is left out and listed with the reason; it cannot tell which files hold data about the app's people. The app must be a folder below the one this server was started for.",
             // Its own `path`, required: the zip goes beside the app, so the server's own folder, the
             // default everywhere else, is always refused here (the documentation review, item 5).
             "inputSchema": {
