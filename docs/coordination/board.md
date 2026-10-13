@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0350 (since 2026-10-13) — next: 0329, 0300, 0342, 0293, 0291
-- builder-none — arm: none — holds: 0361 (since 2026-10-13) — next: 0345, 0346, 0347
+- builder-full — arm: full — holds: 0329 (since 2026-10-13) — next: 0300, 0342, 0293, 0291
+- builder-none — arm: none — holds: 0345 (since 2026-10-13) — next: 0346, 0347, 0337, 0336
 
 ## Queue
 
@@ -23,9 +23,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 10. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
 11. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
 12. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-13. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — ready
-14. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — ready
-15. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
+13. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
 
 ## Log
 
@@ -295,3 +293,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 14:19 — assigned 0342 to builder-full (full) as next: lane 9, owner released 13 Oct: advisory matching by index; advisories.rs only, after the docker.rs items so docker.rs can pass to builder-none for 0301
 - 2026-10-13 14:19 — assigned 0293 to builder-full (full) as next: lane 9, owner released 13 Oct: two data files compiled in; signed_in/passwords.rs and sv-report threats.rs
 - 2026-10-13 14:19 — assigned 0291 to builder-full (full) as next: lane 9, owner released 13 Oct: one reader of requirements.txt; sv-scan, sbom, manifest_lock, and install.rs, after 0329 in the same lane
+- 2026-10-13 14:49 — finished 0350 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1717; now holds 0329
+- 2026-10-13 14:49 — finished 0361 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1713; now holds 0345
+- 2026-10-13 14:49 — assigned 0337 to builder-none (none) as next: lane 10, owner released 13 Oct: questions as a count by default; mcp tools.rs and check_text.rs, after lane 7 in the same files
+- 2026-10-13 14:49 — assigned 0336 to builder-none (none) as next: lane 10, owner released 13 Oct: unchanged findings as one line each; mcp tools.rs, catalog.rs, check_text.rs, parts.rs, after 0337
