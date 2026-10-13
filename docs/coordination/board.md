@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0291 (since 2026-10-13) — next: 0339
-- builder-none — arm: none — holds: 0301 (since 2026-10-13) — next: 0410, 0414, 0355, 0365
+- builder-full — arm: full — holds: 0339 (since 2026-10-13)
+- builder-none — arm: none — holds: 0410 (since 2026-10-13) — next: 0414, 0355, 0365
 
 ## Queue
 
@@ -316,3 +316,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 16:23 — assigned 0414 to builder-none (none) as next: the 0301 security review's findings; the owner's word 13 Oct: to builder-none right after 0410, during the wind-down; docker.rs and tests/fence.rs, which this lane holds
 - 2026-10-13 16:23 — assigned 0355 to builder-none (none) as next: given back after 0414, owner released 13 Oct: the readiness poll's fixed 2 s; docker.rs
 - 2026-10-13 16:23 — assigned 0365 to builder-none (none) as next: given back after 0355, owner released 13 Oct: mail's fixed 10 s wait; the item says build only if a real report's timings show it
+- 2026-10-13 16:29 — finished 0291 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1736; now holds 0339
+- 2026-10-13 16:29 — finished 0301 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1739; now holds 0410
