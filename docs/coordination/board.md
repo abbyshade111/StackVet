@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0293 (since 2026-10-13) — next: 0291, 0339
-- builder-none — arm: none — holds: 0347 (since 2026-10-13) — next: 0337, 0336, 0301, 0410, 0355, 0365
+- builder-full — arm: full — holds: 0291 (since 2026-10-13) — next: 0339
+- builder-none — arm: none — holds: 0336 (since 2026-10-13) — next: 0301, 0410, 0355, 0365
 
 ## Queue
 
@@ -304,3 +304,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 15:28 — assigned 0355 to builder-none (none) as next: lane 11, owner released 13 Oct: the readiness poll's fixed 2 s; docker.rs, after 0410
 - 2026-10-13 15:28 — assigned 0365 to builder-none (none) as next: lane 11, owner released 13 Oct: mail's fixed 10 s wait; docker.rs; the item says build only if a real report's timings show it
 - 2026-10-13 15:28 — assigned 0339 to builder-full (full) as next: lane 11, owner released 13 Oct: container tests one per file; crates/sv-cli/tests and tools/ci_shards.py, none of them in builder-none's lane
+- 2026-10-13 15:59 — finished 0293 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1732; now holds 0291
+- 2026-10-13 15:59 — finished 0347 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1730; now holds 0337
+- 2026-10-13 15:59 — finished 0337 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1733; now holds 0336
