@@ -1420,7 +1420,7 @@ pub(crate) const HARDENING: [&str; 5] = [
 ];
 
 /// `args` with `HARDENING` just after the command word.
-pub(crate) fn hardened(args: Vec<String>) -> Vec<String> {
+fn hardened(args: Vec<String>) -> Vec<String> {
     let mut out = args;
     let at = 1.min(out.len());
     out.splice(at..at, HARDENING.iter().map(|s| (*s).to_owned()));
@@ -3460,6 +3460,10 @@ mod probe_tests {
             volume: "sv-deps-py-x".to_owned(),
         };
         let args = install.args("sv-1-install", "python:3.12-slim");
+        let refs: Vec<&str> = args.iter().map(String::as_str).collect();
+        hardened_by_prepared(&refs);
+        // The stand-in name server (ADR-085) the same: its builder writes none of the five.
+        let args = crate::name_server::start_args("sv-1-net", "sv-1-dns");
         let refs: Vec<&str> = args.iter().map(String::as_str).collect();
         hardened_by_prepared(&refs);
     }
