@@ -435,7 +435,7 @@ pub fn compliance(report: &Report) -> String {
                     line.id,
                     crate::threats::stride_words(&line.stride)
                 )),
-                cell(line.status.label()),
+                cell(&line.shown()),
                 cell(&line.element_name),
                 cell(&line.description),
                 cell(&crate::threats::evidence_words(line))

@@ -194,6 +194,31 @@ fn checked_requirements_make_a_threat_checked_in_part_and_never_more() {
 }
 
 #[test]
+fn a_threat_checked_in_part_says_how_many_of_its_requirements_were_checked() {
+    // One of three looked at reads as one of three, not as all three checked in part (backlog 0333).
+    let lines = evaluate(
+        &rules(),
+        &context(&[("auth", true)]),
+        &[
+            line("V6.2.1", Status::NotVerified),
+            line("V6.2.4", Status::Checked),
+            line("V7.2.3", Status::NotVerified),
+        ],
+    );
+    let t = lines.iter().find(|t| t.id == "T-01").unwrap();
+    assert_eq!(t.status, ThreatStatus::CheckedInPart);
+    assert_eq!(t.shown(), "checked in part: 1 of 3 requirements checked");
+    // The other statuses read as their label.
+    let found = evaluate(
+        &rules(),
+        &context(&[("auth", true)]),
+        &[line("V6.2.1", Status::NeedsAttention)],
+    );
+    let t = found.iter().find(|t| t.id == "T-01").unwrap();
+    assert_eq!(t.shown(), "found");
+}
+
+#[test]
 fn a_threat_nothing_has_looked_at_is_not_verified() {
     let lines = evaluate(
         &rules(),

@@ -672,7 +672,7 @@ pub fn page(report: &Report) -> String {
                 "<tr><td><code>{}</code> {}</td><td class=\"{class}\">{}</td><td>{}</td><td>{}</td><td>{}</td></tr>\n",
                 escape(&line.id),
                 escape(crate::threats::stride_words(&line.stride)),
-                escape(line.status.label()),
+                escape(&line.shown()),
                 escape(&line.element_name),
                 escape(&line.description),
                 escape(&crate::threats::evidence_words(line))
