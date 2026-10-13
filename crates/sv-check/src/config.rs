@@ -53,7 +53,10 @@ impl ConfigReport {
                     Verified::new(id, requirement_ids, "the files this check reads".to_owned());
                 // The `.gitignore` check reads the app's root only, and V13.3.1 speaks of every secret in the
                 // source, so its pass is one sample of that (backlog 0006 part 4; ADR-090).
-                let credit = if id == GITIGNORE_COVERS_ENV {
+                // A lockfile that pins every version is the inventory half of V15.1.2; whether each library comes
+                // from a trusted, continually maintained repository is not read, so its pass is in part (backlog
+                // 0307; ADR-053).
+                let credit = if id == GITIGNORE_COVERS_ENV || id == "config.versions-pinned" {
                     credit.in_part()
                 } else {
                     credit
@@ -1639,12 +1642,13 @@ mod tests {
             r#"{"packages":{"":{"name":"x"},"node_modules/express":{"version":"4.19.2"}}}"#,
         )
         .unwrap();
-        assert!(
-            check_dir(&dir)
-                .passed
-                .iter()
-                .any(|p| p.check_id == "config.versions-pinned")
-        );
+        let passed = check_dir(&dir).passed;
+        let credit = passed
+            .iter()
+            .find(|p| p.check_id == "config.versions-pinned")
+            .expect("a lockfile that pins passes");
+        // In part: the versions are pinned, and where each library comes from is not read (backlog 0307).
+        assert!(credit.in_part, "{credit:?}");
         fs::remove_dir_all(&dir).ok();
     }
 
