@@ -1,6 +1,6 @@
 # From the gap analysis of 7 October 2026: findings for any session to pick up
 
-**Status:** partly done: part 21's outside-tool half, folded into the owner's next loop trial
+**Status:** done, 13 October 2026
 
 Asked for by the owner on 7
 October 2026 ("please include everything else on the backlog for other sessions to pick up as they can"). Each
@@ -955,3 +955,5 @@ names a `read`; held by `an_owner_taken_from_the_request_on_a_create_is_found` a
 `owner_field_tests.rs`. It is not in `burst.rs`, which one review had named. Parts 18, 22(d), and 22(e) were read too,
 and are built. What remains is part 21's outside-tool run, which is a trial rather than code. The work of sending more
 samples, so that checks marked "checked in part" can earn a plain credit, is 0232, which is not built.
+
+**Done, 13 October 2026** (the trial's cleanup, at the owner's word): every part's own status line already said done; the last, part 21's outside-tool half, was marked done by 263db4d9 (#1669, the second loop trial's results). Only this item's status line was stale.
