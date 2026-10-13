@@ -103,11 +103,19 @@ const PROBE_TMPFS: &str = "/tmp:rw,noexec,nosuid,size=16m";
 /// `--internal` stops traffic leaving for the internet, but the bridge's gateway address is the host
 /// itself (on Docker Desktop and Colima, the virtual machine), so without one of these the app could
 /// reach anything listening there (the deep review of 4 October 2026, S2). Containers on the network
-/// still reach one another. The first is Docker's own option for an internal network with no gateway
-/// (Docker 28 and later); the second is the older one. Which was used is said if the check fails.
-const NO_GATEWAY: &[&str] = &[
-    "com.docker.network.bridge.gateway_mode_ipv4=isolated",
-    "com.docker.network.bridge.inhibit_ipv4=true",
+/// still reach one another. The first asks Docker (28 and later) for no gateway over IPv4 or IPv6:
+/// a daemon set to give new networks IPv6 gives the internal network an IPv6 gateway too, which is
+/// the host just the same (backlog 0300). The second asks it of IPv4 alone, the third is the older
+/// IPv4 option. Which was used is said if the check fails, and the gateway check knocks on every
+/// gateway of either family, so a daemon that took an option and left an IPv6 gateway open is still
+/// caught.
+const NO_GATEWAY: &[&[&str]] = &[
+    &[
+        "com.docker.network.bridge.gateway_mode_ipv4=isolated",
+        "com.docker.network.bridge.gateway_mode_ipv6=isolated",
+    ],
+    &["com.docker.network.bridge.gateway_mode_ipv4=isolated"],
+    &["com.docker.network.bridge.inhibit_ipv4=true"],
 ];
 /// A port the gateway check knocks on: whatever answers there, open or refused, is the host's stack
 /// answering, which is what the fence must not allow.
@@ -619,12 +627,14 @@ impl DockerBackend {
         // 1. The fence. Without a gateway address when the daemon allows one of the ways; a daemon that
         //    refuses both gets the plain internal network, and the gateway check below decides.
         let mut made_with = None;
-        for option in NO_GATEWAY {
-            if self
-                .docker(&["network", "create", "--internal", "-o", option, &network])
-                .is_ok_and(|(code, _)| code == 0)
-            {
-                made_with = Some(*option);
+        for options in NO_GATEWAY {
+            let mut args = vec!["network", "create", "--internal"];
+            for option in *options {
+                args.extend(["-o", option]);
+            }
+            args.push(&network);
+            if self.docker(&args).is_ok_and(|(code, _)| code == 0) {
+                made_with = Some(*options);
                 break;
             }
         }
@@ -651,7 +661,10 @@ impl DockerBackend {
         self.verify_fenced(&network)?;
         let network_made = made_with.map_or(
             "plain internal: Docker refused both ways of leaving out a gateway".to_owned(),
-            |o| format!("with `{o}`"),
+            |options| {
+                let named: Vec<String> = options.iter().map(|o| format!("`{o}`")).collect();
+                format!("with {}", named.join(" and "))
+            },
         );
         // 1b'. And that nothing on it can reach the host through the bridge's gateway, which
         //      `--internal` alone leaves open.
@@ -1908,7 +1921,7 @@ impl DockerBackend {
         let targets = gateway_targets(&config);
         if targets.is_empty() {
             return fail(format!(
-                "Docker names no IPv4 gateway or subnet for the network `{network}` ({}), so whether the \
+                "Docker names no gateway or subnet for the network `{network}` ({}), so whether the \
                  app could reach this computer through it cannot be checked",
                 config.trim()
             ));
@@ -1922,10 +1935,12 @@ impl DockerBackend {
             format!("nc -vv -w 3 127.0.0.1 {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-self=$?\"");
         // An address that is the knocking container's own is not knocked on: with no gateway, Docker
         // gives the subnet's first address to the first container, which is this one, and its own
-        // refusal would read as the host answering. CI found exactly that.
+        // refusal would read as the host answering. CI found exactly that. Both families are read, since
+        // an IPv6 gateway is knocked on as well (backlog 0300); a netcat that cannot reach an IPv6
+        // address at all says so in words the verdict does not take for a fence, and the run stops.
         for target in &targets {
             script.push_str(&format!(
-                "; case \" $(ip -4 -o addr show 2>/dev/null) \" in *\"inet {target}/\"*) echo \"sv-own={target}\";; \
+                "; case \" $(ip -o addr show 2>/dev/null) \" in *\"inet {target}/\"*|*\"inet6 {target}/\"*) echo \"sv-own={target}\";; \
                  *) nc -vv -w 3 {target} {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-gateway=$?\";; esac"
             ));
         }
@@ -2887,21 +2902,34 @@ enum GatewayVerdict {
     Unknown(String),
 }
 
-/// The addresses to knock on for a network: every IPv4 gateway Docker names, and the first address of
-/// every IPv4 subnet, where a gateway would be. Read from `Gateway|Subnet` pairs, space-separated.
+/// The addresses to knock on for a network: every gateway Docker names, and the first address of every
+/// subnet, where a gateway would be, IPv4 and IPv6 alike. Until backlog 0300 only IPv4 was read, so an
+/// IPv6 gateway, the host just as the IPv4 one is, was never knocked on. Read from `Gateway|Subnet`
+/// pairs, space-separated.
 fn gateway_targets(config: &str) -> Vec<String> {
+    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
     let mut out: Vec<String> = Vec::new();
     for pair in config.split_whitespace() {
         let (gateway, subnet) = pair.split_once('|').unwrap_or((pair, ""));
-        if let Ok(ip) = gateway.parse::<std::net::Ipv4Addr>() {
+        if let Ok(ip) = gateway.parse::<IpAddr>() {
             out.push(ip.to_string());
         }
-        if let Some((base, bits)) = subnet.split_once('/')
-            && let (Ok(base), Ok(bits)) = (base.parse::<std::net::Ipv4Addr>(), bits.parse::<u32>())
-            && bits < 31
-        {
-            let mask = u32::MAX.checked_shl(32 - bits).unwrap_or(0);
-            out.push(std::net::Ipv4Addr::from((u32::from(base) & mask) + 1).to_string());
+        let Some((base, bits)) = subnet.split_once('/') else {
+            continue;
+        };
+        let Ok(bits) = bits.parse::<u32>() else {
+            continue;
+        };
+        match base.parse::<IpAddr>() {
+            Ok(IpAddr::V4(base)) if bits < 31 => {
+                let mask = u32::MAX.checked_shl(32 - bits).unwrap_or(0);
+                out.push(Ipv4Addr::from((u32::from(base) & mask) + 1).to_string());
+            }
+            Ok(IpAddr::V6(base)) if bits < 127 => {
+                let mask = u128::MAX.checked_shl(128 - bits).unwrap_or(0);
+                out.push(Ipv6Addr::from((u128::from(base) & mask) + 1).to_string());
+            }
+            _ => {}
         }
     }
     out.sort();
@@ -5031,12 +5059,25 @@ mod gateway_tests {
             gateway_targets("172.20.0.1|172.20.0.0/16 "),
             vec!["172.20.0.1"]
         );
+        assert!(gateway_targets("").is_empty());
+    }
+
+    #[test]
+    fn an_ipv6_gateway_is_knocked_on_as_well() {
+        // Backlog 0300: a daemon that gives new networks IPv6 gives the internal one an IPv6 gateway,
+        // the host just as the IPv4 one is. Until then these were dropped, and the fence passed.
         assert_eq!(
             gateway_targets("10.9.0.254|10.9.0.0/24 |fd00::/64 "),
-            vec!["10.9.0.1", "10.9.0.254"]
+            vec!["10.9.0.1", "10.9.0.254", "fd00::1"]
         );
-        assert!(gateway_targets("").is_empty());
-        assert!(gateway_targets("|fd00::/64 ").is_empty());
+        assert_eq!(gateway_targets("|fd00:9::/64 "), vec!["fd00:9::1"]);
+        assert_eq!(
+            gateway_targets("172.18.0.1|172.18.0.0/16 fd5e:1::1|fd5e:1::/64 "),
+            vec!["172.18.0.1", "fd5e:1::1"]
+        );
+        // The host part masked off, as for IPv4, and a subnet too small to have a gateway left alone.
+        assert_eq!(gateway_targets("|fd00:9::7/64 "), vec!["fd00:9::1"]);
+        assert!(gateway_targets("|fd00::5/127 ").is_empty());
     }
 
     #[test]
