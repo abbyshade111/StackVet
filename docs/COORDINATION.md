@@ -56,8 +56,13 @@ makes those collisions stop, and what it costs.
    hands, or frees it when the list is empty. The two may land on
    `main` in either order: `check` reads a held item marked done as the normal hand-back, not a disagreement (the
    first two finished items, 0280 and 0278, each turned their own pull request red before it did).
-5. A red `main` goes to exactly one session, through the same `assign`, so two never fix it together.
-6. At the end: `measure --since <day> --arms` counts what git shows, and the write-up goes in the item.
+5. A hand-out that should not have gone out is taken back with `withdraw <number> --why "..."`: the item's status
+   line goes back to open, it returns to the queue on hold with the reason, and nothing is counted as finished. Added
+   13 October 2026, when 0263 went out from the queue though the owner had set it aside in its own text, below a
+   status line that still read open; the no-context builder read the whole item and asked. So the orchestrator reads
+   each item whole before assigning it, not only its status line and Where line.
+6. A red `main` goes to exactly one session, through the same `assign`, so two never fix it together.
+7. At the end: `measure --since <day> --arms` counts what git shows, and the write-up goes in the item.
 
 The commands are listed at the top of `tools/coordination.py`, and `--self-test` exercises every one, their refusals,
 the measures on a history made for the test, and the no-context clone.
