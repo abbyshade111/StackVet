@@ -339,6 +339,14 @@ jobs:
     # image and in a native sv, before comparing what the two found. The runner is an ordinary user,
     # so the file the image writes has to come out owned by that user, and a run as root over the
     # runner's folder is what shows `safe.directory` is needed. Built, not published.
+    #
+    # Skipped on the short path (backlog 0349): a pull request that changes only backlog items
+    # changes nothing the image is built from, and this job took about four minutes and a round of
+    # Docker Hub pulls on each one. A pull request that changes anything else, and every push and
+    # nightly run on main, still builds and drives the image. `publish` needs this job and runs
+    # only on a push to main, where the whole suite always runs, so it is unaffected.
+    needs: scope
+    if: needs.scope.outputs.full != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
