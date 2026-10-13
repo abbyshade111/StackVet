@@ -1,6 +1,6 @@
 # Four readers of requirements.txt, each with its own comment and option rules, and no test holding them to one another
 
-**Status:** claimed by builder-full, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: medium. Verified against the code by the reviewing session before filing.
 
