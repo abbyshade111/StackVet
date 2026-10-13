@@ -397,6 +397,7 @@ fn scan_piece(
 ) -> Vec<Finding> {
     let mut out = Vec::new();
     let env_file = is_env_file(relative);
+    let lines = Lines::new(text);
 
     for (rule, re) in &rules.rules {
         for m in re.find_iter(text) {
@@ -422,7 +423,7 @@ fn scan_piece(
                 confidence: rule.confidence,
                 location: Location {
                     file: relative.to_owned(),
-                    line: first_line - 1 + line_of(text, m.start()),
+                    line: first_line - 1 + lines.of(m.start()),
                 },
                 secret: Some(Secret::redact(value)),
                 requirement_ids: rule.requirement_ids.clone(),
@@ -532,6 +533,7 @@ fn url_password_findings(
     keep: &std::ops::Range<usize>,
 ) -> Vec<Finding> {
     let mut out = Vec::new();
+    let lines = Lines::new(text);
     for caps in URL_PASSWORD.captures_iter(text) {
         let Some(password) = url_password(&caps) else {
             continue;
@@ -554,7 +556,7 @@ fn url_password_findings(
             confidence: Confidence::Medium,
             location: Location {
                 file: relative.to_owned(),
-                line: first_line - 1 + line_of(text, password.start()),
+                line: first_line - 1 + lines.of(password.start()),
             },
             secret: Some(Secret::redact(password.as_str())),
             requirement_ids: vec!["V13.3.1".into(), "SBD-AC-05".into()],
@@ -830,6 +832,7 @@ fn assignment_findings(
     keep: &std::ops::Range<usize>,
 ) -> Vec<Finding> {
     let mut out = Vec::new();
+    let lines = Lines::new(text);
     let mut reported = std::collections::HashSet::new();
     for Named {
         name: name_match,
@@ -923,7 +926,7 @@ fn assignment_findings(
             confidence,
             location: Location {
                 file: relative.to_owned(),
-                line: first_line - 1 + line_of(text, value_match.start()),
+                line: first_line - 1 + lines.of(value_match.start()),
             },
             secret: Some(Secret::redact(value)),
             requirement_ids: ASSIGNMENT_REQUIREMENTS.iter().map(|r| (*r).to_owned()).collect(),
@@ -1091,12 +1094,36 @@ fn block_end(text: &str, header: &str, after: usize) -> usize {
         .map_or(text.len(), |at| after + at + end.len())
 }
 
-fn line_of(text: &str, byte_offset: usize) -> usize {
-    text[..byte_offset.min(text.len())]
-        .bytes()
-        .filter(|b| *b == b'\n')
-        .count()
-        + 1
+#[cfg(test)]
+mod lines_tests;
+
+/// The line each place in a text is on, 1-indexed, from where its line breaks are, found once and only if a
+/// line is asked for. Until backlog 0352 every finding counted the breaks from the start of its file again.
+struct Lines<'t> {
+    text: &'t str,
+    breaks: std::cell::OnceCell<Vec<usize>>,
+}
+
+impl<'t> Lines<'t> {
+    fn new(text: &'t str) -> Self {
+        Lines {
+            text,
+            breaks: std::cell::OnceCell::new(),
+        }
+    }
+
+    /// The line `byte_offset` is on: one more than the line breaks before it.
+    fn of(&self, byte_offset: usize) -> usize {
+        let breaks = self.breaks.get_or_init(|| {
+            self.text
+                .bytes()
+                .enumerate()
+                .filter(|(_, b)| *b == b'\n')
+                .map(|(at, _)| at)
+                .collect()
+        });
+        breaks.partition_point(|&at| at < byte_offset) + 1
+    }
 }
 
 /// Runs the secret rules over every readable text file in `app_dir`.
