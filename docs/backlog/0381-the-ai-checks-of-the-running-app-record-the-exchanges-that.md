@@ -1,6 +1,6 @@
 # The AI checks of the running app record the exchanges that show what they found
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** partly done: the AI findings that rest on the app's log, a burst of messages, the kill switch's second copy, a stored injection, or an agent's loop name no question yet; and the words sv sent are not kept, only the app's answer
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
