@@ -1,6 +1,6 @@
 # No delta mode: an unchanged list of findings is re-read by the AI tool after every edit
 
-**Status:** open
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: MCP token cost. Severity: high. Verified against the code by the reviewing session before filing.
 
