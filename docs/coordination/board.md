@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: nothing
-- builder-none — arm: none — holds: 0355 (since 2026-10-13) — next: 0365
+- builder-none — arm: none — holds: nothing
 
 ## Queue
 
@@ -20,6 +20,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 7. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
 8. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
 9. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
+10. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: the item says build only if a real report's timings show the cost, and none does; given back open at the trial's end, nothing built (builder-none and the owner, 13 Oct)
 
 ## Log
 
@@ -321,3 +322,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 16:59 — finished 0339 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1743
 - 2026-10-13 16:59 — finished 0410 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1744; now holds 0414
 - 2026-10-13 16:59 — finished 0414 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1745; now holds 0355
+- 2026-10-13 17:12 — finished 0355 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1747; now holds 0365
+- 2026-10-13 17:12 — withdrew 0365 from builder-none (none), on hold: the item says build only if a real report's timings show the cost, and none does; given back open at the trial's end, nothing built (builder-none and the owner, 13 Oct)
