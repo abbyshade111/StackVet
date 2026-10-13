@@ -1512,6 +1512,10 @@ fn binds_name(body: tree_sitter::Node, name: &str, source: &[u8]) -> bool {
 ///
 /// Said only when the calls are all there is to see: at least one call, every use of the name a
 /// call or its own definition or an import, and no call that spreads its arguments (`*args`).
+#[cfg(test)]
+#[path = "ast/callers_tests.rs"]
+mod callers_tests;
+
 fn note_callers(
     rules: &AstRules,
     listing: &sv_scan::files::Listing,
@@ -1528,11 +1532,17 @@ fn note_callers(
     if parser.set_language(&grammar).is_err() {
         return;
     }
+    // Only a file whose text holds a function's name can call it: `calls_of` reads the identifiers spelled
+    // that way, and nothing else. The rest are not parsed again (backlog 0351); in most apps that is nearly all.
+    let names: Vec<&str> = pending.iter().map(|d| d.function.as_str()).collect();
     let files: Vec<(String, String, tree_sitter::Tree)> = listing
         .app_files()
         .filter(|e| e.language == Some("python"))
         .filter_map(|e| {
             let text = e.read_text().ok()?;
+            if !names.iter().any(|name| text.contains(name)) {
+                return None;
+            }
             let tree = parser.parse(&text, None)?;
             Some((e.relative.clone(), text, tree))
         })
