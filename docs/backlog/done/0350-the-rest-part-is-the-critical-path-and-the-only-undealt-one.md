@@ -1,6 +1,6 @@
 # The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling
 
-**Status:** claimed by builder-full, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: test and CI time. Severity: medium. Verified against the code by the reviewing session before filing.
 
