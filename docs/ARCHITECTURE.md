@@ -129,7 +129,9 @@ terminal command the person can run.
   to it is sent from inside; `sv` opens no network connection of its own but `sv probe` and the install step (ADR-019,
   ADR-027, ADR-052). Verified by asking Docker, not by trusting the flag.
 - **What `sv` writes into somebody's folder** is the report folder (the record of the build loop, ADR-076, included),
-  `security-notes.md`, and its section of `AGENTS.md`, and nothing else (ADR-017); never through a link.
+  `security-notes.md`, its section of `AGENTS.md`, and, when the owner runs `sv review` at their own terminal, what
+  they recorded and its seal in `stackvet.toml` and seal lines in `design-decisions.md`; nothing else (ADR-017, with
+  its Later entry of 5 October 2026); never through a link.
 - **Every decision has a record** in the same pull request, and the "Decision records" check holds it (`docs/adr/README.md`).
 
 ## Where to look
