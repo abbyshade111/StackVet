@@ -1468,6 +1468,8 @@ fn a_complete_bill_of_materials_says_so_and_an_empty_one_does_not() {
     };
     let claim = completeness_verified(&complete).expect("a complete list may say it is one");
     assert_eq!(claim.requirement_ids, vec!["V15.1.2".to_string()]);
+    // The inventory half of V15.1.2: where each library comes from is not read (backlog 0307).
+    assert!(claim.in_part, "{claim:?}");
 
     // An app with no dependencies `sv` could find is far more often an app whose manifests were
     // never read. Claiming a complete inventory of nothing is the easiest false green line here.

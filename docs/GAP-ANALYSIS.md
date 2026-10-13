@@ -390,3 +390,41 @@ answer (3.5), and the `--fail-on` advice (6.3).
 - The coverage generator checks itself and the credit census holds the documents to what the tests really credit.
 - The trials are written down before they run, with dated amendments and "no reading" where the data cannot decide.
 - The backlog records honestly who decided what, the duplicated builds, and each review's fault count.
+
+## Since (reviewed 13 October 2026)
+
+The body above is the reading of 7 October 2026 and stays as it was written. Since then these findings were built,
+each checked in the code on 13 October; a finding not listed here is as the body describes it.
+
+- **1.1** The app's own tests are a tier of their own, *tested only by the app's own tests*, below an automated check, and
+  never "checked" (ADR-050).
+- **1.3** The secrets-file check reads the history of the default branch, not only what git tracks now
+  (`crates/sv-check/src/git.rs`, `ever_added`, called from `crates/sv-check/src/config.rs`).
+- **1.7** One read of another user's record earns *checked in part*, not "checked" (ADR-053).
+- **3.1** Packages are installed before the run, outside the fence, in a container that sees only the dependency
+  files, when the owner sets `install = true` (ADR-052).
+- **3.6** Templates and notebooks are read for what they can hold, and a file that cannot be read is named rather than
+  skipped silently (ADR-054).
+- **4.1** The answers that set the level are shown for the owner to confirm in `sv review` (ADR-024, Later, 9 October
+  2026), and the report says under the level line why the app is held to it and on whose word.
+- **5.1** `sv check` reads the manifest when it is there, and a file `sv` cannot read stops the run, as it stops
+  `sv report`.
+- **5.2** GETTING-STARTED gives the address of each kind of package's OSV download.
+- **5.3, all but one bullet.** The guide gives a check that the tool is connected, and the prompt and `AGENTS.md`
+  rules tell the tool to stop when it is not (`crates/sv-cli/tests/did_it_connect.rs`); someone with only Docker
+  records their answers through the container (`review_container.rs`); `sv report --tools` says on screen when a tool
+  is not there, and an install hint reads as a sentence (`tools_on_screen.rs`); the MCP server writes `sv`'s own next
+  step outside the fence it puts around the app's text; the guide has "Keeping StackVet up to date"
+  (`guide_update.rs`); `sv init > stackvet.toml` writes a file `sv` can read (`init_redirect.rs`); and
+  `tools/install.sh` builds with `--locked`, and the guide says the build folder can be deleted. Not checked for
+  this note: what `sv check` lists for an empty folder.
+- **6.2** The short version says which level the app was held to, and what is left out of the numbers because of it
+  (`crates/sv-report/src/bluf.rs`).
+- **7.1** The tests must pass before a pull request merges into `main`, and every commit on `main` is tested
+  (ADR-051).
+- **7.2** In CI, `SV_REQUIRE_BACKEND=1` makes a missing container backend a failure, so the fence tests cannot pass
+  without testing the fence.
+- **7.5** The backlog is one file per item, each with a status line (ADR-061).
+
+So of the short version's four places, the second (apps that install packages) and the fourth (the project's own
+safety nets) are answered in large part; the first and third are answered only where listed above.

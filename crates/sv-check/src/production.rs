@@ -696,6 +696,7 @@ fn finding(rule: &Rule, description: String, host: &str) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: rule.rule_id.to_owned(),
         title: rule.title.to_owned(),
         severity: rule.severity,
@@ -1190,6 +1191,97 @@ fn curl_program() -> std::ffi::OsString {
     "curl".into()
 }
 
+/// The most `sv probe` keeps of what one `curl` prints on each of its two streams (backlog 0327). The headers, the
+/// certificate chain after them, and an error are far smaller; a site answering with header lines that never end would
+/// otherwise fill this computer's memory for the 15 seconds curl is given. Past it, curl is stopped and the request is
+/// said not to have been read.
+const CURL_OUTPUT_LIMIT: u64 = 1024 * 1024;
+
+/// What one `curl` printed, each stream kept to `CURL_OUTPUT_LIMIT`.
+struct Printed {
+    status: std::process::ExitStatus,
+    stdout: Vec<u8>,
+    stderr: Vec<u8>,
+    /// One stream printed more than the limit, and curl was stopped for it.
+    cut: bool,
+}
+
+/// Runs `command` and reads what it prints, keeping at most `limit` bytes of each stream. A command that prints more
+/// is stopped, rather than read to its end.
+fn run_capped(command: &mut std::process::Command, limit: u64) -> std::io::Result<Printed> {
+    use std::io::Read;
+    use std::process::Stdio;
+    let mut child = command
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()?;
+    let mut stdout = child.stdout.take().expect("piped");
+    let mut stderr = child.stderr.take().expect("piped");
+    // One byte past the limit says it was passed. Standard error is read beside it, so neither pipe fills while the
+    // other is read.
+    let err = std::thread::spawn(move || {
+        let mut kept = Vec::new();
+        let _ = (&mut stderr).take(limit + 1).read_to_end(&mut kept);
+        kept
+    });
+    let mut out = Vec::new();
+    let _ = (&mut stdout).take(limit + 1).read_to_end(&mut out);
+    let mut cut = out.len() as u64 > limit;
+    if cut {
+        let _ = child.kill();
+    }
+    drop(stdout);
+    let mut err = err.join().unwrap_or_default();
+    if err.len() as u64 > limit {
+        cut = true;
+        let _ = child.kill();
+    }
+    let status = child.wait()?;
+    out.truncate(limit as usize);
+    err.truncate(limit as usize);
+    Ok(Printed {
+        status,
+        stdout: out,
+        stderr: err,
+        cut,
+    })
+}
+
+/// Why a request whose answer was cut is not read: the start of an answer is not the answer.
+fn too_long() -> String {
+    format!(
+        "the answer was longer than {} MB, far longer than any site's headers, so curl was stopped and it was not read",
+        CURL_OUTPUT_LIMIT / (1024 * 1024)
+    )
+}
+
+/// The answer in what one `curl` printed: none when it printed more than the limit, or failed.
+fn answer_from(out: &Printed, mark: &str) -> Answer {
+    if out.cut {
+        return Answer {
+            revocation: None,
+            status: 0,
+            headers: Vec::new(),
+            failure: Some(too_long()),
+        };
+    }
+    if !out.status.success() {
+        return Answer {
+            revocation: None,
+            status: 0,
+            headers: Vec::new(),
+            failure: Some(
+                String::from_utf8_lossy(&out.stderr)
+                    .trim()
+                    .trim_start_matches("curl: ")
+                    .to_owned(),
+            ),
+        };
+    }
+    read_curl_output(&String::from_utf8_lossy(&out.stdout), mark)
+}
+
 /// The real fetcher: `curl`, with the flags that make the limits above true rather than intended.
 ///
 /// `curl` rather than a Rust HTTP client for the reason the tool adapters are external programs: it
@@ -1288,10 +1380,10 @@ impl Curl {
         args.extend(extra.iter().copied());
         args.push(url);
 
-        let out = match std::process::Command::new(curl_program())
-            .args(self.args(&args))
-            .output()
-        {
+        let out = match run_capped(
+            std::process::Command::new(curl_program()).args(self.args(&args)),
+            CURL_OUTPUT_LIMIT,
+        ) {
             Ok(out) => out,
             Err(e) => {
                 return Answer {
@@ -1302,20 +1394,7 @@ impl Curl {
                 };
             }
         };
-        if !out.status.success() {
-            return Answer {
-                revocation: None,
-                status: 0,
-                headers: Vec::new(),
-                failure: Some(
-                    String::from_utf8_lossy(&out.stderr)
-                        .trim()
-                        .trim_start_matches("curl: ")
-                        .to_owned(),
-                ),
-            };
-        }
-        read_curl_output(&String::from_utf8_lossy(&out.stdout), &mark)
+        answer_from(&out, &mark)
     }
 
     /// Whether `curl` is on this machine at all.
@@ -1348,8 +1427,8 @@ impl Fetch for Curl {
             ));
         }
         self.made += 1;
-        let out = match std::process::Command::new(curl_program())
-            .args(self.args(&[
+        let out = match run_capped(
+            std::process::Command::new(curl_program()).args(self.args(&[
                 // curl refuses the handshake when no stapled status comes back, with its own exit
                 // code, 91; any other failure is not an answer to this question.
                 "--cert-status",
@@ -1366,9 +1445,10 @@ impl Fetch for Curl {
                 "--output",
                 "/dev/null",
                 url,
-            ]))
-            .output()
-        {
+            ])),
+            CURL_OUTPUT_LIMIT,
+        ) {
+            Ok(out) if out.cut => return Stapling::CannotAsk(too_long()),
             Ok(out) => out,
             Err(e) => return Stapling::CannotAsk(format!("curl could not be run: {e}")),
         };
@@ -1383,11 +1463,12 @@ impl Fetch for Curl {
             ));
         }
         // Asked of curl itself, on this machine, before the request: which TLS library it uses.
-        let library = std::process::Command::new(curl_program())
-            .arg("--version")
-            .output()
-            .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
-            .unwrap_or_default();
+        let library = run_capped(
+            std::process::Command::new(curl_program()).arg("--version"),
+            CURL_OUTPUT_LIMIT,
+        )
+        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
+        .unwrap_or_default();
         self.made += 1;
         let mut args: Vec<&str> = vec![
             "--tlsv1.0",
@@ -1408,10 +1489,11 @@ impl Fetch for Curl {
         ];
         args.extend(old_tls_library_args(&library));
         args.push(url);
-        match std::process::Command::new(curl_program())
-            .args(self.args(&args))
-            .output()
-        {
+        match run_capped(
+            std::process::Command::new(curl_program()).args(self.args(&args)),
+            CURL_OUTPUT_LIMIT,
+        ) {
+            Ok(out) if out.cut => OldTls::CannotTell(too_long()),
             Ok(out) => old_tls_from(out.status.code(), &String::from_utf8_lossy(&out.stderr)),
             Err(e) => OldTls::CannotTell(format!("curl could not be run: {e}")),
         }
@@ -1566,6 +1648,9 @@ fn parse_head(text: &str) -> Answer {
 
 #[cfg(test)]
 mod curl_tests;
+
+#[cfg(test)]
+mod curl_capped_tests;
 
 #[cfg(test)]
 mod error_answer_tests;

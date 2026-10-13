@@ -502,6 +502,7 @@ fn hidden_finding(entry: &Entry, line: usize, count: usize, kinds: &[&str]) -> F
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: HIDDEN.into(),
         title: "An instruction file for the AI coding tool holds characters a person cannot see"
             .into(),

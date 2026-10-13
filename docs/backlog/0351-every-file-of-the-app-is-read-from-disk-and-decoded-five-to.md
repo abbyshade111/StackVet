@@ -1,6 +1,6 @@
 # Every file of the app is read from disk and decoded five to six times across the static stage
 
-**Status:** open
+**Status:** claimed by builder-none, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: sv run speed. Severity: medium. Verified against the code by the reviewing session before filing.
 

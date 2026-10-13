@@ -28,6 +28,7 @@ pub mod assemble;
 // One copy, in the library: the report's stages catch a panic through it, and the binary's hook records into it (0234).
 pub mod board_link;
 pub mod bundle;
+pub mod code_lines;
 pub mod compare;
 pub mod crash;
 pub mod crash_notes;
@@ -201,7 +202,7 @@ fn run_gap_reason(why: &sv_run::CannotRun) -> sv_report::GapReason {
     match why {
         CannotRun::NoBackend { .. } => GapReason::NotInstalled,
         CannotRun::NoRunCommand { .. } => GapReason::NotAsked,
-        CannotRun::BadImage { .. } => GapReason::CouldNotRead,
+        CannotRun::BadImage { .. } | CannotRun::BadHealth { .. } => GapReason::CouldNotRead,
         CannotRun::BackendFailed { .. }
         | CannotRun::NeverReady { .. }
         | CannotRun::AppFolderUnseen { .. }
@@ -719,12 +720,14 @@ pub fn adapters_examined(
         })
         .zip(adapters.all())
         .map(|(entry, adapter)| {
-            entry.with_tool(
-                run.tools
-                    .iter()
-                    .find(|(id, _)| id == &adapter.id)
-                    .map(|(_, tool)| tool.clone()),
-            )
+            entry
+                .with_tool(
+                    run.tools
+                        .iter()
+                        .find(|(id, _)| id == &adapter.id)
+                        .map(|(_, tool)| tool.clone()),
+                )
+                .as_outside_tool(&adapter.name)
         })
         .collect()
 }
@@ -1343,8 +1346,6 @@ pub fn write_bundle(
         .context("making a private folder for the report on its way into the zip")?;
     let scratch = private.path().to_path_buf();
     let written = write_report_files(report, &scratch);
-    let sbom_json =
-        serde_json::to_string_pretty(&sbom::to_cyclonedx(&sbom::build(app_abs)))? + "\n";
     let report_files: Result<Vec<(String, Vec<u8>)>> = written.and_then(|names| {
         names
             .iter()
@@ -1360,10 +1361,7 @@ pub fn write_bundle(
     let report_files = report_files?;
     refuse_a_credential_in_the_report(&rules, &report_files)?;
     entries.extend(report_files);
-    entries.push((
-        format!("{folder}/report/sbom.cdx.json"),
-        sbom_json.into_bytes(),
-    ));
+    // The bill of materials is a report file now (backlog 0382), so it is among those, and was checked with them.
 
     let made_at = bundle::utc_time(
         std::time::SystemTime::now()

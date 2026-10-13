@@ -785,6 +785,19 @@ fn with_prompt(section: &AiSection, prompt: &str) -> sv_manifest::RequestTemplat
 
 /// Asks the app's AI feature. `signed_in` is the users section and the account to sign in as when
 /// the feature needs a signed-in user.
+/// The id the questions of this suite are kept under in `seen.json`, `ai-<kind>-<n>` (backlog 0381): a finding names
+/// the questions that showed it by these, and "What StackVet saw" quotes their answers. A question asked again, after a
+/// rate limiter's wait, is kept as `…-2`.
+fn question_id(kind: &str, n: u32) -> String {
+    format!("ai-{}-{n}", kind.to_lowercase())
+}
+
+/// `found`, naming as its evidence the questions whose answers showed it (backlog 0381).
+fn on(ids: Vec<String>, mut found: crate::Finding) -> crate::Finding {
+    found.evidence = ids;
+    found
+}
+
 pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome, LogMarkers) {
     let mut out = Outcome::default();
     let mut markers = LogMarkers::default();
@@ -861,7 +874,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
         );
         let response = send_filled(
             http,
-            &format!("ai-{}", kind.to_lowercase()),
+            &question_id(kind, n),
             &with_prompt(section, &prompt),
             &mut session,
             &pages,
@@ -916,7 +929,9 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
         .as_ref()
         .is_some_and(|r| r.body.to_lowercase().contains(&format!("svraw{plain}")));
     if raw {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("PLAIN", 1)],
+            finding(
             &RAW,
             "The model service's whole response reaches the browser",
             Severity::Low,
@@ -926,6 +941,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                  holds, so the response object was passed on rather than the reply's text.",
                 section.chat.path
             ),
+        ),
         ));
     } else if shows_replies {
         // Only ever a finding: what else the page is sent was not looked at.
@@ -941,14 +957,17 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
     //     app's to write, so only its start is quoted.
     let sent: String = plain_seen.model.chars().take(80).collect();
     if floating(&plain_seen.model) {
-        out.findings.push(finding(
-            &FLOATING_SENT,
-            "The app asks for its model by a name that moves",
-            Severity::Low,
-            format!(
-                "The request the app made to its model for a message sent through {} asked for \
+        out.findings.push(on(
+            vec![question_id("PLAIN", 1)],
+            finding(
+                &FLOATING_SENT,
+                "The app asks for its model by a name that moves",
+                Severity::Low,
+                format!(
+                    "The request the app made to its model for a message sent through {} asked for \
                  the model `{}`.",
-                section.chat.path, sent
+                    section.chat.path, sent
+                ),
             ),
         ));
     } else if !sent.is_empty() {
@@ -977,14 +996,17 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
         // One request to the model, and its length limit alone (ADR-053, Later).
         .in_part());
     } else {
-        out.findings.push(finding(
-            &UNBOUNDED,
-            "The app asks its model for a reply of any length",
-            Severity::Low,
-            format!(
-                "The request the app made to its model for a message sent through {} set no \
+        out.findings.push(on(
+            vec![question_id("PLAIN", 1)],
+            finding(
+                &UNBOUNDED,
+                "The app asks its model for a reply of any length",
+                Severity::Low,
+                format!(
+                    "The request the app made to its model for a message sent through {} set no \
                  maximum length for the reply.",
-                section.chat.path
+                    section.chat.path
+                ),
             ),
         ));
     }
@@ -1018,7 +1040,9 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
         .as_ref()
         .is_some_and(|r| repeats(&r.body, &instructions))
     {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("LEAK", 3)],
+            finding(
             &LEAKED,
             "The AI feature passes on a reply that repeats its instructions",
             Severity::Medium,
@@ -1027,6 +1051,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                  the app had given it, and the app's answer carried them.",
                 section.chat.path
             ),
+        ),
         ));
     } else if shows_replies {
         let redacted = leak_answer
@@ -1106,7 +1131,9 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
         }
     ));
     if inject_seen.received {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("INJECT", 4), question_id("PLAIN", 5)],
+            finding(
             &UNSCREENED,
             "A textbook prompt injection reaches the model",
             Severity::Medium,
@@ -1115,6 +1142,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                  passed to the model as it was.",
                 section.chat.path
             ),
+        ),
         ));
     } else if !after_seen.received {
         say(
@@ -1176,7 +1204,9 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
             &mut out,
         );
     } else if image_seen.fetched || rendered {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("IMAGE", 2)],
+            finding(
             &FETCHED,
             "An address the model writes gets loaded",
             Severity::Medium,
@@ -1193,6 +1223,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                     section.chat.path
                 )
             },
+        ),
         ));
     } else {
         // Only a finding: the page may still draw the reply's markdown as an image in the browser,
@@ -1681,23 +1712,29 @@ fn retrieval_questions<F>(
         );
         return;
     }
-    out.findings.push(finding(
-        &RETRIEVAL_UNSCOPED,
-        "The AI feature searches other people's notes",
-        Severity::High,
-        "Chatting as the second test user, a question naming only what the first test user's \
+    out.findings.push(on(
+        vec![question_id("RECALL", 34), question_id("RECALL", 35)],
+        finding(
+            &RETRIEVAL_UNSCOPED,
+            "The AI feature searches other people's notes",
+            Severity::High,
+            "Chatting as the second test user, a question naming only what the first test user's \
          private note was about brought that note to the model: the app's search did not keep the \
          second user to their own."
-            .to_owned(),
+                .to_owned(),
+        ),
     ));
     if shown {
-        out.findings.push(finding(
-            &REPLY_UNFILTERED,
-            "The AI feature's answer carries another person's private note",
-            Severity::High,
-            "The first test user's private note, handed to the model for the second user's \
+        out.findings.push(on(
+            vec![question_id("RECALL", 34), question_id("RECALL", 35)],
+            finding(
+                &REPLY_UNFILTERED,
+                "The AI feature's answer carries another person's private note",
+                Severity::High,
+                "The first test user's private note, handed to the model for the second user's \
              question, came back in the answer the second user was shown."
-                .to_owned(),
+                    .to_owned(),
+            ),
         ));
     } else {
         out.not_assessed.push((
@@ -1935,7 +1972,9 @@ fn record_tool_questions<F>(
         }
     ));
     if leaked {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("FETCH", 22), question_id("FETCH", 23)],
+            finding(
             &RECORD_TOOL,
             "The AI feature's tool hands one user another user's record",
             Severity::High,
@@ -1944,6 +1983,7 @@ fn record_tool_questions<F>(
                  record the first test user created, and the tool gave it back.",
                 tool.name
             ),
+        ),
         ));
     } else if others_seen.tool_requested {
         out.verified.push(crate::Verified::new(
@@ -2249,7 +2289,9 @@ where
         if used { ", using what did not fit" } else { "" }
     ));
     if used {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("BADSHAPE", 41)],
+            finding(
             &SHAPE_UNCHECKED,
             "The AI feature uses an answer that is not in the shape it asked for",
             Severity::Medium,
@@ -2258,6 +2300,7 @@ where
                  wrong type and one field more, each carrying `SVBAD{bad}`, and the app's answer \
                  carried it."
             ),
+        ),
         ));
         return;
     }
@@ -2357,13 +2400,16 @@ where
         }
     ));
     if !shown.is_empty() {
-        out.findings.push(finding(
-            &FAILURE_SHOWN,
-            "The AI service's error reaches the person using the app",
-            Severity::Low,
-            format!(
-                "When the AI service failed, the app's answer carried {}.",
-                shown.join(" and ")
+        out.findings.push(on(
+            vec![question_id("FAIL", 31), question_id("PLAIN", 32)],
+            finding(
+                &FAILURE_SHOWN,
+                "The AI service's error reaches the person using the app",
+                Severity::Low,
+                format!(
+                    "When the AI service failed, the app's answer carried {}.",
+                    shown.join(" and ")
+                ),
             ),
         ));
     }
@@ -2414,7 +2460,9 @@ where
             ),
         ));
     } else if !answered {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("FAIL", 31), question_id("PLAIN", 32)],
+            finding(
             &FAILURE_HANDLED,
             "The AI feature stops working after its service fails once",
             Severity::Medium,
@@ -2423,6 +2471,7 @@ where
                  {} and its reply did not come back.",
                 status(&after_answer)
             ),
+        ),
         ));
     } else if failed_answer.is_some() && shown.is_empty() {
         out.verified.push(
@@ -2504,13 +2553,16 @@ where
         }
     ));
     if !traces.is_empty() {
-        out.findings.push(finding(
-            &FAILURE_SHOWN,
-            "The AI service's error reaches the person using the app",
-            Severity::Low,
-            format!(
-                "When the AI service did not answer, the app's answer carried {}.",
-                traces.join(" and ")
+        out.findings.push(on(
+            vec![question_id("HANG", 51), question_id("PLAIN", 52)],
+            finding(
+                &FAILURE_SHOWN,
+                "The AI service's error reaches the person using the app",
+                Severity::Low,
+                format!(
+                    "When the AI service did not answer, the app's answer carried {}.",
+                    traces.join(" and ")
+                ),
             ),
         ));
     }
@@ -2571,7 +2623,9 @@ where
             ),
         ));
     } else if !answered {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("HANG", 51), question_id("PLAIN", 52)],
+            finding(
             &HANG_HANDLED,
             "The AI feature stops answering while its service does not answer",
             Severity::Medium,
@@ -2581,6 +2635,7 @@ where
                  sv waits.",
                 status(&after_answer)
             ),
+        ),
         ));
     } else if held_answer.is_none() {
         out.not_assessed.push((
@@ -2651,14 +2706,17 @@ where
         }
     ));
     if carried && html && raw {
-        out.findings.push(finding(
-            &REPLY_HTML,
-            "The model's reply is written into the page as HTML",
-            Severity::High,
-            "The test model's reply carried an image tag whose failure to load runs a line of \
+        out.findings.push(on(
+            vec![question_id("MARKUP", 40)],
+            finding(
+                &REPLY_HTML,
+                "The model's reply is written into the page as HTML",
+                Severity::High,
+                "The test model's reply carried an image tag whose failure to load runs a line of \
              script, and the app's answer, a page of HTML, held that tag as it was written, so a \
              browser drawing the page runs it."
-                .to_owned(),
+                    .to_owned(),
+            ),
         ));
     }
 }
@@ -2720,24 +2778,27 @@ fn more_questions<F>(
         .in_part());
     } else {
         let only_direction = kinds == ["a right-to-left override"];
-        out.findings.push(finding(
-            &HIDDEN,
-            "A reply's hidden characters or misleading link reach the page",
-            if only_direction {
-                Severity::Low
-            } else {
-                Severity::Medium
-            },
-            format!(
-                "The test model's reply to a message sent through {} hid things in it, and the \
-                 app's answer still carried {}.{}",
-                section.chat.path,
-                kinds.join(", "),
+        out.findings.push(on(
+            vec![question_id("HIDDEN", 9)],
+            finding(
+                &HIDDEN,
+                "A reply's hidden characters or misleading link reach the page",
                 if only_direction {
-                    " An app for people who write right to left may keep that one on purpose."
+                    Severity::Low
                 } else {
-                    ""
-                }
+                    Severity::Medium
+                },
+                format!(
+                    "The test model's reply to a message sent through {} hid things in it, and the \
+                 app's answer still carried {}.{}",
+                    section.chat.path,
+                    kinds.join(", "),
+                    if only_direction {
+                        " An app for people who write right to left may keep that one on purpose."
+                    } else {
+                        ""
+                    }
+                ),
             ),
         ));
     }
@@ -2773,7 +2834,9 @@ fn more_questions<F>(
             out,
         );
     } else if shown {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("HARM", 10)],
+            finding(
             &HARMFUL,
             "A reply the moderation service flagged is shown anyway",
             Severity::High,
@@ -2782,6 +2845,7 @@ fn more_questions<F>(
                  sent through {}, was told it was violent, and its answer carried the reply.",
                 section.chat.path
             ),
+        ),
         ));
     } else if shows_replies {
         out.verified.push(crate::Verified::new(
@@ -2833,14 +2897,22 @@ fn more_questions<F>(
         ));
         // Only ever a finding: other languages and encodings were not tried.
         if !through.is_empty() {
-            out.findings.push(finding(
-                &LANGUAGES,
-                "A prompt injection blocked in English gets through in another language",
-                Severity::Medium,
-                format!(
-                    "The app stopped the textbook injection in English, and the same injection \
+            out.findings.push(on(
+                vec![
+                    question_id("INJECT", 11),
+                    question_id("INJECT", 12),
+                    question_id("INJECT", 13),
+                    question_id("INJECT", 14),
+                ],
+                finding(
+                    &LANGUAGES,
+                    "A prompt injection blocked in English gets through in another language",
+                    Severity::Medium,
+                    format!(
+                        "The app stopped the textbook injection in English, and the same injection \
                      {} reached the model.",
-                    through.join(", and ")
+                        through.join(", and ")
+                    ),
                 ),
             ));
         }
@@ -2891,7 +2963,9 @@ fn more_questions<F>(
             out,
         );
     } else if head != tail {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("LONGEND", 15)],
+            finding(
             &TRUNCATED,
             "A long message is cut short instead of refused",
             Severity::Medium,
@@ -2902,6 +2976,7 @@ fn more_questions<F>(
                 section.chat.path,
                 if head { "end" } else { "beginning" }
             ),
+        ),
         ));
     }
     // Passed on whole is only ever a step: that length is within every current model's context
@@ -3003,7 +3078,9 @@ where
             ),
         ));
     } else if !smuggled.is_empty() {
-        out.findings.push(finding(
+        out.findings.push(on(
+            vec![question_id("SMUGGLE", 16)],
+            finding(
             &HIDDEN_INPUT,
             "An instruction hidden in invisible characters reaches the model",
             Severity::Medium,
@@ -3019,6 +3096,7 @@ where
                 },
                 smuggled.join(" and ")
             ),
+        ),
         ));
     } else if partly {
         out.not_assessed.push((
@@ -3069,15 +3147,18 @@ where
         }
     ));
     if seen.received && !odd.is_empty() {
-        out.findings.push(finding(
-            &CHARSET,
-            "Characters no language needs reach the model",
-            Severity::Low,
-            format!(
-                "A message to the AI feature carried control characters and a private-use \
+        out.findings.push(on(
+            vec![question_id("ODDCHARS", 17)],
+            finding(
+                &CHARSET,
+                "Characters no language needs reach the model",
+                Severity::Low,
+                format!(
+                    "A message to the AI feature carried control characters and a private-use \
                  character, and the model was given {} as they were sent: nothing limits a \
                  message to the characters the feature needs.",
-                odd.join(" and ")
+                    odd.join(" and ")
+                ),
             ),
         ));
     } else {
@@ -3210,16 +3291,21 @@ pub fn kill_switch(
         .as_ref()
         .is_some_and(|r| (200..500).contains(&r.status))
     {
-        out.verified.push(crate::Verified::new(
-            KILL_SWITCH.rule_id,
-            KILL_SWITCH.requirement_ids,
-            format!(
-                "a copy of the app started with {switch} answered the AI feature ({}) without \
+        out.verified.push(
+            crate::Verified::new(
+                KILL_SWITCH.rule_id,
+                KILL_SWITCH.requirement_ids,
+                format!(
+                    "a copy of the app started with {switch} answered the AI feature ({}) without \
                  calling the model, where the same message reached it with the switch off; that \
                  the switch takes effect without a restart was not shown",
-                status(&answer)
-            ),
-        ));
+                    status(&answer)
+                ),
+            )
+            // A copy started with the switch on, not one switched while it ran: the "immediately" half
+            // of C9.6.1 was not shown (backlog 0304; ADR-053's in-part credit).
+            .in_part(),
+        );
     } else if answer.as_ref().is_some_and(|r| r.status >= 500) {
         // A server error cannot be told from a copy that crashed, so it is not a pass: the same status
         // rule as C2.1.3 (200 to 499 answers the request).
@@ -3922,3 +4008,9 @@ mod model_html_tests;
 mod stored_injection_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod kill_switch_in_part_tests;
+
+#[cfg(test)]
+mod evidence_tests;

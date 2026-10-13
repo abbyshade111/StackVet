@@ -12,6 +12,8 @@
 //! visible rather than assumed.
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -187,6 +189,11 @@ pub struct Finding {
     /// fingerprint here. Empty until the report gathers them.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub also_on_this_line: Vec<Finding>,
+    /// The outside tool's own page about the rule that fired, from its SARIF `helpUri`, when that is a plain web
+    /// address (`crate::adapters::kept_help_uri`); `None` for `sv`'s own rules and a tool that gives none (backlog
+    /// 0378).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub help_uri: Option<String>,
     /// Why the report lists the finding apart though nothing about its file or rule says so: it is
     /// about requirements the app is not held to, or an outside tool's finding about requirements
     /// `sv`'s own check of the running app verified in the same run (`Outranked`). `None` until the
@@ -488,8 +495,9 @@ pub fn is_test_path(path: &str) -> bool {
 /// make either more certain. It takes every requirement and CWE of the others, names their rules in
 /// `also_reported_by`, carries the redacted value if it had none, and says, in one line each, how
 /// `sv`'s own rules among the others rated the line, so nothing the others were evidence about and
-/// no reason for `sv`'s own rating is lost. A tool's text is not copied over: it can quote the value
-/// it found (S8), and it is named instead. (BACKLOG, family-hub item 7, 4 October 2026.)
+/// no reason for `sv`'s own rating is lost. An outside tool's title, its rule's short description, is said the
+/// same way (backlog 0380, 12 October 2026), so a second opinion is read as one; its message is not copied over,
+/// since it can quote the value it found (S8). (BACKLOG, family-hub item 7, 4 October 2026.)
 pub fn merge_same_place(findings: Vec<Finding>) -> Vec<Finding> {
     let rank = |c: Confidence| match c {
         Confidence::High => 0,
@@ -500,18 +508,26 @@ pub fn merge_same_place(findings: Vec<Finding>) -> Vec<Finding> {
     let order = |f: &Finding| (f.severity, !is_svs_own(&f.rule_id), rank(f.confidence));
     // Each group is the findings of one place, and which of them is kept so far.
     let mut groups: Vec<(Vec<Finding>, usize, Vec<String>)> = Vec::with_capacity(findings.len());
+    // The groups of each line of code, oldest first, so a finding is compared only with those of its own place
+    // (backlog 0367): the same first match as a scan of every group, without one per finding.
+    let mut at_place: HashMap<(String, usize), Vec<usize>> = HashMap::new();
     for f in findings {
-        let same = groups.iter().position(|(members, kept, cwe)| {
-            let kept = &members[*kept];
-            reads_code(kept)
-                && reads_code(&f)
-                && kept.location == f.location
-                && kept.rule_id != f.rule_id
-                && cwe.iter().any(|c| f.cwe.contains(c))
+        let place = reads_code(&f).then(|| (f.location.file.clone(), f.location.line));
+        let same = place.as_ref().and_then(|place| {
+            at_place.get(place)?.iter().copied().find(|&i| {
+                let (members, kept, cwe) = &groups[i];
+                let kept = &members[*kept];
+                reads_code(kept)
+                    && kept.rule_id != f.rule_id
+                    && cwe.iter().any(|c| f.cwe.contains(c))
+            })
         });
         match same {
             None => {
                 let cwe = f.cwe.clone();
+                if let Some(place) = place {
+                    at_place.entry(place).or_default().push(groups.len());
+                }
                 groups.push((vec![f], 0, cwe));
             }
             Some(i) => {
@@ -533,17 +549,26 @@ pub fn merge_same_place(findings: Vec<Finding>) -> Vec<Finding> {
         .map(|(mut members, kept, _)| {
             let mut keep = members.remove(kept);
             for other in members {
-                if !other.rule_id.is_empty()
-                    && other.rule_id != keep.rule_id
-                    && is_svs_own(&other.rule_id)
-                {
-                    let said = format!(
-                        "`sv`'s own rule `{}` reported this line too, as {} and {}: {}",
-                        other.rule_id,
-                        other.severity.name(),
-                        other.certainty(),
-                        other.title
-                    );
+                if !other.rule_id.is_empty() && other.rule_id != keep.rule_id {
+                    // An outside tool's title, its rule's own short description, is said as `sv`'s own are
+                    // (backlog 0380): its message is not, since it can quote the value it found (S8). The title is
+                    // already redacted, as all of a tool's text is when its report is read.
+                    let said = if is_svs_own(&other.rule_id) {
+                        format!(
+                            "`sv`'s own rule `{}` reported this line too, as {} and {}: {}",
+                            other.rule_id,
+                            other.severity.name(),
+                            other.certainty(),
+                            other.title
+                        )
+                    } else {
+                        format!(
+                            "The outside tool's rule `{}` reported this line too, as {}: {}",
+                            other.rule_id,
+                            other.severity.name(),
+                            other.title
+                        )
+                    };
                     keep.description = if keep.description.is_empty() {
                         said
                     } else {
@@ -596,14 +621,19 @@ pub fn one_per_line(findings: Vec<Finding>) -> Vec<Finding> {
     };
     let order = |f: &Finding| (f.severity, !is_svs_own(&f.rule_id), rank(f.confidence));
     let mut lines: Vec<Vec<Finding>> = Vec::with_capacity(findings.len());
+    // Which entry of `lines` holds each line of code (backlog 0367).
+    let mut at_line: HashMap<(String, usize), usize> = HashMap::new();
     for f in findings {
-        let same = lines.iter().position(|members| {
-            let first = &members[0];
-            reads_code(first) && reads_code(&f) && first.location == f.location
-        });
-        match same {
-            Some(i) => lines[i].push(f),
-            None => lines.push(vec![f]),
+        if !reads_code(&f) {
+            lines.push(vec![f]);
+            continue;
+        }
+        match at_line.entry((f.location.file.clone(), f.location.line)) {
+            Entry::Occupied(i) => lines[*i.get()].push(f),
+            Entry::Vacant(slot) => {
+                slot.insert(lines.len());
+                lines.push(vec![f]);
+            }
         }
     }
     lines
@@ -679,6 +709,9 @@ mod quoted_tests;
 mod test_information_tests;
 
 #[cfg(test)]
+mod tool_words_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -713,6 +746,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         }
     }
 
@@ -963,9 +997,18 @@ mod tests {
         assert_eq!(merged[0].rule_id, "ast.x");
         assert_eq!(merged[0].confidence, Confidence::Low);
         assert_eq!(merged[0].also_reported_by, vec!["semgrep.y".to_owned()]);
-        // A tool merged into `sv`'s finding adds no words of its own.
+        // A tool merged into `sv`'s finding adds one line, naming its rule by its title, and nothing of its message
+        // (backlog 0380; until 12 October 2026 it added nothing at all).
         assert!(
-            merged[0].description.is_empty(),
+            merged[0].description.starts_with(
+                "The outside tool's rule `semgrep.y` reported this line too, as medium: "
+            ),
+            "{}",
+            merged[0].description
+        );
+        assert_eq!(
+            merged[0].description.lines().count(),
+            1,
             "{}",
             merged[0].description
         );
@@ -1084,6 +1127,77 @@ mod tests {
             );
             assert!(merged.iter().all(|f| f.also_reported_by.is_empty()));
         }
+    }
+
+    #[test]
+    fn places_apart_in_the_list_are_still_gathered_and_kept_in_the_order_they_first_came() {
+        // Backlog 0367: the findings of a place are found by the place, not by reading every one before them.
+        // Findings of two files and a running-app finding, interleaved.
+        let probe = |line| {
+            at(
+                "probe.headers",
+                "the running app",
+                line,
+                &["CWE-79"],
+                Severity::Medium,
+            )
+        };
+        let findings = vec![
+            at(
+                "ast.sql-built-by-hand",
+                "b.js",
+                4,
+                &["CWE-89"],
+                Severity::Medium,
+            ),
+            probe(1),
+            at("semgrep.xss", "a.js", 4, &["CWE-79"], Severity::Medium),
+            at("bandit.B608", "a.js", 4, &["CWE-89"], Severity::High),
+            at("semgrep.sqli", "b.js", 4, &["CWE-89"], Severity::High),
+            probe(1),
+            at("semgrep.sqli", "a.js", 4, &["CWE-89"], Severity::Medium),
+        ];
+        let merged = merge_same_place(findings);
+        let shown: Vec<(&str, &str, Vec<&str>)> = merged
+            .iter()
+            .map(|f| {
+                (
+                    f.location.file.as_str(),
+                    f.rule_id.as_str(),
+                    f.also_reported_by.iter().map(String::as_str).collect(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            shown,
+            vec![
+                ("b.js", "semgrep.sqli", vec!["ast.sql-built-by-hand"]),
+                ("the running app", "probe.headers", vec![]),
+                ("a.js", "semgrep.xss", vec![]),
+                ("a.js", "bandit.B608", vec!["semgrep.sqli"]),
+                ("the running app", "probe.headers", vec![]),
+            ]
+        );
+        let lines = one_per_line(merged);
+        let shown: Vec<(&str, &str, usize)> = lines
+            .iter()
+            .map(|f| {
+                (
+                    f.location.file.as_str(),
+                    f.rule_id.as_str(),
+                    f.also_on_this_line.len(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            shown,
+            vec![
+                ("b.js", "semgrep.sqli", 0),
+                ("the running app", "probe.headers", 0),
+                ("a.js", "bandit.B608", 1),
+                ("the running app", "probe.headers", 0),
+            ]
+        );
     }
 
     #[test]
@@ -1287,6 +1401,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: "secrets.anthropic-key".into(),
             title: "Anthropic API key found in a file".into(),
             severity: Severity::Critical,

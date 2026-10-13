@@ -1954,10 +1954,16 @@ pub struct ResolvedClaim {
 ///
 /// The one rule that matters: `effective = claimed || found_in_code`. A claim of "no" cannot
 /// switch off a requirement the code says applies, and a claim of "yes" is honored even when
-/// nothing corroborates it. Both directions add requirements; neither removes one.
+/// nothing corroborates it. Corroboration only ever adds requirements.
 ///
-/// The asymmetry is the safety argument. A wrong claim costs the user a requirement they did not
-/// need to meet — never a requirement they needed and were told they did not.
+/// The owner's "no" does remove requirements, though, wherever the code does not contradict it
+/// (backlog 0332). With no corroborator for the condition (`ClaimState::Unverifiable`), the
+/// requirements gated on it are not applicable on the owner's word alone; with one that agrees
+/// (`ClaimState::Confirmed`), on the owner's word and the code's. That is by design, and it is
+/// labeled: the report gives each one's source as the owner's claim, and the claim's line says it
+/// was taken on the manifest's word. So a wrong "no" can cost the owner a requirement they needed,
+/// where nothing in the code could show it; a wrong "yes" only ever costs one they did not need.
+/// The asymmetry protects against what the code shows, not against what the owner says.
 pub fn resolve(
     manifest: &Manifest,
     corroboration: &dyn Fn(Condition) -> Option<bool>,

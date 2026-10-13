@@ -76,6 +76,7 @@ fn finding(rule: &Rule, host: &str, description: String) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: rule.rule_id.to_owned(),
         title: rule.title.to_owned(),
         severity: Severity::Low,
@@ -338,16 +339,43 @@ impl Dns for SystemDns {
         };
         let socket = std::net::UdpSocket::bind(bind).map_err(|e| e.to_string())?;
         socket
-            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
-            .map_err(|e| e.to_string())?;
-        socket
             .send_to(&query, (server, 53))
             .map_err(|e| format!("the resolver at {server} could not be reached ({e})"))?;
         let mut buf = [0u8; 4096];
-        let (n, _) = socket
-            .recv_from(&mut buf)
-            .map_err(|_| format!("the resolver at {server} did not answer"))?;
+        let n = answer_from(
+            &socket,
+            (server, 53).into(),
+            std::time::Duration::from_secs(5),
+            &mut buf,
+        )?;
         https_answer(id, &buf[..n])
+    }
+}
+
+/// Waits for the answer from `resolver` alone: a datagram from any other sender is dropped and the wait goes on,
+/// until `wait` has passed in all. With the random id (`query_id`) this is the other half of taking only the
+/// resolver's answer: something on the local network that answers first, with the right id guessed, is not read
+/// (backlog 0328; ADR-027, Later). Returns the length of the answer in `buf`.
+fn answer_from(
+    socket: &std::net::UdpSocket,
+    resolver: std::net::SocketAddr,
+    wait: std::time::Duration,
+    buf: &mut [u8],
+) -> Result<usize, String> {
+    let silent = || format!("the resolver at {} did not answer", resolver.ip());
+    let deadline = std::time::Instant::now() + wait;
+    loop {
+        let left = deadline.saturating_duration_since(std::time::Instant::now());
+        if left.is_zero() {
+            return Err(silent());
+        }
+        socket
+            .set_read_timeout(Some(left))
+            .map_err(|e| e.to_string())?;
+        let (n, from) = socket.recv_from(buf).map_err(|_| silent())?;
+        if from == resolver {
+            return Ok(n);
+        }
     }
 }
 
@@ -357,6 +385,27 @@ mod id_tests;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_the_resolver_asked_is_listened_to() {
+        // Another sender answers first, then the resolver: the resolver's answer is the one read (backlog 0328).
+        let asking = std::net::UdpSocket::bind("127.0.0.1:0").unwrap();
+        let resolver = std::net::UdpSocket::bind("127.0.0.1:0").unwrap();
+        let other = std::net::UdpSocket::bind("127.0.0.1:0").unwrap();
+        let to = asking.local_addr().unwrap();
+        other.send_to(b"forged", to).unwrap();
+        resolver.send_to(b"genuine", to).unwrap();
+        let mut buf = [0u8; 64];
+        let wait = std::time::Duration::from_secs(5);
+        let n = answer_from(&asking, resolver.local_addr().unwrap(), wait, &mut buf).unwrap();
+        assert_eq!(&buf[..n], b"genuine");
+
+        // Only another sender: nothing is read, and the wait ends saying the resolver did not answer.
+        other.send_to(b"forged", to).unwrap();
+        let wait = std::time::Duration::from_millis(300);
+        let silent = answer_from(&asking, resolver.local_addr().unwrap(), wait, &mut buf);
+        assert!(silent.unwrap_err().contains("did not answer"));
+    }
 
     /// Real answers from a public resolver on 26 September 2026, to the question `https_query`
     /// asks with id 0x1234: crypto.cloudflare.com, which offers ECH; cloudflare.com, which has an

@@ -231,10 +231,25 @@ fn from_report(report: &Value, which: &str, id: &str, checks: &[CheckLine]) -> S
 /// before it offers a report, ADR-034), and the bytes read are the ones sealed, so a file swapped
 /// after the check is not taken for the sealed one. Why not otherwise (backlog 0226, part 1, item 9:
 /// `sv explain` repeated any `report.json` in the folder, which the AI coding tool can write).
-fn sealed_as_read(dir: &Path, bytes: &[u8]) -> std::result::Result<(), String> {
-    let sealed = crate::report_seal::proven(dir)?;
+///
+/// A report the person names (`named`, from `--report`) may have been sealed in another folder and
+/// kept where it is now on purpose; the app's own last report must have been sealed where it is, or
+/// a copy put there would be repeated as the app's current one (backlog 0286).
+fn sealed_as_read(
+    dir: &Path,
+    bytes: &[u8],
+    named: bool,
+) -> std::result::Result<crate::report_seal::Place, String> {
+    let (sealed, place) = if named {
+        crate::report_seal::proven_wherever(dir)?
+    } else {
+        (
+            crate::report_seal::proven(dir)?,
+            crate::report_seal::Place::Here,
+        )
+    };
     match sealed.get("report.json") {
-        Some(digest) if *digest == crate::bundle::sha256(bytes) => Ok(()),
+        Some(digest) if *digest == crate::bundle::sha256(bytes) => Ok(place),
         Some(_) => Err("its report.json changed after it was sealed".to_owned()),
         None => Err("its seal does not cover report.json".to_owned()),
     }
@@ -361,19 +376,23 @@ pub fn command(id: &str, app: Option<&Path>, report_file: Option<&Path>) -> Resu
         }
         (None, None) => None,
     };
+    let mut moved = false;
     let (report, unproven) = match &asked {
         None => (None, None),
         Some((path, _, missing)) => {
             let dir = path.parent().unwrap_or(Path::new("."));
             let bytes = std::fs::read(path).with_context(|| missing.clone())?;
-            match sealed_as_read(dir, &bytes) {
-                Ok(()) => (
-                    Some(
-                        serde_json::from_slice::<Value>(&bytes)
-                            .with_context(|| format!("parsing {}", path.display()))?,
-                    ),
-                    None,
-                ),
+            match sealed_as_read(dir, &bytes, report_file.is_some()) {
+                Ok(place) => {
+                    moved = place == crate::report_seal::Place::Elsewhere;
+                    (
+                        Some(
+                            serde_json::from_slice::<Value>(&bytes)
+                                .with_context(|| format!("parsing {}", path.display()))?,
+                        ),
+                        None,
+                    )
+                }
                 Err(why) => (None, Some((path.clone(), why))),
             }
         }
@@ -388,7 +407,7 @@ pub fn command(id: &str, app: Option<&Path>, report_file: Option<&Path>) -> Resu
         return Ok(out);
     }
     let which = asked.as_ref().map_or("", |(_, which, _)| which.as_str());
-    explain(
+    let mut out = explain(
         &frameworks,
         &reach,
         &rules,
@@ -396,7 +415,15 @@ pub fn command(id: &str, app: Option<&Path>, report_file: Option<&Path>) -> Resu
         &human,
         id,
         report.as_ref().map(|r| (r, which)),
-    )
+    )?;
+    if moved {
+        out.push_str(
+            "\nThat report was sealed in another folder and copied or moved where it is now: sv \
+             wrote it, and nothing has changed it since, but it describes the app it was written \
+             for, when its run started, not the app as it is now.\n",
+        );
+    }
+    Ok(out)
 }
 
 #[cfg(test)]
