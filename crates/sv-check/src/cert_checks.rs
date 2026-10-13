@@ -240,6 +240,7 @@ fn finding(file: &str, line: usize, what: &str, does: &str) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: CHECKS_OFF.into(),
         title: "Certificate checking is switched off for every connection the app makes".into(),
         severity: Severity::High,

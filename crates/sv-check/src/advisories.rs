@@ -794,6 +794,7 @@ fn finding_for(component: &Component, advisory: &Advisory, due: &Due) -> Finding
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: format!("advisory.{}", advisory.id),
         title: format!(
             "{} {} has a known vulnerability: {names}",

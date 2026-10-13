@@ -3492,3 +3492,44 @@ fn findings_only_for_and_in_part_are_refused_where_they_say_nothing_or_too_much(
 
     assert!(rules_from(&one_rule(r#", "inPart": true"#)).is_ok());
 }
+
+#[test]
+fn a_clean_run_of_the_deny_list_rules_credits_their_requirements_in_part() {
+    // Backlog 0302. Not seeing MD5 or SHA-1 is not "only approved hash functions are used"
+    // (V11.4.1): MD4, RIPEMD-160 and a CRC used as a MAC are not looked for. Not seeing pickle,
+    // Marshal or unserialize is the second half of V1.5.2; its allowlist of object types is not
+    // looked for. Each credited its requirement whole, so both read *checked*.
+    let dir = std::env::temp_dir().join(format!("sv-ast-deny-lists-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(
+        dir.join("app.py"),
+        "import hashlib, json\n\
+         digest = hashlib.sha256(data).hexdigest()\n\
+         record = json.loads(body)\n",
+    )
+    .unwrap();
+    let scan = scan_dir(rules(), &dir);
+    std::fs::remove_dir_all(&dir).ok();
+    for (rule, requirement) in [
+        ("ast.weak-hash-function", "V11.4.1"),
+        ("ast.unsafe-deserialization", "V1.5.2"),
+    ] {
+        assert!(
+            scan.findings.iter().all(|f| f.rule_id != rule),
+            "{rule} found something in a clean file: {:?}",
+            scan.findings
+        );
+        let credit = scan
+            .verified
+            .iter()
+            .find(|v| v.check_id == rule)
+            .unwrap_or_else(|| {
+                panic!("{rule}: a clean Python file still credits what it looked for")
+            });
+        assert_eq!(credit.requirement_ids, vec![requirement.to_owned()]);
+        assert!(
+            credit.in_part,
+            "{rule}: not seeing a deny-list is part of {requirement}, not all of it: {credit:?}"
+        );
+    }
+}
