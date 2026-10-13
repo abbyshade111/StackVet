@@ -3,10 +3,13 @@
 # is the program a Scoop install on Windows downloads (the bucket abbyshade111/scoop-stackvet).
 #
 # On a tag `v*`: built on a Windows runner, checked to start and to find its data beside it, zipped with that data and
-# the licence, signed where it was built (GitHub's keyless signing, the step the image's publishing uses, so anyone can
-# check it with `gh attestation verify`), and attached with its SHA-256 to the release of that tag. The tag must match
-# the version `sv` reports. Run by hand, or on a pull request that changes this file: the same, kept as the run's file, with nothing published or signed, so the
-# workflow can be tried before a tag.
+# the licence, and handed to a second job that signs it (GitHub's keyless signing, the step the image's publishing
+# uses, so anyone can check it with `gh attestation verify`) and attaches it with its SHA-256 to the release of that
+# tag. The tag must match the version `sv` reports. Run by hand, or on a pull request that changes this file: the
+# first job alone, kept as the run's file, with nothing published or signed, so the workflow can be tried before a
+# tag. Only the second job can write anything, and it runs inside the `release` Environment, which the owner made in
+# the repository's settings on 13 October 2026 to admit only runs of tags `v*` (backlog 0422): GitHub holds that rule
+# outside this file, so no edit to it by a branch can sign or publish from a pull request.
 #
 # Every step is pinned to an exact commit fingerprint rather than a version name, as in the other workflows.
 
@@ -30,19 +33,19 @@ concurrency:
 
 jobs:
   windows:
+    # The build and its check, with no permission to write anything: the job a pull request runs.
     runs-on: windows-latest
     timeout-minutes: 45
     permissions:
-      # The release, and the signed statement of where the zip was built (as the image's publishing has).
-      contents: write
-      id-token: write
-      attestations: write
+      contents: read
     defaults:
       run:
         shell: bash
+    outputs:
+      name: ${{ steps.zip.outputs.name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        # The token stays out of the checked-out folder (AC.12.2); the release step is handed it alone.
+        # The token stays out of the checked-out folder (AC.12.2).
         with:
           persist-credentials: false
 
@@ -93,27 +96,48 @@ jobs:
           grep -q "Read " check.txt || { echo "::error::the zipped sv did not read the example app"; mv data.moved data; exit 1; }
           mv data.moved data
 
-      - name: Sign where the zip was built
-        if: github.event_name == 'push'
+      - name: Keep the zip for the release job, or as the trial's file
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.zip.outputs.name }}
+          path: |
+            dist/${{ steps.zip.outputs.name }}.zip
+            dist/${{ steps.zip.outputs.name }}.zip.sha256
+          retention-days: 3
+
+  release:
+    # Signs the zip the job above built and checked, and makes the release: only on a tag, and only inside the
+    # `release` Environment (tags `v*`), the one job of this workflow that may write. What it signs is the tested
+    # zip handed over as an artifact, as the image's `publish` job takes the tested image (backlog 0343).
+    if: github.event_name == 'push'
+    needs: windows
+    environment: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      # The release, and the signed statement of where the zip was built (as the image's publishing has).
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      NAME: ${{ needs.windows.outputs.name }}
+    steps:
+      - name: Fetch the zip that was checked
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.windows.outputs.name }}
+          path: dist
+
+      - name: Sign the zip that was checked
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
-          subject-path: dist/${{ steps.zip.outputs.name }}.zip
+          subject-path: dist/${{ needs.windows.outputs.name }}.zip
 
       - name: The release
-        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-          NAME: ${{ steps.zip.outputs.name }}
         run: |
           gh release create "$TAG" "dist/$NAME.zip" "dist/$NAME.zip.sha256" \
             --repo "$GITHUB_REPOSITORY" --verify-tag --title "sv $TAG" \
             --notes "The Windows program of sv $TAG, zipped with its data. On Windows, install it with Scoop (see docs/GETTING-STARTED.md), or unzip it and run sv.exe from that folder. Check where it was built with: gh attestation verify $NAME.zip --repo $GITHUB_REPOSITORY. Mac and Linux: Homebrew, or the container image."
-
-      - name: Keep the trial's zip
-        if: github.event_name != 'push'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ${{ steps.zip.outputs.name }}
-          path: dist/${{ steps.zip.outputs.name }}.zip
-          retention-days: 3

@@ -22,5 +22,3 @@ From the deep review of 13 October 2026 (backlog 0417), area: documentation. Sev
 - How verified: read.
 - Overlap: 0403 (open) is the wording of a reason; none for a picture.
 - Needs a decision record?: no; ADR-015 is unchanged.
-
-**The owner's decision, 13 October 2026** (asked by session stackvet-deep-review): CLAUDE.md stays self-contained, since it is what every session reads at its start and was trimmed the same day; CONTRIBUTING.md says the rules are in CLAUDE.md, with one sentence each, so the two cannot drift again.

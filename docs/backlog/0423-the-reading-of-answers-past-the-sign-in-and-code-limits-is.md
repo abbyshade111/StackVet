@@ -25,5 +25,3 @@ shared function is broken.
 **Record.** None for the refactor. If the two definitions of "refused" are made one, that changes what counts as
 pushing back for one of the checks: a Later line on the record governing the signed-in suites (`python3
 tools/adr_check.py` names it).
-
-**The owner's decision, 13 October 2026** (asked by session stackvet-deep-review after the review): yes. The owner makes two GitHub Environments in the repository's settings, `release` allowing only tags `v*` and `publish` allowing only the branch `main`; then a pull request adds `environment: release` to this workflow's job and `environment: publish` to `rust.yml`'s `publish` job, with the Later lines on ADR-108 and ADR-051 that say the setting exists and what it holds. Until that pull request lands, the hold stands.

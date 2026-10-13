@@ -34,3 +34,5 @@ before building.
 **Record.** Yes: it changes how an answer reaches the *documented by the owner* and *attested by the owner* tiers. A
 Later entry on ADR-026 (`sv review`'s questions), proposed in the claim; ADR-022's Governs list (`notes.rs`) kept true
 or an unchanged line.
+
+**The owner's decision, 13 October 2026** (asked by session stackvet-deep-review): yes, build it. The third answer's word must not be `owner`, which today confirms the tool's word; a confirmation stays shown as the tool's word confirmed by a person, never as the owner's own (the owner's rule of 27 September 2026, 0115). The record is a Later entry on ADR-026, proposed in the claim and accepted in the pull request that builds it.

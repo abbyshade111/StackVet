@@ -29,8 +29,8 @@ how the requirements no check speaks to could be assessed.
 - 0418 (requirements and tests (citations)): `ast.dynamic-code-execution` credits V1.3.2 whole for Java without looking for SpEL, and three more AST rules credit whole from call lists with gaps
 
 **Medium (23):**
-- 0419 (?): The CSP-reporting credit (V3.4.7) is whole "on all N routes" while a named route with no policy at all is skipped
-- 0420 (?): A whole V3.5.1 credit can rest on a `creates` entry refused for any reason: no control shows that request works with its token
+- 0419 (code: `sv-check` (checks' honesty)): The CSP-reporting credit (V3.4.7) is whole "on all N routes" while a named route with no policy at all is skipped
+- 0420 (code: `sv-check` (checks' honesty)): A whole V3.5.1 credit can rest on a `creates` entry refused for any reason: no control shows that request works with its token
 - 0421 (CI and `tools/`): A backlog-only pull request skips the board test, so a done note on a queued item turns main red after a green check
 - 0422 (CI): A pull request that edits release.yml runs it with contents, id-token, and attestations write before any merge (the owner's setting)
 - 0423 (code quality and duplication): The reading of answers past the sign-in and code limits is one algorithm written twice, and the copies have drifted
@@ -116,25 +116,25 @@ how the requirements no check speaks to could be assessed.
 - 0499 (coverage, the requirements no check speaks to for a typical web app with sign-in (`auth`, `tls`, `internet`, `email`; level 2)): A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown
 - 0500 (coverage, the requirements no check speaks to for a typical web app with sign-in (`auth`, `tls`, `internet`, `email`; level 2)): The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read
 **The owner's decisions, surfaced by the review** (not builds): a GitHub Environment restricted to `v*` tags for the
-release job (0423, the same class as 0289 for a second workflow and a second consumer, the Scoop bucket); which
+release job (0422, the same class as 0289 for a second workflow and a second consumer, the Scoop bucket); which
 generated number the website's "StackVet can check" column reads, now that "can settle" counts 40 requirements a check
-can only ever fail (0434); whether the third `sv review` answer, "this is my own decision, the tool only wrote it down",
-is wanted (0426: it changes how an answer reaches the owner's tiers, so its record is proposed in the claim); and
-whether CLAUDE.md keeps its own copy of the five rules CONTRIBUTING.md states (0485).
+can only ever fail (0433); whether the third `sv review` answer, "this is my own decision, the tool only wrote it down",
+is wanted (0425: it changes how an answer reaches the owner's tiers, so its record is proposed in the claim); and
+whether CLAUDE.md keeps its own copy of the five rules CONTRIBUTING.md states (0484).
 
-**Records owed, by the items that say so:** ADR-096 (0419, 0468), ADR-053 (0418, 0420, 0467), ADR-104 (0422), ADR-108
-(0423), ADR-026 (0426), ADR-059 (0431), ADR-040 (0432), ADR-047 (0433), ADR-018 (0435), the record governing
-`data/applicability-v2.json` (0469), and ADR-022 (0488, which credits nothing and says so). Each is a Later entry
+**Records owed, by the items that say so:** ADR-096 (0419, 0467), ADR-053 (0418, 0420, 0466), ADR-104 (0421), ADR-108
+(0422), ADR-026 (0425), ADR-059 (0430), ADR-040 (0431), ADR-047 (0432), ADR-018 (0434), the record governing
+`data/applicability-v2.json` (0468), and ADR-022 (0487, which credits nothing and says so). Each is a Later entry
 written in the pull request that builds the item, as CLAUDE.md asks.
 
 **What this round shows about the last round.** Of the 91 items filed on 12 October, the fixes that landed close their
 items as stated; three reviewers read the fixes for 0278, 0280, 0281, 0283, 0284, 0285, 0291, 0302, 0304, 0306, 0307,
 0313, 0315, 0327, 0328, 0331, 0334, 0342, 0352, 0353, 0366, 0367, 0368, 0336, 0345 to 0348, 0362, 0286, 0309, 0311,
 0343, 0356, 0358, 0300, 0301, 0410, 0414, 0329, 0355, 0326 and found each right, with these edges: the delta mode's
-all-fixed and paged cases (0453, 0454), the seal's second read of `report.json` (0455), the 0291 reader's tab (0449),
-and the 0333 wording's in-part case (0448). The recurring fault is still the citation: one high and six mediums here
+all-fixed and paged cases (0452, 0453), the seal's second read of `report.json` (0454), the 0291 reader's tab (0448),
+and the 0333 wording's in-part case (0447). The recurring fault is still the citation: one high and six mediums here
 are a check crediting a requirement whole from a list, a finding naming requirements it did not find failing, or a
-public count that reads "can settle" as "can check". The fastest guard is 0431's: the credit log carrying the in-part
+public count that reads "can settle" as "can check". The fastest guard is 0430's: the credit log carrying the in-part
 mark, so the generated coverage cannot say more than the code does.
 
 **Found sound** (so the next review need not re-read it): `rust.yml`'s pins, token handling, the four-part suite with
@@ -142,7 +142,7 @@ no gap, the image built once and the same image published, `windows.yml`, `decis
 dependency layer, `action.yml` passing `--no-tools` only when the image knows it; every `tools/*.py` subprocess in list
 form, UTF-8 and LF on every write, links refused before writes; the MCP server's spec in parts, prompts listing, pipe
 refusals, one answer for outside and missing, the folder-bound seal, the delta mode's fingerprints and pages (bar
-0453 and 0454), the descriptions' size test, the fence on every quoted line; `account_changes_whole` and `left_out`
+0452 and 0453), the descriptions' size test, the fence on every quoted line; `account_changes_whole` and `left_out`
 (ADR-105, ADR-099) with their forged-entry tests; `report_lock`'s caps; `code_lines`' bounds and redaction; `seen.rs`'s
 header cut; the setup prompts' install-after-yes rule. The fence: every container through `prepared`, the network by
 one function with `--internal --ipv6=false`, `gateway_verdict` failing closed at every step, a plain network never
@@ -158,7 +158,7 @@ time-arithmetic patterns in the whole tree. Documents: ARCHITECTURE.md is the mo
 guide's steps 1 to 5, the website's words, the glossary (bar one entry), the brand page, the coverage tables' "How to
 read this", and the report-file and tool counts.
 
-**Not verified:** anything that needs a build or a run: the sign-in guard's wrap (0466), the delta mode on a real
-paged check (0454), the Docker version boundary for link-local IPv6 (0451), whether this repository's settings grant a
-pull request run write permissions (0423), Semgrep's credit arriving on a real Go app (0435), and which tests hold
-paths a document move would touch (0442). Each item says so where it applies.
+**Not verified:** anything that needs a build or a run: the sign-in guard's wrap (0465), the delta mode on a real
+paged check (0453), the Docker version boundary for link-local IPv6 (0450), whether this repository's settings grant a
+pull request run write permissions (0422), Semgrep's credit arriving on a real Go app (0434), and which tests hold
+paths a document move would touch (0441). Each item says so where it applies.

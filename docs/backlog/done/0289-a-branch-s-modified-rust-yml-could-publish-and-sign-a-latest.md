@@ -1,6 +1,6 @@
 # A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting)
 
-**Status:** open
+**Status:** done, 13 October 2026
 
 **Was queued on the coordination board** (`docs/coordination/board.md`, backlog 0273), which closed on 13 October 2026 when the trial ended; it is taken the normal way since, from the roadmap, with any hold below still standing. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: medium. Verified against the code by the reviewing session before filing.
 
@@ -16,4 +16,6 @@
 
 **Record.** ADR-051 governs `rust.yml`; the Environment is a repository setting and wants the owner's yes and a Later line when made.
 
-**The owner's decision, 13 October 2026:** yes, the same way as 0423: an Environment named `publish` restricted to the branch `main`, made by the owner in the repository's settings, then `environment: publish` on the `publish` job with a Later line on ADR-051. Built together with 0423.
+**The owner's decision, 13 October 2026:** yes, the same way as 0422: an Environment named `publish` restricted to the branch `main`, made by the owner in the repository's settings, then `environment: publish` on the `publish` job with a Later line on ADR-051. Built together with 0423.
+
+**Done, 13 October 2026** (session stackvet-deep-review): the owner made the `publish` Environment (branch `main`, read back through the API); `rust.yml`'s `publish` job names it; ADR-051, Later. The `action.yml` half (verifying the source ref) was not changed: the Environment makes the branch rule hold before anything is signed.

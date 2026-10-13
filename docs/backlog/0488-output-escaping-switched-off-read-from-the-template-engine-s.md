@@ -26,5 +26,3 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   pointer is the list of dangerous sinks the existing rules already locate (shell, SQL, HTML, path), shown as "the
   places StackVet looked for each context", so the hand check reads "for each of these, what cleans the value
   first?" No code to point at beyond that. Tier: *checked by hand*.
-
-**The owner's decision, 13 October 2026** (asked by session stackvet-deep-review): build this first, alone, and try it on one chapter's questions before any of the fourteen proposals that assume it (0489 to 0500) is taken; what the trial shows may change the rest. The proposals wait for it.
