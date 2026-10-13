@@ -6,8 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: nothing
-- builder-none — arm: none — holds: nothing
+(none yet: `session add <name> --arm full|none`)
 
 ## Queue
 
@@ -324,3 +323,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 16:59 — finished 0414 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1745; now holds 0355
 - 2026-10-13 17:12 — finished 0355 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1747; now holds 0365
 - 2026-10-13 17:12 — withdrew 0365 from builder-none (none), on hold: the item says build only if a real report's timings show the cost, and none does; given back open at the trial's end, nothing built (builder-none and the owner, 13 Oct)
+- 2026-10-13 17:32 — session builder-full removed
+- 2026-10-13 17:32 — session builder-none removed

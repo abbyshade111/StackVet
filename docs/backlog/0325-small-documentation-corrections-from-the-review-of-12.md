@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: documentation. Severity: low. Verified against the code by the reviewing session before filing.
+**Was queued on the coordination board** (`docs/coordination/board.md`, backlog 0273), which closed on 13 October 2026 when the trial ended; it is taken the normal way since, from the roadmap, with any hold below still standing. From the deep review of 12 October 2026 (backlog 0277), area: documentation. Severity: low. Verified against the code by the reviewing session before filing.
 
 **What is wrong.** Seven small places where a document names a thing the reader will not find, or a count that has moved, or breaks the house standard.
 

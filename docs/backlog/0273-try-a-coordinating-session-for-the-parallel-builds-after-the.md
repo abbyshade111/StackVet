@@ -1,6 +1,6 @@
 # Try a coordinating session for the parallel builds, after the next loop trials and the website mock-ups
 
-**Status:** claimed by stackvet-orchestrator, 12 October 2026
+**Status:** partly done: the owner's choices on the candidates in the write-up (the CLAUDE.md build-folder line; keeping the coordinating session for review bursts) and the cleanup list
 
 Asked for by the owner on 12 October 2026, after a review of whether an orchestrator agent would help in building `sv`
 or inside `sv`'s own workflows (session stackvet-orchestrator-agent-review). **Not before** the next trial of the
@@ -111,3 +111,115 @@ reading comes from the sessions' own usage display, not the desktop app. `docs/C
 tree. It then read the committed `CLAUDE.md` from history and called the substitution possible tampering: so the
 no-context arm's transcripts are checked for whether the session read the committed file on its own, and the stub says
 the replacement is deliberate.
+
+## The trial, written up (13 October 2026)
+
+**What ran.** From 12 October, 20:46 UTC (the first builder pull request merged) to 13 October, 20:43 UTC (builder-full's
+last item, 0339, merged: the end point the owner set), two fresh cloud sessions on Opus 5.5 built the findings of the
+deep review (0277) and the efficiency review (0335), handed out by this session through the board. builder-full had
+`CLAUDE.md`; builder-none had a two-line stub and the five-line footer. Hand-outs went by the board alone after each
+session's first: a lane of up to six items, planned so no file was in both lanes at once, matched pairs split across
+them. All counts below are from git (merge times in UTC) and the board's log unless marked otherwise.
+
+**Items finished inside the window:** builder-full 39, builder-none 41 (two more, 0414 and 0355, merged after the end
+point; 0365 was handed back unbuilt, by the owner's choice, since its own condition was not met). Nothing was built
+twice, no claim collided, and no backlog, design, or record number was taken twice during the trial (the tree's 36
+duplicate numbers all date from 8 to 11 October).
+
+**The day against ordinary days** (`measure`, whole repository, every session, so the trial is one part of each):
+
+| Day | Pull requests merged | Of them only a claim | Merges of `main` into a branch |
+|---|---|---|---|
+| 10 October | 71 | 22 (31%) | 8 |
+| 11 October | 61 | 23 (38%) | 6 |
+| 12 October (trial from evening; the review filings too) | 163 | 40 (25%) | 25 |
+| 13 October (the trial's day) | 103 | 13 (13%) | 27 |
+
+Claims as their own pull requests fell, because `assign` made each claim inside the board's own pull request (46 board
+pull requests for 82 finished items). Merges of `main` into branches rose, and nearly all are builder-none's: it merged
+`main` into 45 of its branches, against builder-full's 1, because the stub held by `skip-worktree` made a local merge the
+only safe way for it to stay current (see the interventions). Pull requests refused after passing are on GitHub only
+and were not counted.
+
+**Per arm, from each finished pull request** (82 in all, including the two after the end point):
+
+| | builder-full (full context) | builder-none (no context) |
+|---|---|---|
+| Items finished | 39 | 43 |
+| Changed a decision record | 19 | 13 |
+| Record expected by the item and written (a Later entry where the item said one was owed) | 17 of 18 | 12 of 14; the two others were met another way the item allowed |
+| "ADR-NNN: unchanged, because" lines in descriptions | 129 | 110 |
+| Description says what was not verified | 18 of 39 | 43 of 43 |
+| Average description length | 2,708 characters | 3,665 characters |
+| British spellings in descriptions | 0 | 2 ("behaviour") |
+| Commits not naming the tool (merge commits aside) | 1 | 0 |
+| Pull requests ending "Generated with Claude Code" | 39 of 39 | 43 of 43 |
+
+**Time lost waiting, and why** (gaps between merges over two hours, from git):
+- builder-full, 7.3 hours (before 0323) and 4.6 hours (before 0326): its cloud disk filled with its own build folder,
+  and it asked the owner before deleting it, as `CLAUDE.md` and the footer's "delete nothing" both say; the owner was
+  away the first time, and the second question sat inside a bullet of a report with no check-in set after it. About 12
+  hours of the full arm's 24.
+- builder-none, 7.7 hours (before 0279): it stopped to ask about 0263, which this session had assigned in error (the
+  owner had set it aside in the item's text, below a status line that read "open"); then it waited about four hours more
+  because this session held back the next lane for a second yes the owner had already given.
+
+**Questions each arm put to the owner:** builder-full 2, both about deleting its own build folder. builder-none 8:
+three were the owner's to decide and right to ask (0263, the refusal on old Docker in 0301, 0365 without evidence);
+five came from what the stub lacked: whether to take its second item without a pasted go-ahead, merging its own green pull requests (its own permission check refused
+without `CLAUDE.md`'s "Git is pre-approved" line), a `CLAUDE.md` change on `main` it could not merge past, conflicts on a
+status line, and a real conflict it could settle itself.
+
+**Interventions** (things the owner told one arm beyond the footer): builder-none, seven: auto-merge; merging its own
+green pull requests; `gh pr update-branch`; a scratch worktree for status-line conflicts; settling conflicts itself;
+keep checking the board; delete its own build folder. builder-full, one: delete its own build folder. The last was given
+to both, in the same words, and is not a difference between them.
+
+**What the line-by-line result says** (the item's own test: a rule the no-context arm follows anyway is a candidate to
+cut from `CLAUDE.md`; a rule only the full arm follows is one the file earns):
+- *Followed anyway, carried by CI, the tools, or the defaults:* decision records (the "Decision records" check; both
+  arms equal), naming the tool in commits and the PR footer (the default attribution), claims and `done`
+  (`tools/backlog.py` and the board), red-first tests and saying what was not verified (builder-none did both every
+  time, more often than builder-full).
+- *Only the full arm followed, so `CLAUDE.md` earns them:* auto-merge on every pull request; merging its own green work
+  (this one is also the permission a session's own guard reads: not knowledge but authority); bringing `main` in and
+  settling conflicts (`merge_main.py`); American spelling; taking the next board item without a pasted go-ahead.
+- *A `CLAUDE.md` rule that cost the full arm:* "ask before deleting" cost about 12 hours, for a build folder in a
+  throwaway cloud container.
+- *Not measured:* tokens and money per arm. The cloud sessions' own usage displays were not read; the owner can read
+  them there, and the write-up adds them if so. The caveat from the plan stands: cached context costs about a tenth
+  of fresh, so the money gap may be small even where the attention gap is large.
+
+**What the board did well:** no duplicate work, no claim or number collisions, a claim visible on `main` before work
+began, lanes that let both sessions run for hours without a hand-off, and a record of every hand-out with its reason.
+The two separate security reviews the owner asked for (0300 and 0301, read-only) each found real gaps, filed as 0410
+and 0414 and built inside the trial.
+
+**What it did badly** (this session's own faults first):
+- A builder waiting on a question looked the same as a stalled one: the board saw only git's silence. A "waiting on the
+  owner" line a builder can write is the first thing to add.
+- It assigned 0263 from a status line without reading the whole item; `withdraw` was built that day (#1684), and items
+  are read whole since.
+- It held a released lane back for a second yes the owner did not know was needed: about four hours of builder-none's.
+- Its board check, its Windows test, and six of the review's record lines were wrong at first; the builders and CI
+  caught them.
+- The no-shared-file rule made `crates/sv-run/src/docker.rs` and `.github/workflows/rust.yml` one queue each, so the
+  last day could not be split evenly, and when one arm stalled the other ran short of work.
+- It could not see sessions it did not run: an off-board change (0394) conflicted with a board item.
+- A lane can only be added to at the end; reordering took two withdrawals.
+- 46 board pull requests, each with its own CI run, for 82 items.
+
+**Candidates for the owner** (none is made here):
+1. In `CLAUDE.md`: a session's own build output in its own cloud container may be deleted without asking.
+2. Keep the coordinating session for bursts of independent findings (a review's items, as here), with a "waiting"
+   line, insert-at-position, and a `close` command added to the board; not for ordinary days.
+3. 0322 and 0325 (they edit `CLAUDE.md`) were held for the trial and can go now.
+
+**Cleanup, for the owner's yes** (nothing deleted): the 43 open items that were never on the board; the nine left on
+the board's queue, whose "queued" line now says the board closed (0289, 0290, 0322, 0324, 0325, 0338, 0341, 0365, 0369;
+0263 stays set aside); the seven Dependabot pull requests (#1627 to #1634); 0390's question (the board test stays off
+Windows?); the no-context cloud environment; and this session's scratch files and worktree.
+
+**The board is closed:** both sessions are off it, so the `CLAUDE.md` rule about taking work from it no longer applies,
+and the remaining items go the normal way.
+

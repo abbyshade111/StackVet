@@ -3,6 +3,11 @@
 Written 12 October 2026 for the trial in backlog 0273 (the record is `docs/adr/ADR-061.md`, Later, 12 October 2026).
 The owner's three principles for it: keep it simple, make everything visible, and document and test it thoroughly.
 
+**Closed 13 October 2026.** The trial ended when builder-full's last item merged (20:43 UTC); both building sessions
+are off the board, so the rule in `CLAUDE.md` about taking work from it no longer applies, and the items left in its
+queue go the normal way. The write-up is in backlog 0273. This page and the tool stay, for a later burst if the owner
+chooses one.
+
 ## Why
 
 Many sessions build `sv` at once, and until now none was in charge: each coordinated with the others only through
