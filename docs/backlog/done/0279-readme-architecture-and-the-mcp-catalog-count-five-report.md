@@ -1,6 +1,6 @@
 # README, ARCHITECTURE, and the MCP catalog count five report files where sv writes seven
 
-**Status:** open
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: documentation. Severity: high. Verified against the code by the reviewing session before filing.
 
