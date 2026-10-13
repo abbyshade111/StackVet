@@ -314,15 +314,18 @@ fn ai(services: &dyn Services, plan: &Plan, section: &AiSection) -> crate::signe
         seeded: plan.users.is_some_and(|u| u.seed.is_some()),
         owner: plan.accounts.map(|accounts| &accounts.a),
     };
+    // Recorded as the signed-in suite is, so each finding can name the questions that showed it (backlog 0381).
     let (mut outcome, markers) = {
-        let mut http = services.http(
+        let mut http = crate::signed_in::recording::Recording::new(services.http(
             Target::App,
             With {
                 model: Model::IfAnswering,
                 ..With::default()
             },
-        );
-        crate::ai::run(http.as_mut(), section, &context)
+        ));
+        let (mut outcome, markers) = crate::ai::run(&mut http, section, &context);
+        outcome.exchanges = http.finish();
+        (outcome, markers)
     };
     // Then what the app wrote down about it, read after the questions, as the signed-in suite
     // reads its own markers.

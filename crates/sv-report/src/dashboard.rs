@@ -894,21 +894,8 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) 
                     escape(&s.sv),
                     escape(&app.folder.display().to_string())
                 ));
-                if !s.not_run.is_empty() || !s.gaps.is_empty() {
-                    b.push_str("<h3>What was not examined</h3>\n<ul>\n");
-                    if !s.not_run.is_empty() {
-                        b.push_str(&format!(
-                            "<li>Not run this time: {}. {} of the requirements that apply can only be checked that way.</li>\n",
-                            prose(&s.not_run.join(", and ")),
-                            s.only_they_reach
-                        ));
-                    }
-                    for gap in &s.gaps {
-                        b.push_str(&format!("<li>{}</li>\n", prose(gap)));
-                    }
-                    b.push_str("</ul>\n");
-                }
                 b.push_str(&glance_of(&s.counts, s.target_level));
+                // The findings first, then what was not examined, as the reports order them (ADR-110).
                 b.push_str("<h3>Findings</h3>\n");
                 if s.findings.is_empty() {
                     b.push_str("<p>No findings in this report. That says what was found, not that nothing is there.</p>\n");
@@ -927,6 +914,20 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) 
                             "<li class=\"note\">… and {} more, in the report's security.md, worst first</li>\n",
                             s.findings.len() - 10
                         ));
+                    }
+                    b.push_str("</ul>\n");
+                }
+                if !s.not_run.is_empty() || !s.gaps.is_empty() {
+                    b.push_str("<h3>What was not examined</h3>\n<ul>\n");
+                    if !s.not_run.is_empty() {
+                        b.push_str(&format!(
+                            "<li>Not run this time: {}. {} of the requirements that apply can only be checked that way.</li>\n",
+                            prose(&s.not_run.join(", and ")),
+                            s.only_they_reach
+                        ));
+                    }
+                    for gap in &s.gaps {
+                        b.push_str(&format!("<li>{}</li>\n", prose(gap)));
                     }
                     b.push_str("</ul>\n");
                 }

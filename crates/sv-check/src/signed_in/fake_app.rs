@@ -420,6 +420,9 @@ pub(super) struct Flaws {
     pub(super) runs_uploaded_code: bool,
     /// Serves an uploaded .html as text/html with nothing telling the browser not to render it.
     pub(super) renders_uploaded_pages: bool,
+    /// Serves an uploaded .html with no `Content-Type` at all, and nothing else: a browser sniffs
+    /// the body and renders the page.
+    pub(super) uploaded_pages_untyped: bool,
     /// Runs an uploaded .php5, though not a .php (backlog 0232, part 4).
     pub(super) runs_uploaded_php5: bool,
     /// Serves an uploaded .xhtml as `application/xhtml+xml`, which a browser renders, with nothing telling it not to.
@@ -2408,6 +2411,9 @@ impl FakeApp {
                     ));
                 }
                 if name.ends_with(".html") {
+                    if self.flaws.uploaded_pages_untyped {
+                        return Some(Self::respond(200, vec![], contents));
+                    }
                     if self.flaws.renders_uploaded_pages {
                         return Some(Self::respond(
                             200,

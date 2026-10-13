@@ -306,7 +306,8 @@
         "shell": "A shell script has no objects to deserialize; it passes text between programs.",
         "cpp": "C++ has no object deserializer in the language itself. Reading bytes into a struct is a memory-safety question, which this rule does not ask; a library such as Boost.Serialization or protobuf is not looked for."
       },
-      "looksFor": "data read with a reader that can build any kind of object, such as pickle, Marshal, or PHP's unserialize"
+      "looksFor": "data read with a reader that can build any kind of object, such as pickle, Marshal, or PHP's unserialize",
+      "inPart": true
     },
     {
       "id": "ast.shell-command-backticks",
@@ -553,6 +554,7 @@
         "python": "usedforsecurity\\s*=\\s*False"
       },
       "looksFor": "MD5 or SHA-1 used as a hash function",
+      "inPart": true,
       "looksForIn": {
         "shell": "md5sum, sha1sum, or openssl asked for MD5 or SHA-1"
       }

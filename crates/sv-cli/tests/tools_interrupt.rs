@@ -1,4 +1,4 @@
-//! Ctrl-C during `sv report --tools` stops the tool that is running and everything it started,
+//! Ctrl-C during `sv report --tools` stops the tools that are running and everything they started,
 //! starts no other, removes the tools' private folder, lets go of the report folder, and writes
 //! nothing. Before this, nothing caught Ctrl-C on that path: it ended `sv` alone, and the tool, in
 //! a process group of its own so the limit can stop all of it, ran on with no limit at all (the
@@ -50,10 +50,11 @@ fn ctrl_c_while_a_tool_runs_stops_it_and_writes_nothing() {
     std::fs::create_dir_all(&bin).unwrap();
     std::fs::create_dir_all(&tmp).unwrap();
     let sleeping = dir.join("sleeping");
-    let semgrep_ran = dir.join("semgrep-ran");
-    // Bandit, which comes first for a Python app: it answers its version, then starts a program
-    // that would hold the run for five minutes, as Semgrep's real work is done by a second
-    // program, and waits for it.
+    let semgrep_sleeping = dir.join("semgrep-sleeping");
+    let codeql_ran = dir.join("codeql-ran");
+    // Bandit, which runs beside the others for a Python app (backlog 0368): it answers its version,
+    // then starts a program that would hold the run for five minutes, as Semgrep's real work is done
+    // by a second program, and waits for it.
     script(
         &bin.join("bandit"),
         &format!(
@@ -69,13 +70,19 @@ fn ctrl_c_while_a_tool_runs_stops_it_and_writes_nothing() {
         .find(|k| Path::new(k).exists())
         .expect("no kill on this computer");
     std::os::unix::fs::symlink(kill, bin.join("kill")).unwrap();
-    // Semgrep, which comes after it, says whether it was ever asked to read the app.
+    // Semgrep, in the other lane at the same time, holds the run the same way.
     script(
         &bin.join("semgrep"),
         &format!(
-            "[ \"$1\" = --version ] && {{ echo 1.80.0; exit 0; }}\n: > '{}'\nexit 2\n",
-            semgrep_ran.display()
+            "[ \"$1\" = --version ] && {{ echo 1.80.0; exit 0; }}\n\
+             sleep 300 &\necho $! > '{0}.part' && mv '{0}.part' '{0}'\nwait\n",
+            semgrep_sleeping.display()
         ),
+    );
+    // CodeQL, which comes after Semgrep in its lane, says whether it was ever started at all.
+    script(
+        &bin.join("codeql"),
+        &format!(": > '{}'\nexit 2\n", codeql_ran.display()),
     );
 
     let app = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/flask-booking");
@@ -96,7 +103,7 @@ fn ctrl_c_while_a_tool_runs_stops_it_and_writes_nothing() {
 
     // Setup: Bandit is running, with the program it started, inside the run's private folder.
     let deadline = Instant::now() + Duration::from_secs(180);
-    while !sleeping.exists() {
+    while !sleeping.exists() || !semgrep_sleeping.exists() {
         if let Some(status) = sv.try_wait().unwrap() {
             let out = sv.wait_with_output().unwrap();
             panic!(
@@ -115,9 +122,11 @@ fn ctrl_c_while_a_tool_runs_stops_it_and_writes_nothing() {
     );
     let pid = std::fs::read_to_string(&sleeping).unwrap();
     let pid = pid.trim().to_owned();
+    let semgrep_pid = std::fs::read_to_string(&semgrep_sleeping).unwrap();
+    let semgrep_pid = semgrep_pid.trim().to_owned();
     assert!(
-        !gone(&pid),
-        "the tool's program is not running to be stopped"
+        !gone(&pid) && !gone(&semgrep_pid),
+        "the tools' programs are not running to be stopped"
     );
 
     // Ctrl-C, as the terminal sends it: to `sv`, since the tool leads a process group of its own.
@@ -141,7 +150,7 @@ fn ctrl_c_while_a_tool_runs_stops_it_and_writes_nothing() {
         String::from_utf8_lossy(&out.stderr)
     );
     let stopped_in_time = (0..200).any(|_| {
-        let done = gone(&pid);
+        let done = gone(&pid) && gone(&semgrep_pid);
         if !done {
             std::thread::sleep(Duration::from_millis(50));
         }
@@ -151,20 +160,23 @@ fn ctrl_c_while_a_tool_runs_stops_it_and_writes_nothing() {
     let report_files: Vec<PathBuf> = std::fs::read_dir(&report)
         .map(|entries| entries.flatten().map(|e| e.path()).collect())
         .unwrap_or_default();
-    let semgrep_asked = semgrep_ran.exists();
+    let codeql_started = codeql_ran.exists();
     if stopped_in_time {
         std::fs::remove_dir_all(&dir).ok();
     } else {
-        Command::new("kill").args(["-KILL", &pid]).status().ok();
+        Command::new("kill")
+            .args(["-KILL", &pid, &semgrep_pid])
+            .status()
+            .ok();
     }
 
     assert_eq!(out.status.code(), Some(130), "{said}");
     assert!(said.contains("Stopped with Ctrl-C"), "{said}");
     assert!(
         stopped_in_time,
-        "process {pid}, which the tool started, still runs"
+        "process {pid} or {semgrep_pid}, which the tools started, still runs"
     );
-    assert!(!semgrep_asked, "a tool was started after Ctrl-C");
+    assert!(!codeql_started, "a tool was started after Ctrl-C");
     assert!(left_in_tmp.is_empty(), "left behind: {left_in_tmp:?}");
     assert!(
         report_files.is_empty(),

@@ -679,6 +679,7 @@ fn metadata_checks(line: &str, named: bool, out: &mut LogOutcome) {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: "probe.log-timestamp-zoned".to_owned(),
             title: "A security event is logged with a time that does not say its zone".to_owned(),
             severity: Severity::Low,

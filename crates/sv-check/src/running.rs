@@ -272,6 +272,7 @@ fn finding(about: &About, title: &str, severity: Severity, description: String) 
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: about.rule_id.to_owned(),
         title: title.to_owned(),
         severity,

@@ -27,6 +27,7 @@ fn finding(rule: &str, file: &str, line: usize) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
     })
 }
 
