@@ -7,41 +7,39 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: 0323 (since 2026-10-13) — next: 0326, 0344, 0366, 0354, 0356
-- builder-none — arm: none — holds: 0367 (since 2026-10-13) — next: 0364, 0352, 0353
+- builder-none — arm: none — holds: 0364 (since 2026-10-13) — next: 0352, 0353, 0351, 0263
 
 ## Queue
 
-1. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — ready
-2. 0279 README, ARCHITECTURE, and the MCP catalog count five report files where sv writes seven — ready
-3. 0289 A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting) — hold: the owner's decision first; see the item
-4. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
-5. 0291 Four readers of requirements.txt, each with its own comment and option rules, and no test holding them to one another — ready
-6. 0293 Two data files are compiled in, bypassing the one data path, and the guard test cannot see them — ready
-7. 0300 The gateway fence is IPv4-only: an IPv6 gateway on the fenced network is neither removed nor knocked on — ready
-8. 0301 In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable — ready
-9. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
-10. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
-11. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
-12. 0329 Host paths go to docker -v in the short form, so an app folder whose path holds a colon cannot be mounted and the run does not say why — ready
-13. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
-14. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-15. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
-16. 0343 The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove — ready
-17. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
-18. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
-19. 0351 Every file of the app is read from disk and decoded five to six times across the static stage — ready
-20. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
-21. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
-22. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-23. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-24. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-25. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-26. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-27. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-28. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-29. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-30. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
-31. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+1. 0279 README, ARCHITECTURE, and the MCP catalog count five report files where sv writes seven — ready
+2. 0289 A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting) — hold: the owner's decision first; see the item
+3. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
+4. 0291 Four readers of requirements.txt, each with its own comment and option rules, and no test holding them to one another — ready
+5. 0293 Two data files are compiled in, bypassing the one data path, and the guard test cannot see them — ready
+6. 0300 The gateway fence is IPv4-only: an IPv6 gateway on the fenced network is neither removed nor knocked on — ready
+7. 0301 In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable — ready
+8. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
+9. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
+10. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
+11. 0329 Host paths go to docker -v in the short form, so an app folder whose path holds a colon cannot be mounted and the run does not say why — ready
+12. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
+13. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+14. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
+15. 0343 The publish job builds the image a third time, from scratch, on the critical path, and attests a build nobody drove — ready
+16. 0349 The image job runs its two builds, the smoke test, and the Action twice on every pull request, backlog-only ones included — ready
+17. 0350 The rest part is the critical path and the only undealt one: a fourth part of sv-check alone would cut the ceiling — ready
+18. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
+19. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
+20. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+21. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+22. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+23. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+24. 0345 The fence sentence is pasted into ten tool descriptions, and stated again in the instructions and at the top of every fenced answer — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+25. 0346 Tool descriptions carry how-to-behave text and the same paragraphs several times, and the instructions restate the catalog — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+26. 0347 stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+27. 0348 stackvet_prompts with no argument sends all 36 prompts, twice — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+28. 0361 Fence tags cost 141 characters per finding where 6 hex digits would do — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+29. 0362 stackvet_guidance and stackvet_before send each prompt twice, in the text and in the structured result — hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
 
 ## Log
 
@@ -269,3 +267,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 01:53 — assigned 0352 to builder-none (none) as next: lane 5: secrets scan regex passes, secrets.rs only; no file shared with builder-full's lane
 - 2026-10-13 01:53 — assigned 0353 to builder-none (none) as next: lane 5: one query walk per rule, ast.rs only; no file shared with builder-full's lane
 - 2026-10-13 02:23 — finished 0368 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1670; now holds 0367
+- 2026-10-13 02:53 — finished 0367 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1673; now holds 0364
+- 2026-10-13 02:53 — assigned 0351 to builder-none (none) as next: lane 6: read each file once in the static stage; sv-scan and the sv-check readers, after 0352 and 0353 in the same files; none in builder-full's lane
+- 2026-10-13 02:53 — assigned 0263 to builder-none (none) as next: lane 6: static half of V16.5.4, supporting only; ast.rs and the coverage files, which stay in this lane
