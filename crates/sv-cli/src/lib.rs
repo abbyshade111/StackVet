@@ -719,12 +719,14 @@ pub fn adapters_examined(
         })
         .zip(adapters.all())
         .map(|(entry, adapter)| {
-            entry.with_tool(
-                run.tools
-                    .iter()
-                    .find(|(id, _)| id == &adapter.id)
-                    .map(|(_, tool)| tool.clone()),
-            )
+            entry
+                .with_tool(
+                    run.tools
+                        .iter()
+                        .find(|(id, _)| id == &adapter.id)
+                        .map(|(_, tool)| tool.clone()),
+                )
+                .as_outside_tool(&adapter.name)
         })
         .collect()
 }

@@ -493,6 +493,36 @@ pub fn page(report: &Report) -> String {
     }
 
     // Split by level, level 1 first. See `crate::groups`.
+    // What each outside tool did, after what was not examined (backlog 0379).
+    let tools = crate::outside_tools(report);
+    if !tools.is_empty() {
+        b.push_str("<h2>Outside tools</h2>\n");
+        if crate::no_outside_tool_ran(&tools) {
+            b.push_str(&format!(
+                "<p>None ran this time. They run only with <code>sv report --tools</code>, at a terminal: {}.</p>\n",
+                escape(&tools.iter().map(|r| r.name.as_str()).collect::<Vec<_>>().join(", "))
+            ));
+        } else {
+            b.push_str(&format!(
+                "<p>{}</p>\n<table>\n<tr><th>tool</th><th>what happened</th><th>version</th><th class=\"n\">found</th>\
+                 <th class=\"n\">agreed with StackVet</th><th class=\"n\">took</th></tr>\n",
+                escape(crate::OUTSIDE_TOOLS_SECTION)
+            ));
+            for r in &tools {
+                b.push_str(&format!(
+                    "<tr><td>{}</td><td>{}</td><td>{}</td><td class=\"n\">{}</td><td class=\"n\">{}</td><td class=\"n\">{}</td></tr>\n",
+                    escape(&r.name),
+                    escape(&r.what),
+                    escape(r.version.as_deref().unwrap_or("")),
+                    r.found,
+                    r.agreed,
+                    escape(r.took.as_deref().unwrap_or(""))
+                ));
+            }
+            b.push_str("</table>\n");
+        }
+    }
+
     b.push_str("<h2>Requirements that apply</h2>\n");
     for group in crate::groups::by_level(&report.requirements) {
         b.push_str(&format!(
@@ -926,6 +956,9 @@ fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
             "<p class=\"note\"><em>{}</em></p>\n",
             escape(&held)
         ));
+    }
+    if let Some(by) = crate::found_by(report, f) {
+        b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&by)));
     }
     for note in crate::finding_notes(f) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&note)));

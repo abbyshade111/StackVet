@@ -348,6 +348,35 @@ pub fn compliance(report: &Report) -> String {
         out.push('\n');
     }
 
+    // What each outside tool did, after what was not examined (backlog 0379).
+    let tools = crate::outside_tools(report);
+    if !tools.is_empty() {
+        out.push_str("## Outside tools\n\n");
+        if crate::no_outside_tool_ran(&tools) {
+            out.push_str(&format!(
+                "None ran this time. They run only with `sv report --tools`, at a terminal: {}.\n\n",
+                tools.iter().map(|r| r.name.as_str()).collect::<Vec<_>>().join(", ")
+            ));
+        } else {
+            out.push_str(&format!(
+                "{}\n\n| tool | what happened | version | found | agreed with StackVet | took |\n|---|---|---|---:|---:|---:|\n",
+                crate::OUTSIDE_TOOLS_SECTION
+            ));
+            for r in &tools {
+                out.push_str(&format!(
+                    "| {} | {} | {} | {} | {} | {} |\n",
+                    cell(&r.name),
+                    cell(&r.what),
+                    cell(r.version.as_deref().unwrap_or("")),
+                    r.found,
+                    r.agreed,
+                    r.took.as_deref().unwrap_or("")
+                ));
+            }
+            out.push('\n');
+        }
+    }
+
     // By chapter, with what does not apply counted beside what does, and the requirements' own
     // words in an appendix at the end. See `crate::chapters` for why.
     out.push_str("## Requirements that apply\n\n");
@@ -1062,6 +1091,9 @@ fn finding_section(out: &mut String, report: &Report, finding: &sv_check::Findin
     }
     if let Some(held) = crate::baseline_note(report, finding) {
         out.push_str(&format!("*{}*\n\n", inert(&held)));
+    }
+    if let Some(by) = crate::found_by(report, finding) {
+        out.push_str(&format!("*{}*\n\n", inert(&by)));
     }
     for note in crate::finding_notes(finding) {
         out.push_str(&format!("*{}*\n\n", inert(&note)));

@@ -698,6 +698,132 @@ fn a_finding_from_the_running_app_shows_what_stackvet_saw() {
 }
 
 #[test]
+fn the_outside_tools_section_says_what_each_tool_did_and_each_finding_names_its_tool() {
+    // Each outside tool's run was in `report.json` only (backlog 0379), and a tool's finding named neither the tool
+    // nor its rule: a person could not tell Bandit's finding from StackVet's.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut bandit = finding("bandit.B613", &[]);
+    bandit.title = "A bidirectional control character in the code".into();
+    let mut own = finding("ast.sql", &[]);
+    own.title = "A query built by hand".into();
+    own.also_reported_by = vec!["semgrep.python.sqli".into()];
+    let mut i = inputs(&f, &buckets, vec![bandit, own], &[]);
+    // So "What was not examined" is there to come before the tools.
+    i.gaps = vec![Gap {
+        what: "the running app".into(),
+        why: "it was not started".into(),
+        reason: sv_report::GapReason::NotAsked,
+        requirements: Vec::new(),
+    }];
+    let mut report = build(i);
+    let run = |program: &str, version: &str, ms: u64| sv_check::adapters::ToolRun {
+        program: program.into(),
+        version: Some(version.into()),
+        took_ms: ms,
+        ..Default::default()
+    };
+    report.examined = vec![
+        sv_report::Examined::ran("bandit.")
+            .with_tool(Some(run("Bandit", "bandit 1.9.4", 3187)))
+            .as_outside_tool("Bandit"),
+        sv_report::Examined::ran("semgrep.")
+            .with_tool(Some(run("Semgrep", "1.176.0", 16621)))
+            .as_outside_tool("Semgrep"),
+        sv_report::Examined::not_run(
+            "codeql-python.",
+            "CodeQL (Python) is not installed on this computer",
+        )
+        .as_outside_tool("CodeQL (Python)"),
+        sv_report::Examined::nothing_to_examine("gosec.", "this app has no code in go")
+            .as_outside_tool("gosec"),
+        // `sv`'s own checks are not outside tools, and are never a row.
+        sv_report::Examined::ran("ast."),
+    ];
+    let rows = sv_report::outside_tools(&report);
+    assert_eq!(rows.len(), 4, "{rows:?}");
+    assert_eq!(rows[0].found, 1, "Bandit's own finding: {rows:?}");
+    assert_eq!(rows[0].version.as_deref(), Some("bandit 1.9.4"));
+    assert_eq!(rows[0].took.as_deref(), Some("3.2 s"));
+    assert_eq!(
+        (rows[1].found, rows[1].agreed),
+        (0, 1),
+        "Semgrep agreed on StackVet's line: {rows:?}"
+    );
+    assert!(
+        rows[2]
+            .what
+            .starts_with("Did not run: CodeQL (Python) is not installed"),
+        "{rows:?}"
+    );
+    assert!(
+        rows[2].version.is_none() && rows[2].took.is_none(),
+        "{rows:?}"
+    );
+    assert!(
+        rows[3].what.starts_with("Nothing for it to read"),
+        "{rows:?}"
+    );
+    for (name, page) in [
+        ("report.html", sv_report::html::page(&report)),
+        ("compliance.md", sv_report::markdown::compliance(&report)),
+    ] {
+        let gaps = page
+            .find("What was not examined")
+            .unwrap_or_else(|| panic!("{name}: the gaps"));
+        let tools = page
+            .find("Outside tools")
+            .unwrap_or_else(|| panic!("{name}: the section\n{page}"));
+        let requirements = page
+            .find("Requirements that apply")
+            .unwrap_or_else(|| panic!("{name}: the tables"));
+        assert!(
+            gaps < tools && tools < requirements,
+            "{name}: after the gaps, before the tables"
+        );
+        assert!(
+            page.contains("bandit 1.9.4") && page.contains("16.6 s"),
+            "{name}: {page}"
+        );
+    }
+    for (name, page) in [
+        ("report.html", sv_report::html::page(&report)),
+        ("security.md", sv_report::markdown::security(&report)),
+    ] {
+        // Each finding's own section, from its title to the next finding's heading.
+        let section = |title: &str| {
+            let at = page
+                .rfind(title)
+                .unwrap_or_else(|| panic!("{name}: {title}"));
+            let end = ["<h3", "\n### ", "<h2", "\n## "]
+                .iter()
+                .filter_map(|h| page[at..].find(h).map(|i| at + i))
+                .min()
+                .unwrap_or(page.len());
+            page[at..end].to_owned()
+        };
+        assert!(
+            section("A bidirectional control character").contains("Found by Bandit, rule `B613`."),
+            "{name}: the tool's finding names its tool and rule"
+        );
+        assert!(
+            !section("A query built by hand").contains("Found by"),
+            "{name}: StackVet's own finding is not said to be a tool's"
+        );
+    }
+    // With no tool run at all, as in a plain `sv report`, the section is one sentence, not a table of "did not run".
+    report.examined = vec![
+        sv_report::Examined::not_run("bandit.", "outside tools run only with --tools")
+            .as_outside_tool("Bandit"),
+        sv_report::Examined::not_run("semgrep.", "outside tools run only with --tools")
+            .as_outside_tool("Semgrep"),
+    ];
+    let page = sv_report::markdown::compliance(&report);
+    assert!(page.contains("None ran this time. They run only with `sv report --tools`, at a terminal: Bandit, Semgrep."), "{page}");
+    assert!(!page.contains("| Bandit |"), "{page}");
+}
+
+#[test]
 fn the_reports_lead_with_what_to_fix_and_say_what_was_not_examined_right_after() {
     // Order is the message (ADR-110): the things to fix first, worst first, then how the report was made, then
     // what was not examined, before anything else. Findings read without the gaps read as the whole truth about

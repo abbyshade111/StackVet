@@ -494,6 +494,10 @@ pub struct Examined {
     /// same as one against today's unless the report says which it was.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub advisories: Option<AdvisoryDatabase>,
+    /// The outside tool this entry is, by its name (`Semgrep`, `Bandit`), so the report can say what each one did
+    /// (backlog 0379). `None` for `sv`'s own checks.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outside_tool: Option<String>,
 }
 
 /// The advisory database a report compared the app's packages with.
@@ -550,6 +554,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -561,6 +566,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -572,6 +578,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -584,6 +591,12 @@ impl Examined {
     /// The same entry, with what the outside tool was and how its run went.
     pub fn with_tool(mut self, tool: Option<sv_check::adapters::ToolRun>) -> Self {
         self.tool = tool;
+        self
+    }
+
+    /// The same entry, marked as the outside tool it is, by its name (backlog 0379).
+    pub fn as_outside_tool(mut self, name: impl Into<String>) -> Self {
+        self.outside_tool = Some(name.into());
         self
     }
 
@@ -601,6 +614,7 @@ impl Examined {
             stand_in: None,
             tool: None,
             advisories: None,
+            outside_tool: None,
         }
     }
 
@@ -1473,6 +1487,96 @@ pub fn fix_then_notes(
 pub fn is_note(f: &sv_check::Finding) -> bool {
     f.severity == sv_check::Severity::Info && !f.apart()
 }
+
+/// One outside tool's run, as the "Outside tools" section shows it (backlog 0379).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ToolRow {
+    /// The tool, by its name, with the program that stood in for it when one did.
+    pub name: String,
+    /// Whether it ran, and why not when it did not, in a sentence.
+    pub what: String,
+    /// The version it answered, when it ran.
+    pub version: Option<String>,
+    /// The findings in this report that are its own.
+    pub found: usize,
+    /// The findings of `sv`'s own, or another tool's, it also reported on the same line.
+    pub agreed: usize,
+    /// How long it took, when it ran.
+    pub took: Option<String>,
+}
+
+/// Every outside tool `sv` knows, in the order it knows them, with what each did this run (backlog 0379). Empty when
+/// the report names none.
+pub fn outside_tools(report: &Report) -> Vec<ToolRow> {
+    report
+        .examined
+        .iter()
+        .filter_map(|e| {
+            let name = e.outside_tool.as_ref()?;
+            let ran = matches!(e.state, ExaminedState::Ran | ExaminedState::Partly);
+            let why = e.why.clone().unwrap_or_default();
+            let what = match e.state {
+                ExaminedState::Ran => match &e.stand_in {
+                    Some(stood) => format!("Ran. {stood}"),
+                    None => "Ran.".to_owned(),
+                },
+                ExaminedState::Partly => format!("Ran on part of the app: {why}"),
+                ExaminedState::NotRun => format!("Did not run: {why}"),
+                ExaminedState::NothingToExamine => format!("Nothing for it to read: {why}"),
+            };
+            let tool = e.tool.as_ref();
+            Some(ToolRow {
+                name: match tool {
+                    Some(t) if ran && !t.program.is_empty() && &t.program != name => {
+                        format!("{name} ({} in its place)", t.program)
+                    }
+                    _ => name.clone(),
+                },
+                what,
+                version: tool.filter(|_| ran).and_then(|t| t.version.clone()),
+                found: report
+                    .findings
+                    .iter()
+                    .filter(|f| f.rule_id.starts_with(&e.rules))
+                    .count(),
+                agreed: report
+                    .findings
+                    .iter()
+                    .filter(|f| f.also_reported_by.iter().any(|r| r.starts_with(&e.rules)))
+                    .count(),
+                took: tool
+                    .filter(|_| ran)
+                    .map(|t| format!("{:.1} s", t.took_ms as f64 / 1000.0)),
+            })
+        })
+        .collect()
+}
+
+/// "Found by Bandit, rule `B613`." for a finding an outside tool raised, by the tool's name and its own rule id; `None`
+/// for `sv`'s own (backlog 0379). The longest matching entry decides, as it does for `Examined`.
+pub fn found_by(report: &Report, f: &sv_check::Finding) -> Option<String> {
+    let e = report
+        .examined
+        .iter()
+        .filter(|e| e.outside_tool.is_some() && f.rule_id.starts_with(&e.rules))
+        .max_by_key(|e| e.rules.len())?;
+    let rule = &f.rule_id[e.rules.len()..];
+    Some(format!(
+        "Found by {}, rule `{rule}`.",
+        e.outside_tool.as_deref().unwrap_or_default()
+    ))
+}
+
+/// Whether no outside tool ran at all this time, as in a plain `sv report`: the section is then a sentence, not a
+/// table of the same "did not run" (backlog 0379).
+pub fn no_outside_tool_ran(rows: &[ToolRow]) -> bool {
+    rows.iter().all(|r| r.version.is_none() && r.took.is_none())
+}
+
+/// What the "Outside tools" section says above its table.
+pub const OUTSIDE_TOOLS_SECTION: &str = "The security tools each language already has, run beside StackVet's own \
+     checks with `sv report --tools`. Their findings are among the things to fix above, each marked with the tool's \
+     rule; one that found the same as StackVet on the same line is counted here as agreeing.";
 
 /// How many of a finding's exchanges "What StackVet saw" quotes before it counts the rest.
 pub const SAW_SHOWN: usize = 3;
