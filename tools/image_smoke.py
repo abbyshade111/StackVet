@@ -134,7 +134,7 @@ def main():
         check_call = ("tools/call", {"name": "stackvet_check", "arguments": {"path": "app"}})
         replies = session(docker(args.image, root, me), [
             ("tools/list", {}),
-            ("tools/call", {"name": "stackvet_spec", "arguments": {}}),
+            ("tools/call", {"name": "stackvet_spec", "arguments": {"section": "all"}}),
             check_call,
             ("tools/call", {"name": "stackvet_record_answer", "arguments": {"path": "app"}}),
             ("tools/call", {"name": "stackvet_bundle", "arguments": {"path": "app"}}),

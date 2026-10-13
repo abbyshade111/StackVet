@@ -1,6 +1,6 @@
 # stackvet_spec is 47,187 characters, sent whole every time and never paged, with no test on its size
 
-**Status:** claimed by builder-none, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: MCP token cost. Severity: medium. Verified against the code by the reviewing session before filing.
 

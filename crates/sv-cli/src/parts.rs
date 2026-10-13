@@ -1,4 +1,4 @@
-//! An answer in parts: `stackvet_plan` and `stackvet_check`, in pieces an AI coding tool takes in whole.
+//! An answer in parts: `stackvet_plan`, `stackvet_check` and `stackvet_spec`, in pieces an AI coding tool takes in whole.
 //!
 //! Found in the loop pilot (5 October 2026, BACKLOG "`sv`'s plan is too big for an AI tool to take in as one
 //! answer"): the plan for the trials' club app was 115,618 characters, and Claude Code refused to pass it to the
@@ -214,7 +214,7 @@ pub fn ask(args: &Value, tool: &str, names: &[&str]) -> Result<Ask> {
 /// One answer of a tool whose answer comes in parts.
 pub struct Answer<'a> {
     pub tool: &'static str,
-    /// What the answer is, for the list of parts: "plan" or "check".
+    /// What the answer is, for the list of parts: "plan", "check" or "spec".
     pub what: &'static str,
     /// Its sections, in the order of the whole answer, made with the fence given.
     pub sections: &'a dyn Fn(&Fence) -> Vec<Section>,
@@ -359,10 +359,17 @@ pub const PARTS: &str = "[the parts of this answer]";
 
 fn how_to_ask(answer: &Answer) -> String {
     format!(
-        "Call {} again for the same app with `section` set to a section's name, and `page` when it has more \
+        "Call {} again{} with `section` set to a section's name, and `page` when it has more \
          than one page (pages start at 1). `\"section\": \"all\"` gives the whole {} at once, which may be more \
          than you can take in whole.",
-        answer.tool, answer.what
+        answer.tool,
+        // The spec is the same for every app; a plan and a check are of one.
+        if answer.what == "spec" {
+            ""
+        } else {
+            " for the same app"
+        },
+        answer.what
     )
 }
 

@@ -960,7 +960,8 @@ fn the_prompts_shown_to_work_are_where_every_builder_starts_and_no_others() {
         .handle(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}))
         .unwrap();
     let instructions = hello["result"]["instructions"].as_str().unwrap().to_owned();
-    let spec = text(&call(&server, "stackvet_spec", json!({}))).to_owned();
+    // The whole spec, as `sv init` prints it; asked with no section, a long one comes in parts.
+    let spec = text(&call(&server, "stackvet_spec", json!({ "section": "all" }))).to_owned();
     let mut shown = 0;
     for p in &library.prompts {
         let named = format!("(`{}`)", p.id);
