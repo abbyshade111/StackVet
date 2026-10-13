@@ -24,6 +24,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 11. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
 12. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
 13. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
+14. 0410 The fence over IPv6, after review: no IPv6 at all on the fenced network, a test on the option list, and ADR-019 said exactly — ready
 
 ## Log
 
@@ -297,3 +298,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 14:49 — finished 0361 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1713; now holds 0345
 - 2026-10-13 14:49 — assigned 0337 to builder-none (none) as next: lane 10, owner released 13 Oct: questions as a count by default; mcp tools.rs and check_text.rs, after lane 7 in the same files
 - 2026-10-13 14:49 — assigned 0336 to builder-none (none) as next: lane 10, owner released 13 Oct: unchanged findings as one line each; mcp tools.rs, catalog.rs, check_text.rs, parts.rs, after 0337
+- 2026-10-13 15:07 — queued 0410
