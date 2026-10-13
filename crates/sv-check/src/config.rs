@@ -58,6 +58,9 @@ impl ConfigReport {
                 } else {
                     credit
                 };
+                // No file named like a secrets file in the history is another sample of the same sentence, so its
+                // pass is in part as well (backlog 0331).
+                let credit = credit.in_part_if(id == "config.secrets-file-committed");
                 self.passed.push(credit)
             }
             Outcome::Failed(f) => self.findings.push(*f),
@@ -1160,8 +1163,8 @@ mod tests {
             whole
                 .passed
                 .iter()
-                .any(|p| p.check_id == "config.secrets-file-committed"),
-            "the whole history did not pass: {whole:?}"
+                .any(|p| p.check_id == "config.secrets-file-committed" && p.in_part),
+            "the whole history did not pass, in part: {whole:?}"
         );
     }
 
