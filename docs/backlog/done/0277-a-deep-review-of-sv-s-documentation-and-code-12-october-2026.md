@@ -1,6 +1,6 @@
 # A deep review of sv's documentation and code (12 October 2026), for the coordination trial
 
-**Status:** claimed by stackvet-orchestrator, 12 October 2026
+**Status:** done, 13 October 2026
 
 Asked for by the owner on 12 October 2026, after the coordination trial (0273) was built: "a deep review of the StackVet
 documentation (for consistency, accuracy, etc.) and code (both vulnerabilities and code quality)". Run by session
@@ -112,3 +112,5 @@ outside tools run on the owner's computer with a cleared environment (ADR-032), 
 
 **Next:** a follow-on review of efficiency (`sv`'s run speed, CI and test time, the size of MCP answers, build time),
 asked for by the owner on 12 October 2026, filed the same way and queued behind these.
+
+**Done, 13 October 2026:** the review is complete and each of its 57 findings is an item of its own (0278 to 0334), handed out on the coordination board (0273) or left open with its own status; the ones still open are taken the normal way.
