@@ -1,6 +1,6 @@
 # The publish step puts the registry token in the shell script text instead of the environment
 
-**Status:** claimed by builder-full, 12 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: low. Verified against the code by the reviewing session before filing.
 
