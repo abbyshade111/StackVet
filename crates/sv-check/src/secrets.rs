@@ -346,7 +346,31 @@ fn is_secret_name(name: &str) -> bool {
         "salt",
         "hmac",
     ];
-    NAMES.iter().any(|k| n.ends_with(k) || n.contains(k))
+    NAMES.iter().any(|k| n.ends_with(k) || n.contains(k)) || name_words(name).any(|w| w == "pass")
+}
+
+/// The words of a name, lowered: split at anything not a letter or digit and where a lower-case
+/// letter meets a capital, so `DB_PASS`, `smtp-pass`, and `dbPass` each hold the word `pass` and
+/// `BYPASS_MODE`, `passport`, and `passengerCount` do not (backlog 0315). A word only a substring
+/// would find is a whole word here or nothing.
+fn name_words(name: &str) -> impl Iterator<Item = String> + '_ {
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let mut previous_lower = false;
+    for c in name.chars() {
+        if !c.is_ascii_alphanumeric() {
+            words.push(std::mem::take(&mut word));
+            previous_lower = false;
+            continue;
+        }
+        if c.is_ascii_uppercase() && previous_lower {
+            words.push(std::mem::take(&mut word));
+        }
+        previous_lower = c.is_ascii_lowercase();
+        word.push(c.to_ascii_lowercase());
+    }
+    words.push(word);
+    words.into_iter().filter(|w| !w.is_empty())
 }
 
 /// A name whose value is masked wherever `sv` repeats text it did not write: every name the scan
@@ -1220,3 +1244,6 @@ mod tests;
 
 #[cfg(test)]
 mod redact_named_tests;
+
+#[cfg(test)]
+mod pass_name_tests;

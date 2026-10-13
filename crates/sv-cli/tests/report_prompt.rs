@@ -94,14 +94,15 @@ fn every_section_and_file_the_prompt_names_is_in_a_report_sv_writes() {
 }
 
 #[test]
-fn the_prompt_starts_with_what_was_not_checked_and_never_says_secure() {
+fn the_prompt_starts_with_what_to_fix_then_what_was_not_checked_and_never_says_secure() {
     let text = sv_cli::report_prompt::TEXT;
     let at = |s: &str| {
         text.find(s)
             .unwrap_or_else(|| panic!("no {s:?} in the prompt"))
     };
-    assert!(at("What was not checked, first") < at("At most three things to do first"));
-    assert!(at("\"What was not examined\"") < at("\"What to do next\""));
+    // The things to fix first, then what was not checked, as the report now orders them (ADR-110).
+    assert!(at("At most three things to fix first") < at("Then what was not checked"));
+    assert!(at("\"What to do next\"") < at("\"What was not examined\""));
     assert!(text.contains("Never tell me the app is secure, safe, compliant, or that it passed"));
     assert!(text.contains("Do not soften what the report says"));
     assert!(text.contains("do not guess what a report would say"));

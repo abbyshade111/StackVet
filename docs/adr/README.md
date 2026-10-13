@@ -155,6 +155,8 @@ source files, and in two tests:
 | [ADR-106](ADR-106.md) | The suite runs as three jobs side by side, and the required check waits for them all (accepted, 12 October 2026) |
 | [ADR-107](ADR-107.md) | The StackVet mark in the heading of `report.html` and the dashboard, drawn in the page, with the pages' policy unchanged (accepted, 12 October 2026) |
 | [ADR-108](ADR-108.md) | The Windows program is published as a signed GitHub Release when the owner pushes a version tag (accepted, 12 October 2026) |
+| [ADR-109](ADR-109.md) | The second loop trial tests `sv`'s waiting features on two briefs, with an outside check the builder never sees (accepted, 12 October 2026) |
+| [ADR-110](ADR-110.md) | The reports lead with the things to fix, and say what was not examined right after (accepted, 12 October 2026) |
 
 ## Names in the records
 
