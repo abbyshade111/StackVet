@@ -1,6 +1,6 @@
 # Each finding shows what StackVet saw: the request and reply, the lines of code, or the tool's own words
 
-**Status:** open
+**Status:** claimed by securevibe-trial-prep, 12 October 2026
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
