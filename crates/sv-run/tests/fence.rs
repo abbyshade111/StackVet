@@ -413,12 +413,14 @@ fn the_fence_closes_the_way_to_this_computer_through_the_gateway() {
     // stop the run here, or its passing below would prove nothing.
     let open = "sv-gateway-open-net";
     make(open, &[]);
-    let refused = backend.verify_gateway_closed(open);
+    let refused = backend.verify_gateway_closed(open, true);
     remove(open);
     let refused =
         refused.expect_err("the gateway of an --internal network was not found reachable");
+    // Reached, or, behind a host firewall that drops the knock, not taken for a fence (backlog 0301).
     assert!(
-        format!("{refused:?}").contains("reached its gateway"),
+        format!("{refused:?}").contains("reached its gateway")
+            || format!("{refused:?}").contains("`--internal` alone"),
         "it stopped for the wrong reason: {refused:?}"
     );
 
@@ -428,7 +430,7 @@ fn the_fence_closes_the_way_to_this_computer_through_the_gateway() {
         closed,
         &["-o", "com.docker.network.bridge.gateway_mode_ipv4=isolated"],
     );
-    let verdict = backend.verify_gateway_closed(closed);
+    let verdict = backend.verify_gateway_closed(closed, false);
     remove(closed);
     assert!(verdict.is_ok(), "the runner's own network: {verdict:?}");
 }

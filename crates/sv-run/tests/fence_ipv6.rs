@@ -90,7 +90,7 @@ fn an_ipv6_gateway_left_open_stops_the_run() {
         "-c",
         &format!("nc -vv -w 3 {gateway} 9 </dev/null 2>&1; echo \"exit=$?\""),
     ]);
-    let verdict = backend.verify_gateway_closed(net);
+    let verdict = backend.verify_gateway_closed(net, false);
     let _ = docker(&["network", "rm", net]);
     let lower = knock.to_lowercase();
     if lower.contains("refused") || lower.contains("exit=0") {
@@ -143,7 +143,7 @@ fn the_network_the_runner_asks_for_first_closes_both_gateways() {
         );
         return;
     }
-    let verdict = backend.verify_gateway_closed(net);
+    let verdict = backend.verify_gateway_closed(net, false);
     let _ = docker(&["network", "rm", net]);
     assert!(verdict.is_ok(), "both gateways isolated: {verdict:?}");
 }
