@@ -331,6 +331,32 @@ pub struct ThreatLine {
     pub atlas: Vec<AtlasRef>,
 }
 
+impl ThreatLine {
+    /// The status as the report's threat table shows it. "Checked in part" says how many of the threat's
+    /// requirements at this level were checked, so one in five looked at does not read as all five checked in
+    /// part (backlog 0333).
+    pub fn shown(&self) -> String {
+        match self.status {
+            ThreatStatus::CheckedInPart => {
+                let of = self.found.len()
+                    + self.checked.len()
+                    + self.app_tested.len()
+                    + self.documented.len()
+                    + self.attested.len()
+                    + self.stated.len()
+                    + self.by_hand.len()
+                    + self.not_verified.len();
+                format!(
+                    "checked in part: {} of {of} requirement{} checked",
+                    self.checked.len(),
+                    if of == 1 { "" } else { "s" }
+                )
+            }
+            status => status.label().to_owned(),
+        }
+    }
+}
+
 /// Whether a set of conditions holds: all true, one false, or some unknown and none false.
 fn holds(ctx: &ConditionContext, when: &[String]) -> (Option<bool>, Vec<String>) {
     let mut unknown = Vec::new();

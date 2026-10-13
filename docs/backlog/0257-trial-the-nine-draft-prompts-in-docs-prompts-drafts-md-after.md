@@ -1,6 +1,6 @@
 # Trial the nine draft prompts in docs/prompts/drafts.md, after the git-history check (0258)
 
-**Status:** partly done: group A ran on 12 October 2026 with no reading for all seven drafts (docs/prompts/drafts-trial/results.md); the drafts needing a second brief (10's reset half, 11, 13, 15, 16, 17 with the group G account changes, 21) and the process drafts (1 to 7, 9, 14, 23) remain, each to be proposed with its cost
+**Status:** partly done: the second loop trial ran on 12 and 13 October 2026 (docs/prompts/loop-2/results.md); what remains is the process drafts (1 to 7, 9, 14, 23) and those needing another brief (11, 13, 15, 16, 21), each proposed to the owner with its cost
 
 The nine drafts in `docs/prompts/drafts.md` (design entry 0368, from the Cursor build) are written but not tested, and
 none is served by `sv`. Each draft names what its trial would measure. The trial needs the owner's yes and a budget,
@@ -31,3 +31,13 @@ library's rule decides. About 80 builds, a budget of about $20 to $25 of the own
 day. The protocol is written and merged before the first build (`docs/prompts/drafts-trial/protocol.md`). Drafts that
 need a second brief (10's sign-up half, 11, 13, 15, 16, 17, 21), and the process drafts (1 to 7, 9, 14, 23), are not in
 this claim; each is proposed to the owner with its own cost.
+
+**Scope of this claim (12 October 2026, evening), the owner's choice after group A gave no reading ("both briefs, $50
+budget, scripted review is fine if labeled"):** the second loop trial, which tests `sv`'s own waiting features on
+real AI-built apps rather than prompts (ADR-109, proposed). Two briefs with `sv` attached through its MCP server: the
+club brief corrected (`stackvet.toml`, the text forms and private pages listed, git allowed with signed commits), and
+a new accounts brief (sign-up, reset, and the four account changes of 0232 group G, plus a form offering none, with
+`not-offered` confirmed in `sv review` by a labeled script). Each build checked a second time with the outside tools
+(0006 part 21, claimed with this), `SV_LOG` set, `sv` run twice per build for the history, and the build-loop record
+and kept evidence read. Haiku 5.5 and Sonnet 5.5 by exact id; a budget of $50; nothing canceled for cost. The protocol
+and its tools are written and merged before any build. Draft 17's own trial waits for the accounts brief's controls.

@@ -263,6 +263,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         };
         let mut findings = vec![
             finding("public/js/jquery.min.js"),
