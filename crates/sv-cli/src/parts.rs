@@ -220,6 +220,8 @@ pub struct Answer<'a> {
     pub sections: &'a dyn Fn(&Fence) -> Vec<Section>,
     /// The sections the first answer starts with, in that order; the rest follow in the whole answer's order.
     pub first: &'a [&'static str],
+    /// Sections the first answer never holds, only names in its list of parts with how to ask for them.
+    pub only_asked: &'a [&'static str],
     /// The structured result's fields every part carries.
     pub always: Map<String, Value>,
     /// The whole answer, as it was before it came in parts.
@@ -251,7 +253,9 @@ pub fn respond(answer: &Answer, ask: &Ask) -> Result<Value> {
                 return Ok(whole());
             }
             let mut order: Vec<usize> = answer.first.iter().filter_map(|n| index(n)).collect();
-            let rest: Vec<usize> = (0..measured.len()).filter(|n| !order.contains(n)).collect();
+            let rest: Vec<usize> = (0..measured.len())
+                .filter(|n| !order.contains(n) && !answer.only_asked.contains(&measured[*n].name))
+                .collect();
             order.extend(rest);
             let all = order
                 .iter()
@@ -484,6 +488,7 @@ mod tests {
             what: "test",
             sections: &sections,
             first: &["both", "empty"],
+            only_asked: &[],
             always,
             whole_text: &whole_text,
             whole_structured: json!({ "app": "t", "first": [], "second": [], "none": [], "padding": "x".repeat(ANSWER_BUDGET) }),
@@ -522,6 +527,48 @@ mod tests {
         // A list with no items at all is sent empty where it would be, so "none" is said.
         assert_eq!(part("empty", 1)["none"], json!([]));
         assert_eq!(part("empty", 1)["app"], "t");
+    }
+
+    #[test]
+    fn a_section_only_asked_for_is_named_in_the_first_answer_and_not_shown() {
+        // Backlog 0337: the person's questions do not change between edits, so a check's first answer
+        // counts them and says how to ask, and holds none of them even with room to spare.
+        let answer = Answer {
+            first: &["empty"],
+            only_asked: &["both"],
+            ..answer()
+        };
+        let first = respond(&answer, &Ask::First).unwrap();
+        let shown = &first["structuredContent"]["part"]["shown"];
+        assert_eq!(
+            shown,
+            &json!([{ "section": "empty", "page": 1, "pages": 1 }]),
+            "{first:#}"
+        );
+        assert!(first["structuredContent"].get("first").is_none());
+        let said = first["content"][0]["text"].as_str().unwrap();
+        assert!(
+            said.contains(
+                "- `both`: Two lists, 3 pages: {\"section\": \"both\", \"page\": 1} to 3"
+            ),
+            "{said}"
+        );
+        // Asked for, it comes.
+        let asked = respond(
+            &answer,
+            &Ask::Part {
+                section: "both".to_owned(),
+                page: 1,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            asked["structuredContent"]["first"]
+                .as_array()
+                .unwrap()
+                .len(),
+            14
+        );
     }
 
     #[test]

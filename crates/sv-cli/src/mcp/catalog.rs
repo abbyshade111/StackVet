@@ -648,6 +648,7 @@ pub(super) fn spec(args: &Value) -> Result<Value> {
             what: "spec",
             sections: &|_| spec_sections(),
             first: &["app", "instructions"],
+            only_asked: &[],
             always: serde_json::Map::new(),
             whole_text: &|_| whole.clone(),
             whole_structured: Value::Null,
