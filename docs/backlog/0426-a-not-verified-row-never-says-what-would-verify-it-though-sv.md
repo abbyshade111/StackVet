@@ -26,3 +26,5 @@ rather than inviting the same run again. Sibling of 0372 (what each requirement 
 both.
 
 **Record.** None; `ADR-110: unchanged, because` lines for `html.rs` and `markdown.rs`.
+
+**The owner's decision, 13 October 2026** (asked by session stackvet-deep-review): yes, build it. The third answer's word must not be `owner`, which today confirms the tool's word; a confirmation stays shown as the tool's word confirmed by a person, never as the owner's own (the owner's rule of 27 September 2026, 0115). The record is a Later entry on ADR-026, proposed in the claim and accepted in the pull request that builds it.

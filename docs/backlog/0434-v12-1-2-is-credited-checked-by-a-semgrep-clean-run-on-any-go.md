@@ -43,3 +43,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage accuracy.
 - Needs a decision record?: yes: it changes what counts as evidence for V12.1.2 (and V12.1.1 if taken), a Later entry
   on ADR-018 (the adapter map is in its Governs list), and the owner's decision of 6 October 2026 in 0147 should be
   cited as the reason.
+
+**The owner's decision, 13 October 2026** (asked by session stackvet-deep-review): the website's column reads the "can be credited" count (113 of 253 ASVS on 12 October) under a heading like "can confirm or fail", with one sentence beside the table saying that for the other 40 a check can only show the control missing; AISVS is counted on the same level basis as ASVS, or the table says that it is not. The paper is not yet written, so nothing holds the older wording. Build after 0431, since the gate it adds can move the "can be credited" count; whoever takes 0376 reads this note first.

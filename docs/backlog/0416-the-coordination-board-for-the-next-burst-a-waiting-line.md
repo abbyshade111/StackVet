@@ -1,6 +1,6 @@
 # The coordination board, for the next burst: a waiting line, insert at a position, and a close command
 
-**Status:** open
+**Status:** claimed by stackvet-deep-review, 13 October 2026
 
 From the coordination trial's write-up (backlog 0273, 13 October 2026). The owner chose the same day to keep the
 coordinating session for bursts of independent findings, such as a review's items, with these three things added to

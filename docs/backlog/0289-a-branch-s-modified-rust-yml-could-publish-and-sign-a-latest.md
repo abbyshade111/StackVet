@@ -15,3 +15,5 @@
 **Fix.** Two parts. The owner's: put the `publish` job behind a GitHub Environment restricted to `main` (a repository setting). A build: add `--source-ref refs/heads/main` to the `gh attestation verify` call in `action.yml` where the runner's gh supports it (2.65 and later), else check the attestation's `workflow.ref`.
 
 **Record.** ADR-051 governs `rust.yml`; the Environment is a repository setting and wants the owner's yes and a Later line when made.
+
+**The owner's decision, 13 October 2026:** yes, the same way as 0423: an Environment named `publish` restricted to the branch `main`, made by the owner in the repository's settings, then `environment: publish` on the `publish` job with a Later line on ADR-051. Built together with 0423.
