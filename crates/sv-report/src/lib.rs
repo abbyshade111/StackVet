@@ -2086,6 +2086,10 @@ mod next_step_tests;
 #[path = "build_loop_tail_tests.rs"]
 mod build_loop_tail_tests;
 
+#[cfg(test)]
+#[path = "outranked_in_part_tests.rs"]
+mod outranked_in_part_tests;
+
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
 /// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already, and for a note worth
 /// knowing, which asks for nothing.
@@ -2320,9 +2324,12 @@ pub fn mark_outranked(
         if !outside || applies.is_empty() {
             continue;
         }
+        // Only a credit that verified the requirement whole: one in part rests, by its own words, on
+        // one sample, and says nothing of the route or file the tool's finding is about (backlog 0303).
         let run_check = |r: &String| {
             verified.iter().find(|v| {
                 v.check_id.starts_with("probe.")
+                    && !v.in_part
                     && !manual_only.contains(r.as_str())
                     && v.requirement_ids.iter().any(|id| id == r)
             })
