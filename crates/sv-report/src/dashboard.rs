@@ -290,20 +290,21 @@ impl Run {
     /// status across every run (ADR-086, answer 3). `changes_since` says the same thing in sentences.
     fn changes(&self, earlier: &Run) -> Changes {
         let mut before = Vec::new();
+        // Each run's fingerprints as a set, so the two lists are compared once each, not each with every other
+        // (backlog 0367).
+        let prints = |run: &Run| -> std::collections::HashSet<String> {
+            run.findings.iter().map(|f| f.fingerprint.clone()).collect()
+        };
+        let (then, now) = (prints(earlier), prints(self));
         let gone: Vec<&KeptFinding> = earlier
             .findings
             .iter()
-            .filter(|f| !self.findings.iter().any(|g| g.fingerprint == f.fingerprint))
+            .filter(|f| !now.contains(&f.fingerprint))
             .collect();
         let new: Vec<&KeptFinding> = self
             .findings
             .iter()
-            .filter(|f| {
-                !earlier
-                    .findings
-                    .iter()
-                    .any(|g| g.fingerprint == f.fingerprint)
-            })
+            .filter(|f| !then.contains(&f.fingerprint))
             .collect();
         for f in &new {
             before.push(format!("New finding ({}): {}", f.severity, f.title));
@@ -893,21 +894,8 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) 
                     escape(&s.sv),
                     escape(&app.folder.display().to_string())
                 ));
-                if !s.not_run.is_empty() || !s.gaps.is_empty() {
-                    b.push_str("<h3>What was not examined</h3>\n<ul>\n");
-                    if !s.not_run.is_empty() {
-                        b.push_str(&format!(
-                            "<li>Not run this time: {}. {} of the requirements that apply can only be checked that way.</li>\n",
-                            prose(&s.not_run.join(", and ")),
-                            s.only_they_reach
-                        ));
-                    }
-                    for gap in &s.gaps {
-                        b.push_str(&format!("<li>{}</li>\n", prose(gap)));
-                    }
-                    b.push_str("</ul>\n");
-                }
                 b.push_str(&glance_of(&s.counts, s.target_level));
+                // The findings first, then what was not examined, as the reports order them (ADR-110).
                 b.push_str("<h3>Findings</h3>\n");
                 if s.findings.is_empty() {
                     b.push_str("<p>No findings in this report. That says what was found, not that nothing is there.</p>\n");
@@ -926,6 +914,20 @@ pub fn page(apps: &[App], written: &str, board: Option<&Path>, health: &Health) 
                             "<li class=\"note\">… and {} more, in the report's security.md, worst first</li>\n",
                             s.findings.len() - 10
                         ));
+                    }
+                    b.push_str("</ul>\n");
+                }
+                if !s.not_run.is_empty() || !s.gaps.is_empty() {
+                    b.push_str("<h3>What was not examined</h3>\n<ul>\n");
+                    if !s.not_run.is_empty() {
+                        b.push_str(&format!(
+                            "<li>Not run this time: {}. {} of the requirements that apply can only be checked that way.</li>\n",
+                            prose(&s.not_run.join(", and ")),
+                            s.only_they_reach
+                        ));
+                    }
+                    for gap in &s.gaps {
+                        b.push_str(&format!("<li>{}</li>\n", prose(gap)));
                     }
                     b.push_str("</ul>\n");
                 }

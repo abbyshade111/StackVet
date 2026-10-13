@@ -331,6 +331,10 @@ impl Server {
             );
         }
         let a = &found.rules.attribution;
+        // Each prompt's text is in both answers on purpose (backlog 0362): a client reads the text or the
+        // structured result, not both, and a coding prompt cannot be fetched by its id (`prompts/get` serves
+        // the design prompts alone), so a client reading the structured result would lose it. The cost is bytes
+        // on the wire, not tokens. Held by `mcp/prompts_twice_tests.rs`.
         Ok(json!({
             "content": [{ "type": "text", "text": text }],
             "structuredContent": {
@@ -354,10 +358,14 @@ impl Server {
             .get("requirement")
             .and_then(Value::as_str)
             .filter(|q| !q.is_empty());
+        let id = args
+            .get("id")
+            .and_then(Value::as_str)
+            .filter(|q| !q.is_empty());
         if args.get("path").and_then(Value::as_str).is_some() {
             anyhow::ensure!(
-                requirement.is_none(),
-                "give either requirement or path, not both"
+                requirement.is_none() && id.is_none(),
+                "give either requirement, id, or path, not two of them"
             );
             // The folder with the new name, or the old one while only it exists (ADR-062).
             let folder = sv_scan::ecosystems::default_report_dir_in(&self.app_dir(args)?);
@@ -367,7 +375,14 @@ impl Server {
                 .unwrap_or_else(|| sv_scan::ecosystems::DEFAULT_REPORT_DIR.to_owned());
             let report_name = format!("{folder_name}/report.json");
             let report = folder.join("report.json");
-            // A link could point outside the root, as for every other file read here.
+            // A link could point outside the root, as for every other file read here: the folder as well as
+            // the file, since a linked folder is read through like any other (backlog 0311).
+            if let Ok(meta) = std::fs::symlink_metadata(&folder) {
+                anyhow::ensure!(
+                    !meta.file_type().is_symlink(),
+                    "{folder_name} is a link to somewhere else, so it is not read"
+                );
+            }
             if let Ok(meta) = std::fs::symlink_metadata(&report) {
                 anyhow::ensure!(
                     !meta.file_type().is_symlink(),
@@ -418,18 +433,86 @@ impl Server {
                 "isError": false,
             }));
         }
+        anyhow::ensure!(
+            requirement.is_none() || id.is_none(),
+            "give either requirement or id, not both"
+        );
         let (prompts, ids, text) = crate::prompts_for(&self.loaded.frameworks, requirement)?;
+        let whole = |p: &sv_check::prompts::Prompt| {
+            json!({
+                "id": p.id, "title": p.title, "prompt": p.prompt,
+                "requirements": p.requirements, "sbdControls": p.sbd_controls,
+                "status": p.status.as_str(),
+                "result": p.tested.as_ref().map(|t| t.result.as_str()),
+            })
+        };
+        // One prompt in full, by the id the list gives.
+        if let Some(id) = id {
+            let Some(p) = prompts.prompts.iter().find(|p| p.id == id) else {
+                anyhow::bail!(
+                    "there is no prompt {id:?}; stackvet_prompts with no argument lists them, each with its id"
+                );
+            };
+            return Ok(json!({
+                "content": [{ "type": "text", "text": prompts.markdown(&[p]) }],
+                "structuredContent": { "prompts": [whole(p)], "credit": prompts.credit },
+                "isError": false,
+            }));
+        }
+        // With no argument, a list: one line a prompt, its text asked for by id (backlog 0348). Every prompt
+        // in full was about 28,000 characters, in the text and again in the structured result, for a tool
+        // that wanted one of them.
+        if requirement.is_none() {
+            let listed: Vec<&sv_check::prompts::Prompt> = ids
+                .iter()
+                .filter_map(|id| prompts.prompts.iter().find(|p| &p.id == id))
+                .collect();
+            let mut text = String::from(
+                "## Prompts for the AI coding tool\n\nThe library's prompts, one a line: ask stackvet_prompts with \
+                 `id` for one in full, or with `requirement` for those that target it. A prompt is shown to work \
+                 only when an app built with it passed its check and the same app built without it failed. A \
+                 prompt is an instruction, not evidence: check the app afterwards, whichever you use.\n\n",
+            );
+            for p in &listed {
+                let targets: Vec<&str> = p
+                    .requirements
+                    .iter()
+                    .chain(&p.sbd_controls)
+                    .map(String::as_str)
+                    .collect();
+                let targets = if targets.is_empty() {
+                    String::new()
+                } else {
+                    format!(" For {}.", targets.join(", "))
+                };
+                text.push_str(&format!(
+                    "- `{}`: {}. {}{targets}\n",
+                    p.id,
+                    p.title,
+                    p.status_sentence()
+                ));
+            }
+            text.push_str(&format!("\n{}\n", prompts.credit));
+            let listed: Vec<Value> = listed
+                .iter()
+                .map(|p| {
+                    json!({
+                        "id": p.id, "title": p.title,
+                        "requirements": p.requirements, "sbdControls": p.sbd_controls,
+                        "status": p.status.as_str(),
+                    })
+                })
+                .collect();
+            return Ok(json!({
+                "content": [{ "type": "text", "text": text }],
+                "structuredContent": { "prompts": listed, "credit": prompts.credit },
+                "isError": false,
+            }));
+        }
         let chosen: Vec<Value> = ids
             .iter()
             .filter_map(|id| prompts.prompts.iter().find(|p| &p.id == id))
-            .map(|p| {
-                json!({
-                    "id": p.id, "title": p.title, "prompt": p.prompt,
-                    "requirements": p.requirements, "sbdControls": p.sbd_controls,
-                    "status": p.status.as_str(),
-                    "result": p.tested.as_ref().map(|t| t.result.as_str()),
-                })
-            })
+            .map(whole)
             .collect();
         Ok(json!({
             "content": [{ "type": "text", "text": text }],
@@ -517,7 +600,9 @@ impl Server {
                      it as stated by the AI coding tool, which is less than the person's own word, and \
                      asks again. Show the person what you wrote; if they agree with it, they can change \
                      that line to `Written by: owner` themselves and record it by running `sv review` \
-                     in their own terminal. Do not change it or run `sv review` for them.",
+                     in their own terminal. If you worked it out from the code and they agree, they \
+                     leave the line as it is and confirm it through `sv review`, and the report shows \
+                     it as your words a person confirmed. Do not change it or run `sv review` for them.",
                 fence.wrap(id),
                 fence.wrap(&written.path.display().to_string())
             )

@@ -45,8 +45,10 @@ pub fn read(folder: &Path) -> Result<Side> {
     })?;
     let json: Value = serde_json::from_slice(&bytes)
         .with_context(|| format!("{} is not JSON sv can read", path.display()))?;
-    // Whether the folder's seal holds for its files as they are now, `report.json` among them.
-    let sealed = crate::report_seal::proven(&folder).map(|_| ());
+    // Whether the folder's seal holds for its files as they are now, `report.json` among them. A
+    // report kept in another folder than it was written in is still `sv`'s: comparing reports kept
+    // from earlier runs is what this is for (backlog 0286), and each says when its run started.
+    let sealed = crate::report_seal::proven_wherever(&folder).map(|_| ());
     Ok(Side {
         folder,
         json,

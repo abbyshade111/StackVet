@@ -18,3 +18,5 @@
 
 **The owner's word, 12 October 2026:** held until the loop test (0257) has finished, since this changes what the AI coding tool
 is told, and the trial's comparisons should not move under it; the same reason as 0338.
+
+**Released, 13 October 2026, the owner's word** ("I'm fine releasing those items"): the loop test's second trial has its results (#1669), and the hold above is lifted, the catalog description included. 0338 stays held.
