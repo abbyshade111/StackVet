@@ -91,7 +91,10 @@ fn an_ipv6_gateway_left_open_stops_the_run() {
         "-c",
         &format!("nc -vv -w 3 {gateway} 9 </dev/null 2>&1; echo \"exit=$?\""),
     ]);
-    let verdict = backend.verify_gateway_closed(net, false);
+    let verdict = backend.verify_gateway_closed(
+        net,
+        Some(&["com.docker.network.bridge.gateway_mode_ipv4=isolated"]),
+    );
     let _ = docker(&["network", "rm", net]);
     let lower = knock.to_lowercase();
     if lower.contains("refused") || lower.contains("exit=0") {
@@ -143,7 +146,13 @@ fn a_network_with_ipv6_is_refused_even_with_both_gateways_isolated() {
         );
         return;
     }
-    let verdict = backend.verify_gateway_closed(net, false);
+    let verdict = backend.verify_gateway_closed(
+        net,
+        Some(&[
+            "com.docker.network.bridge.gateway_mode_ipv4=isolated",
+            "com.docker.network.bridge.gateway_mode_ipv6=isolated",
+        ]),
+    );
     let _ = docker(&["network", "rm", net]);
     // `sv` asks for no IPv6, and over IPv6 the bridge's link-local address, which no gateway list
     // names, may be the host: a network that has it is refused whatever its gateways (backlog 0410).
@@ -155,7 +164,10 @@ fn a_network_with_ipv6_is_refused_even_with_both_gateways_isolated() {
 }
 
 #[test]
-fn the_network_the_runner_asks_for_first_passes() {
+fn the_network_the_runner_makes_is_judged_by_the_branch_it_took() {
+    // Backlog 0414: through the runner's own way of making the network, fallback included, saying which
+    // branch it took. One made with a way of leaving out the gateway must pass where nothing answers;
+    // one made plain must never pass.
     let backend = DockerBackend::new();
     if backend.available().is_err() {
         println!("no container backend here; the runner's network cannot be exercised");
@@ -163,23 +175,22 @@ fn the_network_the_runner_asks_for_first_passes() {
     }
     let net = "sv-fence-runner-net";
     let _ = docker(&["network", "rm", net]);
-    // The runner's own command, with the options it asks for first.
-    let args = sv_run::docker::network_create_args(
-        &[
-            "com.docker.network.bridge.gateway_mode_ipv4=isolated",
-            "com.docker.network.bridge.gateway_mode_ipv6=isolated",
-        ],
-        net,
-    );
-    let args: Vec<&str> = args.iter().map(String::as_str).collect();
-    let (made, said) = docker(&args);
-    if !made {
-        println!(
-            "this daemon refuses the runner's first network, so the runner tries the next: {said}"
-        );
-        return;
-    }
-    let verdict = backend.verify_gateway_closed(net, false);
+    let made = backend
+        .make_fenced_network(net)
+        .expect("the runner could make its network");
+    let verdict = backend.verify_gateway_closed(net, made);
     let _ = docker(&["network", "rm", net]);
-    assert!(verdict.is_ok(), "the runner's first network: {verdict:?}");
+    match made {
+        Some(options) => {
+            println!("the runner made its network with {options:?}");
+            assert!(
+                verdict.is_ok(),
+                "the runner's network, made with {options:?}: {verdict:?}"
+            );
+        }
+        None => {
+            println!("the runner fell back to --internal alone");
+            assert!(verdict.is_err(), "a plain network passed");
+        }
+    }
 }

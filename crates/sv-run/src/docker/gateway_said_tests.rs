@@ -7,7 +7,7 @@ fn a_check_that_did_not_run_says_what_docker_said() {
     let out = "Unable to find image 'busybox:1.36' locally\n\
                docker: Error response from daemon: toomanyrequests: You have reached your pull rate limit.\n\
                \n";
-    let GatewayVerdict::Unknown(why) = gateway_verdict(out, false, 1) else {
+    let GatewayVerdict::Unknown(why) = gateway_verdict(out, None, 1) else {
         panic!("a check that never ran was given a verdict");
     };
     assert!(
@@ -27,7 +27,7 @@ fn a_check_that_did_not_run_says_what_docker_said() {
 #[test]
 fn silence_is_said_as_no_detail() {
     assert_eq!(
-        gateway_verdict("\n  \n", false, 1),
+        gateway_verdict("\n  \n", None, 1),
         GatewayVerdict::Unknown("the check did not run; Docker said: no detail".to_owned())
     );
 }
@@ -38,7 +38,7 @@ fn dockers_help_hint_is_passed_over_for_the_line_that_says_why() {
     let out = "Unable to find image 'busybox:1.36' locally\n\
                docker: Error response from daemon: Get \"https://registry-1.docker.io/v2/\": 504 Gateway Timeout.\n\
                Run 'docker run --help' for more information\n";
-    let GatewayVerdict::Unknown(why) = gateway_verdict(out, false, 1) else {
+    let GatewayVerdict::Unknown(why) = gateway_verdict(out, None, 1) else {
         panic!("a check that never ran was given a verdict");
     };
     assert!(why.ends_with("504 Gateway Timeout."), "{why}");

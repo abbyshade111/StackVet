@@ -625,35 +625,8 @@ impl DockerBackend {
         }
 
         // 1. The fence. Without a gateway address when the daemon allows one of the ways; a daemon that
-        //    refuses both gets the plain internal network, and the gateway check below decides.
-        let mut made_with = None;
-        for options in NO_GATEWAY {
-            let args = network_create_args(options, &network);
-            let args: Vec<&str> = args.iter().map(String::as_str).collect();
-            if self.docker(&args).is_ok_and(|(code, _)| code == 0) {
-                made_with = Some(*options);
-                break;
-            }
-        }
-        let created = match made_with {
-            Some(_) => Ok((0, String::new())),
-            None => {
-                let args = network_create_args(&[], &network);
-                let args: Vec<&str> = args.iter().map(String::as_str).collect();
-                self.docker(&args)
-            }
-        };
-        created
-            .map_err(|e| CannotRun::BackendFailed { detail: e })
-            .and_then(|(code, out)| {
-                if code == 0 {
-                    Ok(())
-                } else {
-                    Err(CannotRun::BackendFailed {
-                        detail: first_line(&out),
-                    })
-                }
-            })?;
+        //    refuses them all gets the plain internal network, which the gateway check below refuses.
+        let made_with = self.make_fenced_network(&network)?;
 
         // 1b. Do not take the flag's word for it. Asking Docker whether the network really is
         // internal costs one call and turns "we passed --internal" into "the fence is there".
@@ -670,7 +643,7 @@ impl DockerBackend {
         // 1b'. And that nothing on it can reach the host through the bridge's gateway, which
         //      `--internal` alone leaves open.
         container.network_made = Some(network_made.clone());
-        self.verify_gateway_closed(&network, made_with.is_none())
+        self.verify_gateway_closed(&network, made_with)
             .map_err(|e| match e {
                 CannotRun::BackendFailed { detail } => CannotRun::BackendFailed {
                     detail: format!("{detail} (the network was made {network_made})"),
@@ -1895,17 +1868,46 @@ impl DockerBackend {
         }
     }
 
+    /// Makes the fenced network: internal, with no IPv6, and without a gateway address by the first of
+    /// `NO_GATEWAY`'s ways the daemon takes. Returns that way, or `None` when it took none and the
+    /// network was made with `--internal` alone, which the gateway check then never passes.
+    pub fn make_fenced_network(
+        &self,
+        network: &str,
+    ) -> Result<Option<&'static [&'static str]>, CannotRun> {
+        for options in NO_GATEWAY {
+            let args = network_create_args(options, network);
+            let args: Vec<&str> = args.iter().map(String::as_str).collect();
+            if self.docker(&args).is_ok_and(|(code, _)| code == 0) {
+                return Ok(Some(*options));
+            }
+        }
+        let args = network_create_args(&[], network);
+        let args: Vec<&str> = args.iter().map(String::as_str).collect();
+        match self.docker(&args) {
+            Ok((0, _)) => Ok(None),
+            Ok((_, out)) => Err(CannotRun::BackendFailed {
+                detail: first_line(&out),
+            }),
+            Err(e) => Err(CannotRun::BackendFailed { detail: e }),
+        }
+    }
+
     /// Refuses the run when a container on the fenced network can reach the bridge's gateway, the
     /// host (or the virtual machine Docker runs in). Knocked on from a throwaway container: an answer
     /// of any kind, a connection or a refusal, is the host's stack answering. The control is the same
     /// knock on the container's own loopback, which must read as refused, so an `nc` that cannot tell
     /// one from the other stops the run rather than passing for a fence.
     ///
-    /// `plain` is a network made with `--internal` alone, whose bridge keeps its address on the host.
-    /// There a knock that times out is not taken for a fence: a host firewall that drops what it does
-    /// not allow, rather than refusing it, times the knock out while other ports, SSH among them,
-    /// stay open to the app (the deep review of 12 October 2026, backlog 0301).
-    pub fn verify_gateway_closed(&self, network: &str, plain: bool) -> Result<(), CannotRun> {
+    /// A plain network, one whose bridge keeps its address on the host, never passes on silence: a host
+    /// firewall that drops what it does not allow, rather than refusing it, times the knock out while
+    /// other ports, SSH among them, stay open to the app (backlog 0301). Whether it is plain is read
+    /// from what Docker built as well as from how it was asked (`plain_reason`, backlog 0414).
+    pub fn verify_gateway_closed(
+        &self,
+        network: &str,
+        made_with: Option<&[&str]>,
+    ) -> Result<(), CannotRun> {
         let fail = |detail: String| Err(CannotRun::BackendFailed { detail });
         let config = match self.docker(&[
             "network",
@@ -1934,6 +1936,7 @@ impl DockerBackend {
             ));
         }
         let gateway = targets.join(", ");
+        let plain = plain_reason(made_with, &config);
         let script = knock_script(&targets);
         let out = match self.docker(&[
             "run",
@@ -1948,7 +1951,7 @@ impl DockerBackend {
             Ok((_, out)) => out,
             Err(e) => return fail(format!("could not check the fence's gateway: {e}")),
         };
-        match gateway_verdict(&out, plain, targets.len()) {
+        match gateway_verdict(&out, plain.as_deref(), targets.len()) {
             GatewayVerdict::Closed => Ok(()),
             GatewayVerdict::Reachable => fail(format!(
                 "a container on the fenced network reached its gateway, {gateway}, which is this \
@@ -2931,6 +2934,30 @@ fn knock_script(targets: &[String]) -> String {
     script
 }
 
+/// Why the fenced network is plain, its bridge keeping an address on this computer, or `None` when it
+/// is not. It is plain when Docker took none of the ways of leaving out a gateway (`made_with` is
+/// `None`), and also when, asked for one of them, it still names a gateway address for the network:
+/// a daemon that accepts an option it does not know and ignores it builds a plain network all the
+/// same, and the gateway it names tells (backlog 0414). `config` is the inspect output the gateway
+/// check reads, `Gateway|Subnet` pairs.
+fn plain_reason(made_with: Option<&[&str]>, config: &str) -> Option<String> {
+    if made_with.is_none() {
+        return Some("Docker made it with `--internal` alone, taking none of the ways of leaving out a gateway".to_owned());
+    }
+    let named: Vec<&str> = config
+        .split_whitespace()
+        .filter_map(|pair| pair.split_once('|').map_or(Some(pair), |(g, _)| Some(g)))
+        .filter(|g| g.parse::<std::net::IpAddr>().is_ok())
+        .collect();
+    (!named.is_empty()).then(|| {
+        format!(
+            "Docker names a gateway address for it ({}) though it was asked for none: it took the \
+             option without honoring it",
+            named.join(", ")
+        )
+    })
+}
+
 /// What the gateway check saw. See `verify_gateway_closed`.
 #[derive(Debug, PartialEq, Eq)]
 enum GatewayVerdict {
@@ -2980,7 +3007,7 @@ fn gateway_targets(config: &str) -> Vec<String> {
 /// gateway address. On a `plain` one, whose bridge keeps its address on the host, the same silence
 /// may be a firewall dropping one port and not others, so it is not taken for a fence (backlog
 /// 0301). Anything else is not taken for either.
-fn gateway_verdict(out: &str, plain: bool, targets: usize) -> GatewayVerdict {
+fn gateway_verdict(out: &str, plain: Option<&str>, targets: usize) -> GatewayVerdict {
     // Each knock's output, and its exit status, in order.
     let mut sections: Vec<(String, String, Option<i32>)> = Vec::new();
     let mut text = String::new();
@@ -3064,9 +3091,23 @@ fn gateway_verdict(out: &str, plain: bool, targets: usize) -> GatewayVerdict {
             inet6.join(", ")
         ));
     }
+    // A plain network never passes on silence: its bridge has an address on this computer, and a knock
+    // there that goes unanswered may be a firewall dropping one port while others stay open (0301).
+    // Nor when every address was the knocking container's own (backlog 0414).
+    let plain_refusal = |reason: &str| {
+        GatewayVerdict::Unknown(format!(
+            "the network has its gateway address on this computer ({reason}), and a knock there that \
+             goes unanswered may be a firewall dropping one port while others stay open; a Docker \
+             that makes the network with no gateway address (`gateway_mode_ipv4=isolated`, Docker 28 \
+             and later, or `inhibit_ipv4` before it) is one this check can trust"
+        ))
+    };
     if knocks.is_empty() {
         // Every address was the knocking container's own: nothing of the host's is on the network.
-        return GatewayVerdict::Closed;
+        return match plain {
+            Some(reason) => plain_refusal(reason),
+            None => GatewayVerdict::Closed,
+        };
     }
     for (_, said, code) in knocks {
         let lower = said.to_lowercase();
@@ -3081,14 +3122,10 @@ fn gateway_verdict(out: &str, plain: bool, targets: usize) -> GatewayVerdict {
     }
     match unknown {
         Some(why) => GatewayVerdict::Unknown(why),
-        None if plain => GatewayVerdict::Unknown(
-            "the network has its gateway address on this computer, since Docker made it with \
-             `--internal` alone, and a knock there that goes unanswered may be a firewall dropping \
-             one port while others stay open; Docker 28 or later makes the network with no gateway \
-             address, which this check can trust"
-                .to_owned(),
-        ),
-        None => GatewayVerdict::Closed,
+        None => match plain {
+            Some(reason) => plain_refusal(reason),
+            None => GatewayVerdict::Closed,
+        },
     }
 }
 
@@ -5107,7 +5144,38 @@ mod gateway_tests {
             .lines()
             .filter(|l| l.starts_with("sv-gateway=") || l.starts_with("sv-own="))
             .count();
-        gateway_verdict(out, plain, targets)
+        let reason = plain_reason(None, "");
+        gateway_verdict(out, reason.as_deref().filter(|_| plain), targets)
+    }
+
+    #[test]
+    fn a_network_is_plain_by_what_docker_built_not_only_by_what_was_asked() {
+        // Backlog 0414: a daemon that takes `gateway_mode_ipv4=isolated` without knowing it builds a
+        // plain network, and names its gateway; that is what tells.
+        let isolated: &[&str] = &["com.docker.network.bridge.gateway_mode_ipv4=isolated"];
+        assert!(
+            plain_reason(None, "|172.18.0.0/16 ").is_some_and(|r| r.contains("`--internal` alone"))
+        );
+        assert_eq!(plain_reason(Some(isolated), "|172.18.0.0/16 "), None);
+        let named = plain_reason(Some(isolated), "172.18.0.1|172.18.0.0/16 ");
+        assert!(
+            named
+                .as_deref()
+                .is_some_and(|r| r.contains("172.18.0.1") && r.contains("without honoring it")),
+            "{named:?}"
+        );
+        // A gateway of either family.
+        assert!(plain_reason(Some(isolated), "|172.18.0.0/16 fd00::1|fd00::/64 ").is_some());
+        assert_eq!(plain_reason(Some(isolated), ""), None);
+    }
+
+    #[test]
+    fn a_plain_network_whose_addresses_are_all_the_containers_own_does_not_pass() {
+        let out = format!("{REFUSED_SELF}sv-own=172.18.0.1\n");
+        assert_eq!(verdict(&out, false), GatewayVerdict::Closed);
+        assert!(
+            matches!(verdict(&out, true), GatewayVerdict::Unknown(why) if why.contains("`--internal` alone"))
+        );
     }
 
     #[test]
@@ -5240,8 +5308,8 @@ mod gateway_tests {
     fn a_knock_that_never_reported_is_not_the_fence_holding() {
         // Output cut short after the first of two knocks (backlog 0410).
         let out = format!("{REFUSED_SELF}nc: timed out\nsv-gateway=1\n");
-        assert_eq!(gateway_verdict(&out, false, 1), GatewayVerdict::Closed);
-        let cut = gateway_verdict(&out, false, 2);
+        assert_eq!(gateway_verdict(&out, None, 1), GatewayVerdict::Closed);
+        let cut = gateway_verdict(&out, None, 2);
         assert!(
             matches!(&cut, GatewayVerdict::Unknown(why) if why.contains("1 of the 2")),
             "{cut:?}"

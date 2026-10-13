@@ -410,19 +410,23 @@ fn the_fence_closes_the_way_to_this_computer_through_the_gateway() {
     };
 
     // The positive control: `--internal` alone, which the review reached the host through. The check must
-    // stop the run here, or its passing below would prove nothing.
+    // stop the run here because the gateway answered, judged as if the network had been asked for without
+    // a gateway: an `nc` that stopped reporting refusals would read silence, and fail this (backlog 0414).
     let open = "sv-gateway-open-net";
     make(open, &[]);
-    let refused = backend.verify_gateway_closed(open, true);
+    let as_asked: &[&str] = &["com.docker.network.bridge.gateway_mode_ipv4=isolated"];
+    let reached = backend.verify_gateway_closed(open, Some(as_asked));
+    // And judged as what it is, plain: refused whatever the knock heard, a firewall's silence included.
+    let plain = backend.verify_gateway_closed(open, None);
     remove(open);
-    let refused =
-        refused.expect_err("the gateway of an --internal network was not found reachable");
-    // Reached, or, behind a host firewall that drops the knock, not taken for a fence (backlog 0301).
+    let reached =
+        reached.expect_err("the gateway of an --internal network was not found reachable");
     assert!(
-        format!("{refused:?}").contains("reached its gateway")
-            || format!("{refused:?}").contains("`--internal` alone"),
-        "it stopped for the wrong reason: {refused:?}"
+        format!("{reached:?}").contains("reached its gateway"),
+        "it stopped for the wrong reason: {reached:?}"
     );
+    let plain = plain.expect_err("a plain --internal network passed");
+    println!("the plain network was refused: {plain:?}");
 
     // The network the runner makes now.
     let closed = "sv-gateway-closed-net";
@@ -430,7 +434,7 @@ fn the_fence_closes_the_way_to_this_computer_through_the_gateway() {
         closed,
         &["-o", "com.docker.network.bridge.gateway_mode_ipv4=isolated"],
     );
-    let verdict = backend.verify_gateway_closed(closed, false);
+    let verdict = backend.verify_gateway_closed(closed, Some(as_asked));
     remove(closed);
     assert!(verdict.is_ok(), "the runner's own network: {verdict:?}");
 }
