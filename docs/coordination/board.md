@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0326 (since 2026-10-13) — next: 0344, 0366, 0354, 0356
+- builder-full — arm: full — holds: 0344 (since 2026-10-13) — next: 0366, 0354, 0356
 - builder-none — arm: none — holds: 0279 (since 2026-10-13) — next: 0362, 0348, 0361, 0345, 0346, 0347
 
 ## Queue
@@ -285,3 +285,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 12:15 — assigned 0345 to builder-none (none) as next: lane 7: the fence sentence repeated in ten tool descriptions; catalog.rs and mod.rs
 - 2026-10-13 12:15 — assigned 0346 to builder-none (none) as next: lane 7: tool descriptions repeat how-to-behave text; catalog.rs, after 0345 in the same file
 - 2026-10-13 12:15 — assigned 0347 to builder-none (none) as next: lane 7: stackvet_spec sent whole and never paged; catalog.rs, after 0346
+- 2026-10-13 12:49 — finished 0326 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1695; now holds 0344
