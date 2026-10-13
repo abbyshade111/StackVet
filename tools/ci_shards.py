@@ -53,12 +53,12 @@ def self_test():
     # A folder with a `main.rs` is one program; a folder without one (the verdicts' snapshots) is none.
     with tempfile.TemporaryDirectory() as tmp:
         tmp = pathlib.Path(tmp)
-        (tmp / "b.rs").write_text("")
+        (tmp / "b.rs").touch()
         (tmp / "a").mkdir()
-        (tmp / "a" / "main.rs").write_text("")
-        (tmp / "a" / "part.rs").write_text("")
+        (tmp / "a" / "main.rs").touch()
+        (tmp / "a" / "part.rs").touch()
         (tmp / "data").mkdir()
-        (tmp / "data" / "x.json").write_text("")
+        (tmp / "data" / "x.json").touch()
         assert names(tmp) == ["a", "b"], names(tmp)
     print("ci_shards self-test: ok")
 
