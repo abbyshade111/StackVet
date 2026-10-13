@@ -1,6 +1,6 @@
 # The SBOM is written with every report, and easy to find
 
-**Status:** open
+**Status:** claimed by securevibe-trial-prep, 13 October 2026
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
