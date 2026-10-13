@@ -1,7 +1,11 @@
 //! The loop trials' measures added for the second loop trial (ADR-109): the `sv` tools counted under both of the
 //! MCP server's names, the outside tools' findings from the second check the builder never sees, and the build-loop
 //! record (`docs/prompts/loop-pilot/loop_measures.py`). The script is run on the trials' builds by hand; this holds
-//! it to its self-test, which has a written-out build for each.
+//! it to its self-test, which has a written-out build for each. Not on Windows: the scripts are the trials' own
+//! tools, run on Mac and Linux and not part of `sv`, and the second trial's scorer failed its self-test on every
+//! Windows run of `main` from its first (#1584) while passing on both; the owner asked on 12 October 2026 that it
+//! leave the Windows build, as the coordination board's test did (ADR-061, Later).
+#![cfg(not(windows))]
 
 use std::process::Command;
 
