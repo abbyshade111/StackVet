@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0339 (since 2026-10-13)
-- builder-none — arm: none — holds: 0410 (since 2026-10-13) — next: 0414, 0355, 0365
+- builder-full — arm: full — holds: nothing
+- builder-none — arm: none — holds: 0355 (since 2026-10-13) — next: 0365
 
 ## Queue
 
@@ -318,3 +318,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 16:23 — assigned 0365 to builder-none (none) as next: given back after 0355, owner released 13 Oct: mail's fixed 10 s wait; the item says build only if a real report's timings show it
 - 2026-10-13 16:29 — finished 0291 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1736; now holds 0339
 - 2026-10-13 16:29 — finished 0301 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1739; now holds 0410
+- 2026-10-13 16:59 — finished 0339 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1743
+- 2026-10-13 16:59 — finished 0410 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1744; now holds 0414
+- 2026-10-13 16:59 — finished 0414 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1745; now holds 0355
