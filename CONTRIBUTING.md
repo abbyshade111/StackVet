@@ -9,13 +9,16 @@ By taking part you agree to the [code of conduct](CODE_OF_CONDUCT.md). A problem
 
 ## Before you start
 
-- **Look at [docs/BACKLOG.md](docs/BACKLOG.md)** for what is planned, and **claim the item you are taking** by
-  editing its entry to say so, in a commit of its own, before any other work. Several people and AI sessions work
-  here at once, and a claim written into the repository is the only one everybody sees. A message is not a claim.
+- **Look at [docs/BACKLOG.md](docs/BACKLOG.md)** for what is planned (each item is a file of its own under
+  `docs/backlog/`), and **claim the item you are taking** with `python3 tools/backlog.py claim <number> --by <you>`,
+  which sets its status line, in a commit of its own, merged before any other work ([ADR-061](docs/adr/ADR-061.md)).
+  Several people and AI sessions work here at once, and a claim written into the repository is the only one
+  everybody sees. A message is not a claim. When the work lands, `python3 tools/backlog.py done <number>` marks it.
 - **For anything larger than a fix, open an issue first** (the "Idea" template), so the design can be agreed
   before the code is written.
-- **Read the part of [docs/DESIGN.md](docs/DESIGN.md) for whatever you touch.** It says why things are the way
-  they are, including the ways they were wrong before.
+- **Read the design entries for whatever you touch.** Each is a file of its own under `docs/design/`
+  ([ADR-060](docs/adr/ADR-060.md); [docs/DESIGN.md](docs/DESIGN.md) says how they are named and found). They say
+  why things are the way they are, including the ways they were wrong before.
 
 ## Building and testing
 
@@ -31,9 +34,9 @@ These are exactly what CI runs, and all three must pass. A few more things to kn
 
 - **Tests that start an app need Docker** (or Colima). Without it, they check that `sv` says plainly it could
   not run them, and they print which of the two they did.
-- **`docs/COVERAGE.md` is generated.** After changing a rule, a map from another tool's rules, or a requirement a
-  check cites, run `python3 tools/coverage.py` to regenerate it; never edit it by hand. A test fails while it is
-  out of date.
+- **`docs/COVERAGE.md`, `docs/REQUIREMENTS.md`, and `data/reach.json` are generated.** After changing a rule, a
+  map from another tool's rules, or a requirement a check cites, run `python3 tools/coverage.py` to regenerate all
+  three; never edit them by hand. A test fails while any of them is out of date.
 - **The container** is built with `docker build -t stackvet/sv .`. `python3 tools/image_smoke.py stackvet/sv`
   drives it as an AI coding tool would; CI runs both on every pull request.
 
@@ -47,8 +50,11 @@ These are exactly what CI runs, and all three must pass. A few more things to kn
   is known to work when you disable the thing it guards, run the tests, and see them fail. Do that for every
   guard you add, count how many tests catch each break, and say so in the pull request. If only one test
   catches it where you expected several, add the test that makes it deliberate.
-- **`sv` opens no network connection of its own.** Data it needs from outside is something the user downloads
-  and points it at.
+- **`sv` opens no network connection of its own**, with two exceptions the person asks for by name: `sv probe
+  <address>` sends a few read-only requests to the address they type ([ADR-027](docs/adr/ADR-027.md)), and with
+  `install = true` the install step downloads the app's packages before the run, outside the fence
+  ([ADR-052](docs/adr/ADR-052.md)). Anything else it needs from outside is something the user downloads and points
+  it at.
 - **Never print, log, or commit a key or password**, including in a test. Test data that must look like a key
   is built from pieces at run time.
 - **History is never rewritten.** No force-pushing to `main`, no squashing old commits: papers and documents

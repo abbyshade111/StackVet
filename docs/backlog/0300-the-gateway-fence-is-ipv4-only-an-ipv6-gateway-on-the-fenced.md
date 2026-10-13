@@ -1,6 +1,6 @@
 # The gateway fence is IPv4-only: an IPv6 gateway on the fenced network is neither removed nor knocked on
 
-**Status:** open
+**Status:** claimed by builder-full, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: the fence. Severity: medium. Verified against the code by the reviewing session before filing.
 

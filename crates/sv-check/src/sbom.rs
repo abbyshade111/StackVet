@@ -686,7 +686,10 @@ pub fn completeness_verified(sbom: &Sbom) -> Option<crate::verified::Verified> {
             },
             sbom.what_was_read()
         ),
-    ))
+    )
+    // The list is the inventory V15.1.2 asks for; that each library comes from a trusted, continually
+    // maintained repository is not read, so the credit is in part (backlog 0307; ADR-053).
+    .in_part())
 }
 
 pub fn incompleteness_finding(sbom: &Sbom) -> Option<Finding> {
@@ -709,6 +712,7 @@ pub fn incompleteness_finding(sbom: &Sbom) -> Option<Finding> {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         rule_id: "sbom.incomplete".into(),
         title: "The list of what this app ships is not complete".into(),
         severity: Severity::Medium,

@@ -41,8 +41,10 @@ One sequence runs across both versions of SecureVibe, so a number always means o
 
 ## v1's records that `sv` still cites
 
-Two of v1's decisions are rules `sv` keeps. `DESIGN.md` restates both among "the rules that carry over" (the
-evidence-tier rule without its number), and ADR-012 is also cited by number in `DESIGN.md`, in three source files, and in two tests:
+Two of v1's decisions are rules `sv` keeps. The design record (`docs/design/`, "What carries over unchanged") restates
+both among "the rules that carry over" (the evidence-tier rule without its number), and ADR-012 is also cited by number
+in three other design entries ("Shape", "What the first run found", and "`sv check`: the first findings"), in three
+source files, and in two tests:
 
 - **ADR-006, evidence tiers.** AI review alone is never a pass, and a requirement only a person can check
   never passes on its own.
@@ -52,8 +54,8 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
   clean result, and a wrong statement in a report is worse than a gap in it.
 
   ADR-012 also ruled out SecureVibe writing its own static-analysis rules for other languages. `sv` later
-  wrote such rules for fourteen languages, fifteen counting shell on 30 September 2026 (`DESIGN.md`, "Rules
-  that read the code"). ADR-018 replaces that ruling, and the rest of ADR-012 stays in force.
+  wrote such rules for fourteen languages, fifteen counting shell on 30 September 2026 (the design record,
+  `docs/design/`, "Rules that read the code"). ADR-018 replaces that ruling, and the rest of ADR-012 stays in force.
 
 ## `sv`'s records
 
@@ -101,12 +103,12 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-054](ADR-054.md) | Templates and notebooks are read for what they can hold, and never pass silently |
 | [ADR-055](ADR-055.md) | Two checks stop resting on one sample: cross-site access asks the private pages, and a common password is three |
 | [ADR-056](ADR-056.md) | An error answer is credited only when the app was made to give one, and it was clean |
-| [ADR-057](ADR-057.md) | A dashboard for `sv`, optional, with history kept only when the owner asks, outside the app's folder (proposed) |
+| [ADR-057](ADR-057.md) | A dashboard for `sv`, optional, with history kept only when the owner asks, outside the app's folder (accepted, 8 October 2026) |
 | [ADR-058](ADR-058.md) | A private set of pages for the owner to read `sv`'s documentation, in the home folder, without the paper |
 | [ADR-059](ADR-059.md) | Every check that gives credit is seen withholding it in the test suite, or the build fails |
 | [ADR-060](ADR-060.md) | One file per design entry, so two pull requests stop colliding in the design record |
 | [ADR-061](ADR-061.md) | One file per backlog item, with a status line, so what is open is data and two claims meet only on their own item |
-| [ADR-062](ADR-062.md) | The product is StackVet and the command stays `sv`: one place for every name, the old names read for a window, the paper and v1 untouched (proposed) |
+| [ADR-062](ADR-062.md) | The product is StackVet and the command stays `sv`: one place for every name, the old names read for a window, the paper and v1 untouched (accepted, 9 October 2026) |
 | [ADR-063](ADR-063.md) | StackVet's logo is the code bracket, in terracotta, as the owner chose |
 | [ADR-064](ADR-064.md) | A tool that does not answer, and C9.1.1 checked in part |
 | [ADR-065](ADR-065.md) | Hidden characters sent into the AI feature, for C2.1.2 and C2.1.5 |
@@ -153,6 +155,9 @@ evidence-tier rule without its number), and ADR-012 is also cited by number in `
 | [ADR-106](ADR-106.md) | The suite runs as three jobs side by side, and the required check waits for them all (accepted, 12 October 2026) |
 | [ADR-107](ADR-107.md) | The StackVet mark in the heading of `report.html` and the dashboard, drawn in the page, with the pages' policy unchanged (accepted, 12 October 2026) |
 | [ADR-108](ADR-108.md) | The Windows program is published as a signed GitHub Release when the owner pushes a version tag (accepted, 12 October 2026) |
+| [ADR-109](ADR-109.md) | The second loop trial tests `sv`'s waiting features on two briefs, with an outside check the builder never sees (accepted, 12 October 2026) |
+| [ADR-110](ADR-110.md) | The reports lead with the things to fix, and say what was not examined right after (accepted, 12 October 2026) |
+| [ADR-111](ADR-111.md) | The outside tools run with every `sv report` and `sv bundle` unless `--no-tools` is given (accepted, 13 October 2026) |
 
 ## Names in the records
 
