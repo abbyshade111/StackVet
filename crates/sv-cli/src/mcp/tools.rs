@@ -331,6 +331,10 @@ impl Server {
             );
         }
         let a = &found.rules.attribution;
+        // Each prompt's text is in both answers on purpose (backlog 0362): a client reads the text or the
+        // structured result, not both, and a coding prompt cannot be fetched by its id (`prompts/get` serves
+        // the design prompts alone), so a client reading the structured result would lose it. The cost is bytes
+        // on the wire, not tokens. Held by `mcp/prompts_twice_tests.rs`.
         Ok(json!({
             "content": [{ "type": "text", "text": text }],
             "structuredContent": {
