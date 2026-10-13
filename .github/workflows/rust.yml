@@ -494,9 +494,13 @@ jobs:
         id: publish
         # Runs on main can finish out of order now that each commit has its own, so `latest` moves
         # only when this commit is still the newest on main; the commit's own tag is always pushed.
-        # Both tags name the same image, so its one digest is what gets signed.
+        # Both tags name the same image, so its one digest is what gets signed. The token reaches the
+        # script through the environment, never as its text (backlog 0318), as the Docker Hub steps' does.
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
           docker push "$IMAGE:${{ github.sha }}"
           git fetch --depth=1 origin main
           if [ "$(git rev-parse FETCH_HEAD)" = "${{ github.sha }}" ]; then

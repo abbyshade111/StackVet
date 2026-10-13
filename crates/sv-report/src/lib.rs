@@ -1991,17 +1991,20 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
     }
     text.push_str(&unreadable);
     text.push_str(&gaps);
-    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not.
+    // The chain of hashes over the record's lines (backlog 0239): whether it holds, and where it breaks if not. A
+    // chain that holds says nothing of lines cut from the end, and the sentence says so (backlog 0310).
     if let Some(at) = b.chain_broken_at {
         text.push_str(&format!(
-            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added after it \
-             was written, so that line and the lines after it are not vouched for."
+            " The record's chain of hashes breaks at its line {at}: a line was changed, removed, or added there \
+             after it was written, so that line and the lines after it are not vouched for."
         ));
     } else if let (true, Some(head)) = (b.chained > 0, &b.chain_head) {
         let short: String = head.chars().take(12).collect();
         text.push_str(&format!(
             " Each of the record's {} chained lines checks out against the one before it, ending at the hash {short}. \
-             A rewrite of the whole record would keep a valid chain, so compare that hash with an earlier report's.",
+             Lines cut from the end, or a rewrite of the whole record, would leave a valid chain all the same, \
+             so compare that hash with an earlier report's: if the record has only grown since, its chain still \
+             passes through the hash that report showed.",
             b.chained
         ));
     }
@@ -2059,6 +2062,10 @@ mod mark_tests;
 #[cfg(test)]
 #[path = "next_step_tests.rs"]
 mod next_step_tests;
+
+#[cfg(test)]
+#[path = "build_loop_tail_tests.rs"]
+mod build_loop_tail_tests;
 
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
 /// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already.
