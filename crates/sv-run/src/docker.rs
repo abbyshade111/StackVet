@@ -94,7 +94,7 @@ const fn strip<'a>(bytes: &'a [u8], prefix: &[u8]) -> Option<&'a [u8]> {
 
 /// The image the probes run from. Tiny, and already needed for the health check. The digest is the multi-platform one
 /// the tag points to.
-const PROBE_IMAGE: &str = helper_image("probe");
+pub const PROBE_IMAGE: &str = helper_image("probe");
 
 /// The one place a container that talks to the app may write: in memory, where nothing written can
 /// be run, and only big enough for the request it is about to send.
@@ -628,11 +628,8 @@ impl DockerBackend {
         //    refuses both gets the plain internal network, and the gateway check below decides.
         let mut made_with = None;
         for options in NO_GATEWAY {
-            let mut args = vec!["network", "create", "--internal"];
-            for option in *options {
-                args.extend(["-o", option]);
-            }
-            args.push(&network);
+            let args = network_create_args(options, &network);
+            let args: Vec<&str> = args.iter().map(String::as_str).collect();
             if self.docker(&args).is_ok_and(|(code, _)| code == 0) {
                 made_with = Some(*options);
                 break;
@@ -640,7 +637,11 @@ impl DockerBackend {
         }
         let created = match made_with {
             Some(_) => Ok((0, String::new())),
-            None => self.docker(&["network", "create", "--internal", &network]),
+            None => {
+                let args = network_create_args(&[], &network);
+                let args: Vec<&str> = args.iter().map(String::as_str).collect();
+                self.docker(&args)
+            }
         };
         created
             .map_err(|e| CannotRun::BackendFailed { detail: e })
@@ -669,12 +670,13 @@ impl DockerBackend {
         // 1b'. And that nothing on it can reach the host through the bridge's gateway, which
         //      `--internal` alone leaves open.
         container.network_made = Some(network_made.clone());
-        self.verify_gateway_closed(&network).map_err(|e| match e {
-            CannotRun::BackendFailed { detail } => CannotRun::BackendFailed {
-                detail: format!("{detail} (the network was made {network_made})"),
-            },
-            other => other,
-        })?;
+        self.verify_gateway_closed(&network, made_with.is_none())
+            .map_err(|e| match e {
+                CannotRun::BackendFailed { detail } => CannotRun::BackendFailed {
+                    detail: format!("{detail} (the network was made {network_made})"),
+                },
+                other => other,
+            })?;
 
         // 1c. A mail server, when a check needs to read what the app emails. Started before the app so
         //     it is there to be sent to, on the same fenced network, and nowhere else: mail sent to it
@@ -1898,7 +1900,12 @@ impl DockerBackend {
     /// of any kind, a connection or a refusal, is the host's stack answering. The control is the same
     /// knock on the container's own loopback, which must read as refused, so an `nc` that cannot tell
     /// one from the other stops the run rather than passing for a fence.
-    pub fn verify_gateway_closed(&self, network: &str) -> Result<(), CannotRun> {
+    ///
+    /// `plain` is a network made with `--internal` alone, whose bridge keeps its address on the host.
+    /// There a knock that times out is not taken for a fence: a host firewall that drops what it does
+    /// not allow, rather than refusing it, times the knock out while other ports, SSH among them,
+    /// stay open to the app (the deep review of 12 October 2026, backlog 0301).
+    pub fn verify_gateway_closed(&self, network: &str, plain: bool) -> Result<(), CannotRun> {
         let fail = |detail: String| Err(CannotRun::BackendFailed { detail });
         let config = match self.docker(&[
             "network",
@@ -1927,23 +1934,7 @@ impl DockerBackend {
             ));
         }
         let gateway = targets.join(", ");
-        // `-vv`, and not `-z`: busybox's netcat (`nc_bloaty.c`, 1.36) reports a refused connection only
-        // at the second level of verbosity ("if we're scanning at a one -v verbosity level, don't print
-        // refusals"), and a refusal kept quiet would read as silence, which must never pass for a fence.
-        // CI found the first two tries silent. With nothing to send, a connection that opens ends at once.
-        let mut script =
-            format!("nc -vv -w 3 127.0.0.1 {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-self=$?\"");
-        // An address that is the knocking container's own is not knocked on: with no gateway, Docker
-        // gives the subnet's first address to the first container, which is this one, and its own
-        // refusal would read as the host answering. CI found exactly that. Both families are read, since
-        // an IPv6 gateway is knocked on as well (backlog 0300); a netcat that cannot reach an IPv6
-        // address at all says so in words the verdict does not take for a fence, and the run stops.
-        for target in &targets {
-            script.push_str(&format!(
-                "; case \" $(ip -o addr show 2>/dev/null) \" in *\"inet {target}/\"*|*\"inet6 {target}/\"*) echo \"sv-own={target}\";; \
-                 *) nc -vv -w 3 {target} {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-gateway=$?\";; esac"
-            ));
-        }
+        let script = knock_script(&targets);
         let out = match self.docker(&[
             "run",
             "--rm",
@@ -1957,7 +1948,7 @@ impl DockerBackend {
             Ok((_, out)) => out,
             Err(e) => return fail(format!("could not check the fence's gateway: {e}")),
         };
-        match gateway_verdict(&out) {
+        match gateway_verdict(&out, plain, targets.len()) {
             GatewayVerdict::Closed => Ok(()),
             GatewayVerdict::Reachable => fail(format!(
                 "a container on the fenced network reached its gateway, {gateway}, which is this \
@@ -2894,6 +2885,52 @@ fn parse_at_once(
         .collect()
 }
 
+/// The command that makes the fenced network with `options`: internal, and asking for no IPv6 at all.
+/// `sv` needs none, and an IPv6 network gives the app a way to the host the IPv4 options do not
+/// close (the bridge's link-local address, which no gateway list names; backlog 0410). A daemon whose
+/// default gives new networks IPv6 may not honor the request; the gateway check then finds an IPv6
+/// address on the network and stops the run.
+pub fn network_create_args(options: &[&str], network: &str) -> Vec<String> {
+    let mut args: Vec<String> = ["network", "create", "--internal", "--ipv6=false"]
+        .map(str::to_owned)
+        .to_vec();
+    for option in options {
+        args.extend(["-o".to_owned(), (*option).to_owned()]);
+    }
+    args.push(network.to_owned());
+    args
+}
+
+/// The script the gateway check runs in a container on the fenced network: first the container's own
+/// addresses, every family (`ip -o addr`, never `-4`: an IPv6 address must be seen), a line for each IPv6
+/// one but loopback, and whether the list could be read at all; then the control, a knock on its own
+/// loopback; then a knock on each target that is not its own address.
+fn knock_script(targets: &[String]) -> String {
+    let mut script = String::from(
+        "A=\"$(ip -o addr show 2>/dev/null)\"; \
+         case \"$A\" in *\"inet 127.0.0.1/\"*) echo \"sv-addrs=1\";; *) echo \"sv-addrs=0\";; esac; \
+         echo \"$A\" | while read -r _ _ family address _; do \
+         if [ \"$family\" = inet6 ] && [ \"${address%%/*}\" != ::1 ]; then echo \"sv-inet6=$address\"; fi; done; ",
+    );
+    // `-vv`, and not `-z`: busybox's netcat (`nc_bloaty.c`, 1.36) reports a refused connection only
+    // at the second level of verbosity ("if we're scanning at a one -v verbosity level, don't print
+    // refusals"), and a refusal kept quiet would read as silence, which must never pass for a fence.
+    // CI found the first two tries silent. With nothing to send, a connection that opens ends at once.
+    script.push_str(&format!(
+        "nc -vv -w 3 127.0.0.1 {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-self=$?\""
+    ));
+    // An address that is the knocking container's own is not knocked on: with no gateway, Docker
+    // gives the subnet's first address to the first container, which is this one, and its own
+    // refusal would read as the host answering. CI found exactly that.
+    for target in targets {
+        script.push_str(&format!(
+            "; case \" $A \" in *\"inet {target}/\"*|*\"inet6 {target}/\"*) echo \"sv-own={target}\";; \
+             *) nc -vv -w 3 {target} {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-gateway=$?\";; esac"
+        ));
+    }
+    script
+}
+
 /// What the gateway check saw. See `verify_gateway_closed`.
 #[derive(Debug, PartialEq, Eq)]
 enum GatewayVerdict {
@@ -2939,9 +2976,11 @@ fn gateway_targets(config: &str) -> Vec<String> {
 
 /// Reads the knocks: the container's own loopback (the control, which must be refused) and then each
 /// gateway address. A connection or a refusal from any of them is the host answering; a timeout, no
-/// route, or an unreachable network from every one is the fence holding. Anything else is not taken
-/// for either.
-fn gateway_verdict(out: &str) -> GatewayVerdict {
+/// route, or an unreachable network from every one is the fence holding, on a network made without a
+/// gateway address. On a `plain` one, whose bridge keeps its address on the host, the same silence
+/// may be a firewall dropping one port and not others, so it is not taken for a fence (backlog
+/// 0301). Anything else is not taken for either.
+fn gateway_verdict(out: &str, plain: bool, targets: usize) -> GatewayVerdict {
     // Each knock's output, and its exit status, in order.
     let mut sections: Vec<(String, String, Option<i32>)> = Vec::new();
     let mut text = String::new();
@@ -2980,23 +3019,57 @@ fn gateway_verdict(out: &str) -> GatewayVerdict {
             own.trim()
         ));
     }
+    // The container's own addresses could be listed: without them neither its own address nor an
+    // IPv6 one can be told, so a missing `ip` stops the run rather than passing.
+    if !sections
+        .iter()
+        .any(|(m, _, code)| m == "sv-addrs" && *code == Some(1))
+    {
+        return GatewayVerdict::Unknown(
+            "the knocking container's own addresses could not be listed".to_owned(),
+        );
+    }
     let knocks: Vec<&(String, String, Option<i32>)> = sections
         .iter()
         .filter(|(m, _, _)| m == "sv-gateway")
         .collect();
-    if knocks.is_empty() {
-        // Every address was the knocking container's own: nothing of the host's is on the network.
-        if sections.iter().any(|(m, _, _)| m == "sv-own") {
-            return GatewayVerdict::Closed;
-        }
-        return GatewayVerdict::Unknown("the knock on the gateway did not report back".to_owned());
+    // One report for every address knocked on, a knock or its own: output cut short must not
+    // read a knock that never reported as the fence holding (backlog 0410).
+    let own = sections.iter().filter(|(m, _, _)| m == "sv-own").count();
+    if knocks.len() + own != targets || targets == 0 {
+        return GatewayVerdict::Unknown(format!(
+            "{} of the {targets} addresses knocked on reported back",
+            knocks.len() + own
+        ));
     }
     let mut unknown = None;
-    for (_, said, code) in knocks {
+    for (_, said, code) in &knocks {
         let lower = said.to_lowercase();
         if *code == Some(0) || lower.contains("refused") {
             return GatewayVerdict::Reachable;
         }
+    }
+    // Any IPv6 address on the network but loopback: `sv` asked for none, and over IPv6 the bridge's
+    // link-local address, which no gateway list names, may be the host (backlog 0410).
+    let inet6: Vec<&str> = out
+        .lines()
+        .filter_map(|l| l.strip_prefix("sv-inet6="))
+        .map(str::trim)
+        .collect();
+    if !inet6.is_empty() {
+        return GatewayVerdict::Unknown(format!(
+            "the fenced network has IPv6 ({}), though sv asked Docker for none: the daemon gives new \
+             networks IPv6 by default. Turn that off (remove `com.docker.network.enable_ipv6` from \
+             `default-network-opts` in Docker's daemon.json, and restart Docker), then run again",
+            inet6.join(", ")
+        ));
+    }
+    if knocks.is_empty() {
+        // Every address was the knocking container's own: nothing of the host's is on the network.
+        return GatewayVerdict::Closed;
+    }
+    for (_, said, code) in knocks {
+        let lower = said.to_lowercase();
         let closed = code.is_some()
             && (lower.contains("timed out")
                 || lower.contains("timeout")
@@ -3008,6 +3081,13 @@ fn gateway_verdict(out: &str) -> GatewayVerdict {
     }
     match unknown {
         Some(why) => GatewayVerdict::Unknown(why),
+        None if plain => GatewayVerdict::Unknown(
+            "the network has its gateway address on this computer, since Docker made it with \
+             `--internal` alone, and a knock there that goes unanswered may be a firewall dropping \
+             one port while others stay open; Docker 28 or later makes the network with no gateway \
+             address, which this check can trust"
+                .to_owned(),
+        ),
         None => GatewayVerdict::Closed,
     }
 }
@@ -5019,7 +5099,16 @@ mod gateway_tests {
     use super::*;
 
     const REFUSED_SELF: &str =
-        "nc: can't connect to remote host (127.0.0.1): Connection refused\nsv-self=1\n";
+        "sv-addrs=1\nnc: can't connect to remote host (127.0.0.1): Connection refused\nsv-self=1\n";
+
+    /// The verdict, told as many addresses as the output reports on.
+    fn verdict(out: &str, plain: bool) -> GatewayVerdict {
+        let targets = out
+            .lines()
+            .filter(|l| l.starts_with("sv-gateway=") || l.starts_with("sv-own="))
+            .count();
+        gateway_verdict(out, plain, targets)
+    }
 
     #[test]
     fn a_gateway_that_answers_in_any_way_is_reachable() {
@@ -5028,7 +5117,7 @@ mod gateway_tests {
             "sv-gateway=0\n",
         ] {
             assert_eq!(
-                gateway_verdict(&format!("{REFUSED_SELF}{gateway}")),
+                verdict(&format!("{REFUSED_SELF}{gateway}"), false),
                 GatewayVerdict::Reachable,
                 "{gateway}"
             );
@@ -5044,11 +5133,119 @@ mod gateway_tests {
             "nc: can't connect to remote host (172.20.0.1): Connection timed out\nsv-gateway=1\n",
         ] {
             assert_eq!(
-                gateway_verdict(&format!("{REFUSED_SELF}{gateway}")),
+                verdict(&format!("{REFUSED_SELF}{gateway}"), false),
                 GatewayVerdict::Closed,
                 "{gateway}"
             );
         }
+    }
+
+    #[test]
+    fn on_a_plain_internal_network_an_unanswered_knock_is_not_a_fence() {
+        // Backlog 0301: with `--internal` alone the bridge keeps its address on the host, and a
+        // firewall that drops all but SSH times the knock on port 9 out. That silence passed.
+        for gateway in [
+            "nc: timed out\nsv-gateway=1\n",
+            "nc: can't connect to remote host (172.20.0.1): No route to host\nsv-gateway=1\n",
+        ] {
+            let verdict = verdict(&format!("{REFUSED_SELF}{gateway}"), true);
+            assert!(
+                matches!(&verdict, GatewayVerdict::Unknown(why) if why.contains("--internal` alone")),
+                "{gateway}: {verdict:?}"
+            );
+        }
+        // An answer is still the host answering, and the control still has to hold.
+        assert_eq!(
+            verdict(
+                &format!(
+                    "{REFUSED_SELF}nc: 172.20.0.1 (172.20.0.1:9): Connection refused\nsv-gateway=1\n"
+                ),
+                true
+            ),
+            GatewayVerdict::Reachable
+        );
+        assert!(matches!(
+            verdict("sv-self=0\nnc: timed out\nsv-gateway=1\n", true),
+            GatewayVerdict::Unknown(_)
+        ));
+    }
+
+    #[test]
+    fn the_network_asks_for_no_ipv6_and_for_no_gateway_of_either_family_first() {
+        // Backlog 0410: nothing went red when the IPv6 option left the list, since the Docker tests
+        // make their own networks.
+        assert_eq!(
+            NO_GATEWAY[0],
+            [
+                "com.docker.network.bridge.gateway_mode_ipv4=isolated",
+                "com.docker.network.bridge.gateway_mode_ipv6=isolated",
+            ]
+        );
+        for options in NO_GATEWAY.iter().copied().chain([&[][..]]) {
+            let args = network_create_args(options, "n");
+            assert_eq!(
+                args[..4],
+                ["network", "create", "--internal", "--ipv6=false"],
+                "{args:?}"
+            );
+            assert_eq!(args.last().map(String::as_str), Some("n"));
+        }
+    }
+
+    #[test]
+    fn the_knock_lists_every_address_family_and_each_ipv6_address() {
+        // Backlog 0410: `ip -4` would hide an IPv6 address on the network, and its own IPv6 address
+        // would be knocked on as the host's.
+        let script = knock_script(&["172.18.0.1".to_owned(), "fd00::1".to_owned()]);
+        assert!(script.contains("ip -o addr show"), "{script}");
+        assert!(
+            !script.contains("ip -4") && !script.contains("-o -4"),
+            "{script}"
+        );
+        assert!(
+            script.contains("sv-inet6=") && script.contains("sv-addrs="),
+            "{script}"
+        );
+        assert!(script.contains("*\"inet6 fd00::1/\"*"), "{script}");
+        assert_eq!(script.matches("sv-gateway=").count(), 2, "{script}");
+    }
+
+    #[test]
+    fn any_ipv6_address_on_the_network_stops_the_run() {
+        // Link-local included: the bridge's fe80:: address is on no gateway list, and may be the host.
+        for address in ["fe80::42:acff:fe12:2/64", "fd00:9::2/64"] {
+            let out = format!(
+                "sv-addrs=1\nsv-inet6={address}\nnc: can't connect to remote host (127.0.0.1): Connection refused\nsv-self=1\nnc: timed out\nsv-gateway=1\n"
+            );
+            let got = verdict(&out, false);
+            assert!(
+                matches!(&got, GatewayVerdict::Unknown(why) if why.contains(address) && why.contains("default-network-opts")),
+                "{got:?}"
+            );
+        }
+        // A gateway that answers is still said as reached.
+        let out = "sv-addrs=1\nsv-inet6=fd00:9::2/64\nnc: can't connect to remote host (127.0.0.1): Connection refused\nsv-self=1\nnc: 172.18.0.1 (172.18.0.1:9): Connection refused\nsv-gateway=1\n";
+        assert_eq!(verdict(out, false), GatewayVerdict::Reachable);
+    }
+
+    #[test]
+    fn a_container_whose_addresses_cannot_be_listed_does_not_pass() {
+        let out = "sv-addrs=0\nnc: can't connect to remote host (127.0.0.1): Connection refused\nsv-self=1\nnc: timed out\nsv-gateway=1\n";
+        assert!(matches!(verdict(out, false), GatewayVerdict::Unknown(_)));
+        let out = "nc: can't connect to remote host (127.0.0.1): Connection refused\nsv-self=1\nnc: timed out\nsv-gateway=1\n";
+        assert!(matches!(verdict(out, false), GatewayVerdict::Unknown(_)));
+    }
+
+    #[test]
+    fn a_knock_that_never_reported_is_not_the_fence_holding() {
+        // Output cut short after the first of two knocks (backlog 0410).
+        let out = format!("{REFUSED_SELF}nc: timed out\nsv-gateway=1\n");
+        assert_eq!(gateway_verdict(&out, false, 1), GatewayVerdict::Closed);
+        let cut = gateway_verdict(&out, false, 2);
+        assert!(
+            matches!(&cut, GatewayVerdict::Unknown(why) if why.contains("1 of the 2")),
+            "{cut:?}"
+        );
     }
 
     #[test]
@@ -5085,10 +5282,10 @@ mod gateway_tests {
         let out = format!(
             "{REFUSED_SELF}nc: timed out\nsv-gateway=1\nnc: can't connect to remote host (10.9.0.254): Connection refused\nsv-gateway=1\n"
         );
-        assert_eq!(gateway_verdict(&out), GatewayVerdict::Reachable);
+        assert_eq!(verdict(&out, false), GatewayVerdict::Reachable);
         let out =
             format!("{REFUSED_SELF}nc: timed out\nsv-gateway=1\nnc: timed out\nsv-gateway=1\n");
-        assert_eq!(gateway_verdict(&out), GatewayVerdict::Closed);
+        assert_eq!(verdict(&out, false), GatewayVerdict::Closed);
     }
 
     #[test]
@@ -5096,19 +5293,19 @@ mod gateway_tests {
         // CI, 4 October 2026: with no gateway, the subnet's first address was the knocking container's
         // own, and its refusal read as the host answering.
         assert_eq!(
-            gateway_verdict(&format!("{REFUSED_SELF}sv-own=172.18.0.1\n")),
+            verdict(&format!("{REFUSED_SELF}sv-own=172.18.0.1\n"), false),
             GatewayVerdict::Closed
         );
         // Its own address skipped, another that answers still stops the run.
         let out = format!(
             "{REFUSED_SELF}sv-own=172.18.0.1\nnc: 172.18.0.254 (172.18.0.254:9): Connection refused\nsv-gateway=1\n"
         );
-        assert_eq!(gateway_verdict(&out), GatewayVerdict::Reachable);
+        assert_eq!(verdict(&out, false), GatewayVerdict::Reachable);
     }
 
     #[test]
     fn a_check_that_cannot_tell_is_never_taken_for_a_fence() {
-        let unknown = |out: &str| matches!(gateway_verdict(out), GatewayVerdict::Unknown(_));
+        let unknown = |out: &str| matches!(verdict(out, false), GatewayVerdict::Unknown(_));
         // The control did not read as refused: an nc that says nothing would pass any gateway.
         assert!(unknown("sv-self=1\nnc: timed out\nsv-gateway=1\n"));
         assert!(unknown("sv-self=0\nnc: timed out\nsv-gateway=1\n"));

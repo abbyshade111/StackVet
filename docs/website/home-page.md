@@ -20,10 +20,10 @@ harbor teal, plum, and blueprint navy). **Direction C, in the logo's own colors:
   how a build goes", and every step in it is something StackVet really does.
 - **Type:** Atkinson Hyperlegible for everything a person reads (made for readers with low vision); JetBrains Mono,
   the logo's face, only for the wordmark and small labels.
-- **Colors, from `docs/brand/README.md`:** page `#EEF0EA`, panels `#FFFFFF`, text `#14201C` (softer `#3B4842`,
-  captions `#5A6660`), lines `#E1E3DB`; accent and buttons `#C2410C` with white text, accent text `#9A3412`; the
-  question bubble `#FBEFE7`. Dark bands (the report, the footer) `#14201C` with `#F3F4EF` text, panels `#182A23`,
-  "needs attention" `#FDBA74`, "checked" `#A7D7BF`.
+- **Colors, kept with what each is for and its contrast in `docs/brand/README.md`:** page `#EEF0EA`, panels
+  `#FFFFFF`, text `#14201C` (softer `#3B4842`, captions `#5A6660`), lines `#E1E3DB`; accent and buttons `#C2410C`
+  with white text, accent text `#9A3412`; the question bubble `#FBEFE7`. Dark bands (the report, the footer)
+  `#14201C` with `#F3F4EF` text, panels `#182A23`, "needs attention" `#FDBA74`, "checked" `#A7D7BF`.
 - Every grid stacks to one column at phone width; every button is at least 44 px high.
 
 

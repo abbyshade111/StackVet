@@ -105,13 +105,14 @@ pub fn render(report: &Report) -> String {
         })
         .collect();
 
-    // Said plainly rather than left to be inferred from an empty `results` array.
+    // Said plainly rather than left to be inferred from an empty `results` array. At level `note`, not `warning`
+    // (backlog 0408): to the owner, nine warnings in a file of no findings read as nine problems with the app.
     let notifications: Vec<Value> = report
         .gaps
         .iter()
         .map(|gap| {
             json!({
-                "level": "warning",
+                "level": "note",
                 "message": { "text": format!("Not examined: {} — {}", gap.what, gap.why) },
                 "descriptor": { "id": "sv.not-examined" }
             })

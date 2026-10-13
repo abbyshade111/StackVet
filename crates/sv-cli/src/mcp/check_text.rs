@@ -13,7 +13,17 @@ pub(super) fn summary_with(
     fence: &sv_report::fence::Fence,
     questions_whole: bool,
 ) -> String {
-    check_sections(report, fence, questions_whole)
+    summary_since(report, fence, questions_whole, None)
+}
+
+/// The same, with the findings shown before in this session as one line each when `delta` is given.
+pub(super) fn summary_since(
+    report: &sv_report::Report,
+    fence: &sv_report::fence::Fence,
+    questions_whole: bool,
+    delta: Option<&Delta>,
+) -> String {
+    sections_since(report, fence, questions_whole, delta)
         .iter()
         .map(crate::parts::Section::text)
         .collect()
@@ -57,6 +67,15 @@ pub(super) fn check_sections(
     report: &sv_report::Report,
     fence: &sv_report::fence::Fence,
     questions_whole: bool,
+) -> Vec<crate::parts::Section> {
+    sections_since(report, fence, questions_whole, None)
+}
+
+fn sections_since(
+    report: &sv_report::Report,
+    fence: &sv_report::fence::Fence,
+    questions_whole: bool,
+    delta: Option<&Delta>,
 ) -> Vec<crate::parts::Section> {
     use crate::parts::{Item, Section};
     let one_line = |text: &str| fence.wrap(text);
@@ -253,9 +272,43 @@ pub(super) fn check_sections(
         findings.lead =
             "\nNo findings. That is not the same as secure: see what was not examined.\n"
                 .to_owned();
+        if let Some(delta) = delta.filter(|d| !d.gone.is_empty()) {
+            findings.lead.push_str(&format!(
+                "GONE since your check at {}: {}\n",
+                delta.since,
+                delta.gone.len()
+            ));
+            for s in &delta.gone {
+                findings.items.push(Item::text(format!(
+                    "- {} {} {}\n",
+                    s.fingerprint,
+                    s.rule,
+                    one_line(&format!("{}:{}", s.file, s.line))
+                )));
+            }
+        }
     } else {
         let (app, in_tests) = sv_report::app_then_tests(report);
         findings.lead = format!("\n{} FINDINGS:\n", report.findings.len());
+        if let Some(delta) = delta {
+            let unchanged = report
+                .findings
+                .iter()
+                .filter(|f| delta.unchanged(f))
+                .count();
+            findings.lead = format!(
+                "\n{} FINDINGS: {} new since your check at {}, in full below; {} unchanged since \
+                 then, one line each after them; {} gone since then. Unchanged means the same \
+                 fingerprint, not the same code: a finding you changed the code around can keep \
+                 its fingerprint, so look again at any you worked on. Call stackvet_check with \
+                 section \"all\" for every finding in full.\n",
+                report.findings.len(),
+                report.findings.len() - unchanged,
+                delta.since,
+                unchanged,
+                delta.gone.len()
+            );
+        }
         if !in_tests.is_empty() {
             findings.lead.push_str(&format!(
                 "({} in the app itself first, then {} {}. Those still count; fix a key or a copied \
@@ -266,7 +319,12 @@ pub(super) fn check_sections(
                 sv_report::apart_named(&in_tests)
             ));
         }
+        let mut known = Vec::new();
         for f in app.into_iter().chain(in_tests) {
+            if delta.is_some_and(|d| d.unchanged(f)) {
+                known.push(f);
+                continue;
+            }
             let mut text = format!(
                 "- [{}, {}] {} — {}{}\n  fix: {}\n",
                 f.severity.name(),
@@ -292,6 +350,34 @@ pub(super) fn check_sections(
                 text.push_str(&format!("  {}\n", sv_report::one_line(&note)));
             }
             findings.items.push(Item::with(text, "findings", json!(f)));
+        }
+        if let Some(delta) = delta {
+            let line = |s: &Shown| {
+                format!(
+                    "- {} {} {}\n",
+                    s.fingerprint,
+                    s.rule,
+                    one_line(&format!("{}:{}", s.file, s.line))
+                )
+            };
+            if !known.is_empty() {
+                findings.items.push(Item::text(format!(
+                    "UNCHANGED since your check at {}:\n",
+                    delta.since
+                )));
+                for f in known {
+                    findings.items.push(Item::text(line(&Shown::of(f))));
+                }
+            }
+            if !delta.gone.is_empty() {
+                findings.items.push(Item::text(format!(
+                    "GONE since your check at {}:\n",
+                    delta.since
+                )));
+                for s in &delta.gone {
+                    findings.items.push(Item::text(line(s)));
+                }
+            }
         }
     }
 
@@ -391,6 +477,101 @@ pub(super) fn check_always(report: &sv_report::Report) -> serde_json::Map<String
     out.insert("app".to_owned(), json!(report.app_name));
     out.insert("targetLevel".to_owned(), json!(report.target_level));
     out.insert("counts".to_owned(), json!(report.counts));
+    out
+}
+
+/// A finding as a check named it, for telling a later check which findings it gave before.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct Shown {
+    pub fingerprint: String,
+    pub rule: String,
+    pub file: String,
+    pub line: usize,
+}
+
+impl Shown {
+    pub fn of(f: &sv_check::Finding) -> Shown {
+        Shown {
+            fingerprint: f.fingerprint.clone(),
+            rule: f.rule_id.clone(),
+            file: f.location.file.clone(),
+            line: f.location.line,
+        }
+    }
+
+    fn to_json(&self) -> Value {
+        json!({
+            "fingerprint": self.fingerprint,
+            "ruleId": self.rule,
+            "file": self.file,
+            "line": self.line,
+        })
+    }
+}
+
+/// The findings a check in this session found, and when, from an answer asked for with no section
+/// or as `all` (backlog 0336).
+#[derive(Debug, Clone)]
+pub(super) struct Seen {
+    pub at: String,
+    pub findings: Vec<Shown>,
+}
+
+/// What a check has in common with the last one in this session that gave its findings: which it
+/// found then and still finds, by fingerprint, and which it found then and no longer finds.
+pub(super) struct Delta {
+    pub since: String,
+    before: std::collections::HashSet<String>,
+    pub gone: Vec<Shown>,
+}
+
+impl Delta {
+    pub fn of(report: &sv_report::Report, seen: &Seen) -> Delta {
+        let now: std::collections::HashSet<&str> = report
+            .findings
+            .iter()
+            .map(|f| f.fingerprint.as_str())
+            .collect();
+        Delta {
+            since: seen.at.clone(),
+            before: seen
+                .findings
+                .iter()
+                .filter(|s| !s.fingerprint.is_empty())
+                .map(|s| s.fingerprint.clone())
+                .collect(),
+            gone: seen
+                .findings
+                .iter()
+                .filter(|s| !now.contains(s.fingerprint.as_str()))
+                .cloned()
+                .collect(),
+        }
+    }
+
+    /// Whether `f` was in the answer before, by its fingerprint. One without a fingerprint is
+    /// always new.
+    pub fn unchanged(&self, f: &sv_check::Finding) -> bool {
+        !f.fingerprint.is_empty() && self.before.contains(&f.fingerprint)
+    }
+}
+
+/// The structured check with the findings given before in this session named, not repeated:
+/// `findings` holds the new ones in full, `unchanged` and `gone` name the rest, and `since` says
+/// when they were given.
+pub(super) fn structured_since(report: &sv_report::Report, delta: &Delta) -> Value {
+    let mut out = structured(report);
+    let (known, new): (Vec<&sv_check::Finding>, Vec<&sv_check::Finding>) =
+        report.findings.iter().partition(|f| delta.unchanged(f));
+    out["findings"] = json!(new);
+    out["unchanged"] = json!(
+        known
+            .iter()
+            .map(|f| Shown::of(f).to_json())
+            .collect::<Vec<_>>()
+    );
+    out["gone"] = json!(delta.gone.iter().map(Shown::to_json).collect::<Vec<_>>());
+    out["since"] = json!(delta.since);
     out
 }
 

@@ -15,13 +15,17 @@ when the jobs together are not every file exactly once.
 
 import pathlib
 import sys
+import tempfile
 
 TESTS = pathlib.Path(__file__).resolve().parent.parent / "crates" / "sv-cli" / "tests"
 
 
 def names(folder=TESTS):
-    """Every test file's name, without `.rs`, in name order."""
-    return sorted(p.stem for p in folder.glob("*.rs"))
+    """Every test program's name, in name order: each file's name without `.rs`, and each folder holding a
+    `main.rs`, which Cargo builds as one program named after the folder (backlog 0339)."""
+    files = [p.stem for p in folder.glob("*.rs")]
+    folders = [p.parent.name for p in folder.glob("*/main.rs")]
+    return sorted(files + folders)
 
 
 def deal(files, job, jobs):
@@ -46,6 +50,16 @@ def self_test():
             continue
         raise AssertionError(f"job {bad} accepted")
     assert names(), "no test files found"
+    # A folder with a `main.rs` is one program; a folder without one (the verdicts' snapshots) is none.
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = pathlib.Path(tmp)
+        (tmp / "b.rs").touch()
+        (tmp / "a").mkdir()
+        (tmp / "a" / "main.rs").touch()
+        (tmp / "a" / "part.rs").touch()
+        (tmp / "data").mkdir()
+        (tmp / "data" / "x.json").touch()
+        assert names(tmp) == ["a", "b"], names(tmp)
     print("ci_shards self-test: ok")
 
 

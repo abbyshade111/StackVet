@@ -30,6 +30,11 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
     let count = json!({ "type": "integer", "minimum": 0 });
     let strings = json!({ "type": "array", "items": string });
     let object = |properties: Value, required: &[&str]| json!({ "type": "object", "properties": properties, "required": required, "additionalProperties": false });
+    // A finding named in a line, as a check gave it before (backlog 0336).
+    let shown = object(
+        json!({ "fingerprint": string, "ruleId": string, "file": string, "line": count }),
+        &["fingerprint", "ruleId", "file", "line"],
+    );
     let finding = object(
         json!({
             "rule_id": string, "title": string,
@@ -161,6 +166,11 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                 ) },
                 "questions": { "type": "array", "items": question.clone() },
                 "part": part.clone(),
+                // Asked for with no section, the findings given before in this session and still
+                // found, and those gone since, named a line each (backlog 0336).
+                "unchanged": { "type": "array", "items": shown.clone() },
+                "gone": { "type": "array", "items": shown },
+                "since": string,
             }),
             // The lists are left out of a part that holds none of them (`crate::parts`).
             &["app", "targetLevel", "counts"],
@@ -564,7 +574,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_check",
             "title": "Check an app",
-            "description": "Check the app against OWASP ASVS 5.0, AISVS 1.0 and the Secure by Design checklist: credentials in the code, configuration, rules that read the code, dependencies (listed, not compared with known vulnerabilities), and which requirements apply. It never starts the app. The result gives the counts, then what was NOT examined, then what needs attention with the file, line and fix, then, in its section \"questions\", what only the person can answer and how to record it. It never says a requirement passed, and nothing in it means the app is secure.",
+            "description": "Check the app against OWASP ASVS 5.0, AISVS 1.0 and the Secure by Design checklist: credentials in the code, configuration, rules that read the code, dependencies (listed, not compared with known vulnerabilities), and which requirements apply. It never starts the app. The result gives the counts, then what was NOT examined, then what needs attention with the file, line and fix, then, in its section \"questions\", what only the person can answer and how to record it. It never says a requirement passed, and nothing in it means the app is secure. Asked again in the same session, the findings it gave before and still finds come a line each.",
             "inputSchema": { "type": "object", "properties": {
                 "path": path.clone(),
                 "section": section(CHECK_SECTIONS),

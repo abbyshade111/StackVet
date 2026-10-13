@@ -22,8 +22,10 @@ use sv_scan::ecosystems::DetectedEcosystem;
 
 mod cyclonedx;
 mod lockfiles;
+mod runs_on;
 pub use cyclonedx::*;
 use lockfiles::*;
+pub use runs_on::*;
 
 /// Whether a version is what is installed, or only what was requested.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -762,3 +764,6 @@ mod tests;
 
 #[cfg(test)]
 mod not_compared_tests;
+
+#[cfg(test)]
+mod runs_on_tests;
