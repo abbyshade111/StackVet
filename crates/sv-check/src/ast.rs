@@ -1620,9 +1620,6 @@ fn binds_name(body: tree_sitter::Node, name: &str, source: &[u8]) -> bool {
 ///
 /// Said only when the calls are all there is to see: at least one call, every use of the name a
 /// call or its own definition or an import, and no call that spreads its arguments (`*args`).
-#[cfg(test)]
-mod callers_tests;
-
 fn note_callers(
     rules: &AstRules,
     listing: &sv_scan::files::Listing,
@@ -2341,6 +2338,9 @@ fn read_page(rules: &AstRules, relative: &str, source: &str, scan: &mut AstScan)
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod callers_tests;
 
 #[cfg(test)]
 mod body_whole_tests;
