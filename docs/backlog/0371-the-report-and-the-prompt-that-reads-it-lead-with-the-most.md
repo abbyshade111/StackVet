@@ -1,6 +1,6 @@
 # The report, and the prompt that reads it, lead with the most important things to fix
 
-**Status:** open
+**Status:** claimed by securevibe-trial-prep, 12 October 2026
 
 The owner's choice of 12 October 2026, from the website's words (backlog 0224, `docs/website/home-page.md`,
 sections 1, 3, and 4): the report "starts with the most important things to fix, then what was checked, and what
