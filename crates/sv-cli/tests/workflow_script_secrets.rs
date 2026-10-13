@@ -69,8 +69,14 @@ fn no_workflow_writes_a_secret_into_a_script() {
     for file in &files {
         let text = std::fs::read_to_string(file).unwrap().replace("\r\n", "\n");
         for hit in secrets_in_scripts(&text) {
-            found.push(format!("{}: {hit}", file.file_name().unwrap().to_string_lossy()));
+            found.push(format!(
+                "{}: {hit}",
+                file.file_name().unwrap().to_string_lossy()
+            ));
         }
     }
-    assert!(found.is_empty(), "hand these to the step through env: instead\n{found:#?}");
+    assert!(
+        found.is_empty(),
+        "hand these to the step through env: instead\n{found:#?}"
+    );
 }
