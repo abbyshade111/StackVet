@@ -892,7 +892,7 @@ impl DockerBackend {
             oidc,
             mcp_server,
             fetch,
-            ai,
+            mut ai,
             liveness,
             timings: mut suite_timings,
         } = sv_check::script::run(
@@ -924,6 +924,11 @@ impl DockerBackend {
         // And from the lines of the app's own output the log checks read, kept the same way: an
         // app that logs a sign-in with its password logs the test account's.
         if let Some(asked) = signed_in.as_mut() {
+            crate::stand_ins::blank_log(asked, &secrets);
+        }
+        // The AI suite's the same way (backlog 0381): its exchanges are kept now, and the account it signs in as is
+        // the test account.
+        if let Some(asked) = ai.as_mut() {
             crate::stand_ins::blank_log(asked, &secrets);
         }
 
