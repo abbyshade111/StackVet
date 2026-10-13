@@ -885,10 +885,13 @@ fn outside_tools(
         match adapters {
             Ok(adapters) => {
                 for adapter in adapters.all() {
-                    examined.push(sv_report::Examined::not_run(
-                        format!("{}.", adapter.id),
-                        "outside tools run only with --tools",
-                    ));
+                    examined.push(
+                        sv_report::Examined::not_run(
+                            format!("{}.", adapter.id),
+                            "outside tools run only with --tools",
+                        )
+                        .as_outside_tool(&adapter.name),
+                    );
                 }
                 tool_gaps.push(sv_report::Gap {
                     what: "the security tool this language already has".to_owned(),
@@ -1030,6 +1033,8 @@ fn running_app(
                     &mut record,
                 );
                 crate::seen::signed_in(secret_rules, outcome.signed_in.as_ref(), &mut record);
+                // The AI suite's questions, with ids `ai-<kind>-<n>`, kept beside the signed-in suite's (backlog 0381).
+                crate::seen::signed_in(secret_rules, outcome.ai.as_ref(), &mut record);
                 crate::seen::liveness(secret_rules, &outcome.liveness, &mut record);
                 seen = Some(record);
                 findings.extend(running_findings);

@@ -47,3 +47,28 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7
+
+  # The helper images `sv run` starts beside the app (the probes, the mail server, the test provider, and the browser),
+  # pinned by fingerprint in crates/sv-run/images/Dockerfile, which the code reads when it is compiled (backlog 0317).
+  # A new fingerprint, or a new tag, changes what every `sv run` starts, so the whole suite runs against it first.
+  - package-ecosystem: docker
+    directory: /crates/sv-run/images
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+
+  # py7zr, which only the CI steps that run the archive tests install (ADR-089), and each package it pulls in, pinned
+  # with their files' hashes in tools/py7zr-requirements.txt (backlog 0288). Each update moves a version and its hashes
+  # together; the suite on Linux and the Windows workflow both run on a pull request that changes the file.
+  - package-ecosystem: pip
+    directory: /tools
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      py7zr:
+        patterns: ['*']
