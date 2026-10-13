@@ -3210,16 +3210,21 @@ pub fn kill_switch(
         .as_ref()
         .is_some_and(|r| (200..500).contains(&r.status))
     {
-        out.verified.push(crate::Verified::new(
-            KILL_SWITCH.rule_id,
-            KILL_SWITCH.requirement_ids,
-            format!(
-                "a copy of the app started with {switch} answered the AI feature ({}) without \
+        out.verified.push(
+            crate::Verified::new(
+                KILL_SWITCH.rule_id,
+                KILL_SWITCH.requirement_ids,
+                format!(
+                    "a copy of the app started with {switch} answered the AI feature ({}) without \
                  calling the model, where the same message reached it with the switch off; that \
                  the switch takes effect without a restart was not shown",
-                status(&answer)
-            ),
-        ));
+                    status(&answer)
+                ),
+            )
+            // A copy started with the switch on, not one switched while it ran: the "immediately" half
+            // of C9.6.1 was not shown (backlog 0304; ADR-053's in-part credit).
+            .in_part(),
+        );
     } else if answer.as_ref().is_some_and(|r| r.status >= 500) {
         // A server error cannot be told from a copy that crashed, so it is not a pass: the same status
         // rule as C2.1.3 (200 to 499 answers the request).
@@ -3922,3 +3927,6 @@ mod model_html_tests;
 mod stored_injection_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod kill_switch_in_part_tests;

@@ -580,4 +580,6 @@ mod tests;
 
 // Whether the chain of hashes holds, and where it breaks (backlog 0239).
 #[cfg(test)]
+mod chain_tail_tests;
+#[cfg(test)]
 mod chain_tests;

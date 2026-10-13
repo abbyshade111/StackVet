@@ -3420,7 +3420,7 @@ fn with_switch() -> AiSection {
 
 /// Runs the questions against the first copy, then the kill switch against a second started
 /// with it, the way the run does.
-fn ask_switched(first: Flaws, second: Flaws, started: bool) -> Outcome {
+pub(super) fn ask_switched(first: Flaws, second: Flaws, started: bool) -> Outcome {
     let s = with_switch();
     let ctx = context(None, &NO_POLICY);
     let mut app = FakeChat {
