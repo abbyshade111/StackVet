@@ -156,7 +156,7 @@ jobs:
         run: rustup toolchain install stable --profile minimal --component clippy,rustfmt && rustup default stable
 
 
-      - name: Sign in to Docker Hub
+      - name: Sign in to Docker Hub, fetch what the mirror missed, and sign out
         # The tests start containers from Docker Hub's images (the app's own, busybox, node, python). Signed out, every pull counts against Docker Hub's limit for the runner's shared
         # address, and on 9 October 2026 that limit ("429 Too Many Requests") turned main red for hours.
         # The owner's token (secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN, given 9 October
@@ -171,13 +171,28 @@ jobs:
           else
             # Three tries, then on without it: Docker Hub itself can fail a sign-in (a 500 on 9 October
             # 2026), and that is no reason to stop the run; the warning says the pulls went unsigned.
+            signed_in=false
             for wait in 5 15 0; do
               if printf '%s' "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin; then
-                exit 0
+                signed_in=true
+                break
               fi
               sleep "$wait"
             done
-            echo "::warning::Docker Hub refused the sign-in three times; pulls are held to the anonymous limit."
+            if [ "$signed_in" = true ]; then
+              # Signed in only for these fetches, and signed out before anything of the branch's own
+              # runs (backlog 0287): `docker login` keeps the token in ~/.docker/config.json, which a
+              # test, a build script, or a package's own code could read as the same user.
+              for image in busybox:1.36 axllent/mailpit:v1.31 node:22-alpine python:3.12-slim \
+                           chromedp/headless-shell:151.0.7922.109; do
+                docker image inspect "$image" > /dev/null 2>&1 \
+                  || docker pull --quiet "$image" \
+                  || echo "::warning::Could not fetch $image signed in; it will be fetched unsigned if needed."
+              done
+              docker logout
+            else
+              echo "::warning::Docker Hub refused the sign-in three times; pulls are held to the anonymous limit."
+            fi
           fi
 
 
@@ -327,7 +342,7 @@ jobs:
             docker pull "$image" || echo "::warning::Could not fetch $image ahead of the build; the build will try."
           done
 
-      - name: Sign in to Docker Hub
+      - name: Sign in to Docker Hub, fetch what the mirror missed, and sign out
         # The image is built from Docker Hub's `rust` and `debian` images. Signed out, every pull counts against Docker Hub's limit for the runner's shared
         # address, and on 9 October 2026 that limit ("429 Too Many Requests") turned main red for hours.
         # The owner's token (secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN, given 9 October
@@ -342,13 +357,27 @@ jobs:
           else
             # Three tries, then on without it: Docker Hub itself can fail a sign-in (a 500 on 9 October
             # 2026), and that is no reason to stop the run; the warning says the pulls went unsigned.
+            signed_in=false
             for wait in 5 15 0; do
               if printf '%s' "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin; then
-                exit 0
+                signed_in=true
+                break
               fi
               sleep "$wait"
             done
-            echo "::warning::Docker Hub refused the sign-in three times; pulls are held to the anonymous limit."
+            if [ "$signed_in" = true ]; then
+              # Signed in only for these fetches, and signed out before anything of the branch's own
+              # runs (backlog 0287): `docker login` keeps the token in ~/.docker/config.json, which a
+              # test, a build script, or a package's own code could read as the same user.
+              for image in $(awk '/^FROM/ {print $2}' Dockerfile); do
+                docker image inspect "$image" > /dev/null 2>&1 \
+                  || docker pull --quiet "$image" \
+                  || echo "::warning::Could not fetch $image signed in; it will be fetched unsigned if needed."
+              done
+              docker logout
+            else
+              echo "::warning::Docker Hub refused the sign-in three times; pulls are held to the anonymous limit."
+            fi
           fi
 
       - name: Build the image
