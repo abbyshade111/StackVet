@@ -394,6 +394,7 @@ pub fn check(listing: &Listing, report: &mut ConfigReport) {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.model-file-can-run-code".into(),
         title: "A model file in the app is stored in a format that can run code when loaded".into(),
         severity: Severity::Medium,

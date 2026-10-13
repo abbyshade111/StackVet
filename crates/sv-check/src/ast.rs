@@ -1123,6 +1123,7 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                 bundled_library: None,
                 outranked: None,
                 also_on_this_line: Vec::new(),
+                help_uri: None,
                 rule_id: compiled.rule.id.clone(),
                 title: compiled.rule.title.clone(),
                 severity: compiled.rule.severity,

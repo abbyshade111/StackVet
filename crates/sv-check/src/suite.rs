@@ -522,6 +522,7 @@ fn mismatch(test: &NamedTest, requirement_id: &str, description: &str) -> Findin
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: NAME_MISMATCH.into(),
         title: format!("A test named for {requirement_id} shares no words with it"),
         severity: Severity::Info,

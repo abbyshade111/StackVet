@@ -2309,14 +2309,6 @@
     "finding_only": false
    }
   ],
-  "V11.1.1": [
-   {
-    "id": "secrets.private-key-block",
-    "run": "Reads the code",
-    "looks_for": "Private key found in a file",
-    "finding_only": false
-   }
-  ],
   "V11.2.3": [
    {
     "id": "brakeman",
