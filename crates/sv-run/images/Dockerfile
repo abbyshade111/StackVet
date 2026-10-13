@@ -6,7 +6,7 @@
 # Keep each line as `FROM <image> AS <name>`, with the four names below; a missing one stops `sv` compiling.
 
 # The probes, and the health check: tiny.
-FROM busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662 AS probe
+FROM busybox:1.38@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e AS probe
 # The mail server the app is given when the probes read its email: Mailpit.
 FROM axllent/mailpit:v1.31@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48 AS mail
 # The test OpenID Connect provider, the test model, the name server, and the browser driver: a stock Node image.
