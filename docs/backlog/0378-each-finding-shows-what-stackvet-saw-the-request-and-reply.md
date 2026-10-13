@@ -1,6 +1,6 @@
 # Each finding shows what StackVet saw: the request and reply, the lines of code, or the tool's own words
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** partly done: part 2: a code finding's lines, and an outside tool's own message, rule link, and version, which the adapters do not keep yet
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
@@ -21,3 +21,9 @@ what showed it. To build, under each finding, "What StackVet saw":
   length), and cookies, `Set-Cookie`, `Authorization`, and form tokens (a `csrf_token` field) are masked. A reply on
   `haiku-a-5` holds a form's anti-forgery token in full; it must not reach a report. Tested by breaking it: a reply
   holding a key-like value and a token is shown masked, and the test fails when the mask is removed.
+
+**Part 1 done 12 October 2026 by session securevibe-trial-prep** (ADR-082, Later): under each finding from the running
+app, "What StackVet saw", each exchange it names as its request, its status, and the reply's visible words, at most
+three then how many more; and a form field named for a credential loses its value in every kept page first. Part 2,
+the lines of a code finding and an outside tool's own words, rule link, and version, needs the adapters to keep what
+they drop today (the SARIF region, `helpUri`, the tool's version on the finding).
