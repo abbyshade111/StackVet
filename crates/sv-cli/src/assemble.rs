@@ -888,7 +888,7 @@ fn outside_tools(
                     examined.push(
                         sv_report::Examined::not_run(
                             format!("{}.", adapter.id),
-                            "outside tools run only with --tools",
+                            "outside tools left out with --no-tools",
                         )
                         .as_outside_tool(&adapter.name),
                     );
