@@ -10,6 +10,6 @@ FROM busybox:1.38@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b
 # The mail server the app is given when the probes read its email: Mailpit.
 FROM axllent/mailpit:v1.31@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48 AS mail
 # The test OpenID Connect provider, the test model, the name server, and the browser driver: a stock Node image.
-FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS provider
+FROM node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS provider
 # The headless browser. Its version is read from the tag, so a change of tag is a change of browser.
 FROM chromedp/headless-shell:155.0.8059.26@sha256:47e3a0c0cbef29e321d16c893cd804996243f710ca7855770dd4f9c4cd2b8627 AS browser

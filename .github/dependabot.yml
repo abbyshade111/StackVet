@@ -58,6 +58,12 @@ updates:
     open-pull-requests-limit: 5
     cooldown:
       default-days: 7
+    # Node's major version is the owner's choice, made from Node's release schedule: only the even-numbered majors get
+    # long-term support, and Dependabot proposes whichever major is newest (#1634 offered Node 25, unsupported since
+    # 1 June 2026). Fixes within the chosen major still arrive here as new fingerprints (ADR-019, Later, 13 October 2026).
+    ignore:
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
 
   # py7zr, which only the CI steps that run the archive tests install (ADR-089), and each package it pulls in, pinned
   # with their files' hashes in tools/py7zr-requirements.txt (backlog 0288). Each update moves a version and its hashes
