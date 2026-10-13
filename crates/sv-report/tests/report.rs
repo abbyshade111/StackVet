@@ -545,6 +545,91 @@ fn nothing_is_ever_labelled_a_pass() {
 }
 
 #[test]
+fn a_note_worth_knowing_is_never_counted_named_or_advised_on_as_a_thing_to_fix() {
+    // An `Info` finding in the app's own code says something worth knowing and asks for nothing (ADR-110, Later).
+    // Found in a real report: one counted among "4 things to fix", told "Fix it in the code", while "What to do next"
+    // said "Fix the 3 things"; the counts disagreed and good news read as a problem.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut real = finding("ast.sql", &[]);
+    real.title = "A query built by hand".into();
+    let mut note = finding("config.ai-commits-off-merge", &[]);
+    note.title =
+        "2 commit(s) on the default branch were made by an AI coding tool and not merged in".into();
+    note.severity = Severity::Info;
+    note.location.file = ".git".into();
+    let report = build(inputs(&f, &buckets, vec![real, note], &[]));
+    // The setup: both are findings of the report, and the note is the information one.
+    assert_eq!(report.findings.len(), 2);
+    assert!(report.findings.iter().any(|f| f.severity == Severity::Info));
+
+    let (worst, _) = sv_report::bluf::worst_findings(&report);
+    assert_eq!(worst.len(), 1, "the note is not among the worst");
+    let headline = sv_report::bluf::headline(&report);
+    assert!(headline.starts_with("1 thing was found"), "{headline}");
+    assert!(
+        headline.contains("1 more is a note worth knowing"),
+        "{headline}"
+    );
+    let steps = sv_report::bluf::next_steps(&report);
+    assert!(
+        steps[0].what.starts_with("Fix the 1 thing that was found"),
+        "counted as the section counts them: {}",
+        steps[0].what
+    );
+    for (name, page, fix_heading, notes_heading) in [
+        (
+            "report.html",
+            sv_report::html::page(&report),
+            "<h2>1 thing to fix</h2>",
+            "<h2>Worth knowing: 1 note</h2>",
+        ),
+        (
+            "security.md",
+            sv_report::markdown::security(&report),
+            "## 1 thing to fix",
+            "## Worth knowing: 1 note",
+        ),
+    ] {
+        let fix_at = page
+            .find(fix_heading)
+            .unwrap_or_else(|| panic!("{name}: no {fix_heading:?}\n{page}"));
+        let notes_at = page
+            .find(notes_heading)
+            .unwrap_or_else(|| panic!("{name}: no {notes_heading:?}\n{page}"));
+        assert!(
+            fix_at < notes_at,
+            "{name}: the notes come after the things to fix"
+        );
+        let notes_part = &page[notes_at..];
+        assert!(
+            notes_part.contains("not merged in"),
+            "{name}: the note is under its own heading"
+        );
+        let fix_part = &page[fix_at..notes_at];
+        assert!(
+            !fix_part.contains("not merged in"),
+            "{name}: the note is not among the things to fix"
+        );
+        // A note is never told to be fixed.
+        assert!(
+            fix_part.contains("Fix it in the code"),
+            "{name}: the setup: a thing to fix is given the fix advice"
+        );
+        assert!(
+            !notes_part.contains("Fix it in the code"),
+            "{name}: a note is not given the fix advice"
+        );
+    }
+    let compliance = sv_report::markdown::compliance(&report);
+    assert!(compliance.contains("## 1 thing to fix"), "{compliance}");
+    assert!(
+        compliance.contains("One more is a note worth knowing"),
+        "{compliance}"
+    );
+}
+
+#[test]
 fn the_reports_lead_with_what_to_fix_and_say_what_was_not_examined_right_after() {
     // Order is the message (ADR-110): the things to fix first, worst first, then how the report was made, then
     // what was not examined, before anything else. Findings read without the gaps read as the whole truth about
