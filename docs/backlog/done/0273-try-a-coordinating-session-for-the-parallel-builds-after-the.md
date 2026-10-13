@@ -1,6 +1,6 @@
 # Try a coordinating session for the parallel builds, after the next loop trials and the website mock-ups
 
-**Status:** partly done: the owner's choices on the candidates in the write-up (the CLAUDE.md build-folder line; keeping the coordinating session for review bursts) and the cleanup list
+**Status:** done, 13 October 2026
 
 Asked for by the owner on 12 October 2026, after a review of whether an orchestrator agent would help in building `sv`
 or inside `sv`'s own workflows (session stackvet-orchestrator-agent-review). **Not before** the next trial of the
@@ -222,4 +222,12 @@ Windows?); the no-context cloud environment; and this session's scratch files an
 
 **The board is closed:** both sessions are off it, so the `CLAUDE.md` rule about taking work from it no longer applies,
 and the remaining items go the normal way.
+
+**The owner's choices, 13 October 2026** ("yes to 1 and 2, go ahead with the cleanup"):
+1. `CLAUDE.md` now lets a cloud session delete its own build output in its own cloud container without asking, and
+   nothing else (the "Keep the disk tidy" rule).
+2. The coordinating session is kept for bursts of independent findings, such as a review's items, not for ordinary
+   days; the three additions it needs first are backlog 0416 (a waiting line, insert at a position, a close command).
+3. The cleanup goes ahead: 0390 closed as the intended end state; the open items never on the board checked against
+   `main` for any overtaken by later work; the rest reported to the owner, nothing deleted without saying what.
 
