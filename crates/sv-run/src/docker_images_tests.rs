@@ -34,7 +34,7 @@ fn the_browser_version_is_still_read_from_its_tag_and_not_its_digest() {
         .rsplit(':')
         .next()
         .unwrap();
-    assert_eq!(tag, "151.0.7922.109");
+    assert_eq!(tag, "155.0.8059.26");
 }
 
 #[test]

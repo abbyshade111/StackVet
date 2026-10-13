@@ -35,7 +35,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 174 (50%) | 122 (35%) | 10 | 161 |
+| OWASP ASVS 5.0 | 345 | 174 (50%) | 122 (35%) | 9 | 162 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -76,7 +76,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V8 Authorization | 13 | 4 | 2 | 1 | 8 |
 | V9 Self-contained Tokens | 7 | 5 | 3 | 0 | 2 |
 | V10 OAuth and OIDC | 36 | 8 | 6 | 0 | 28 |
-| V11 Cryptography | 24 | 11 | 7 | 1 | 12 |
+| V11 Cryptography | 24 | 11 | 7 | 0 | 13 |
 | V12 Secure Communication | 12 | 9 | 7 | 1 | 2 |
 | V13 Configuration | 21 | 10 | 3 | 1 | 10 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 7 |
@@ -293,7 +293,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V16.2.5 | L2 | Outside tools: `semgrep`, `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V16.4.1 | L2 | Outside tools: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 
-### Supporting only (10)
+### Supporting only (9)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -302,7 +302,6 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V5.4.3 | L2 | Signed in: `probe.upload-not-scanned` |
 | V6.2.12 | L2 | Signed in: `probe.breached-password-accepted` |
 | V8.3.1 | L1 | Signed in: `probe.admin-page-ordinary-user`, `probe.admin-action-ordinary-user`, `probe.role-field-trusted`, `probe.email-change-role-trusted` (sv only ever as a finding: `probe.email-change-role-trusted`, `probe.role-field-trusted`) |
-| V11.1.1 | L2 | Reads the code: `secrets.private-key-block` |
 | V12.2.2 | L1 | Your own live site: `probe.certificate-not-trusted` |
 | V13.3.1 | L2 | Reads the code: `secrets.anthropic-key`, `secrets.openai-key`, `secrets.huggingface-token`, `secrets.aws-access-key` and 22 more; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` (sv only ever as a finding: `config.secret-under-public-name`, `secrets.credential-assignment`, `secrets.password-in-url`) |
 | V14.2.2 | L2 | Signed in: `probe.private-page-shared-cache` (sv only ever as a finding: `probe.private-page-shared-cache`) |
@@ -366,7 +365,7 @@ running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's
 - C9.3.7: found failing by sv's `probe.ai-output-fetched`.
 - C9.5.3: settled by `probe.ai-tool-reads-others-records`.
 - C9.5.4: found failing by semgrep's `mcp-credential-in-response`.
-- C9.6.1: settled by `probe.ai-kill-switch-ignored`.
+- C9.6.1: checked in part only, by `probe.ai-kill-switch-ignored`.
 - C10.1.1: found failing by sv's `config.mcp-server-unpinned`.
 - C10.2.1: settled by `probe.mcp-server-token-unchecked`.
 - C10.2.6: settled by `probe.mcp-session-survives-end`.

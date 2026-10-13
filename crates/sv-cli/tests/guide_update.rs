@@ -80,12 +80,27 @@ fn the_guide_updates_the_image_the_workflow_publishes() {
 #[test]
 fn a_version_can_be_held_to_by_its_commit() {
     // The guide says every image is published under the commit `--version` prints. Both come from the
-    // same `github.sha` in the publishing job, or the pinned name would be one nobody pushed.
+    // same `github.sha`, or the pinned name would be one nobody pushed. The image is built once, in the
+    // `image` job, and `publish` pushes that same image, loaded from it (backlog 0343).
     let workflow = read(".github/workflows/rust.yml");
     let publish = workflow.split("\n  publish:\n").nth(1).unwrap();
+    let image = workflow
+        .split("\n  image:\n")
+        .nth(1)
+        .and_then(|rest| rest.split("\n  publish:\n").next())
+        .expect("the workflow has an image job before publish");
     assert!(
-        publish.contains("--build-arg SV_GIT_COMMIT=${{ github.sha }}"),
+        image.contains("--build-arg SV_GIT_COMMIT=${{ github.sha }}"),
         "the image's --version names another commit than its tag"
+    );
+    assert!(
+        !publish.contains("docker build"),
+        "publish builds an image of its own rather than pushing the one that was tested"
+    );
+    assert!(
+        publish.contains("docker load")
+            && publish.contains("docker tag stackvet/sv \"$IMAGE:${{ github.sha }}\""),
+        "publish does not push the image the image job built"
     );
     assert!(
         publish.contains("docker push \"$IMAGE:${{ github.sha }}\""),

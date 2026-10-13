@@ -197,9 +197,7 @@ fn run() -> Result<i32> {
         "bundle" => finished(cmd_bundle(rest)),
         "connect" => {
             print!("{}", sv_cli::connect::command(rest)?);
-            if let Some(line) = sv_cli::connect::where_it_goes(rest) {
-                eprintln!("{line}");
-            }
+            eprintln!("{}", sv_cli::connect::where_it_goes(rest));
             Ok(exit::CLEAN)
         }
         "doctor" => finished(cmd_doctor(rest)),
@@ -339,13 +337,12 @@ const COMMANDS: &[Command] = &[
             "--run",
             "--slow",
             "--tools",
+            "--no-tools",
             "--keep-tool-output",
             "--quiet",
         ],
         valued: &["--out", "--advisories", "--fail-on", "--baseline"],
-        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--tools [--keep-tool-output]] [--advisories DIR] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n\
-                     --keep-tool-output, with --tools, keeps each tool's own report,\n\
-                     credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, a tool --tools could\n                     not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
+        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--no-tools | --keep-tool-output] [--advisories DIR] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n                     the outside tools (Semgrep, Bandit, CodeQL, and the rest) run unless\n                     --no-tools; Semgrep fetches its rules from semgrep.dev as it runs\n                     --keep-tool-output keeps each tool's own report,\n                     credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, an outside tool that\n                     could not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
     },
     Command {
         name: "review",
@@ -357,9 +354,9 @@ const COMMANDS: &[Command] = &[
     Command {
         name: "bundle",
         word: Some("PATH"),
-        flags: &["--run", "--slow", "--tools"],
+        flags: &["--run", "--slow", "--tools", "--no-tools"],
         valued: &["--out", "--advisories"],
-        help: "  sv bundle [PATH] [--out FILE.zip] [--run [--slow]] [--tools] [--advisories DIR]\n                     the app, its report and a SHA-256 for every file in one zip, beside\n                     the app unless --out says where, with anything that could hold a\n                     secret left out and listed\n",
+        help: "  sv bundle [PATH] [--out FILE.zip] [--run [--slow]] [--no-tools] [--advisories DIR]\n                     the app, its report and a SHA-256 for every file in one zip, beside\n                     the app unless --out says where, with anything that could hold a\n                     secret left out and listed\n",
     },
     Command {
         name: "dashboard",
@@ -387,7 +384,7 @@ const COMMANDS: &[Command] = &[
         word: Some("TOOL"),
         flags: &[],
         valued: &["--docker", "--user", "--folder"],
-        help: "  sv connect TOOL [--docker PATH] [--user UID:GID] [--folder DIR]\n                     print the settings that connect an AI coding tool (claude, vscode,\n                     or cursor) to `sv` for this folder, the paths already filled in;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux; writes nothing\n",
+        help: "  sv connect [TOOL] [--docker PATH] [--user UID:GID] [--folder DIR]\n                     print StackVet's MCP server for this folder, the paths already filled\n                     in: with no TOOL, its name, command, and arguments, for any AI coding\n                     tool to put in its own settings; with TOOL (claude, vscode, or\n                     cursor), that tool's settings block;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux; writes nothing\n",
     },
     Command {
         name: "doctor",
@@ -1207,8 +1204,10 @@ fn cmd_run(args: &[String]) -> Result<i32> {
     let manifest = Manifest::load_in(&app_dir)?.0;
 
     println!("Starting {} behind the network fence…", manifest.app.name);
+    // One walk of the folder for the whole run (backlog 0354).
+    let private_files = private_files(&sv_scan::files::Listing::of(&app_dir));
     let requests = RunPlan::from_manifest(&manifest, &app_dir)
-        .map(|plan| anonymous_requests(&plan))
+        .map(|plan| anonymous_requests(&plan, &private_files))
         .unwrap_or_default();
     if slow {
         println!(
@@ -1216,7 +1215,7 @@ fn cmd_run(args: &[String]) -> Result<i32> {
              minutes before using an emailed sign-in code, so it can take as long as they are."
         );
     }
-    match probe_the_running_app(&manifest, &app_dir, slow) {
+    match probe_the_running_app(&manifest, &app_dir, slow, &private_files) {
         Err((reason, _)) => {
             println!("\nNot assessed.\n\n{reason}");
             // Nothing about the running app was checked, which ADR-029 says with a 2, as `sv check` and
@@ -1240,7 +1239,7 @@ fn cmd_run(args: &[String]) -> Result<i32> {
                 sv_run::resources::sentence(outcome.resources.as_ref())
             );
             let (findings, verified, signed_in_not_assessed) =
-                running_app_evidence(&outcome, &plan);
+                running_app_evidence(&outcome, &plan, &private_files);
             println!(
                 "\nAsked it {} question{}, as somebody who has not signed in.",
                 outcome.probe_responses.len(),
@@ -1967,13 +1966,9 @@ fn cmd_dashboard(args: &[String]) -> Result<()> {
         board.as_deref(),
         &health,
     );
-    let staging = parent.join(format!(
-        ".{}.sv-{}",
-        name.to_string_lossy(),
-        std::process::id()
-    ));
-    std::fs::write(&staging, page).with_context(|| format!("writing {}", staging.display()))?;
-    std::fs::rename(&staging, &target).with_context(|| format!("writing {}", target.display()))?;
+    // Staged and moved into place by the one writer that follows no link (backlog 0314): the
+    // folder may be one others can write to, and a link planted at the staging name is refused.
+    write_without_following(&parent, &name.to_string_lossy(), page.as_bytes())?;
 
     let missing: Vec<&sv_report::dashboard::App> =
         apps.iter().filter(|a| a.summary.is_err()).collect();
@@ -2489,8 +2484,9 @@ struct ReportArgs {
     run_the_app: bool,
     /// With --run: wait out the session timeouts too.
     slow: bool,
-    /// Opt-in for the same reason as --run, and one more: these are other people's programs, and one
-    /// of them fetches its rules over the network the first time it runs.
+    /// On unless --no-tools (ADR-111, the owner's decision of 13 October 2026): their findings are the ones the owner
+    /// has found matter most. They are other people's programs, run with the guards ADR-032 records, and Semgrep
+    /// fetches its rules from semgrep.dev as it runs; `--no-tools` is the run that starts none of them.
     run_tools: bool,
     /// With --tools, keep each tool's own report in `seen.json` (`sv report` only).
     keep_tool_output: bool,
@@ -2506,11 +2502,12 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
         out: None,
         run_the_app: false,
         slow: false,
-        run_tools: false,
+        run_tools: tools_by_default(),
         keep_tool_output: false,
         quiet: false,
         advisories_dir: None,
     };
+    let mut no_tools = false;
     let mut rest = args.iter();
     while let Some(arg) = rest.next() {
         match arg.as_str() {
@@ -2522,7 +2519,9 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             }
             "--run" => parsed.run_the_app = true,
             "--slow" => parsed.slow = true,
+            // Still accepted, and the default since ADR-111: scripts and prompts that pass it keep working.
             "--tools" => parsed.run_tools = true,
+            "--no-tools" => no_tools = true,
             "--keep-tool-output" => parsed.keep_tool_output = true,
             "--quiet" => parsed.quiet = true,
             "--advisories" => {
@@ -2534,7 +2533,25 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             other => parsed.app_dir = sv_check::adapters::clean_folder(Path::new(other)),
         }
     }
+    if no_tools {
+        if args.iter().any(|a| a == "--tools") {
+            bail!("--tools and --no-tools say opposite things: give one of them");
+        }
+        parsed.run_tools = false;
+    }
     Ok(parsed)
+}
+
+/// Whether the outside tools run when neither --tools nor --no-tools is given: yes (ADR-111). Only in a debug build,
+/// `SV_NO_TOOLS_FOR_TEST` turns them off, which `.cargo/config.toml` sets for every test, so a test runs the same on a
+/// computer with Semgrep installed as on CI without it, and never reaches semgrep.dev; the tests of the default take
+/// it away. A released `sv` has no such switch.
+fn tools_by_default() -> bool {
+    #[cfg(debug_assertions)]
+    if std::env::var_os("SV_NO_TOOLS_FOR_TEST").is_some() {
+        return false;
+    }
+    true
 }
 
 /// `sv report`, ending with its exit status (`exit`, and DESIGN, "Exit codes for CI").
@@ -2668,7 +2685,7 @@ fn report_command(
         advisories_dir,
     } = parse_report_args(args, "a directory")?;
     if keep_tool_output && !run_tools {
-        bail!("--keep-tool-output keeps what the tools wrote, so it needs --tools as well");
+        bail!("--keep-tool-output keeps what the tools wrote, so it cannot go with --no-tools");
     }
     sv_cli::assemble::QUIET.store(quiet, std::sync::atomic::Ordering::Relaxed);
     *app_seen = Some(app_dir.clone());
@@ -2880,7 +2897,8 @@ fn report_command(
         .filter(|g| !reasons.iter().any(|r| r.starts_with(g.as_str())))
         .collect();
     if !unsaid.is_empty() {
-        println!("\nAsked for, and not all of it ran (the reports say the same):");
+        // Not "asked for": the outside tools run without being asked since ADR-111.
+        println!("\nNot everything this run tried could run (the reports say the same):");
         for gap in unsaid {
             println!("  {gap}");
         }
@@ -3031,6 +3049,7 @@ mod tests {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: decided[0].switch.rule_id.to_owned(),
             title: "open".to_owned(),
             severity: sv_check::Severity::High,
@@ -3099,6 +3118,7 @@ mod tests {
                 bundled_library: None,
                 outranked: None,
                 also_on_this_line: Vec::new(),
+                help_uri: None,
             };
             f.fingerprint = format!("fp-{rule}");
             f
@@ -3574,3 +3594,6 @@ mod bundle_backstop_tests {
 
 #[cfg(test)]
 mod adapters_once_tests;
+
+#[cfg(all(test, unix))]
+mod dashboard_link_tests;

@@ -16,14 +16,26 @@ files() {
     find "$top/examples" "$top/crates" "$top/data" -type d \( -name target -o -name node_modules \) -prune -o \
         -type f "$@" -print
 }
-for f in $(files -name stackvet.toml); do copy "$f" manifest; done
-for f in $(files \( -name package-lock.json -o -name yarn.lock -o -name poetry.lock -o -name Pipfile.lock \
+# Read one path a line, not split into words, so a file whose name holds a space is copied whole
+# (backlog 0320). Read from a here-document rather than a pipe, so `n` is counted in this shell.
+copy_all() { # copy_all TARGET, with the paths on standard input
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        copy "$f" "$1"
+    done
+}
+copy_all manifest <<EOF
+$(files -name stackvet.toml)
+EOF
+copy_all lockfiles <<EOF
+$(files \( -name package-lock.json -o -name yarn.lock -o -name poetry.lock -o -name Pipfile.lock \
     -o -name Pipfile -o -name Gemfile.lock -o -name go.sum -o -name go.mod -o -name pnpm-lock.yaml \
     -o -name composer.lock -o -name Cargo.lock -o -name uv.lock -o -name bun.lock -o -name pylock.toml \
-    -o -name gradle.lockfile -o -name 'requirements*.txt' -o -name '*.xml' -o -name '*.tap' \)); do
-    copy "$f" lockfiles
-done
-for f in $(files -name '*.sarif'); do copy "$f" tool_reports; done
+    -o -name gradle.lockfile -o -name 'requirements*.txt' -o -name '*.xml' -o -name '*.tap' \))
+EOF
+copy_all tool_reports <<EOF
+$(files -name '*.sarif')
+EOF
 # The MCP server's input: a session as a client opens one, and a tool call, one message a line.
 printf '%s\n' \
     '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"seed","version":"0"}}}' \

@@ -574,7 +574,7 @@ listed apart, below this item.
    kept here. Still open: an outside tool run as an independent check of the loop arm, which needs a new trial.
    **The owner's decision, 9 October 2026:** the outside-tool half is folded into the next loop trial the owner runs
    anyway, rather than paid for as a trial of its own ("agree"). It stays open until then.
-   **Part status:** partly done: an outside tool run as an independent check of the loop arm, folded into the owner's next loop trial
+   **Part status:** done, 13 October 2026
 22. **Smaller trust gaps in the build loop.** (`docs/GAP-ANALYSIS.md`, 4.6.) Each claimable on its own: (a) the
    seal key's passphrase on by default, and the report saying when a seal's key has none (a change to ADR-043); (b)
    reports read back as MCP resources fenced as app text; (c) a "drafted by your AI tool, adopted by you" label for

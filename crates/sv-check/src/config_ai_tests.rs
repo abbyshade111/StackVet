@@ -1,5 +1,6 @@
 //! The note on AI-made commits outside a merge (ADR-092): an `Info` finding when the history names
-//! such a commit, a plain note when none does, and not assessed when the folder is no repository.
+//! such a commit, a check that ran and found nothing when none does (ADR-092, Later), and not assessed when the
+//! folder is no repository.
 
 use super::*;
 
@@ -77,7 +78,7 @@ fn an_ai_commit_outside_a_merge_is_a_info_note_that_names_it() {
 }
 
 #[test]
-fn a_branch_with_no_ai_commit_says_none_was_found() {
+fn a_branch_with_no_ai_commit_is_a_check_that_found_nothing_not_a_finding() {
     if std::process::Command::new("git")
         .arg("--version")
         .output()
@@ -87,13 +88,17 @@ fn a_branch_with_no_ai_commit_says_none_was_found() {
         return;
     }
     let dir = repo("clean", false);
-    let f = finding_of(ai_commits_off_merge(&dir));
+    // None outside a merge is good news, so it must not reach the report as a thing to fix (ADR-092, Later), and it
+    // names no requirement, so it credits none.
+    match ai_commits_off_merge(&dir) {
+        Outcome::Passed(ids) => assert!(ids.is_empty(), "it credits no requirement: {ids:?}"),
+        Outcome::Failed(f) => panic!("good news reported as a finding: {}", f.title),
+        Outcome::NotAssessed(why) => panic!("the test's repository could not be read: {why}"),
+    }
+    // The setup: the same history with an AI commit outside a merge is found, so the check really looked.
+    let found = repo("clean-but-one", true);
+    let f = finding_of(ai_commits_off_merge(&found));
     assert_eq!(f.severity, Severity::Info);
-    assert!(
-        f.title.starts_with("No commit"),
-        "the note says none was found: {}",
-        f.title
-    );
 }
 
 #[test]

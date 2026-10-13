@@ -59,7 +59,7 @@ fn taken() -> sv_run::resources::Taken {
 }
 
 fn notes(resources: Option<sv_run::resources::Taken>) -> Vec<(String, String)> {
-    let (_, _, not_assessed) = running_app_evidence(&outcome(resources), &plan());
+    let (_, _, not_assessed) = running_app_evidence(&outcome(resources), &plan(), &[]);
     let c9: Vec<_> = not_assessed
         .into_iter()
         .filter(|(r, _)| r == "C9.1.1")

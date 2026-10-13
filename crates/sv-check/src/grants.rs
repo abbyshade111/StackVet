@@ -285,6 +285,7 @@ pub fn check(listing: &Listing, sbom: &Sbom, report: &mut ConfigReport) {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.retired-grant-enabled".into(),
         title: "The app's sign-in server switches on a grant that must no longer be used".into(),
         severity: Severity::Medium,
