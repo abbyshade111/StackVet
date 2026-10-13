@@ -278,6 +278,13 @@ pub fn page(report: &Report) -> String {
         );
         b.push_str(&format!("<p class=\"note\">{linked}</p>\n"));
     }
+    // What the SARIF file beside it is, and what it holds (backlog 0408).
+    let sarif = escape(&crate::sarif_line(report)).replacen(
+        crate::SARIF_FILE,
+        &format!("<a href=\"{0}\">{0}</a>", crate::SARIF_FILE),
+        1,
+    );
+    b.push_str(&format!("<p class=\"note\">{sarif}</p>\n"));
     if let Some(line) = crate::advisories_line(report) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
     }

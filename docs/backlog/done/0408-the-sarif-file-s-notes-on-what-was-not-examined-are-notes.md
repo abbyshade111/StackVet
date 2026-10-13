@@ -1,6 +1,6 @@
 # The SARIF file's notes on what was not examined are notes, not warnings, and the report says what the file holds
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** done, 13 October 2026
 
 The owner's decision of 13 October 2026, from the Antigravity trial's `findings.sarif`. It held no results at all,
 only nine "Not examined: ..." notifications at level `warning`. To the owner the file's name and those warnings read as

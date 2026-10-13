@@ -43,7 +43,7 @@ pub const REPORT_FILES: [ReportFile; 8] = [
         render: sv_report::markdown::low_findings,
     },
     ReportFile {
-        name: "findings.sarif",
+        name: sv_report::SARIF_FILE,
         mime: "application/sarif+json",
         render: sv_report::sarif::render,
     },

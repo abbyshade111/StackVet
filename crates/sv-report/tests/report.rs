@@ -4121,3 +4121,45 @@ fn an_outside_tools_finding_links_the_tools_own_page_about_its_rule() {
     );
     assert_eq!(uri("ast.sql"), serde_json::Value::Null);
 }
+
+#[test]
+fn the_sarif_files_notes_are_notes_and_the_page_says_what_it_holds() {
+    // Nine "warnings" in a file of no findings read to the owner as nine problems with the app (backlog 0408).
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut report = build(inputs(&f, &buckets, vec![finding("ast.sql", &[])], &[]));
+    report.gaps.push(sv_report::Gap {
+        what: "the running app".into(),
+        why: "it was not started".into(),
+        reason: sv_report::GapReason::NotAsked,
+        requirements: Vec::new(),
+    });
+    let sarif: serde_json::Value =
+        serde_json::from_str(&sv_report::sarif::render(&report)).unwrap();
+    let run = &sarif["runs"][0];
+    let notes = run["invocations"][0]["toolExecutionNotifications"]
+        .as_array()
+        .unwrap();
+    // The setup: there is a finding and a note, so the counts below are about something.
+    let (findings, notes_n) = (run["results"].as_array().unwrap().len(), notes.len());
+    assert!(findings >= 1 && notes_n >= 1, "{sarif}");
+    for note in notes {
+        assert_eq!(note["level"], "note", "{note}");
+    }
+    let said = |n: usize, one: &str, many: &str| format!("{n} {}", if n == 1 { one } else { many });
+    let expected = format!(
+        "holds {}, and {} on what was not examined",
+        said(findings, "finding", "findings"),
+        said(notes_n, "note", "notes")
+    );
+    let html = sv_report::html::page(&report);
+    assert!(
+        html.contains(
+            "<a href=\"findings.sarif\">findings.sarif</a> beside this report is for code editors"
+        ),
+        "{html}"
+    );
+    assert!(html.contains(&expected), "{expected}");
+    let compliance = sv_report::markdown::compliance(&report);
+    assert!(compliance.contains(&expected), "{expected}");
+}
