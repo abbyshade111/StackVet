@@ -33,16 +33,21 @@ fn the_tool_passes_its_own_checks() {
 #[test]
 fn every_test_file_here_is_in_exactly_one_job() {
     let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+    // Each file is a program, and so is each folder holding a `main.rs` (backlog 0339).
     let here: BTreeSet<String> = std::fs::read_dir(&dir)
         .unwrap()
         .filter_map(|e| e.ok())
         .map(|e| e.path())
-        .filter(|p| p.extension().is_some_and(|x| x == "rs"))
+        .filter(|p| p.extension().is_some_and(|x| x == "rs") || p.join("main.rs").is_file())
         .map(|p| p.file_stem().unwrap().to_string_lossy().into_owned())
         .collect();
     assert!(
         here.contains("ci_shards"),
         "the setup: this file is among them"
+    );
+    assert!(
+        here.contains("started_apps"),
+        "the setup: the folder of container tests is among them"
     );
     let job = |n: &str| -> Vec<String> {
         let (ok, said) = shards(&["args", n, "2"]);
