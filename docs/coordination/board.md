@@ -6,29 +6,26 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0349 (since 2026-10-13) — next: 0343, 0350, 0329, 0300
-- builder-none — arm: none — holds: 0348 (since 2026-10-13) — next: 0361, 0345, 0346, 0347
+- builder-full — arm: full — holds: 0350 (since 2026-10-13) — next: 0329, 0300, 0342, 0293, 0291
+- builder-none — arm: none — holds: 0361 (since 2026-10-13) — next: 0345, 0346, 0347
 
 ## Queue
 
 1. 0289 A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting) — hold: the owner's decision first; see the item
 2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
-3. 0291 Four readers of requirements.txt, each with its own comment and option rules, and no test holding them to one another — ready
-4. 0293 Two data files are compiled in, bypassing the one data path, and the guard test cannot see them — ready
-5. 0301 In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable — ready
-6. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
-7. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
-8. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
-9. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
-10. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-11. 0342 The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison — ready
-12. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
-13. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
-14. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-15. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-16. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — ready
-17. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — ready
-18. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
+3. 0301 In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable — ready
+4. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
+5. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
+6. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
+7. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
+8. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+9. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
+10. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
+11. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+12. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+13. 0336 No delta mode: an unchanged list of findings is re-read by the AI tool after every edit — ready
+14. 0337 The person's questions come whole on every check when they fit, about 540 characters each, though they do not change between edits — ready
+15. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
 
 ## Log
 
@@ -292,3 +289,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 13:49 — finished 0354 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1704; now holds 0356
 - 2026-10-13 13:49 — finished 0356 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1707; now holds 0349
 - 2026-10-13 13:49 — finished 0362 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1703; now holds 0348
+- 2026-10-13 14:19 — finished 0349 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1709; now holds 0343
+- 2026-10-13 14:19 — finished 0343 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1711; now holds 0350
+- 2026-10-13 14:19 — finished 0348 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1708; now holds 0361
+- 2026-10-13 14:19 — assigned 0342 to builder-full (full) as next: lane 9, owner released 13 Oct: advisory matching by index; advisories.rs only, after the docker.rs items so docker.rs can pass to builder-none for 0301
+- 2026-10-13 14:19 — assigned 0293 to builder-full (full) as next: lane 9, owner released 13 Oct: two data files compiled in; signed_in/passwords.rs and sv-report threats.rs
+- 2026-10-13 14:19 — assigned 0291 to builder-full (full) as next: lane 9, owner released 13 Oct: one reader of requirements.txt; sv-scan, sbom, manifest_lock, and install.rs, after 0329 in the same lane
