@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0288 (since 2026-10-12) — next: 0317, 0308, 0327, 0320, 0359, 0332
-- builder-none — arm: none — holds: 0307 (since 2026-10-12) — next: 0319, 0305, 0321, 0311, 0328, 0360
+- builder-full — arm: full — holds: 0308 (since 2026-10-12) — next: 0327, 0320, 0359, 0332
+- builder-none — arm: none — holds: 0305 (since 2026-10-12) — next: 0321, 0311, 0328, 0360
 
 ## Queue
 
@@ -247,3 +247,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-12 22:24 — assigned 0311 to builder-none (none) as next: lane 2, pair 18 with 0308: symlinked report folder, ecosystems.rs and tools.rs
 - 2026-10-12 22:24 — assigned 0328 to builder-none (none) as next: lane 2, pair 19 with 0327: DNS answer from any sender, live_tls.rs only
 - 2026-10-12 22:24 — assigned 0360 to builder-none (none) as next: lane 2, pair 20 with 0320: fuzz/Cargo.lock out of date
+- 2026-10-12 22:54 — finished 0288 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1623; now holds 0317
+- 2026-10-12 22:54 — finished 0317 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1630; now holds 0308
+- 2026-10-12 22:54 — finished 0307 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1622; now holds 0319
+- 2026-10-12 22:54 — finished 0319 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1626; now holds 0305
