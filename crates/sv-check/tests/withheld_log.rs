@@ -31,6 +31,7 @@ fn a_finding(rule: &str) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
     }
 }
 

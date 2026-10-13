@@ -13,10 +13,12 @@ the questions only you can answer.
 It takes about fifteen minutes to set up, once. A word here you do not know is probably in
 [the glossary](GLOSSARY.md).
 
-**Or let your AI coding tool do steps 1 to 3.** [The setup prompt](prompts/setup.md) asks it to check Docker, fetch
-StackVet, put the folder in git, and write the settings file with the paths already filled in, asking you before
-it installs or changes anything outside the folder. It is new and has not yet been tried in any AI coding tool, so
-the steps below are still the way that is known to work.
+**Or let your AI coding tool do steps 1 to 3.** [The setup prompts](prompts/setup.md) are for someone who has used
+an AI chat but never built an app with one. Copied into your AI coding tool one at a time, they have it look at your
+computer, help you install what is missing, fetch StackVet (on Windows, install it with Scoop), and write the settings
+file with the paths already filled in, asking you before it installs or changes anything outside the folder. They
+are new and have not yet been tried in any AI coding tool, so the steps below are still the way that is known to
+work.
 
 ## What StackVet will and will not tell you
 
@@ -70,6 +72,11 @@ docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/s
 
 It prints the settings and the name of the file they go in, and writes nothing itself. On Linux, add
 `--user "$(id -u):$(id -g)"` at the end. The examples below show what it prints.
+
+**On Windows, the Docker settings do not work yet:** `sv connect --docker` takes only a Mac or Linux path for
+Docker. Install StackVet with Scoop instead ("On Windows: Scoop", in section 6), and in the app's folder, in
+PowerShell, run `stackvet connect claude` (or `vscode`, or `cursor`). It prints settings that start the installed
+copy directly, with no Docker, which the checks that read your code do not need. Not yet tried by hand.
 
 ### Claude (the desktop app and Claude Code)
 
@@ -308,9 +315,9 @@ can see another's data, are reported as *not assessed*, and so are your app's ow
 the app is started. That is honest, not a pass.
 
 Those checks need `sv report --run` at a terminal, with StackVet installed directly on your computer
-rather than in Docker, because starting your app means starting containers of its own. There is no
-download for that yet, so it means building StackVet yourself. The steps are at the end of this
-section, under "Installing StackVet on your computer, for `--run`".
+rather than in Docker, because starting your app means starting containers of its own. On Windows that is a
+download, installed with Scoop; on a Mac or Linux it means building StackVet, which Homebrew does for you. The steps
+are at the end of this section, under "Installing StackVet on your computer, for `--run`".
 
 If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in
 `stackvet.toml`. The app runs with no internet, so it cannot fetch its own packages; this line lets StackVet

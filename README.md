@@ -96,8 +96,10 @@ sends at most four read-only requests to the address you type (five with `--api`
 DNS resolver one question about that name. And with `install = true`, the install step above downloads the app's
 packages from PyPI or npm before the run; the report says when it did. Advisory data is something you download and point it at; the list
 of packages your app depends on is yours, and a check that quietly phones out is one you did not agree to.
-Outside tools you turn on with `--tools` are other people's programs, and semgrep fetches its rules the first
-time it runs; gosec is started so that it cannot download your app's modules or run a C compiler, and a tool that
+Outside tools you turn on with `--tools` are other people's programs, and semgrep fetches its rule packs
+(`p/security-audit`, `p/default`, and `p/ai-best-practices` for an app that may call a model) from semgrep.dev every
+time it runs, so a `--tools` run reaches that third party though `sv` itself opens no connection; gosec is started
+so that it cannot download your app's modules or run a C compiler, and a tool that
 would read through a link in your app is not run while the link is there. `sv run` starts containers, and Docker downloads any image it does not have yet.
 
 `sv run` also asks the running app questions as somebody who has not signed in: among them, what headers

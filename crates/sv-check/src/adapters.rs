@@ -2148,6 +2148,29 @@ pub fn unread_files(
     ))
 }
 
+/// The most characters of a rule's page address kept.
+const HELP_URI_CHARS: usize = 300;
+
+/// A tool's `helpUri` for a rule, kept only when it is a plain web address: `https://` or `http://`, a host, and only
+/// the characters an address is written with, short enough to read (backlog 0378). The address comes from the tool's
+/// report, which reads the app, and is written into `report.html` as a link and into `security.md`: a `javascript:`
+/// address, a quote, a space, a bracket, or an angle bracket could make it something other than a link, so such an
+/// address is dropped, never mended.
+pub fn kept_help_uri(uri: &str) -> Option<String> {
+    let rest = uri
+        .strip_prefix("https://")
+        .or_else(|| uri.strip_prefix("http://"))?;
+    let host = rest.split(['/', '?', '#']).next().unwrap_or("");
+    let plain = |c: char| c.is_ascii_alphanumeric() || "-._~:/?#@!$&+,;=%".contains(c);
+    (uri.len() <= HELP_URI_CHARS
+        && !host.is_empty()
+        && host
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "-.:".contains(c))
+        && uri.chars().all(plain))
+    .then(|| uri.to_owned())
+}
+
 /// Reads a SARIF 2.1.0 document into findings.
 pub fn parse_sarif(adapter: &Adapter, text: &str) -> Result<Vec<Finding>> {
     parse_sarif_relative_to(adapter, text, Path::new(""))
@@ -2222,6 +2245,10 @@ pub fn parse_sarif_relative_to(
                 bundled_library: None,
                 outranked: None,
                 also_on_this_line: Vec::new(),
+                help_uri: rule_meta
+                    .get(rule_id.as_str())
+                    .and_then(|rule| rule["helpUri"].as_str())
+                    .and_then(kept_help_uri),
                 rule_id: format!("{}.{}", adapter.id, rule_id),
                 title: if short.is_empty() {
                     format!("{} reported {rule_id}", adapter.name)
@@ -2503,6 +2530,9 @@ mod folder_tests;
 
 #[cfg(test)]
 mod presence_tests;
+
+#[cfg(test)]
+mod rule_page_tests;
 
 #[cfg(all(test, unix))]
 mod stand_in_tests;

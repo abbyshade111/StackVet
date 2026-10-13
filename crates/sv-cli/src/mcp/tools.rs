@@ -367,7 +367,14 @@ impl Server {
                 .unwrap_or_else(|| sv_scan::ecosystems::DEFAULT_REPORT_DIR.to_owned());
             let report_name = format!("{folder_name}/report.json");
             let report = folder.join("report.json");
-            // A link could point outside the root, as for every other file read here.
+            // A link could point outside the root, as for every other file read here: the folder as well as
+            // the file, since a linked folder is read through like any other (backlog 0311).
+            if let Ok(meta) = std::fs::symlink_metadata(&folder) {
+                anyhow::ensure!(
+                    !meta.file_type().is_symlink(),
+                    "{folder_name} is a link to somewhere else, so it is not read"
+                );
+            }
             if let Ok(meta) = std::fs::symlink_metadata(&report) {
                 anyhow::ensure!(
                     !meta.file_type().is_symlink(),

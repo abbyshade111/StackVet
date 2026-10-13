@@ -181,49 +181,85 @@ fn trailer_tool(message: &str) -> Option<String> {
 /// sees only what a commit says about itself.
 pub fn ai_commits_off_merge(app_dir: &Path) -> Option<Vec<AiCommit>> {
     let branch = default_branch(app_dir);
-    let out = git(app_dir)
-        .args(LOG_OVERRIDES)
-        .args([
-            "log",
-            "--first-parent",
-            "--no-merges",
-            "--no-show-signature",
-            "--no-ext-diff",
-            "--no-textconv",
-            "--format=%H%x1f%s%x1f%B%x1e",
-            branch,
-            "--",
-        ])
-        .output()
-        .ok()?;
-    if !out.status.success() {
-        return None;
+    let log = |format: &str| {
+        git(app_dir)
+            .args(LOG_OVERRIDES)
+            .args([
+                "log",
+                "--first-parent",
+                "--no-merges",
+                "--no-show-signature",
+                "--no-ext-diff",
+                "--no-textconv",
+                format,
+                branch,
+                "--",
+            ])
+            .output()
+            .ok()
+            .filter(|out| out.status.success())
+            .map(|out| String::from_utf8_lossy(&out.stdout).into_owned())
+    };
+    // The commits' real hashes first, one to a line, where a message cannot reach (backlog 0313).
+    let hashes: Vec<String> = log("--format=%H")?
+        .lines()
+        .map(str::trim)
+        .filter(|h| matches!(h.len(), 40 | 64) && h.bytes().all(|b| b.is_ascii_hexdigit()))
+        .map(str::to_owned)
+        .collect();
+    let text = log("--format=%x1e%H%x1f%B")?;
+    Some(records_by_hash(&text, &hashes))
+}
+
+/// Each commit's message out of `git log`'s text, found by the marker its real hash makes, for the
+/// commits that name a tool, newest first as `hashes` lists them. A message may hold the separators
+/// itself, and so a marker naming another commit (backlog 0313), so each is looked for from the end:
+/// the oldest commit's real marker is the last one in the text, since no later message stands after
+/// it, a message cannot hold its own commit's hash, and an older message cannot hold a newer
+/// commit's. The subject is the message's first paragraph, as git's own `%s` is, read from the
+/// message rather than from a field a separator in it could move.
+fn records_by_hash(text: &str, hashes: &[String]) -> Vec<AiCommit> {
+    let mut end = text.len();
+    let mut found = Vec::new();
+    for hash in hashes.iter().rev() {
+        let marker = format!("\u{1e}{hash}\u{1f}");
+        let Some(at) = text[..end].rfind(&marker) else {
+            continue;
+        };
+        let body = &text[at + marker.len()..end];
+        end = at;
+        let Some(tool) = trailer_tool(body) else {
+            continue;
+        };
+        let subject = body
+            .trim_start()
+            .split("\n\n")
+            .next()
+            .unwrap_or("")
+            .lines()
+            .map(str::trim)
+            .collect::<Vec<_>>()
+            .join(" ")
+            .chars()
+            .map(|c| if c.is_control() { ' ' } else { c })
+            .collect();
+        found.push(AiCommit {
+            hash: hash.clone(),
+            subject,
+            tool: tool.chars().filter(|c| !c.is_control()).collect(),
+        });
     }
-    let text = String::from_utf8_lossy(&out.stdout);
-    Some(
-        text.split('\u{1e}')
-            .filter_map(|record| {
-                let mut fields = record.splitn(3, '\u{1f}');
-                let hash = fields.next()?.trim();
-                let subject = fields.next()?;
-                let body = fields.next().unwrap_or("");
-                if hash.is_empty() {
-                    return None;
-                }
-                let tool = trailer_tool(body)?;
-                Some(AiCommit {
-                    hash: hash.to_owned(),
-                    subject: subject.to_owned(),
-                    tool,
-                })
-            })
-            .collect(),
-    )
+    found.reverse();
+    found
 }
 
 #[cfg(test)]
 #[path = "git_ai_tests.rs"]
 mod ai_tests;
+
+#[cfg(test)]
+#[path = "git_separator_tests.rs"]
+mod separator_tests;
 
 #[cfg(test)]
 mod tests {
