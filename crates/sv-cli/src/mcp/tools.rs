@@ -132,21 +132,16 @@ impl Server {
         let app_dir = self.app_dir(args)?;
         let report = self.report_for(&app_dir, progress)?;
         // The parts carry the questions only the person can answer in full, and so does the whole
-        // answer, so the parts joined are still the whole (backlog 0187, part 10). Asked for with no
-        // section, a check that would come whole without them but not with them comes whole with
-        // them only counted, as before they were folded in, rather than in parts.
-        let full = |fence: &sv_report::fence::Fence| summary_with(&report, fence, true);
-        let mut with_questions = structured(&report);
-        with_questions["questions"] = questions_in_order(&report);
-        let fits = |text: String, data: &Value| {
-            text.len() <= crate::parts::ANSWER_BUDGET
-                && data.to_string().len() <= crate::parts::ANSWER_BUDGET
-        };
-        let counted = matches!(ask, crate::parts::Ask::First)
-            && !fits(sv_report::fence::fenced(full), &with_questions);
+        // answer asked for as `all`, so the parts joined are still the whole (backlog 0187, part 10).
+        // Asked for with no section, a check that comes whole only counts them and says how to ask:
+        // they do not change between edits, and in full they were about 540 characters each on
+        // every check (backlog 0337).
+        let counted = matches!(ask, crate::parts::Ask::First);
         let whole_structured = if counted {
             structured(&report)
         } else {
+            let mut with_questions = structured(&report);
+            with_questions["questions"] = questions_in_order(&report);
             with_questions
         };
         crate::parts::respond(
@@ -155,6 +150,8 @@ impl Server {
                 what: "check",
                 sections: &|fence| check_sections(&report, fence, true),
                 first: CHECK_FIRST,
+                // Named in the list of parts with their count, in full only when asked for.
+                only_asked: &["questions"],
                 always: check_always(&report),
                 whole_text: &|fence| summary_with(&report, fence, !counted),
                 whole_structured,
@@ -177,6 +174,7 @@ impl Server {
                 what: "plan",
                 sections: &|fence| crate::plan::sections_with(&plan, fence),
                 first: crate::plan::FIRST,
+                only_asked: &[],
                 always: crate::plan::always_json(&plan),
                 whole_text: &|fence| crate::plan::markdown_with(&plan, fence),
                 whole_structured: crate::plan::to_json(&plan),
@@ -600,7 +598,9 @@ impl Server {
                      it as stated by the AI coding tool, which is less than the person's own word, and \
                      asks again. Show the person what you wrote; if they agree with it, they can change \
                      that line to `Written by: owner` themselves and record it by running `sv review` \
-                     in their own terminal. Do not change it or run `sv review` for them.",
+                     in their own terminal. If you worked it out from the code and they agree, they \
+                     leave the line as it is and confirm it through `sv review`, and the report shows \
+                     it as your words a person confirmed. Do not change it or run `sv review` for them.",
                 fence.wrap(id),
                 fence.wrap(&written.path.display().to_string())
             )

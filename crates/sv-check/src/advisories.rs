@@ -28,7 +28,7 @@ use crate::sbom::{Component, Sbom};
 use crate::verified::Verified;
 use regex::Regex;
 use serde::Deserialize;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::path::Path;
 use std::sync::LazyLock;
 use sv_manifest::FixWithinDays;
@@ -546,11 +546,42 @@ fn matches(component: &Component, affected: &Affected) -> Option<bool> {
 /// folded, and every run of `-`, `_` and `.` read as one `-`). A lockfile and an advisory may each
 /// spell it either way, so comparing the spellings would quietly miss the advisory.
 fn same_package(ecosystem: &str, advisory: &str, ours: &str) -> bool {
+    package_key(ecosystem, advisory) == package_key(ecosystem, ours)
+}
+
+/// A package's name as `same_package` compares it: PEP 503's form for PyPI, case folded elsewhere.
+/// Two names are the same package exactly when their keys are equal, so the index below can be
+/// looked up by key and find what `same_package` would have found.
+fn package_key(ecosystem: &str, name: &str) -> String {
     if ecosystem == "PyPI" {
-        crate::manifest_lock::python_name(advisory) == crate::manifest_lock::python_name(ours)
+        crate::manifest_lock::python_name(name)
     } else {
-        advisory.eq_ignore_ascii_case(ours)
+        name.to_ascii_lowercase()
     }
+}
+
+/// The advisories that name each package, by OSV ecosystem and `package_key`, each advisory once per
+/// package and in the database's order; withdrawn ones are left out. Built once per audit (backlog
+/// 0342): before, every component was compared with every advisory, about twelve million comparisons
+/// and twice as many normalized names for a Python app against OSV's PyPI export. An advisory not
+/// under a component's key names no package of that component's, so `matches` would only have said no.
+fn advisory_index(database: &[Advisory]) -> HashMap<(&str, String), Vec<usize>> {
+    let mut index: HashMap<(&str, String), Vec<usize>> = HashMap::new();
+    for (at, advisory) in database.iter().enumerate() {
+        if advisory.withdrawn.is_some() {
+            continue;
+        }
+        for affected in &advisory.affected {
+            let ecosystem = affected.package.ecosystem.as_str();
+            let listed = index
+                .entry((ecosystem, package_key(ecosystem, &affected.package.name)))
+                .or_default();
+            if listed.last() != Some(&at) {
+                listed.push(at);
+            }
+        }
+    }
+    index
 }
 
 /// The requirement a clean comparison is evidence about: the app contains only components that have
@@ -601,13 +632,15 @@ pub fn audit_against(
         }
     }
 
+    let index = advisory_index(database);
     for component in &sbom.components {
         let mut undecided = false;
         let mut matched: Vec<&Advisory> = Vec::new();
-        for advisory in database {
-            if advisory.withdrawn.is_some() {
-                continue;
-            }
+        // Only the advisories naming this component's package; every other one would say no.
+        let named = osv_ecosystem(&component.ecosystem)
+            .and_then(|osv| index.get(&(osv, package_key(osv, &component.name))))
+            .map_or(&[][..], Vec::as_slice);
+        for advisory in named.iter().map(|&at| &database[at]) {
             // Undecided is per advisory: one that matches settles itself, and says nothing about
             // another that could not be compared, which stays a gap in the report.
             let mut this_one_undecided = false;
@@ -1114,6 +1147,10 @@ fn due_for(advisory: &Advisory, time_frames: Option<&FixWithinDays>, today: Opti
         }
     }
 }
+
+#[cfg(test)]
+#[path = "advisories_index_tests.rs"]
+mod index_tests;
 
 #[cfg(test)]
 mod tests {

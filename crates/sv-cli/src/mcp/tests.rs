@@ -960,7 +960,8 @@ fn the_prompts_shown_to_work_are_where_every_builder_starts_and_no_others() {
         .handle(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}))
         .unwrap();
     let instructions = hello["result"]["instructions"].as_str().unwrap().to_owned();
-    let spec = text(&call(&server, "stackvet_spec", json!({}))).to_owned();
+    // The whole spec, as `sv init` prints it; asked with no section, a long one comes in parts.
+    let spec = text(&call(&server, "stackvet_spec", json!({ "section": "all" }))).to_owned();
     let mut shown = 0;
     for p in &library.prompts {
         let named = format!("(`{}`)", p.id);
@@ -4712,11 +4713,29 @@ fn a_short_plan_and_check_are_answered_whole_as_before() {
         // The setup: the answer is short, and still has something in it.
         assert!(text(&whole).len() > 5_000, "{tool}");
         assert!(text(&whole).len() <= crate::parts::ANSWER_BUDGET, "{tool}");
-        assert_eq!(unfenced(text(&first)), unfenced(text(&whole)), "{tool}");
-        assert_eq!(
-            first["structuredContent"], whole["structuredContent"],
-            "{tool}"
-        );
+        let mut all_but_questions = whole["structuredContent"].clone();
+        if tool == "stackvet_check" {
+            // The questions, which do not change between edits, are counted with how to ask for
+            // them, and come in full only when asked for (backlog 0337).
+            let questions = all_but_questions
+                .as_object_mut()
+                .unwrap()
+                .remove("questions")
+                .unwrap();
+            let n = questions.as_array().unwrap().len();
+            assert!(n > 0, "the setup: the check has questions");
+            assert!(first["structuredContent"].get("questions").is_none());
+            assert!(
+                text(&first).contains(&format!("QUESTIONS FOR THE OWNER — {n} that"))
+                    && text(&first).contains("stackvet_check again with section \"questions\""),
+                "{}",
+                text(&first)
+            );
+            assert!(text(&first).len() < text(&whole).len());
+        } else {
+            assert_eq!(unfenced(text(&first)), unfenced(text(&whole)), "{tool}");
+        }
+        assert_eq!(first["structuredContent"], all_but_questions, "{tool}");
         assert!(first["structuredContent"].get("part").is_none(), "{tool}");
         assert!(!text(&first).contains(crate::parts::PARTS), "{tool}");
     }

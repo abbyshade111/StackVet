@@ -277,3 +277,22 @@ fn nothing_an_ai_tool_reads_calls_an_app_safe_or_spells_a_word_the_british_way()
     }
     assert!(wrong.is_empty(), "{}", wrong.join("\n"));
 }
+
+#[test]
+fn each_description_says_what_the_tool_gives_in_a_few_sentences() {
+    // The tool list is read on every turn. Descriptions say what a tool gives; when to call it is
+    // the instructions', and the rules for what comes back are in what comes back (backlog 0346).
+    // Measured 13 October 2026: 9,455 characters of descriptions before, 5,695 after.
+    let mut total = 0;
+    for tool in tools().as_array().unwrap() {
+        let description = tool["description"].as_str().unwrap();
+        assert!(
+            description.len() < 750,
+            "{}: {} characters: {description}",
+            tool["name"],
+            description.len()
+        );
+        total += description.len();
+    }
+    assert!(total < 6_500, "{total} characters of descriptions");
+}
