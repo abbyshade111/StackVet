@@ -1,6 +1,6 @@
 # The AI checks of the running app record the exchanges that show what they found
 
-**Status:** open
+**Status:** claimed by securevibe-trial-prep, 12 October 2026
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
