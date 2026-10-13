@@ -34,7 +34,7 @@ pub mod seen;
 pub mod threats;
 
 use serde::Serialize;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use sv_check::Finding;
 use sv_frameworks::applicability::Buckets;
 use sv_frameworks::{Condition, Frameworks, Source};
@@ -2345,6 +2345,33 @@ pub fn status_of(
     }
 }
 
+/// Where each requirement is named among `items`: for each id, the place of every item that names it, once each, in
+/// the items' order.
+fn about_each<'a, T>(
+    items: &'a [T],
+    ids: impl Fn(&'a T) -> &'a Vec<String>,
+) -> HashMap<&'a str, Vec<usize>> {
+    let mut about: HashMap<&str, Vec<usize>> = HashMap::new();
+    for (at, item) in items.iter().enumerate() {
+        for id in ids(item) {
+            let places = about.entry(id.as_str()).or_default();
+            if places.last() != Some(&at) {
+                places.push(at);
+            }
+        }
+    }
+    about
+}
+
+/// The items `about_each` found naming `id`.
+fn about<'a, T>(
+    about: &'a HashMap<&str, Vec<usize>>,
+    id: &str,
+    items: &'a [T],
+) -> impl Iterator<Item = &'a T> {
+    about.get(id).into_iter().flatten().map(|&at| &items[at])
+}
+
 pub fn build(inputs: Inputs<'_>) -> Report {
     // A machine's reading of the app and a person's word, apart: the first is what the checks,
     // the counterparts, and the requirements set aside are read from; the second is read by tier.
@@ -2370,37 +2397,35 @@ pub fn build(inputs: Inputs<'_>) -> Report {
             .unwrap_or_else(|| (String::new(), String::new()))
     };
 
+    // The findings, checks and a person's word about each requirement, found once here rather than by a scan of
+    // every one of them for each requirement (backlog 0367). Each list keeps its own order.
+    let findings_about = about_each(&inputs.findings, |f| &f.requirement_ids);
+    let checks_about = about_each(checks, |v| &v.requirement_ids);
+    let word_about = about_each(&by_word, |v| &v.requirement_ids);
+
     let mut requirements = Vec::new();
     for id in &inputs.buckets.applicable {
         // A finding whose own text says it leaves the credit alone is shown beside the status, not
         // made into it (BACKLOG, family-hub item 6). Every other finding still decides it.
-        let (findings, information): (Vec<&Finding>, Vec<&Finding>) = inputs
-            .findings
-            .iter()
-            .filter(|f| f.requirement_ids.iter().any(|r| r == id))
-            .partition(|f| f.withholds_credit());
+        let (findings, information): (Vec<&Finding>, Vec<&Finding>) =
+            about(&findings_about, id, &inputs.findings).partition(|f| f.withholds_credit());
         let findings: Vec<String> = findings.iter().map(|f| f.rule_id.clone()).collect();
         let mut information: Vec<String> = information.iter().map(|f| f.rule_id.clone()).collect();
         information.sort();
         information.dedup();
         // The app's own tests are kept apart from `sv`'s checks (ADR-050): written by the AI coding
         // tool, they are a tier of their own, never *checked*.
-        let about_this = |v: &&sv_check::Verified| v.requirement_ids.iter().any(|r| r == id);
         let as_checked_by = |v: &sv_check::Verified| CheckedBy {
             check_id: v.check_id.clone(),
             scope: v.scope.clone(),
             in_part: v.in_part,
             whose: None,
         };
-        let tested: Vec<CheckedBy> = checks
-            .iter()
-            .filter(about_this)
+        let tested: Vec<CheckedBy> = about(&checks_about, id, checks)
             .filter(|v| v.tier == sv_check::Tier::AppTested)
             .map(as_checked_by)
             .collect();
-        let satisfied: Vec<CheckedBy> = checks
-            .iter()
-            .filter(about_this)
+        let satisfied: Vec<CheckedBy> = about(&checks_about, id, checks)
             .filter(|v| v.tier == sv_check::Tier::Checked)
             .map(as_checked_by)
             .collect();
@@ -2425,7 +2450,14 @@ pub fn build(inputs: Inputs<'_>) -> Report {
             .get(id)
             .map(|r| r.counterparts.as_slice())
             .unwrap_or_default();
-        for v in checks {
+        // Only the checks about a counterpart, in the checks' own order.
+        let mut about_counterparts: Vec<usize> = counterparts
+            .iter()
+            .flat_map(|c| checks_about.get(c.as_str()).into_iter().flatten().copied())
+            .collect();
+        about_counterparts.sort_unstable();
+        about_counterparts.dedup();
+        for v in about_counterparts.into_iter().map(|i| &checks[i]) {
             for counterpart in counterparts {
                 if v.requirement_ids.iter().any(|r| r == counterpart)
                     && !supported_by.iter().any(|c| c.check_id == v.check_id)
@@ -2443,10 +2475,8 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         }
         // A person's word about this requirement, by the tier each credit says it rests on.
         let word = |tiers: &[sv_check::Tier]| -> Vec<(sv_check::Tier, CheckedBy)> {
-            by_word
-                .iter()
+            about(&word_about, id, &by_word)
                 .filter(|v| tiers.contains(&v.tier))
-                .filter(|v| v.requirement_ids.iter().any(|r| r == id))
                 .map(|v| {
                     (
                         v.tier,

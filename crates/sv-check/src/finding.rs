@@ -12,6 +12,8 @@
 //! visible rather than assumed.
 
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -500,18 +502,26 @@ pub fn merge_same_place(findings: Vec<Finding>) -> Vec<Finding> {
     let order = |f: &Finding| (f.severity, !is_svs_own(&f.rule_id), rank(f.confidence));
     // Each group is the findings of one place, and which of them is kept so far.
     let mut groups: Vec<(Vec<Finding>, usize, Vec<String>)> = Vec::with_capacity(findings.len());
+    // The groups of each line of code, oldest first, so a finding is compared only with those of its own place
+    // (backlog 0367): the same first match as a scan of every group, without one per finding.
+    let mut at_place: HashMap<(String, usize), Vec<usize>> = HashMap::new();
     for f in findings {
-        let same = groups.iter().position(|(members, kept, cwe)| {
-            let kept = &members[*kept];
-            reads_code(kept)
-                && reads_code(&f)
-                && kept.location == f.location
-                && kept.rule_id != f.rule_id
-                && cwe.iter().any(|c| f.cwe.contains(c))
+        let place = reads_code(&f).then(|| (f.location.file.clone(), f.location.line));
+        let same = place.as_ref().and_then(|place| {
+            at_place.get(place)?.iter().copied().find(|&i| {
+                let (members, kept, cwe) = &groups[i];
+                let kept = &members[*kept];
+                reads_code(kept)
+                    && kept.rule_id != f.rule_id
+                    && cwe.iter().any(|c| f.cwe.contains(c))
+            })
         });
         match same {
             None => {
                 let cwe = f.cwe.clone();
+                if let Some(place) = place {
+                    at_place.entry(place).or_default().push(groups.len());
+                }
                 groups.push((vec![f], 0, cwe));
             }
             Some(i) => {
@@ -596,14 +606,19 @@ pub fn one_per_line(findings: Vec<Finding>) -> Vec<Finding> {
     };
     let order = |f: &Finding| (f.severity, !is_svs_own(&f.rule_id), rank(f.confidence));
     let mut lines: Vec<Vec<Finding>> = Vec::with_capacity(findings.len());
+    // Which entry of `lines` holds each line of code (backlog 0367).
+    let mut at_line: HashMap<(String, usize), usize> = HashMap::new();
     for f in findings {
-        let same = lines.iter().position(|members| {
-            let first = &members[0];
-            reads_code(first) && reads_code(&f) && first.location == f.location
-        });
-        match same {
-            Some(i) => lines[i].push(f),
-            None => lines.push(vec![f]),
+        if !reads_code(&f) {
+            lines.push(vec![f]);
+            continue;
+        }
+        match at_line.entry((f.location.file.clone(), f.location.line)) {
+            Entry::Occupied(i) => lines[*i.get()].push(f),
+            Entry::Vacant(slot) => {
+                slot.insert(lines.len());
+                lines.push(vec![f]);
+            }
         }
     }
     lines
@@ -1084,6 +1099,77 @@ mod tests {
             );
             assert!(merged.iter().all(|f| f.also_reported_by.is_empty()));
         }
+    }
+
+    #[test]
+    fn places_apart_in_the_list_are_still_gathered_and_kept_in_the_order_they_first_came() {
+        // Backlog 0367: the findings of a place are found by the place, not by reading every one before them.
+        // Findings of two files and a running-app finding, interleaved.
+        let probe = |line| {
+            at(
+                "probe.headers",
+                "the running app",
+                line,
+                &["CWE-79"],
+                Severity::Medium,
+            )
+        };
+        let findings = vec![
+            at(
+                "ast.sql-built-by-hand",
+                "b.js",
+                4,
+                &["CWE-89"],
+                Severity::Medium,
+            ),
+            probe(1),
+            at("semgrep.xss", "a.js", 4, &["CWE-79"], Severity::Medium),
+            at("bandit.B608", "a.js", 4, &["CWE-89"], Severity::High),
+            at("semgrep.sqli", "b.js", 4, &["CWE-89"], Severity::High),
+            probe(1),
+            at("semgrep.sqli", "a.js", 4, &["CWE-89"], Severity::Medium),
+        ];
+        let merged = merge_same_place(findings);
+        let shown: Vec<(&str, &str, Vec<&str>)> = merged
+            .iter()
+            .map(|f| {
+                (
+                    f.location.file.as_str(),
+                    f.rule_id.as_str(),
+                    f.also_reported_by.iter().map(String::as_str).collect(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            shown,
+            vec![
+                ("b.js", "semgrep.sqli", vec!["ast.sql-built-by-hand"]),
+                ("the running app", "probe.headers", vec![]),
+                ("a.js", "semgrep.xss", vec![]),
+                ("a.js", "bandit.B608", vec!["semgrep.sqli"]),
+                ("the running app", "probe.headers", vec![]),
+            ]
+        );
+        let lines = one_per_line(merged);
+        let shown: Vec<(&str, &str, usize)> = lines
+            .iter()
+            .map(|f| {
+                (
+                    f.location.file.as_str(),
+                    f.rule_id.as_str(),
+                    f.also_on_this_line.len(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            shown,
+            vec![
+                ("b.js", "semgrep.sqli", 0),
+                ("the running app", "probe.headers", 0),
+                ("a.js", "bandit.B608", 1),
+                ("the running app", "probe.headers", 0),
+            ]
+        );
     }
 
     #[test]

@@ -290,20 +290,21 @@ impl Run {
     /// status across every run (ADR-086, answer 3). `changes_since` says the same thing in sentences.
     fn changes(&self, earlier: &Run) -> Changes {
         let mut before = Vec::new();
+        // Each run's fingerprints as a set, so the two lists are compared once each, not each with every other
+        // (backlog 0367).
+        let prints = |run: &Run| -> std::collections::HashSet<String> {
+            run.findings.iter().map(|f| f.fingerprint.clone()).collect()
+        };
+        let (then, now) = (prints(earlier), prints(self));
         let gone: Vec<&KeptFinding> = earlier
             .findings
             .iter()
-            .filter(|f| !self.findings.iter().any(|g| g.fingerprint == f.fingerprint))
+            .filter(|f| !now.contains(&f.fingerprint))
             .collect();
         let new: Vec<&KeptFinding> = self
             .findings
             .iter()
-            .filter(|f| {
-                !earlier
-                    .findings
-                    .iter()
-                    .any(|g| g.fingerprint == f.fingerprint)
-            })
+            .filter(|f| !then.contains(&f.fingerprint))
             .collect();
         for f in &new {
             before.push(format!("New finding ({}): {}", f.severity, f.title));
