@@ -1,6 +1,6 @@
 # The fence over IPv6, after review: no IPv6 at all on the fenced network, a test on the option list, and ADR-019 said exactly
 
-**Status:** claimed by builder-none, 13 October 2026
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the separate security review of 0300 (pull request #1725, commit 2ccd4b6f), which the owner asked for on 13 October 2026 and filed at the owner's word the same day. The review's verdict: sound, with gaps. It found no path where an error, a timeout, a missing tool, or an empty inspect result turns into a pass. It read the code and did not run Docker or cargo; points marked [inference] depend on how Docker behaves.
 
