@@ -1,6 +1,6 @@
 # The advisory match is components times advisories times affected ranges, with two string normalizations per PyPI comparison
 
-**Status:** partly done: Parsing the advisory files on one thread per core is not built: the matching was the cost (26 s to 0.13 s at 300 components and 20,000 records), and the files' order feeds the findings' order.
+**Status:** done, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: sv run speed. Severity: high. Verified against the code by the reviewing session before filing.
 
