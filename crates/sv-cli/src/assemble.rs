@@ -14,7 +14,8 @@ use super::*;
 /// server passes them on, so a long check does not look stuck.
 ///
 /// Every stage is announced on every run, in this order, so a count of them means the same each
-/// time; the three that run only when asked say so in their names. They were one stage, "Putting
+/// time; the three that do not always run say when in their names (the outside tools run unless
+/// --no-tools, ADR-111). They were one stage, "Putting
 /// the report together", until `sv report --run --tools` sat in it for minutes without a word
 /// (backlog 226, part 2, item 15).
 pub const REPORT_STAGES: [&str; 10] = [
@@ -25,7 +26,7 @@ pub const REPORT_STAGES: [&str; 10] = [
     "Reading its configuration",
     "Reading its code",
     "Comparing its packages with known vulnerabilities, when there is a database",
-    "Running the outside tools, when asked with --tools",
+    "Running the outside tools, unless --no-tools",
     "Running the app, when asked with --run",
     "Putting the report together",
 ];

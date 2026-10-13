@@ -62,6 +62,21 @@ fn a_plain_report_tries_every_tool_for_the_apps_languages() {
         );
     }
     assert!(!compliance.contains("--no-tools was given"), "{compliance}");
+    // Nothing on screen says the tools were asked for: they were not, and still ran.
+    assert!(
+        said.contains("Not everything this run tried could run"),
+        "{said}"
+    );
+    assert!(
+        err.contains("Running the outside tools, unless --no-tools"),
+        "{err}"
+    );
+    for asked in ["Asked for", "when asked with --tools"] {
+        assert!(
+            !said.contains(asked) && !err.contains(asked),
+            "{asked}: {said}{err}"
+        );
+    }
 }
 
 #[test]

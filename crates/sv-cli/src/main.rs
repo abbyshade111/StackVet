@@ -2897,7 +2897,8 @@ fn report_command(
         .filter(|g| !reasons.iter().any(|r| r.starts_with(g.as_str())))
         .collect();
     if !unsaid.is_empty() {
-        println!("\nAsked for, and not all of it ran (the reports say the same):");
+        // Not "asked for": the outside tools run without being asked since ADR-111.
+        println!("\nNot everything this run tried could run (the reports say the same):");
         for gap in unsaid {
             println!("  {gap}");
         }
