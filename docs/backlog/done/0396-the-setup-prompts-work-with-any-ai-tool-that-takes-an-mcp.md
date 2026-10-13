@@ -1,6 +1,6 @@
 # The setup prompts work with any AI tool that takes an MCP server
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** done, 13 October 2026
 
 The owner's decision of 13 October 2026, during the setup prompts' trial in Antigravity: "keeping up multiple tools to
 support is not feasible. The prompts should ask how that tool sets up an MCP server and then tell it to set up the sv

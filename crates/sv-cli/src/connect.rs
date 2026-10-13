@@ -7,6 +7,11 @@
 //! (`.cursor/mcp.json`), with the folder it was started in. It prints and never writes: the AI coding
 //! tool, or the person, puts it in the file, as with every other file in the app's folder.
 //!
+//! With no tool named, it prints StackVet's server itself, in no tool's format: its name, that it talks over standard
+//! input and output, and its command and arguments (backlog 0396). The setup prompts use that one, and the AI coding
+//! tool puts it into its own app's settings in its own app's way, so `sv` keeps no list of apps for them: the owner's
+//! decision of 13 October 2026, after the trial in Antigravity stopped at an app `sv connect` had no settings for.
+//!
 //! Two ways to run `sv`, two blocks:
 //! - `--docker PATH`: through the container, as `docs/GETTING-STARTED.md` sets it up. `PATH` is where
 //!   `docker` is on the person's computer (`which docker` prints it). A program inside the container
@@ -71,6 +76,29 @@ pub enum Runner {
 
 /// The settings block for `tool`, starting `sv` for `folder`.
 pub fn block(tool: Tool, runner: &Runner, folder: &Path) -> Value {
+    let (command, args) = command_and_args(runner, folder);
+    match tool {
+        Tool::Claude | Tool::Cursor => json!({
+            "mcpServers": { "stackvet": { "command": command, "args": args } }
+        }),
+        Tool::VsCode => json!({
+            "servers": { "stackvet": { "type": "stdio", "command": command, "args": args } }
+        }),
+    }
+}
+
+/// StackVet's server for `folder`, in no tool's format (backlog 0396): what any AI coding tool needs to put it into
+/// its own settings.
+pub fn server(runner: &Runner, folder: &Path) -> Value {
+    let (command, args) = command_and_args(runner, folder);
+    json!({ "name": SERVER_NAME, "transport": "stdio", "command": command, "args": args })
+}
+
+/// The name every block gives the server, and so the prefix of its tools' names (`stackvet_status`).
+pub const SERVER_NAME: &str = "stackvet";
+
+/// The program that starts `sv` as an MCP server for `folder`, and its arguments.
+fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
     let folder = folder.display().to_string();
     let (command, args) = match runner {
         Runner::Docker { docker, user } => {
@@ -95,17 +123,10 @@ pub fn block(tool: Tool, runner: &Runner, folder: &Path) -> Value {
     };
     let mut args = args;
     args.extend(["mcp".to_owned(), "--root".to_owned(), folder]);
-    match tool {
-        Tool::Claude | Tool::Cursor => json!({
-            "mcpServers": { "stackvet": { "command": command, "args": args } }
-        }),
-        Tool::VsCode => json!({
-            "servers": { "stackvet": { "type": "stdio", "command": command, "args": args } }
-        }),
-    }
+    (command, args)
 }
 
-/// `sv connect TOOL [--docker PATH] [--user UID:GID] [--folder DIR]`.
+/// `sv connect [TOOL] [--docker PATH] [--user UID:GID] [--folder DIR]`.
 pub fn command(args: &[String]) -> Result<String> {
     let mut tool = None;
     let mut docker = None;
@@ -132,7 +153,6 @@ pub fn command(args: &[String]) -> Result<String> {
             }
         }
     }
-    let tool = tool.with_context(|| format!("name the AI coding tool: {}", Tool::NAMES))?;
     let folder = folder.unwrap_or_else(|| PathBuf::from("."));
     let folder = folder
         .canonical()
@@ -164,8 +184,9 @@ pub fn command(args: &[String]) -> Result<String> {
                 bail!(
                     "this `sv` is running inside its container, so its own path means nothing to your \
                      AI coding tool. Give --docker with docker's full path on your computer (`which \
-                     docker` prints it), for example: sv connect {} --docker /usr/local/bin/docker",
-                    tool_word(tool)
+                     docker` prints it), for example: sv connect {}--docker /usr/local/bin/docker",
+                    tool.map(|t| format!("{} ", tool_word(t)))
+                        .unwrap_or_default()
                 );
             }
             let program = std::env::current_exe()
@@ -174,18 +195,28 @@ pub fn command(args: &[String]) -> Result<String> {
             Runner::Installed(program)
         }
     };
-    let text = serde_json::to_string_pretty(&block(tool, &runner, &folder))?;
+    let printed = match tool {
+        Some(tool) => block(tool, &runner, &folder),
+        None => server(&runner, &folder),
+    };
+    let text = serde_json::to_string_pretty(&printed)?;
     Ok(format!("{text}\n"))
 }
 
 /// The line that says where the block goes, for standard error, so standard output is the block alone.
-pub fn where_it_goes(args: &[String]) -> Option<String> {
-    let tool = args.iter().find_map(|a| Tool::named(a))?;
-    Some(format!(
-        "Put this in {} in the app's folder, then restart your AI coding tool and ask it to list the \
-         `stackvet_` tools.",
-        tool.settings_file()
-    ))
+pub fn where_it_goes(args: &[String]) -> String {
+    match args.iter().find_map(|a| Tool::named(a)) {
+        Some(tool) => format!(
+            "Put this in {} in the app's folder, then restart your AI coding tool and ask it to list the \
+             `stackvet_` tools.",
+            tool.settings_file()
+        ),
+        None => "This is StackVet's MCP server for this folder, in no app's format: a local server that talks over \
+                 standard input and output. Put its name, command, and arguments, exactly as printed, into your AI \
+                 coding tool's MCP settings, in that tool's own way; then have it load them and list the `stackvet_` \
+                 tools."
+            .to_owned(),
+    }
 }
 
 fn tool_word(tool: Tool) -> &'static str {

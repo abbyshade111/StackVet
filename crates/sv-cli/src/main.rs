@@ -197,9 +197,7 @@ fn run() -> Result<i32> {
         "bundle" => finished(cmd_bundle(rest)),
         "connect" => {
             print!("{}", sv_cli::connect::command(rest)?);
-            if let Some(line) = sv_cli::connect::where_it_goes(rest) {
-                eprintln!("{line}");
-            }
+            eprintln!("{}", sv_cli::connect::where_it_goes(rest));
             Ok(exit::CLEAN)
         }
         "doctor" => finished(cmd_doctor(rest)),
@@ -386,7 +384,7 @@ const COMMANDS: &[Command] = &[
         word: Some("TOOL"),
         flags: &[],
         valued: &["--docker", "--user", "--folder"],
-        help: "  sv connect TOOL [--docker PATH] [--user UID:GID] [--folder DIR]\n                     print the settings that connect an AI coding tool (claude, vscode,\n                     or cursor) to `sv` for this folder, the paths already filled in;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux; writes nothing\n",
+        help: "  sv connect [TOOL] [--docker PATH] [--user UID:GID] [--folder DIR]\n                     print StackVet's MCP server for this folder, the paths already filled\n                     in: with no TOOL, its name, command, and arguments, for any AI coding\n                     tool to put in its own settings; with TOOL (claude, vscode, or\n                     cursor), that tool's settings block;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux; writes nothing\n",
     },
     Command {
         name: "doctor",
