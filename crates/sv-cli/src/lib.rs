@@ -28,6 +28,7 @@ pub mod assemble;
 // One copy, in the library: the report's stages catch a panic through it, and the binary's hook records into it (0234).
 pub mod board_link;
 pub mod bundle;
+pub mod code_lines;
 pub mod compare;
 pub mod crash;
 pub mod crash_notes;

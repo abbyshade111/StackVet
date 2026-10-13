@@ -1037,6 +1037,10 @@ pub struct Report {
     /// out of `report.json`. `None` when the app was not asked anything.
     #[serde(skip)]
     pub seen: Option<seen::Seen>,
+    /// The lines of the app's code each code finding is on, the one before and after with it, redacted, by file and
+    /// line (backlog 0378, part 2). Never in `report.json`: it holds the app's code, and the report pages show it.
+    #[serde(skip)]
+    pub code_lines: std::collections::BTreeMap<(String, usize), Vec<(usize, String)>>,
     /// Passed in rather than read from a clock, so the same app twice produces the same bytes.
     pub generated: Option<String>,
     /// Which `sv` made this report, so whoever reads it can tell which checks it had. Without it, a
@@ -1561,8 +1565,15 @@ pub fn found_by(report: &Report, f: &sv_check::Finding) -> Option<String> {
         .filter(|e| e.outside_tool.is_some() && f.rule_id.starts_with(&e.rules))
         .max_by_key(|e| e.rules.len())?;
     let rule = &f.rule_id[e.rules.len()..];
+    // With the version it answered, when it ran (backlog 0378, part 2): a rule's meaning can change between versions.
+    let version = e
+        .tool
+        .as_ref()
+        .and_then(|t| t.version.as_deref())
+        .map(|v| format!(" ({v})"))
+        .unwrap_or_default();
     Some(format!(
-        "Found by {}, rule `{rule}`.",
+        "Found by {}{version}, rule `{rule}`.",
         e.outside_tool.as_deref().unwrap_or_default()
     ))
 }
@@ -1577,6 +1588,16 @@ pub fn no_outside_tool_ran(rows: &[ToolRow]) -> bool {
 pub const OUTSIDE_TOOLS_SECTION: &str = "The security tools each language already has, run beside StackVet's own \
      checks with `sv report --tools`. Their findings are among the things to fix above, each marked with the tool's \
      rule; one that found the same as StackVet on the same line is counted here as agreeing.";
+
+/// The lines of the app's code a finding is on, with the one before and after, as `sv` kept them redacted (backlog
+/// 0378, part 2); `None` for a finding that is not on a line of code, or whose file could not be read.
+pub fn code_of<'a>(report: &'a Report, f: &sv_check::Finding) -> Option<&'a [(usize, String)]> {
+    report
+        .code_lines
+        .get(&(f.location.file.clone(), f.location.line))
+        .map(Vec::as_slice)
+        .filter(|lines| !lines.is_empty())
+}
 
 /// How many of a finding's exchanges "What StackVet saw" quotes before it counts the rest.
 pub const SAW_SHOWN: usize = 3;
@@ -3116,6 +3137,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         build_loop: None,
         timings: Vec::new(),
         seen: None,
+        code_lines: Default::default(),
         app_name: inputs.app_name.to_owned(),
         target_level: inputs.target_level,
         generated: inputs.generated,

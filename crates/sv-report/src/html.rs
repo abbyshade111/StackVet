@@ -970,6 +970,15 @@ fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
         ));
     }
     b.push_str(&format!("<p>{}</p>\n", escape(&f.description)));
+    // The lines of code it is on, the finding's own marked (backlog 0378, part 2).
+    if let Some(lines) = crate::code_of(report, f) {
+        b.push_str("<p><strong>The code.</strong></p>\n<pre class=\"code\">");
+        for (n, text) in lines {
+            let mark = if *n == f.location.line { "&gt;" } else { " " };
+            b.push_str(&format!("{mark} {n:>4}  {}\n", escape(text)));
+        }
+        b.push_str("</pre>\n");
+    }
     // What the finding rests on, from what `sv` kept of the running app (backlog 0378).
     let saw = crate::what_was_seen(report, f);
     if let Some((last, shown)) = saw.split_last() {
@@ -1214,6 +1223,7 @@ mod tests {
             baseline: None,
             build_loop: None,
             seen: None,
+            code_lines: Default::default(),
             timings: Vec::new(),
             app_name: "test".into(),
             target_level: 1,

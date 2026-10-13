@@ -803,7 +803,8 @@ fn the_outside_tools_section_says_what_each_tool_did_and_each_finding_names_its_
             page[at..end].to_owned()
         };
         assert!(
-            section("A bidirectional control character").contains("Found by Bandit, rule `B613`."),
+            section("A bidirectional control character")
+                .contains("Found by Bandit (bandit 1.9.4), rule `B613`."),
             "{name}: the tool's finding names its tool and rule"
         );
         assert!(
@@ -821,6 +822,58 @@ fn the_outside_tools_section_says_what_each_tool_did_and_each_finding_names_its_
     let page = sv_report::markdown::compliance(&report);
     assert!(page.contains("None ran this time. They run only with `sv report --tools`, at a terminal: Bandit, Semgrep."), "{page}");
     assert!(!page.contains("| Bandit |"), "{page}");
+}
+
+#[test]
+fn a_code_finding_shows_the_lines_it_is_on() {
+    // A finding said its file and line, and a person had to open the file to see what it meant (backlog 0378, part 2).
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut sql = finding("ast.sql", &[]);
+    sql.title = "A query built by hand".into();
+    sql.location.line = 3;
+    let mut other = finding("ast.shell", &[]);
+    other.title = "A command built by hand".into();
+    other.location.line = 9;
+    let mut report = build(inputs(&f, &buckets, vec![sql, other], &[]));
+    report.code_lines.insert(
+        ("app.py".into(), 3),
+        vec![
+            (2, "id = request.args[\"id\"]".into()),
+            (3, "query = \"SELECT * FROM notes WHERE id = \" + id".into()),
+            (4, "rows = db.execute(query)".into()),
+        ],
+    );
+    for (name, page) in [
+        ("report.html", sv_report::html::page(&report)),
+        ("security.md", sv_report::markdown::security(&report)),
+    ] {
+        let at = page
+            .rfind("A query built by hand")
+            .unwrap_or_else(|| panic!("{name}: the finding"));
+        let next = page
+            .rfind("A command built by hand")
+            .unwrap_or_else(|| panic!("{name}: the other"));
+        let (mine, theirs) = if at < next {
+            (&page[at..next], &page[next..])
+        } else {
+            (&page[at..], &page[next..at])
+        };
+        assert!(mine.contains("The code."), "{name}: {mine}");
+        assert!(
+            mine.contains("   3  query = ")
+                && (mine.contains(">    3") || mine.contains("&gt;    3")),
+            "{name}: its own line is marked: {mine}"
+        );
+        assert!(
+            mine.contains("   2  id = request.args") && mine.contains("   4  rows = db.execute"),
+            "{name}: {mine}"
+        );
+        assert!(
+            !theirs.contains("The code."),
+            "{name}: a finding whose lines were not kept shows none: {theirs}"
+        );
+    }
 }
 
 #[test]
