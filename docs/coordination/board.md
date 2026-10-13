@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - builder-full — arm: full — holds: 0323 (since 2026-10-13) — next: 0326, 0344, 0366, 0354, 0356
-- builder-none — arm: none — holds: 0368 (since 2026-10-13) — next: 0367, 0364, 0352, 0353
+- builder-none — arm: none — holds: 0367 (since 2026-10-13) — next: 0364, 0352, 0353
 
 ## Queue
 
@@ -268,3 +268,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 01:53 — finished 0357 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1667; now holds 0368
 - 2026-10-13 01:53 — assigned 0352 to builder-none (none) as next: lane 5: secrets scan regex passes, secrets.rs only; no file shared with builder-full's lane
 - 2026-10-13 01:53 — assigned 0353 to builder-none (none) as next: lane 5: one query walk per rule, ast.rs only; no file shared with builder-full's lane
+- 2026-10-13 02:23 — finished 0368 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1670; now holds 0367
