@@ -65,8 +65,11 @@ def run(build, slow):
     names = [n for n in ('stackvet.toml', 'securevibe.toml') if os.path.exists(os.path.join(dst, n))]
     merge_policy(os.path.join(dst, names[0] if names else 'stackvet.toml'))
     # --allow-empty: a build that wrote nothing is checked as it is (it has no report), not a crash of the run.
-    subprocess.run('git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm build --allow-empty',
-                   shell=True, cwd=dst, check=True)
+    # Three list-form calls, no shell (backlog 0321), as image_smoke.py does.
+    git = ['git', '-C', dst, '-c', 'user.email=t@t', '-c', 'user.name=t']
+    subprocess.run(git[:3] + ['init', '-q'], check=True)
+    subprocess.run(git + ['add', '-A'], check=True)
+    subprocess.run(git + ['commit', '-qm', 'build', '--allow-empty'], check=True)
     cmd = [SV, 'report', dst, '--run', '--out', out] + (['--slow'] if slow else [])
     with open(dst + '.log', 'w', encoding='utf-8', newline='\n') as log:
         code = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT, timeout=3600).returncode
