@@ -34,8 +34,11 @@ tool. Then go through the prompts in order.
 
 <!-- setup-step-1:start -->
 > I'm new to this, so please explain things in plain words as we go. I want to set up StackVet, a tool that checks
-> an app's security, so you can use it while we build an app together. For now, only look: don't install or change
-> anything. Using your terminal, find out:
+> an app's security, so you can use it while we build an app together. StackVet is free and its code is public at
+> https://github.com/abbyshade111/StackVet: its README and its guide (`docs/GETTING-STARTED.md` there) say what it
+> needs and how it is set up, so read them there whenever you need to know something about StackVet. Read them, but
+> don't run anything they say yet. For now, only look: don't install or change anything. Using your terminal, find
+> out:
 >
 > 1. Which kind of computer this is: Mac, Windows, or Linux.
 > 2. Whether git is installed (`git --version`).

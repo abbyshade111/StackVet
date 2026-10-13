@@ -76,6 +76,22 @@ fn the_first_prompt_only_looks() {
     }
 }
 
+/// The first prompt tells the AI tool where StackVet's own words are, so it reads them rather than guessing, at the
+/// owner's asking on 13 October 2026; and reading them does not become a reason to run what they say.
+#[test]
+fn the_first_prompt_names_the_public_repository_and_its_guide() {
+    let text = flat(&block("setup-step-1"));
+    assert!(
+        text.contains("https://github.com/abbyshade111/StackVet:"),
+        "{text}"
+    );
+    // The guide it names is a file in the repository, so the tool finds it where it is told to look.
+    assert!(text.contains("(`docs/GETTING-STARTED.md` there)"), "{text}");
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    assert!(root.join("docs/GETTING-STARTED.md").is_file());
+    assert!(text.contains("don't run anything they say yet"), "{text}");
+}
+
 #[test]
 fn the_install_prompt_asks_before_each_install_and_names_only_official_pages() {
     let text = flat(&block("setup-step-2"));
