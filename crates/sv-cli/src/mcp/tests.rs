@@ -1291,6 +1291,40 @@ fn a_report_that_is_a_link_out_of_the_app_is_not_read_for_prompts() {
 }
 
 #[test]
+fn a_report_folder_that_is_a_link_out_of_the_app_is_not_read_for_prompts() {
+    // The folder rather than the file: `stackvet-report` itself a link to a folder outside the root, whose
+    // `report.json` is an ordinary file (backlog 0311).
+    let root = std::env::temp_dir().join(format!("sv-mcp-gaps-folder-link-{}", std::process::id()));
+    let outside =
+        std::env::temp_dir().join(format!("sv-mcp-gaps-folder-outside-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    std::fs::remove_dir_all(&outside).ok();
+    std::fs::create_dir_all(root.join("app")).unwrap();
+    std::fs::create_dir_all(&outside).unwrap();
+    std::fs::write(
+        outside.join("report.json"),
+        json!({ "requirements": [{ "id": "V3.4.3", "status": "needs-attention" }] }).to_string(),
+    )
+    .unwrap();
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(
+        &outside,
+        root.join("app")
+            .join(sv_scan::ecosystems::DEFAULT_REPORT_DIR),
+    )
+    .unwrap();
+    let server = Server::new(&root).unwrap();
+    let result = call(&server, "stackvet_prompts", json!({ "path": "app" }));
+    std::fs::remove_dir_all(&root).ok();
+    std::fs::remove_dir_all(&outside).ok();
+    #[cfg(unix)]
+    {
+        assert_eq!(result["isError"], true, "{result}");
+        assert!(text(&result).contains("is a link"), "{}", text(&result));
+    }
+}
+
+#[test]
 fn prompts_for_a_requirement_say_whether_each_was_shown_to_work() {
     let server = Server::new(&examples()).unwrap();
     let all = call(&server, "stackvet_prompts", json!({}));
