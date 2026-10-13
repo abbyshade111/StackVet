@@ -535,30 +535,10 @@ pub fn fully_hash_pinned(text: &str) -> bool {
         "--no-binary",
         "--pre",
     ];
-    // One requirement per logical line: a `\` at the end joins the next one on.
-    let mut logical = Vec::new();
-    let mut current = String::new();
-    for line in text.lines() {
-        let line = line.split_once(" #").map_or(line, |(code, _)| code);
-        let line = if line.trim_start().starts_with('#') {
-            ""
-        } else {
-            line
-        };
-        match line.trim_end().strip_suffix('\\') {
-            Some(head) => {
-                current.push_str(head);
-                current.push(' ');
-            }
-            None => {
-                current.push_str(line);
-                logical.push(std::mem::take(&mut current));
-            }
-        }
-    }
-    logical.push(current);
+    // One requirement per logical line, read as pip reads them (backlog 0291).
+    let logical = crate::requirements::logical_lines(text);
     let mut requirements = 0;
-    for line in logical.iter().map(|l| l.trim()).filter(|l| !l.is_empty()) {
+    for line in logical.iter().map(String::as_str) {
         if line.starts_with('-') {
             let option = line.split([' ', '=']).next().unwrap_or(line);
             if SETTINGS.contains(&option) {
@@ -566,8 +546,17 @@ pub fn fully_hash_pinned(text: &str) -> bool {
             }
             return false;
         }
-        let (requirement, rest) = line.split_once(char::is_whitespace).unwrap_or((line, ""));
-        let requirement = requirement.split(';').next().unwrap_or(requirement);
+        // The requirement runs to its first option; pip allows spaces inside it (`Jinja2 ==3.1.4`), which
+        // the other readers accept and this one read as a name with no version until backlog 0291.
+        let (requirement, rest) = line
+            .find(" --")
+            .map_or((line, ""), |at| (&line[..at], &line[at..]));
+        let requirement: String = requirement
+            .split(';')
+            .next()
+            .unwrap_or(requirement)
+            .split_whitespace()
+            .collect();
         let Some((name, version)) = requirement.split_once("==") else {
             return false;
         };
@@ -939,11 +928,11 @@ pub const REPORT_LOCK: &str = sv_frameworks::names::REPORT_LOCK;
 /// Who holds `REPORT_LOCK`, beside it: the one file of the lock another run can read on Windows.
 pub const REPORT_HOLDER: &str = sv_frameworks::names::REPORT_HOLDER;
 
-/// The six files a report is written as, in the order they are written and sealed. The one list
+/// The files a report is written as, in the order they are written and sealed. The one list
 /// the names of a report folder derive from: `REPORT_FOLDER_NAMES` here, and in `sv-cli` the table
 /// that says how each is rendered and what kind of file it is (`report_files`), which the compiler
 /// holds to this one, the seal (`report_seal::SEALED`), and the MCP server's resources.
-pub const REPORT_FILES: [&str; 7] = [
+pub const REPORT_FILES: [&str; 8] = [
     "report.html",
     "compliance.md",
     "security.md",
@@ -951,6 +940,7 @@ pub const REPORT_FILES: [&str; 7] = [
     "findings.sarif",
     "report.json",
     "seen.json",
+    "sbom.cdx.json",
 ];
 
 /// The record of the build loop (ADR-076): one line for each call the AI coding tool made to `sv`'s

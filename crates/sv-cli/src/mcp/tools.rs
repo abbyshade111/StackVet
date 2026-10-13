@@ -132,35 +132,86 @@ impl Server {
         let app_dir = self.app_dir(args)?;
         let report = self.report_for(&app_dir, progress)?;
         // The parts carry the questions only the person can answer in full, and so does the whole
-        // answer, so the parts joined are still the whole (backlog 0187, part 10). Asked for with no
-        // section, a check that would come whole without them but not with them comes whole with
-        // them only counted, as before they were folded in, rather than in parts.
-        let full = |fence: &sv_report::fence::Fence| summary_with(&report, fence, true);
-        let mut with_questions = structured(&report);
-        with_questions["questions"] = questions_in_order(&report);
-        let fits = |text: String, data: &Value| {
-            text.len() <= crate::parts::ANSWER_BUDGET
-                && data.to_string().len() <= crate::parts::ANSWER_BUDGET
+        // answer asked for as `all`, so the parts joined are still the whole (backlog 0187, part 10).
+        // Asked for with no section, a check that comes whole only counts them and says how to ask:
+        // they do not change between edits, and in full they were about 540 characters each on
+        // every check (backlog 0337).
+        let counted = matches!(ask, crate::parts::Ask::First);
+        // Asked for with no section, the findings this session's last whole answer gave, and still
+        // found, come a line each, when the answer then comes whole (backlog 0336). Pages are never
+        // cut from this, so a page asked for is the same in every answer.
+        let seen = self
+            .seen
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .get(&app_dir)
+            .cloned();
+        let shown_all = || {
+            let at = crate::bundle::utc_time(
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_secs())
+                    .unwrap_or(0),
+            );
+            self.seen
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .insert(
+                    app_dir.clone(),
+                    Seen {
+                        at,
+                        findings: report.findings.iter().map(Shown::of).collect(),
+                    },
+                );
         };
-        let counted = matches!(ask, crate::parts::Ask::First)
-            && !fits(sv_report::fence::fenced(full), &with_questions);
+        if let Some(seen) = seen.filter(|_| counted) {
+            let delta = Delta::of(&report, &seen);
+            let text = sv_report::fence::fenced(|fence| {
+                summary_since(&report, fence, false, Some(&delta))
+            });
+            let data = structured_since(&report, &delta);
+            // Only when it is shorter: with a finding or two, the line saying what "unchanged"
+            // means is longer than what it saves.
+            let full = sv_report::fence::fenced(|fence| summary_with(&report, fence, false));
+            if text.len() < full.len()
+                && text.len() <= crate::parts::ANSWER_BUDGET
+                && data.to_string().len() <= crate::parts::ANSWER_BUDGET
+            {
+                shown_all();
+                return Ok(json!({
+                    "content": [{ "type": "text", "text": text }],
+                    "structuredContent": data,
+                    "isError": false,
+                }));
+            }
+        }
         let whole_structured = if counted {
             structured(&report)
         } else {
+            let mut with_questions = structured(&report);
+            with_questions["questions"] = questions_in_order(&report);
             with_questions
         };
-        crate::parts::respond(
+        let result = crate::parts::respond(
             &crate::parts::Answer {
                 tool: "stackvet_check",
                 what: "check",
                 sections: &|fence| check_sections(&report, fence, true),
                 first: CHECK_FIRST,
+                // Named in the list of parts with their count, in full only when asked for.
+                only_asked: &["questions"],
                 always: check_always(&report),
                 whole_text: &|fence| summary_with(&report, fence, !counted),
                 whole_structured,
             },
             &ask,
-        )
+        )?;
+        // An answer that gave the findings, or started them and listed the rest: asked for with no
+        // section, or as `all`. A section asked for on its own may not have shown them.
+        if !matches!(ask, crate::parts::Ask::Part { .. }) {
+            shown_all();
+        }
+        Ok(result)
     }
 
     /// The plan for an app from its brief (ADR-030): built from the same report as a check, so the
@@ -177,6 +228,7 @@ impl Server {
                 what: "plan",
                 sections: &|fence| crate::plan::sections_with(&plan, fence),
                 first: crate::plan::FIRST,
+                only_asked: &[],
                 always: crate::plan::always_json(&plan),
                 whole_text: &|fence| crate::plan::markdown_with(&plan, fence),
                 whole_structured: crate::plan::to_json(&plan),
@@ -331,6 +383,10 @@ impl Server {
             );
         }
         let a = &found.rules.attribution;
+        // Each prompt's text is in both answers on purpose (backlog 0362): a client reads the text or the
+        // structured result, not both, and a coding prompt cannot be fetched by its id (`prompts/get` serves
+        // the design prompts alone), so a client reading the structured result would lose it. The cost is bytes
+        // on the wire, not tokens. Held by `mcp/prompts_twice_tests.rs`.
         Ok(json!({
             "content": [{ "type": "text", "text": text }],
             "structuredContent": {
@@ -354,10 +410,14 @@ impl Server {
             .get("requirement")
             .and_then(Value::as_str)
             .filter(|q| !q.is_empty());
+        let id = args
+            .get("id")
+            .and_then(Value::as_str)
+            .filter(|q| !q.is_empty());
         if args.get("path").and_then(Value::as_str).is_some() {
             anyhow::ensure!(
-                requirement.is_none(),
-                "give either requirement or path, not both"
+                requirement.is_none() && id.is_none(),
+                "give either requirement, id, or path, not two of them"
             );
             // The folder with the new name, or the old one while only it exists (ADR-062).
             let folder = sv_scan::ecosystems::default_report_dir_in(&self.app_dir(args)?);
@@ -367,7 +427,14 @@ impl Server {
                 .unwrap_or_else(|| sv_scan::ecosystems::DEFAULT_REPORT_DIR.to_owned());
             let report_name = format!("{folder_name}/report.json");
             let report = folder.join("report.json");
-            // A link could point outside the root, as for every other file read here.
+            // A link could point outside the root, as for every other file read here: the folder as well as
+            // the file, since a linked folder is read through like any other (backlog 0311).
+            if let Ok(meta) = std::fs::symlink_metadata(&folder) {
+                anyhow::ensure!(
+                    !meta.file_type().is_symlink(),
+                    "{folder_name} is a link to somewhere else, so it is not read"
+                );
+            }
             if let Ok(meta) = std::fs::symlink_metadata(&report) {
                 anyhow::ensure!(
                     !meta.file_type().is_symlink(),
@@ -418,18 +485,86 @@ impl Server {
                 "isError": false,
             }));
         }
+        anyhow::ensure!(
+            requirement.is_none() || id.is_none(),
+            "give either requirement or id, not both"
+        );
         let (prompts, ids, text) = crate::prompts_for(&self.loaded.frameworks, requirement)?;
+        let whole = |p: &sv_check::prompts::Prompt| {
+            json!({
+                "id": p.id, "title": p.title, "prompt": p.prompt,
+                "requirements": p.requirements, "sbdControls": p.sbd_controls,
+                "status": p.status.as_str(),
+                "result": p.tested.as_ref().map(|t| t.result.as_str()),
+            })
+        };
+        // One prompt in full, by the id the list gives.
+        if let Some(id) = id {
+            let Some(p) = prompts.prompts.iter().find(|p| p.id == id) else {
+                anyhow::bail!(
+                    "there is no prompt {id:?}; stackvet_prompts with no argument lists them, each with its id"
+                );
+            };
+            return Ok(json!({
+                "content": [{ "type": "text", "text": prompts.markdown(&[p]) }],
+                "structuredContent": { "prompts": [whole(p)], "credit": prompts.credit },
+                "isError": false,
+            }));
+        }
+        // With no argument, a list: one line a prompt, its text asked for by id (backlog 0348). Every prompt
+        // in full was about 28,000 characters, in the text and again in the structured result, for a tool
+        // that wanted one of them.
+        if requirement.is_none() {
+            let listed: Vec<&sv_check::prompts::Prompt> = ids
+                .iter()
+                .filter_map(|id| prompts.prompts.iter().find(|p| &p.id == id))
+                .collect();
+            let mut text = String::from(
+                "## Prompts for the AI coding tool\n\nThe library's prompts, one a line: ask stackvet_prompts with \
+                 `id` for one in full, or with `requirement` for those that target it. A prompt is shown to work \
+                 only when an app built with it passed its check and the same app built without it failed. A \
+                 prompt is an instruction, not evidence: check the app afterwards, whichever you use.\n\n",
+            );
+            for p in &listed {
+                let targets: Vec<&str> = p
+                    .requirements
+                    .iter()
+                    .chain(&p.sbd_controls)
+                    .map(String::as_str)
+                    .collect();
+                let targets = if targets.is_empty() {
+                    String::new()
+                } else {
+                    format!(" For {}.", targets.join(", "))
+                };
+                text.push_str(&format!(
+                    "- `{}`: {}. {}{targets}\n",
+                    p.id,
+                    p.title,
+                    p.status_sentence()
+                ));
+            }
+            text.push_str(&format!("\n{}\n", prompts.credit));
+            let listed: Vec<Value> = listed
+                .iter()
+                .map(|p| {
+                    json!({
+                        "id": p.id, "title": p.title,
+                        "requirements": p.requirements, "sbdControls": p.sbd_controls,
+                        "status": p.status.as_str(),
+                    })
+                })
+                .collect();
+            return Ok(json!({
+                "content": [{ "type": "text", "text": text }],
+                "structuredContent": { "prompts": listed, "credit": prompts.credit },
+                "isError": false,
+            }));
+        }
         let chosen: Vec<Value> = ids
             .iter()
             .filter_map(|id| prompts.prompts.iter().find(|p| &p.id == id))
-            .map(|p| {
-                json!({
-                    "id": p.id, "title": p.title, "prompt": p.prompt,
-                    "requirements": p.requirements, "sbdControls": p.sbd_controls,
-                    "status": p.status.as_str(),
-                    "result": p.tested.as_ref().map(|t| t.result.as_str()),
-                })
-            })
+            .map(whole)
             .collect();
         Ok(json!({
             "content": [{ "type": "text", "text": text }],
@@ -517,7 +652,9 @@ impl Server {
                      it as stated by the AI coding tool, which is less than the person's own word, and \
                      asks again. Show the person what you wrote; if they agree with it, they can change \
                      that line to `Written by: owner` themselves and record it by running `sv review` \
-                     in their own terminal. Do not change it or run `sv review` for them.",
+                     in their own terminal. If you worked it out from the code and they agree, they \
+                     leave the line as it is and confirm it through `sv review`, and the report shows \
+                     it as your words a person confirmed. Do not change it or run `sv review` for them.",
                 fence.wrap(id),
                 fence.wrap(&written.path.display().to_string())
             )

@@ -17,6 +17,7 @@ pub mod ecosystems;
 pub mod files;
 pub mod jvm;
 mod not_the_app;
+pub mod requirements;
 pub use not_the_app::not_the_app_in;
 
 use anyhow::{Context, Result};

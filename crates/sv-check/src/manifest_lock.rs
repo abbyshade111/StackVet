@@ -256,17 +256,12 @@ pub(crate) fn python_name(name: &str) -> String {
 
 fn python_wants(text: &str) -> Vec<Wanted> {
     let mut out = Vec::new();
-    for line in text.lines() {
-        // A comment starts at `#` at the start of a line or after white space.
-        let line = match line.find(" #").or_else(|| line.find("\t#")) {
-            Some(at) => &line[..at],
-            None => line,
-        };
-        // A `\\` at the end carries the requirement on to the next line, where its `--hash`
-        // options are; it is not part of the version.
-        let line = line.trim().trim_end_matches('\\').trim();
-        // Options (`-r`, `-e`, `--hash` on its own line) and comments are not packages.
-        if line.is_empty() || line.starts_with('#') || line.starts_with('-') {
+    // Continuations joined and comments cut as pip does, the same for every reader (backlog 0291): a
+    // requirement's `--hash` options on the lines after it are on its line here.
+    for line in sv_scan::requirements::logical_lines(text) {
+        let line = line.as_str();
+        // Options (`-r`, `-e`) are not packages.
+        if line.starts_with('-') {
             continue;
         }
         let (requirement, marker) = match line.split_once(';') {

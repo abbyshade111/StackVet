@@ -60,6 +60,10 @@ pub enum CannotRun {
     /// `image` under `[stack.run]` is not a name Docker reads as one (`image_reference`), so it
     /// was never put on Docker's command line, where a value beginning with a dash is an option.
     BadImage { image: String, why: String },
+    /// `health` under `[stack.run]` is not a plain path: `/`, then letters, digits, and `-._~/`,
+    /// with an optional query of the same and `=&`. It is asked of the app and written into the
+    /// report, so anything else is refused before the run (backlog 0312).
+    BadHealth { path: String, why: String },
     /// The backend is there but refused.
     BackendFailed { detail: String },
     /// The app was started and never became healthy. `loopback` is the loopback address its start
@@ -98,6 +102,7 @@ impl CannotRun {
             CannotRun::NoBackend { .. } => "no container backend",
             CannotRun::NoRunCommand { .. } => "stackvet.toml does not say how to run it",
             CannotRun::BadImage { .. } => "the image named is not one Docker reads",
+            CannotRun::BadHealth { .. } => "the health path named is not a plain path",
             CannotRun::BackendFailed { .. } => "the container backend refused",
             CannotRun::NeverReady { .. } => "it started and never answered",
             CannotRun::AppFolderUnseen { .. } => "its folder arrived empty in the container",
@@ -125,6 +130,13 @@ impl CannotRun {
                  reads as one ({image:?}: {why}), so the app was not started and everything that \
                  needs it running is reported as not assessed. Name the image as Docker does, \
                  `python:3.12-slim` or `registry.example.com/team/app:1.0`."
+            ),
+            CannotRun::BadHealth { path, why } => format!(
+                "stackvet.toml names a health path under [stack.run] that is not a plain path \
+                 ({path:?}: {why}), so the app was not started and everything that needs it \
+                 running is reported as not assessed. Name a path such as `/health` or \
+                 `/healthz?full=1`: `/`, then letters, digits, and `-._~/`, and after a `?` the \
+                 same with `=` and `&`."
             ),
             CannotRun::BackendFailed { detail } => format!(
                 "The container backend refused: {detail}. Everything that needs the app running \
@@ -595,13 +607,20 @@ impl RunPlan {
         if let Some(why) = image_reference::problem(&image) {
             return Err(CannotRun::BadImage { image, why });
         }
+        let health_path = non_empty(&run.health).unwrap_or_else(|| "/".to_owned());
+        if let Some(why) = health_path_problem(&health_path) {
+            return Err(CannotRun::BadHealth {
+                path: health_path,
+                why,
+            });
+        }
         Ok(RunPlan {
             image,
             build: non_empty(&run.build),
             start: start.expect("checked above"),
             test: non_empty(&run.test),
             test_report: non_empty(&run.test_report),
-            health_path: non_empty(&run.health).unwrap_or_else(|| "/".to_owned()),
+            health_path,
             // Absolute, always. Docker reads a relative path as the *name* of a named volume and
             // refuses it, which turns "sv was run from the wrong directory" into an error message
             // about invalid characters in a volume name.
@@ -627,6 +646,27 @@ impl RunPlan {
             install: run.install.unwrap_or(false),
         })
     }
+}
+
+/// Why `path` is not a health path `sv` asks for, or `None` when it is: `/` and then RFC 3986's
+/// unreserved characters (letters, digits, `-._~`) and `/`, with an optional query of the same and
+/// `=&`. Anything else could carry Markdown or a second host into the report (backlog 0312).
+fn health_path_problem(path: &str) -> Option<String> {
+    if !path.starts_with('/') {
+        return Some("it does not begin with `/`".to_owned());
+    }
+    if path.starts_with("//") {
+        return Some("it begins with `//`, which names another host".to_owned());
+    }
+    let (route, query) = path.split_once('?').unwrap_or((path, ""));
+    let plain = |c: char| c.is_ascii_alphanumeric() || "-._~".contains(c);
+    if let Some(c) = route.chars().find(|c| !(plain(*c) || *c == '/')) {
+        return Some(format!("{c:?} is not a plain path character"));
+    }
+    if let Some(c) = query.chars().find(|c| !(plain(*c) || "=&".contains(*c))) {
+        return Some(format!("{c:?} is not a plain query character"));
+    }
+    None
 }
 
 /// An empty string in a manifest is the template's placeholder, not an answer.

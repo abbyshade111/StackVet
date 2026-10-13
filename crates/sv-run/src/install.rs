@@ -136,9 +136,10 @@ impl Install {
         .map(|a| (*a).to_owned())
         .collect();
         args.push(format!("{}:/out", self.volume));
+        // The owner's files by `--mount`, which a colon in their folder's path cannot break (backlog 0329).
         for (host, name) in &self.files {
-            args.push("-v".to_owned());
-            args.push(format!("{}:/in/{name}:ro", host.display()));
+            args.push("--mount".to_owned());
+            args.push(crate::docker::read_only_bind(host, &format!("/in/{name}")));
         }
         args.extend([
             image.to_owned(),
@@ -389,30 +390,11 @@ fn one_line(text: &str) -> String {
 /// local install (`-e`, `.`), another index (`--index-url`), and an address (`git+…`, `https://…`),
 /// each of which could install something the file does not name.
 pub fn unpinned(text: &str) -> Vec<String> {
-    let mut logical = Vec::new();
-    let mut current = String::new();
-    for line in text.lines() {
-        let line = match line.find(" #") {
-            Some(at) => &line[..at],
-            None if line.trim_start().starts_with('#') => "",
-            None => line,
-        };
-        let trimmed = line.trim_end();
-        if let Some(head) = trimmed.strip_suffix('\\') {
-            current.push_str(head);
-            current.push(' ');
-            continue;
-        }
-        current.push_str(trimmed);
-        if !current.trim().is_empty() {
-            logical.push(current.trim().to_owned());
-        }
-        current.clear();
-    }
-    if !current.trim().is_empty() {
-        logical.push(current.trim().to_owned());
-    }
-    logical.into_iter().filter(|line| !pinned(line)).collect()
+    // Continuations joined and comments cut as pip does, the same for every reader (backlog 0291).
+    sv_check::requirements::logical_lines(text)
+        .into_iter()
+        .filter(|line| !pinned(line))
+        .collect()
 }
 
 fn pinned(line: &str) -> bool {
@@ -568,13 +550,15 @@ gunicorn==23.0.0 \\
         let mounts: Vec<&String> = args
             .iter()
             .enumerate()
-            .filter(|(i, _)| *i > 0 && args[i - 1] == "-v")
+            .filter(|(i, _)| *i > 0 && (args[i - 1] == "-v" || args[i - 1] == "--mount"))
             .map(|(_, m)| m)
             .collect();
         assert_eq!(mounts.len(), 2, "{mounts:?}");
         assert!(mounts[0].ends_with(":/out"), "{mounts:?}");
+        // The owner's file by `--mount` (backlog 0329), read-only.
         assert!(
-            mounts[1].ends_with("requirements.txt:/in/requirements.txt:ro"),
+            mounts[1].starts_with("type=bind,src=")
+                && mounts[1].ends_with("requirements.txt,dst=/in/requirements.txt,readonly"),
             "{mounts:?}"
         );
         assert!(

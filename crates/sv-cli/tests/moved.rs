@@ -119,8 +119,26 @@ fn nothing_but_the_data_finder_reads_from_the_build_folder_at_run_time() {
 /// Every place under `crates` (each crate's `src`) that names the build folder outside a test
 /// module, as `path:line`.
 fn build_folder_reads(crates: &Path) -> Vec<String> {
+    scan_src(crates).build_folder
+}
+
+/// What `scan_src` finds outside test modules.
+struct Scan {
+    /// Each `env!("CARGO_MANIFEST_DIR")`, or `option_env!`, however spaced, as `path:line`.
+    build_folder: Vec<String>,
+    /// Each file under the repository's `data/` folder that `include_str!` or `include_bytes!` compiles
+    /// in, named from `data/`, with where (backlog 0293).
+    compiled_data: Vec<(String, String)>,
+}
+
+fn scan_src(crates: &Path) -> Scan {
     let crates = crates.to_path_buf();
+    let data = crates
+        .join("../data")
+        .canonical()
+        .unwrap_or_else(|_| crates.join("../data"));
     let mut found = Vec::new();
+    let mut compiled_data = Vec::new();
     let mut stack = vec![crates.clone()];
     while let Some(dir) = stack.pop() {
         for entry in std::fs::read_dir(&dir).unwrap() {
@@ -209,13 +227,90 @@ fn build_folder_reads(crates: &Path) -> Vec<String> {
                     in_test = true;
                 } else if in_test && *line == "}" && item_follows(n) {
                     in_test = false;
-                } else if !in_test && line.contains("env!(\"CARGO_MANIFEST_DIR\")") {
-                    found.push(format!("{}:{}", path.display(), n + 1));
+                } else if !in_test {
+                    // Spaces inside the macro do not hide it, and `option_env!` names the same folder.
+                    let packed: String = line.split_whitespace().collect();
+                    if packed.contains("env!(\"CARGO_MANIFEST_DIR\"") {
+                        found.push(format!("{}:{}", path.display(), n + 1));
+                    }
+                    for include in ["include_str!(\"", "include_bytes!(\""] {
+                        let Some((_, rest)) = packed.split_once(include) else {
+                            continue;
+                        };
+                        let Some((named, _)) = rest.split_once('"') else {
+                            continue;
+                        };
+                        let file = path.parent().unwrap().join(named);
+                        let file = file.canonical().unwrap_or(file);
+                        if let Ok(inside) = file.strip_prefix(&data) {
+                            compiled_data.push((
+                                inside.to_string_lossy().replace('\\', "/"),
+                                format!("{}:{}", path.display(), n + 1),
+                            ));
+                        }
+                    }
                 }
             }
         }
     }
-    found
+    Scan {
+        build_folder: found,
+        compiled_data,
+    }
+}
+
+#[test]
+fn the_data_compiled_in_is_exactly_what_data_readme_says_is() {
+    // Backlog 0293: two data files are compiled in, bypassing `sv_frameworks::data` and `SV_DATA_DIR`, by a
+    // recorded decision (ADR-036, Later). A third would arrive unrecorded, so each compiled-in file must be
+    // marked so in `data/README.md`, and each file marked so must be compiled in.
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let scan = scan_src(&root.join("crates"));
+    let compiled: std::collections::BTreeSet<String> =
+        scan.compiled_data.iter().map(|(f, _)| f.clone()).collect();
+    let readme = std::fs::read_to_string(root.join("data/README.md")).expect("data/README.md");
+    let marked: std::collections::BTreeSet<String> = readme
+        .lines()
+        .filter(|l| l.contains("**compiled in**"))
+        .filter_map(|l| l.split('`').nth(1).map(str::to_owned))
+        .collect();
+    // The setup: both sides were found, so an empty match proves nothing.
+    assert!(
+        !compiled.is_empty(),
+        "no compiled-in data found; the scan is broken"
+    );
+    assert!(
+        !marked.is_empty(),
+        "data/README.md marks nothing compiled in"
+    );
+    assert_eq!(
+        compiled, marked,
+        "compiled in ({:#?}) and marked **compiled in** in data/README.md differ",
+        scan.compiled_data
+    );
+}
+
+#[test]
+fn a_spaced_or_optional_build_folder_and_a_compiled_in_data_file_are_found() {
+    // The scan's own fixture: a crate with `option_env!`, a spaced `env!`, and an include of a data file.
+    let root = scratch("compiled-in");
+    let src = root.join("crates/demo/src");
+    std::fs::create_dir_all(&src).unwrap();
+    std::fs::create_dir_all(root.join("data")).unwrap();
+    std::fs::write(root.join("data/table.json"), "{}").unwrap();
+    std::fs::write(
+        src.join("lib.rs"),
+        "const A: Option<&str> = option_env!(\"CARGO_MANIFEST_DIR\");\n\
+         const B: &str = env!( \"CARGO_MANIFEST_DIR\" );\n\
+         const C: &str = include_str!(\"../../../data/table.json\");\n\
+         const D: &str = include_str!(\"lib.rs\");\n",
+    )
+    .unwrap();
+    let scan = scan_src(&root.join("crates"));
+    std::fs::remove_dir_all(&root).ok();
+    assert_eq!(scan.build_folder.len(), 2, "{:#?}", scan.build_folder);
+    let files: Vec<&str> = scan.compiled_data.iter().map(|(f, _)| f.as_str()).collect();
+    assert_eq!(files, ["table.json"], "{:#?}", scan.compiled_data);
 }
 
 #[test]

@@ -20,10 +20,81 @@ use std::time::Duration;
 
 /// How long to wait for the app to answer before calling it not assessed.
 const READY_TIMEOUT_SECONDS: u64 = 60;
-/// The image the probes run from. Tiny, and already needed for the health check. Named by its digest as well as its tag,
-/// so a moved tag cannot change what runs (backlog 0238); the digest is the multi-platform one the tag points to.
-const PROBE_IMAGE: &str =
-    "busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662";
+/// The helper images, each named by its digest as well as its tag, so a moved tag cannot change what runs (backlog
+/// 0238). They are written in one file, `images/Dockerfile`, which CI reads to fetch them and Dependabot moves (backlog
+/// 0317); each is found there when `sv` is compiled, so a name missing from the file stops the build.
+const IMAGES: &str = include_str!("../images/Dockerfile");
+
+/// The image on the line `FROM <image> AS <stage>` of `images/Dockerfile`.
+const fn helper_image(stage: &str) -> &'static str {
+    let bytes = IMAGES.as_bytes();
+    let mut start = 0;
+    while start < bytes.len() {
+        let mut end = start;
+        while end < bytes.len() && bytes[end] != b'\n' {
+            end += 1;
+        }
+        let (_, rest) = bytes.split_at(start);
+        let (line, _) = rest.split_at(end - start);
+        if let Some(image) = image_of_line(line, stage.as_bytes()) {
+            return match std::str::from_utf8(image) {
+                Ok(image) => image,
+                Err(_) => panic!("images/Dockerfile: an image name that is not UTF-8"),
+            };
+        }
+        start = end + 1;
+    }
+    panic!("images/Dockerfile: no line FROM <image> AS <stage> for one of the helper images")
+}
+
+/// The image of one line, when the line is exactly `FROM <image> AS <stage>` (a trailing `\r` or space allowed).
+const fn image_of_line<'a>(line: &'a [u8], stage: &[u8]) -> Option<&'a [u8]> {
+    let mut line = line;
+    while let [rest @ .., b'\r' | b' ' | b'\t'] = line {
+        line = rest;
+    }
+    let Some(rest) = strip(line, b"FROM ") else {
+        return None;
+    };
+    let mut at = 0;
+    while at < rest.len() && rest[at] != b' ' {
+        at += 1;
+    }
+    let (image, tail) = rest.split_at(at);
+    let Some(name) = strip(tail, b" AS ") else {
+        return None;
+    };
+    if image.is_empty() || name.len() != stage.len() {
+        return None;
+    }
+    let mut i = 0;
+    while i < name.len() {
+        if name[i] != stage[i] {
+            return None;
+        }
+        i += 1;
+    }
+    Some(image)
+}
+
+/// `bytes` without `prefix`, if it starts with it.
+const fn strip<'a>(bytes: &'a [u8], prefix: &[u8]) -> Option<&'a [u8]> {
+    if bytes.len() < prefix.len() {
+        return None;
+    }
+    let mut i = 0;
+    while i < prefix.len() {
+        if bytes[i] != prefix[i] {
+            return None;
+        }
+        i += 1;
+    }
+    Some(bytes.split_at(prefix.len()).1)
+}
+
+/// The image the probes run from. Tiny, and already needed for the health check. The digest is the multi-platform one
+/// the tag points to.
+const PROBE_IMAGE: &str = helper_image("probe");
 
 /// The one place a container that talks to the app may write: in memory, where nothing written can
 /// be run, and only big enough for the request it is about to send.
@@ -32,11 +103,19 @@ const PROBE_TMPFS: &str = "/tmp:rw,noexec,nosuid,size=16m";
 /// `--internal` stops traffic leaving for the internet, but the bridge's gateway address is the host
 /// itself (on Docker Desktop and Colima, the virtual machine), so without one of these the app could
 /// reach anything listening there (the deep review of 4 October 2026, S2). Containers on the network
-/// still reach one another. The first is Docker's own option for an internal network with no gateway
-/// (Docker 28 and later); the second is the older one. Which was used is said if the check fails.
-const NO_GATEWAY: &[&str] = &[
-    "com.docker.network.bridge.gateway_mode_ipv4=isolated",
-    "com.docker.network.bridge.inhibit_ipv4=true",
+/// still reach one another. The first asks Docker (28 and later) for no gateway over IPv4 or IPv6:
+/// a daemon set to give new networks IPv6 gives the internal network an IPv6 gateway too, which is
+/// the host just the same (backlog 0300). The second asks it of IPv4 alone, the third is the older
+/// IPv4 option. Which was used is said if the check fails, and the gateway check knocks on every
+/// gateway of either family, so a daemon that took an option and left an IPv6 gateway open is still
+/// caught.
+const NO_GATEWAY: &[&[&str]] = &[
+    &[
+        "com.docker.network.bridge.gateway_mode_ipv4=isolated",
+        "com.docker.network.bridge.gateway_mode_ipv6=isolated",
+    ],
+    &["com.docker.network.bridge.gateway_mode_ipv4=isolated"],
+    &["com.docker.network.bridge.inhibit_ipv4=true"],
 ];
 /// A port the gateway check knocks on: whatever answers there, open or refused, is the host's stack
 /// answering, which is what the fence must not allow.
@@ -44,12 +123,10 @@ const GATEWAY_PORT: &str = "9";
 /// The mail server the app is given when the probes need to read its email: Mailpit, which keeps
 /// every message it is sent and answers questions about them over HTTP. Pinned to a minor release,
 /// as the probe image is, so a run does not change under the owner because a new one came out.
-const MAIL_IMAGE: &str =
-    "axllent/mailpit:v1.31@sha256:b68349e3a014b90c5610bfb26b2ae36f3892d7b8cf25ee140c6c71c98d2fcf48";
+const MAIL_IMAGE: &str = helper_image("mail");
 /// The test OpenID Connect provider runs in a stock Node image: its script uses built-in modules
-/// only, because the fence has no route to a package registry. Named by digest (backlog 0238).
-pub(crate) const PROVIDER_IMAGE: &str =
-    "node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402";
+/// only, because the fence has no route to a package registry.
+pub(crate) const PROVIDER_IMAGE: &str = helper_image("provider");
 const PROVIDER_PORT: u16 = 9000;
 const PROVIDER_SCRIPT: &str = include_str!("../assets/oidc-provider.mjs");
 /// The test model the app's AI feature is pointed at, in the same stock Node image. See
@@ -64,7 +141,7 @@ const MODEL_KEY: &str = "sv-test-model-key-not-a-real-key";
 const PROVIDER_CLIENT_ID: &str = "sv-test-client";
 /// The headless browser, pinned to one version so a run today and a run next month draw pages the
 /// same way. Its DevTools port is reached only from the driver, which shares its network.
-const BROWSER_IMAGE: &str = "chromedp/headless-shell:151.0.7922.109@sha256:2d349b544a1ea6b5b5fd7c0fe99215ff662339c57407ee2e8c0a11af93516b04";
+const BROWSER_IMAGE: &str = helper_image("browser");
 /// Every helper image `sv` runs, by name and digest, in the run record so a report says what ran (backlog 0238).
 pub const HELPER_IMAGES: &[&str] = &[PROBE_IMAGE, MAIL_IMAGE, PROVIDER_IMAGE, BROWSER_IMAGE];
 
@@ -100,6 +177,9 @@ pub fn digest_of(text: &str) -> Option<String> {
     .then(|| digest.to_owned())
 }
 
+#[cfg(test)]
+#[path = "docker_images_file_tests.rs"]
+mod images_file_tests;
 #[cfg(test)]
 #[path = "docker_images_tests.rs"]
 mod images_tests;
@@ -547,12 +627,14 @@ impl DockerBackend {
         // 1. The fence. Without a gateway address when the daemon allows one of the ways; a daemon that
         //    refuses both gets the plain internal network, and the gateway check below decides.
         let mut made_with = None;
-        for option in NO_GATEWAY {
-            if self
-                .docker(&["network", "create", "--internal", "-o", option, &network])
-                .is_ok_and(|(code, _)| code == 0)
-            {
-                made_with = Some(*option);
+        for options in NO_GATEWAY {
+            let mut args = vec!["network", "create", "--internal"];
+            for option in *options {
+                args.extend(["-o", option]);
+            }
+            args.push(&network);
+            if self.docker(&args).is_ok_and(|(code, _)| code == 0) {
+                made_with = Some(*options);
                 break;
             }
         }
@@ -579,7 +661,10 @@ impl DockerBackend {
         self.verify_fenced(&network)?;
         let network_made = made_with.map_or(
             "plain internal: Docker refused both ways of leaving out a gateway".to_owned(),
-            |o| format!("with `{o}`"),
+            |options| {
+                let named: Vec<String> = options.iter().map(|o| format!("`{o}`")).collect();
+                format!("with {}", named.join(" and "))
+            },
         );
         // 1b'. And that nothing on it can reach the host through the bridge's gateway, which
         //      `--internal` alone leaves open.
@@ -646,7 +731,7 @@ impl DockerBackend {
         let name_server = name_server_dns.as_ref().map(|_| name_server_name.as_str());
 
         // 2. The app, fenced and hardened like every helper (`app_args`).
-        let mount = format!("{}:/app:ro", plan.app_dir.display());
+        let mount = read_only_bind(&plan.app_dir, "/app");
         let port_env = format!("PORT={}", plan.port);
         // The installed packages, read-only, with their commands first on the PATH and Python's on
         // its import path. Set on the container, so the start command, `seed`, and the tests all
@@ -772,7 +857,7 @@ impl DockerBackend {
                     "--rm",
                     "--network",
                     "none",
-                    "-v",
+                    "--mount",
                     &mount,
                     PROBE_IMAGE,
                     "ls",
@@ -820,7 +905,7 @@ impl DockerBackend {
             oidc,
             mcp_server,
             fetch,
-            ai,
+            mut ai,
             liveness,
             timings: mut suite_timings,
         } = sv_check::script::run(
@@ -852,6 +937,11 @@ impl DockerBackend {
         // And from the lines of the app's own output the log checks read, kept the same way: an
         // app that logs a sign-in with its password logs the test account's.
         if let Some(asked) = signed_in.as_mut() {
+            crate::stand_ins::blank_log(asked, &secrets);
+        }
+        // The AI suite's the same way (backlog 0381): its exchanges are kept now, and the account it signs in as is
+        // the test account.
+        if let Some(asked) = ai.as_mut() {
             crate::stand_ins::blank_log(asked, &secrets);
         }
 
@@ -1342,8 +1432,23 @@ pub(crate) const HARDENING: [&str; 5] = [
     "no-new-privileges",
 ];
 
+/// The `--mount` value that puts `src`, a folder or file of the owner's, read-only at `dst` in a
+/// container (backlog 0329). Docker's short `-v src:dst:ro` splits at every colon, so a folder such
+/// as `Notes: 2026/app` could not be mounted and the run failed without saying why; `--mount` is read
+/// as comma-separated fields, and a field holding a comma or a double quote is quoted the way Docker's
+/// reader expects, with any double quote doubled.
+pub fn read_only_bind(src: &std::path::Path, dst: &str) -> String {
+    let source = format!("src={}", src.display());
+    let source = if source.contains([',', '"']) {
+        format!("\"{}\"", source.replace('"', "\"\""))
+    } else {
+        source
+    };
+    format!("type=bind,{source},dst={dst},readonly")
+}
+
 /// `args` with `HARDENING` just after the command word.
-pub(crate) fn hardened(args: Vec<String>) -> Vec<String> {
+fn hardened(args: Vec<String>) -> Vec<String> {
     let mut out = args;
     let at = 1.min(out.len());
     out.splice(at..at, HARDENING.iter().map(|s| (*s).to_owned()));
@@ -1407,7 +1512,7 @@ fn app_args<'a>(
         network,
         "--tmpfs",
         APP_TMP,
-        "-v",
+        "--mount",
         mount,
         "--tmpfs",
         REPORT_TMPFS,
@@ -1816,7 +1921,7 @@ impl DockerBackend {
         let targets = gateway_targets(&config);
         if targets.is_empty() {
             return fail(format!(
-                "Docker names no IPv4 gateway or subnet for the network `{network}` ({}), so whether the \
+                "Docker names no gateway or subnet for the network `{network}` ({}), so whether the \
                  app could reach this computer through it cannot be checked",
                 config.trim()
             ));
@@ -1830,10 +1935,12 @@ impl DockerBackend {
             format!("nc -vv -w 3 127.0.0.1 {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-self=$?\"");
         // An address that is the knocking container's own is not knocked on: with no gateway, Docker
         // gives the subnet's first address to the first container, which is this one, and its own
-        // refusal would read as the host answering. CI found exactly that.
+        // refusal would read as the host answering. CI found exactly that. Both families are read, since
+        // an IPv6 gateway is knocked on as well (backlog 0300); a netcat that cannot reach an IPv6
+        // address at all says so in words the verdict does not take for a fence, and the run stops.
         for target in &targets {
             script.push_str(&format!(
-                "; case \" $(ip -4 -o addr show 2>/dev/null) \" in *\"inet {target}/\"*) echo \"sv-own={target}\";; \
+                "; case \" $(ip -o addr show 2>/dev/null) \" in *\"inet {target}/\"*|*\"inet6 {target}/\"*) echo \"sv-own={target}\";; \
                  *) nc -vv -w 3 {target} {GATEWAY_PORT} </dev/null 2>&1; echo \"sv-gateway=$?\";; esac"
             ));
         }
@@ -2795,21 +2902,34 @@ enum GatewayVerdict {
     Unknown(String),
 }
 
-/// The addresses to knock on for a network: every IPv4 gateway Docker names, and the first address of
-/// every IPv4 subnet, where a gateway would be. Read from `Gateway|Subnet` pairs, space-separated.
+/// The addresses to knock on for a network: every gateway Docker names, and the first address of every
+/// subnet, where a gateway would be, IPv4 and IPv6 alike. Until backlog 0300 only IPv4 was read, so an
+/// IPv6 gateway, the host just as the IPv4 one is, was never knocked on. Read from `Gateway|Subnet`
+/// pairs, space-separated.
 fn gateway_targets(config: &str) -> Vec<String> {
+    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
     let mut out: Vec<String> = Vec::new();
     for pair in config.split_whitespace() {
         let (gateway, subnet) = pair.split_once('|').unwrap_or((pair, ""));
-        if let Ok(ip) = gateway.parse::<std::net::Ipv4Addr>() {
+        if let Ok(ip) = gateway.parse::<IpAddr>() {
             out.push(ip.to_string());
         }
-        if let Some((base, bits)) = subnet.split_once('/')
-            && let (Ok(base), Ok(bits)) = (base.parse::<std::net::Ipv4Addr>(), bits.parse::<u32>())
-            && bits < 31
-        {
-            let mask = u32::MAX.checked_shl(32 - bits).unwrap_or(0);
-            out.push(std::net::Ipv4Addr::from((u32::from(base) & mask) + 1).to_string());
+        let Some((base, bits)) = subnet.split_once('/') else {
+            continue;
+        };
+        let Ok(bits) = bits.parse::<u32>() else {
+            continue;
+        };
+        match base.parse::<IpAddr>() {
+            Ok(IpAddr::V4(base)) if bits < 31 => {
+                let mask = u32::MAX.checked_shl(32 - bits).unwrap_or(0);
+                out.push(Ipv4Addr::from((u32::from(base) & mask) + 1).to_string());
+            }
+            Ok(IpAddr::V6(base)) if bits < 127 => {
+                let mask = u128::MAX.checked_shl(128 - bits).unwrap_or(0);
+                out.push(Ipv6Addr::from((u128::from(base) & mask) + 1).to_string());
+            }
+            _ => {}
         }
     }
     out.sort();
@@ -3385,6 +3505,10 @@ mod probe_tests {
         let args = install.args("sv-1-install", "python:3.12-slim");
         let refs: Vec<&str> = args.iter().map(String::as_str).collect();
         hardened_by_prepared(&refs);
+        // The stand-in name server (ADR-085) the same: its builder writes none of the five.
+        let args = crate::name_server::start_args("sv-1-net", "sv-1-dns");
+        let refs: Vec<&str> = args.iter().map(String::as_str).collect();
+        hardened_by_prepared(&refs);
     }
 
     #[test]
@@ -3460,7 +3584,8 @@ mod probe_tests {
 
     #[test]
     fn the_app_is_hardened_like_every_helper() {
-        let args = app_args("sv-1-app", "sv-1-net", "/apps/notes:/app:ro", "PORT=8080");
+        let mount = read_only_bind(std::path::Path::new("/apps/notes"), "/app");
+        let args = app_args("sv-1-app", "sv-1-net", &mount, "PORT=8080");
         hardened_by_prepared(&args);
         let at = args.iter().position(|a| *a == "--network").unwrap();
         assert_eq!(args[at + 1], "sv-1-net");
@@ -3470,8 +3595,10 @@ mod probe_tests {
                 .any(|a| *a == "-p" || a.starts_with("--publish")),
             "nothing published: {args:?}"
         );
-        assert!(
-            args.contains(&"/apps/notes:/app:ro"),
+        let at = args.iter().position(|a| *a == "--mount").unwrap();
+        assert_eq!(
+            args[at + 1],
+            "type=bind,src=/apps/notes,dst=/app,readonly",
             "the app's folder stays read-only: {args:?}"
         );
         // Its only writable places are in memory, and each has a size, so neither can be used to
@@ -3504,7 +3631,12 @@ mod probe_tests {
         };
         // Every way a container is started here: the app, each helper, and the plain `run`s.
         let mut started: Vec<Vec<&str>> = vec![
-            app_args("sv-1-app", "sv-1-net", "/apps/notes:/app:ro", "PORT=8080"),
+            app_args(
+                "sv-1-app",
+                "sv-1-net",
+                "type=bind,src=/apps/notes,dst=/app,readonly",
+                "PORT=8080",
+            ),
             browser_args("net", "b"),
             mail_args("net", "m"),
             driver_args("net", "JOB=1"),
@@ -4927,12 +5059,25 @@ mod gateway_tests {
             gateway_targets("172.20.0.1|172.20.0.0/16 "),
             vec!["172.20.0.1"]
         );
+        assert!(gateway_targets("").is_empty());
+    }
+
+    #[test]
+    fn an_ipv6_gateway_is_knocked_on_as_well() {
+        // Backlog 0300: a daemon that gives new networks IPv6 gives the internal one an IPv6 gateway,
+        // the host just as the IPv4 one is. Until then these were dropped, and the fence passed.
         assert_eq!(
             gateway_targets("10.9.0.254|10.9.0.0/24 |fd00::/64 "),
-            vec!["10.9.0.1", "10.9.0.254"]
+            vec!["10.9.0.1", "10.9.0.254", "fd00::1"]
         );
-        assert!(gateway_targets("").is_empty());
-        assert!(gateway_targets("|fd00::/64 ").is_empty());
+        assert_eq!(gateway_targets("|fd00:9::/64 "), vec!["fd00:9::1"]);
+        assert_eq!(
+            gateway_targets("172.18.0.1|172.18.0.0/16 fd5e:1::1|fd5e:1::/64 "),
+            vec!["172.18.0.1", "fd5e:1::1"]
+        );
+        // The host part masked off, as for IPv4, and a subnet too small to have a gateway left alone.
+        assert_eq!(gateway_targets("|fd00:9::7/64 "), vec!["fd00:9::1"]);
+        assert!(gateway_targets("|fd00::5/127 ").is_empty());
     }
 
     #[test]
