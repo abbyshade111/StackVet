@@ -13,3 +13,4 @@ Look first at whether the test reads a container list, or a stand-in's output, t
 time can add to: the name it was given looks like one a run gives its own container, which was not checked. If so, the
 test's own setup should name only what it made, so it cannot be handed another test's container.
 
+Seen again on 13 October 2026: Rust (suite (rest)), [run 38347894447](https://github.com/abbyshade111/StackVet/actions/runs/38347894447), commit e723bf0 (the merge of #1658); the same line 48, given `container sv-1-1-test-app (…)` where it expected `container app1 (…)`. The next push's run (#1662, `0dd38a2`) passed.

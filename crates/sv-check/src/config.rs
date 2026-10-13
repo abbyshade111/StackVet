@@ -49,15 +49,26 @@ impl ConfigReport {
     fn record(&mut self, id: &str, outcome: Outcome) {
         match outcome {
             Outcome::Passed(requirement_ids) => {
-                let credit =
-                    Verified::new(id, requirement_ids, "the files this check reads".to_owned());
+                let covered = if id == AI_COMMITS_OFF_MERGE {
+                    "the default branch's commits, by what each says about itself: none that names an AI coding \
+                     tool reached the branch outside a merge"
+                } else {
+                    "the files this check reads"
+                };
+                let credit = Verified::new(id, requirement_ids, covered.to_owned());
                 // The `.gitignore` check reads the app's root only, and V13.3.1 speaks of every secret in the
                 // source, so its pass is one sample of that (backlog 0006 part 4; ADR-090).
-                let credit = if id == GITIGNORE_COVERS_ENV {
+                // A lockfile that pins every version is the inventory half of V15.1.2; whether each library comes
+                // from a trusted, continually maintained repository is not read, so its pass is in part (backlog
+                // 0307; ADR-053).
+                let credit = if id == GITIGNORE_COVERS_ENV || id == "config.versions-pinned" {
                     credit.in_part()
                 } else {
                     credit
                 };
+                // No file named like a secrets file in the history is another sample of the same sentence, so its
+                // pass is in part as well (backlog 0331).
+                let credit = credit.in_part_if(id == "config.secrets-file-committed");
                 self.passed.push(credit)
             }
             Outcome::Failed(f) => self.findings.push(*f),
@@ -87,7 +98,7 @@ pub fn check_dir_in(
     );
     report.record(GITIGNORE_COVERS_ENV, gitignore_covers_env(app_dir));
     report.record("config.security-contact", security_contact(app_dir));
-    report.record("config.ai-commits-off-merge", ai_commits_off_merge(app_dir));
+    report.record(AI_COMMITS_OFF_MERGE, ai_commits_off_merge(app_dir));
     report.record(
         "config.versions-pinned",
         versions_pinned(listing, bill_of_materials),
@@ -137,6 +148,18 @@ fn is_secret_file(name: &str) -> bool {
         && (SECRET_FILES.contains(&name)
             || name.starts_with(".env.")
             || (name.contains("-firebase-adminsdk-") && name.ends_with(".json")))
+}
+
+/// The git pathspecs that reach every name `is_secret_file` accepts, at any depth, so reading
+/// the history compares only those paths in each commit. They may reach more (an `.env.example`),
+/// never less: the names git returns are still filtered by `is_secret_file`.
+fn secret_file_pathspecs() -> Vec<String> {
+    SECRET_FILES
+        .iter()
+        .copied()
+        .chain([".env.*", "*-firebase-adminsdk-*.json"])
+        .map(|name| format!(":(glob)**/{name}"))
+        .collect()
 }
 
 /// Names that are meant to be committed: a template showing which settings exist, with no values in it.
@@ -212,7 +235,7 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
     // finding's own fix says to do) is still in every copy of the history. Until 7 October 2026 only
     // the tracked files were read, and V13.3.1 was credited after the fix (the gap analysis, 1.3).
     if committed.is_empty() {
-        let Some(added) = crate::git::ever_added(app_dir) else {
+        let Some(added) = crate::git::ever_added(app_dir, &secret_file_pathspecs()) else {
             return Outcome::NotAssessed(
                 "git could not read this repository's history, so `sv` cannot say whether a \
                  secrets file was committed in the past and untracked since."
@@ -244,6 +267,7 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: "config.secrets-file-committed".into(),
             title: format!("A file that holds credentials is in version control (`{first}`)"),
             severity: Severity::Critical,
@@ -272,9 +296,13 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
     }
 }
 
-/// Commits on the default branch that an AI coding tool made and that were not merged in (ADR-092). Always an
-/// `Info` note, never a finding that fails and never a credit: a commit either names its tool or it does not,
-/// and the report says which of these it can and cannot see.
+/// The check of AI-made commits outside a merge, by its rule id.
+const AI_COMMITS_OFF_MERGE: &str = "config.ai-commits-off-merge";
+
+/// Commits on the default branch that an AI coding tool made and that were not merged in (ADR-092). An `Info` note
+/// worth knowing when there are some, never a finding that fails; none is a check that ran and found nothing
+/// (ADR-092, Later). Never a credit: a commit either names its tool or it does not, and the report says which of
+/// these it can and cannot see.
 fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
     let Some(commits) = crate::git::ai_commits_off_merge(app_dir) else {
         return Outcome::NotAssessed(
@@ -283,41 +311,39 @@ fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
                 .to_owned(),
         );
     };
-    let (title, description) = match commits.len() {
-        0 => (
-            "No commit on the default branch was made by an AI coding tool outside a merge"
-                .to_owned(),
-            "Every commit that names an AI coding tool came in through a merge, or none names one."
-                .to_owned(),
-        ),
-        n => {
-            let shown: Vec<String> = commits
-                .iter()
-                .take(10)
-                .map(|c| {
-                    format!(
-                        "`{}` {} ({})",
-                        &c.hash[..c.hash.len().min(8)],
-                        c.subject,
-                        c.tool
-                    )
-                })
-                .collect();
-            (
+    // None outside a merge is a check that ran and found nothing, not a finding (ADR-092, Later): reported among the
+    // checks that found nothing, so it never reads as a thing to fix. It names no requirement, so it credits none.
+    if commits.is_empty() {
+        return Outcome::Passed(&[]);
+    }
+    let n = commits.len();
+    let (title, description) = {
+        let shown: Vec<String> = commits
+            .iter()
+            .take(10)
+            .map(|c| {
                 format!(
-                    "{n} commit(s) on the default branch were made by an AI coding tool and not merged in"
-                ),
-                format!(
-                    "These commits name an AI coding tool and reached the branch directly: {}{}.",
-                    shown.join("; "),
-                    if n > 10 {
-                        format!("; and {} more", n - 10)
-                    } else {
-                        String::new()
-                    }
-                ),
-            )
-        }
+                    "`{}` {} ({})",
+                    &c.hash[..c.hash.len().min(8)],
+                    c.subject,
+                    c.tool
+                )
+            })
+            .collect();
+        (
+            format!(
+                "{n} commit(s) on the default branch were made by an AI coding tool and not merged in"
+            ),
+            format!(
+                "These commits name an AI coding tool and reached the branch directly: {}{}.",
+                shown.join("; "),
+                if n > 10 {
+                    format!("; and {} more", n - 10)
+                } else {
+                    String::new()
+                }
+            ),
+        )
     };
     Outcome::Failed(Box::new(crate::finding::found(Finding {
         evidence: Vec::new(),
@@ -328,7 +354,8 @@ fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
-        rule_id: "config.ai-commits-off-merge".into(),
+        help_uri: None,
+        rule_id: AI_COMMITS_OFF_MERGE.into(),
         title,
         severity: Severity::Info,
         confidence: Confidence::High,
@@ -363,6 +390,7 @@ fn in_history_finding(first: &str, count: usize) -> Finding {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.secrets-file-committed".into(),
         title: format!(
             "A file that holds credentials was committed, and is still in the history (`{first}`)"
@@ -597,6 +625,7 @@ fn env_not_ignored_finding(file: &str, description: String) -> Finding {
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
         rule_id: "config.gitignore-covers-env".into(),
         title: "Nothing stops the environment file being committed".into(),
         severity: Severity::High,
@@ -734,6 +763,7 @@ fn versions_pinned(
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
+            help_uri: None,
             rule_id: "config.versions-pinned".into(),
             title: if names.len() == 1 {
                 format!("{} does not pin the versions it installs", names[0])
@@ -897,6 +927,7 @@ fn security_contact(app_dir: &Path) -> Outcome {
         bundled_library: None,
         outranked: None,
         also_on_this_line: Vec::new(),
+        help_uri: None,
         rule_id: "config.security-contact".into(),
         title: "There is no way to report a security problem".into(),
         severity: Severity::Low,
@@ -921,6 +952,10 @@ fn security_contact(app_dir: &Path) -> Outcome {
 #[cfg(test)]
 #[path = "config_ai_tests.rs"]
 mod ai_tests;
+
+#[cfg(test)]
+#[path = "config_history_tests.rs"]
+mod history_tests;
 
 #[cfg(test)]
 mod tests {
@@ -1160,8 +1195,8 @@ mod tests {
             whole
                 .passed
                 .iter()
-                .any(|p| p.check_id == "config.secrets-file-committed"),
-            "the whole history did not pass: {whole:?}"
+                .any(|p| p.check_id == "config.secrets-file-committed" && p.in_part),
+            "the whole history did not pass, in part: {whole:?}"
         );
     }
 
@@ -1639,12 +1674,13 @@ mod tests {
             r#"{"packages":{"":{"name":"x"},"node_modules/express":{"version":"4.19.2"}}}"#,
         )
         .unwrap();
-        assert!(
-            check_dir(&dir)
-                .passed
-                .iter()
-                .any(|p| p.check_id == "config.versions-pinned")
-        );
+        let passed = check_dir(&dir).passed;
+        let credit = passed
+            .iter()
+            .find(|p| p.check_id == "config.versions-pinned")
+            .expect("a lockfile that pins passes");
+        // In part: the versions are pinned, and where each library comes from is not read (backlog 0307).
+        assert!(credit.in_part, "{credit:?}");
         fs::remove_dir_all(&dir).ok();
     }
 
