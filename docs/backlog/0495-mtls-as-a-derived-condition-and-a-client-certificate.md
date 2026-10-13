@@ -1,0 +1,17 @@
+# mTLS as a derived condition, and a client certificate accepted without a trust check reported
+
+**Status:** open
+
+From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requirements no check speaks to for a typical web app with sign-in (`auth`, `tls`, `internet`, `email`; level 2). A proposal, not a fault: how these could be assessed, in the order of preference the owner set (a static read; the running app behind the fence; an outside tool already adapted; showing the person the lines of their own code with a plain question; a hand check with a reason), each at its honest tier (ADR-022, ADR-050). Written by a read-only reviewer and read, not built, by the reviewing session; a requirement's text must be read again before any citation is written (a citation is a claim). The cross-cutting item it assumes is "A question to the owner carries the lines it rests on".
+
+**Section: V12 Secure Communication (V12.1.3)**
+
+- **V12.1.3** (L2), mTLS client certificates validated before their identity is used. No question; applies to a
+  typical app only in name, since almost none uses client certificates. Route 1, in two steps: a derived condition
+  `mtls` (code: `requestCert: true`, `ssl_verify_client`, `ClientAuth: tls.Require...`, `SSLVerifyClient`,
+  `ssl.CERT_REQUIRED` with `verify_mode`), so for the app that has none it is *does not apply* with the reason "the app
+  asks for no client certificate" (derived, like `xml`); and for the app that has it, finding-only:
+  `RequireAnyClientCert` or `RequestClientCert` without `ClientCAs`, `requestCert: true` with
+  `rejectUnauthorized: false`, nginx `ssl_verify_client optional_no_ca`. Tier: applicability (a reason, not a status),
+  and `sv`'s own for the finding. Partial-checks proposes the finding; the derived condition is new, and it takes the
+  requirement off every ordinary app's "not verified" list honestly.
