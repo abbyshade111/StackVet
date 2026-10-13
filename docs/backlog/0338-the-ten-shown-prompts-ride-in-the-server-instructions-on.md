@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: MCP token cost. Severity: high. Verified against the code by the reviewing session before filing.
+**Was queued on the coordination board** (`docs/coordination/board.md`, backlog 0273), which closed on 13 October 2026 when the trial ended; it is taken the normal way since, from the roadmap, with any hold below still standing. From the efficiency review of 12 October 2026 (backlog 0335), area: MCP token cost. Severity: high. Verified against the code by the reviewing session before filing.
 
 **What is wrong.** 7,662 characters (about 1,900 tokens) of the roughly 2,970-token instructions are the full text of the ten prompts marked `shown` in `data/prompts.json`; the client puts a server's instructions in the system prompt, so this is paid on every turn of the whole session. The identical text is in every `stackvet_spec` answer and in guidance and briefs.
 
