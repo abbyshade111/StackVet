@@ -6,7 +6,7 @@ From the second loop trial (backlog 0257, `docs/prompts/loop-2/results.md`), 13 
 
 `sv init`'s specification tells the AI coding tool that `sv` signs in up to 60 times in one run and to "let the copy
 `sv` runs allow that many (for example, through a setting only the test copy is started with) and keep the real limit
-everywhere else". Twelve of the 110 builds scored (the trial's 90 and the drafts trial's 20 controls) did so in their `start` command (a sign-in limit raised to 60, 100,
+everywhere else". Twelve of the 90 builds scored (the trial's 70 and the drafts trial's 20 controls) did so in their `start` command (a sign-in limit raised to 60, 100,
 or 1000), with and without `sv` attached while building. The wrong-password check then tries `failed-sign-ins` plus two
 wrong passwords against that loosened copy, and reports "Wrong passwords can be tried without limit": seven of the
 nine such findings in the trial came from this, each about a limit the shipped app keeps.

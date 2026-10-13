@@ -1,7 +1,7 @@
 # The second loop trial's results: sv's newer features on real apps (13 October 2026)
 
 
-The second loop trial ran 90 builds on two briefs for $27.43 (`docs/prompts/loop-2/results.md`, ADR-109). It asked
+The second loop trial ran 70 builds on two briefs for $27.43 (`docs/prompts/loop-2/results.md`, ADR-109). It asked
 whether `sv`'s newer features work on apps an AI coding tool really built, and mostly they do: the account changes
 answered in 124 of 160 tries, the `not-offered` list made V7.5.1 whole once confirmed, the build-loop record matched
 every transcript, the AI-commits note counted every build's commits, and `sv compare` and `sv`'s own log did what
