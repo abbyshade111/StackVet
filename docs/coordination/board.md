@@ -6,25 +6,20 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0329 (since 2026-10-13) — next: 0300, 0342, 0293, 0291
-- builder-none — arm: none — holds: 0345 (since 2026-10-13) — next: 0346, 0347, 0337, 0336
+- builder-full — arm: full — holds: 0293 (since 2026-10-13) — next: 0291, 0339
+- builder-none — arm: none — holds: 0347 (since 2026-10-13) — next: 0337, 0336, 0301, 0410, 0355, 0365
 
 ## Queue
 
 1. 0289 A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting) — hold: the owner's decision first; see the item
 2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
-3. 0301 In the plain --internal fallback, a host firewall that drops rather than refuses makes the gateway knock pass while other ports stay reachable — ready
-4. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
-5. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
-6. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
-7. 0339 Container tests are one program per file and programs run one after another, so about half the suite's time is apps coming up in sequence — ready
-8. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-9. 0355 The readiness poll sleeps a fixed 2 s between tries, so an app up in one second is seen at about four — ready
-10. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — ready
-11. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-12. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-13. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
-14. 0410 The fence over IPv6, after review: no IPv6 at all on the fenced network, a test on the option list, and ADR-019 said exactly — ready
+3. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
+4. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
+5. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
+6. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+7. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+8. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+9. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
 
 ## Log
 
@@ -299,3 +294,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 14:49 — assigned 0337 to builder-none (none) as next: lane 10, owner released 13 Oct: questions as a count by default; mcp tools.rs and check_text.rs, after lane 7 in the same files
 - 2026-10-13 14:49 — assigned 0336 to builder-none (none) as next: lane 10, owner released 13 Oct: unchanged findings as one line each; mcp tools.rs, catalog.rs, check_text.rs, parts.rs, after 0337
 - 2026-10-13 15:07 — queued 0410
+- 2026-10-13 15:28 — finished 0329 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1720; now holds 0300
+- 2026-10-13 15:28 — finished 0300 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1725; now holds 0342
+- 2026-10-13 15:28 — finished 0342 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1729; now holds 0293
+- 2026-10-13 15:28 — finished 0345 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1718; now holds 0346
+- 2026-10-13 15:28 — finished 0346 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1728; now holds 0347
+- 2026-10-13 15:28 — assigned 0301 to builder-none (none) as next: lane 11, owner released 13 Oct: the fence's other gap, 0300's matched pair; docker.rs passes to this lane now that builder-full has no docker.rs item left
+- 2026-10-13 15:28 — assigned 0410 to builder-none (none) as next: lane 11: the 0300 security review's findings, filed at the owner's word 13 Oct; docker.rs and tests/fence_ipv6.rs, after 0301
+- 2026-10-13 15:28 — assigned 0355 to builder-none (none) as next: lane 11, owner released 13 Oct: the readiness poll's fixed 2 s; docker.rs, after 0410
+- 2026-10-13 15:28 — assigned 0365 to builder-none (none) as next: lane 11, owner released 13 Oct: mail's fixed 10 s wait; docker.rs; the item says build only if a real report's timings show it
+- 2026-10-13 15:28 — assigned 0339 to builder-full (full) as next: lane 11, owner released 13 Oct: container tests one per file; crates/sv-cli/tests and tools/ci_shards.py, none of them in builder-none's lane
