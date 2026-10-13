@@ -1,6 +1,6 @@
 # The bill of materials lists the app, its image, its language, and the language's modules it uses
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** done, 13 October 2026
 
 The owner's decision of 13 October 2026, from the Antigravity trial's app, which uses only Python's own library: its
 `sbom.cdx.json` listed no components at all, which reads as "nothing ships". The owner: "at the very least python
