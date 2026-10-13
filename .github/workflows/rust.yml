@@ -214,18 +214,33 @@ jobs:
         # (ADR-089); without it they fail, rather than passing without reading. They are in sv-check, so `rest`.
         # py7zr and each package it pulls in are pinned to their files' hashes, so pip installs nothing it was
         # not told of (tools/py7zr-requirements.txt, backlog 0288).
+        # Docker's own record of every container the tests create is kept while they run, and the images
+        # they came from are listed at the end: which part starts which image is read from what happened,
+        # not guessed from the tests' text (backlog 0363).
         run: |
-          case "$PART" in
-            rest)
-              python3 -m pip install --require-hashes -r tools/py7zr-requirements.txt
-              cargo test --workspace --exclude sv-cli
-              cargo test -p sv-cli --lib --bins
-              cargo test -p sv-cli --doc
-              ;;
-            cli-1) cargo test -p sv-cli $(python3 tools/ci_shards.py args 1 2) ;;
-            cli-2) cargo test -p sv-cli $(python3 tools/ci_shards.py args 2 2) ;;
-            *) echo "::error::no such part: $PART"; exit 1 ;;
-          esac
+          docker events --filter type=container --filter event=create \
+            --format '{{.Actor.Attributes.image}}' > "$RUNNER_TEMP/started-images.txt" &
+          watching=$!
+          set +e
+          (
+            set -e
+            case "$PART" in
+              rest)
+                python3 -m pip install --require-hashes -r tools/py7zr-requirements.txt
+                cargo test --workspace --exclude sv-cli
+                cargo test -p sv-cli --lib --bins
+                cargo test -p sv-cli --doc
+                ;;
+              cli-1) cargo test -p sv-cli $(python3 tools/ci_shards.py args 1 2) ;;
+              cli-2) cargo test -p sv-cli $(python3 tools/ci_shards.py args 2 2) ;;
+              *) echo "::error::no such part: $PART"; exit 1 ;;
+            esac
+          )
+          status=$?
+          kill "$watching" 2>/dev/null
+          echo "Images the $PART tests started containers from, with how many containers:"
+          sort "$RUNNER_TEMP/started-images.txt" | uniq -c | sort -rn
+          exit "$status"
 
       - name: Pass the credits this part saw to `test`
         # GitHub's own artifact actions, pinned to a commit like every step here (ADR-106). Two files: the
