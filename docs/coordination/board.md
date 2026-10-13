@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0291 (since 2026-10-13) — next: 0339
-- builder-none — arm: none — holds: 0336 (since 2026-10-13) — next: 0301, 0410, 0355, 0365
+- builder-full — arm: full — holds: 0339 (since 2026-10-13)
+- builder-none — arm: none — holds: 0410 (since 2026-10-13) — next: 0414, 0355, 0365
 
 ## Queue
 
@@ -307,3 +307,14 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 15:59 — finished 0293 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1732; now holds 0291
 - 2026-10-13 15:59 — finished 0347 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1730; now holds 0337
 - 2026-10-13 15:59 — finished 0337 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1733; now holds 0336
+- 2026-10-13 16:19 — queued 0414
+- 2026-10-13 16:23 — finished 0336 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1737; now holds 0301
+- 2026-10-13 16:23 — withdrew 0365 from builder-none (none), on hold: reordered so 0414 (the 0301 review's findings) follows 0410, the owner's word 13 Oct; given back at once
+- 2026-10-13 16:23 — withdrew 0355 from builder-none (none), on hold: reordered so 0414 (the 0301 review's findings) follows 0410, the owner's word 13 Oct; given back at once
+- 2026-10-13 16:23 — released 0355
+- 2026-10-13 16:23 — released 0365
+- 2026-10-13 16:23 — assigned 0414 to builder-none (none) as next: the 0301 security review's findings; the owner's word 13 Oct: to builder-none right after 0410, during the wind-down; docker.rs and tests/fence.rs, which this lane holds
+- 2026-10-13 16:23 — assigned 0355 to builder-none (none) as next: given back after 0414, owner released 13 Oct: the readiness poll's fixed 2 s; docker.rs
+- 2026-10-13 16:23 — assigned 0365 to builder-none (none) as next: given back after 0355, owner released 13 Oct: mail's fixed 10 s wait; the item says build only if a real report's timings show it
+- 2026-10-13 16:29 — finished 0291 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1736; now holds 0339
+- 2026-10-13 16:29 — finished 0301 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1739; now holds 0410
