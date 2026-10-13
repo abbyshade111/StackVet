@@ -22,7 +22,7 @@ arms, it says so and why.
 | B2 | `accounts-brief.md` | `loop` | 10 | 10 |
 | C | `accounts-none-brief.md` | `loop`, then the scripted review | 5 | 5 |
 
-Ninety builds. **The club brief's `none` arm is not built again:** the drafts trial's twenty control builds of the same
+Seventy builds. **The club brief's `none` arm is not built again:** the drafts trial's twenty control builds of the same
 day are it (`~/sv-drafts`), checked again here with the outside tools. They differ from phase A's in the brief's two
 corrections (below) and nothing else, which the results say beside every comparison.
 
@@ -142,3 +142,7 @@ total after each phase.
    such.** The environment settings a build's `start` command gives the copy `sv` runs (`start_settings`), since
    eleven builds lowered their own sign-in limits or cookie settings there; and requirement ids in tests' names written
    with underscores (`test_V6_3_1_...`), which `loop_dodging.py` counted only when written with dots.
+4. **13 October 2026, after the trial: the count of builds corrected.** The protocol said "Ninety builds"; its table,
+   and the cost estimate of $44, are seventy (A 20, B1 20, B2 20, C 10). The ninety the scorer reports are those seventy
+   and the drafts trial's twenty controls. Nothing was built or checked differently; only the word was wrong, and it was
+   repeated in the results pull request's description, two backlog items, and a design entry before it was caught.

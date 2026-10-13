@@ -1,6 +1,6 @@
 # The second loop trial: results (12 and 13 October 2026)
 
-Backlog 0257 and 0006 part 21, under ADR-109, run by its protocol (`protocol.md`, merged at `1d1e5aec`, with three
+Backlog 0257 and 0006 part 21, under ADR-109, run by its protocol (`protocol.md`, merged at `1d1e5aec`, with four
 amendments) from 18:43 on 12 October to 01:41 on 13 October 2026. `sv` was a release build of `1d1e5aec`, from an
 exported copy of the repository, which is why its version line reads "commit unknown"; its data was that copy's
 `data/`. The builder was Claude Code 2.1.295, on `claude-haiku-5-5` and `claude-sonnet-5-5`. Every number below is from
@@ -21,7 +21,7 @@ exported copy of the repository, which is why its version line reads "commit unk
   Semgrep, which the builders never saw, found about as much with `sv` attached as without.
 - **No draft got a reading.** Draft 17's problem (an account change without the password) was in none of the twenty
   builds without `sv`, so, as with group A, the models already do what the draft asks.
-- **Cost: $27.43** of the owner's $50 (estimate $44). The owner's key was in none of the transcripts. No crash file.
+- **Seventy builds, for $27.43** of the owner's $50 (estimate $44). The owner's key was in none of the transcripts. No crash file.
 
 ## The builds
 
@@ -134,7 +134,8 @@ wrong-password findings and the sixteen account changes that did not take were r
 
 ## Amendments, and what else went wrong
 
-Three amendments (`protocol.md`): phase C's checks ran apart, because the run script split the review script's path
+Four amendments (`protocol.md`); the fourth corrects the protocol's "ninety builds" to the seventy its table and
+estimate always were. The first three: phase C's checks ran apart, because the run script split the review script's path
 at the space in the drive's name, before any of its results existed; the build-loop record is held to the calls after
 the settings file; and two readings were added after phases A and B were seen, each said as such. A fourth slip is
 this writer's: the cause first guessed for the sixteen changes that did not take (the apps locking after `sv`'s wrong
