@@ -2733,6 +2733,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     });
     report.run_record = Some(run_record);
     report.seen = seen;
+    // The lines each code finding is on, for "The code" under it (backlog 0378, part 2).
+    report.code_lines = crate::code_lines::read(app_dir, &report.findings, secret_rules);
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped
     // here, so nothing past this point holds the app's code twice.
     if options.keep_tool_output {
