@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0298 (since 2026-10-12) — next: 0294, 0295, 0303, 0287, 0288, 0317
-- builder-none — arm: none — holds: 0296 (since 2026-10-12) — next: 0297, 0299, 0307, 0319, 0305
+- builder-full — arm: full — holds: 0295 (since 2026-10-12) — next: 0303, 0287, 0288, 0317
+- builder-none — arm: none — holds: 0299 (since 2026-10-12) — next: 0307, 0319, 0305
 
 ## Queue
 
@@ -239,3 +239,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-12 21:14 — assigned 0319 to builder-none (none) as next: lane of six, pair 15 with 0287 (builder-full): each keeps a credential or a write out of reach of untrusted code; tools/backlog.py, in this lane only
 - 2026-10-12 21:14 — assigned 0305 to builder-none (none) as next: lane of six, pair 16 with 0288 (builder-full): each a supply-chain or citation fix the record names; secret-rules.json and the coverage files, in this lane only
 - 2026-10-12 21:24 — finished 0302 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1607; now holds 0296
+- 2026-10-12 21:53 — finished 0298 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1612; now holds 0294
+- 2026-10-12 21:53 — finished 0294 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1615; now holds 0295
+- 2026-10-12 21:53 — finished 0296 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1610; now holds 0297
+- 2026-10-12 21:53 — finished 0297 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1613; now holds 0299
