@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- builder-full — arm: full — holds: 0354 (since 2026-10-13) — next: 0356, 0349, 0343, 0350, 0329, 0300
-- builder-none — arm: none — holds: 0362 (since 2026-10-13) — next: 0348, 0361, 0345, 0346, 0347
+- builder-full — arm: full — holds: 0349 (since 2026-10-13) — next: 0343, 0350, 0329, 0300
+- builder-none — arm: none — holds: 0348 (since 2026-10-13) — next: 0361, 0345, 0346, 0347
 
 ## Queue
 
@@ -289,3 +289,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 13:19 — assigned 0350 to builder-full (full) as next: lane 8, owner released 13 Oct: a fourth suite part; rust.yml and tools/ci_shards.py, after 0343
 - 2026-10-13 13:19 — assigned 0329 to builder-full (full) as next: lane 8, owner released 13 Oct: a colon in the app folder's path; docker.rs and install.rs, which this lane now holds
 - 2026-10-13 13:19 — assigned 0300 to builder-full (full) as next: lane 8, owner released 13 Oct: the fence over IPv6; docker.rs, after 0329; its pair 0301 goes to builder-none when docker.rs changes lanes
+- 2026-10-13 13:49 — finished 0354 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1704; now holds 0356
+- 2026-10-13 13:49 — finished 0356 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1707; now holds 0349
+- 2026-10-13 13:49 — finished 0362 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1703; now holds 0348
