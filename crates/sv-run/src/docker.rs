@@ -718,7 +718,7 @@ impl DockerBackend {
         let name_server = name_server_dns.as_ref().map(|_| name_server_name.as_str());
 
         // 2. The app, fenced and hardened like every helper (`app_args`).
-        let mount = format!("{}:/app:ro", plan.app_dir.display());
+        let mount = read_only_bind(&plan.app_dir, "/app");
         let port_env = format!("PORT={}", plan.port);
         // The installed packages, read-only, with their commands first on the PATH and Python's on
         // its import path. Set on the container, so the start command, `seed`, and the tests all
@@ -844,7 +844,7 @@ impl DockerBackend {
                     "--rm",
                     "--network",
                     "none",
-                    "-v",
+                    "--mount",
                     &mount,
                     PROBE_IMAGE,
                     "ls",
@@ -1419,6 +1419,21 @@ pub(crate) const HARDENING: [&str; 5] = [
     "no-new-privileges",
 ];
 
+/// The `--mount` value that puts `src`, a folder or file of the owner's, read-only at `dst` in a
+/// container (backlog 0329). Docker's short `-v src:dst:ro` splits at every colon, so a folder such
+/// as `Notes: 2026/app` could not be mounted and the run failed without saying why; `--mount` is read
+/// as comma-separated fields, and a field holding a comma or a double quote is quoted the way Docker's
+/// reader expects, with any double quote doubled.
+pub fn read_only_bind(src: &std::path::Path, dst: &str) -> String {
+    let source = format!("src={}", src.display());
+    let source = if source.contains([',', '"']) {
+        format!("\"{}\"", source.replace('"', "\"\""))
+    } else {
+        source
+    };
+    format!("type=bind,{source},dst={dst},readonly")
+}
+
 /// `args` with `HARDENING` just after the command word.
 fn hardened(args: Vec<String>) -> Vec<String> {
     let mut out = args;
@@ -1484,7 +1499,7 @@ fn app_args<'a>(
         network,
         "--tmpfs",
         APP_TMP,
-        "-v",
+        "--mount",
         mount,
         "--tmpfs",
         REPORT_TMPFS,
@@ -3541,7 +3556,8 @@ mod probe_tests {
 
     #[test]
     fn the_app_is_hardened_like_every_helper() {
-        let args = app_args("sv-1-app", "sv-1-net", "/apps/notes:/app:ro", "PORT=8080");
+        let mount = read_only_bind(std::path::Path::new("/apps/notes"), "/app");
+        let args = app_args("sv-1-app", "sv-1-net", &mount, "PORT=8080");
         hardened_by_prepared(&args);
         let at = args.iter().position(|a| *a == "--network").unwrap();
         assert_eq!(args[at + 1], "sv-1-net");
@@ -3551,8 +3567,10 @@ mod probe_tests {
                 .any(|a| *a == "-p" || a.starts_with("--publish")),
             "nothing published: {args:?}"
         );
-        assert!(
-            args.contains(&"/apps/notes:/app:ro"),
+        let at = args.iter().position(|a| *a == "--mount").unwrap();
+        assert_eq!(
+            args[at + 1],
+            "type=bind,src=/apps/notes,dst=/app,readonly",
             "the app's folder stays read-only: {args:?}"
         );
         // Its only writable places are in memory, and each has a size, so neither can be used to
@@ -3585,7 +3603,12 @@ mod probe_tests {
         };
         // Every way a container is started here: the app, each helper, and the plain `run`s.
         let mut started: Vec<Vec<&str>> = vec![
-            app_args("sv-1-app", "sv-1-net", "/apps/notes:/app:ro", "PORT=8080"),
+            app_args(
+                "sv-1-app",
+                "sv-1-net",
+                "type=bind,src=/apps/notes,dst=/app,readonly",
+                "PORT=8080",
+            ),
             browser_args("net", "b"),
             mail_args("net", "m"),
             driver_args("net", "JOB=1"),
