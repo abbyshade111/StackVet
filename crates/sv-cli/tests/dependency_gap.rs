@@ -317,7 +317,8 @@ fn a_lockfile_read_in_full_is_credited_by_both_checks() {
         ],
     );
     assert!(sbom.contains("pkg:npm/express@4.19.2"), "{sbom}");
-    assert_eq!(line["status"], "checked", "{line}");
+    // In part: both checks show the inventory, and where each library comes from is not read (backlog 0307).
+    assert_eq!(line["status"], "checked-in-part", "{line}");
     let mut by = checked_by(&line);
     by.sort();
     assert_eq!(by, vec!["config.versions-pinned", "sbom"], "{line}");

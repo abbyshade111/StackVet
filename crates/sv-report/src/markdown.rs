@@ -243,9 +243,38 @@ pub fn compliance(report: &Report) -> String {
         out.push('\n');
     }
 
-    out.push_str("## Read this first\n\n");
+    // The things to fix lead, worst first, before how the report was made and what was not examined (ADR-110).
+    // Each is set out in full in security.md; here a line each, so the reader of this file meets them first.
+    let (app, _) = crate::app_then_tests(report);
+    let (fix, notes) = crate::fix_then_notes(app);
+    if !fix.is_empty() {
+        out.push_str(&format!(
+            "## {} thing{} to fix\n\nWorst first. Each is in security.md, with why it matters and what to do.{}\n\n",
+            fix.len(),
+            if fix.len() == 1 { "" } else { "s" },
+            match notes.len() {
+                0 => String::new(),
+                1 => " One more is a note worth knowing, not a thing to fix: it is under \"Worth knowing\" in security.md.".to_owned(),
+                k => format!(" {k} more are notes worth knowing, not things to fix: they are under \"Worth knowing\" in security.md."),
+            }
+        ));
+        for f in &fix {
+            out.push_str(&format!(
+                "- **{}** {} — `{}` line {}\n",
+                f.severity.name(),
+                cell(&f.title),
+                cell(&f.location.file),
+                f.location.line
+            ));
+        }
+        out.push('\n');
+    }
+
+    out.push_str("## How this report was made\n\n");
     if let Some(note) = &report.run_note {
-        out.push_str(&format!("{note}\n\n"));
+        // The note quotes stackvet.toml (the health path) and what the app sent back, so it is
+        // app text, as `report.html` already treats it (backlog 0312).
+        out.push_str(&format!("{}\n\n", inert(note)));
     }
     if !report.run_steps.is_empty() {
         out.push_str(&format!(
@@ -317,6 +346,35 @@ pub fn compliance(report: &Report) -> String {
             out.push_str(&format!("| {} | {} |\n", cell(&gap.what), cell(&gap.why)));
         }
         out.push('\n');
+    }
+
+    // What each outside tool did, after what was not examined (backlog 0379).
+    let tools = crate::outside_tools(report);
+    if !tools.is_empty() {
+        out.push_str("## Outside tools\n\n");
+        if crate::no_outside_tool_ran(&tools) {
+            out.push_str(&format!(
+                "None ran this time. They run only with `sv report --tools`, at a terminal: {}.\n\n",
+                tools.iter().map(|r| r.name.as_str()).collect::<Vec<_>>().join(", ")
+            ));
+        } else {
+            out.push_str(&format!(
+                "{}\n\n| tool | what happened | version | found | agreed with StackVet | took |\n|---|---|---|---:|---:|---:|\n",
+                crate::OUTSIDE_TOOLS_SECTION
+            ));
+            for r in &tools {
+                out.push_str(&format!(
+                    "| {} | {} | {} | {} | {} | {} |\n",
+                    cell(&r.name),
+                    cell(&r.what),
+                    cell(r.version.as_deref().unwrap_or("")),
+                    r.found,
+                    r.agreed,
+                    r.took.as_deref().unwrap_or("")
+                ));
+            }
+            out.push('\n');
+        }
     }
 
     // By chapter, with what does not apply counted beside what does, and the requirements' own
@@ -799,21 +857,8 @@ pub fn security(report: &Report) -> String {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
 
-    if !report.gaps.is_empty() {
-        // Deliberately before the findings. A list of findings read without this reads as the whole
-        // truth about the app, and it is only the truth about the part that was examined.
-        out.push_str("## What was not examined\n\n");
-        for gap in &report.gaps {
-            // App text reaches both: a file path, the decisions file's own words.
-            out.push_str(&format!(
-                "- **{}** — {}\n",
-                inert(&gap.what),
-                inert(&gap.why)
-            ));
-        }
-        out.push('\n');
-    }
-
+    // The things to fix lead, then what was set aside, then what was not examined (ADR-110).
+    security_findings(&mut out, report);
     let set_aside = crate::false_alarm_entries(report);
     if !set_aside.is_empty() || !report.reviews_not_counted.is_empty() {
         out.push_str("## Set aside in stackvet.toml\n\n");
@@ -846,34 +891,70 @@ pub fn security(report: &Report) -> String {
         }
     }
 
+    if !report.gaps.is_empty() {
+        // Directly after the findings and what was set aside (ADR-110): a list of findings read without
+        // this reads as the whole truth about the app, and it is only the truth about the part examined.
+        out.push_str("## What was not examined\n\n");
+        for gap in &report.gaps {
+            // App text reaches both: a file path, the decisions file's own words.
+            out.push_str(&format!(
+                "- **{}** — {}\n",
+                inert(&gap.what),
+                inert(&gap.why)
+            ));
+        }
+        out.push('\n');
+    }
+
+    out
+}
+
+/// `security.md`'s findings: the app's own worst first, then those in test or sample code, then the test-code
+/// information. Nothing found is said in words that point at what was not examined, which follows.
+fn security_findings(out: &mut String, report: &Report) {
     if report.findings.is_empty() {
         out.push_str(
-            "## Nothing was found\n\nNo check found anything wrong. Read that together with the \
-             section above: it means the checks that ran found nothing, not that the app is \
+            "## Nothing was found\n\nNo check found anything wrong. Read that together with \"What was not examined\", \
+             below: it means the checks that ran found nothing, not that the app is \
              secure.\n\n",
         );
-        test_information_section(&mut out, report);
-        return out;
+        test_information_section(out, report);
+        return;
     }
 
     let (app, tests) = crate::app_then_tests(report);
     if app.is_empty() {
         out.push_str(
             "## Nothing was found in the app itself\n\nEverything below is in test or sample \
-             code. Read that together with the section above: it means the checks that ran found \
+             code. Read that together with \"What was not examined\", below: it means the checks that ran found \
              nothing in the app's own code, not that the app is secure.\n\n",
         );
     } else {
-        out.push_str(&format!(
-            "## {} thing{} to fix\n\nWorst first.\n\n",
-            app.len(),
-            if app.len() == 1 { "" } else { "s" }
-        ));
-        let (full, low) = crate::split_low(report, app);
-        for finding in full {
-            finding_section(&mut out, report, finding);
+        let (fix, notes) = crate::fix_then_notes(app);
+        if !fix.is_empty() {
+            out.push_str(&format!(
+                "## {} thing{} to fix\n\nWorst first.\n\n",
+                fix.len(),
+                if fix.len() == 1 { "" } else { "s" }
+            ));
+            let (full, low) = crate::split_low(report, fix);
+            for finding in full {
+                finding_section(out, report, finding);
+            }
+            low_lines(out, &low);
         }
-        low_lines(&mut out, &low);
+        // After the things to fix, and never counted with them (ADR-110, Later).
+        if !notes.is_empty() {
+            out.push_str(&format!(
+                "## Worth knowing: {} note{}\n\n{}\n\n",
+                notes.len(),
+                if notes.len() == 1 { "" } else { "s" },
+                crate::NOTES_SECTION
+            ));
+            for finding in notes {
+                finding_section(out, report, finding);
+            }
+        }
     }
     if !tests.is_empty() {
         out.push_str(&format!(
@@ -883,11 +964,10 @@ pub fn security(report: &Report) -> String {
             crate::TEST_CODE_SECTION
         ));
         for finding in tests {
-            finding_section(&mut out, report, finding);
+            finding_section(out, report, finding);
         }
     }
-    test_information_section(&mut out, report);
-    out
+    test_information_section(out, report);
 }
 
 /// The low-severity findings, one line per rule with its count and files (ADR-095). Every one is in full in
@@ -1012,6 +1092,9 @@ fn finding_section(out: &mut String, report: &Report, finding: &sv_check::Findin
     if let Some(held) = crate::baseline_note(report, finding) {
         out.push_str(&format!("*{}*\n\n", inert(&held)));
     }
+    if let Some(by) = crate::found_by(report, finding) {
+        out.push_str(&format!("*{}*\n\n", inert(&by)));
+    }
     for note in crate::finding_notes(finding) {
         out.push_str(&format!("*{}*\n\n", inert(&note)));
     }
@@ -1019,6 +1102,15 @@ fn finding_section(out: &mut String, report: &Report, finding: &sv_check::Findin
         out.push_str(&format!("**Next step.** {}\n\n", inert(&step)));
     }
     out.push_str(&format!("{}\n\n", inert(&finding.description)));
+    // What the finding rests on, from what `sv` kept of the running app (backlog 0378). The app's own text, so inert.
+    let saw = crate::what_was_seen(report, finding);
+    if let Some((last, shown)) = saw.split_last() {
+        out.push_str("**What StackVet saw.**\n\n");
+        for line in shown {
+            out.push_str(&format!("- {}\n", code(line)));
+        }
+        out.push_str(&format!("\n{last}\n\n"));
+    }
     out.push_str(&format!(
         "**Why it matters.** {}\n\n",
         inert(&finding.impact)
@@ -1087,7 +1179,8 @@ mod tests {
             sv: Default::default(),
             run_record: None,
             manifest_file: crate::default_manifest_file(),
-            run_note: None,
+            // Backlog 0312: the run note carries the health path stackvet.toml names.
+            run_note: Some(format!("the run asked {live}")),
             run_steps: Vec::new(),
             test_output: None,
             run_status: None,
@@ -1133,6 +1226,12 @@ mod tests {
         }
         for live in ["![x](", "<img", "[click]("] {
             assert!(!md.contains(live), "{live} is live in:\n{md}");
+        }
+        // compliance.md's "How this report was made" carries the run note (backlog 0312).
+        let md = compliance(&report);
+        assert!(md.contains("the run asked"), "the note missing:\n{md}");
+        for live in ["![x](", "<img", "[click]("] {
+            assert!(!md.contains(live), "{live} is live in compliance.md:\n{md}");
         }
     }
 

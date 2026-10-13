@@ -1,6 +1,6 @@
 # Every CI part fetches all five container images, 16 to 25 s per part, where each part starts only some
 
-**Status:** open
+**Status:** claimed by builder-full, 12 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: test and CI time. Severity: low. Verified against the code by the reviewing session before filing.
 

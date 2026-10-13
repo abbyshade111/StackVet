@@ -545,8 +545,289 @@ fn nothing_is_ever_labelled_a_pass() {
 }
 
 #[test]
-fn the_reports_say_how_much_was_not_examined_before_they_say_what_was_found() {
-    // Order is the message. Findings read first are read as the whole truth about the app.
+fn a_note_worth_knowing_is_never_counted_named_or_advised_on_as_a_thing_to_fix() {
+    // An `Info` finding in the app's own code says something worth knowing and asks for nothing (ADR-110, Later).
+    // Found in a real report: one counted among "4 things to fix", told "Fix it in the code", while "What to do next"
+    // said "Fix the 3 things"; the counts disagreed and good news read as a problem.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut real = finding("ast.sql", &[]);
+    real.title = "A query built by hand".into();
+    let mut note = finding("config.ai-commits-off-merge", &[]);
+    note.title =
+        "2 commit(s) on the default branch were made by an AI coding tool and not merged in".into();
+    note.severity = Severity::Info;
+    note.location.file = ".git".into();
+    let report = build(inputs(&f, &buckets, vec![real, note], &[]));
+    // The setup: both are findings of the report, and the note is the information one.
+    assert_eq!(report.findings.len(), 2);
+    assert!(report.findings.iter().any(|f| f.severity == Severity::Info));
+
+    let (worst, _) = sv_report::bluf::worst_findings(&report);
+    assert_eq!(worst.len(), 1, "the note is not among the worst");
+    let headline = sv_report::bluf::headline(&report);
+    assert!(headline.starts_with("1 thing was found"), "{headline}");
+    assert!(
+        headline.contains("1 more is a note worth knowing"),
+        "{headline}"
+    );
+    let steps = sv_report::bluf::next_steps(&report);
+    assert!(
+        steps[0].what.starts_with("Fix the 1 thing that was found"),
+        "counted as the section counts them: {}",
+        steps[0].what
+    );
+    for (name, page, fix_heading, notes_heading) in [
+        (
+            "report.html",
+            sv_report::html::page(&report),
+            "<h2>1 thing to fix</h2>",
+            "<h2>Worth knowing: 1 note</h2>",
+        ),
+        (
+            "security.md",
+            sv_report::markdown::security(&report),
+            "## 1 thing to fix",
+            "## Worth knowing: 1 note",
+        ),
+    ] {
+        let fix_at = page
+            .find(fix_heading)
+            .unwrap_or_else(|| panic!("{name}: no {fix_heading:?}\n{page}"));
+        let notes_at = page
+            .find(notes_heading)
+            .unwrap_or_else(|| panic!("{name}: no {notes_heading:?}\n{page}"));
+        assert!(
+            fix_at < notes_at,
+            "{name}: the notes come after the things to fix"
+        );
+        let notes_part = &page[notes_at..];
+        assert!(
+            notes_part.contains("not merged in"),
+            "{name}: the note is under its own heading"
+        );
+        let fix_part = &page[fix_at..notes_at];
+        assert!(
+            !fix_part.contains("not merged in"),
+            "{name}: the note is not among the things to fix"
+        );
+        // A note is never told to be fixed.
+        assert!(
+            fix_part.contains("Fix it in the code"),
+            "{name}: the setup: a thing to fix is given the fix advice"
+        );
+        assert!(
+            !notes_part.contains("Fix it in the code"),
+            "{name}: a note is not given the fix advice"
+        );
+    }
+    let compliance = sv_report::markdown::compliance(&report);
+    assert!(compliance.contains("## 1 thing to fix"), "{compliance}");
+    assert!(
+        compliance.contains("One more is a note worth knowing"),
+        "{compliance}"
+    );
+}
+
+#[test]
+fn a_finding_from_the_running_app_shows_what_stackvet_saw() {
+    // `Finding.evidence` names the exchanges a check recorded, and `seen.json` keeps them; until backlog 0378 no report
+    // read either, so a finding said what was wrong and nothing of what showed it.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut guessed = finding("probe.failed-sign-ins-unlimited", &[]);
+    guessed.title = "Failed sign-ins are not limited".into();
+    guessed.evidence = (0..5).map(|i| format!("guess-{i}")).collect();
+    let mut quiet = finding("ast.sql", &[]);
+    quiet.title = "A query built by hand".into();
+    let mut report = build(inputs(&f, &buckets, vec![guessed, quiet], &[]));
+    report.seen = Some(sv_report::seen::Seen {
+        exchanges: (0..5)
+            .map(|i| sv_report::seen::Exchange {
+                id: format!("guess-{i}"),
+                method: "POST".into(),
+                path: "/login".into(),
+                status: 401,
+                headers: Vec::new(),
+                body: "<html><head><title>Sign in</title></head><body><p>Wrong email or password.</p></body></html>"
+                    .into(),
+            })
+            .collect(),
+        ..Default::default()
+    });
+    for (name, page, quoted) in [
+        (
+            "report.html",
+            sv_report::html::page(&report),
+            "POST /login answered 401: &quot;Wrong email or password.&quot;",
+        ),
+        (
+            "security.md",
+            sv_report::markdown::security(&report),
+            "POST /login answered 401: \"Wrong email or password.\"",
+        ),
+    ] {
+        // The last time each title appears is its own section: the short version names the worst first.
+        let at = page
+            .rfind("Failed sign-ins are not limited")
+            .unwrap_or_else(|| panic!("{name}: the finding\n{page}"));
+        let next = page
+            .rfind("A query built by hand")
+            .unwrap_or_else(|| panic!("{name}: the other finding"));
+        let (first, second) = if at < next {
+            (&page[at..next], &page[next..])
+        } else {
+            (&page[at..], &page[next..at])
+        };
+        assert!(first.contains("What StackVet saw"), "{name}: {first}");
+        assert_eq!(
+            first.matches(quoted).count(),
+            sv_report::SAW_SHOWN,
+            "{name}: the first few, quoted by their visible words: {first}"
+        );
+        assert!(first.contains("And 2 more like them"), "{name}: {first}");
+        assert!(
+            first.contains("seen.json"),
+            "{name}: where all of them are: {first}"
+        );
+        assert!(
+            !second.contains("What StackVet saw"),
+            "{name}: a finding that names nothing shows nothing: {second}"
+        );
+    }
+}
+
+#[test]
+fn the_outside_tools_section_says_what_each_tool_did_and_each_finding_names_its_tool() {
+    // Each outside tool's run was in `report.json` only (backlog 0379), and a tool's finding named neither the tool
+    // nor its rule: a person could not tell Bandit's finding from StackVet's.
+    let f = frameworks();
+    let buckets = Buckets::default();
+    let mut bandit = finding("bandit.B613", &[]);
+    bandit.title = "A bidirectional control character in the code".into();
+    let mut own = finding("ast.sql", &[]);
+    own.title = "A query built by hand".into();
+    own.also_reported_by = vec!["semgrep.python.sqli".into()];
+    let mut i = inputs(&f, &buckets, vec![bandit, own], &[]);
+    // So "What was not examined" is there to come before the tools.
+    i.gaps = vec![Gap {
+        what: "the running app".into(),
+        why: "it was not started".into(),
+        reason: sv_report::GapReason::NotAsked,
+        requirements: Vec::new(),
+    }];
+    let mut report = build(i);
+    let run = |program: &str, version: &str, ms: u64| sv_check::adapters::ToolRun {
+        program: program.into(),
+        version: Some(version.into()),
+        took_ms: ms,
+        ..Default::default()
+    };
+    report.examined = vec![
+        sv_report::Examined::ran("bandit.")
+            .with_tool(Some(run("Bandit", "bandit 1.9.4", 3187)))
+            .as_outside_tool("Bandit"),
+        sv_report::Examined::ran("semgrep.")
+            .with_tool(Some(run("Semgrep", "1.176.0", 16621)))
+            .as_outside_tool("Semgrep"),
+        sv_report::Examined::not_run(
+            "codeql-python.",
+            "CodeQL (Python) is not installed on this computer",
+        )
+        .as_outside_tool("CodeQL (Python)"),
+        sv_report::Examined::nothing_to_examine("gosec.", "this app has no code in go")
+            .as_outside_tool("gosec"),
+        // `sv`'s own checks are not outside tools, and are never a row.
+        sv_report::Examined::ran("ast."),
+    ];
+    let rows = sv_report::outside_tools(&report);
+    assert_eq!(rows.len(), 4, "{rows:?}");
+    assert_eq!(rows[0].found, 1, "Bandit's own finding: {rows:?}");
+    assert_eq!(rows[0].version.as_deref(), Some("bandit 1.9.4"));
+    assert_eq!(rows[0].took.as_deref(), Some("3.2 s"));
+    assert_eq!(
+        (rows[1].found, rows[1].agreed),
+        (0, 1),
+        "Semgrep agreed on StackVet's line: {rows:?}"
+    );
+    assert!(
+        rows[2]
+            .what
+            .starts_with("Did not run: CodeQL (Python) is not installed"),
+        "{rows:?}"
+    );
+    assert!(
+        rows[2].version.is_none() && rows[2].took.is_none(),
+        "{rows:?}"
+    );
+    assert!(
+        rows[3].what.starts_with("Nothing for it to read"),
+        "{rows:?}"
+    );
+    for (name, page) in [
+        ("report.html", sv_report::html::page(&report)),
+        ("compliance.md", sv_report::markdown::compliance(&report)),
+    ] {
+        let gaps = page
+            .find("What was not examined")
+            .unwrap_or_else(|| panic!("{name}: the gaps"));
+        let tools = page
+            .find("Outside tools")
+            .unwrap_or_else(|| panic!("{name}: the section\n{page}"));
+        let requirements = page
+            .find("Requirements that apply")
+            .unwrap_or_else(|| panic!("{name}: the tables"));
+        assert!(
+            gaps < tools && tools < requirements,
+            "{name}: after the gaps, before the tables"
+        );
+        assert!(
+            page.contains("bandit 1.9.4") && page.contains("16.6 s"),
+            "{name}: {page}"
+        );
+    }
+    for (name, page) in [
+        ("report.html", sv_report::html::page(&report)),
+        ("security.md", sv_report::markdown::security(&report)),
+    ] {
+        // Each finding's own section, from its title to the next finding's heading.
+        let section = |title: &str| {
+            let at = page
+                .rfind(title)
+                .unwrap_or_else(|| panic!("{name}: {title}"));
+            let end = ["<h3", "\n### ", "<h2", "\n## "]
+                .iter()
+                .filter_map(|h| page[at..].find(h).map(|i| at + i))
+                .min()
+                .unwrap_or(page.len());
+            page[at..end].to_owned()
+        };
+        assert!(
+            section("A bidirectional control character").contains("Found by Bandit, rule `B613`."),
+            "{name}: the tool's finding names its tool and rule"
+        );
+        assert!(
+            !section("A query built by hand").contains("Found by"),
+            "{name}: StackVet's own finding is not said to be a tool's"
+        );
+    }
+    // With no tool run at all, as in a plain `sv report`, the section is one sentence, not a table of "did not run".
+    report.examined = vec![
+        sv_report::Examined::not_run("bandit.", "outside tools run only with --tools")
+            .as_outside_tool("Bandit"),
+        sv_report::Examined::not_run("semgrep.", "outside tools run only with --tools")
+            .as_outside_tool("Semgrep"),
+    ];
+    let page = sv_report::markdown::compliance(&report);
+    assert!(page.contains("None ran this time. They run only with `sv report --tools`, at a terminal: Bandit, Semgrep."), "{page}");
+    assert!(!page.contains("| Bandit |"), "{page}");
+}
+
+#[test]
+fn the_reports_lead_with_what_to_fix_and_say_what_was_not_examined_right_after() {
+    // Order is the message (ADR-110): the things to fix first, worst first, then how the report was made, then
+    // what was not examined, before anything else. Findings read without the gaps read as the whole truth about
+    // the app, so the gaps come straight after them, ahead of every table.
     let f = frameworks();
     let buckets = Buckets::default();
     let mut i = inputs(&f, &buckets, vec![finding("ast.sql", &[])], &[]);
@@ -557,14 +838,43 @@ fn the_reports_say_how_much_was_not_examined_before_they_say_what_was_found() {
         requirements: Vec::new(),
     }];
     let report = build(i);
-    let security = sv_report::markdown::security(&report);
-    let gaps_at = security
-        .find("What was not examined")
-        .expect("the gaps section");
-    let findings_at = security.find("to fix").expect("the findings section");
-    assert!(
-        gaps_at < findings_at,
-        "the gaps must come first:\n{security}"
+    let in_order = |name: &str, page: &str, headings: &[&str]| {
+        let at: Vec<usize> = headings
+            .iter()
+            .map(|h| {
+                page.find(h)
+                    .unwrap_or_else(|| panic!("{name}: no {h:?} in\n{page}"))
+            })
+            .collect();
+        assert!(
+            at.windows(2).all(|w| w[0] < w[1]),
+            "{name}: the sections must come in the order {headings:?}:\n{page}"
+        );
+    };
+    in_order(
+        "security.md",
+        &sv_report::markdown::security(&report),
+        &["1 thing to fix", "## What was not examined"],
+    );
+    in_order(
+        "compliance.md",
+        &sv_report::markdown::compliance(&report),
+        &[
+            "## 1 thing to fix",
+            "## How this report was made",
+            "## What was not examined",
+            "## Requirements that apply",
+        ],
+    );
+    in_order(
+        "report.html",
+        &sv_report::html::page(&report),
+        &[
+            "<h2>1 thing to fix</h2>",
+            "<h2>How this report was made</h2>",
+            "<h2>What was not examined</h2>",
+            "<h2>Requirements that apply</h2>",
+        ],
     );
 }
 
@@ -740,14 +1050,31 @@ fn every_requirement_a_check_cites_is_a_requirement_that_exists() {
     // `secret-rules.json` went unchecked. A guard that silently covers half of what it names is
     // worse than none, because the half it misses now looks guarded.
     collect_cited(&workspace.join("crates"), &mut cited);
-    collect_cited(&workspace.join("data"), &mut cited);
+    let mut from_data: BTreeSet<String> = BTreeSet::new();
+    collect_cited(&workspace.join("data"), &mut from_data);
+    // The credential formats cite only ids the Rust code cites too, since V11.1.1 left them (backlog 0305), so
+    // the walk of `data/` is held to every id the formats cite, read on its own.
+    let mut credential_formats: BTreeSet<String> = BTreeSet::new();
+    let formats = std::fs::read_to_string(workspace.join("data/secret-rules.json")).unwrap();
+    collect_json(
+        &serde_json::from_str(&formats).unwrap(),
+        &mut credential_formats,
+    );
+    assert!(
+        !credential_formats.is_empty(),
+        "the credential formats cite nothing"
+    );
+    assert!(
+        credential_formats.is_subset(&from_data),
+        "the collector never reached the credential formats, in JSON: {credential_formats:?} against {from_data:?}"
+    );
+    cited.extend(from_data);
 
     // The sanity check is that both sources were really reached, rather than a count that says
     // nothing about which files it came from.
     for (id, whose) in [
         ("V13.4.4", "the probes, in Rust"),
         ("V1.5.2", "the rules that read code, in JSON"),
-        ("V11.1.1", "the credential formats, in JSON"),
     ] {
         assert!(
             cited.contains(id),
@@ -1141,7 +1468,22 @@ fn report_for_folder(files: &[(&str, &str)]) -> sv_report::Report {
 #[test]
 fn end_to_end_a_clean_scan_supports_the_secrets_controls_and_checks_none_of_them() {
     let report = report_for_folder(&[("app.py", "import os\nKEY = os.environ['STRIPE_KEY']\n")]);
-    for id in ["SBD-AC-05", "V13.3.1", "V11.1.1"] {
+    // V11.1.1 asks for a documented key-management policy, which no file scan can speak to, so the scan does not
+    // cite it, even in support (backlog 0305).
+    let policy = report
+        .requirements
+        .iter()
+        .find(|l| l.id == "V11.1.1")
+        .expect("V11.1.1 should apply");
+    assert!(
+        !policy
+            .supported_by
+            .iter()
+            .any(|c| c.check_id == "secrets.scan"),
+        "{:?}",
+        policy.supported_by
+    );
+    for id in ["SBD-AC-05", "V13.3.1"] {
         let line = report
             .requirements
             .iter()
@@ -1881,7 +2223,7 @@ mod same_story {
         // exists; and a claim, so the "what the app says about itself" section does.
         let mut i = inputs(&f, &buckets, vec![finding("some.rule", &["V17.1.1"])], &[]);
         // So "What was not examined" is emitted too: it is one of the sections whose order matters
-        // most, being the one the reports lead with.
+        // most, being the one that follows the things to fix (ADR-110).
         i.gaps = vec![sv_report::Gap {
             what: "the app while it was running".into(),
             why: "it was not started".into(),

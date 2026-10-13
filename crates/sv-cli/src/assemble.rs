@@ -885,10 +885,13 @@ fn outside_tools(
         match adapters {
             Ok(adapters) => {
                 for adapter in adapters.all() {
-                    examined.push(sv_report::Examined::not_run(
-                        format!("{}.", adapter.id),
-                        "outside tools run only with --tools",
-                    ));
+                    examined.push(
+                        sv_report::Examined::not_run(
+                            format!("{}.", adapter.id),
+                            "outside tools run only with --tools",
+                        )
+                        .as_outside_tool(&adapter.name),
+                    );
                 }
                 tool_gaps.push(sv_report::Gap {
                     what: "the security tool this language already has".to_owned(),
