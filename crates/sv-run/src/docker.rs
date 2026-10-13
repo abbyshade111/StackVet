@@ -669,12 +669,13 @@ impl DockerBackend {
         // 1b'. And that nothing on it can reach the host through the bridge's gateway, which
         //      `--internal` alone leaves open.
         container.network_made = Some(network_made.clone());
-        self.verify_gateway_closed(&network).map_err(|e| match e {
-            CannotRun::BackendFailed { detail } => CannotRun::BackendFailed {
-                detail: format!("{detail} (the network was made {network_made})"),
-            },
-            other => other,
-        })?;
+        self.verify_gateway_closed(&network, made_with.is_none())
+            .map_err(|e| match e {
+                CannotRun::BackendFailed { detail } => CannotRun::BackendFailed {
+                    detail: format!("{detail} (the network was made {network_made})"),
+                },
+                other => other,
+            })?;
 
         // 1c. A mail server, when a check needs to read what the app emails. Started before the app so
         //     it is there to be sent to, on the same fenced network, and nowhere else: mail sent to it
@@ -1898,7 +1899,12 @@ impl DockerBackend {
     /// of any kind, a connection or a refusal, is the host's stack answering. The control is the same
     /// knock on the container's own loopback, which must read as refused, so an `nc` that cannot tell
     /// one from the other stops the run rather than passing for a fence.
-    pub fn verify_gateway_closed(&self, network: &str) -> Result<(), CannotRun> {
+    ///
+    /// `plain` is a network made with `--internal` alone, whose bridge keeps its address on the host.
+    /// There a knock that times out is not taken for a fence: a host firewall that drops what it does
+    /// not allow, rather than refusing it, times the knock out while other ports, SSH among them,
+    /// stay open to the app (the deep review of 12 October 2026, backlog 0301).
+    pub fn verify_gateway_closed(&self, network: &str, plain: bool) -> Result<(), CannotRun> {
         let fail = |detail: String| Err(CannotRun::BackendFailed { detail });
         let config = match self.docker(&[
             "network",
@@ -1957,7 +1963,7 @@ impl DockerBackend {
             Ok((_, out)) => out,
             Err(e) => return fail(format!("could not check the fence's gateway: {e}")),
         };
-        match gateway_verdict(&out) {
+        match gateway_verdict(&out, plain) {
             GatewayVerdict::Closed => Ok(()),
             GatewayVerdict::Reachable => fail(format!(
                 "a container on the fenced network reached its gateway, {gateway}, which is this \
@@ -2939,9 +2945,11 @@ fn gateway_targets(config: &str) -> Vec<String> {
 
 /// Reads the knocks: the container's own loopback (the control, which must be refused) and then each
 /// gateway address. A connection or a refusal from any of them is the host answering; a timeout, no
-/// route, or an unreachable network from every one is the fence holding. Anything else is not taken
-/// for either.
-fn gateway_verdict(out: &str) -> GatewayVerdict {
+/// route, or an unreachable network from every one is the fence holding, on a network made without a
+/// gateway address. On a `plain` one, whose bridge keeps its address on the host, the same silence
+/// may be a firewall dropping one port and not others, so it is not taken for a fence (backlog
+/// 0301). Anything else is not taken for either.
+fn gateway_verdict(out: &str, plain: bool) -> GatewayVerdict {
     // Each knock's output, and its exit status, in order.
     let mut sections: Vec<(String, String, Option<i32>)> = Vec::new();
     let mut text = String::new();
@@ -3008,6 +3016,13 @@ fn gateway_verdict(out: &str) -> GatewayVerdict {
     }
     match unknown {
         Some(why) => GatewayVerdict::Unknown(why),
+        None if plain => GatewayVerdict::Unknown(
+            "the network has its gateway address on this computer, since Docker made it with \
+             `--internal` alone, and a knock there that goes unanswered may be a firewall dropping \
+             one port while others stay open; Docker 28 or later makes the network with no gateway \
+             address, which this check can trust"
+                .to_owned(),
+        ),
         None => GatewayVerdict::Closed,
     }
 }
@@ -5028,7 +5043,7 @@ mod gateway_tests {
             "sv-gateway=0\n",
         ] {
             assert_eq!(
-                gateway_verdict(&format!("{REFUSED_SELF}{gateway}")),
+                gateway_verdict(&format!("{REFUSED_SELF}{gateway}"), false),
                 GatewayVerdict::Reachable,
                 "{gateway}"
             );
@@ -5044,11 +5059,41 @@ mod gateway_tests {
             "nc: can't connect to remote host (172.20.0.1): Connection timed out\nsv-gateway=1\n",
         ] {
             assert_eq!(
-                gateway_verdict(&format!("{REFUSED_SELF}{gateway}")),
+                gateway_verdict(&format!("{REFUSED_SELF}{gateway}"), false),
                 GatewayVerdict::Closed,
                 "{gateway}"
             );
         }
+    }
+
+    #[test]
+    fn on_a_plain_internal_network_an_unanswered_knock_is_not_a_fence() {
+        // Backlog 0301: with `--internal` alone the bridge keeps its address on the host, and a
+        // firewall that drops all but SSH times the knock on port 9 out. That silence passed.
+        for gateway in [
+            "nc: timed out\nsv-gateway=1\n",
+            "nc: can't connect to remote host (172.20.0.1): No route to host\nsv-gateway=1\n",
+        ] {
+            let verdict = gateway_verdict(&format!("{REFUSED_SELF}{gateway}"), true);
+            assert!(
+                matches!(&verdict, GatewayVerdict::Unknown(why) if why.contains("--internal` alone")),
+                "{gateway}: {verdict:?}"
+            );
+        }
+        // An answer is still the host answering, and the control still has to hold.
+        assert_eq!(
+            gateway_verdict(
+                &format!(
+                    "{REFUSED_SELF}nc: 172.20.0.1 (172.20.0.1:9): Connection refused\nsv-gateway=1\n"
+                ),
+                true
+            ),
+            GatewayVerdict::Reachable
+        );
+        assert!(matches!(
+            gateway_verdict("sv-self=0\nnc: timed out\nsv-gateway=1\n", true),
+            GatewayVerdict::Unknown(_)
+        ));
     }
 
     #[test]
@@ -5085,10 +5130,10 @@ mod gateway_tests {
         let out = format!(
             "{REFUSED_SELF}nc: timed out\nsv-gateway=1\nnc: can't connect to remote host (10.9.0.254): Connection refused\nsv-gateway=1\n"
         );
-        assert_eq!(gateway_verdict(&out), GatewayVerdict::Reachable);
+        assert_eq!(gateway_verdict(&out, false), GatewayVerdict::Reachable);
         let out =
             format!("{REFUSED_SELF}nc: timed out\nsv-gateway=1\nnc: timed out\nsv-gateway=1\n");
-        assert_eq!(gateway_verdict(&out), GatewayVerdict::Closed);
+        assert_eq!(gateway_verdict(&out, false), GatewayVerdict::Closed);
     }
 
     #[test]
@@ -5096,19 +5141,19 @@ mod gateway_tests {
         // CI, 4 October 2026: with no gateway, the subnet's first address was the knocking container's
         // own, and its refusal read as the host answering.
         assert_eq!(
-            gateway_verdict(&format!("{REFUSED_SELF}sv-own=172.18.0.1\n")),
+            gateway_verdict(&format!("{REFUSED_SELF}sv-own=172.18.0.1\n"), false),
             GatewayVerdict::Closed
         );
         // Its own address skipped, another that answers still stops the run.
         let out = format!(
             "{REFUSED_SELF}sv-own=172.18.0.1\nnc: 172.18.0.254 (172.18.0.254:9): Connection refused\nsv-gateway=1\n"
         );
-        assert_eq!(gateway_verdict(&out), GatewayVerdict::Reachable);
+        assert_eq!(gateway_verdict(&out, false), GatewayVerdict::Reachable);
     }
 
     #[test]
     fn a_check_that_cannot_tell_is_never_taken_for_a_fence() {
-        let unknown = |out: &str| matches!(gateway_verdict(out), GatewayVerdict::Unknown(_));
+        let unknown = |out: &str| matches!(gateway_verdict(out, false), GatewayVerdict::Unknown(_));
         // The control did not read as refused: an nc that says nothing would pass any gateway.
         assert!(unknown("sv-self=1\nnc: timed out\nsv-gateway=1\n"));
         assert!(unknown("sv-self=0\nnc: timed out\nsv-gateway=1\n"));
