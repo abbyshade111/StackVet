@@ -27,7 +27,7 @@ fn call(time: &str) -> String {
 }
 
 fn record_path(dir: &Path) -> std::path::PathBuf {
-    let folder = sv_scan::ecosystems::default_report_dir_in(dir);
+    let folder = dir.join(sv_scan::ecosystems::STATE_DIR);
     std::fs::create_dir_all(&folder).unwrap();
     folder.join(sv_scan::ecosystems::BUILD_LOOP_RECORD)
 }

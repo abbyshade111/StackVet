@@ -34,16 +34,19 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 20. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
 21. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 22. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-23. 0370 A setup prompt library for people new to building with AI — ready
-24. 0413 A reports page: what each report file is for, who reads it, and an example of each — ready
-25. 0412 Write the report as a PDF again, beside report.html — ready
-26. 0415 CodeQL only when the owner turns it on, for the uses its license allows — ready
-27. 0232 More samples for the checks that rest on one sample (groups A to H) — ready
-28. 0503 The report does not say the typed-text check did not run when no form is named — ready
-29. 0504 The second loop trial's score counts text-forms and not text-form — ready
-30. 0505 V1.3.1 and V1.3.5, rich text and user-supplied Markdown, are turned on only by an AI feature — ready
-31. 0506 V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them — ready
-32. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
+23. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
+24. 0508 Podman as a second container backend for the fence, so a Mac or Linux user without Docker can run the running-app checks — ready
+25. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
+26. 0370 A setup prompt library for people new to building with AI — ready
+27. 0413 A reports page: what each report file is for, who reads it, and an example of each — ready
+28. 0412 Write the report as a PDF again, beside report.html — ready
+29. 0415 CodeQL only when the owner turns it on, for the uses its license allows — ready
+30. 0232 More samples for the checks that rest on one sample (groups A to H) — ready
+31. 0503 The report does not say the typed-text check did not run when no form is named — ready
+32. 0504 The second loop trial's score counts text-forms and not text-form — ready
+33. 0505 V1.3.1 and V1.3.5, rich text and user-supplied Markdown, are turned on only by an AI feature — ready
+34. 0506 V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them — ready
+35. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
 
 ## Log
 
@@ -354,16 +357,21 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 08:13 — assigned 0476 to documentation (full) as next: usability lane: sv --help and each command's help say where a non-programmer's path is (main.rs)
 - 2026-10-14 08:13 — assigned 0475 to documentation (full) as next: usability lane: error messages a person meets through the tool name both routes (sv-cli lib.rs, sv-manifest, report_lock.rs, doctor.rs)
 - 2026-10-14 08:13 — finished 0409 by wording (full): https://github.com/abbyshade111/StackVet/pull/1861; from its lane, behind 0404
-- 2026-10-14 08:46 — released 0290
-- 2026-10-14 08:46 — released 0338
-- 2026-10-14 08:46 — released 0374
-- 2026-10-14 08:46 — queued 0370, marked
-- 2026-10-14 08:46 — queued 0413, marked
-- 2026-10-14 08:46 — queued 0412, marked
-- 2026-10-14 08:46 — queued 0415, marked
-- 2026-10-14 08:47 — queued 0232, marked
-- 2026-10-14 08:47 — queued 0503, marked
-- 2026-10-14 08:47 — queued 0504, marked
-- 2026-10-14 08:47 — queued 0505, marked
-- 2026-10-14 08:47 — queued 0506, marked
-- 2026-10-14 08:47 — queued 0502, on hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code, marked
+- 2026-10-14 08:52 — queued 0507, on hold: after the proposals 0488 to 0500 are built; a record of its own, marked
+- 2026-10-14 08:52 — queued 0508, on hold: until the owner asks for it, or a Mac or Linux user without Docker does, marked
+- 2026-10-14 09:03 — released 0508
+- 2026-10-14 09:03 — released 0508
+- 2026-10-14 09:03 — queued 0510, marked
+- 2026-10-14 09:22 — released 0290
+- 2026-10-14 09:22 — released 0338
+- 2026-10-14 09:22 — released 0374
+- 2026-10-14 09:22 — queued 0370, marked
+- 2026-10-14 09:22 — queued 0413, marked
+- 2026-10-14 09:22 — queued 0412, marked
+- 2026-10-14 09:22 — queued 0415, marked
+- 2026-10-14 09:22 — queued 0232, marked
+- 2026-10-14 09:22 — queued 0503, marked
+- 2026-10-14 09:22 — queued 0504, marked
+- 2026-10-14 09:22 — queued 0505, marked
+- 2026-10-14 09:22 — queued 0506, marked
+- 2026-10-14 09:22 — queued 0502, on hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code, marked

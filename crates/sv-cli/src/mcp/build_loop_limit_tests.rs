@@ -4,11 +4,12 @@
 use super::tests::{call, scratch_app, text};
 use super::*;
 
+/// Writes the record where `sv` keeps it, and gives the report folder, where the report about it is written.
 fn write_record(app: &Path, bytes: &[u8]) -> std::path::PathBuf {
-    let folder = sv_scan::ecosystems::default_report_dir_in(app);
+    let folder = app.join(sv_scan::ecosystems::STATE_DIR);
     std::fs::create_dir_all(&folder).unwrap();
     std::fs::write(folder.join(sv_scan::ecosystems::BUILD_LOOP_RECORD), bytes).unwrap();
-    folder
+    sv_scan::ecosystems::default_report_dir_in(app)
 }
 
 fn one_call() -> String {

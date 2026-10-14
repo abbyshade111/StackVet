@@ -124,8 +124,8 @@ fn a_well_set_up_site_is_credited_for_each_thing_it_got_right() {
         );
     }
     // The front page's one answer and its cookies, in part; the transport, in full (ADR-053, Later). The one
-    // request to the root that is answered 301 is one sample of the requests (backlog 0006 part 4), in part; the
-    // port-level answer is whole and stays plain.
+    // request to the root that is answered 301 is one sample of the requests (backlog 0006 part 4), in part, as a
+    // refused port 80 is (backlog 0466, `refused_port_tests.rs`).
     for v in out
         .verified
         .iter()

@@ -41,6 +41,7 @@ pub mod level_hints;
 pub mod live_tls;
 pub mod locate;
 pub mod logs;
+pub mod look_away;
 pub mod manifest_lock;
 pub mod mcp_server;
 pub mod model_files;

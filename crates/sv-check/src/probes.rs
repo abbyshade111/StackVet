@@ -547,13 +547,44 @@ pub fn verified(responses: &[ProbeResponse]) -> Vec<crate::Verified> {
 }
 
 /// The same, knowing which routes stackvet.toml names and were asked (ADR-096): the header, cookie,
-/// and content-type credits are whole only when there were such routes, every one answered, and every
-/// answer passed. With none, or one unanswered, they stay in part.
+/// and content-type credits are whole only when there were two or more such routes, every one
+/// answered, and every answer passed. With none, only one, or one unanswered, they stay in part
+/// (backlog 0467).
 pub fn verified_with_routes(
     responses: &[ProbeResponse],
     routes: &[String],
 ) -> Vec<crate::Verified> {
+    // The route answers each credit read, added to its evidence, so `seen.json` shows what a whole
+    // credit "on all N routes" rests on (backlog 0467): every route answer for the page checks, and
+    // those carrying a policy for the reporting check.
+    let route_ids = |answers: Vec<&ProbeResponse>| -> Vec<String> {
+        answers
+            .into_iter()
+            .filter(|r| r.id.starts_with(ROUTE_ID))
+            .map(|r| r.id.clone())
+            .collect()
+    };
+    let read = route_ids(pages(responses));
+    let with_policy = route_ids(policy_answers(responses));
     name_credits(verified_unnamed(responses, routes))
+        .into_iter()
+        .map(|credit| {
+            let more = match credit.check_id.as_str() {
+                id if id == SECURITY_HEADERS.rule_id
+                    || id == COOKIE_ATTRIBUTES.rule_id
+                    || id == CONTENT_TYPE.rule_id
+                    || id == OPENER_POLICY.rule_id =>
+                {
+                    &read
+                }
+                id if id == CSP_REPORTING.rule_id => &with_policy,
+                _ => return credit,
+            };
+            let mut evidence = credit.evidence.clone();
+            evidence.extend(more.iter().cloned());
+            credit.with_evidence(evidence)
+        })
+        .collect()
 }
 
 /// The answers each probe credit was read from, by their ids (ADR-082, backlog 0229, part 1): the same
@@ -595,20 +626,19 @@ fn name_credits(credits: Vec<crate::Verified>) -> Vec<crate::Verified> {
 fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate::Verified> {
     let mut out = Vec::new();
     let find = |id: &str| responses.iter().find(|r| r.id == id);
-    // Every route stackvet.toml names was asked and answered: the only way these credits speak for
-    // more than one or two answers a stranger sees (ADR-096).
-    let every_route = !routes.is_empty()
+    // Every route stackvet.toml names was asked and answered, so the credit's words name them.
+    let all_answered = !routes.is_empty()
         && routes
             .iter()
             .all(|path| find(&format!("{ROUTE_ID}{path}")).is_some());
-    let and_routes = if every_route {
-        format!(
-            ", and on all {} route{} stackvet.toml names",
-            routes.len(),
-            if routes.len() == 1 { "" } else { "s" }
-        )
-    } else {
-        String::new()
+    // And there were two or more: the only way these credits speak for more than a few answers a
+    // stranger sees (ADR-096), as for groups B, E, and F. One named route is one more sample, so its
+    // credit is in part (backlog 0467; ADR-096, Later, 14 October 2026).
+    let every_route = all_answered && routes.len() >= 2;
+    let and_routes = match routes.len() {
+        _ if !all_answered => String::new(),
+        1 => ", and on the one route stackvet.toml names".to_owned(),
+        n => format!(", and on all {n} routes stackvet.toml names"),
     };
 
     // Every judged page has to pass for the credit, which names them. The named routes are counted
@@ -769,10 +799,11 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
     let policies = policy_answers(responses);
     // A named route that answered with no policy at all reports nowhere, and is not in `policies`: for
     // this credit, every route means every named route answered with a policy (backlog 0419).
-    let every_policy = every_route
+    let all_with_policy = all_answered
         && routes
             .iter()
             .all(|path| policies.iter().any(|r| r.id == format!("{ROUTE_ID}{path}")));
+    let every_policy = all_with_policy && every_route;
     if policies.iter().any(|r| r.id == "home") && csp_reporting(&policies).is_none() {
         out.push(
             crate::Verified::new(
@@ -780,7 +811,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
                 CSP_REPORTING.requirement_ids,
                 format!(
                     "the Content-Security-Policy on the app's answer on its health path{}",
-                    if every_policy {
+                    if all_with_policy {
                         and_routes.as_str()
                     } else {
                         ""
@@ -2514,6 +2545,12 @@ mod home_judged_tests;
 
 #[cfg(test)]
 mod failing_requirements_tests;
+
+#[cfg(test)]
+mod routes_evidence_tests;
+
+#[cfg(test)]
+mod one_route_tests;
 
 #[cfg(test)]
 #[path = "probes_evidence_tests.rs"]

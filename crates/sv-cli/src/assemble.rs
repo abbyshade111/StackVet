@@ -2726,6 +2726,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     let mut report = sv_report::build(sv_report::Inputs {
         on_the_internet: manifest.app.deployment == sv_manifest::Deployment::Internet,
         ai_tool: sv_check::ai_tool::read(listing, loaded.secret_rules),
+        look_away: sv_check::look_away::read(listing, loaded.secret_rules),
         app_name: if manifest.app.name.is_empty() {
             "This app"
         } else {
