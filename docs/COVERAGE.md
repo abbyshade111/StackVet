@@ -308,9 +308,11 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 ### Level 1 with no check at all (9)
 
-The baseline every app is assessed against, and where a new check does the most good.
+Where a new check would do the most good. Which of them apply to an app depends on what the app is (`data/knowledge/applicability.json`):
 
-V2.1.1, V2.2.1, V6.1.1, V8.1.1, V10.4.1, V10.4.2, V10.4.3, V10.4.5, V15.1.1
+- Every app (4): V2.1.1, V2.2.1, V8.1.1, V15.1.1
+- Only where the answer to "Does the app have sign-in, with accounts, passwords, or sessions?" is yes (1): V6.1.1
+- Only where the answer to "Does the app run an OAuth authorization server or OpenID provider of its own?" is yes (4): V10.4.1, V10.4.2, V10.4.3, V10.4.5
 
 ## AISVS 1.0 by chapter
 

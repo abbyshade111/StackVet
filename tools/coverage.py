@@ -1345,8 +1345,30 @@ def main():
     l1 = sorted((q for q, v in asvs.items() if v["level"] == 1 and not tiers(q)),
                 key=lambda q: [int(x) for x in re.findall(r"\d+", q)])
     w(f"### Level 1 with no check at all ({len(l1)})\n")
-    w("The baseline every app is assessed against, and where a new check does the most good.\n")
-    w(", ".join(l1) + "\n")
+    # Not every one is every app's (backlog 0472): read which each applies to from the applicability rules,
+    # the most specific scope that names it, as the report does.
+    rules = load(ROOT / "data/knowledge/applicability.json")["rules"]
+
+    def condition_of(q):
+        scopes = [r for r in rules if q == r["scope"] or q.startswith(r["scope"] + ".")]
+        return max(scopes, key=lambda r: len(r["scope"]))["condition"] if scopes else "always"
+
+    by_condition = defaultdict(list)
+    for q in l1:
+        by_condition[condition_of(q)].append(q)
+    # Each condition's question as `sv` asks it, from `sv-frameworks`, so the paragraph is in a person's words.
+    questions = dict(re.findall(r'=> "([a-z0-9-]+)", (?:Claim|Derived), "(?:[^"\\]|\\.)*",\s*"((?:[^"\\]|\\.)*)";',
+                                (ROOT / "crates/sv-frameworks/src/condition.rs").read_text(encoding="utf-8")))
+    every = by_condition.pop("always", [])
+    w("Where a new check would do the most good. Which of them apply to an app depends on what the app is "
+      "(`data/knowledge/applicability.json`):\n")
+    w(f"- Every app ({len(every)}): " + (", ".join(every) or "none"))
+    for condition in sorted(by_condition):
+        qs = by_condition[condition]
+        if condition not in questions:
+            sys.exit(f"coverage.py: no question for the condition `{condition}` in crates/sv-frameworks/src/condition.rs")
+        w(f"- Only where the answer to \"{questions[condition]}\" is yes ({len(qs)}): " + ", ".join(qs))
+    w("")
 
     # ---- AISVS
     w("## AISVS 1.0 by chapter\n")
