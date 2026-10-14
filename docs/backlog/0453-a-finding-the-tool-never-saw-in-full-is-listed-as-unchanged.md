@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: the last 48 hours' code, `sv-cli` and the MCP server. Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-cli/src/mcp/tools.rs:211-212` (`shown_all()` after every answer that is not `Ask::Part`,

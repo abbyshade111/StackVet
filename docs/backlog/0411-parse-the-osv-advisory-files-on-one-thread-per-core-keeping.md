@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Left from backlog 0342, which built the index that made the matching itself fast (26 s to 0.13 s at 300 components and
 20,000 records, debug build). The review's estimate for this part was not measured.
 

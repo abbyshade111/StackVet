@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: requirements and tests (citations). Severity: medium. Verified against the code by the reviewing session before filing. Two examples confirmed by the reviewing session: V7.2.4 (`sessions.rs:1528`) and V13.4.4 (`probes.rs:683`) are always `.in_part()` and `docs/COVERAGE.md:208` and `:236` print them without the marker. Sibling of the item on the website's "can check" column and the summary's "can be credited" definition.
 
 - Where:

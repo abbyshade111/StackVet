@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: usability. Severity: low. Verified against the code by the reviewing session before filing. The documentation review found the same glossary entry (its F14): the entry names three of the eight files and calls `compliance.md` the one to read; 0413 corrects this everywhere but there. Worth lines in the glossary too, since the guide uses them unexplained: "seal", "needs attention", "checked in part", "the fence".
 
 - Where: `docs/GETTING-STARTED.md:349-356` (the CI exit codes, in the non-programmer's guide; the README has them

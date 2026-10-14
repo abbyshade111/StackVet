@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the second loop trial (backlog 0257, `docs/prompts/loop-2/results.md`), 13 October 2026.
 
 `tests.name-does-not-match-requirement` says a test named for a requirement "shares no words with it". Three of the ten

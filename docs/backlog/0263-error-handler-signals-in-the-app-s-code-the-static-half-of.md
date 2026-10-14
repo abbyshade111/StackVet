@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From 0085, part 3, whose done note lists this as "not done from the proposals"; split out on 11 October 2026 when
 0085 was closed, so it stays visible. The running half of V16.5.4 is built: `probe.app-stopped-during-questions`
 (`crates/sv-check/src/running.rs`) finds an app that stopped, restarted, or went quiet while it was asked.

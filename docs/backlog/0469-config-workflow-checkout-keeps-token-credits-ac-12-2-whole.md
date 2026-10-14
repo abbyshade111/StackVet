@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: requirements and tests (citations). Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-check/src/workflows.rs:726-733` (`Verified::new(CHECKOUT_TOKEN, &["AC.12.2"], "…every checkout sets persist-credentials: false; credentials kept on the runner some other way are not in any file")`, no `.in_part()`).

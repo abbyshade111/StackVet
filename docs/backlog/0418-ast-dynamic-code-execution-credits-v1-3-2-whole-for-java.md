@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: requirements and tests (citations). Severity: high. Verified against the code by the reviewing session before filing. The rule data was read by the reviewing session: Java's only taught call is `^eval$`, and Java has no `nothingToFind` entry, so any Java file read credits V1.3.2 whole.
 
 - Where:

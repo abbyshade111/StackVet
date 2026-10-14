@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: coverage accuracy. Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `docs/COVERAGE.md:310-314` ("The baseline every app is assessed against, and where a new check does the most

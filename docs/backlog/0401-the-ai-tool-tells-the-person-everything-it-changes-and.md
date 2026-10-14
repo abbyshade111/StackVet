@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 The owner's asking, 13 October 2026, after the trial in Antigravity: "investigate ways to ensure the AI tool tells the
 user everything it's doing - a normal person would have had no idea it made those changes."
 

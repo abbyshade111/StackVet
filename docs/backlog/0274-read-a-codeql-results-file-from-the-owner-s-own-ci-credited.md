@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Moved here on 12 October 2026 from backlog 0147 part 7, when 0147 was closed: the one thing in 0147 approved and never
 built. **The owner's decision, 9 October 2026** (recorded in 0147, asked by session securevibe-e2): yes to reading a
 CodeQL SARIF file from the owner's own CI, as recommended. A clean result is credited only when the file's commit is

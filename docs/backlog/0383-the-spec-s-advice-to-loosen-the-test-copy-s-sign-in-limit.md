@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the second loop trial (backlog 0257, `docs/prompts/loop-2/results.md`), 13 October 2026.
 
 `sv init`'s specification tells the AI coding tool that `sv` signs in up to 60 times in one run and to "let the copy

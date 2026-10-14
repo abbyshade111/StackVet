@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 13 October 2026 in the owner's trial in Antigravity. Bandit's B104 flagged `HOST = os.environ.get("HOST",
 "0.0.0.0")` in the app's `server.py`; the AI tool changed the default to `""`, and the finding went away. In Python an
 empty host given to a server (`HTTPServer(("", port), ...)`, `socket.bind(("", port))`) binds every interface, exactly

@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: usability. Severity: medium (a person is steered to the
 harder path by a sentence that is no longer true). Verified against the two files by the reviewing session before
 filing.

@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 13 October 2026 in the owner's trial in Antigravity. The report's `security.md` writes a setting's name with its
 square brackets escaped, `\[stack.run.users\]`, so a Markdown viewer does not read it as a link. Antigravity's viewer
 showed that line as "under stack.run.usersstack.run.usersstack.run.users". It was the one sentence telling the person

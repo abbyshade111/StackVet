@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 The owner's decision of 13 October 2026, with backlog item on the SARIF notes: the name `findings.sarif` reads to a
 person as "issues with the app" even when it holds no findings. Rename it to one that says what it is, such as
 `stackvet.sarif`.

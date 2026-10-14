@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: coverage accuracy. Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `docs/COVERAGE.md:9-10` ("**Can be credited**: of those, the ones a check can mark *checked*");

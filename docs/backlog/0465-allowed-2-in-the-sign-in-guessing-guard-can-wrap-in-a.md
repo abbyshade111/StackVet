@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: code quality and duplication. Severity: low. Verified against the code by the reviewing session before filing. Filed on its own so the one-line fix is not deferred with the refactor of the duplicated reading (the item before it).
 
 - Where: `crates/sv-check/src/signed_in/signin.rs:299-300` (`const MOST_ATTEMPTS: u32 = 26; if allowed + 2 >

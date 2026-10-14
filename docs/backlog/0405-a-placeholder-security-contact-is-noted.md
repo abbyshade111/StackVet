@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 13 October 2026 in the owner's trial in Antigravity. Early in the build, the AI tool wrote the app's
 `SECURITY.md`, its policy for reporting a vulnerability. It gave `security@example.com` as the contact and promised
 "We acknowledge reports within 48 hours", a commitment the owner never made. `example.com` is reserved for examples
