@@ -26,26 +26,30 @@ use zeroize::Zeroizing;
 /// never offered, and a person may read "nothing waiting" beside a report that still lists findings. Says what to do
 /// with such a finding, and how many the last report in the default report folder lists, when one can be read. It
 /// offers no way to set one aside: only an entry a person confirms here does that.
+///
+/// The count is `sv`'s word only when `sv` can show it wrote the report: the AI coding tool can write `report.json`,
+/// so an unsealed one is not counted from, as `sv explain` does not repeat one (backlog 0451). Even then only an
+/// ordinary file is read, and no more of it than the MCP server reads of any file: a pipe there would be waited on
+/// for ever.
 pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
     let folder = app_dir.join(sv_frameworks::names::REPORT_DIR);
-    let counted = std::fs::read_to_string(folder.join("report.json"))
-        .ok()
-        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
-        .and_then(|report| report.get("findings")?.as_array().map(Vec::len));
-    let last = match counted {
-        Some(0) => format!(
+    let last = match counted_findings(&folder) {
+        Ok(0) => format!(
             "The last report in {} lists no finding that counts.",
             folder.display()
         ),
-        Some(1) => format!(
+        Ok(1) => format!(
             "The last report in {} lists 1 finding that counts.",
             folder.display()
         ),
-        Some(n) => format!(
+        Ok(n) => format!(
             "The last report in {} lists {n} findings that count.",
             folder.display()
         ),
-        None => format!("No report was read in {} to count from.", folder.display()),
+        Err(why) => format!(
+            "No report sv can show it wrote was read in {} to count from: {why}.",
+            folder.display()
+        ),
     };
     format!(
         "That is about entries only. A finding with no entry is never offered here: a real one is fixed in the code and \
@@ -54,9 +58,38 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
     )
 }
 
+/// How many findings the sealed report in `folder` lists, or why none is counted.
+fn counted_findings(folder: &Path) -> Result<usize, String> {
+    sv_cli::report_seal::proven(folder)?;
+    let path = folder.join("report.json");
+    if !std::fs::symlink_metadata(&path).is_ok_and(|m| m.is_file()) {
+        return Err("its report.json is not an ordinary file".to_owned());
+    }
+    let mut text = String::new();
+    std::fs::File::open(&path)
+        .and_then(|file| {
+            std::io::Read::read_to_string(
+                &mut std::io::Read::take(file, sv_cli::mcp::MAX_RESOURCE_BYTES + 1),
+                &mut text,
+            )
+        })
+        .map_err(|e| format!("its report.json could not be read ({e})"))?;
+    if text.len() as u64 > sv_cli::mcp::MAX_RESOURCE_BYTES {
+        return Err("its report.json is larger than sv reads of a report".to_owned());
+    }
+    serde_json::from_str::<serde_json::Value>(&text)
+        .ok()
+        .and_then(|report| report.get("findings")?.as_array().map(Vec::len))
+        .ok_or_else(|| "its report.json lists no findings sv can read".to_owned())
+}
+
 #[cfg(test)]
 #[path = "review_gap_tests.rs"]
 mod gap_tests;
+
+#[cfg(test)]
+#[path = "review_report_read_tests.rs"]
+mod report_read_tests;
 
 #[cfg(test)]
 #[path = "review_left_out_tests.rs"]
