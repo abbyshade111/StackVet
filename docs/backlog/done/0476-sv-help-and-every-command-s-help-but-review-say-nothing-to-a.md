@@ -1,6 +1,6 @@
 # `sv --help` and every command's `--help` but `review` say nothing to a person who is not a programmer
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -18,3 +18,9 @@ From the deep review of 13 October 2026 (backlog 0417), area: usability. Severit
 - How verified: read.
 - Overlap: 0254 (done: `review` only), 0413 (the reports page; `report --help` can point at it).
 - Needs a decision record?: no.
+
+**Done 14 October 2026 (session documentation).** `sv --help` ends with "NEW TO THIS?", naming
+`docs/GETTING-STARTED.md` and `sv doctor`. `sv report --help` says which of the eight files to open first and points
+at the README's "What a report holds" (0413's reports page, when it exists, can take its place) and at
+`docs/INSTALL.md` for `--run`; `sv doctor --help` and `sv connect --help` each name the page and section with the
+whole flow. `crates/sv-cli/tests/help_for_newcomers.rs` holds each, and that each section named is there.
