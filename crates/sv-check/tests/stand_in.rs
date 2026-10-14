@@ -92,9 +92,7 @@ fn install(bin: &Path, name: &str, log: &Path, rule: &str, how: Option<Fake>) {
         py(how == Fake::Broken),
         py(name == OPENGREP),
     );
-    std::fs::write(&path, script).unwrap();
-    use std::os::unix::fs::PermissionsExt;
-    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+    sv_check::test_support::executable(&path, &script);
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

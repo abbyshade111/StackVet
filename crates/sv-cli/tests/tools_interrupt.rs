@@ -11,9 +11,7 @@ use std::time::{Duration, Instant};
 
 /// Writes an executable shell script.
 fn script(path: &Path, body: &str) {
-    use std::os::unix::fs::PermissionsExt;
-    std::fs::write(path, format!("#!/bin/sh\nPATH=/bin:/usr/bin\n{body}")).unwrap();
-    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
+    sv_check::test_support::executable(path, &format!("#!/bin/sh\nPATH=/bin:/usr/bin\n{body}"));
 }
 
 /// Whether process `pid` is gone: not there, or ended and waiting only to be collected.

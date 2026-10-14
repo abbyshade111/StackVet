@@ -473,12 +473,7 @@ fn the_real_codeql_for_ruby_runs_nothing_the_app_plants_and_follows_no_link() {
     .unwrap();
     for stub in ["bundle", "setup"] {
         let path = app.join("bin").join(stub);
-        std::fs::write(&path, format!("#!/bin/sh\ntouch {}\n", mark(stub))).unwrap();
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
-        }
+        sv_check::test_support::executable(&path, &format!("#!/bin/sh\ntouch {}\n", mark(stub)));
     }
     std::fs::write(
         app.join("app/controllers/users_controller.rb"),

@@ -346,19 +346,16 @@ fn the_install_script_builds_with_the_versions_in_cargo_lock() {
     // Gap analysis 5.3: without `--locked`, a build chooses today's newest versions of what `sv` is
     // made from, which no test of `sv` ever ran with. A stand-in `cargo` writes down what it was
     // asked, and fails, so nothing is built or installed.
-    use std::os::unix::fs::PermissionsExt;
     let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/install.sh");
     let root = scratch("locked");
     let bin = root.join("bin");
     std::fs::create_dir_all(&bin).unwrap();
     let asked = root.join("asked");
     let cargo = bin.join("cargo");
-    std::fs::write(
+    sv_check::test_support::executable(
         &cargo,
-        format!("#!/bin/sh\necho \"$@\" > '{}'\nexit 1\n", asked.display()),
-    )
-    .unwrap();
-    std::fs::set_permissions(&cargo, std::fs::Permissions::from_mode(0o755)).unwrap();
+        &format!("#!/bin/sh\necho \"$@\" > '{}'\nexit 1\n", asked.display()),
+    );
     let ran = Command::new("sh")
         .arg(&script)
         .env("SV_PREFIX", root.join("prefix"))

@@ -33,12 +33,7 @@ fn fake_bandit_writing(bin: &Path, sarif: &str) {
         "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo 'bandit 1.9.4'; exit 0; fi\nout=''\nwhile [ $# -gt 0 ]; do if [ \"$1\" = \"--output\" ]; then out=\"$2\"; fi; shift; done\ncat > \"$out\" <<'SARIF'\n{sarif}\nSARIF\nexit 1\n"
     );
     let path = bin.join("bandit");
-    std::fs::write(&path, script).unwrap();
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
-    }
+    sv_check::test_support::executable(&path, &script);
 }
 
 /// What each stand-in for a tool kept out of the test says when asked for its version.
@@ -77,12 +72,10 @@ fn keep_other_tools_out(bin: &Path) -> Vec<String> {
     );
     for command in &commands {
         let path = bin.join(command);
-        std::fs::write(&path, format!("#!/bin/sh\necho '{KEPT_OUT}' >&2\nexit 1\n")).unwrap();
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
-        }
+        sv_check::test_support::executable(
+            &path,
+            &format!("#!/bin/sh\necho '{KEPT_OUT}' >&2\nexit 1\n"),
+        );
     }
     commands
 }

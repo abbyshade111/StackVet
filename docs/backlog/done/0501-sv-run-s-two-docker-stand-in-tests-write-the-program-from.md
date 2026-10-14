@@ -1,6 +1,6 @@
 # sv-run's two docker stand-in tests write the program from the test process, so a parallel test hits "Text file busy" (the race sv-check's executable helper guards)
 
-**Status:** claimed by honesty, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
