@@ -6,7 +6,7 @@ home page's section 4 links here.
 
 ## What you get
 
-**One folder, eight files, each with a reader of its own.**
+**One folder, nine files, each with a reader of its own.**
 
 When StackVet checks your app, it writes a folder named `stackvet-report` inside the app's folder. Start with
 `report.html`: it is the whole report on one page, and it ends with this same list.
@@ -21,6 +21,7 @@ When StackVet checks your app, it writes a folder named `stackvet-report` inside
 | `report.json` | The report's data as JSON | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | What sv saw of the running app, with every key and sign-in in it cut short | You, to see what a finding rests on |
 | `sbom.cdx.json` | The app's bill of materials, every package it uses with its version, as CycloneDX JSON | Tools that read a bill of materials |
+| `report.pdf` | The whole report as one file to read, print, or send: compliance.md's order, with each finding in full. US Letter paper unless stackvet.toml's report-paper setting asks for A4; its fonts show Western European letters only, so report.html is the complete version | You, or whoever you hand it to |
 
 ## Two reports that look alike, and are not
 

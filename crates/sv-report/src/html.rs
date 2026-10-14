@@ -283,6 +283,13 @@ pub fn page(report: &Report) -> String {
         1,
     );
     b.push_str(&format!("<p class=\"note\">{sarif}</p>\n"));
+    // The same report as one file to read or print (ADR-116).
+    let pdf = escape(&crate::pdf_line(report)).replacen(
+        crate::pdf::FILE,
+        &format!("<a href=\"{0}\">{0}</a>", crate::pdf::FILE),
+        1,
+    );
+    b.push_str(&format!("<p class=\"note\">{pdf}</p>\n"));
     if let Some(line) = crate::advisories_line(report) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
     }
@@ -1419,6 +1426,7 @@ mod tests {
             not_run_this_time: None,
             could_settle: Default::default(),
             plain: Default::default(),
+            paper: Default::default(),
         }
     }
 

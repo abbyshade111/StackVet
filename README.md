@@ -132,7 +132,7 @@ give `--out`. Add `--run` to start the app behind the fence and include what it 
 that are installed (Bandit, gosec, Brakeman, and Semgrep) run unless you add `--no-tools`, which is the quick run.
 CodeQL runs only when you turn it on with `[tools] codeql = true` in `stackvet.toml`: its license allows it only on an
 app released under an open-source license, for academic research, or with a paid GitHub Advanced Security license,
-and StackVet cannot tell which applies to yours. Off, the report does not name it. It writes eight files:
+and StackVet cannot tell which applies to yours. Off, the report does not name it. It writes nine files:
 
 | File | What it holds | Who it is for |
 |---|---|---|
@@ -144,6 +144,7 @@ and StackVet cannot tell which applies to yours. Off, the report does not name i
 | `report.json` | The report's data as JSON | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | What sv saw of the running app, with every key and sign-in in it cut short | You, to see what a finding rests on |
 | `sbom.cdx.json` | The app's bill of materials, every package it uses with its version, as CycloneDX JSON | Tools that read a bill of materials |
+| `report.pdf` | The whole report as one file to read, print, or send: compliance.md's order, with each finding in full. US Letter paper unless stackvet.toml's report-paper setting asks for A4; its fonts show Western European letters only, so report.html is the complete version | You, or whoever you hand it to |
 
 `compliance.md` and `security.md` open with the same lines on a small app, but they are written for different
 readers. [The reports page](docs/website/reports-page.md) says when to open each, with an example of each.

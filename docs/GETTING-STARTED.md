@@ -356,6 +356,7 @@ a browser. Each file in the folder has a reader of its own:
 | `report.json` | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | You, to see what a finding rests on |
 | `sbom.cdx.json` | Tools that read a bill of materials |
+| `report.pdf` | You, or whoever you hand it to |
 
 `security.md` is what to fix; `compliance.md` is the whole picture against the standards. On a small app the two
 open alike, but they are not the same: [the reports page](website/reports-page.md) shows an example of each. To have your AI tool
