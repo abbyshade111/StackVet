@@ -71,6 +71,7 @@ pub fn write_report_folder(
         .map(|s| s.finding.fingerprint.clone())
         .collect();
     crate::build_loop::settle(&mut build_loop, &false_alarms);
+    crate::build_loop::look_again(&mut build_loop, app_dir, &false_alarms);
     report.build_loop = Some(build_loop);
     // A manifest read under its old name is said at the terminal as the report says it (ADR-062).
     if let Some(note) = sv_manifest::locate(app_dir)

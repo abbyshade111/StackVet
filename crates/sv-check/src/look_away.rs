@@ -94,7 +94,7 @@ pub fn read(listing: &Listing, rules: &SecretRules) -> LookAway {
 }
 
 /// The scanner a comment on `line` speaks to, and what it says from its word on; `None` when the line has none.
-fn on_line<'a>(line: &'a str, extension: &str) -> Option<(&'static str, &'a str)> {
+pub(crate) fn on_line<'a>(line: &'a str, extension: &str) -> Option<(&'static str, &'a str)> {
     static WORD: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(r"(?i)\b(?:(?:nosemgrep|gosec:disable|nosec|lgtm)\b|codeql\[)")
             .expect("a fixed pattern")
@@ -125,6 +125,21 @@ fn on_line<'a>(line: &'a str, extension: &str) -> Option<(&'static str, &'a str)
         .unwrap_or(rest.len());
     let says = rest[..end].trim_end();
     Some((scanner, says))
+}
+
+/// `line` without the comment that tells a scanner to look away, from where that comment opens: what the line read
+/// before the comment was added to it (backlog 0401). `None` when the line has no such comment, or nothing but it.
+pub(crate) fn without_comment(line: &str, extension: &str) -> Option<String> {
+    let (_, says) = on_line(line, extension)?;
+    // `says` is a slice of `line`, so where it starts is where the word that tells the scanner is.
+    let word_at = says.as_ptr() as usize - line.as_ptr() as usize;
+    let before = &line[..word_at];
+    let opens = ["<!--", "/*", "//", "#", "--"]
+        .iter()
+        .filter_map(|o| before.rfind(o))
+        .max()?;
+    let kept = line[..opens].trim_end();
+    (!kept.trim().is_empty()).then(|| kept.to_owned())
 }
 
 /// Whether what comes before a word on its line opens a comment.

@@ -169,11 +169,27 @@ fn status_cell(line: &crate::RequirementLine) -> String {
 }
 
 pub fn compliance(report: &Report) -> String {
+    compliance_as(report, false)
+}
+
+/// The text `report.pdf` is laid out from (ADR-116): `compliance.md`'s order, with each finding written out in full
+/// where `compliance.md` gives a line and points to `security.md`, what was set aside with them, and every low-severity
+/// finding in full before the appendix, so the one file holds the whole report and nothing in it twice.
+pub fn pdf_text(report: &Report) -> String {
+    compliance_as(report, true)
+}
+
+fn compliance_as(report: &Report, pdf: bool) -> String {
     let mut out = String::new();
     let c = &report.counts;
     out.push_str(&format!(
-        "# {} — what applies, and what is known\n\n",
-        inert(&report.app_name).replace(['\n', '\r'], " ")
+        "# {} — {}\n\n",
+        inert(&report.app_name).replace(['\n', '\r'], " "),
+        if pdf {
+            "the security report"
+        } else {
+            "what applies, and what is known"
+        }
     ));
     let made_by = report.sv.describe();
     if let Some(when) = &report.generated {
@@ -187,7 +203,13 @@ pub fn compliance(report: &Report) -> String {
             report.target_level
         ));
     }
-    out.push_str(&crate::folder::markdown_line("compliance.md"));
+    if pdf {
+        // The PDF's own line, then what its fonts cannot show (ADR-116).
+        out.push_str(&crate::folder::markdown_line(crate::pdf::FILE));
+        out.push_str(&format!("*{}*\n\n", crate::pdf::FONTS_NOTE));
+    } else {
+        out.push_str(&crate::folder::markdown_line("compliance.md"));
+    }
 
     // The short version, before any of the explaining. See `crate::bluf`.
     out.push_str("## The short version\n\n");
@@ -197,6 +219,9 @@ pub fn compliance(report: &Report) -> String {
     }
     if let Some(line) = crate::build_loop_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
+    }
+    if let Some(line) = crate::went_same_line(report) {
+        out.push_str(&format!("**{}**\n\n", inert(&line)));
     }
     if let Some(line) = crate::slowest_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
@@ -219,7 +244,8 @@ pub fn compliance(report: &Report) -> String {
         }
         if rest > 0 {
             out.push_str(&format!(
-                "- … and {rest} more, in security.md, worst first\n"
+                "- … and {rest} more, {}, worst first\n",
+                if pdf { "below" } else { "in security.md" }
             ));
         }
         out.push('\n');
@@ -251,7 +277,11 @@ pub fn compliance(report: &Report) -> String {
     // Each is set out in full in security.md; here a line each, so the reader of this file meets them first.
     let (app, _) = crate::app_then_tests(report);
     let (fix, notes) = crate::fix_then_notes(app);
-    if !fix.is_empty() {
+    if pdf {
+        // Here the findings are set out in full, as security.md sets them out, with what was set aside.
+        security_findings(&mut out, report, true);
+        set_aside(&mut out, report);
+    } else if !fix.is_empty() {
         out.push_str(&format!(
             "## {} thing{} to fix\n\nWorst first. Each is in security.md, with why it matters and what to do.{}\n\n",
             fix.len(),
@@ -743,6 +773,23 @@ pub fn compliance(report: &Report) -> String {
         out.push('\n');
     }
 
+    if pdf {
+        let low: Vec<&sv_check::Finding> = report
+            .findings
+            .iter()
+            .filter(|f| crate::is_grouped_low(f))
+            .collect();
+        if !low.is_empty() {
+            out.push_str(&format!(
+                "## Every low-severity finding\n\n{} finding{}, grouped by rule above. Each counts as a finding.\n\n",
+                low.len(),
+                if low.len() == 1 { "" } else { "s" }
+            ));
+            for finding in low {
+                finding_section(&mut out, report, finding);
+            }
+        }
+    }
     appendix(&mut out, report);
     out
 }
@@ -900,9 +947,36 @@ pub fn security(report: &Report) -> String {
     if let Some(line) = crate::build_loop_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
+    if let Some(line) = crate::went_same_line(report) {
+        out.push_str(&format!("**{}**\n\n", inert(&line)));
+    }
+    // The same report as one file to read or print (ADR-116).
+    out.push_str(&format!("{}\n\n", crate::pdf_line(report)));
 
     // The things to fix lead, then what was set aside, then what was not examined (ADR-110).
-    security_findings(&mut out, report);
+    security_findings(&mut out, report, false);
+    set_aside(&mut out, report);
+
+    if !report.gaps.is_empty() {
+        // Directly after the findings and what was set aside (ADR-110): a list of findings read without
+        // this reads as the whole truth about the app, and it is only the truth about the part examined.
+        out.push_str("## What was not examined\n\n");
+        for gap in &report.gaps {
+            // App text reaches both: a file path, the decisions file's own words.
+            out.push_str(&format!(
+                "- **{}** — {}\n",
+                inert(&gap.what),
+                inert(&gap.why)
+            ));
+        }
+        out.push('\n');
+    }
+
+    out
+}
+
+/// What was set aside in stackvet.toml, and the reviews there that do not count; nothing when there are neither.
+fn set_aside(out: &mut String, report: &Report) {
     let set_aside = crate::false_alarm_entries(report);
     if !set_aside.is_empty() || !report.reviews_not_counted.is_empty() {
         out.push_str("## Set aside in stackvet.toml\n\n");
@@ -934,28 +1008,12 @@ pub fn security(report: &Report) -> String {
             out.push('\n');
         }
     }
-
-    if !report.gaps.is_empty() {
-        // Directly after the findings and what was set aside (ADR-110): a list of findings read without
-        // this reads as the whole truth about the app, and it is only the truth about the part examined.
-        out.push_str("## What was not examined\n\n");
-        for gap in &report.gaps {
-            // App text reaches both: a file path, the decisions file's own words.
-            out.push_str(&format!(
-                "- **{}** — {}\n",
-                inert(&gap.what),
-                inert(&gap.why)
-            ));
-        }
-        out.push('\n');
-    }
-
-    out
 }
 
 /// `security.md`'s findings: the app's own worst first, then those in test or sample code, then the test-code
-/// information. Nothing found is said in words that point at what was not examined, which follows.
-fn security_findings(out: &mut String, report: &Report) {
+/// information. Nothing found is said in words that point at what was not examined, which follows. In the PDF
+/// (`in_pdf`), the low-severity findings are pointed to at its end rather than in `low-findings.md`.
+fn security_findings(out: &mut String, report: &Report, in_pdf: bool) {
     if report.findings.is_empty() {
         out.push_str(
             "## Nothing was found\n\nNo check found anything wrong. Read that together with \"What was not examined\", \
@@ -985,7 +1043,7 @@ fn security_findings(out: &mut String, report: &Report) {
             for finding in full {
                 finding_section(out, report, finding);
             }
-            low_lines(out, &low);
+            low_lines(out, &low, in_pdf);
         }
         // After the things to fix, and never counted with them (ADR-110, Later).
         if !notes.is_empty() {
@@ -1016,15 +1074,19 @@ fn security_findings(out: &mut String, report: &Report) {
 
 /// The low-severity findings, one line per rule with its count and files (ADR-095). Every one is in full in
 /// `LOW_FINDINGS_FILE`, beside this report.
-fn low_lines(out: &mut String, low: &[crate::LowGroup]) {
+fn low_lines(out: &mut String, low: &[crate::LowGroup], in_pdf: bool) {
     if low.is_empty() {
         return;
     }
     let total: usize = low.iter().map(|g| g.count).sum();
     out.push_str(&format!(
-        "### {total} low-severity finding{}, by rule\n\nEach is in full, with where and how to fix it, in {}.\n\n",
+        "### {total} low-severity finding{}, by rule\n\nEach is in full, with where and how to fix it, {}.\n\n",
         if total == 1 { "" } else { "s" },
-        code(crate::LOW_FINDINGS_FILE)
+        if in_pdf {
+            "under \"Every low-severity finding\", near the end".to_owned()
+        } else {
+            format!("in {}", code(crate::LOW_FINDINGS_FILE))
+        }
     ));
     for g in low {
         out.push_str(&format!(
@@ -1315,6 +1377,7 @@ mod tests {
             not_run_this_time: None,
             could_settle: Default::default(),
             plain: Default::default(),
+            paper: Default::default(),
         };
         let md = security(&report);
         // The setup: all three reached the page.

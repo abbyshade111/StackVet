@@ -86,7 +86,9 @@ pub fn point_questions(
 ) {
     use sv_check::human::{MOST_POINTERS, Pointer, RestsOn};
     let mut texts: BTreeMap<String, Option<Vec<String>>> = BTreeMap::new();
-    let mut by_question: BTreeMap<String, RestsOn> = BTreeMap::new();
+    // Per question, each locator that found a place it could show: what it finds, the places that could be read (at
+    // most `MOST_POINTERS`), and how many more it found.
+    let mut by_question: BTreeMap<String, Vec<(String, Vec<Pointer>, usize)>> = BTreeMap::new();
     for locator in locators.all() {
         let Some(places) = found.places.get(&locator.id) else {
             continue;
@@ -111,13 +113,46 @@ pub fn point_questions(
             continue;
         }
         for id in &locator.questions {
-            by_question.entry(id.clone()).or_insert_with(|| RestsOn {
-                finds: locator.finds.clone(),
-                places: shown.clone(),
+            by_question.entry(id.clone()).or_default().push((
+                locator.finds.clone(),
+                shown.clone(),
                 more,
-            });
+            ));
         }
     }
+    // Several locators can speak to one question (backlog 0516): the first place of each, then the second, in the
+    // order `data/locators.json` lists them, so a question shows what every locator found before more of any one.
+    let by_question: BTreeMap<String, RestsOn> = by_question
+        .into_iter()
+        .map(|(id, found)| {
+            let finds = found
+                .iter()
+                .map(|(finds, _, _)| finds.as_str())
+                .collect::<Vec<_>>()
+                .join("; ");
+            let mut places = Vec::new();
+            let mut more: usize = found.iter().map(|(_, _, more)| more).sum();
+            for round in 0..MOST_POINTERS {
+                for (_, shown, _) in &found {
+                    if let Some(place) = shown.get(round) {
+                        if places.len() < MOST_POINTERS {
+                            places.push(place.clone());
+                        } else {
+                            more += 1;
+                        }
+                    }
+                }
+            }
+            (
+                id,
+                RestsOn {
+                    finds,
+                    places,
+                    more,
+                },
+            )
+        })
+        .collect();
     for item in report
         .only_you_can_check
         .iter_mut()

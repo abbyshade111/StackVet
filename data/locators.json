@@ -11,8 +11,36 @@
       "names": "^(authori[sz]\\w*|(require|ensure|verify|assert|check|enforce|must)(role|roles|permission|permissions|perm|perms|admin|owner|ownership|scope|scopes|access|policy|ability|abilities|staff|superuser)\\w*|has(role|roles|permission|permissions|perm|perms|scope|scopes|access|ability|anyrole|anyauthority|authority)\\w*|can(access|edit|view|delete|update|read|write|manage|create|modify)\\w*|is(admin|owner|authori[sz]ed|allowed|staff|superuser|permitted)|(permission|permissions|roles?|admin|owner|staff|superuser)required|userpassestest|preauthori[sz]e|rolesallowed)$",
       "queries": {
         "python": "[(function_definition name: (identifier) @defined)\n (call function: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))\n (decorator (identifier) @used)\n (decorator (attribute attribute: (identifier) @used))\n (argument_list (identifier) @used)]",
-        "javascript": "[(function_declaration name: (identifier) @defined)\n (method_definition name: (property_identifier) @defined)\n (variable_declarator name: (identifier) @defined value: [(arrow_function) (function_expression)])\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (identifier) @used)\n (arguments (member_expression property: (property_identifier) @used))]",
-        "typescript": "[(function_declaration name: (identifier) @defined)\n (method_definition name: (property_identifier) @defined)\n (variable_declarator name: (identifier) @defined value: [(arrow_function) (function_expression)])\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (identifier) @used)\n (arguments (member_expression property: (property_identifier) @used))]"
+        "javascript": "[(function_declaration name: (identifier) @defined)\n (method_definition name: (property_identifier) @defined)\n (variable_declarator name: (identifier) @defined value: [(arrow_function) (function_expression)])\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (identifier) @used)]",
+        "typescript": "[(function_declaration name: (identifier) @defined)\n (method_definition name: (property_identifier) @defined)\n (variable_declarator name: (identifier) @defined value: [(arrow_function) (function_expression)])\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (identifier) @used)]"
+      }
+    },
+    {
+      "id": "locate.owner-checks",
+      "questions": [
+        "V8.1.1",
+        "V8.3.1"
+      ],
+      "finds": "comparisons and queries of a record's owner or user id, where the app may keep a person to their own records",
+      "names": "(owner|ownerid|userid|authorid|createdby|accountid)['\"\\]\\)]*\\s*(=|!=|<>|:)|(==|!=)=?\\s*[\\w.\\[\\]'\"()]*(owner|ownerid|userid|authorid|createdby|accountid)\\b",
+      "queries": {
+        "python": "[(comparison_operator) @used\n (string) @used\n ((call function: (attribute attribute: (identifier) @method) arguments: (argument_list (keyword_argument) @used))\n  (#match? @method \"^(filter_by|filter|get_or_404|first_or_404|where|get)$\"))]",
+        "javascript": "[(binary_expression operator: [\"===\" \"!==\" \"==\" \"!=\"]) @used\n (string) @used\n (template_string) @used\n ((pair key: (property_identifier) @key) @used\n  (#match? @key \"^(owner|ownerId|owner_id|userId|user_id|authorId|author_id|createdBy|created_by|accountId|account_id)$\"))]",
+        "typescript": "[(binary_expression operator: [\"===\" \"!==\" \"==\" \"!=\"]) @used\n (string) @used\n (template_string) @used\n ((pair key: (property_identifier) @key) @used\n  (#match? @key \"^(owner|ownerId|owner_id|userId|user_id|authorId|author_id|createdBy|created_by|accountId|account_id)$\"))]"
+      }
+    },
+    {
+      "id": "locate.refusals",
+      "questions": [
+        "V8.1.1",
+        "V8.3.1"
+      ],
+      "finds": "places that refuse a request with a 403 (Forbidden), whether the answer is sent, returned, or raised",
+      "names": "^(403|forbidden|httpforbidden|permissiondenied|forbiddenerror|forbiddenexception)$",
+      "queries": {
+        "python": "[(argument_list (integer) @used)\n (argument_list (keyword_argument value: (integer) @used))\n (return_statement (expression_list (integer) @used))\n (raise_statement (identifier) @used)\n (raise_statement (call function: (identifier) @used))\n (raise_statement (call function: (attribute attribute: (identifier) @used)))]",
+        "javascript": "[(arguments (number) @used)\n (throw_statement (new_expression constructor: (identifier) @used))\n ((assignment_expression left: (member_expression property: (property_identifier) @field) right: (number) @used)\n  (#match? @field \"^(status|statusCode)$\"))]",
+        "typescript": "[(arguments (number) @used)\n (throw_statement (new_expression constructor: (identifier) @used))\n ((assignment_expression left: (member_expression property: (property_identifier) @field) right: (number) @used)\n  (#match? @field \"^(status|statusCode)$\"))]"
       }
     }
   ]

@@ -32,7 +32,7 @@ How to ask them. These are for the person you are building this app with, not fo
   session ends after 30 minutes without use; nothing has tested that. Is that what you want?\" With
   no lines to quote, say so rather than describe code you have not shown. The \"where to look\" line
   under each question says where the answer is usually found, and \"In the code\", when a question
-  has it, shows lines StackVet found by their names: start from those, and say when they do not do
+  has it, shows lines StackVet found by their names or their shape: start from those, and say when they do not do
   what their names suggest.
 - Record the answer as the person gave it, as described in each part below. \"Not sure\" is a good
   answer, and is recorded as not-sure. A \"no\" is useful too: the report lists it as something to fix.

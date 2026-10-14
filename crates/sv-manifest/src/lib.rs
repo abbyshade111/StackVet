@@ -106,6 +106,9 @@ pub struct AppSection {
     /// report to say how it was built (ADR-076). On unless `false`; a report says when it is off.
     #[serde(default)]
     pub build_loop_record: Option<bool>,
+    /// The paper `report.pdf` is laid out on: `"a4"`, or US Letter when it is left out (ADR-116).
+    #[serde(default)]
+    pub report_paper: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -191,6 +194,10 @@ pub struct Capabilities {
     /// Do other applications share this app's hostname?
     #[serde(default)]
     pub shared_hostname: Option<bool>,
+    /// Does the app take formatted text people supply and show it: rich text from an editor, or Markdown,
+    /// stylesheets, templates, or similar (V1.3.1, V1.3.5; ADR-117)?
+    #[serde(default)]
+    pub rich_text: Option<bool>,
     /// Does this run as more than one service talking to each other over a network?
     ///
     /// Fifteen of the Secure by Design checklist's thirty-six controls are about the space between
@@ -1953,6 +1960,7 @@ impl Manifest {
             (Condition::OutOfBandAuth, c.out_of_band_auth),
             (Condition::OutOfBandOrEmailCode, out_of_band_or_email_code),
             (Condition::SharedHostname, c.shared_hostname),
+            (Condition::RichText, c.rich_text),
             (Condition::CiCd, self.repository.ci_cd),
             (Condition::HostedScm, self.repository.hosted_scm),
             (
@@ -3064,3 +3072,5 @@ mod account_changes_tests;
 
 #[cfg(test)]
 mod email_code_condition_tests;
+#[cfg(test)]
+mod rich_text_condition_tests;

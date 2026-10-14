@@ -30,6 +30,7 @@ pub mod interview;
 pub mod json;
 pub mod live;
 pub mod markdown;
+pub mod pdf;
 pub mod sarif;
 pub mod seen;
 pub mod threats;
@@ -1190,6 +1191,9 @@ pub struct Report {
     /// beside the framework's own words, never in place of them. Not in `report.json`: it is `sv`'s data, not the app's.
     #[serde(skip)]
     pub plain: BTreeMap<String, String>,
+    /// The paper `report.pdf` is laid out on, from stackvet.toml's `report-paper` (ADR-116).
+    #[serde(skip)]
+    pub paper: pdf::Paper,
 }
 
 /// What kind of run a report came from, said by what it was not: the short version's line about
@@ -1867,6 +1871,20 @@ pub const SARIF_FILE: &str = "stackvet.sarif";
 /// The line near the top of the report saying what the SARIF file beside it is, and what it holds (backlog 0408): its
 /// name reads to a person as "problems with the app" even when it holds none, so the page says how many findings it
 /// holds and how many notes on what was not examined, counted from the file itself.
+/// The line naming `report.pdf` beside the report (ADR-116): the same report as one file, and the paper it is on.
+pub fn pdf_line(report: &Report) -> String {
+    format!(
+        "{} beside this report is the same report as one file to read or print, on {} paper{}.",
+        pdf::FILE,
+        report.paper.name(),
+        match report.paper {
+            pdf::Paper::Letter =>
+                " (`report-paper = \"a4\"` under `[app]` in stackvet.toml makes it A4)",
+            pdf::Paper::A4 => ", as stackvet.toml asks",
+        }
+    )
+}
+
 pub fn sarif_line(report: &Report) -> String {
     let document: serde_json::Value =
         serde_json::from_str(&crate::sarif::render(report)).unwrap_or_default();
@@ -2307,6 +2325,20 @@ pub struct BuildLoop {
     pub first_fingerprints: Option<Vec<String>>,
     #[serde(skip)]
     pub last_fingerprints: Option<Vec<String>>,
+    /// The first check's findings placed by rule and file key (backlog 0401); read to make `went_same`, never written
+    /// into the report.
+    #[serde(skip)]
+    pub first_placed: BTreeMap<String, (String, String)>,
+    /// Of the findings no longer found between the first check and the last, those whose line still reads as it did
+    /// (backlog 0401). Left out when there are none, so a report written before it reads and seals the same.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub went_same: Vec<WentSame>,
+    /// How many of the findings that went were looked for again in the app's code, and how many were past the limit
+    /// and not. Left out when 0.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub looked_again: usize,
+    #[serde(skip_serializing_if = "is_zero")]
+    pub not_looked_again: usize,
     /// The names `sv` defines that the AI tool asked about, each once, in the order first asked
     /// (ADR-084, decision 3), and what `sv` handed over (decision 5).
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -2325,6 +2357,17 @@ pub struct BuildLoop {
     /// when there are none, so a report written before it reads and seals the same.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub signs_of_use: Vec<String>,
+}
+
+/// A finding no longer found whose line still reads in the app as it did when it was found (backlog 0401): its rule,
+/// where the line is now, and how it reads.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, serde::Deserialize)]
+pub struct WentSame {
+    pub rule: String,
+    pub file: String,
+    pub line: usize,
+    #[serde(flatten)]
+    pub how: sv_check::review::StillReads,
 }
 
 /// Between the first check of the build loop and the last: findings no longer found, those of them
@@ -2512,6 +2555,67 @@ pub const SUITE_TIMING: &str = "the running app, ";
 /// runs inside its suite, so it is counted in no total, and it is left out of the slowest parts,
 /// which would otherwise name a request beside the suite that holds it.
 pub const REQUEST_TIMING: &str = "the request ";
+
+/// The findings that went between the first check of the build loop and the last while their lines still read as
+/// they did, named one by one, for the top of the report (backlog 0401): a fix changes the line, so each went some
+/// other way, and the person is told to look. `None` when none did, or none was looked for. The file names are the
+/// app's, in backticks; each renderer makes them safe as it makes the rest of the app's text.
+pub fn went_same_line(report: &Report) -> Option<String> {
+    let b = report.build_loop.as_ref()?;
+    if b.looked_again == 0 {
+        return None;
+    }
+    let none_past_limit = if b.not_looked_again > 0 {
+        format!(
+            " {} more that went were not looked for, past the limit of {}.",
+            b.not_looked_again, b.looked_again
+        )
+    } else {
+        String::new()
+    };
+    if b.went_same.is_empty() {
+        return Some(format!(
+            "Of the findings no longer found between the first check and the last, {} {} looked for again in the \
+             app's code, and none still sits on a line that reads as it did when it was found.{none_past_limit} A \
+             line rewritten to do the same thing is not caught by this.",
+            b.looked_again,
+            if b.looked_again == 1 { "was" } else { "were" },
+        ));
+    }
+    let items: Vec<String> = b
+        .went_same
+        .iter()
+        .map(|w| {
+            let how = match &w.how {
+                sv_check::review::StillReads::LookAway { scanner } => {
+                    format!("a comment there now tells {scanner} to look away")
+                }
+                sv_check::review::StillReads::Unchanged => {
+                    "the line is unchanged, so the check stopped finding it for another reason, which the record \
+                     cannot tell"
+                        .to_owned()
+                }
+            };
+            format!(
+                "{} at {} line {} ({how})",
+                w.rule,
+                crate::markdown::code(&w.file),
+                w.line
+            )
+        })
+        .collect();
+    let n = b.went_same.len();
+    Some(format!(
+        "Look at {}: {n} finding{} no longer found at the last check while the line {} on still reads as it did, \
+         so changing the code did not make {} go: {}. Ask whoever changed it what was done, and why. A line rewritten \
+         to do the same thing is not caught by this, only one that reads the same.{none_past_limit}",
+        if n == 1 { "this" } else { "these" },
+        if n == 1 { " was" } else { "s were" },
+        if n == 1 { "it was" } else { "each was" },
+        if n == 1 { "it" } else { "them" },
+        items.join("; "),
+    ))
+}
 
 /// One paragraph saying what the record of the build loop shows, for the top of the report. `None`
 /// for a report that was not written into a report folder.
@@ -2703,6 +2807,10 @@ mod outranked_in_part_tests;
 #[cfg(test)]
 #[path = "sbom_not_made_tests.rs"]
 mod sbom_not_made_tests;
+
+#[cfg(test)]
+#[path = "went_same_tests.rs"]
+mod went_same_tests;
 
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
 /// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already, and for a note worth
@@ -3560,6 +3668,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         not_run_this_time: None,
         could_settle: Default::default(),
         plain: Default::default(),
+        paper: Default::default(),
     }
 }
 

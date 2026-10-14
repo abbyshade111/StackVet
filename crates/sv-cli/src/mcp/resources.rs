@@ -255,6 +255,7 @@ pub(super) fn report_file_description(name: &str) -> &'static str {
         "sbom.cdx.json" => {
             "The app's software bill of materials, every package it ships, in CycloneDX JSON."
         }
+        "report.pdf" => "The report as one PDF file, for a person to read or print.",
         _ => "The whole report, for a program to read.",
     }
 }

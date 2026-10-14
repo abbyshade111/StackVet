@@ -14,7 +14,7 @@
 
 use anyhow::{Context, Result};
 use serde_json::{Value, json};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::io::Write;
 use std::path::Path;
 use sv_report::{BuildLoop, LoopCounts};
@@ -47,6 +47,10 @@ pub struct Line {
     /// The check had more findings than `MAX_FINGERPRINTS`, so `fingerprints` holds only some, and
     /// no comparison is made from it.
     pub fingerprints_cut: bool,
+    /// At a check, for each fingerprint of a finding on a line of code: the rule that found it and a key for its file
+    /// (`sv_check::review::file_key`, a hash of the path, never the path), so a later report can look again at the line
+    /// of a finding that went (backlog 0401). Empty in a line written before it.
+    pub placed: BTreeMap<String, (String, String)>,
     /// Names `sv` itself defines that the call asked about (ADR-084, decision 3): a feature or
     /// topic from the tool's own list, a requirement id. Never a word the AI tool chose.
     pub asked: Vec<String>,
@@ -94,6 +98,46 @@ pub fn fingerprints_of<'a>(fingerprints: impl IntoIterator<Item = &'a str>) -> (
     let cut = all.len() > MAX_FINGERPRINTS;
     all.truncate(MAX_FINGERPRINTS);
     (all, cut)
+}
+
+/// For each of a check's findings on a line of code whose fingerprint `kept` holds: the rule that found it and a key
+/// for its file, as a line keeps them (backlog 0401).
+pub fn placed_of(
+    findings: &[sv_check::Finding],
+    kept: &[String],
+) -> BTreeMap<String, (String, String)> {
+    findings
+        .iter()
+        .filter(|f| {
+            f.fingerprint.starts_with(sv_check::review::FINGERPRINT_V2)
+                && f.location.is_file()
+                && is_rule(&f.rule_id)
+                && kept.binary_search(&f.fingerprint).is_ok()
+        })
+        .map(|f| {
+            (
+                f.fingerprint.clone(),
+                (
+                    f.rule_id.clone(),
+                    sv_check::review::file_key(&f.location.file),
+                ),
+            )
+        })
+        .collect()
+}
+
+/// Whether `s` is a rule's id as `sv` and the outside tools it runs name one (`config.debug-mode`, `bandit.B104`,
+/// `semgrep.python.lang.security.audit.x`): no spaces, and not too long.
+fn is_rule(s: &str) -> bool {
+    !s.is_empty()
+        && s.len() <= 160
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || "-_.:/".contains(c))
+}
+
+/// Whether `s` is a file's key as `sv_check::review::file_key` makes one.
+fn is_file_key(s: &str) -> bool {
+    s.len() == 16 && s.bytes().all(|b| b.is_ascii_hexdigit())
 }
 
 /// Whether `s` is a fingerprint as `sv` writes one (`882dedc677bff5a5`, `v2-61eb1668992f3990`):
@@ -147,6 +191,9 @@ impl Line {
         if self.fingerprints_cut {
             line["fingerprints_cut"] = json!(true);
         }
+        if !self.placed.is_empty() {
+            line["placed"] = json!(self.placed);
+        }
         if !self.asked.is_empty() {
             line["asked"] = json!(self.asked);
         }
@@ -191,6 +238,28 @@ impl Line {
                         .map(|f| f.as_str().filter(|f| is_fingerprint(f)).map(str::to_owned))
                         .collect::<Option<Vec<String>>>()?,
                 )
+            }
+        };
+        // A fingerprint placed that the line does not list, a rule that is not a name, or a key that is not sixteen hex
+        // characters makes the line one `sv` did not write.
+        let placed = match v.get("placed") {
+            None => BTreeMap::new(),
+            Some(map) => {
+                let map = map.as_object()?;
+                let listed = fingerprints.as_ref()?;
+                if map.len() > MAX_FINGERPRINTS {
+                    return None;
+                }
+                map.iter()
+                    .map(|(fp, pair)| {
+                        let pair = pair.as_array().filter(|p| p.len() == 2)?;
+                        let rule = pair[0].as_str().filter(|r| is_rule(r))?;
+                        let key = pair[1].as_str().filter(|k| is_file_key(k))?;
+                        listed
+                            .contains(fp)
+                            .then(|| (fp.clone(), (rule.to_owned(), key.to_owned())))
+                    })
+                    .collect::<Option<BTreeMap<_, _>>>()?
             }
         };
         // Names that are not ones `sv` writes make the line one it did not write.
@@ -257,6 +326,7 @@ impl Line {
             off: false,
             fingerprints,
             fingerprints_cut: v.get("fingerprints_cut") == Some(&Value::Bool(true)),
+            placed,
             asked,
             handed,
             handed_sizes,
@@ -545,6 +615,67 @@ pub fn settle(summary: &mut BuildLoop, set_aside: &[String]) {
     });
 }
 
+/// The most findings that went a report looks for again in the app's code (backlog 0401): each costs its file's
+/// length squared at worst.
+const MOST_LOOKED_AGAIN: usize = 50;
+
+/// Of the findings no longer found between the first check and the last, and not set aside as false alarms
+/// (`set_aside`), those whose line still reads in the app as it did when the first check found it: as written, or but
+/// for a comment that tells a scanner to look away (backlog 0401). A fix changes the line, so these went some other
+/// way, and the report names them. Only a finding the first check placed (`Line::placed`) can be looked for, and at
+/// most `MOST_LOOKED_AGAIN`; a line rewritten to do the same thing is not found, and the report says so.
+pub fn look_again(summary: &mut BuildLoop, app_dir: &Path, set_aside: &[String]) {
+    let (Some(first), Some(last)) = (&summary.first_fingerprints, &summary.last_fingerprints)
+    else {
+        return;
+    };
+    if summary.checks < 2 {
+        return;
+    }
+    let gone: Vec<(String, String, String)> = first
+        .iter()
+        .filter(|f| !last.contains(f) && !set_aside.contains(f))
+        .filter_map(|f| {
+            let (rule, key) = summary.first_placed.get(f)?;
+            Some((f.clone(), rule.clone(), key.clone()))
+        })
+        .collect();
+    if gone.is_empty() {
+        return;
+    }
+    let last: BTreeSet<String> = last.iter().cloned().collect();
+    let listing = sv_scan::files::Listing::of(app_dir);
+    let by_key: BTreeMap<String, String> = listing
+        .app_files()
+        .map(|e| (sv_check::review::file_key(&e.relative), e.relative.clone()))
+        .collect();
+    summary.looked_again = gone.len().min(MOST_LOOKED_AGAIN);
+    summary.not_looked_again = gone.len() - summary.looked_again;
+    for (fingerprint, rule, key) in gone.iter().take(MOST_LOOKED_AGAIN) {
+        let Some(file) = by_key.get(key) else {
+            continue;
+        };
+        let Some((line, how)) = sv_check::review::still_reads(app_dir, rule, file, fingerprint)
+        else {
+            continue;
+        };
+        // Still found on that line, under the fingerprint its words have now: it did not go, so it is not counted
+        // among those looked for either.
+        if sv_check::review::fingerprint_now(app_dir, rule, file, line)
+            .is_some_and(|now| last.contains(&now))
+        {
+            summary.looked_again -= 1;
+            continue;
+        }
+        summary.went_same.push(sv_report::WentSame {
+            rule: rule.clone(),
+            file: file.clone(),
+            line,
+            how,
+        });
+    }
+}
+
 /// The record's first `MAX_BYTES`, as bytes, since one byte that is not UTF-8 must cost one line
 /// and not the whole record. Cut at the limit, the line it cuts through is left out, not counted
 /// as unreadable: `sv` wrote it whole.
@@ -624,6 +755,7 @@ pub fn summarize(bytes: &[u8]) -> BuildLoop {
             let kept = line.fingerprints.clone().filter(|_| !line.fingerprints_cut);
             if summary.checks == 0 {
                 summary.first_fingerprints = kept.clone();
+                summary.first_placed = line.placed.clone();
             }
             summary.last_fingerprints = kept;
         }
@@ -656,6 +788,10 @@ mod tests;
 mod chain_tail_tests;
 #[cfg(test)]
 mod chain_tests;
+
+// Where each finding was, and the ones that went while their line still reads as it did (backlog 0401).
+#[cfg(test)]
+mod placed_tests;
 
 // The record kept apart from the report folder, and what a report says when it is gone (backlog 0404).
 #[cfg(test)]

@@ -10,12 +10,15 @@ If you have used a terminal or Docker before, [the guide](../GETTING-STARTED.md)
 **Tried so far:** in Antigravity, on a Mac, on 13 October 2026, with the Gemini 3.8 Flash model, from an empty folder
 to StackVet connected and a first build. That trial is where most of these words come from. The setup worked. In the
 build, though, the AI tool decided where the app runs and who signs in without asking, offered "done" for checks
-nobody had made, and made two security findings disappear without changing what the app does, which only the app's
-git history showed. The prompts were changed for each of these on 14 October 2026 (backlog 0407); until the changed
-prompts are tried there and do better, we don't recommend Antigravity with that model. Tests hold the prompts to the image name StackVet is published under, to the options `sv connect` takes,
-and to the Scoop commands that install it on Windows (`crates/sv-cli/tests/connect.rs`,
-`crates/sv-cli/tests/setup_prompts.rs`). If anything here goes wrong, the guide has the same steps as commands. The
-website names only the AI tools these prompts have really been tried in.
+nobody had made, and made two security findings disappear without changing what the app does, which only the app's git
+history showed. The prompts were changed for each of these on 14 October 2026 (backlog 0407); until the changed
+prompts are tried there and do better, we don't recommend Antigravity with that model. Tests hold the prompts to the
+image name StackVet is published under, to the options `sv connect` takes, and to the Scoop commands that install it
+on Windows (`crates/sv-cli/tests/connect.rs`, `crates/sv-cli/tests/setup_prompts.rs`). If anything here goes wrong,
+the guide has the same steps as commands. The website names only the AI tools these prompts have really been tried in.
+
+**Next:** the owner tries these prompts in Antigravity, Cursor, and VS Code (backlog 0502). Until then, none of
+the three is named here as tried.
 
 ## Before the first prompt: an AI tool that can run commands
 
@@ -147,8 +150,9 @@ Use the version for your computer.
 ### On Windows
 
 On Windows, StackVet is installed on the computer itself, with Scoop, rather than run in Docker. Nothing is built,
-and the checks that read your app's code need no Docker at all. (Docker Desktop is needed later only for the checks
-that start your app.)
+and the checks that read your app's code need no Docker at all. The checks that start your app (`sv report --run`)
+have not been tried on a Windows computer, even with Docker Desktop running: without them, the report says which
+requirements only they reach, and a Mac or Linux computer, or a cloud runner, is the known way to run them.
 
 <!-- setup-windows:start -->
 > Please set up StackVet in this folder so you can use its tools while we build. On Windows it is installed with
@@ -183,6 +187,9 @@ that start your app.)
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
 >    which settings file you wrote, since a new chat may not remember it.
+> 11. Tell me that on Windows, StackVet's checks that start the app (`stackvet report --run`) have not been tried
+>    yet: the checks that read the code work here, and the report will say what the others would have reached. Don't
+>    promise me the full report on this computer.
 <!-- setup-windows:end -->
 
 ## 4. Check that it's connected
@@ -262,7 +269,8 @@ What happens next:
 ## 6. Make the full report
 
 The report your AI tool writes through StackVet's tools reads your code. The full report also starts your app in a
-container of its own, with no internet, signs in as test users and tries things against it, and runs the security
+container of its own, with no internet, tries things against it (signed in as test users too, when `stackvet.toml`
+names them), and runs the security
 tools each language already has, such as Semgrep and Bandit. It is made at the terminal, by StackVet installed on your
 computer itself; your AI tool can walk you through it. Paste this into the same chat, in your app's folder:
 
@@ -284,8 +292,11 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    you starts the new one.
 > 4. In this folder, run `sv doctor` (`stackvet doctor` in PowerShell) and tell me in plain words what is ready for the
 >    full report and what is not.
-> 5. Ask me, then run `sv report . --run` here (`stackvet report . --run` in PowerShell). It starts the app in a
->    container with no internet, signs in as test users and tries things against it, and runs the security tools that
+> 5. On Windows, tell me first that this step has not been tried on a Windows computer, and that a Mac or Linux
+>    computer is the known way to run it. Ask me, then run `sv report . --run` here (`stackvet report . --run` in
+>    PowerShell). It starts the app in a
+>    container with no internet, tries things against it (signed in as test users too, when stackvet.toml names
+>    them), and runs the security tools that
 >    are installed; Semgrep downloads its rules from semgrep.dev as it runs. It takes several minutes. It needs Docker:
 >    if your own commands are kept from Docker, say so and ask me to allow it, or tell me the command to type myself.
 >    Never give StackVet's container access to Docker, and never run commands inside a container.
@@ -300,7 +311,8 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 **Your answers count as yours only once you record them yourself.** The report shows the answers your AI tool wrote
 as the tool's word, even when it was writing down what you said, until you record them with `sv review` in your app's
 folder (`stackvet review` in PowerShell). It asks your name, shows each answer, and signs the ones you confirm with a
-key of your own, protected by a passphrase you choose, so your AI tool cannot run it for you. Your AI tool can still
+key of your own, which you can protect with a passphrase. It runs only in a terminal you type in, so your AI tool
+cannot run it for you. Your AI tool can still
 walk you to it. Not yet tried in any AI tool. Paste this into the same chat, in your app's folder:
 
 <!-- setup-step-7:start -->

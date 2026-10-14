@@ -15,8 +15,8 @@ pub struct FolderFile {
     pub for_whom: &'static str,
 }
 
-/// The eight files, in the order they are written.
-pub const FILES: [FolderFile; 8] = [
+/// The nine files, in the order they are written.
+pub const FILES: [FolderFile; 9] = [
     FolderFile {
         name: "report.html",
         holds: "The whole report on one page: what to fix first, what was not examined, and every requirement that \
@@ -59,6 +59,14 @@ pub const FILES: [FolderFile; 8] = [
         name: crate::SBOM_FILE,
         holds: "The app's bill of materials, every package it uses with its version, as CycloneDX JSON",
         for_whom: "Tools that read a bill of materials",
+    },
+    // Written by sv itself (ADR-116).
+    FolderFile {
+        name: crate::pdf::FILE,
+        holds: "The whole report as one file to read, print, or send: compliance.md's order, with each finding in \
+                full. US Letter paper unless stackvet.toml's report-paper setting asks for A4; its fonts show Western \
+                European letters only, so report.html is the complete version",
+        for_whom: "You, or whoever you hand it to",
     },
 ];
 

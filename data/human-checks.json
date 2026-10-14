@@ -27,6 +27,11 @@
       "how": "Take each limit from your security notes — so many of something per person, so many per day — and try to go past it in the app. Try it slowly and then quickly, and from two accounts at once if the limit is meant to be global."
     },
     {
+      "id": "V2.2.3",
+      "title": "Details that belong together are refused when they do not fit",
+      "how": "`sv` does not check this: which details must fit together is a rule of your own business, such as a return date after the departure date, a child's ticket only for a child's age, or a delivery only to a country you ship to, and nothing in the code says which rules were meant. Write down each pair or group of details in your app that must agree, and the rule for each. Then try to save a combination that breaks each rule, once through the form and once with a value changed in the browser before it is sent (right-click, Inspect, and edit the field), and check that the app refuses it and keeps nothing."
+    },
+    {
       "id": "V2.3.4",
       "title": "Two people cannot book the same thing",
       "how": "Only where something is limited in number: a seat, a slot, the last item in stock. Open the app in two browsers, get both to the moment of booking the same one, and confirm both as close together as you can. Exactly one should succeed."
@@ -75,6 +80,11 @@
       "id": "V13.4.5",
       "title": "Nothing internal is reachable from outside",
       "how": "From a browser that is not signed in, and ideally not on your network, try the addresses that exist for you rather than for visitors: /docs, /swagger, /metrics, /health, /debug, /admin, /.git. Each should either refuse or not exist."
+    },
+    {
+      "id": "V13.2.5",
+      "title": "The server can reach only the places you listed",
+      "how": "`sv` does not check this: which places the server may send requests to, or load data or files from, is usually set where the app is hosted (a firewall rule, an outbound proxy, or the host's network settings), not in the app's code, and `sv` reads no host's settings. Write down every outside service the app calls, such as payments, email, an AI service, or file storage, and every place it loads data or files from. Then open your host's network or firewall settings and check that outgoing connections are allowed only to those and refused everywhere else. If nothing there limits them, write that down: it is the answer, and the requirement is not met yet."
     },
     {
       "id": "V14.1.1",

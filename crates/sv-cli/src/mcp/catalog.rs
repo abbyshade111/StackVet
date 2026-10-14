@@ -35,6 +35,21 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
         json!({ "fingerprint": string, "ruleId": string, "file": string, "line": count }),
         &["fingerprint", "ruleId", "file", "line"],
     );
+    // One gone since, and whether its line still reads as it did (backlog 0401).
+    let gone = object(
+        json!({
+            "fingerprint": string, "ruleId": string, "file": string, "line": count,
+            "stillReads": object(
+                json!({
+                    "line": count,
+                    "how": { "type": "string", "enum": ["unchanged", "look-away"] },
+                    "scanner": string,
+                }),
+                &["line", "how"],
+            ),
+        }),
+        &["fingerprint", "ruleId", "file", "line"],
+    );
     let finding = object(
         json!({
             "rule_id": string, "title": string,
@@ -184,7 +199,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                 // Asked for with no section, the findings given before in this session and still
                 // found, and those gone since, named a line each (backlog 0336).
                 "unchanged": { "type": "array", "items": shown.clone() },
-                "gone": { "type": "array", "items": shown },
+                "gone": { "type": "array", "items": gone },
                 "since": string,
             }),
             // The lists are left out of a part that holds none of them (`crate::parts`).
@@ -601,7 +616,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_write_report",
             "title": "Write the full report",
-            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, low-findings.md (every low-severity finding in full), stackvet.sarif (the findings, for code-scanning tools), report.json, seen.json (what the running app answered, credentials cut out) and sbom.cdx.json (the bill of materials). Same checks as stackvet_check.",
+            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, low-findings.md (every low-severity finding in full), stackvet.sarif (the findings, for code-scanning tools), report.json, seen.json (what the running app answered, credentials cut out), sbom.cdx.json (the bill of materials) and report.pdf (the report as one file for the person to print or send). Same checks as stackvet_check.",
             "inputSchema": {
                 "type": "object",
                 "properties": {

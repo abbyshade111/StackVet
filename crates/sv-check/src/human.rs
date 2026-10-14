@@ -92,7 +92,7 @@ impl Item {
 }
 
 /// What a question shows of the app's code, and the sentence that says what it is.
-pub const POINTERS_SAY: &str = "These are where to look, not evidence: StackVet found them by their names and did not read what they do.";
+pub const POINTERS_SAY: &str = "These are where to look, not evidence: StackVet found them by their names or their shape (a 403 sent, a query by owner) and did not read what they do.";
 
 /// The most places one question shows; the rest are counted.
 pub const MOST_POINTERS: usize = 3;

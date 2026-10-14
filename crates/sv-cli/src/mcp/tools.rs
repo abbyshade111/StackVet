@@ -78,13 +78,18 @@ impl Server {
                         .lock()
                         .unwrap_or_else(std::sync::PoisonError::into_inner) =
                         Some(sv_report::LoopCounts::of(report));
+                    let kept = crate::build_loop::fingerprints_of(
+                        report.findings.iter().map(|f| f.fingerprint.as_str()),
+                    );
+                    *self
+                        .last_placed
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner) =
+                        crate::build_loop::placed_of(&report.findings, &kept.0);
                     *self
                         .last_fingerprints
                         .lock()
-                        .unwrap_or_else(std::sync::PoisonError::into_inner) =
-                        Some(crate::build_loop::fingerprints_of(
-                            report.findings.iter().map(|f| f.fingerprint.as_str()),
-                        ));
+                        .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(kept);
                 }
                 report
             }
@@ -172,7 +177,7 @@ impl Server {
                 );
         };
         if let Some(seen) = seen.filter(|_| counted) {
-            let delta = Delta::of(&report, &seen);
+            let delta = Delta::of(&report, &seen, &app_dir);
             let text = sv_report::fence::fenced(|fence| {
                 summary_since(&report, fence, false, Some(&delta))
             });
@@ -283,6 +288,7 @@ impl Server {
             in_container: std::env::var_os(super::IN_CONTAINER).is_some()
                 || crate::connect::in_a_container(),
             backend: &backend,
+            windows: cfg!(windows),
         };
         let lines = crate::doctor::answers(&app_dir, &asked);
         let shown = args.get("path").and_then(Value::as_str).unwrap_or(".");
