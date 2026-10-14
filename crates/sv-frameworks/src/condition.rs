@@ -162,6 +162,12 @@ conditions! {
         "Does the app have infrastructure or pipeline configuration (Terraform, CloudFormation, CI workflows)?";
     OutOfBandAuth => "out-of-band-auth", Claim, "This app does not send sign-in codes by phone, SMS or push notification.",
         "Does the app send sign-in codes by phone, SMS, or push notification?";
+    // V6.6.2 (codes bound to the request that asked for them) speaks to an emailed code too, and `sv`
+    // checks one against it from an `email-code` entry; V6.6.1 is about phone and SMS only. So V6.6.2
+    // is gated on its own answer: `out-of-band-auth`, or an `email-code` entry under
+    // `[stack.run.users]` (backlog 0468; ADR-015, Later, 14 October 2026).
+    OutOfBandOrEmailCode => "out-of-band-or-email-code", Claim, "This app does not send sign-in codes by phone, SMS, push notification, or email.",
+        "Does the app send sign-in codes by phone, SMS, push notification, or email?";
     MultiAgent => "multi-agent", Claim, "There is a single assistant, not several AI agents that must identify each other.",
         "Are there several AI agents that must identify each other, rather than a single assistant?";
     MultimodalAi => "multimodal-ai", Claim, "The assistant accepts typed text only; it does not take images, video or audio.",

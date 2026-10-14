@@ -1873,6 +1873,20 @@ impl Manifest {
             (Some(false), _) => Some(false),
             (_, stated) => stated,
         };
+        // An emailed sign-in code is one of V6.6.2's codes, whatever `out-of-band-auth` (phone, SMS,
+        // or push) says, so an `email-code` entry is a yes for it. Without one, the owner's own
+        // answer stands, silence included (backlog 0468).
+        let email_code = self
+            .stack
+            .run
+            .users
+            .as_ref()
+            .is_some_and(|u| u.email_code.is_some());
+        let out_of_band_or_email_code = if email_code {
+            Some(true)
+        } else {
+            c.out_of_band_auth
+        };
         vec![
             (Condition::Auth, c.auth),
             (Condition::Oauth, c.oauth),
@@ -1911,6 +1925,7 @@ impl Manifest {
             (Condition::MultiAgent, about_ai(c.ai.multi_agent)),
             (Condition::MultimodalAi, about_ai(c.ai.multimodal)),
             (Condition::OutOfBandAuth, c.out_of_band_auth),
+            (Condition::OutOfBandOrEmailCode, out_of_band_or_email_code),
             (Condition::SharedHostname, c.shared_hostname),
             (Condition::CiCd, self.repository.ci_cd),
             (Condition::HostedScm, self.repository.hosted_scm),
@@ -1972,7 +1987,12 @@ pub fn resolve(
     let mut resolved = Vec::new();
 
     for (condition, claimed) in manifest.claims() {
-        let found_in_code = corroboration(condition);
+        // A phone, SMS, or push provider in the code is a yes for V6.6.2's condition as it is for
+        // V6.6.1's, so the one is corroborated by what corroborates the other (backlog 0468).
+        let found_in_code = corroboration(match condition {
+            Condition::OutOfBandOrEmailCode => Condition::OutOfBandAuth,
+            other => other,
+        });
         let effective = match (claimed, found_in_code) {
             // Either saying yes is a yes. Corroboration only ever adds requirements.
             (Some(true), _) | (_, Some(true)) => Some(true),
@@ -3014,3 +3034,6 @@ pub fn locate_or_bail(app_dir: &Path) -> Result<Located> {
 
 #[cfg(test)]
 mod account_changes_tests;
+
+#[cfg(test)]
+mod email_code_condition_tests;
