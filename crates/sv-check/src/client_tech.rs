@@ -214,7 +214,7 @@ pub fn check(listing: &Listing, sbom: &Sbom, report: &mut ConfigReport) {
         let Ok(text) = entry.read_text() else {
             continue;
         };
-        let line_of = |at: usize| text[..at].matches('\n').count() + 1;
+        let line_of = |at: usize| sv_scan::text::line_of(&text, at);
         for (pattern, what) in PLUG_INS.iter() {
             if let Some(found) = pattern.find(&text) {
                 report.findings.push(plug_in_finding(

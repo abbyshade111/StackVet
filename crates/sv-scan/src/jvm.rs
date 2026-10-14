@@ -110,10 +110,6 @@ fn blank(text: &str, re: &Regex) -> String {
     out
 }
 
-fn line_at(text: &str, byte: usize) -> usize {
-    text[..byte].matches('\n').count() + 1
-}
-
 fn re(pattern: &str) -> Regex {
     Regex::new(pattern).expect("a valid pattern")
 }
@@ -281,7 +277,7 @@ pub fn read_pom(app_dir: &Path, manifest: &str) -> Option<Reading> {
         );
         match tag(block, "version") {
             Some((v, at)) => {
-                let line = line_at(&text, p.start() + at);
+                let line = crate::text::line_of(&text, p.start() + at);
                 if let Some(resolved) = resolve_pom(v, &props) {
                     judge(&mut reading, (manifest, line), name, resolved, v, false);
                 } else {
@@ -290,7 +286,7 @@ pub fn read_pom(app_dir: &Path, manifest: &str) -> Option<Reading> {
             }
             None => reading.unsettled.push(VersionAt {
                 manifest: manifest.to_owned(),
-                line: line_at(&text, p.start()),
+                line: crate::text::line_of(&text, p.start()),
                 dependency: name,
                 version: String::new(),
                 why: "the parent section names no version".to_owned(),
@@ -322,7 +318,7 @@ pub fn read_pom(app_dir: &Path, manifest: &str) -> Option<Reading> {
         );
         match tag(block, "version") {
             Some((v, at)) => {
-                let line = line_at(&body, whole.start() + at);
+                let line = crate::text::line_of(&body, whole.start() + at);
                 match resolve_pom(v, &props) {
                     Some(resolved) => {
                         judge(&mut reading, (manifest, line), name, resolved, v, false)
@@ -335,7 +331,7 @@ pub fn read_pom(app_dir: &Path, manifest: &str) -> Option<Reading> {
             None if managed.contains(&name) || boms || parent.is_some() => reading.exact += 1,
             None => reading.unsettled.push(VersionAt {
                 manifest: manifest.to_owned(),
-                line: line_at(&body, whole.start()),
+                line: crate::text::line_of(&body, whole.start()),
                 dependency: name,
                 version: String::new(),
                 why: "no version, and nothing in this file or a parent says which".to_owned(),
