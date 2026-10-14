@@ -370,9 +370,9 @@
     },
     {
       "scope": "V6.6.2",
-      "condition": "out-of-band-auth",
+      "condition": "out-of-band-or-email-code",
       "source": "claim",
-      "notApplicableReason": "This app does not use out-of-band sign-in codes sent by phone, SMS or push notification."
+      "notApplicableReason": "This app does not send sign-in codes by phone, SMS, push notification, or email."
     },
     {
       "scope": "V6.8",
