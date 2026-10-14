@@ -19,6 +19,7 @@
 use crate::advisories::Day;
 use crate::finding::Finding;
 use crate::seal::{Checker, Sealed};
+use serde::Serialize;
 use std::path::Path;
 use sv_manifest::FindingReview;
 
@@ -288,6 +289,91 @@ impl<'a> Texts<'a> {
             .unwrap_or_else(|| format!("line {n}"));
         named(rule, &f.location.file, &what)
     }
+}
+
+/// A short key for a file's path, as the record of the build loop keeps it beside a fingerprint (backlog 0401): sixteen
+/// hex characters of SHA-256, so the record holds a hash of the path, never the path, as it holds a hash of the line.
+pub fn file_key(file: &str) -> String {
+    use sha2::{Digest, Sha256};
+    let digest = Sha256::digest(format!("file\n{file}").as_bytes());
+    digest.iter().take(8).map(|b| format!("{b:02x}")).collect()
+}
+
+/// How a line a finding was on, no longer found, still reads in the app now (backlog 0401).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case", tag = "how")]
+pub enum StillReads {
+    /// The line reads as it did, and nothing above it that sets a name it uses has changed.
+    Unchanged,
+    /// The line reads as it did once a comment that tells `scanner` to look away is taken off it, or one sits on the
+    /// line above it.
+    LookAway { scanner: String },
+}
+
+/// The line of `file` the fingerprint `fingerprint` named under `rule`, when it still reads as it did when it was
+/// found: its number, and how. `None` when no line does: the line was changed or removed, or the file is gone, or the
+/// fingerprint is in the form used before 5 October 2026, which this does not read. A line rewritten to do the same
+/// thing (`"0.0.0.0"` to `""`) is not found by this: only one that reads the same.
+///
+/// The file's lines are read masked, as every fingerprint is made (`Texts::lines`), and the fingerprint of each is made
+/// as a finding's is: the search costs the file's length squared at worst, so the caller keeps it to the few findings
+/// that went.
+pub fn still_reads(
+    app_dir: &Path,
+    rule: &str,
+    file: &str,
+    fingerprint: &str,
+) -> Option<(usize, StillReads)> {
+    if !fingerprint.starts_with(FINGERPRINT_V2) {
+        return None;
+    }
+    let mut texts = Texts::new(app_dir);
+    let lines = texts.lines(file)?.to_vec();
+    let extension = file
+        .rsplit_once('.')
+        .map(|(_, e)| e.to_ascii_lowercase())
+        .unwrap_or_default();
+    let scanner_on = |i: usize| crate::look_away::on_line(&lines[i], &extension).map(|(s, _)| s);
+    for i in 0..lines.len() {
+        if line_fingerprint(rule, file, &lines, i) == fingerprint {
+            let how = match scanner_on(i).or_else(|| i.checked_sub(1).and_then(scanner_on)) {
+                Some(scanner) => StillReads::LookAway {
+                    scanner: scanner.to_owned(),
+                },
+                None => StillReads::Unchanged,
+            };
+            return Some((i + 1, how));
+        }
+    }
+    for i in 0..lines.len() {
+        let (Some(scanner), Some(before)) = (
+            scanner_on(i),
+            crate::look_away::without_comment(&lines[i], &extension),
+        ) else {
+            continue;
+        };
+        let mut as_it_was = lines.clone();
+        as_it_was[i] = before;
+        if line_fingerprint(rule, file, &as_it_was, i) == fingerprint {
+            return Some((
+                i + 1,
+                StillReads::LookAway {
+                    scanner: scanner.to_owned(),
+                },
+            ));
+        }
+    }
+    None
+}
+
+/// The fingerprint a finding of `rule` on line `line` (from 1) of `file` has in the app's code as it reads now; `None`
+/// when the file cannot be read or has no such line. A finding that went by its fingerprint but is found again on the
+/// same line, whose words changed only by a comment, did not go (backlog 0401).
+pub fn fingerprint_now(app_dir: &Path, rule: &str, file: &str, line: usize) -> Option<String> {
+    let mut texts = Texts::new(app_dir);
+    let lines = texts.lines(file)?;
+    let index = line.checked_sub(1).filter(|&i| i < lines.len())?;
+    Some(line_fingerprint(rule, file, lines, index))
 }
 
 /// The lines of `file` an entry's fingerprint names, as their numbers and their text with spaces
@@ -708,6 +794,10 @@ pub const AGREE: &str = "If you agree after reading the code, run `sv review` in
 #[cfg(test)]
 #[path = "review_counts_tests.rs"]
 mod counts_tests;
+
+#[cfg(test)]
+#[path = "review_still_reads_tests.rs"]
+mod still_reads_tests;
 
 #[cfg(test)]
 mod tests {

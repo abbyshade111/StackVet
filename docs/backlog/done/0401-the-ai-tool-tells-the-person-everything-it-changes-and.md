@@ -1,6 +1,6 @@
 # The AI tool tells the person everything it changes, and StackVet shows what changed between checks
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -45,3 +45,15 @@ outside the app's folder, or what it told the person.
   changed on their lines. A finding gone while its line still does the same thing is the case to make loud. The record
   of the build loop already keeps each check's findings' fingerprints (ADR-084), which such a comparison would start
   from.
+
+**Done, 14 October 2026 (the remainder):** StackVet now compares the first check of the build loop with the last and
+names each finding that went while its line still reads as it did. Each check line of the record keeps, beside each
+fingerprint, the finding's rule and a hash of its file (never its name or its words); when the report is written, each
+finding that went (at most 50) is looked for again in today's code by its fingerprint, as written and with a comment
+that tells a scanner to look away taken off. Those found are named at the top of compliance.md, security.md, and
+report.html, with their rule, file, and line and whether a look-away comment is there now, and the person is told to
+ask whoever changed it what was done. A check asked for again through the MCP server does the same for the findings
+in its GONE list, and tells the AI tool to tell the person. A finding `sv` still finds on its line, under the new
+fingerprint a comment there gives it, did not go and is not named. What it cannot see, and says: a line rewritten to
+do the same thing (`"0.0.0.0"` to `""`, as in the trial), a file deleted or renamed, and a setting changed in
+`stackvet.toml` are not told apart from a fix. ADR-084, ADR-076, and ADR-066, each "Later, 14 October 2026".
