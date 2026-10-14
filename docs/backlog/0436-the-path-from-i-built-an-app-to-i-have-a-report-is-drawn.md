@@ -1,6 +1,6 @@
 # The path from "I built an app" to "I have a report" is drawn nowhere a person reads, though the paper's figure already draws it
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

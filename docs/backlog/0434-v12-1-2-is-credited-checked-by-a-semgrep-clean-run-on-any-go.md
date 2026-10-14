@@ -1,6 +1,6 @@
 # V12.1.2 is credited *checked* by a Semgrep clean run on any Go or Python app, while the hand check beside it says sv does not check it
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

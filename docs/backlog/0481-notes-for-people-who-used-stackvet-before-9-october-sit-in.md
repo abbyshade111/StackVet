@@ -1,6 +1,6 @@
 # Notes for people who used StackVet before 9 October sit in the first-time reader's path
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

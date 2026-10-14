@@ -1,6 +1,6 @@
 # `probe.plain-http-served` credits V12.2.1 whole when port 80 refuses the connection and in part when it redirects
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

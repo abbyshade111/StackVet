@@ -1,6 +1,6 @@
 # ADR-096's whole credit needs only one named route, and the credit's evidence does not name the route answers it rests on
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
