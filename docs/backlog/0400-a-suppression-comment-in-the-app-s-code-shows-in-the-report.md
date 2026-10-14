@@ -31,3 +31,12 @@ line, so a person sees that something tried to silence a scanner even when Stack
 adding them is worth knowing about); and whether any tool StackVet runs (CodeQL's `lgtm`, Opengrep) hides a suppressed
 result in a way not yet covered. Check each before building, with a fixture.
 
+
+**Checked 14 October 2026 (session documentation), waiting on the owner.** Of the tools `sv` runs, Bandit (run with
+`--ignore-nosec`), gosec (`-track-suppressions`), Semgrep (`// nosemgrep`), and Brakeman (`config/brakeman.ignore`) each
+report a suppressed result, and `suppressed_by` shows it marked as such; `crates/sv-check/tests/suppressed.rs` holds each
+against a real report kept in `crates/sv-check/tests/fixtures/suppressed/`. Opengrep is not among the tools `sv` runs
+(`data/adapters.json`). CodeQL was not checked: no `codeql` is installed in the session's container, and its
+security-extended suites, as `sv` runs them, are not known here to include the alert-suppression query that reads
+`lgtm` and `codeql[...]` comments; a real run over a fixture is still owed. Whether the report lists the suppression
+comments themselves is the owner's question, in `docs/coordination/waiting/0400.md`.
