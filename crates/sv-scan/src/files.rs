@@ -308,14 +308,11 @@ impl Entry {
                 Err(_) => return Err(Unread::NotText),
             };
             let text = std::str::from_utf8(&buf[..valid]).expect("checked above");
-            let mut keep_to = if at_end {
+            let keep_to = text.floor_char_boundary(if at_end {
                 text.len()
             } else {
                 text.len().saturating_sub(overlap).max(carried)
-            };
-            while !text.is_char_boundary(keep_to) {
-                keep_to -= 1;
-            }
+            });
             each(Piece {
                 text,
                 first_line,
@@ -328,10 +325,7 @@ impl Entry {
             // owned once. Its text starts `overlap` earlier: look-behind, so a pattern that asks what
             // comes before a match (a word boundary) sees the same character it would in the whole
             // file. The bytes after `keep_to` in this piece were its look-ahead.
-            let mut cut = keep_to.saturating_sub(overlap);
-            while !text.is_char_boundary(cut) {
-                cut -= 1;
-            }
+            let cut = text.floor_char_boundary(keep_to.saturating_sub(overlap));
             first_line += text[..cut].bytes().filter(|b| *b == b'\n').count();
             carried = keep_to - cut;
             buf.drain(..cut);

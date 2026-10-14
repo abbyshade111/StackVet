@@ -3301,28 +3301,19 @@ fn kept_body(body: &str) -> String {
     let mark = sv_check::probes::REFLECTION_MARK;
     // Searched from a little before the cut, so a value that starts inside the kept part and runs
     // past it is kept whole.
-    let mut search = from.saturating_sub(mark.len() + AROUND_ECHO);
-    while !body.is_char_boundary(search) {
-        search += 1;
-    }
+    let search = body.ceil_char_boundary(from.saturating_sub(mark.len() + AROUND_ECHO));
     let mut after = from;
     for (at, _) in body[search..].match_indices(mark).take(MOST_ECHOES) {
         let at = search + at;
         if at + mark.len() + AROUND_ECHO <= from {
             continue;
         }
-        let mut start = if at < after {
+        let start = body.ceil_char_boundary(if at < after {
             at
         } else {
             at.saturating_sub(AROUND_ECHO).max(after)
-        };
-        while !body.is_char_boundary(start) {
-            start += 1;
-        }
-        let mut end = (at + mark.len() + AROUND_ECHO).min(body.len());
-        while !body.is_char_boundary(end) {
-            end -= 1;
-        }
+        });
+        let end = body.floor_char_boundary(at + mark.len() + AROUND_ECHO);
         kept.push_str("\n[…]\n");
         kept.push_str(&body[start..end]);
         after = end;
@@ -3334,14 +3325,8 @@ fn kept_body(body: &str) -> String {
         if at + marker.len() <= from {
             continue;
         }
-        let mut start = at.saturating_sub(AROUND_ECHO);
-        while !body.is_char_boundary(start) {
-            start += 1;
-        }
-        let mut end = (at + marker.len() + AROUND_ECHO).min(body.len());
-        while !body.is_char_boundary(end) {
-            end -= 1;
-        }
+        let start = body.ceil_char_boundary(at.saturating_sub(AROUND_ECHO));
+        let end = body.floor_char_boundary(at + marker.len() + AROUND_ECHO);
         kept.push_str("\n[…]\n");
         kept.push_str(&body[start..end]);
     }
