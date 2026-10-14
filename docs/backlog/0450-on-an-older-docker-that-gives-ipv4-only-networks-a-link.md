@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: the last 48 hours' code, `sv-run`, `sv-report`, `sv-scan`. Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-run/src/docker.rs:3085-3100`: any `sv-inet6=` line but loopback returns `GatewayVerdict::Unknown("the fenced network has IPv6 (...), though sv asked Docker for none: the daemon gives new networks IPv6 by default. Turn that off (remove `com.docker.network.enable_ipv6` from `default-network-opts` in Docker's daemon.json, and restart Docker), then run again")`; `knock_script` at `:2920-2930` lists every `inet6` address, `fe80::` included (by design, 0410).

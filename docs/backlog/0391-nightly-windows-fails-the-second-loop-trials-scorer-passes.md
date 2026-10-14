@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Recorded by the nightly CI routine on 13 October 2026. The Windows workflow failed on 16 pushes to `main` between
 22:41 UTC on 12 October and 00:18 UTC on 13 October on one test, `the_second_loop_trials_scorer_passes_its_self_test`
 (`crates/sv-check/tests/loop_measures.rs`, line 39), with totals such as 3115 passed and 1 failed. Rust and CodeQL

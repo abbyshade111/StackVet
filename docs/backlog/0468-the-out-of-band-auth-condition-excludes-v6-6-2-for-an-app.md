@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: requirements and tests (citations). Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `data/applicability-v2.json:372-376` (`"scope": "V6.6.2", "condition": "out-of-band-auth", "source": "claim"`,

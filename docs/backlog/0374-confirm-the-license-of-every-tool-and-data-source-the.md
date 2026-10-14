@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Before stackvet.dev goes live (backlog 0224, `docs/website/home-page.md`, "Credits"). The repository records two
 licenses: the Semgrep Rules License, with the owner's condition that nothing built on it is sold (ADR-018), and FIRST's
 CVSS calculator, BSD-2-Clause (ADR-033). The rest are to be read from each one's own source and written beside its

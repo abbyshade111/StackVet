@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Recorded by the nightly CI routine on 13 October 2026. Two tests in `crates/sv-run/src/lib.rs` that stop a command
 which runs too long failed on Windows now and then, on pushes to `main` where everything else passed or only an
 unrelated test failed. Neither failed the night before. The two are recorded together because they share the code

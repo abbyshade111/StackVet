@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the second loop trial (backlog 0257, `docs/prompts/loop-2/results.md`), 13 October 2026.
 
 With no `signup` in `stackvet.toml`, the wrong-password check tries its wrong passwords against "a user name no account

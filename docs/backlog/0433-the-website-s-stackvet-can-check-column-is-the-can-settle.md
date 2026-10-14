@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: coverage accuracy. Severity: medium. Verified against the code by the reviewing session before filing. Sibling of the in-part census item from the requirements review: once that gate runs, the "can be credited" count itself moves, so choose the column after it.
 
 - Where: `docs/website/home-page.md:108-111` (the table: "ASVS 5.0, levels 1 and 2 | 253 | 153", "AISVS 1.0 | 191 |

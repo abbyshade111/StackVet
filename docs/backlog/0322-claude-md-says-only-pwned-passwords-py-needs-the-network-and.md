@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Was queued on the coordination board** (`docs/coordination/board.md`, backlog 0273), which closed on 13 October 2026 when the trial ended; it is taken the normal way since, from the roadmap, with any hold below still standing. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: low. Verified against the code by the reviewing session before filing.
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: low. Verified against the code by the reviewing session before filing.
 
 **What is wrong.** The guide's sentence is incomplete, and a wrong CVSS checkout silently produces different tables with a different commit written in the header.
 

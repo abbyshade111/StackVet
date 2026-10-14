@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Was queued on the coordination board** (`docs/coordination/board.md`, backlog 0273), which closed on 13 October 2026 when the trial ended; it is taken the normal way since, from the roadmap, with any hold below still standing. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: medium. Verified against the code by the reviewing session before filing.
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: medium. Verified against the code by the reviewing session before filing.
 
 **What is wrong.** This is GitHub's standard limit, not a bug in the scripts, which fail closed (`record_numbers.py:109-129` lets any HTTP error propagate; a missing token is a failure; `adr_check.py` reads the description from the event file and re-runs on `edited`). A pull request that edits `ci_scope.py` to print `false`, or `adr_check.py` to print "nothing owed" and exit 0, reports green; a session with auto-merge on merges it; `main`'s own run (ADR-051) finds it afterwards.
 

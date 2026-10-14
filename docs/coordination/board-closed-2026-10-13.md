@@ -1,0 +1,322 @@
+# The coordination board
+
+Written only by the orchestrator, with `python3 tools/coordination.py`; the role is `docs/COORDINATION.md` (backlog
+0273; ADR-061, Later). A building session reads this file and takes the item named beside its name, and nothing else:
+a claim is still the record (`tools/backlog.py`), and this board only says who takes what, in which order, and why.
+
+**Closed** 2026-10-13: the trial of 12 to 13 October 2026 ended on 13 October; its queue goes back to the roadmap, and the burst after the deep review (0417) gets a board of its own. Kept as a record; `open --by <session>` starts a new board and keeps this one beside it.
+
+## Sessions
+
+(none yet: `session add <name> --arm full|none`)
+
+## Queue
+
+(empty)
+
+## Log
+
+- 2026-10-12 13:41 — opened by stackvet-orchestrator
+- 2026-10-12 13:41 — session builder-full added, arm full
+- 2026-10-12 13:41 — session builder-none added, arm none
+- 2026-10-12 13:41 — queued 0263
+- 2026-10-12 14:49 — queued 0278
+- 2026-10-12 14:49 — queued 0279
+- 2026-10-12 14:49 — queued 0280
+- 2026-10-12 14:49 — queued 0281
+- 2026-10-12 14:49 — queued 0282
+- 2026-10-12 14:49 — queued 0283
+- 2026-10-12 14:49 — queued 0284
+- 2026-10-12 14:49 — queued 0285
+- 2026-10-12 14:49 — queued 0286
+- 2026-10-12 14:49 — queued 0287
+- 2026-10-12 14:49 — queued 0288
+- 2026-10-12 14:49 — queued 0289, on hold: the owner's decision first; see the item
+- 2026-10-12 14:49 — queued 0290, on hold: the owner's decision first; see the item
+- 2026-10-12 14:49 — queued 0291
+- 2026-10-12 14:49 — queued 0292
+- 2026-10-12 14:49 — queued 0293
+- 2026-10-12 14:49 — queued 0294
+- 2026-10-12 14:49 — queued 0295
+- 2026-10-12 14:49 — queued 0296
+- 2026-10-12 14:49 — queued 0297
+- 2026-10-12 14:49 — queued 0298
+- 2026-10-12 14:49 — queued 0299
+- 2026-10-12 14:49 — queued 0300
+- 2026-10-12 14:49 — queued 0301
+- 2026-10-12 14:49 — queued 0302
+- 2026-10-12 14:49 — queued 0303
+- 2026-10-12 14:49 — queued 0304
+- 2026-10-12 14:49 — queued 0305
+- 2026-10-12 14:49 — queued 0306
+- 2026-10-12 14:49 — queued 0307
+- 2026-10-12 14:49 — queued 0308
+- 2026-10-12 14:49 — queued 0309
+- 2026-10-12 14:49 — queued 0310
+- 2026-10-12 14:49 — queued 0311
+- 2026-10-12 14:49 — queued 0312
+- 2026-10-12 14:49 — queued 0313
+- 2026-10-12 14:49 — queued 0314
+- 2026-10-12 14:49 — queued 0315
+- 2026-10-12 14:49 — queued 0316
+- 2026-10-12 14:49 — queued 0317
+- 2026-10-12 14:49 — queued 0318
+- 2026-10-12 14:49 — queued 0319
+- 2026-10-12 14:49 — queued 0320
+- 2026-10-12 14:49 — queued 0321
+- 2026-10-12 14:49 — queued 0322
+- 2026-10-12 14:49 — queued 0323
+- 2026-10-12 14:49 — queued 0324
+- 2026-10-12 14:49 — queued 0325
+- 2026-10-12 14:49 — queued 0326
+- 2026-10-12 14:49 — queued 0327
+- 2026-10-12 14:49 — queued 0328
+- 2026-10-12 14:49 — queued 0329
+- 2026-10-12 14:49 — queued 0330
+- 2026-10-12 14:49 — queued 0331
+- 2026-10-12 14:49 — queued 0332
+- 2026-10-12 14:49 — queued 0333
+- 2026-10-12 14:49 — queued 0334
+- 2026-10-12 15:08 — queued 0336
+- 2026-10-12 15:08 — queued 0337
+- 2026-10-12 15:08 — queued 0338, on hold: the owner's decision first; see the item
+- 2026-10-12 15:08 — queued 0339
+- 2026-10-12 15:08 — queued 0340, on hold: the owner's decision first; see the item
+- 2026-10-12 15:08 — queued 0341
+- 2026-10-12 15:08 — queued 0342
+- 2026-10-12 15:08 — queued 0343
+- 2026-10-12 15:08 — queued 0344
+- 2026-10-12 15:08 — queued 0345
+- 2026-10-12 15:08 — queued 0346
+- 2026-10-12 15:08 — queued 0347
+- 2026-10-12 15:08 — queued 0348
+- 2026-10-12 15:08 — queued 0349
+- 2026-10-12 15:08 — queued 0350
+- 2026-10-12 15:08 — queued 0351
+- 2026-10-12 15:08 — queued 0352
+- 2026-10-12 15:08 — queued 0353
+- 2026-10-12 15:08 — queued 0354
+- 2026-10-12 15:08 — queued 0355
+- 2026-10-12 15:08 — queued 0356
+- 2026-10-12 15:08 — queued 0357
+- 2026-10-12 15:08 — queued 0358
+- 2026-10-12 15:08 — queued 0359
+- 2026-10-12 15:08 — queued 0360
+- 2026-10-12 15:08 — queued 0361
+- 2026-10-12 15:08 — queued 0362
+- 2026-10-12 15:08 — queued 0363
+- 2026-10-12 15:08 — queued 0364
+- 2026-10-12 15:08 — queued 0365
+- 2026-10-12 15:08 — queued 0366
+- 2026-10-12 15:08 — queued 0367
+- 2026-10-12 15:08 — queued 0368
+- 2026-10-12 15:08 — queued 0369
+- 2026-10-12 15:11 — dropped 0338 from the queue
+- 2026-10-12 15:11 — queued 0338, on hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+- 2026-10-12 15:15 — dropped 0340 from the queue
+- 2026-10-12 15:18 — assigned 0278 to builder-full (full): pair 1 with 0280: both high, a small Rust fix in the signed-in suite with a fake-app witness, different files
+- 2026-10-12 15:18 — assigned 0280 to builder-none (none): pair 1 with 0278: both high, a small Rust fix in the signed-in suite with a fake-app witness, different files
+- 2026-10-12 15:34 — finished 0280 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1561
+- 2026-10-12 15:35 — assigned 0281 to builder-none (none): pair 2 with 0282 (for builder-full when it frees): each a Rust fix with a red-first test and a record line
+- 2026-10-12 15:39 — dropped 0336 from the queue
+- 2026-10-12 15:39 — queued 0336, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:39 — dropped 0337 from the queue
+- 2026-10-12 15:39 — queued 0337, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:39 — dropped 0345 from the queue
+- 2026-10-12 15:39 — queued 0345, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:39 — dropped 0346 from the queue
+- 2026-10-12 15:39 — queued 0346, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:39 — dropped 0347 from the queue
+- 2026-10-12 15:39 — queued 0347, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:39 — dropped 0348 from the queue
+- 2026-10-12 15:39 — queued 0348, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:39 — dropped 0361 from the queue
+- 2026-10-12 15:39 — queued 0361, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:39 — dropped 0362 from the queue
+- 2026-10-12 15:39 — queued 0362, on hold: the owner's word: changes what the AI tool is told; after the loop test (0257) has finished
+- 2026-10-12 15:43 — finished 0278 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1563
+- 2026-10-12 15:43 — assigned 0282 to builder-full (full): pair 2 with 0281 (builder-none): each a Rust fix with a red-first test and a record line
+- 2026-10-12 16:35 — assigned 0284 to builder-none (none) as next: pair 3 with 0285: each a redaction fix with a test key built from pieces at run time, different files (secrets.rs, seen.rs)
+- 2026-10-12 16:35 — assigned 0285 to builder-full (full) as next: pair 3 with 0284: each a redaction fix with a test key built from pieces at run time, different files (seen.rs, secrets.rs)
+- 2026-10-12 17:07 — finished 0282 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1570; now holds 0285
+- 2026-10-12 17:07 — finished 0281 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1571; now holds 0284
+- 2026-10-12 17:07 — assigned 0286 to builder-none (none) as next: pair 4 with 0283: each a medium security fix in Rust that owes a Later entry on its record and a test, different files (report_seal.rs, ai_tool.rs)
+- 2026-10-12 17:07 — assigned 0283 to builder-full (full) as next: pair 4 with 0286: each a medium security fix in Rust that owes a Later entry on its record and a test, different files (ai_tool.rs, report_seal.rs)
+- 2026-10-12 17:49 — finished 0285 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1573; now holds 0283
+- 2026-10-12 17:49 — finished 0283 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1577
+- 2026-10-12 17:49 — finished 0284 by builder-none (none); now holds 0286
+- 2026-10-12 17:49 — assigned 0314 to builder-full (full): pair 5 with 0309 (builder-none, next after 0286, which shares its files): each a small fix to how sv-cli reads or writes a file it does not own
+- 2026-10-12 17:49 — assigned 0313 to builder-full (full) as next: pair 6 with 0292 (for builder-none later): each makes a reader of git or the manifest say what it could not read, with a test
+- 2026-10-12 17:49 — assigned 0309 to builder-none (none) as next: pair 5 with 0314 (builder-full): each a small fix to how sv-cli reads or writes a file it does not own; after 0286, which touches the same report_seal.rs
+- 2026-10-12 18:28 — finished 0286 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1581; now holds 0309
+- 2026-10-12 18:28 — assigned 0292 to builder-none (none) as next: pair 6 with 0313 (builder-full): each makes a reader of git or the manifest say what it could not read; after 0309, which shares report_lock.rs, in the same session
+- 2026-10-12 18:47 — finished 0314 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1582; now holds 0313
+- 2026-10-12 18:47 — finished 0313 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1585
+- 2026-10-12 18:47 — assigned 0315 to builder-full (full): pair 7 with 0306 (for builder-none later): each a small detection fix with a red-first test, no coverage files touched
+- 2026-10-12 18:47 — assigned 0304 to builder-full (full) as next: pair 8 with 0302 (for builder-none later): each marks a credit in part and regenerates the coverage files, so the two run one after the other, never at once
+- 2026-10-12 18:55 — finished 0309 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1586; now holds 0292
+- 2026-10-12 18:55 — assigned 0306 to builder-none (none) as next: pair 7 with 0315 (builder-full): each a small detection fix with a red-first test, no coverage files touched; uploads.rs, which nobody else holds
+- 2026-10-12 19:27 — finished 0292 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1588; now holds 0306
+- 2026-10-12 19:27 — assigned 0312 to builder-none (none) as next: pair 9 with 0310 (for builder-full later): each makes report text say no more than it should, with a test; markdown.rs and sv-run's manifest check, which nobody else holds
+- 2026-10-12 19:46 — finished 0315 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1592; now holds 0304
+- 2026-10-12 19:46 — finished 0306 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1591; now holds 0312
+- 2026-10-12 19:46 — assigned 0310 to builder-full (full) as next: pair 9 with 0312 (builder-none): each makes report text say no more than it should, with a test; build_loop.rs and the report's wording, which nobody else holds
+- 2026-10-12 19:46 — assigned 0316 to builder-none (none) as next: pair 10 with 0318 (for builder-full later): each a one-line CI fix keeping a token out of reach of a branch's code, in different workflow files (windows.yml, rust.yml)
+- 2026-10-12 19:54 — finished 0304 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1594; now holds 0310
+- 2026-10-12 19:54 — assigned 0318 to builder-full (full) as next: pair 10 with 0316 (builder-none): each a one-line CI fix keeping a token out of reach of a branch's code; rust.yml, apart from builder-none's windows.yml
+- 2026-10-12 20:07 — finished 0312 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1597; now holds 0316
+- 2026-10-12 20:07 — assigned 0302 to builder-none (none) as next: pair 8 with 0304 (builder-full, merged): each marks credits in part and regenerates the coverage files; builder-full holds no coverage item now (0310, then 0318)
+- 2026-10-12 20:25 — finished 0316 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1598; now holds 0302
+- 2026-10-12 20:26 — assigned 0296 to builder-none (none) as next: pair 11 with 0298 (for builder-full later): each a documentation fix that brings a page in line with the code and records, in files nobody else holds; no coverage files
+- 2026-10-12 20:46 — finished 0310 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1601; now holds 0318
+- 2026-10-12 20:46 — assigned 0298 to builder-full (full) as next: pair 11 with 0296 (builder-none): each a documentation fix that brings a page in line with the code and records; GAP-ANALYSIS.md, which nobody else holds; no coverage files
+- 2026-10-12 21:04 — finished 0318 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1605; now holds 0298
+- 2026-10-12 21:04 — assigned 0294 to builder-full (full) as next: pair 12 with 0297 (for builder-none later): each a documentation fix where a page contradicts the records it cites; docs/ARCHITECTURE.md, which nobody else holds; no coverage files
+- 2026-10-12 21:14 — assigned 0295 to builder-full (full) as next: lane of six, pair 13 with 0299 (builder-none): documentation fixes where a page has drifted from the code; ARCHITECTURE.md after 0294, in this lane only
+- 2026-10-12 21:14 — assigned 0303 to builder-full (full) as next: lane of six, pair 14 with 0307 (builder-none): each corrects how a partial credit is treated, with a test; finding.rs and sv-report's lib.rs, in this lane only
+- 2026-10-12 21:14 — assigned 0287 to builder-full (full) as next: lane of six, pair 15 with 0319 (builder-none): each keeps a credential or a write out of reach of untrusted code; rust.yml, in this lane only
+- 2026-10-12 21:14 — assigned 0288 to builder-full (full) as next: lane of six, pair 16 with 0305 (builder-none): each a supply-chain or citation fix the record names; rust.yml and windows.yml, in this lane only
+- 2026-10-12 21:14 — assigned 0317 to builder-full (full) as next: lane of six, pair 17 with 0321 (for builder-none's next lane): small CI and tooling tidies; rust.yml, in this lane only
+- 2026-10-12 21:14 — assigned 0297 to builder-none (none) as next: lane of six, pair 12 with 0294 (builder-full): each a documentation fix where a page contradicts the records it cites; docs/adr/README.md and ADR-057, in this lane only
+- 2026-10-12 21:14 — assigned 0299 to builder-none (none) as next: lane of six, pair 13 with 0295 (builder-full): documentation fixes where a page has drifted from the code; docs/BACKLOG.md, in this lane only
+- 2026-10-12 21:14 — assigned 0307 to builder-none (none) as next: lane of six, pair 14 with 0303 (builder-full): each corrects how a partial credit is treated, with a test; regenerates the coverage files, which only this lane touches
+- 2026-10-12 21:14 — assigned 0319 to builder-none (none) as next: lane of six, pair 15 with 0287 (builder-full): each keeps a credential or a write out of reach of untrusted code; tools/backlog.py, in this lane only
+- 2026-10-12 21:14 — assigned 0305 to builder-none (none) as next: lane of six, pair 16 with 0288 (builder-full): each a supply-chain or citation fix the record names; secret-rules.json and the coverage files, in this lane only
+- 2026-10-12 21:24 — finished 0302 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1607; now holds 0296
+- 2026-10-12 21:53 — finished 0298 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1612; now holds 0294
+- 2026-10-12 21:53 — finished 0294 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1615; now holds 0295
+- 2026-10-12 21:53 — finished 0296 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1610; now holds 0297
+- 2026-10-12 21:53 — finished 0297 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1613; now holds 0299
+- 2026-10-12 22:24 — finished 0295 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1617; now holds 0303
+- 2026-10-12 22:24 — finished 0303 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1619; now holds 0287
+- 2026-10-12 22:24 — finished 0287 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1621; now holds 0288
+- 2026-10-12 22:24 — finished 0299 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1616; now holds 0307
+- 2026-10-12 22:24 — assigned 0308 to builder-full (full) as next: lane 2, pair 18 with 0311: MCP confinement gap, resources.rs only
+- 2026-10-12 22:24 — assigned 0327 to builder-full (full) as next: lane 2, pair 19 with 0328: probe input limits, production.rs only
+- 2026-10-12 22:24 — assigned 0320 to builder-full (full) as next: lane 2, pair 20 with 0360: fuzz folder fixes, seed.sh only
+- 2026-10-12 22:24 — assigned 0359 to builder-full (full) as next: lane 2: rust.yml comment fix; CI workflow files stay in this lane
+- 2026-10-12 22:24 — assigned 0332 to builder-full (full) as next: lane 2: comment overstates safety in sv-manifest; no file shared with the other lane
+- 2026-10-12 22:24 — assigned 0321 to builder-none (none) as next: lane 2, pair 17 with 0317: one shell=True in tools/prompt_trial.py
+- 2026-10-12 22:24 — assigned 0311 to builder-none (none) as next: lane 2, pair 18 with 0308: symlinked report folder, ecosystems.rs and tools.rs
+- 2026-10-12 22:24 — assigned 0328 to builder-none (none) as next: lane 2, pair 19 with 0327: DNS answer from any sender, live_tls.rs only
+- 2026-10-12 22:24 — assigned 0360 to builder-none (none) as next: lane 2, pair 20 with 0320: fuzz/Cargo.lock out of date
+- 2026-10-12 22:54 — finished 0288 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1623; now holds 0317
+- 2026-10-12 22:54 — finished 0317 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1630; now holds 0308
+- 2026-10-12 22:54 — finished 0307 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1622; now holds 0319
+- 2026-10-12 22:54 — finished 0319 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1626; now holds 0305
+- 2026-10-12 23:23 — finished 0308 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1635; now holds 0327
+- 2026-10-12 23:23 — finished 0327 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1641; now holds 0320
+- 2026-10-12 23:23 — finished 0305 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1637; now holds 0321
+- 2026-10-12 23:23 — finished 0321 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1640; now holds 0311
+- 2026-10-12 23:23 — assigned 0358 to builder-full (full) as next: lane 3: rust.yml build without --locked; CI files stay in this lane
+- 2026-10-12 23:23 — assigned 0363 to builder-full (full) as next: lane 3: rust.yml image fetches; CI files stay in this lane
+- 2026-10-12 23:23 — assigned 0323 to builder-full (full) as next: lane 3: unused dependency in sv-report and sv-run manifests
+- 2026-10-12 23:23 — assigned 0326 to builder-full (full) as next: lane 3: name server hardening copy, sv-run name_server.rs and its test
+- 2026-10-12 23:23 — assigned 0331 to builder-none (none) as next: lane 3: partial credit for the secrets-file check; coverage files stay in this lane
+- 2026-10-12 23:23 — assigned 0334 to builder-none (none) as next: lane 3: debug-mode marker list in probes.rs; coverage files stay in this lane
+- 2026-10-12 23:23 — assigned 0333 to builder-none (none) as next: lane 3: threat wording in sv-report threats.rs
+- 2026-10-12 23:23 — assigned 0330 to builder-none (none) as next: lane 3: Semgrep packs fetched at run time, say so beside the no-network rule
+- 2026-10-12 23:53 — finished 0320 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1644; now holds 0359
+- 2026-10-12 23:53 — finished 0359 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1647; now holds 0332
+- 2026-10-12 23:53 — finished 0332 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1649; now holds 0358
+- 2026-10-12 23:53 — finished 0311 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1642; now holds 0328
+- 2026-10-12 23:53 — finished 0328 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1648; now holds 0360
+- 2026-10-13 00:23 — finished 0358 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1653; now holds 0363
+- 2026-10-13 00:23 — finished 0360 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1652; now holds 0331
+- 2026-10-13 00:23 — finished 0331 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1657; now holds 0334
+- 2026-10-13 00:23 — assigned 0344 to builder-full (full) as next: lane 4, pair 21 with 0357: build speed, root Cargo.toml profile only
+- 2026-10-13 00:23 — assigned 0366 to builder-full (full) as next: lane 4, pair 22 with 0368: run speed in sv-check, git.rs only
+- 2026-10-13 00:23 — assigned 0354 to builder-full (full) as next: lane 4, pair 23 with 0367: repeated walks, sv-cli lib.rs
+- 2026-10-13 00:23 — assigned 0356 to builder-full (full) as next: lane 4: CI incremental compilation; CI files stay in this lane
+- 2026-10-13 00:23 — assigned 0357 to builder-none (none) as next: lane 4, pair 21 with 0344: build speed, Dockerfile only
+- 2026-10-13 00:23 — assigned 0368 to builder-none (none) as next: lane 4, pair 22 with 0366: run speed in sv-check, adapters.rs
+- 2026-10-13 00:23 — assigned 0367 to builder-none (none) as next: lane 4, pair 23 with 0354: quadratic grouping, finding.rs and sv-report
+- 2026-10-13 00:23 — assigned 0364 to builder-none (none) as next: lane 4: time the crash sweeps once and write the number down
+- 2026-10-13 00:53 — finished 0363 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1658; now holds 0323
+- 2026-10-13 00:53 — finished 0334 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1660; now holds 0333
+- 2026-10-13 01:23 — finished 0333 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1664; now holds 0330
+- 2026-10-13 01:23 — finished 0330 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1666; now holds 0357
+- 2026-10-13 01:53 — finished 0357 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1667; now holds 0368
+- 2026-10-13 01:53 — assigned 0352 to builder-none (none) as next: lane 5: secrets scan regex passes, secrets.rs only; no file shared with builder-full's lane
+- 2026-10-13 01:53 — assigned 0353 to builder-none (none) as next: lane 5: one query walk per rule, ast.rs only; no file shared with builder-full's lane
+- 2026-10-13 02:23 — finished 0368 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1670; now holds 0367
+- 2026-10-13 02:53 — finished 0367 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1673; now holds 0364
+- 2026-10-13 02:53 — assigned 0351 to builder-none (none) as next: lane 6: read each file once in the static stage; sv-scan and the sv-check readers, after 0352 and 0353 in the same files; none in builder-full's lane
+- 2026-10-13 02:53 — assigned 0263 to builder-none (none) as next: lane 6: static half of V16.5.4, supporting only; ast.rs and the coverage files, which stay in this lane
+- 2026-10-13 03:23 — finished 0364 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1674; now holds 0352
+- 2026-10-13 03:53 — finished 0352 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1677; now holds 0353
+- 2026-10-13 04:53 — finished 0353 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1679; now holds 0351
+- 2026-10-13 05:53 — finished 0351 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1681; now holds 0263
+- 2026-10-13 07:37 — withdrew 0263 from builder-none (none), on hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
+- 2026-10-13 08:23 — finished 0323 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1686; now holds 0326
+- 2026-10-13 12:15 — released 0336
+- 2026-10-13 12:15 — released 0337
+- 2026-10-13 12:15 — released 0345
+- 2026-10-13 12:15 — released 0346
+- 2026-10-13 12:15 — released 0347
+- 2026-10-13 12:15 — released 0348
+- 2026-10-13 12:15 — released 0361
+- 2026-10-13 12:15 — released 0362
+- 2026-10-13 12:15 — assigned 0279 to builder-none (none): owner released the AI-tool holds for builder-none on 13 October 2026; the report-file counts in README, ARCHITECTURE, and the catalog sentence together
+- 2026-10-13 12:15 — assigned 0362 to builder-none (none) as next: lane 7: prompts sent twice by guidance and before; mcp tools.rs and catalog.rs, none in builder-full's lane
+- 2026-10-13 12:15 — assigned 0348 to builder-none (none) as next: lane 7: stackvet_prompts with no argument sends all 36 twice; mcp tools.rs
+- 2026-10-13 12:15 — assigned 0361 to builder-none (none) as next: lane 7: shorter fence tags; sv-report fence.rs and check_text.rs
+- 2026-10-13 12:15 — assigned 0345 to builder-none (none) as next: lane 7: the fence sentence repeated in ten tool descriptions; catalog.rs and mod.rs
+- 2026-10-13 12:15 — assigned 0346 to builder-none (none) as next: lane 7: tool descriptions repeat how-to-behave text; catalog.rs, after 0345 in the same file
+- 2026-10-13 12:15 — assigned 0347 to builder-none (none) as next: lane 7: stackvet_spec sent whole and never paged; catalog.rs, after 0346
+- 2026-10-13 12:49 — finished 0326 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1695; now holds 0344
+- 2026-10-13 13:19 — finished 0344 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1697; now holds 0366
+- 2026-10-13 13:19 — finished 0366 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1700; now holds 0354
+- 2026-10-13 13:19 — finished 0279 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1701; now holds 0362
+- 2026-10-13 13:19 — assigned 0349 to builder-full (full) as next: lane 8, owner released 13 Oct: the image job on every pull request; rust.yml stays in this lane
+- 2026-10-13 13:19 — assigned 0343 to builder-full (full) as next: lane 8, owner released 13 Oct: publish builds the image a third time; rust.yml, after 0349
+- 2026-10-13 13:19 — assigned 0350 to builder-full (full) as next: lane 8, owner released 13 Oct: a fourth suite part; rust.yml and tools/ci_shards.py, after 0343
+- 2026-10-13 13:19 — assigned 0329 to builder-full (full) as next: lane 8, owner released 13 Oct: a colon in the app folder's path; docker.rs and install.rs, which this lane now holds
+- 2026-10-13 13:19 — assigned 0300 to builder-full (full) as next: lane 8, owner released 13 Oct: the fence over IPv6; docker.rs, after 0329; its pair 0301 goes to builder-none when docker.rs changes lanes
+- 2026-10-13 13:49 — finished 0354 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1704; now holds 0356
+- 2026-10-13 13:49 — finished 0356 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1707; now holds 0349
+- 2026-10-13 13:49 — finished 0362 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1703; now holds 0348
+- 2026-10-13 14:19 — finished 0349 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1709; now holds 0343
+- 2026-10-13 14:19 — finished 0343 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1711; now holds 0350
+- 2026-10-13 14:19 — finished 0348 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1708; now holds 0361
+- 2026-10-13 14:19 — assigned 0342 to builder-full (full) as next: lane 9, owner released 13 Oct: advisory matching by index; advisories.rs only, after the docker.rs items so docker.rs can pass to builder-none for 0301
+- 2026-10-13 14:19 — assigned 0293 to builder-full (full) as next: lane 9, owner released 13 Oct: two data files compiled in; signed_in/passwords.rs and sv-report threats.rs
+- 2026-10-13 14:19 — assigned 0291 to builder-full (full) as next: lane 9, owner released 13 Oct: one reader of requirements.txt; sv-scan, sbom, manifest_lock, and install.rs, after 0329 in the same lane
+- 2026-10-13 14:49 — finished 0350 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1717; now holds 0329
+- 2026-10-13 14:49 — finished 0361 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1713; now holds 0345
+- 2026-10-13 14:49 — assigned 0337 to builder-none (none) as next: lane 10, owner released 13 Oct: questions as a count by default; mcp tools.rs and check_text.rs, after lane 7 in the same files
+- 2026-10-13 14:49 — assigned 0336 to builder-none (none) as next: lane 10, owner released 13 Oct: unchanged findings as one line each; mcp tools.rs, catalog.rs, check_text.rs, parts.rs, after 0337
+- 2026-10-13 15:07 — queued 0410
+- 2026-10-13 15:28 — finished 0329 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1720; now holds 0300
+- 2026-10-13 15:28 — finished 0300 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1725; now holds 0342
+- 2026-10-13 15:28 — finished 0342 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1729; now holds 0293
+- 2026-10-13 15:28 — finished 0345 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1718; now holds 0346
+- 2026-10-13 15:28 — finished 0346 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1728; now holds 0347
+- 2026-10-13 15:28 — assigned 0301 to builder-none (none) as next: lane 11, owner released 13 Oct: the fence's other gap, 0300's matched pair; docker.rs passes to this lane now that builder-full has no docker.rs item left
+- 2026-10-13 15:28 — assigned 0410 to builder-none (none) as next: lane 11: the 0300 security review's findings, filed at the owner's word 13 Oct; docker.rs and tests/fence_ipv6.rs, after 0301
+- 2026-10-13 15:28 — assigned 0355 to builder-none (none) as next: lane 11, owner released 13 Oct: the readiness poll's fixed 2 s; docker.rs, after 0410
+- 2026-10-13 15:28 — assigned 0365 to builder-none (none) as next: lane 11, owner released 13 Oct: mail's fixed 10 s wait; docker.rs; the item says build only if a real report's timings show it
+- 2026-10-13 15:28 — assigned 0339 to builder-full (full) as next: lane 11, owner released 13 Oct: container tests one per file; crates/sv-cli/tests and tools/ci_shards.py, none of them in builder-none's lane
+- 2026-10-13 15:59 — finished 0293 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1732; now holds 0291
+- 2026-10-13 15:59 — finished 0347 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1730; now holds 0337
+- 2026-10-13 15:59 — finished 0337 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1733; now holds 0336
+- 2026-10-13 16:19 — queued 0414
+- 2026-10-13 16:23 — finished 0336 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1737; now holds 0301
+- 2026-10-13 16:23 — withdrew 0365 from builder-none (none), on hold: reordered so 0414 (the 0301 review's findings) follows 0410, the owner's word 13 Oct; given back at once
+- 2026-10-13 16:23 — withdrew 0355 from builder-none (none), on hold: reordered so 0414 (the 0301 review's findings) follows 0410, the owner's word 13 Oct; given back at once
+- 2026-10-13 16:23 — released 0355
+- 2026-10-13 16:23 — released 0365
+- 2026-10-13 16:23 — assigned 0414 to builder-none (none) as next: the 0301 security review's findings; the owner's word 13 Oct: to builder-none right after 0410, during the wind-down; docker.rs and tests/fence.rs, which this lane holds
+- 2026-10-13 16:23 — assigned 0355 to builder-none (none) as next: given back after 0414, owner released 13 Oct: the readiness poll's fixed 2 s; docker.rs
+- 2026-10-13 16:23 — assigned 0365 to builder-none (none) as next: given back after 0355, owner released 13 Oct: mail's fixed 10 s wait; the item says build only if a real report's timings show it
+- 2026-10-13 16:29 — finished 0291 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1736; now holds 0339
+- 2026-10-13 16:29 — finished 0301 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1739; now holds 0410
+- 2026-10-13 16:59 — finished 0339 by builder-full (full): https://github.com/abbyshade111/StackVet/pull/1743
+- 2026-10-13 16:59 — finished 0410 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1744; now holds 0414
+- 2026-10-13 16:59 — finished 0414 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1745; now holds 0355
+- 2026-10-13 17:12 — finished 0355 by builder-none (none): https://github.com/abbyshade111/StackVet/pull/1747; now holds 0365
+- 2026-10-13 17:12 — withdrew 0365 from builder-none (none), on hold: the item says build only if a real report's timings show the cost, and none does; given back open at the trial's end, nothing built (builder-none and the owner, 13 Oct)
+- 2026-10-13 17:32 — session builder-full removed
+- 2026-10-13 17:32 — session builder-none removed
+- 2026-10-13 19:57 — dropped 0289 from the queue
+- 2026-10-13 20:33 — closed by stackvet-deep-review: the trial of 12 to 13 October 2026 ended on 13 October; its queue goes back to the roadmap, and the burst after the deep review (0417) gets a board of its own. (8 queued items' markers rewritten; the rest of the queue goes back to the roadmap)

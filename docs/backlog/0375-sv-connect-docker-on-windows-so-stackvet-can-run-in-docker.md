@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 
 Found on 12 October 2026 while building the setup prompt library (backlog 0370). On Windows, the settings that start
 StackVet in Docker cannot be made today, for two reasons:

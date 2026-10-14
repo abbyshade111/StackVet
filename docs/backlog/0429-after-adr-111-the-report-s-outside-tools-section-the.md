@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), areas: `sv-report`, coverage accuracy, and `sv-cli`. Severity:
 medium (a misleading report: it gives the person a command that no longer does what the sentence says). Verified
 against the code by the reviewing session before filing (the three strings were grepped; the test holds the stale one).

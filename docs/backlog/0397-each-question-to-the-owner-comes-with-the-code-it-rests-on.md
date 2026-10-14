@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Asked for by the owner on 13 October 2026, during the first build in the Antigravity trial: investigate whether each
 of StackVet's questions to the owner can come with the code it rests on, the lines themselves or at least a link to
 the file and line, so the person can check before answering.

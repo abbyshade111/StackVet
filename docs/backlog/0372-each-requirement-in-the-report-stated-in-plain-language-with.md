@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 The owner's choice of 12 October 2026, from the website's words (backlog 0224, `docs/website/home-page.md`,
 section 4): the report "states every requirement in plain language." Today each requirement's row in `report.html`
 ("what it asks for") is OWASP's own formal wording, and the checks beside a status are named by their internal ids

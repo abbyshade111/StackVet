@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 13 October 2026 in the owner's trial in Antigravity, whose app has `[capabilities.ai] enabled = false` and no AI
 feature at all. Its `report.html` listed the AI requirements as not applying, rightly, but with reasons that describe
 another app:

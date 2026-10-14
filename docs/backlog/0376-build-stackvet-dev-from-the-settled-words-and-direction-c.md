@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From backlog 0224 (done 12 October 2026): the home page's words and its look are settled in
 `docs/website/home-page.md`, direction C in the logo's own colors. To build: the page itself, the credits page, and
 stackvet.app redirecting to stackvet.dev, with the coverage numbers read from `docs/COVERAGE.md` when the site is built

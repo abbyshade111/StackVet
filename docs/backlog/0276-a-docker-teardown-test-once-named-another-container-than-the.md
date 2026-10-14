@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Seen on 12 October 2026 (session backlog-org-0275) in CI's run of pull request #1543, a test for backlog 0275 that
 changed only `.github/workflows/codeql.yml`.
 `docker::container_record_tests::a_teardown_names_what_it_could_not_remove_and_not_what_was_already_gone`

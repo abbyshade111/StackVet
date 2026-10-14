@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the owner's trial in Antigravity, 13 October 2026, the changes the build prompt (the guide's step 4, and the
 setup page's section 5, which a test holds to it word for word) and prompt 6 need. Each is something the AI tool did
 in the trial that a person who is not a programmer would not have caught. The owner's notes on each are outside the

@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: requirements and tests (citations). Severity: medium. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-check/src/probes.rs:487-495` (`SECURITY_HEADERS`, `requirement_ids: &["V3.4.3", "V3.4.4", "V3.4.5", "V3.4.6"]`),

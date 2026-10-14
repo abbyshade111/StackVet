@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 13 October 2026 in the owner's trial in Antigravity. Before `sv report --run`, the AI tool deleted the
 `stackvet-report` folder ("Clear report directory"). The folder held `build-loop.jsonl`, StackVet's record of the
 tool's calls to its MCP server during the build, which was there at 14:20. The full report at 18:39 then said "Nothing

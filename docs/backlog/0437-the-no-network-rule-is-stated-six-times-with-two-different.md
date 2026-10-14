@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: documentation. Severity: medium. Verified against the code by the reviewing session before filing. The report's own "Outside tools" sentence, the coverage tables, and `sv bundle --help` are the same staleness in the code, filed as one item of their own.
 
 - Where: `CONTRIBUTING.md:53-57` ("with two exceptions the person asks for by name: `sv probe` ... and ... the

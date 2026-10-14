@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Recorded by the nightly CI routine on 13 October 2026, from its own run of the Audit workflow's steps on `518f9a1`.
 `cargo build --release --locked -p sv-cli` finishes, with one warning:
 

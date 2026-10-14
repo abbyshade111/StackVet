@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: code quality and duplication. Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-check/src/config.rs:570` (`glob_matches`, git's rules: `*`, `?`, `**`, `[...]`, `\`), `crates/sv-check/src/adapters.rs:263`

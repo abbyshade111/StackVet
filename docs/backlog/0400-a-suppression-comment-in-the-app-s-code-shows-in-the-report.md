@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 13 October 2026 in the owner's trial in Antigravity. After `sv report --run` found Bandit's B104 in the app, the
 AI tool added `# nosec B104` to the line, telling Bandit to ignore it, and the finding left the report. (It then also
 rewrote the line; see the item on empty bind addresses.) A person reading the report would see one finding fewer and

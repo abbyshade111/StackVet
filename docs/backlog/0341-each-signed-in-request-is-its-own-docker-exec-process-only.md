@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Was queued on the coordination board** (`docs/coordination/board.md`, backlog 0273), which closed on 13 October 2026 when the trial ended; it is taken the normal way since, from the roadmap, with any hold below still standing. From the efficiency review of 12 October 2026 (backlog 0335), area: sv run speed. Severity: high. Verified against the code by the reviewing session before filing.
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: sv run speed. Severity: high. Verified against the code by the reviewing session before filing.
 
 **What is wrong.** The file's own header (`docker.rs:9-11`) says the sidecar was introduced because a container per request cost about half a second and a signed-in run made twenty-odd requests; the suites have grown since: 130 static `.send(` call sites across `signed_in/*.rs`, `oidc.rs`, and `ai.rs`, several inside loops, so a full `--run` is a few hundred execs.
 

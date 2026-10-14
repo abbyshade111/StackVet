@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
 Inventory"). The owner: use "the observability features and scan findings to provide the actual evidence for what was

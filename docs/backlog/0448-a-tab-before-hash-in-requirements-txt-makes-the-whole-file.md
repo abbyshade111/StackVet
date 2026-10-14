@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: the last 48 hours' code, `sv-run`, `sv-report`, `sv-scan`. Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-scan/src/ecosystems.rs:551-561`: `let (requirement, rest) = line.find(" --").map_or((line, ""), |at| (&line[..at], &line[at..]));` then `.split_whitespace().collect()`.

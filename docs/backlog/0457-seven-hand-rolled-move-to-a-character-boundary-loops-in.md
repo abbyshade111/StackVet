@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: code quality and duplication. Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-check/src/bundled.rs:119` (`fn floor_char_boundary`), `crates/sv-scan/src/files.rs:316` and

@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the deep review of 13 October 2026 (backlog 0417), area: requirements and tests (citations). Severity: low. Verified against the code by the reviewing session before filing.
 
 - Where: `crates/sv-check/src/production.rs:1092-1099` (`if !plain.reached() { out.verified.push(Verified::new(PLAIN_HTTP_SERVED…` "refused the connection, so there is no plain-HTTP way in", no `.in_part()`) against `:1136-1146` (the 301/308 branch, `.in_part()` since ADR-090).

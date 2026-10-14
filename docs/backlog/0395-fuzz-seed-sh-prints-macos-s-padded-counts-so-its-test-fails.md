@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 13 October 2026 by session securevibe-trial-prep, running the whole `sv-cli` suite on the owner's Mac for
 backlog 0394. `crates/sv-cli/tests/fuzz_seed_spaces.rs` (backlog 0320) fails there, and passes on CI, which runs
 Linux. The test expects `fuzz/seed.sh` to print `seeded: 2 manifests, 1 lockfiles`, and the script builds each count
