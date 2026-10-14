@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-14) — next: 0518, 0519
+- honesty — arm: full — holds: 0518 (since 2026-10-14) — next: 0519, 0232
 - wording — arm: full — holds: 0372 (since 2026-10-14)
 - documentation — arm: full — holds: nothing
 
@@ -425,3 +425,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 16:20 — queued 0518, marked
 - 2026-10-14 16:20 — assigned 0518 to honesty (full) into the lane after 0232: the pointer's second gap, found by honesty's own reading after 0516: the refusals locator shows a forged-form 403 ahead of the real refusal; before the proposals, and before the orchestrator's second reading
 - 2026-10-14 16:50 — finished 0401 by wording (full): https://github.com/abbyshade111/StackVet/pull/1921; from its lane, behind 0372
+- 2026-10-14 18:44 — withdrew 0232 from honesty (full), on hold: put behind 0518 and 0519: 0518 is small and blocks the orchestrator's second reading of the pointer; 0232 is long
+- 2026-10-14 18:44 — released 0232
+- 2026-10-14 18:44 — assigned 0232 to honesty (full) into the lane after 0519: its own claim, taken up again after the two short ones
