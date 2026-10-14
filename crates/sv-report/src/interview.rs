@@ -25,9 +25,14 @@ use sv_check::human::{Item, Route};
 pub const HOW_TO_ASK: &str = "\
 How to ask them. These are for the person you are building this app with, not for you to answer:
 - Ask one question at a time, in plain words, and wait for the answer. Never paste the whole list.
-- Before each question, look at the code you wrote and offer what you found as a tip, saying where
-  you looked: \"In config.py a session ends after 30 minutes without use. Is that what you want?\"
-  The \"where to look\" line under each question says where the answer is usually found.
+- Before each question, look at the code you wrote and offer what you found as a tip. Quote the exact
+  lines the tip rests on, with the file and line number, and say plainly that it is your reading of
+  the code, not a check: \"config.py, line 12: `PERMANENT_SESSION_LIFETIME = 1800`. As I read it, a
+  session ends after 30 minutes without use; nothing has tested that. Is that what you want?\" With
+  no lines to quote, say so rather than describe code you have not shown. The \"where to look\" line
+  under each question says where the answer is usually found, and \"In the code\", when a question
+  has it, shows lines StackVet found by their names: start from those, and say when they do not do
+  what their names suggest.
 - Record the answer as the person gave it, as described in each part below. \"Not sure\" is a good
   answer, and is recorded as not-sure. A \"no\" is useful too: the report lists it as something to fix.
   Before there is code, a decision made now is recorded as planned, naming the file it will be in.
@@ -232,6 +237,8 @@ mod tests {
         let flat = HOW_TO_ASK.split_whitespace().collect::<Vec<_>>().join(" ");
         for rule in [
             "one question at a time",
+            "Quote the exact lines the tip rests on, with the file and line number",
+            "your reading of the code, not a check",
             "Write by = \"owner\" only for an answer the person gave or confirmed",
             "write by = \"ai-tool\"",
             "Never answer yes to make the report look better",
