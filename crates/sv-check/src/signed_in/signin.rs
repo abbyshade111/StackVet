@@ -501,6 +501,22 @@ pub(super) fn brute_force_check(
                  because every attempt landed within a few seconds"
             ),
         ).in_part());
+    } else if !real_account {
+        // A name no account has shows only a limit that counts by address. An app that counts wrong
+        // passwords for each real account, a sound design, never locks a name that has none, so
+        // answering it alike every time says nothing about the limit stackvet.toml states
+        // (backlog 0384, from the second loop trial).
+        out.not_assessed.push((
+            "V6.3.1".to_owned(),
+            format!(
+                "Whether the app resists password guessing: with no `signup` in stackvet.toml, \
+                 this check tried {attempts} wrong passwords against a user name no account has, \
+                 so as not to lock out the accounts the other checks use, and the app answered \
+                 {first_status} every time. That shows the app has no limit by address; it cannot \
+                 show whether the app limits wrong passwords on a real account, which is the usual \
+                 way. Add a `signup` section so this check can make an account of its own to try."
+            ),
+        ));
     } else {
         out.findings.push(finding_on(
             (0..attempts).map(|n| format!("guess-{n}")).collect(),
@@ -2011,3 +2027,5 @@ mod tests {
 
 #[cfg(test)]
 mod log_pages_tests;
+#[cfg(test)]
+mod made_up_name_tests;
