@@ -685,7 +685,7 @@ pub fn compliance(report: &Report) -> String {
                 "| {} | {} | {} ({}) |\n",
                 cell(&ex.id),
                 cell(&ex.reason),
-                cell(ex.rests_on),
+                cell(ex.rests_on_words()),
                 cell(&ex.condition)
             ));
         }

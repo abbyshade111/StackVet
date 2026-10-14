@@ -366,6 +366,18 @@ pub struct ExcludedRequirement {
     pub rests_on: &'static str,
 }
 
+impl ExcludedRequirement {
+    /// Whose word the exclusion rests on, for a person (backlog 0403): the answer in `stackvet.toml`, which the AI
+    /// coding tool writes, or what the code contains. `rests_on` keeps the short form for a program.
+    pub fn rests_on_words(&self) -> &'static str {
+        if self.rests_on == "claim" {
+            "the answer in stackvet.toml, which your AI coding tool writes with you"
+        } else {
+            "what the app's code contains"
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct UndecidedRequirement {
     pub id: String,

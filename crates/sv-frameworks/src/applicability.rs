@@ -259,16 +259,33 @@ pub fn bucket(
                     .collect(),
             });
         } else {
-            out.not_applicable.push(not_applicable_for(req, &matching));
+            out.not_applicable
+                .push(not_applicable_for(req, &matching, ctx));
         }
     }
     out
 }
 
-fn not_applicable_for(req: &RequirementInfo, matching: &[&Rule]) -> NotApplicable {
+fn not_applicable_for(
+    req: &RequirementInfo,
+    matching: &[&Rule],
+    ctx: &ConditionContext,
+) -> NotApplicable {
     // Several rules can share a scope; the reason shown is the first that states one, falling back
     // to the plain-language default for that rule's condition.
     let rule = matching[0];
+    // A condition about the AI, in an app with no AI feature: the reason is that there is none (backlog 0403). The
+    // rule's own reason describes an AI, and would say something untrue of this app.
+    if let Some(larger) = rule.condition.within()
+        && ctx.get(larger) == Some(false)
+    {
+        return NotApplicable {
+            id: req.id.clone(),
+            reason: larger.default_not_applicable_reason().to_owned(),
+            condition: larger,
+            source: larger.source(),
+        };
+    }
     let reason = rule
         .not_applicable_reason
         .clone()
