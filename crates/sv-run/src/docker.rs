@@ -6,9 +6,10 @@
 //!    from this computer. That last part is the reason there is no published port anywhere below.
 //! 2. Start the app on it, with its folder mounted read-only and no credentials in its environment.
 //! 3. Wait for it to answer its health path — from a **sidecar container on the same network**,
-//!    because the host cannot reach it. The sidecar is started once and every request after is an
-//!    `exec` into it: a container started per request cost about half a second each, and a
-//!    signed-in run makes twenty-odd requests.
+//!    because the host cannot reach it. The sidecar is started once, and the requests after go
+//!    through it: a container started per request cost about half a second each. Single requests
+//!    go through one `exec` kept open for the run (`exec_session`, backlog 0341), since a signed-in
+//!    run sends a few hundred and an `exec` each was estimated at 100 to 300 milliseconds.
 //! 4. Ask the probes, anonymous and signed in, through the same sidecar; then remove it.
 //! 5. Run the declared test command inside the app container.
 //! 6. Tear everything down, whatever happened.
@@ -267,6 +268,15 @@ pub struct DockerBackend {
     /// How long each request to the app took, in milliseconds, in the order sent: one entry for a
     /// request sent alone, one for several sent in one call (backlog 226, part 2, item 13).
     request_times: std::sync::Mutex<Vec<(String, u64)>>,
+    /// The one `docker exec` into the sidecar that single requests go through, with the sidecar's name, while it
+    /// works (backlog 0341).
+    session: std::sync::Mutex<Option<(String, crate::exec_session::Session)>>,
+    /// The sidecar a session would not start in or broke down in: its requests go one exec each, as before.
+    no_session: std::sync::Mutex<Option<String>>,
+    /// How many sessions were started, and how many requests were answered through one, for the tests that hold
+    /// the count of execs down.
+    sessions_started: std::sync::atomic::AtomicUsize,
+    answered_in_session: std::sync::atomic::AtomicUsize,
 }
 
 /// The label naming the one run a container or network belongs to. The owner label says which
@@ -291,6 +301,10 @@ impl DockerBackend {
             sidecar_lost: std::sync::Mutex::new(None),
             left_behind: std::sync::Mutex::new(Vec::new()),
             request_times: std::sync::Mutex::new(Vec::new()),
+            session: std::sync::Mutex::new(None),
+            no_session: std::sync::Mutex::new(None),
+            sessions_started: std::sync::atomic::AtomicUsize::new(0),
+            answered_in_session: std::sync::atomic::AtomicUsize::new(0),
         }
     }
 
@@ -932,6 +946,7 @@ impl DockerBackend {
         // Nothing after this point sends a request, so the sidecar goes now rather than waiting on
         // the tests, which can take as long as they like. The mail server with it: nothing reads it
         // after the probes.
+        self.end_session();
         let mut helpers = vec![&sidecar];
         helpers.extend(mail.is_some().then_some(&mail_name));
         helpers.extend(provider.is_some().then_some(&provider_name));
@@ -2571,6 +2586,10 @@ fn is_docker_time(word: &str) -> bool {
 }
 
 #[cfg(test)]
+#[path = "docker_session_tests.rs"]
+mod session_tests;
+
+#[cfg(test)]
 #[path = "seed_failure_tests.rs"]
 mod seed_failure_tests;
 
@@ -2610,13 +2629,7 @@ mod tests {
         // as failing rather than as unrun.
         let backend = DockerBackend {
             binary: "definitely-not-a-real-binary-xyz".to_owned(),
-            owner: crate::cleanup::owner(),
-            cpus: OnceLock::new(),
-            run: std::sync::Mutex::new(None),
-            clock_offset: OnceLock::new(),
-            sidecar_lost: std::sync::Mutex::new(None),
-            left_behind: std::sync::Mutex::new(Vec::new()),
-            request_times: std::sync::Mutex::new(Vec::new()),
+            ..DockerBackend::new()
         };
         let err = backend.available().unwrap_err();
         match err {
@@ -3333,11 +3346,25 @@ impl DockerBackend {
         request: &sv_check::probes::ProbeRequest,
     ) -> Option<sv_check::probes::ProbeResponse> {
         let raw = request_bytes(request, app)?;
-        let script = exchange_script(app, port);
         let started = std::time::Instant::now();
-        let sent = self.inside_fence_with_input(via, &["sh", "-c", &script], &raw);
+        let sent = match self.in_session(via, app, port, &raw) {
+            Some(Ok(answered)) => Ok(answered),
+            Some(Err(said)) => Err(said),
+            None => {
+                let script = exchange_script(app, port);
+                self.inside_fence_with_input(via, &["sh", "-c", &script], &raw)
+                    .map_err(Lost::from)
+            }
+        };
         self.note_request_time(request.id.clone(), started);
-        let (code, out) = sent.ok()?;
+        let (code, out) = match sent {
+            Ok(answered) => answered,
+            Err(Lost::Said(code, said)) => {
+                self.note_if_sidecar_lost(&request.id, code, &said);
+                return None;
+            }
+            Err(Lost::Unsaid) => return None,
+        };
         if self.note_if_sidecar_lost(&request.id, code, &out) {
             return None;
         }
@@ -3345,6 +3372,85 @@ impl DockerBackend {
             return None;
         }
         parse_response(&request.id, &out)
+    }
+
+    /// Sends one request through the session kept open in the sidecar (`exec_session`), starting it when there is
+    /// none. `None` when there is no sidecar, or no session would start, or nothing was sent: the request then goes
+    /// the old way, an exec of its own. A session that breaks down is dropped, and the sidecar's requests after it go
+    /// that way too, so a sidecar that has gone is told from a silent app as before (`note_if_sidecar_lost`).
+    fn in_session(
+        &self,
+        via: &Via,
+        host: &str,
+        port: u16,
+        raw: &[u8],
+    ) -> Option<Result<(i32, String), Lost>> {
+        let Via::Sidecar(sidecar) = via else {
+            return None;
+        };
+        // After Ctrl-C nothing new is sent this way; the exec path refuses to start, and says so.
+        if crate::interrupted() {
+            return None;
+        }
+        let mut session = self.session.lock().ok()?;
+        if session.as_ref().is_some_and(|(name, _)| name != sidecar) {
+            *session = None;
+        }
+        let refused = |no_session: &std::sync::Mutex<Option<String>>| {
+            if let Ok(mut no) = no_session.lock() {
+                *no = Some((*sidecar).to_owned());
+            }
+        };
+        if session.is_none() {
+            if self
+                .no_session
+                .lock()
+                .ok()
+                .is_some_and(|no| no.as_deref() == Some(*sidecar))
+            {
+                return None;
+            }
+            let mark = format!("@@sv-session-{}-", crate::random_hex(8));
+            let script = crate::exec_session::loop_script(&mark);
+            let mut command = Command::new(&self.binary);
+            command.args(self.prepared(&["exec", "-i", sidecar, "sh", "-c", &script]));
+            match crate::exec_session::Session::start(command, &mark) {
+                Some(started) => {
+                    self.sessions_started
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    *session = Some(((*sidecar).to_owned(), started));
+                }
+                None => {
+                    refused(&self.no_session);
+                    return None;
+                }
+            }
+        }
+        let (_, open) = session.as_mut()?;
+        match open.send(host, port, raw) {
+            Ok(answered) => {
+                self.answered_in_session
+                    .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                Some(Ok(answered))
+            }
+            Err(crate::exec_session::Failed::NotSent) => {
+                *session = None;
+                refused(&self.no_session);
+                None
+            }
+            Err(crate::exec_session::Failed::Lost { said, code }) => {
+                *session = None;
+                refused(&self.no_session);
+                Some(Err(Lost::Said(if code == 0 { -1 } else { code }, said)))
+            }
+        }
+    }
+
+    /// Ends the session kept open in the sidecar, before the sidecar goes.
+    fn end_session(&self) {
+        if let Ok(mut session) = self.session.lock() {
+            *session = None;
+        }
     }
 
     /// `probe`, for requests sent one after another in one call (`in_turn_script`). `None` when
@@ -3393,6 +3499,19 @@ impl DockerBackend {
         }
         let ids: Vec<&str> = requests.iter().map(|r| r.id.as_str()).collect();
         Some(parse_at_once(&ids, &out, &mark))
+    }
+}
+
+/// Why a request sent alone has no answer to read: the session it went through broke down, with what it said and
+/// its exit code, or the exec it went through could not be run.
+enum Lost {
+    Said(i32, String),
+    Unsaid,
+}
+
+impl From<String> for Lost {
+    fn from(_: String) -> Self {
+        Lost::Unsaid
     }
 }
 
