@@ -12,13 +12,18 @@ makes it on the builder's behalf, so the backlog stays the record and the board 
     python3 tools/coordination.py session add <name> --arm full|none     # a building session and its arm (the two arms of 0273)
     python3 tools/coordination.py session remove <name>
     python3 tools/coordination.py queue add 0263 [--hold "why it waits"]  # a backlog item, in order; --hold keeps it from assign
+    python3 tools/coordination.py queue add 0263 --mark                  # the same, and writes the board's marker line into the item
     python3 tools/coordination.py queue release 0263                     # lifts the hold
     python3 tools/coordination.py queue drop 0263
     python3 tools/coordination.py assign 0263 --to <name> --why "..."    # claims the item for the session and logs why
+    python3 tools/coordination.py assign 0263 --to <name> --why "..." --after 0260   # into the session's lane right after 0260
     python3 tools/coordination.py handout 0263                           # prints the message to give the builder: item and footer
     python3 tools/coordination.py finish 0263 [--pr URL]                 # the builder is free again; the item's own done note is the record
     python3 tools/coordination.py withdraw 0263 --why "..."              # takes back a hand-out that should not have gone out: open again, on hold
-    python3 tools/coordination.py board                                  # prints the board
+    python3 tools/coordination.py wait 0263 --on "the question"          # a builder: a file beside the board saying it waits on the owner; push it
+    python3 tools/coordination.py wait 0263 --answered                   # the builder, or the orchestrator: the file goes
+    python3 tools/coordination.py close --by <session> --why "..."       # every session gone, the queue back to the roadmap, the board kept
+    python3 tools/coordination.py board                                  # prints the board, and who waits on the owner (this checkout and every branch pushed in the last week)
     python3 tools/coordination.py check                                  # the board agrees with the backlog (a test runs it)
     python3 tools/coordination.py measure --since 2026-10-13 [--until 2026-10-14] [--arms]
     python3 tools/coordination.py setup-no-context ~/stackvet-trial-noctx  # the clone for the no-context arm, on this computer
@@ -46,7 +51,18 @@ import backlog  # noqa: E402  (tools/backlog.py: the items, their status lines, 
 
 ROOT = Path(__file__).resolve().parent.parent
 BOARD = "docs/coordination/board.md"
+# A builder that waits on the owner says so in a file here, named by its item's number, and pushes it on its own
+# branch; `board` reads the folder in this checkout and on every branch pushed in the last week, so a wait is seen
+# before anything merges (backlog 0416: during the trial a builder waiting on a question looked the same as a stalled
+# one, and two waits cost about twelve hours each).
+WAITING = "docs/coordination/waiting"
+WAIT_DAYS = 7
 ARMS = ("full", "none")
+# The line `queue add --mark` writes into an item, and `close` rewrites, so a session off the board leaves it alone.
+MARK = ("**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the "
+        "board's `assign`, never from the roadmap.")
+MARK_RE = re.compile(r"\*\*(?:Was q|Q)ueued on the coordination board\*\*.*?(?:never from the roadmap|still standing)\.", re.S)
+CLOSED = re.compile(r"^\*\*Closed\*\* (?P<when>\d{4}-\d{2}-\d{2}): (?P<why>.+?)(?: Kept as a record.*)?$")
 
 HEADER = """# The coordination board
 
@@ -60,7 +76,7 @@ FOOTER = """Rules that hold whatever else you know, from the owner:
 - Delete nothing, force-push nothing, and rewrite no history.
 - Spend none of the owner's money, and change no setting of the repository or of this computer.
 - Open a pull request for the work and let its checks decide; never merge a red one.
-- When something is the owner's to decide, stop and ask the owner.
+- When something is the owner's to decide, stop and ask the owner, and run `python3 tools/coordination.py wait <number> --on "the question"`, then commit and push that file on your branch, so the board shows you are waiting; `wait <number> --answered` when the owner has answered.
 - When you are done, run `python3 tools/backlog.py done <number>` and say what was built and what was not."""
 
 # A session's line names the item it holds and, when the orchestrator has given it one ahead, the item it takes next
@@ -94,6 +110,7 @@ class Board:
         self.sessions = []  # {name, arm, holds (number or None), since, next (number or None)}
         self.queue = []  # {number, title, hold (reason or None)}
         self.log = []  # {when, text}
+        self.closed = None  # (date, why) once `close` has run; the file is kept as a record and `open` starts a new one
 
     @classmethod
     def read(cls, path):
@@ -108,6 +125,11 @@ class Board:
                 section = line[3:].strip()
                 continue
             if not line.strip():
+                continue
+            if section is None:
+                m = CLOSED.match(line)
+                if m:
+                    board.closed = (m["when"], m["why"])
                 continue
             if section == "Sessions":
                 m = SESSION.match(line)
@@ -134,7 +156,11 @@ class Board:
         return board
 
     def text(self):
-        out = [HEADER, "## Sessions", ""]
+        out = [HEADER]
+        if self.closed:
+            out.append(f"**Closed** {self.closed[0]}: {self.closed[1]} Kept as a record; `open --by <session>` starts a new board "
+                       f"and keeps this one beside it.\n")
+        out += ["## Sessions", ""]
         if not self.sessions:
             out.append("(none yet: `session add <name> --arm full|none`)")
         for s in self.sessions:
@@ -157,6 +183,10 @@ class Board:
 
     def note(self, text, when=None):
         self.log.append({"when": when or now(), "text": text})
+
+    def must_be_open(self):
+        if self.closed:
+            raise SystemExit(f"the board closed on {self.closed[0]} ({self.closed[1]}); `open --by <session>` starts a new one")
 
     def session(self, name):
         for s in self.sessions:
@@ -200,7 +230,16 @@ def title_of(folder, number):
 
 def open_board(board_path, session, when=None):
     if Path(board_path).exists():
-        raise SystemExit(f"{board_path} exists; the board is opened once, and read from then on")
+        old = Board.read(board_path)
+        if not old.closed:
+            raise SystemExit(f"{board_path} exists; the board is opened once, and read from then on (`close` ends it)")
+        kept = Path(board_path).with_name(f"board-closed-{old.closed[0]}.md")
+        n = 2
+        while kept.exists():
+            kept = Path(board_path).with_name(f"board-closed-{old.closed[0]}-{n}.md")
+            n += 1
+        Path(board_path).rename(kept)
+        print(f"the closed board is kept as {kept.name}")
     board = Board(board_path)
     board.note(f"opened by {session}", when)
     board.write()
@@ -228,8 +267,20 @@ def cmd_session(board_path, action, name, arm=None, when=None):
     print(board.log[-1]["text"])
 
 
-def cmd_queue(board_path, folder, action, number, hold=None, when=None):
+def mark_item(item, text):
+    """Writes the board's marker into an item as its first paragraph after the status line, or rewrites the one it has."""
+    if MARK_RE.search(item.text):
+        new = MARK_RE.sub(lambda _: text, item.text, count=1)
+    else:
+        s = backlog.STATUS.search(item.text)
+        new = item.text[: s.end()] + "\n\n" + text + item.text[s.end():]
+    write_text(item.path, new)
+    item.text = new
+
+
+def cmd_queue(board_path, folder, action, number, hold=None, when=None, mark=False):
     board = Board.read(board_path)
+    board.must_be_open()
     number = key_of(number)
     if action == "add":
         if board.queued(number):
@@ -240,7 +291,9 @@ def cmd_queue(board_path, folder, action, number, hold=None, when=None):
         if item.kind == "done":
             raise SystemExit(f"{number} is done; nothing to queue")
         board.queue.append({"number": number, "title": item.title, "hold": hold})
-        board.note(f"queued {number}" + (f", on hold: {hold}" if hold else ""), when)
+        if mark:
+            mark_item(item, MARK)
+        board.note(f"queued {number}" + (f", on hold: {hold}" if hold else "") + (", marked" if mark else ""), when)
     elif action in ("release", "drop"):
         q = board.queued(number)
         if q is None:
@@ -257,10 +310,13 @@ def cmd_queue(board_path, folder, action, number, hold=None, when=None):
     print(board.log[-1]["text"])
 
 
-def cmd_assign(board_path, folder, number, to, why, when=None, date=None, ahead=AHEAD):
+def cmd_assign(board_path, folder, number, to, why, when=None, date=None, ahead=AHEAD, after=None):
     """Gives a queued item to a session: the claim first (the record), then the board. A free session holds it at
-    once; a session already holding one gets it as its next, which `finish` moves into its hands; one ahead at most."""
+    once; a session already holding one gets it as its next, which `finish` moves into its hands; one ahead at most.
+    `after` puts it into the lane right after the item named (the held one puts it first), instead of at the end
+    (backlog 0416: a lane could only be added to at its end, so one urgent item cost two withdrawals)."""
     board = Board.read(board_path)
+    board.must_be_open()
     number = key_of(number)
     if not why or len(why.strip()) < 10:
         raise SystemExit("--why says, in at least ten characters, why this item goes to this session now")
@@ -272,13 +328,22 @@ def cmd_assign(board_path, folder, number, to, why, when=None, date=None, ahead=
     s = board.session(to)
     if s["holds"] and len(s.get("next", [])) >= ahead:
         raise SystemExit(f"{to} holds {s['holds']} and has {', '.join(s['next'])} next; {ahead} ahead at most")
+    if after is not None:
+        after = key_of(after)
+        if not s["holds"]:
+            raise SystemExit(f"{to} holds nothing, so there is no lane to put {number} into; leave --after out")
+        if after != s["holds"] and after not in s.get("next", []):
+            raise SystemExit(f"{after} is not in {to}'s lane ({s['holds']}, then {', '.join(s.get('next', [])) or 'nothing'})")
     date = date or backlog.today()
     if not backlog.claim(folder, number, to, date):
         raise SystemExit(f"the claim of {number} for {to} was refused; the board is unchanged")
     board.queue.remove(q)
     if s["holds"]:
-        s["next"] = s.get("next", []) + [number]
-        board.note(f"assigned {number} to {to} ({s['arm']}) as next: {why.strip()}", when)
+        lane = s.get("next", [])
+        at = len(lane) if after is None else (0 if after == s["holds"] else lane.index(after) + 1)
+        s["next"] = lane[:at] + [number] + lane[at:]
+        where = " as next" if after is None else f" into the lane after {after}"
+        board.note(f"assigned {number} to {to} ({s['arm']}){where}: {why.strip()}", when)
     else:
         s["holds"] = number
         s["since"] = (when or now())[:10]
@@ -310,17 +375,91 @@ def cmd_handout(board_path, folder, number):
     print(handout_text(folder, number, board), end="")
 
 
-def cmd_finish(board_path, number, pr=None, when=None):
+def waiting_path(root, number):
+    return Path(root) / WAITING / f"{key_of(number)}.md"
+
+
+def parse_waiting(text, number, where):
+    asked = re.search(r"^\*\*Asked:\*\* (.+)$", text, re.M)
+    body = text.split("\n\n", 2)
+    question = body[2].strip() if len(body) > 2 else text.strip()
+    return {"number": number, "asked": asked.group(1) if asked else "?", "question": question, "where": where}
+
+
+def waiting_files(root, branches=True):
+    """Who waits on the owner: every waiting file in this checkout and, with `branches`, on every branch pushed to
+    origin in the last WAIT_DAYS days (read with git, never checked out), the checkout's copy first."""
+    found = []
+    local = Path(root) / WAITING
+    if local.is_dir():
+        for path in sorted(local.glob("*.md")):
+            with open(path, encoding="utf-8") as f:
+                found.append(parse_waiting(f.read(), path.stem, "this checkout"))
+    if not branches:
+        return found
+    try:
+        refs = git(root, "for-each-ref", "--format=%(refname:short) %(committerdate:unix)", "refs/remotes/origin/")
+        cutoff = datetime.datetime.now().timestamp() - WAIT_DAYS * 86400
+        for line in refs.splitlines():
+            ref, _, when = line.rpartition(" ")
+            if not when.isdigit() or int(when) < cutoff or ref.endswith("/HEAD"):
+                continue
+            tree = subprocess.run(["git", "-C", str(root), "ls-tree", "--name-only", ref, f"{WAITING}/"],
+                                  capture_output=True, text=True, encoding="utf-8")
+            for path in tree.stdout.split():
+                number = Path(path).stem
+                if not path.endswith(".md") or any(w["number"] == number for w in found):
+                    continue
+                found.append(parse_waiting(git(root, "show", f"{ref}:{path}"), number, ref))
+    except (subprocess.CalledProcessError, OSError):
+        pass
+    return found
+
+
+def waiting_text(found):
+    out = ["## Waiting on the owner", ""]
+    if not found:
+        out.append("(nobody)")
+    for w in found:
+        out.append(f"- {w['number']} (asked {w['asked']}, on {w['where']}): {w['question']}")
+    return "\n".join(out) + "\n"
+
+
+def cmd_wait(root, folder, number, on=None, answered=False, when=None):
+    """A builder waiting on the owner writes the question beside the board and pushes it on its branch; `board`
+    shows it from there. `--answered` takes the file away again (the builder, or `finish`)."""
+    path = waiting_path(root, number)
+    number = key_of(number)
+    if answered:
+        if not path.is_file():
+            raise SystemExit(f"no waiting file for {number} at {path}")
+        path.unlink()
+        print(f"{number} no longer waits; {path.relative_to(root)} removed: commit that with your work")
+        return
+    item = backlog.find(folder, number)
+    if item.kind != "claimed":
+        raise SystemExit(f"{number} is not claimed ({item.status_text}); only a builder holding an item waits on the owner")
+    if not on or len(on.strip()) < 10:
+        raise SystemExit("--on says the question, in at least ten characters, as the owner will read it")
+    write_text(path, f"# Waiting on the owner: {number}\n\n**Asked:** {when or now()}\n\n{on.strip()}\n")
+    print(f"{path.relative_to(root)} written. Commit and push it on your branch now (nothing need merge): the orchestrator's "
+          f"`board` reads it from every branch pushed in the last {WAIT_DAYS} days. When the owner answers, `wait {number} --answered`.")
+
+
+def cmd_finish(board_path, number, pr=None, when=None, root=None):
     board = Board.read(board_path)
     number = key_of(number)
     s = board.holder(number)
     if s is None:
         raise SystemExit(f"nobody holds {number}")
+    waited = root is not None and waiting_path(root, number).is_file()
+    if waited:
+        waiting_path(root, number).unlink()
     queued = s.get("next", [])
     following = queued[0] if queued else None
     s["holds"], s["since"], s["next"] = following, ((when or now())[:10] if following else None), queued[1:]
     board.note(f"finished {number} by {s['name']} ({s['arm']})" + (f": {pr}" if pr else "")
-               + (f"; now holds {following}" if following else ""), when)
+               + (f"; now holds {following}" if following else "") + ("; its waiting file removed" if waited else ""), when)
     board.write()
     print(board.log[-1]["text"])
 
@@ -353,18 +492,65 @@ def cmd_withdraw(board_path, folder, number, why, when=None):
     print(board.log[-1]["text"])
 
 
-def cmd_board(board_path):
+def cmd_close(board_path, folder, by, why, when=None, date=None):
+    """Ends a burst: every session must be free (finish or withdraw first); each queued item's marker says the board
+    closed and the item is taken the normal way; the queue empties; the board stays as the record, and `open` starts
+    the next one beside it (backlog 0416: the trial's board was closed by hand, one command per session and a script
+    for the markers)."""
+    board = Board.read(board_path)
+    board.must_be_open()
+    if not why or len(why.strip()) < 10:
+        raise SystemExit("--why says, in at least ten characters, why the board closes")
+    busy = [s for s in board.sessions if s["holds"] or s.get("next")]
+    if busy:
+        raise SystemExit(f"{', '.join(s['name'] for s in busy)} still hold work; `finish` or `withdraw` it first")
+    date = date or backlog.today()
+    why = why.strip() + ("" if why.strip().endswith(".") else ".")
+    released = 0
+    for q in board.queue:
+        try:
+            item = backlog.find(folder, q["number"])
+        except SystemExit:
+            continue
+        if MARK_RE.search(item.text):
+            mark_item(item, f"**Was queued on the coordination board** (`docs/coordination/board.md`, backlog 0273), which closed "
+                            f"on {date}: {why} It is taken the normal way since, from the roadmap, with any hold "
+                            f"below still standing.")
+            released += 1
+    for s in list(board.sessions):
+        board.note(f"session {s['name']} removed", when)
+    board.sessions = []
+    board.queue = []
+    board.closed = ((when or now())[:10], why)
+    board.note(f"closed by {by}: {why} ({released} queued items' markers rewritten; the rest of the queue goes back to the roadmap)", when)
+    board.write()
+    print(board.log[-1]["text"])
+
+
+def cmd_board(board_path, root=None):
     board = Board.read(board_path)
     print(board.text(), end="")
+    if root is not None:
+        print()
+        print(waiting_text(waiting_files(root)), end="")
     held = sum(1 for s in board.sessions if s["holds"])
     ready = sum(1 for q in board.queue if q["hold"] is None)
     print(f"\n{len(board.sessions)} sessions, {held} holding an item; {len(board.queue)} queued, {ready} ready; {len(board.log)} log lines")
 
 
-def problems(board, folder):
-    """Where the board and the backlog disagree."""
+def problems(board, folder, waiting=()):
+    """Where the board and the backlog disagree; `waiting` is the checkout's waiting files (never a branch's, so the
+    check gives one answer wherever it runs)."""
     out = []
     numbers = {i.path.name[:4]: i for i in backlog.items(folder)}
+    for w in waiting:
+        item = numbers.get(w["number"])
+        if item is None:
+            out.append(f"{w['number']} waits on the owner and is no item")
+        elif item.kind == "done":
+            out.append(f"{w['number']} waits on the owner and is done; `wait {w['number']} --answered` removes the file")
+        elif item.kind != "claimed":
+            out.append(f"{w['number']} waits on the owner but nobody holds it: {item.status_text}")
     seen = set()
     for s in board.sessions:
         if s["arm"] not in ARMS:
@@ -399,9 +585,9 @@ def problems(board, folder):
     return out
 
 
-def cmd_check(board_path, folder):
+def cmd_check(board_path, folder, root=None):
     board = Board.read(board_path)
-    found = problems(board, folder)
+    found = problems(board, folder, waiting_files(root, branches=False) if root else ())
     for p in found:
         print(p)
     print(f"board: {len(found)} problems" if found else "board: agrees with the backlog")
@@ -631,6 +817,33 @@ def self_test():
         assert again.text() == board.text()
         text = handout_text(folder, "1", board)
         assert "backlog 0001: First item" in text and "Its text." in text and FOOTER in text and "Session on the board: a." in text
+        # The waiting line (backlog 0416): a builder holding an item writes its question beside the board; `board`
+        # shows it, and the check holds the file to the backlog.
+        for bad in (("5", "Is the disk ours to use?"), ("1", "short")):
+            try:
+                cmd_wait(tmp, folder, bad[0], on=bad[1], when=when)
+                assert False, bad
+            except SystemExit:
+                pass
+        cmd_wait(tmp, folder, "1", on="May I delete the build folder on this disk?", when=when)
+        assert waiting_path(tmp, "1").is_file()
+        found = waiting_files(tmp, branches=False)
+        assert [(w["number"], w["where"], w["question"]) for w in found] == [("0001", "this checkout", "May I delete the build folder on this disk?")], found
+        assert "- 0001 (asked 2026-10-13 09:00, on this checkout): May I delete" in waiting_text(found), waiting_text(found)
+        assert problems(Board.read(board_path), folder, found) == [], problems(Board.read(board_path), folder, found)
+        write_text(waiting_path(tmp, "4"), "# Waiting on the owner: 0004\n\n**Asked:** x\n\nA stale question.\n")
+        found = problems(Board.read(board_path), folder, waiting_files(tmp, branches=False))
+        assert any("0004 waits on the owner and is done" in f for f in found), found
+        waiting_path(tmp, "4").unlink()
+        write_text(waiting_path(tmp, "5"), "# Waiting on the owner: 0005\n\n**Asked:** x\n\nNobody holds this.\n")
+        found = problems(Board.read(board_path), folder, waiting_files(tmp, branches=False))
+        assert any("0005 waits on the owner but nobody holds it" in f for f in found), found
+        waiting_path(tmp, "5").unlink()
+        try:
+            cmd_wait(tmp, folder, "5", answered=True)
+            assert False, "no file to remove"
+        except SystemExit:
+            pass
         # The builder marks its item done before the orchestrator records the finish: the normal hand-back.
         backlog.mark_done(folder, "1", "13 October 2026", None)
         assert problems(Board.read(board_path), folder) == [], problems(Board.read(board_path), folder)
@@ -647,7 +860,7 @@ def self_test():
         found = problems(stale, folder)
         assert any("a has 0003 next and holds nothing" in f for f in found), found
         # `finish` moves the next item into the session's hands.
-        cmd_finish(board_path, "1", "https://example.test/pull/1", when)
+        cmd_finish(board_path, "1", "https://example.test/pull/1", when, root=tmp)
         try:
             cmd_finish(board_path, "1", None, when)
             assert False, "nobody holds it now"
@@ -655,7 +868,8 @@ def self_test():
             pass
         board = Board.read(board_path)
         assert board.session("a")["holds"] == "0003" and board.session("a")["next"] == []
-        assert board.log[-1]["text"].endswith("; now holds 0003"), board.log[-1]
+        assert board.log[-1]["text"].endswith("; now holds 0003; its waiting file removed"), board.log[-1]
+        assert not waiting_path(tmp, "1").exists(), "finish takes the waiting file away"
         assert problems(board, folder) == [], problems(board, folder)
         # A lane: two ahead, read back in order, and taken in order by `finish`.
         for n in ("6", "7"):
@@ -665,6 +879,31 @@ def self_test():
         lane = Board.read(board_path)
         assert lane.session("a")["next"] == ["0006", "0007"], lane.session("a")
         assert "— next: 0006, 0007" in lane.text() and problems(lane, folder) == [], problems(lane, folder)
+        # Insert at a position (backlog 0416): into the lane right after a named item, never at an item not in it.
+        backlog.write(folder, 8, "Item 8", "open", "Its text.\n")
+        cmd_queue(board_path, folder, "add", "8", None, when)
+        for after in ("9", "5"):
+            try:
+                cmd_assign(board_path, folder, "8", "a", "after an item not in a's lane", when=when, date="13 October 2026", ahead=3, after=after)
+                assert False, after
+            except SystemExit:
+                pass
+        assert backlog.find(folder, "8").kind == "open", "a refused insert claims nothing"
+        cmd_assign(board_path, folder, "8", "a", "urgent: right after 0006 in a's lane", when=when, date="13 October 2026", ahead=3, after="6")
+        placed = Board.read(board_path)
+        assert placed.session("a")["next"] == ["0006", "0008", "0007"], placed.session("a")
+        assert "into the lane after 0006" in placed.log[-1]["text"], placed.log[-1]
+        cmd_withdraw(board_path, folder, "8", "inserted for the test, taken back", when)
+        assert Board.read(board_path).session("a")["next"] == ["0006", "0007"]
+        cmd_session(board_path, "add", "c", "full", when)
+        try:
+            cmd_assign(board_path, folder, "8", "c", "a lane for a session that holds nothing", when=when, date="13 October 2026", after="2")
+            assert False, "c holds nothing"
+        except SystemExit:
+            pass
+        cmd_queue(board_path, folder, "release", "8", None, when)
+        cmd_queue(board_path, folder, "drop", "8", None, when)
+        cmd_session(board_path, "remove", "c", None, when)
         # `withdraw` takes back a hand-out from the lane: open again, queued on hold, not counted as finished.
         try:
             cmd_withdraw(board_path, folder, "7", "short", when)
@@ -700,8 +939,43 @@ def self_test():
         except SystemExit:
             pass
         per, _ = arms_measure(Board.read(board_path), gh=None)
-        assert per["full"] == {"assigned": 4, "finished": 2, "prs": ["https://example.test/pull/1"], "commits": 0, "unnamed_tool": 0, "main_merges": 0}, per["full"]
+        assert per["full"] == {"assigned": 5, "finished": 2, "prs": ["https://example.test/pull/1"], "commits": 0, "unnamed_tool": 0, "main_merges": 0}, per["full"]
         assert per["none"]["assigned"] == 1 and per["none"]["finished"] == 0
+        # `close` (backlog 0416): refused while a session holds work; then the sessions go, each queued item's marker
+        # says the board closed, the queue empties, the board stays as the record, and `open` starts the next one.
+        backlog.write(folder, 9, "Item 9", "open", "Its text.\n")
+        cmd_queue(board_path, folder, "add", "9", None, when, mark=True)
+        marked = backlog.find(folder, "9").text
+        assert MARK in marked and marked.index(MARK) < marked.index("Its text."), marked
+        try:
+            cmd_close(board_path, folder, "orchestrator", "the burst is over, for the test", when)
+            assert False, "b holds 0002"
+        except SystemExit:
+            pass
+        cmd_finish(board_path, "2", None, when)
+        try:
+            cmd_close(board_path, folder, "orchestrator", "short", when)
+            assert False, "the reason is too short"
+        except SystemExit:
+            pass
+        cmd_close(board_path, folder, "orchestrator", "the burst is over, for the test", when, date="13 October 2026")
+        closed = Board.read(board_path)
+        assert closed.closed == ("2026-10-13", "the burst is over, for the test.") and closed.sessions == [] and closed.queue == [], closed.text()
+        assert "**Closed** 2026-10-13: the burst is over, for the test. Kept as a record" in closed.text(), closed.text()
+        marked = backlog.find(folder, "9").text
+        assert "**Was queued on the coordination board**" in marked and "which closed on 13 October 2026: the burst is over, for the test. It is taken the normal way" in marked, marked
+        assert problems(closed, folder) == [], problems(closed, folder)
+        for shut in (lambda: cmd_queue(board_path, folder, "add", "9", None, when),
+                     lambda: cmd_close(board_path, folder, "orchestrator", "closed twice, for the test", when)):
+            try:
+                shut()
+                assert False, "the board is closed"
+            except SystemExit:
+                pass
+        open_board(board_path, "orchestrator", when)
+        assert (board_path.parent / "board-closed-2026-10-13.md").is_file(), "the closed board is kept beside the new one"
+        fresh = Board.read(board_path)
+        assert not fresh.closed and fresh.queue == [] and fresh.sessions == [] and len(fresh.log) == 1, fresh.text()
 
         # The measures, on a history made here: three pull requests, one of them a claim only, and one merge of main
         # into a branch; one backlog number taken twice.
@@ -742,8 +1016,14 @@ def self_test():
         assert counts == {"merged": 3, "claim_only": 2, "main_into_branch": 1, "numbers_twice": 1}, counts
         assert measure(repo, "2026-10-14") == {"merged": 0, "claim_only": 0, "main_into_branch": 0, "numbers_twice": 1}
 
+        # A waiting file pushed on a branch is seen from a clone that fetched it, without checking the branch out.
+        g("checkout", "-q", "-b", "asks")
+        commit("docs/coordination/waiting/0001.md", "# Waiting on the owner: 0001\n\n**Asked:** 2026-10-13 10:00\n\nMay I?\n", "Waiting on the owner")
+        g("checkout", "-q", "main")
         # The no-context clone: the stub is there, and git does not see it as a change.
         clone = setup_no_context(repo, tmp / "noctx")
+        found = waiting_files(clone)
+        assert [(w["number"], w["where"], w["question"]) for w in found] == [("0001", "origin/asks", "May I?")], found
         with open(clone / "CLAUDE.md", encoding="utf-8") as f:
             assert f.read() == STUB
         flags = subprocess.run(["git", "-C", str(clone), "ls-files", "-v", "CLAUDE.md"], capture_output=True, text=True, encoding="utf-8").stdout
@@ -775,6 +1055,10 @@ def main(argv):
     parser.add_argument("--to", help="with assign: the session")
     parser.add_argument("--why", help="with assign: why this item, this session, now; with withdraw: why it is taken back")
     parser.add_argument("--pr", help="with finish: the pull request")
+    parser.add_argument("--after", help="with assign: the lane item the new one goes right after (the held item puts it first)")
+    parser.add_argument("--mark", action="store_true", help="with queue add: write the board's marker line into the item")
+    parser.add_argument("--on", help="with wait: the question the builder waits on")
+    parser.add_argument("--answered", action="store_true", help="with wait: the owner has answered; the file goes")
     parser.add_argument("--since", help="with measure: the first day, 2026-10-13")
     parser.add_argument("--until", help="with measure: the last day; the first alone otherwise")
     parser.add_argument("--arms", action="store_true", help="with measure: the two arms, from the board's log")
@@ -799,11 +1083,11 @@ def main(argv):
     elif c == "queue":
         if len(args) != 2:
             raise SystemExit("queue add|release|drop <number>")
-        cmd_queue(board_path, folder, args[0], args[1], a.hold)
+        cmd_queue(board_path, folder, args[0], args[1], a.hold, mark=a.mark)
     elif c == "assign":
         if len(args) != 1 or not a.to:
             raise SystemExit("assign <number> --to <session> --why '...'")
-        cmd_assign(board_path, folder, args[0], a.to, a.why or "")
+        cmd_assign(board_path, folder, args[0], a.to, a.why or "", after=a.after)
     elif c == "handout":
         if len(args) != 1:
             raise SystemExit("handout <number>")
@@ -811,15 +1095,23 @@ def main(argv):
     elif c == "finish":
         if len(args) != 1:
             raise SystemExit("finish <number> [--pr URL]")
-        cmd_finish(board_path, args[0], a.pr)
+        cmd_finish(board_path, args[0], a.pr, root=root)
     elif c == "withdraw":
         if len(args) != 1 or not a.why:
             raise SystemExit("withdraw <number> --why '...'")
         cmd_withdraw(board_path, folder, args[0], a.why)
+    elif c == "wait":
+        if len(args) != 1 or not (a.on or a.answered):
+            raise SystemExit("wait <number> --on '...' | --answered")
+        cmd_wait(root, folder, args[0], a.on, a.answered)
+    elif c == "close":
+        if args or not a.by or not a.why:
+            raise SystemExit("close --by <session> --why '...'")
+        cmd_close(board_path, folder, a.by, a.why)
     elif c == "board":
-        cmd_board(board_path)
+        cmd_board(board_path, root)
     elif c == "check":
-        return cmd_check(board_path, folder)
+        return cmd_check(board_path, folder, root)
     elif c == "measure":
         if not a.since:
             raise SystemExit("measure --since 2026-10-13 [--until 2026-10-14] [--arms]")
