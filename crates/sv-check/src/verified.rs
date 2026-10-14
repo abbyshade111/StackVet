@@ -100,15 +100,32 @@ impl Verified {
     }
 
     /// The same credit, marked as resting on part of what its requirements ask (ADR-053).
+    #[track_caller]
     pub fn in_part(mut self) -> Self {
+        #[cfg(debug_assertions)]
+        if !self.in_part {
+            census_mark(&self, "in part", std::panic::Location::caller());
+        }
         self.in_part = true;
         self
     }
 
     /// The same credit, in part when `one` says it rests on a single sample: a check that asks
     /// every page the owner lists is in part only when one page was there to ask (ADR-053, Later).
+    #[track_caller]
     pub fn in_part_if(self, one: bool) -> Self {
         if one { self.in_part() } else { self }
+    }
+
+    /// This credit, whole after all: what it was missing was answered another way (V7.5.1, when the
+    /// owner says through `sv review` that the account changes not tried are not offered).
+    #[track_caller]
+    pub fn whole_after_all(&mut self) {
+        #[cfg(debug_assertions)]
+        if self.in_part {
+            census_mark(self, "whole", std::panic::Location::caller());
+        }
+        self.in_part = false;
     }
 
     /// The same credit, resting on `tier`'s word rather than a check of `sv`'s own.
@@ -138,16 +155,36 @@ pub fn unless_credited(check_id: &str, verified: &[Verified]) {
 /// `tools/coverage.py --credits` reads the file, to tell which checks the suite saw give credit.
 #[cfg(debug_assertions)]
 fn census(check_id: &str, requirement_ids: &[&str], at: &std::panic::Location) {
-    use std::io::Write;
-    let Some(log) = std::env::var_os("SV_CREDIT_LOG") else {
-        return;
-    };
-    let line = format!(
+    write_census(&format!(
         "{check_id}\t{}\t{}:{}\n",
         requirement_ids.join(","),
         at.file(),
         at.line()
-    );
+    ));
+}
+
+/// A credit's mark changing, added to the same file as a line of four: the check, its requirements,
+/// `in part` or `whole`, and the place that changed it. A credit is made whole and marked after, so the
+/// line `census` writes cannot carry the mark; `tools/coverage.py --credits` counts, for each check,
+/// the credits made, marked in part, and made whole again, and so knows which checks the suite only
+/// ever saw credit in part (backlog 0430, ADR-059, Later).
+#[cfg(debug_assertions)]
+fn census_mark(credit: &Verified, mark: &str, at: &std::panic::Location) {
+    write_census(&format!(
+        "{}\t{}\t{mark}\t{}:{}\n",
+        credit.check_id,
+        credit.requirement_ids.join(","),
+        at.file(),
+        at.line()
+    ));
+}
+
+#[cfg(debug_assertions)]
+fn write_census(line: &str) {
+    use std::io::Write;
+    let Some(log) = std::env::var_os("SV_CREDIT_LOG") else {
+        return;
+    };
     if let Ok(mut file) = std::fs::OpenOptions::new()
         .create(true)
         .append(true)

@@ -340,7 +340,7 @@ none of them. Most are `sv`'s own checks: rules that read the code, and question
 running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's, and need `--tools`.
 
 - C2.1.2: checked in part only, by `probe.ai-hidden-input`.
-- C2.1.3: settled by `probe.ai-injection-unscreened`; and found failing by sv's `probe.ai-stored-injection-unscreened`.
+- C2.1.3: checked in part only, by `probe.ai-injection-unscreened`; and found failing by sv's `probe.ai-stored-injection-unscreened`.
 - C2.1.4: found failing by sv's `probe.ai-input-truncated`.
 - C2.1.5: found failing by sv's `probe.ai-input-charset-unrestricted`.
 - C2.1.6: found failing by codeql-javascript's `js/system-prompt-injection`.
@@ -351,40 +351,40 @@ running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's
 - C5.2.2: found failing by sv's `probe.ai-retrieval-ignores-user`.
 - C5.2.4: found failing by sv's `probe.ai-reply-carries-others-data`.
 - C6.1.3: found failing by bandit's `B615`; and found failing by sv's `ast.model-download-not-pinned`.
-- C7.1.1: settled by `probe.ai-output-shape-unchecked`.
-- C7.1.2: settled by `probe.ai-output-unbounded`.
-- C7.3.1: settled by `probe.ai-flagged-reply-shown`.
-- C7.3.2: settled by `probe.ai-instructions-leaked`.
+- C7.1.1: checked in part only, by `probe.ai-output-shape-unchecked`.
+- C7.1.2: checked in part only, by `probe.ai-output-unbounded`.
+- C7.3.1: checked in part only, by `probe.ai-flagged-reply-shown`.
+- C7.3.2: checked in part only, by `probe.ai-instructions-leaked`.
 - C7.3.3: found failing by sv's `probe.ai-output-fetched`.
-- C7.3.4: settled by `probe.ai-hidden-content-passed`.
+- C7.3.4: checked in part only, by `probe.ai-hidden-content-passed`.
 - C8.1.3: found failing by sv's `probe.ai-retrieval-ignores-user`.
 - C9.1.1: checked in part only, by `probe.ai-tool-timeout`.
-- C9.1.2: settled by `probe.ai-agent-unbounded`; and found failing by semgrep's `agent-unbounded-loop`.
+- C9.1.2: checked in part only, by `probe.ai-agent-unbounded`; and found failing by semgrep's `agent-unbounded-loop`.
 - C9.3.1: found failing by semgrep's `langchain-dangerous-exec`.
-- C9.3.2: settled by `probe.ai-mcp-output-unvalidated`.
+- C9.3.2: checked in part only, by `probe.ai-mcp-output-unvalidated`.
 - C9.3.7: found failing by sv's `probe.ai-output-fetched`.
-- C9.5.3: settled by `probe.ai-tool-reads-others-records`.
+- C9.5.3: checked in part only, by `probe.ai-tool-reads-others-records`.
 - C9.5.4: found failing by semgrep's `mcp-credential-in-response`.
 - C9.6.1: checked in part only, by `probe.ai-kill-switch-ignored`.
 - C10.1.1: found failing by sv's `config.mcp-server-unpinned`.
-- C10.2.1: settled by `probe.mcp-server-token-unchecked`.
-- C10.2.6: settled by `probe.mcp-session-survives-end`.
+- C10.2.1: checked in part only, by `probe.mcp-server-token-unchecked`.
+- C10.2.6: checked in part only, by `probe.mcp-session-survives-end`.
 - C10.3.1: found failing by sv's `config.mcp-transport-unencrypted`.
-- C10.3.3: settled by `probe.mcp-server-origin-unchecked`.
-- C10.4.1: settled by `probe.ai-mcp-output-unvalidated`.
-- C10.4.2: settled by `probe.ai-mcp-injection-unscreened`; and found failing by semgrep's `mcp-tool-poisoning`, `mcp-unsanitized-return`.
-- C10.4.3: settled by `probe.mcp-server-takes-unknown-or-oversized-arguments`.
-- C10.4.4: settled by `probe.mcp-server-takes-wrong-types`.
+- C10.3.3: checked in part only, by `probe.mcp-server-origin-unchecked`.
+- C10.4.1: checked in part only, by `probe.ai-mcp-output-unvalidated`.
+- C10.4.2: checked in part only, by `probe.ai-mcp-injection-unscreened`; and found failing by semgrep's `mcp-tool-poisoning`, `mcp-unsanitized-return`.
+- C10.4.3: checked in part only, by `probe.mcp-server-takes-unknown-or-oversized-arguments`.
+- C10.4.4: checked in part only, by `probe.mcp-server-takes-wrong-types`.
 - C10.4.5: found failing by sv's `probe.mcp-server-no-size-limit`.
-- C11.2.2: settled by `probe.ai-rate-unlimited`.
+- C11.2.2: checked in part only, by `probe.ai-rate-unlimited`.
 - C11.3.2: found failing by sv's `probe.ai-raw-response-exposed`.
 - C11.4.2: checked in part only, by `probe.ai-flag-not-gating`.
 - AC.12.1: settled by `config.workflow-runs-fork-code`; and found failing by sv's `config.workflow-untrusted-text-in-run`.
-- C12.1.1: settled by `probe.ai-call-log-session`.
+- C12.1.1: checked in part only, by `probe.ai-call-log-session`.
 - C12.1.2: checked in part only, by `probe.ai-safety-decision-detailed`.
-- C12.1.3: settled by `probe.ai-call-log-incomplete`.
+- C12.1.3: checked in part only, by `probe.ai-call-log-incomplete`.
 - AC.12.2: settled by `config.workflow-checkout-keeps-token`.
-- C12.2.1: settled by `probe.ai-injection-logged`.
+- C12.2.1: checked in part only, by `probe.ai-injection-logged`.
 - C12.2.5: checked in part only, by `probe.ai-token-use-attributed`.
 - AC.12.3: found failing by sv's `config.workflow-secrets-with-fork-code`.
 - C12.4.2: checked in part only, by `probe.ai-tool-action-logged`.
