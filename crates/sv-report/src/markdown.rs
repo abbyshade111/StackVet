@@ -220,6 +220,9 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
     if let Some(line) = crate::build_loop_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
+    if let Some(line) = crate::went_same_line(report) {
+        out.push_str(&format!("**{}**\n\n", inert(&line)));
+    }
     if let Some(line) = crate::slowest_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
@@ -943,6 +946,9 @@ pub fn security(report: &Report) -> String {
     }
     if let Some(line) = crate::build_loop_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
+    }
+    if let Some(line) = crate::went_same_line(report) {
+        out.push_str(&format!("**{}**\n\n", inert(&line)));
     }
     // The same report as one file to read or print (ADR-116).
     out.push_str(&format!("{}\n\n", crate::pdf_line(report)));

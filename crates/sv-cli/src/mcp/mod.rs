@@ -56,6 +56,8 @@ mod confine;
 mod explain_settle_tests;
 // Every check asks the AI tool to tell the person what it changed (backlog 0401).
 #[cfg(test)]
+mod build_loop_went_same_tests;
+#[cfg(test)]
 mod fifo_tests;
 #[cfg(test)]
 mod file_uri_tests;
@@ -86,6 +88,8 @@ mod resources_seal_bytes_tests;
 mod since_all_gone_tests;
 #[cfg(test)]
 mod since_paged_tests;
+#[cfg(test)]
+mod since_still_reads_tests;
 #[cfg(test)]
 mod since_tests;
 #[cfg(test)]
@@ -295,6 +299,8 @@ pub struct Server {
     /// The last check's findings' fingerprints, and whether some were left out for the limit,
     /// taken with `last_counts` (ADR-084, decision 6).
     last_fingerprints: std::sync::Mutex<Option<(Vec<String>, bool)>>,
+    /// The last check's findings placed by rule and file key, for the record (backlog 0401).
+    last_placed: std::sync::Mutex<std::collections::BTreeMap<String, (String, String)>>,
     /// For each app, the findings of the last check in this session asked for with no section or as
     /// `all`, and when: a check asked for with no section names those it still finds in a line each
     /// rather than in full (backlog 0336).
@@ -389,6 +395,7 @@ impl Server {
             check: std::sync::Arc::new(assemble),
             last_counts: std::sync::Mutex::new(None),
             last_fingerprints: std::sync::Mutex::new(None),
+            last_placed: std::sync::Mutex::new(std::collections::BTreeMap::new()),
             seen: std::sync::Mutex::new(std::collections::HashMap::new()),
             recording: false,
             client: std::sync::Mutex::new(None),
@@ -709,6 +716,12 @@ impl Server {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .take();
+        let placed = std::mem::take(
+            &mut *self
+                .last_placed
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner),
+        );
         // A check that gave no answer says how it ended; otherwise the answer says.
         let outcome = self
             .last_outcome
@@ -767,6 +780,7 @@ impl Server {
                 off: false,
                 fingerprints_cut: fingerprints.as_ref().is_some_and(|(_, cut)| *cut),
                 fingerprints: fingerprints.map(|(list, _)| list),
+                placed,
                 asked,
                 handed: std::mem::take(
                     &mut *self

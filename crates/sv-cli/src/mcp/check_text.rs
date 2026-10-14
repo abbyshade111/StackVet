@@ -290,10 +290,11 @@ fn sections_since(
             ));
             for s in &delta.gone {
                 findings.items.push(Item::text(format!(
-                    "- {} {} {}\n",
+                    "- {} {} {}{}\n",
                     s.fingerprint,
                     s.rule,
-                    one_line(&format!("{}:{}", s.file, s.line))
+                    one_line(&format!("{}:{}", s.file, s.line)),
+                    delta.still_said(s)
                 )));
             }
         }
@@ -385,7 +386,9 @@ fn sections_since(
                     delta.since
                 )));
                 for s in &delta.gone {
-                    findings.items.push(Item::text(line(s)));
+                    let mut said = line(s);
+                    said.insert_str(said.len() - 1, &delta.still_said(s));
+                    findings.items.push(Item::text(said));
                 }
             }
         }
@@ -533,10 +536,15 @@ pub(super) struct Delta {
     pub since: String,
     before: std::collections::HashSet<String>,
     pub gone: Vec<Shown>,
+    /// Of `gone`, by fingerprint, those whose line still reads as it did when it was given (backlog 0401).
+    pub still: std::collections::BTreeMap<String, (usize, sv_check::review::StillReads)>,
 }
 
+/// The most findings that went a check looks for again in the app's code (backlog 0401).
+const MOST_LOOKED_AGAIN: usize = 50;
+
 impl Delta {
-    pub fn of(report: &sv_report::Report, seen: &Seen) -> Delta {
+    pub fn of(report: &sv_report::Report, seen: &Seen, app_dir: &std::path::Path) -> Delta {
         let now: std::collections::HashSet<&str> = report
             .findings
             .iter()
@@ -556,6 +564,47 @@ impl Delta {
                 .filter(|s| !now.contains(s.fingerprint.as_str()))
                 .cloned()
                 .collect(),
+            still: std::collections::BTreeMap::new(),
+        }
+        .looked_again(app_dir, &now)
+    }
+
+    /// Each finding that went, looked for again in the app's code: whether its line still reads as it did, as written
+    /// or but for a comment that tells a scanner to look away (backlog 0401).
+    fn looked_again(
+        mut self,
+        app_dir: &std::path::Path,
+        now: &std::collections::HashSet<&str>,
+    ) -> Delta {
+        for s in self.gone.iter().take(MOST_LOOKED_AGAIN) {
+            let Some(found) =
+                sv_check::review::still_reads(app_dir, &s.rule, &s.file, &s.fingerprint)
+            else {
+                continue;
+            };
+            // Still found on that line, under the fingerprint its words have now: it did not go.
+            if sv_check::review::fingerprint_now(app_dir, &s.rule, &s.file, found.0)
+                .is_some_and(|f| now.contains(f.as_str()))
+            {
+                continue;
+            }
+            self.still.insert(s.fingerprint.clone(), found);
+        }
+        self
+    }
+
+    /// What follows a finding that went in the check's text: nothing, or that its line still reads as it did.
+    pub fn still_said(&self, s: &Shown) -> String {
+        match self.still.get(&s.fingerprint) {
+            None => String::new(),
+            Some((line, sv_check::review::StillReads::Unchanged)) => format!(
+                " (its line, now line {line}, still reads as it did: the check stopped finding it without the code \
+                 changing; tell the person, and why)"
+            ),
+            Some((line, sv_check::review::StillReads::LookAway { scanner })) => format!(
+                " (its line, now line {line}, reads as it did but for a comment telling {scanner} to look away: that \
+                 hides it, it does not fix it; tell the person)"
+            ),
         }
     }
 
@@ -580,7 +629,21 @@ pub(super) fn structured_since(report: &sv_report::Report, delta: &Delta) -> Val
             .map(|f| Shown::of(f).to_json())
             .collect::<Vec<_>>()
     );
-    out["gone"] = json!(delta.gone.iter().map(Shown::to_json).collect::<Vec<_>>());
+    out["gone"] = json!(
+        delta
+            .gone
+            .iter()
+            .map(|s| {
+                let mut gone = s.to_json();
+                if let Some((line, how)) = delta.still.get(&s.fingerprint) {
+                    let mut still = json!(how);
+                    still["line"] = json!(line);
+                    gone["stillReads"] = still;
+                }
+                gone
+            })
+            .collect::<Vec<_>>()
+    );
     out["since"] = json!(delta.since);
     out
 }

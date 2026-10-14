@@ -35,6 +35,21 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
         json!({ "fingerprint": string, "ruleId": string, "file": string, "line": count }),
         &["fingerprint", "ruleId", "file", "line"],
     );
+    // One gone since, and whether its line still reads as it did (backlog 0401).
+    let gone = object(
+        json!({
+            "fingerprint": string, "ruleId": string, "file": string, "line": count,
+            "stillReads": object(
+                json!({
+                    "line": count,
+                    "how": { "type": "string", "enum": ["unchanged", "look-away"] },
+                    "scanner": string,
+                }),
+                &["line", "how"],
+            ),
+        }),
+        &["fingerprint", "ruleId", "file", "line"],
+    );
     let finding = object(
         json!({
             "rule_id": string, "title": string,
@@ -184,7 +199,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                 // Asked for with no section, the findings given before in this session and still
                 // found, and those gone since, named a line each (backlog 0336).
                 "unchanged": { "type": "array", "items": shown.clone() },
-                "gone": { "type": "array", "items": shown },
+                "gone": { "type": "array", "items": gone },
                 "since": string,
             }),
             // The lists are left out of a part that holds none of them (`crate::parts`).

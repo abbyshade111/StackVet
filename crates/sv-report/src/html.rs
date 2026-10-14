@@ -267,6 +267,12 @@ pub fn page(report: &Report) -> String {
     if let Some(line) = crate::build_loop_line(report) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
     }
+    if let Some(line) = crate::went_same_line(report) {
+        b.push_str(&format!(
+            "<p class=\"note\"><strong>{}</strong></p>\n",
+            escape(&line)
+        ));
+    }
     if let Some(line) = crate::slowest_line(report) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
     }
