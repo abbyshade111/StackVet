@@ -5,7 +5,8 @@
 //! that over-claiming is cheap and under-claiming is not.
 
 pub const STARTER_MANIFEST: &str = r#"# stackvet.toml — what this app is, so `sv` knows which security requirements apply.
-# Written by your AI coding tool; read it yourself before you trust the report.
+# Written by your AI coding tool. The report's "What the app says about itself" shows each answer here
+# beside what the code shows, and `sv review` asks you to confirm the two that set the level.
 manifest-version = 1
 
 [app]
