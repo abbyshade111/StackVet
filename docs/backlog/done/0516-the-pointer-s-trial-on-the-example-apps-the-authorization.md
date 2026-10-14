@@ -1,6 +1,6 @@
 # The pointer's trial on the example apps: the authorization locator finds nothing where the check is inline and points at an OpenID URL where a name starts with authori
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
