@@ -1494,15 +1494,17 @@ mod tests {
         c
     }
 
+    /// How long the commands below that are to be stopped are given: long enough for the shell to have run its first
+    /// command, and far short of the `sleep 30` after it, so only the stopping ends them. On a busy Windows runner,
+    /// Git for Windows' `sh` had not always run its first command within the 400 or 500 milliseconds these were once
+    /// given, and the tests failed with nothing printed and no pid written (backlog 0392).
+    const TO_BE_STOPPED: Duration = Duration::from_secs(3);
+
     #[test]
     fn a_command_that_takes_too_long_is_stopped_and_says_so() {
         let started = Instant::now();
-        let done = run_bounded(
-            &mut sh("echo begun; sleep 30"),
-            Duration::from_millis(400),
-            false,
-        )
-        .expect("it starts");
+        let done =
+            run_bounded(&mut sh("echo begun; sleep 30"), TO_BE_STOPPED, false).expect("it starts");
         assert!(done.stopped, "{done:?}");
         assert!(
             started.elapsed() < Duration::from_secs(10),
@@ -1587,7 +1589,7 @@ mod tests {
             "sleep 30 >/dev/null 2>&1 & {which} > '{}'; wait",
             pid_file.display()
         );
-        let done = run_bounded(&mut sh(&script), Duration::from_millis(500), false).unwrap();
+        let done = run_bounded(&mut sh(&script), TO_BE_STOPPED, false).unwrap();
         assert!(done.stopped);
         let pid = std::fs::read_to_string(&pid_file)
             .unwrap()
