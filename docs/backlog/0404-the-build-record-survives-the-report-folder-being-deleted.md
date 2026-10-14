@@ -1,6 +1,6 @@
 # The build record survives the report folder being deleted, and the report says when it may have been
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
