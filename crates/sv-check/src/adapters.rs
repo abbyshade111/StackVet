@@ -122,6 +122,11 @@ pub struct Adapter {
     /// clean; its findings still stand.
     #[serde(default)]
     pub unfinished_when: Vec<Unfinished>,
+    /// The `[tools]` setting in stackvet.toml that turns this tool on, for a tool that runs only
+    /// when the owner says so (CodeQL, whose license allows only some uses; ADR-115). Off, it is not
+    /// run and not named. Absent for a tool that runs whenever the outside tools do.
+    #[serde(default)]
+    pub opt_in: Option<String>,
 }
 
 /// A line a tool writes when part of its run did not happen, and what it means.
@@ -461,6 +466,19 @@ impl Adapters {
 
     pub fn all(&self) -> &[Adapter] {
         &self.adapters
+    }
+
+    /// The adapters a run uses: every one, less those whose `opt_in` setting is not turned on
+    /// (ADR-115). What is left out is not run and not named, as if `sv` did not know it.
+    pub fn opted_in(&self, turned_on: impl Fn(&str) -> bool) -> Adapters {
+        Adapters {
+            adapters: self
+                .adapters
+                .iter()
+                .filter(|a| a.opt_in.as_deref().is_none_or(&turned_on))
+                .cloned()
+                .collect(),
+        }
     }
 
     /// The conditions some adapter adds arguments for that are known not to hold for this app, given

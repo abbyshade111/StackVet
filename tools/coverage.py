@@ -71,11 +71,20 @@ TIERS = [
     ),
     ("tools", "Outside tools", "the tool installed; runs with `sv report` unless `--no-tools`"),
     (
+        "opt-in",
+        "Outside tools you turn on",
+        "the tool installed and turned on in stackvet.toml (`[tools] codeql = true`), for a use its license "
+        "allows: an open-source app, academic research, or a paid GitHub Advanced Security license",
+    ),
+    (
         "production",
         "Your own live site",
         "the address your app is served from, typed at the terminal (`sv probe https://…`)",
     ),
 ]
+
+# The tiers whose checks are outside tools: the ones that run by default, and those the owner turns on (ADR-115).
+TOOL_TIERS = ("tools", "opt-in")
 
 # Checks whose citations are written in Rust rather than in a data file.
 RUST_CHECKS = {
@@ -851,6 +860,8 @@ def evidence():
         for q in rule["requirementIds"]:
             ev[q]["static"].append(rule["id"])
     for adapter in load(ROOT / "data/adapters.json")["adapters"]:
+        # A tool the owner turns on is counted apart, so the counts say what a default run reaches (ADR-115).
+        tier = "opt-in" if adapter.get("opt_in") else "tools"
         loaded = semgrep_loaded(adapter) if adapter["id"] == "semgrep" else None
         for rule_id in [r for r in adapter["rules"] if loaded is not None and r not in loaded]:
             rule = adapter["rules"][rule_id]
@@ -868,18 +879,19 @@ def evidence():
             del rules[rule_id]
         for rule_id, rule in rules.items():
             for q in rule["requirements"]:
-                if adapter["id"] not in ev[q]["tools"]:
-                    ev[q]["tools"].append(adapter["id"])
+                if adapter["id"] not in ev[q][tier]:
+                    ev[q][tier].append(adapter["id"])
                 CREDITED_BY_TOOL[q].add(adapter["id"])
-                TOOL_LANGUAGES[q] |= (set(rule.get("languages") or ["*"]) if adapter["language"] == "*"
-                                      else set(adapter["language"].split(",")))
+                if tier == "tools":
+                    TOOL_LANGUAGES[q] |= (set(rule.get("languages") or ["*"]) if adapter["language"] == "*"
+                                          else set(adapter["language"].split(",")))
                 TOOL_RULE_IDS[q][adapter["id"]].add(rule_id)
                 if rule.get("what"):
                     TOOL_RULES[q][adapter["id"]].append(rule["what"])
         for rule_id, rule in rules.items():
             for q in rule.get("findings_against", []):
-                if adapter["id"] not in ev[q]["tools"]:
-                    ev[q]["tools"].append(adapter["id"])
+                if adapter["id"] not in ev[q][tier]:
+                    ev[q][tier].append(adapter["id"])
                 TOOL_RULE_IDS[q][adapter["id"]].add(rule_id)
                 if rule.get("what"):
                     TOOL_RULES[q][adapter["id"]].append(rule["what"])
@@ -1149,7 +1161,7 @@ def reach_json(asvs, aisvs, ev, tiers, settles, checks=None):
     requirement a check can settle. A check that is only ever a finding is left out: it can show a
     requirement failing, never met, so it is not what a run that did not happen would have added."""
     def credits(q, tier, check):
-        if tier == "tools":
+        if tier in TOOL_TIERS:
             return check in CREDITED_BY_TOOL.get(q, set())
         return ("sv", check) not in FINDINGS_ONLY.get(q, set())
     reach = {}
@@ -1262,7 +1274,7 @@ def main():
         own that is not only ever a finding, or a tool with some rule a clean run credits to q."""
         sv_only = {r for tool, r in FINDINGS_ONLY.get(q, ()) if tool == "sv"}
         return settles(q) and any(
-            c in CREDITED_BY_TOOL[q] if tier == "tools" else c not in sv_only
+            c in CREDITED_BY_TOOL[q] if tier in TOOL_TIERS else c not in sv_only
             for tier, checks in ev[q].items() for c in checks)
 
     def credited_whole(q):
@@ -1270,7 +1282,7 @@ def main():
         only ever in part, or a tool with a rule a clean run credits to q (backlog 0470)."""
         sv_only = {r for tool, r in FINDINGS_ONLY.get(q, ()) if tool == "sv"}
         return settles(q) and any(
-            c in CREDITED_BY_TOOL[q] if tier == "tools" else (c not in sv_only and c not in IN_PART)
+            c in CREDITED_BY_TOOL[q] if tier in TOOL_TIERS else (c not in sv_only and c not in IN_PART)
             for tier, checks in ev[q].items() for c in checks)
 
     out = []
@@ -1356,10 +1368,14 @@ def main():
       "*checked in part*: every check that credits them tries part of what they ask, so the most a clean run "
       "gives them is *checked in part*, never *checked*.\n")
     plain = [q for q in asvs if settles(q) and tiers(q) == ["static"]]
-    only_tools = [q for q in asvs if settles(q) and tiers(q) == ["tools"]]
+    only_tools = [q for q in asvs if settles(q) and set(tiers(q)) <= set(TOOL_TIERS)]
+    only_opt_in = [q for q in asvs if settles(q) and tiers(q) == ["opt-in"]]
     w(f"With nothing beyond plain `sv check`, {sum(settles(q) and 'static' in tiers(q) for q in asvs)} "
       f"ASVS requirements can be settled. {len(only_tools)} can be settled only by an outside tool, "
-      "almost all by semgrep and CodeQL, and only for the languages their rules are written for.\n")
+      "almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, "
+      f"{len(only_opt_in)} only CodeQL reaches ({', '.join(only_opt_in)}), and CodeQL runs only when "
+      "stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they "
+      "stay not verified.\n")
 
     # ---- AISVS by level, so a count on the ASVS basis (levels 1 and 2) can be read for AISVS too (backlog 0433)
     w("## AISVS 1.0 by level\n")
@@ -1506,7 +1522,7 @@ def main():
     def credited_by_other(q):
         return any(c for tier, checks in ev[q].items() for c in checks
                    if c not in sv_finding_only(q)
-                   and not (tier == "tools"
+                   and not (tier in TOOL_TIERS
                             and any(tool == c for tool, _ in FINDINGS_ONLY.get(q, ()))
                             and c not in CREDITED_BY_TOOL[q]))
 
@@ -1514,13 +1530,13 @@ def main():
     w(f"{len(only)} of these {len(settled_ai)} can only ever be marked *needs attention*: a check can")
     w("show the control missing, and finding nothing does not show it present, so a clean run credits")
     w("none of them. Most are `sv`'s own checks: rules that read the code, and questions asked of the")
-    w("running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's, which run with `sv report` unless `--no-tools`.\n")
+    w("running app (`--run`, with an `ai` section). The rest are semgrep's, which runs with `sv report` unless `--no-tools`, and CodeQL's, which runs only when stackvet.toml turns it on.\n")
     for q in settled_ai:
         rules = sorted(FINDINGS_ONLY.get(q, ()))
         # A tool whose rules only ever find this failing does not settle it, whichever tool it is.
         finding_only_tools = {tool for tool, _ in rules} - CREDITED_BY_TOOL[q]
         names = [c for tier, checks in ev[q].items() for c in checks
-                 if not (tier == "tools" and c in finding_only_tools)
+                 if not (tier in TOOL_TIERS and c in finding_only_tools)
                  and c not in sv_finding_only(q)]
         parts = []
         if names:
@@ -1623,7 +1639,7 @@ def requirement_rows(asvs, aisvs, ev, tiers, settles, supports_only, manual_only
             checks = []
             for t in tiers(q):
                 for c in ev[q][t]:
-                    if t == "tools":
+                    if t in TOOL_TIERS:
                         # Each phrase once: one rule's words can join two with "; " that
                         # another rule says alone.
                         what = sorted({p.strip() for w in TOOL_RULES[q].get(c, [])

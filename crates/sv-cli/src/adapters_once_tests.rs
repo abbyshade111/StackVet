@@ -41,10 +41,10 @@ fn a_report_without_tools_names_them_from_the_file() {
     let loaded = Loaded::load().unwrap();
     let report = assemble_report(&app(), &ReportOptions::reading_only("a test"), &loaded).unwrap();
     let why = tools_gap(&report);
-    assert!(
-        why.contains(&tool_names(loaded.adapters.as_ref().unwrap())),
-        "{why}"
-    );
+    // The tools from the file, less those the app has not turned on: CodeQL, here (ADR-115).
+    let on = loaded.adapters.as_ref().unwrap().opted_in(|_| false);
+    assert!(why.contains(&tool_names(&on)), "{why}");
+    assert!(!why.contains("CodeQL"), "{why}");
     assert!(why.contains("Semgrep"), "{why}");
     let listed = report
         .examined

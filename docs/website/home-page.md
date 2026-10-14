@@ -116,6 +116,10 @@ OWASP is a nonprofit that writes the security checklists many companies build to
 StackVet has a check for 40 more of the ASVS requirements and 18 more of the AISVS ones, but those checks can only
 show the protection missing: when they find nothing wrong, that doesn't show the protection is there.
 
+Five of the ASVS ones counted above only CodeQL can check, and it runs only when you turn it on, because its license
+allows it only for an open-source app, academic research, or a paid GitHub license. Without it, those five stay not
+verified.
+
 ASVS and AISVS sort their requirements into three levels. Level 1 is the baseline for any app, and level 2 is for
 most apps that hold people's information; StackVet holds each app to one of those two, from what you tell it the app
 does and keeps. Level 3, for apps where a break-in would do the most harm, such as banking or medical systems, has
@@ -227,10 +231,10 @@ tell us in a GitHub issue.
 - **Semgrep**, and **Opengrep** in its place when Semgrep isn't installed, running the Semgrep Registry rules. The
   rules are under the Semgrep Rules License, which allows use but not resale; StackVet is not sold. Semgrep and
   Opengrep themselves are under the GNU LGPL 2.1.
-- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby, only when you turn it on (backlog 0415). The
-  CodeQL command-line tool is under the GitHub CodeQL Terms and Conditions, which allow it on an app released under
-  an open-source license, for academic research, or with a paid GitHub Advanced Security license; its queries are
-  under the MIT License.
+- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby, only when you turn it on (`[tools] codeql = true`
+  in `stackvet.toml`). The CodeQL command-line tool is under the GitHub CodeQL Terms and Conditions, which allow it
+  on an app released under an open-source license, for academic research, or with a paid GitHub Advanced Security
+  license; its queries are under the MIT License.
 - **Bandit**, for Python, and **gosec**, for Go, both under the Apache License 2.0. **Brakeman**, for Ruby on
   Rails, under the Brakeman Public Use License, which allows use to analyze your own software and not commercial
   use.

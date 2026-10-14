@@ -129,8 +129,10 @@ which is a perfectly fair thing for a test to be — most tests are.
 
 `sv report` writes the whole thing out, into a folder named `stackvet-report` inside the app's folder unless you
 give `--out`. Add `--run` to start the app behind the fence and include what it answers. The outside security tools
-that are installed (Bandit, gosec, Brakeman, Semgrep, and CodeQL) run unless you add `--no-tools`, which is the quick
-run, since CodeQL can take minutes on a large app. It writes eight files:
+that are installed (Bandit, gosec, Brakeman, and Semgrep) run unless you add `--no-tools`, which is the quick run.
+CodeQL runs only when you turn it on with `[tools] codeql = true` in `stackvet.toml`: its license allows it only on an
+app released under an open-source license, for academic research, or with a paid GitHub Advanced Security license,
+and StackVet cannot tell which applies to yours. Off, the report does not name it. It writes eight files:
 
 | File | What it holds | Who it is for |
 |---|---|---|

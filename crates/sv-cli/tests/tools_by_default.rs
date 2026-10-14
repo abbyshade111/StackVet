@@ -55,12 +55,14 @@ fn a_plain_report_tries_every_tool_for_the_apps_languages() {
         Some(0),
         "a tool not installed is not a failure by default: {said}{err}"
     );
-    for tool in ["bandit", "semgrep", "codeql-python"] {
+    for tool in ["bandit", "semgrep"] {
         assert!(
             said.contains(&format!("{tool} did not run")),
             "{tool}: {said}"
         );
     }
+    // CodeQL runs only when stackvet.toml turns it on, and the example does not (ADR-115).
+    assert!(!said.contains("codeql"), "{said}");
     assert!(!compliance.contains("--no-tools was given"), "{compliance}");
     // Nothing on screen says the tools were asked for: they were not, and still ran.
     assert!(
