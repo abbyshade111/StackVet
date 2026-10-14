@@ -1,6 +1,6 @@
 # README's "Where it is" is 2,200 words under one heading, and the heading does not say what is under it
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
