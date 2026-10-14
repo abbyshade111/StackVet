@@ -54,6 +54,7 @@ mod check_text;
 mod confine;
 #[cfg(test)]
 mod explain_settle_tests;
+// Every check asks the AI tool to tell the person what it changed (backlog 0401).
 #[cfg(test)]
 mod fifo_tests;
 #[cfg(test)]
@@ -93,6 +94,8 @@ mod smoke_list_tests;
 mod spec_parts_tests;
 #[cfg(test)]
 mod status_tests;
+#[cfg(test)]
+mod tell_the_person_tests;
 #[cfg(test)]
 mod tests;
 mod tools;
