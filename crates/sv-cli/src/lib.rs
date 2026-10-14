@@ -2071,7 +2071,8 @@ pub fn refuse_someone_elses_folder(out_dir: &Path, ours: &[&str]) -> Result<()> 
     if !marked {
         anyhow::bail!(
             "{} already holds files sv did not write ({named}), so sv does not write its report \
-             there. Give an empty folder, or a new one, with --out.",
+             there. Give an empty folder, or a new one: with --out at a terminal, or `out` in \
+             stackvet_write_report.",
             out_dir.display()
         );
     }
@@ -2079,7 +2080,8 @@ pub fn refuse_someone_elses_folder(out_dir: &Path, ours: &[&str]) -> Result<()> 
         anyhow::bail!(
             "{} carries sv's marker and also holds files sv did not write ({named}), and sv cannot \
              show it wrote the report there: {why}. A marker can be copied into any folder, so sv \
-             does not write its report there. Give an empty folder, or a new one, with --out.",
+             does not write its report there. Give an empty folder, or a new one: with --out at a terminal, or `out` in \
+             stackvet_write_report.",
             out_dir.display()
         );
     }

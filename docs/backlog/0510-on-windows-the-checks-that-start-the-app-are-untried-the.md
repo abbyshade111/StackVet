@@ -1,6 +1,6 @@
 # On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

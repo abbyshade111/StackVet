@@ -8,7 +8,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 - honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0290, 0415, 0504, 0506, 0232
 - wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401, 0338, 0412, 0503, 0505
-- documentation — arm: full — holds: 0478 (since 2026-10-14) — next: 0476, 0475, 0374, 0413, 0370
+- documentation — arm: full — holds: 0475 (since 2026-10-14) — next: 0374, 0413, 0370, 0510
 
 ## Queue
 
@@ -32,8 +32,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 18. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 20. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-21. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
-22. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
+21. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
 
 ## Log
 
@@ -389,3 +388,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 10:21 — assigned 0506 to honesty (full) as next: filed by a session overnight: V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them (human-checks.json; 0427 is done, so the file is free)
 - 2026-10-14 10:21 — assigned 0232 to honesty (full) as next: released from the archived session: the remaining sample groups B to F for the checks that rest on one sample (sv-check suites); honesty's lane holds no sv-check file now
 - 2026-10-14 10:21 — assigned 0370 to documentation (full) as next: released from the archived session, and first in the owner's plan: finalize the setup prompt library (docs/prompts/setup.md) before the three-tool trial
+- 2026-10-14 10:50 — finished 0478 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1887; now holds 0476
+- 2026-10-14 10:50 — finished 0476 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1888; now holds 0475
+- 2026-10-14 10:50 — assigned 0510 to documentation (full) as next: Windows users told the running-app checks are untried there (the guide, the setup page, sv doctor); the guide is free now that 0473 to 0478 are done, and 0370 in this lane shares the setup page
