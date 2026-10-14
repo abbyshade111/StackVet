@@ -54,8 +54,10 @@ pub struct SecretRules {
 pub const ASSIGNMENT_RULE: &str = "secrets.credential-assignment";
 
 /// What the credential-assignment rule cites. A constant rather than a literal in the finding, so the
-/// citation guard can read it alongside the data file's rules.
-pub const ASSIGNMENT_REQUIREMENTS: &[&str] = &["V13.3.1", "V13.2.3", "SBD-AC-05"];
+/// citation guard can read it alongside the data file's rules. Not V13.2.3 (no default credentials): the
+/// rule passes over a value that reads as a word or has little entropy, which is every stock default, so
+/// what it finds is never one (backlog 0431).
+pub const ASSIGNMENT_REQUIREMENTS: &[&str] = &["V13.3.1", "SBD-AC-05"];
 
 /// The assignment rule's own words, for the same guard.
 pub const ASSIGNMENT_WHAT: &str =
@@ -1310,6 +1312,9 @@ mod redact_named_tests;
 
 #[cfg(test)]
 mod pass_name_tests;
+
+#[cfg(test)]
+mod assignment_citation_tests;
 
 #[cfg(test)]
 mod redact_form_tests;
