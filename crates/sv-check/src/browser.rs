@@ -332,8 +332,9 @@ pub(crate) fn opened(v: &Value, path: &str) -> bool {
 /// reasons it gave under V3.2.2 came from other checks.
 pub const NO_TEXT_FORM: &str = "In a real browser: the typed-text check, which types markup into a form and looks \
     whether the page shows it as text or runs it, was not made, because stackvet.toml names no form for it; sv does \
-    not look for forms of its own. A line under [stack.run.users] such as browser = { text-form = \"/notes/new\", \
-    shows = \"/notes\" } makes it: the page with the form, and the page that shows what was typed.";
+    not look for forms of its own. A line under `[stack.run.users]` such as \
+    `browser = { text-form = \"/notes/new\", shows = \"/notes\" }` makes it: the page with the form, and the page \
+    that shows what was typed.";
 
 /// The browser checks, with the first user's session. `works` says whether the plain requests
 /// showed that session opening the private pages; without that, nothing here would mean anything.
