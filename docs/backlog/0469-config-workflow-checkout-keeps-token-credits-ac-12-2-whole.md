@@ -1,6 +1,6 @@
 # `config.workflow-checkout-keeps-token` credits AC.12.2 whole for one of its two clauses
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

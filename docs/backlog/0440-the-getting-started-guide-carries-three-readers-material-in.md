@@ -1,6 +1,6 @@
 # The getting-started guide carries three readers' material in one 6,300-word file, and the setup is the smallest third
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

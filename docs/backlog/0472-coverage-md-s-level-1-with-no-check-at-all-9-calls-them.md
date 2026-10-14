@@ -1,6 +1,6 @@
 # COVERAGE.md's "Level 1 with no check at all (9)" calls them every app's baseline, though four apply only to an OAuth authorization server
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
