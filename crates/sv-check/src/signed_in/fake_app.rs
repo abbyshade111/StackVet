@@ -575,6 +575,9 @@ pub(super) struct Flaws {
     pub(super) reset_cuts_line_breaks: bool,
     /// Using a reset code answers as if it worked and changes nothing.
     pub(super) reset_does_nothing: bool,
+    /// The reset form, and its token, shows only at the emailed link: plain `/reset` says the link
+    /// is not valid and has no form (backlog 0385).
+    pub(super) reset_form_only_at_link: bool,
     /// A reset code can be used again after it has been used.
     pub(super) reset_reusable: bool,
     /// A reset adds the new password and leaves the old one working.
@@ -1870,6 +1873,11 @@ impl FakeApp {
                     self.sessions.insert(session, who);
                 }
                 Self::respond(303, vec![("Location", "/account".into())], "")
+            }
+            ("GET", "/reset")
+                if self.flaws.reset_form_only_at_link && !query.contains_key("token") =>
+            {
+                Self::respond(200, vec![], "<p>This link is not valid.</p>")
             }
             ("GET", "/forgot" | "/reset") => Self::respond(
                 200,
