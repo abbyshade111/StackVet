@@ -88,7 +88,7 @@ impl Route {
     pub fn what_to_do(self) -> &'static str {
         match self {
             Route::WriteItDown => "write your answer in security-notes.md (`sv notes` makes it)",
-            Route::AnswerInTheManifest => "answer it in the [design] section of stackvet.toml",
+            Route::AnswerInTheManifest => "answer it in the `[design]` section of stackvet.toml",
             Route::GoAndLook => "check it by hand; nothing here can",
         }
     }

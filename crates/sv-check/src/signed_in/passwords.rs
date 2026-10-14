@@ -273,7 +273,7 @@ pub(super) fn password_checks(
         out.not_assessed.push((
             IDS.to_owned(),
             "The password rules are asked through the app's own sign-up, and stackvet.toml sets \
-             no `signup` under [stack.run.users]."
+             no `signup` under `[stack.run.users]`."
                 .to_owned(),
         ));
         return;
@@ -468,7 +468,7 @@ pub(super) fn password_checks(
             "V6.2.11".to_owned(),
             if policy.context_words.is_empty() {
                 "stackvet.toml lists no context-specific words. Add your app's and your \
-                 organization's names under [policy] as `context-words`, and sign-up is asked to \
+                 organization's names under `[policy]` as `context-words`, and sign-up is asked to \
                  refuse a password made from one."
                     .to_owned()
             } else {
@@ -789,7 +789,7 @@ pub(super) fn change_password_checks(
         out.not_assessed.push((
             IDS.to_owned(),
             "Whether a password can be changed, and whether that needs the current one: \
-             stackvet.toml sets no `change-password` under [stack.run.users]."
+             stackvet.toml sets no `change-password` under `[stack.run.users]`."
                 .to_owned(),
         ));
         return;
@@ -1032,7 +1032,7 @@ pub(super) fn change_email_check(
         out.not_assessed.push((
             IDS.to_owned(),
             "Whether changing the email address needs the password again: stackvet.toml sets no \
-             `change-email` under [stack.run.users]."
+             `change-email` under `[stack.run.users]`."
                 .to_owned(),
         ));
         return;
@@ -1548,7 +1548,7 @@ pub(super) fn delete_account_check(
         out.not_assessed.push((
             IDS.to_owned(),
             "Whether deleting an account ends its sessions: stackvet.toml sets no \
-             `delete-account` under [stack.run.users]."
+             `delete-account` under `[stack.run.users]`."
                 .to_owned(),
         ));
         return;

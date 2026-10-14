@@ -132,7 +132,7 @@ fn reset_flow(
         out.not_assessed.push((
             IDS.to_owned(),
             "How a forgotten password is reset: stackvet.toml sets no `reset` under \
-             [stack.run.users]."
+             `[stack.run.users]`."
                 .to_owned(),
         ));
         return;

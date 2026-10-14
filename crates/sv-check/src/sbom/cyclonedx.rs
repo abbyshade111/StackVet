@@ -171,7 +171,7 @@ fn image_component(runs_on: &RunsOn) -> Option<CycloneComponent> {
     };
     let mut properties = vec![property(
         "securevibe:source",
-        "stackvet.toml, [stack.run] image: the image sv starts the app in",
+        "stackvet.toml, `[stack.run]` image: the image sv starts the app in",
     )];
     match &runs_on.image_digest {
         Some(digest) => properties.push(property(

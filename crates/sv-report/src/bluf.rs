@@ -375,7 +375,7 @@ pub fn next_steps(report: &Report) -> Vec<NextStep> {
                 )
             },
             where_to_look:
-                "`sv notes` writes the questions out; the rest are the [design] section \
+                "`sv notes` writes the questions out; the rest are the `[design]` section \
                             of stackvet.toml"
                     .to_owned(),
         });

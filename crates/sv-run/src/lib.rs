@@ -121,18 +121,18 @@ impl CannotRun {
                  `colima start` on a Mac), then run this again; `sv doctor` shows what it finds."
             ),
             CannotRun::NoRunCommand { missing } => format!(
-                "stackvet.toml does not say how to run this app ({} not set under [stack.run]), \
+                "stackvet.toml does not say how to run this app ({} not set under `[stack.run]`), \
                  so everything that needs it running is reported as not assessed.",
                 missing.join(", ")
             ),
             CannotRun::BadImage { image, why } => format!(
-                "stackvet.toml names an image under [stack.run] that is not a name Docker \
+                "stackvet.toml names an image under `[stack.run]` that is not a name Docker \
                  reads as one ({image:?}: {why}), so the app was not started and everything that \
                  needs it running is reported as not assessed. Name the image as Docker does, \
                  `python:3.12-slim` or `registry.example.com/team/app:1.0`."
             ),
             CannotRun::BadHealth { path, why } => format!(
-                "stackvet.toml names a health path under [stack.run] that is not a plain path \
+                "stackvet.toml names a health path under `[stack.run]` that is not a plain path \
                  ({path:?}: {why}), so the app was not started and everything that needs it \
                  running is reported as not assessed. Name a path such as `/health` or \
                  `/healthz?full=1`: `/`, then letters, digits, and `-._~/`, and after a `?` the \

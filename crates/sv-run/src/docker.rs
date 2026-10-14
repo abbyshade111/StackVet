@@ -1323,7 +1323,7 @@ fn never_ready_detail(logs: &str, build: Option<&str>) -> (String, bool) {
         Some(step) => format!(
             "{last} Its build step (`{step}`) ran inside the fence, where nothing can be \
              downloaded and the file system is read-only apart from /tmp, so a step that installs \
-             packages cannot work there: set `install = true` under [stack.run] to have `sv` \
+             packages cannot work there: set `install = true` under `[stack.run]` to have `sv` \
              install them before the run, or install them into the image."
         ),
         None => last,
@@ -3758,7 +3758,7 @@ mod probe_tests {
         );
         assert!(with.contains("`pip install -r requirements.txt`"), "{with}");
         assert!(
-            with.contains("set `install = true` under [stack.run]")
+            with.contains("set `install = true` under `[stack.run]`")
                 && with.contains("install them into the image"),
             "{with}"
         );

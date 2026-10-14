@@ -273,7 +273,7 @@ pub(crate) fn storage_check(
         not_assessed(
             out,
             "what the app keeps in the browser after signing in needs `login` and a private page \
-             in [stack.run.users].",
+             in `[stack.run.users]`.",
         );
         return;
     };
