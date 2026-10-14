@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From backlog 0374 (14 October 2026), which read every credited tool's and data source's license from its source and
 wrote each beside its credit in `docs/website/home-page.md`. These three need the owner's judgment; the rest do not.
 Each quotes the text that raises it. The site's item 5 ("every credited tool's and data source's license confirmed")

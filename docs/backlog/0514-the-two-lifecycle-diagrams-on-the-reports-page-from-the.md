@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Split from backlog 0413 (14 October 2026), which built the rest of the reports page (`docs/website/reports-page.md`).
 0413 asked for two diagrams on the page, drawn by the owner on 13 October 2026 in the website palette and kept for
 now outside the repository, on the owner's USB drive (`whitepaper_claude/diagrams`: an SVG and a PNG of each, and
