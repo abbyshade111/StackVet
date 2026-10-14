@@ -8,7 +8,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 - honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0232, 0516
 - wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401
-- documentation — arm: full — holds: nothing
+- documentation — arm: full — holds: 0517 (since 2026-10-14)
 
 ## Queue
 
@@ -413,3 +413,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 12:50 — finished 0510 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1904; now holds 0512
 - 2026-10-14 13:20 — finished 0512 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1910
 - 2026-10-14 13:50 — finished 0505 by wording (full): https://github.com/abbyshade111/StackVet/pull/1912; from its lane, behind 0372
+- 2026-10-14 13:54 — queued 0517, marked
+- 2026-10-14 13:54 — assigned 0517 to documentation (full): Windows red on main since 0510 (#1904), documentation's own merge: the status test's fixed five topics; the one item in the queue, and the session is free
