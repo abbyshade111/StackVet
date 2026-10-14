@@ -18,6 +18,7 @@ fn catalog() -> Catalog {
             id: "V8.1.1".into(),
             title: "Who may do what".into(),
             asks: "Who may do what in the app.".into(),
+            plain: None,
             facts: vec![],
             how_to_find_out: None,
             heading: None,

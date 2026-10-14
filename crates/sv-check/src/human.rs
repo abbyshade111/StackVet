@@ -60,6 +60,10 @@ pub struct Item {
     pub id: String,
     pub title: String,
     pub how: String,
+    /// The question in plain words, shown first, with `how` under it as the standard's words (backlog
+    /// 0427). Absent for a `human-checks.json` entry, whose `how` is already written for a person who
+    /// is not a programmer.
+    pub plain: Option<String>,
     /// Where to go and look, when the question alone does not say. Absent for a `human-checks.json`
     /// entry, whose `how` is already the instruction.
     pub where_to_look: Option<String>,
@@ -71,6 +75,20 @@ pub struct Item {
     /// look, never evidence: it changes nothing about the requirement's state. Absent when no locator
     /// speaks to the question, or one does and found nothing.
     pub rests_on: Option<RestsOn>,
+}
+
+/// What the standard's own words are called where a question shows them under its plain words.
+pub const STANDARDS_WORDS: &str = "In the standard's words:";
+
+impl Item {
+    /// The question as a person reads it: the plain sentence, then the standard's own words after
+    /// [`STANDARDS_WORDS`] (backlog 0427). Just the standard's words where there is no plain sentence.
+    pub fn asked(&self) -> String {
+        match &self.plain {
+            Some(plain) => format!("{plain} {STANDARDS_WORDS} {}", self.how),
+            None => self.how.clone(),
+        }
+    }
 }
 
 /// What a question shows of the app's code, and the sentence that says what it is.
@@ -148,6 +166,7 @@ pub fn checklist(
                 id: section.id.clone(),
                 title: section.title.clone(),
                 how: section.asks.clone(),
+                plain: section.plain.clone(),
                 where_to_look: section.how_to_find_out.clone(),
                 route: Route::WriteItDown,
                 where_means: None,
@@ -161,6 +180,7 @@ pub fn checklist(
                 id: question.id.clone(),
                 title: question.title.clone(),
                 how: question.asks.clone(),
+                plain: question.plain.clone(),
                 where_to_look: question.how_to_find_out.clone(),
                 route: Route::AnswerInTheManifest,
                 where_means: Some(question.where_means.clone()),
@@ -174,6 +194,7 @@ pub fn checklist(
                 id: check.id.clone(),
                 title: check.title.clone(),
                 how: check.how.clone(),
+                plain: None,
                 where_to_look: None,
                 route: Route::GoAndLook,
                 where_means: None,
@@ -220,6 +241,7 @@ mod tests {
                 id: "V6.1.1".into(),
                 title: "How sign-in is protected".into(),
                 asks: "How the app defends against guessing.".into(),
+                plain: None,
                 facts: Vec::new(),
                 how_to_find_out: None,
                 heading: None,
@@ -235,6 +257,7 @@ mod tests {
                 id: "V8.3.1".into(),
                 title: "Authorization on the server".into(),
                 asks: "Is authorization enforced on the server?".into(),
+                plain: None,
                 where_means: "the file where it happens".into(),
                 how_to_find_out: None,
             }],

@@ -92,8 +92,11 @@ pub const WHO: [&str; 2] = [OWNER, AI_TOOL];
 pub struct Question {
     pub id: String,
     pub title: String,
-    /// The question, in the words of somebody who is not a programmer.
+    /// The question, in the standard's own words where it has them: the citation.
     pub asks: String,
+    /// The same question in one sentence a person who is not a programmer can answer (backlog 0427).
+    #[serde(default)]
+    pub plain: Option<String>,
     /// What `where` should name for this question, said in the file `sv` writes.
     #[serde(rename = "whereMeans")]
     pub where_means: String,
@@ -454,6 +457,7 @@ mod tests {
                     id: "V8.3.1".into(),
                     title: "Who may do what is enforced on the server".into(),
                     asks: "Are the authorization rules enforced on the server?".into(),
+                    plain: None,
                     where_means: "the file where authorization is enforced".into(),
                     how_to_find_out: None,
                 },
@@ -462,6 +466,7 @@ mod tests {
                     title: "Input is validated on the server".into(),
                     asks: "Does the app validate input on the server as well as in the browser?"
                         .into(),
+                    plain: None,
                     where_means: "the file where input validation happens".into(),
                     how_to_find_out: None,
                 },

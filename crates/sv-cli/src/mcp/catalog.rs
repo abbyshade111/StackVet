@@ -114,6 +114,8 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
     let question = object(
         json!({
             "id": string, "title": string, "how": string,
+            // The question in plain words, asked first; `how` is then the standard's words (backlog 0427).
+            "plain": { "type": ["string", "null"] },
             "where_to_look": { "type": ["string", "null"] },
             "route": { "type": "string", "enum": ["write-it-down", "answer-in-the-manifest", "go-and-look"] },
             "where_means": { "type": ["string", "null"] },
@@ -133,6 +135,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
             "id",
             "title",
             "how",
+            "plain",
             "where_to_look",
             "route",
             "where_means",
