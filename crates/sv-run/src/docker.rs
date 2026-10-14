@@ -183,6 +183,10 @@ mod images_file_tests;
 #[cfg(test)]
 #[path = "docker_images_tests.rs"]
 mod images_tests;
+
+#[cfg(test)]
+#[path = "docker_ipv6_advice_tests.rs"]
+mod ipv6_advice_tests;
 /// What drives it: a script of `sv`'s own, run in the same stock Node image as the test provider.
 const DRIVER_SCRIPT: &str = include_str!("../assets/browser-driver.mjs");
 /// Where the app sends its mail on the mail server, and where the probes read it.
@@ -1951,7 +1955,13 @@ impl DockerBackend {
             Ok((_, out)) => out,
             Err(e) => return fail(format!("could not check the fence's gateway: {e}")),
         };
-        match gateway_verdict(&out, plain.as_deref(), targets.len()) {
+        // Asked only when the network shows link-local IPv6 alone, which an older Docker gives every
+        // container (backlog 0450).
+        let version = || match self.docker(&["version", "--format", "{{.Server.Version}}"]) {
+            Ok((0, out)) => Some(out.trim().to_owned()),
+            _ => None,
+        };
+        match gateway_verdict(&out, plain.as_deref(), targets.len(), &version) {
             GatewayVerdict::Closed => Ok(()),
             GatewayVerdict::Reachable => fail(format!(
                 "a container on the fenced network reached its gateway, {gateway}, which is this \
@@ -3016,7 +3026,12 @@ fn gateway_targets(config: &str) -> Vec<String> {
 /// gateway address. On a `plain` one, whose bridge keeps its address on the host, the same silence
 /// may be a firewall dropping one port and not others, so it is not taken for a fence (backlog
 /// 0301). Anything else is not taken for either.
-fn gateway_verdict(out: &str, plain: Option<&str>, targets: usize) -> GatewayVerdict {
+fn gateway_verdict(
+    out: &str,
+    plain: Option<&str>,
+    targets: usize,
+    docker_version: &dyn Fn() -> Option<String>,
+) -> GatewayVerdict {
     // Each knock's output, and its exit status, in order.
     let mut sections: Vec<(String, String, Option<i32>)> = Vec::new();
     let mut text = String::new();
@@ -3093,12 +3108,29 @@ fn gateway_verdict(out: &str, plain: Option<&str>, targets: usize) -> GatewayVer
         .map(str::trim)
         .collect();
     if !inet6.is_empty() {
-        return GatewayVerdict::Unknown(format!(
-            "the fenced network has IPv6 ({}), though sv asked Docker for none: the daemon gives new \
-             networks IPv6 by default. Turn that off (remove `com.docker.network.enable_ipv6` from \
-             `default-network-opts` in Docker's daemon.json, and restart Docker), then run again",
-            inet6.join(", ")
-        ));
+        let addresses = inet6.join(", ");
+        // Link-local alone, on a Docker before 26.0.2: that Docker leaves IPv6 on in containers of
+        // networks made without it (CVE-2024-32473), so the daemon.json advice cannot apply (0450).
+        let old = inet6
+            .iter()
+            .all(|a| link_local(a))
+            .then(docker_version)
+            .flatten()
+            .filter(|v| version_below(v, (26, 0, 2)));
+        return GatewayVerdict::Unknown(match old {
+            Some(version) => format!(
+                "the fenced network has IPv6 ({addresses}), though sv asked Docker for none. They are \
+                 link-local addresses only, and this Docker is {version}: Docker 26.0.2 and later \
+                 switch IPv6 off in containers of networks made without it, as the fix for \
+                 CVE-2024-32473. Update Docker to 26.0.2 or later, then run again"
+            ),
+            None => format!(
+                "the fenced network has IPv6 ({addresses}), though sv asked Docker for none: the \
+                 daemon gives new networks IPv6 by default. Turn that off (remove \
+                 `com.docker.network.enable_ipv6` from `default-network-opts` in Docker's \
+                 daemon.json, and restart Docker), then run again"
+            ),
+        });
     }
     // A plain network never passes on silence: its bridge has an address on this computer, and a knock
     // there that goes unanswered may be a firewall dropping one port while others stay open (0301).
@@ -3135,6 +3167,33 @@ fn gateway_verdict(out: &str, plain: Option<&str>, targets: usize) -> GatewayVer
             Some(reason) => plain_refusal(reason),
             None => GatewayVerdict::Closed,
         },
+    }
+}
+
+/// Whether an address as `ip` lists it (`fe80::1/64`) is IPv6 link-local, `fe80::/10`.
+fn link_local(address: &str) -> bool {
+    let address = address.split('/').next().unwrap_or(address);
+    address
+        .split(':')
+        .next()
+        .and_then(|first| u16::from_str_radix(first, 16).ok())
+        .is_some_and(|first| first & 0xffc0 == 0xfe80)
+}
+
+/// Whether a Docker server version (`26.0.1`, `24.0.7-ce`) is below `than`; `false` for one that does
+/// not read as a version, so an unreadable one never changes the advice.
+fn version_below(version: &str, than: (u64, u64, u64)) -> bool {
+    let mut parts = version
+        .trim()
+        .split(['.', '-', '+'])
+        .map(|p| p.parse::<u64>().ok());
+    match (
+        parts.next().flatten(),
+        parts.next().flatten(),
+        parts.next().flatten(),
+    ) {
+        (Some(major), Some(minor), patch) => (major, minor, patch.unwrap_or(0)) < than,
+        _ => false,
     }
 }
 
@@ -5154,7 +5213,7 @@ mod gateway_tests {
             .filter(|l| l.starts_with("sv-gateway=") || l.starts_with("sv-own="))
             .count();
         let reason = plain_reason(None, "");
-        gateway_verdict(out, reason.as_deref().filter(|_| plain), targets)
+        gateway_verdict(out, reason.as_deref().filter(|_| plain), targets, &|| None)
     }
 
     #[test]
@@ -5317,8 +5376,11 @@ mod gateway_tests {
     fn a_knock_that_never_reported_is_not_the_fence_holding() {
         // Output cut short after the first of two knocks (backlog 0410).
         let out = format!("{REFUSED_SELF}nc: timed out\nsv-gateway=1\n");
-        assert_eq!(gateway_verdict(&out, None, 1), GatewayVerdict::Closed);
-        let cut = gateway_verdict(&out, None, 2);
+        assert_eq!(
+            gateway_verdict(&out, None, 1, &|| None),
+            GatewayVerdict::Closed
+        );
+        let cut = gateway_verdict(&out, None, 2, &|| None);
         assert!(
             matches!(&cut, GatewayVerdict::Unknown(why) if why.contains("1 of the 2")),
             "{cut:?}"
