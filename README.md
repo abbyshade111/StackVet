@@ -160,8 +160,8 @@ each threat concerns (sign-in, stored data, the AI model, uploads, payments, and
 checks showed about each: found, checked in part, not verified, or not known to apply until a question
 in stackvet.toml is answered. (For a threat, *checked in part* means some of its requirements were checked; the
 app's own tests and the owner's word never move one.) It is made from rules, not by asking an AI, and it never calls a threat
-handled, because a threat is only as settled as the requirements that answer it. See
-`docs/THREAT-MODELING.md`.
+handled, because a threat is only as settled as the requirements that answer it. How it came to be made this way is a
+dated reading, `docs/research/THREAT-MODELING.md`, kept as history.
 
 ### Your AI coding tool's own files
 
