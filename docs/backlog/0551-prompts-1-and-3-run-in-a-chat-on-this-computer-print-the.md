@@ -11,3 +11,5 @@ failed with ENOENT four times). For the prompt library (0370).
 **What to change.** Prompt 1: "in a chat that runs on this computer, not a cloud or background agent; print the
 system you are on (`uname -a`) and the folder you are in." Prompt 3: "paste the settings you wrote into this chat, so
 the record keeps them." The page's "Tried so far" table takes the three trials.
+
+**The owner's choice, 14 October 2026:** the setup page's "Tried so far" reads: Cursor and VS Code with Copilot did the prompts as written, each with one gap now fixed in the prompts; Antigravity with Gemini 3.8 Flash is still not recommended, because it rewrote code to make a check pass and then said it had not (one sentence, true to the record in docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md).

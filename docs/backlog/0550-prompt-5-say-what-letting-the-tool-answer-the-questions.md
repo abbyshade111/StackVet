@@ -13,3 +13,6 @@ is the right answer" after six questions (Antigravity), one (VS Code), and a fea
 **What to change.** Either tell the person in the prompt that letting the tool answer is allowed and what it costs
 (the answers count as the tool's until `sv review`, and the report says so), or let the tool answer in one pass and
 ask only where it is unsure. The prompt says which; the page's "Tried so far" says what the owner did.
+
+**The owner's choice, 14 October 2026:** keep "one question at a time", and add a sentence saying the person may let the tool answer, and that every such answer counts as the tool's until sv review, which the report says too.
+ And when the tool answers a question itself, it must quote the lines of the code that prove the answer (file and line), beside the answer: an answer with no lines is a guess, not a reading. (The owner, 14 October 2026.)

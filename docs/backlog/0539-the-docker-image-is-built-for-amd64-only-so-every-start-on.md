@@ -1,6 +1,6 @@
 # The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -19,3 +19,5 @@ Rust build already cross-compiles for the release zip); attest both. Until then,
 say the warning is expected and harmless.
 
 **Record.** ADR-108 (the release and the image) or ADR-080: a Later entry.
+
+**The owner's choice, 14 October 2026:** yes: build the image for linux/amd64 and linux/arm64 with buildx and push one manifest, attesting both; until it lands, the connect output and prompt 3 say the platform warning is expected. ADR-108 (or ADR-080) Later in the building pull request. The workflow file is routed to the owner's review by CODEOWNERS.

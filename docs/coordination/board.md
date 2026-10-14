@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0518 (since 2026-10-14) — next: 0519, 0522, 0521, 0232
+- honesty — arm: full — holds: 0518 (since 2026-10-14) — next: 0519, 0522, 0521, 0539, 0232
 - wording — arm: full — holds: 0545 (since 2026-10-14) — next: 0546, 0547, 0548, 0549, 0550
 - documentation — arm: full — holds: nothing
 
@@ -51,19 +51,18 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 37. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
 38. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
 39. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
-40. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
-41. 0540 `tools/install.sh` copies `target/release/sv` after a build that `CARGO_TARGET_DIR` sent elsewhere, and reports the stale one installed — ready
-42. 0541 `stackvet_status` does not name the folder it serves, so a container for an older app passes as connected — ready
-43. 0542 A hand-written security-notes.md counts for nothing, and sv says so only in the counts — ready
-44. 0543 `confirmed = { by = "ai-tool" }` and `[checked-by-hand] ... by = "ai-tool"` are accepted without a word at write time — ready
-45. 0544 `sv doctor` inside a tool's sandboxed shell says there is no container backend when the socket is merely unreachable — ready
-46. 0551 Prompts 1 and 3: run in a chat on this computer, print the system and folder, and paste the settings written into the chat — ready
-47. 0552 Prompt 4: ask which folder the server serves, and stop an older container before going on — ready
-48. 0553 Prompt 6: a sandboxed shell, a kept copy of sv, and a commit that must match the pulled source — ready
-49. 0554 Prompt 6: "open report.html in my web browser" means the computer's browser, or says both are fine — ready
-50. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
-51. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
-52. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
+40. 0540 `tools/install.sh` copies `target/release/sv` after a build that `CARGO_TARGET_DIR` sent elsewhere, and reports the stale one installed — ready
+41. 0541 `stackvet_status` does not name the folder it serves, so a container for an older app passes as connected — ready
+42. 0542 A hand-written security-notes.md counts for nothing, and sv says so only in the counts — ready
+43. 0543 `confirmed = { by = "ai-tool" }` and `[checked-by-hand] ... by = "ai-tool"` are accepted without a word at write time — ready
+44. 0544 `sv doctor` inside a tool's sandboxed shell says there is no container backend when the socket is merely unreachable — ready
+45. 0551 Prompts 1 and 3: run in a chat on this computer, print the system and folder, and paste the settings written into the chat — ready
+46. 0552 Prompt 4: ask which folder the server serves, and stop an older container before going on — ready
+47. 0553 Prompt 6: a sandboxed shell, a kept copy of sv, and a commit that must match the pulled source — ready
+48. 0554 Prompt 6: "open report.html in my web browser" means the computer's browser, or says both are fine — ready
+49. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
+50. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
+51. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
 
 ## Log
 
@@ -503,3 +502,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 18:54 — assigned 0548 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
 - 2026-10-14 18:54 — assigned 0549 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
 - 2026-10-14 18:54 — assigned 0550 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
+- 2026-10-14 19:04 — released 0539
+- 2026-10-14 19:04 — assigned 0539 to honesty (full) into the lane after 0521: the owner's yes of 14 October: a multi-arch image; the workflow file, routed to the owner's review
+- 2026-10-14 19:04 — released 0536
