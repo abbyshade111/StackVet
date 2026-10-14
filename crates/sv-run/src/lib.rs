@@ -44,6 +44,7 @@ use sv_manifest::Manifest;
 
 pub mod cleanup;
 pub mod docker;
+mod exec_session;
 pub mod image_reference;
 pub mod install;
 pub mod name_server;

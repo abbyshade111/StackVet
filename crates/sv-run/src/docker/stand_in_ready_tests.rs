@@ -13,19 +13,14 @@ fn backend(test: &str) -> (DockerBackend, std::path::PathBuf) {
     sv_check::test_support::executable(
         &docker,
         &format!(
-            "#!/bin/sh\ncat > /dev/null\necho run >> '{}'\nprintf 'HTTP/1.1 200 OK\\r\\nContent-Length: 2\\r\\n\\r\\nok'\n",
+            // A session kept open in the sidecar (backlog 0341) is refused, so each question is its own exec.
+            "#!/bin/sh\ncase \"$*\" in *@@sv-session-*) exit 1;; esac\ncat > /dev/null\necho run >> '{}'\nprintf 'HTTP/1.1 200 OK\\r\\nContent-Length: 2\\r\\n\\r\\nok'\n",
             calls.display()
         ),
     );
     let backend = DockerBackend {
         binary: docker.to_string_lossy().into_owned(),
-        owner: crate::cleanup::owner(),
-        cpus: OnceLock::new(),
-        run: std::sync::Mutex::new(None),
-        clock_offset: OnceLock::new(),
-        sidecar_lost: std::sync::Mutex::new(None),
-        left_behind: std::sync::Mutex::new(Vec::new()),
-        request_times: std::sync::Mutex::new(Vec::new()),
+        ..DockerBackend::new()
     };
     (backend, calls)
 }
