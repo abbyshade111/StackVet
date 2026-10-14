@@ -249,33 +249,14 @@ impl MappedRule {
 
 /// A semgrep `paths` pattern against a path relative to the app's folder, as gitignore reads one: a
 /// pattern with no `/` in it matches the name of the file or of any folder it is in; one with a `/`
-/// matches the whole path. `*` and `?` stay within a name, and `**` crosses folders.
+/// matches the whole path. The wildcards are git's, as `sv_scan::glob` reads them (backlog 0456).
 pub fn path_matches(pattern: &str, path: &str) -> bool {
     let pattern = pattern.trim_start_matches('/').trim_end_matches('/');
     if pattern.contains('/') {
-        glob(pattern.as_bytes(), path.as_bytes())
+        sv_scan::glob::matches(pattern, path)
     } else {
         path.split('/')
-            .any(|name| glob(pattern.as_bytes(), name.as_bytes()))
-    }
-}
-
-fn glob(p: &[u8], s: &[u8]) -> bool {
-    match p {
-        [] => s.is_empty(),
-        [b'*', b'*', b'/', rest @ ..] => {
-            // No folders, or any number of whole ones.
-            glob(rest, s)
-                || s.iter()
-                    .enumerate()
-                    .any(|(i, &c)| c == b'/' && glob(rest, &s[i + 1..]))
-        }
-        [b'*', b'*', rest @ ..] => (0..=s.len()).any(|i| glob(rest, &s[i..])),
-        [b'*', rest @ ..] => (0..=s.len())
-            .take_while(|&i| i == 0 || s[i - 1] != b'/')
-            .any(|i| glob(rest, &s[i..])),
-        [b'?', rest @ ..] => s.first().is_some_and(|&c| c != b'/') && glob(rest, &s[1..]),
-        [c, rest @ ..] => s.first() == Some(c) && glob(rest, &s[1..]),
+            .any(|name| sv_scan::glob::matches(pattern, name))
     }
 }
 

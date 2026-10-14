@@ -571,64 +571,15 @@ fn gitignore_ignores(text: &str, path: &str) -> bool {
         let anchored = pattern.contains('/');
         let pattern = pattern.strip_prefix('/').unwrap_or(pattern);
         let matches = if anchored {
-            glob_matches(pattern, path)
+            sv_scan::glob::matches(pattern, path)
         } else {
-            glob_matches(pattern, path.rsplit('/').next().unwrap_or(path))
+            sv_scan::glob::matches(pattern, path.rsplit('/').next().unwrap_or(path))
         };
         if matches {
             ignored = !negate;
         }
     }
     ignored
-}
-
-/// Git's wildcards: `*` and `?` within one part of a path, `**` across parts, `[...]` a set of
-/// characters (with `!` or `^` for its opposite), and `\` taking the next character as it is.
-fn glob_matches(pattern: &str, text: &str) -> bool {
-    fn go(p: &[char], t: &[char]) -> bool {
-        match p.split_first() {
-            None => t.is_empty(),
-            Some(('*', rest)) if rest.first() == Some(&'*') => {
-                let rest = &rest[1..];
-                let rest = rest.strip_prefix(&['/']).unwrap_or(rest);
-                (0..=t.len()).any(|i| go(rest, &t[i..]))
-            }
-            Some(('*', rest)) => (0..=t.len())
-                .take_while(|i| *i == 0 || t[i - 1] != '/')
-                .any(|i| go(rest, &t[i..])),
-            Some(('?', rest)) => t.first().is_some_and(|c| *c != '/') && go(rest, &t[1..]),
-            Some(('[', rest)) => {
-                let Some(close) = rest.iter().skip(1).position(|c| *c == ']').map(|i| i + 1) else {
-                    return t.first() == Some(&'[') && go(rest, &t[1..]);
-                };
-                let (set, after) = (&rest[..close], &rest[close + 1..]);
-                let (negated, set) = match set.first() {
-                    Some('!' | '^') => (true, &set[1..]),
-                    _ => (false, set),
-                };
-                let Some(c) = t.first() else { return false };
-                let mut inside = false;
-                let mut i = 0;
-                while i < set.len() {
-                    if i + 2 < set.len() && set[i + 1] == '-' {
-                        inside |= set[i] <= *c && *c <= set[i + 2];
-                        i += 3;
-                    } else {
-                        inside |= set[i] == *c;
-                        i += 1;
-                    }
-                }
-                inside != negated && *c != '/' && go(after, &t[1..])
-            }
-            Some(('\\', rest)) if !rest.is_empty() => {
-                t.first() == Some(&rest[0]) && go(&rest[1..], &t[1..])
-            }
-            Some((c, rest)) => t.first() == Some(c) && go(rest, &t[1..]),
-        }
-    }
-    let p: Vec<char> = pattern.chars().collect();
-    let t: Vec<char> = text.chars().collect();
-    go(&p, &t)
 }
 
 #[track_caller]

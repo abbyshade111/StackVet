@@ -637,7 +637,8 @@ fn workspace_members(dir: &Path) -> Option<Vec<String>> {
 }
 
 /// A workspace member pattern against a path below the workspace root: `*` is one folder name,
-/// `**` any number of them. That is all the workspace formats use.
+/// `**` any number of them. That is all the workspace formats use, which name whole folders, so this is kept apart
+/// from `crate::glob`, the wildcard matcher for `.gitignore` lines and semgrep's `paths` (backlog 0456).
 fn glob_matches(pattern: &str, path: &str) -> bool {
     fn go(p: &[&str], s: &[&str]) -> bool {
         match (p.first(), s.first()) {
