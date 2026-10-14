@@ -1,6 +1,6 @@
 # The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision)
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the efficiency review of 12 October 2026 (backlog 0335), area: MCP token cost. Severity: high. Verified against the code by the reviewing session before filing.
 

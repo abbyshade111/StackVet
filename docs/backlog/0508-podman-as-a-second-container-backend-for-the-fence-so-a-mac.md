@@ -18,3 +18,5 @@ item or several. Nothing changes what the fence guarantees; a record only if Pod
 asks for it or a Mac or Linux user without Docker does.**
 
 **The owner's word, 14 October 2026:** take the look now. The hold is lifted; the item goes out with the next lane. Its first step is the measurement (the fence tests with `podman` as the backend, on a Mac with Podman installed, and what differs), written into this item before any code; whether a second backend is adopted is a decision of its own.
+
+**The owner's answer, 14 October 2026** (asked by session honesty through the board's waiting line): (b). The session installs Podman in its own cloud container and measures there; the Linux half is the one that matters most, since Linux users without Docker are the likely Podman users. What differs goes into this item before any code, with a note that the Mac half is still to be measured (the owner's Mac, when there is time).

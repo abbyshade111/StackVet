@@ -416,9 +416,10 @@ own can count toward a requirement; everything else is advice for the tool, writ
 | `stackvet_record_answer` | An answer under one question in `security-notes.md`, the file your written decisions go in, made if it is not there | `security-notes.md` | only as the tool's own word, the lowest rank, until you change its `Written by:` line to `owner` and record it with `sv review` | `sv notes` makes the file |
 | `stackvet_bundle` | One zip of the app and its report, to keep or hand on ("A zip to keep or hand on", above); a tool offers it once the report is written | a zip beside the app, never inside it | no | `sv bundle` |
 
-The ten coding prompts shown to work are also given in full at the end of `sv init`, `stackvet_spec`, and the
-server's opening instructions, since a prompt given where the tool starts did better than the same prompt fetched
-mid-build.
+The ten coding prompts shown to work are also given in full at the end of `sv init` and in `stackvet_spec`'s first
+answer, since a prompt given where the tool starts did better than the same prompt fetched mid-build. The server's
+opening instructions say where they are rather than carry them, since an AI tool pays for its instructions again on
+every turn.
 
 The loop the server is built for, and the two things it never does:
 

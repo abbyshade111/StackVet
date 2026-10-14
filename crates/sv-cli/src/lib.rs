@@ -1125,9 +1125,10 @@ pub mod report_seal;
 
 pub mod seen;
 
-/// The coding prompts shown to work, in full, for the two places every builder reads before any code:
-/// the end of the specification (`sv init`, `stackvet_spec`) and of the MCP server's opening
-/// instructions. In the delivery test (docs/prompts/library-trial/delivery.md) a prompt pasted where
+/// The coding prompts shown to work, in full, for the place every builder reads before any code:
+/// the end of the specification (`sv init`, `stackvet_spec`, in its first answer). The MCP server's
+/// opening instructions carried them too until 14 October 2026, and now say where they are (backlog
+/// 0338). In the delivery test (docs/prompts/library-trial/delivery.md) a prompt pasted where
 /// the builder starts did better than the same prompt fetched mid-build, every time. Read from
 /// `data/prompts.json`, so the list cannot drift from the library; empty if it cannot be read.
 pub fn prompts_at_start() -> String {
@@ -2070,7 +2071,8 @@ pub fn refuse_someone_elses_folder(out_dir: &Path, ours: &[&str]) -> Result<()> 
     if !marked {
         anyhow::bail!(
             "{} already holds files sv did not write ({named}), so sv does not write its report \
-             there. Give an empty folder, or a new one, with --out.",
+             there. Give an empty folder, or a new one: with --out at a terminal, or `out` in \
+             stackvet_write_report.",
             out_dir.display()
         );
     }
@@ -2078,7 +2080,8 @@ pub fn refuse_someone_elses_folder(out_dir: &Path, ours: &[&str]) -> Result<()> 
         anyhow::bail!(
             "{} carries sv's marker and also holds files sv did not write ({named}), and sv cannot \
              show it wrote the report there: {why}. A marker can be copied into any folder, so sv \
-             does not write its report there. Give an empty folder, or a new one, with --out.",
+             does not write its report there. Give an empty folder, or a new one: with --out at a terminal, or `out` in \
+             stackvet_write_report.",
             out_dir.display()
         );
     }

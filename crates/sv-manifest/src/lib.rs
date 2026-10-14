@@ -3025,7 +3025,8 @@ pub fn locate(app_dir: &Path) -> Result<Option<Located>> {
 pub fn locate_or_bail(app_dir: &Path) -> Result<Located> {
     locate(app_dir)?.ok_or_else(|| {
         anyhow::anyhow!(
-            "no {} in {}. Run `sv init` and give the spec to your AI coding tool.",
+            "no {} in {}. Run `sv init` and give the spec to your AI coding tool, or have the tool call \
+             stackvet_spec, which gives the same.",
             sv_frameworks::names::MANIFEST,
             app_dir.display()
         )

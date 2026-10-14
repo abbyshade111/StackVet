@@ -97,6 +97,8 @@ mod status_tests;
 #[cfg(test)]
 mod tell_the_person_tests;
 #[cfg(test)]
+mod terminal_words_tests;
+#[cfg(test)]
 mod tests;
 mod tools;
 
@@ -183,6 +185,12 @@ pub(crate) const INSTRUCTIONS: &str = "StackVet checks an app against OWASP ASVS
     (stackvet_bundle), only if they want one. This server does not start \
     the app, compare the app's packages with known vulnerabilities, or run other security tools; \
     for those, ask the person to run ";
+
+/// Where the prompts shown to work are, said at the end of the instructions in their place.
+pub(crate) const PROMPTS_ARE_IN_THE_SPEC: &str = "\n\nThe prompts shown to work, each given to an AI \
+    coding tool building an app and found to make the problem it is for go away, are in \
+    stackvet_spec's first answer (its section \"prompts\"). Read them once before you write code, \
+    even when stackvet.toml is already written, and follow them while you build.";
 
 /// Set in the container image (see the Dockerfile), where `sv` cannot start the app at all.
 pub(super) const IN_CONTAINER: &str = "SV_IN_CONTAINER";
@@ -790,12 +798,14 @@ impl Server {
         }
     }
 
+    /// The prompts shown to work are not in them (backlog 0338, the owner's decision of 14 October
+    /// 2026): the client puts these in the system prompt, paid on every turn, so the prompts are
+    /// given once, in the spec's first answer, and these say where.
     fn instructions(&self) -> String {
         format!(
             "{INSTRUCTIONS}{}, adding `--advisories` and a folder of OSV advisories they have \
-             downloaded to compare the packages.{}",
+             downloaded to compare the packages.{PROMPTS_ARE_IN_THE_SPEC}",
             at_a_terminal("<the app's folder>", "--run --tools"),
-            crate::prompts_at_start()
         )
     }
 
