@@ -35,7 +35,8 @@ pub struct Locator {
     /// What the lines are, in plain words, shown above them.
     pub finds: String,
     /// The names that count, matched against a name with its case lowered and its `_` taken out, so
-    /// `require_role` and `requireRole` are one name.
+    /// `require_role` and `requireRole` are one name. A locator that finds a shape rather than a name
+    /// (a query with `owner = ?`, a 403 sent) matches the captured text made plain the same way.
     pub names: String,
     /// Per language, a tree-sitter query whose `@defined` captures the name of a function being
     /// written and `@used` the name of one being called or passed.
@@ -163,11 +164,13 @@ impl Locators {
             let Ok(source) = entry.read_text() else {
                 continue;
             };
-            // Most files hold no name any locator knows, and are not parsed for one.
+            // Most files hold no name any locator knows, and are not parsed for one. A locator whose names are a
+            // shape rather than one word (`owner = ?`) is looked for in the whole text, made plain the same way.
             let words: BTreeSet<String> = word_names(&source).collect();
+            let flat = plain(&source);
             let wanted: Vec<&Compiled> = wanted
                 .into_iter()
-                .filter(|c| words.iter().any(|w| c.names.is_match(w)))
+                .filter(|c| words.iter().any(|w| c.names.is_match(w)) || c.names.is_match(&flat))
                 .collect();
             if wanted.is_empty() {
                 continue;
@@ -269,3 +272,6 @@ fn places(c: &Compiled, key: &str, relative: &str, source: &str) -> Vec<Located>
 
 #[cfg(test)]
 mod locate_tests;
+
+#[cfg(test)]
+mod examples_tests;
