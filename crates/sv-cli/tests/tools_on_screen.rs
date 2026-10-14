@@ -18,7 +18,8 @@ fn scratch(tag: &str) -> PathBuf {
 
 /// `sv report --tools` on the Flask example with nothing on the PATH, so no tool can be found.
 fn report(dir: &Path, extra: &[&str]) -> (Option<i32>, String) {
-    let app = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/flask-booking");
+    // CodeQL turned on, as this test is about its install hint too (ADR-115).
+    let app = flask_with_codeql_on(dir);
     let out = Command::new(SV)
         .arg("report")
         .arg(&app)
@@ -84,4 +85,30 @@ fn tools_that_did_not_run_are_named_on_screen_with_how_to_install_them() {
         1,
         "{strict_said}"
     );
+}
+
+/// A copy of the Flask example in `dir`, with CodeQL turned on (`[tools] codeql = true`), which it is not by
+/// default (ADR-115): this test is about CodeQL's place among the tools, so it asks for it.
+fn flask_with_codeql_on(dir: &Path) -> std::path::PathBuf {
+    fn copy(from: &Path, to: &Path) {
+        std::fs::create_dir_all(to).unwrap();
+        for entry in std::fs::read_dir(from).unwrap() {
+            let entry = entry.unwrap();
+            let target = to.join(entry.file_name());
+            if entry.file_type().unwrap().is_dir() {
+                copy(&entry.path(), &target);
+            } else {
+                std::fs::copy(entry.path(), &target).unwrap();
+            }
+        }
+    }
+    let app = dir.join("flask-booking");
+    copy(
+        &Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/flask-booking"),
+        &app,
+    );
+    let manifest = app.join("stackvet.toml");
+    let text = std::fs::read_to_string(&manifest).unwrap();
+    std::fs::write(&manifest, format!("{text}\n[tools]\ncodeql = true\n")).unwrap();
+    app
 }

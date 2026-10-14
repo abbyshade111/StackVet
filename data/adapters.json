@@ -10535,6 +10535,7 @@
       "id": "codeql-javascript",
       "name": "CodeQL (JavaScript and TypeScript)",
       "language": "javascript,typescript",
+      "opt_in": "codeql",
       "version": {
         "command": "codeql",
         "args": [
@@ -10883,6 +10884,7 @@
       "id": "codeql-python",
       "name": "CodeQL (Python)",
       "language": "python",
+      "opt_in": "codeql",
       "version": {
         "command": "codeql",
         "args": [
@@ -11128,6 +11130,7 @@
       "id": "codeql-ruby",
       "name": "CodeQL (Ruby)",
       "language": "ruby",
+      "opt_in": "codeql",
       "version": {
         "command": "codeql",
         "args": [

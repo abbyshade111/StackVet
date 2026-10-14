@@ -291,6 +291,12 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # `*` stands for one folder name. The report lists them, so never put the app's own code here.
 # not-the-app = ["examples", "crates/*/tests/fixtures"]
 
+# CodeQL is off unless turned on here. Its license allows it only on an app released under an
+# open-source license, for academic research, or with a paid GitHub Advanced Security license;
+# `sv` cannot tell which applies, so turn it on only when one does.
+# [tools]
+# codeql = true
+
 # A folder the owner leaves out of the checks, with the reason the report prints beside it. It
 # counts only once the owner confirms it in `sv review` in their own terminal; until then it is
 # read as `not-the-app`. Once confirmed, no finding there counts except a key or password, which

@@ -835,6 +835,13 @@ fn outside_tools(
     // The language's own tool, where there is one and it is here. A tool that is not installed is
     // recorded as not run, with how to install it — never as having found nothing.
     let mut tool_gaps = Vec::new();
+    // A tool the owner has not turned on (CodeQL: `[tools] codeql = true`) is neither run nor named,
+    // as if `sv` did not know it (ADR-115). Reading a results file from the owner's own CI, below,
+    // runs nothing and keeps the full list.
+    let opted_in = adapters
+        .as_ref()
+        .map(|a| a.opted_in(|name| manifest.tools.turned_on(name)));
+    let adapters = &opted_in;
     if options.run_tools {
         let adapters = adapters.as_ref().map_err(|e| anyhow::anyhow!("{e}"))?;
         let languages: Vec<String> = scan_report.languages.iter().cloned().collect();
@@ -934,7 +941,7 @@ fn outside_tools(
             reason,
             requirements: Vec::new(),
         };
-        match (std::fs::read_to_string(path), adapters) {
+        match (std::fs::read_to_string(path), &loaded.adapters) {
             (Err(e), _) => tool_gaps.push(gap(
                 sv_report::GapReason::CouldNotRead,
                 format!("{named} could not be read ({e})."),

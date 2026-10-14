@@ -1185,6 +1185,29 @@ pub struct StackSection {
     pub run: RunSection,
 }
 
+/// Outside tools that run only when the owner turns them on (ADR-115). Today that is CodeQL, whose
+/// license allows it only on an app released under an OSI-approved open-source license, for
+/// academic research, or with a paid GitHub Advanced Security license: `sv` cannot tell which
+/// applies, so the owner who turns it on is saying one does. Off, it is not run and not named.
+#[derive(Debug, Clone, Deserialize, Default)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ToolsSection {
+    /// `true` runs CodeQL, for a use its license allows.
+    #[serde(default)]
+    pub codeql: Option<bool>,
+}
+
+impl ToolsSection {
+    /// Whether the outside tool an adapter's `opt_in` names is turned on. A name this section does
+    /// not know is off.
+    pub fn turned_on(&self, name: &str) -> bool {
+        match name {
+            "codeql" => self.codeql == Some(true),
+            _ => false,
+        }
+    }
+}
+
 /// How the code is developed and shipped. v1 knew the answers because it wrote the code into a
 /// folder on one computer; `sv` is handed a repository and must ask.
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -1398,6 +1421,9 @@ pub struct Manifest {
     pub capabilities: Capabilities,
     #[serde(default)]
     pub repository: RepositorySection,
+    /// Outside tools that run only when the owner turns them on (ADR-115).
+    #[serde(default)]
+    pub tools: ToolsSection,
     /// The design questions, keyed by requirement id. See `sv-check::design`.
     #[serde(default)]
     pub design: std::collections::BTreeMap<String, DesignAnswer>,

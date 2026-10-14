@@ -83,56 +83,68 @@
    "running"
   ],
   "V1.2.1": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.2.3": [
    "tools"
   ],
   "V1.2.4": [
    "static",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.2.5": [
    "static",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.2.6": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.2.7": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.2.9": [
-   "tools"
+   "opt-in"
   ],
   "V1.3.2": [
    "static",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.3.4": [
    "signed-in"
   ],
   "V1.3.6": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.3.7": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.3.10": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.3.11": [
    "signed-in"
   ],
   "V1.3.12": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.5.1": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V1.5.2": [
    "static",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V2.4.1": [
    "signed-in"
@@ -144,12 +156,14 @@
    "signed-in"
   ],
   "V3.3.1": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V3.3.2": [
    "running",
    "signed-in",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V3.3.3": [
    "production"
@@ -157,14 +171,16 @@
   "V3.3.4": [
    "running",
    "signed-in",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V3.4.1": [
    "production"
   ],
   "V3.4.2": [
    "running",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V3.4.3": [
    "running",
@@ -190,17 +206,20 @@
   ],
   "V3.5.1": [
    "signed-in",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V3.5.2": [
    "signed-in"
   ],
   "V3.5.5": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V3.7.2": [
    "static",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V3.7.4": [
    "production"
@@ -235,10 +254,12 @@
   "V5.3.2": [
    "static",
    "signed-in",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V5.3.3": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V5.4.1": [
    "signed-in"
@@ -332,7 +353,8 @@
   ],
   "V9.1.1": [
    "signed-in",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V9.1.2": [
    "signed-in",
@@ -360,7 +382,8 @@
    "signed-in"
   ],
   "V11.2.3": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V11.3.1": [
    "tools"
@@ -371,19 +394,23 @@
   ],
   "V11.4.1": [
    "static",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V11.4.2": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V11.4.3": [
    "tools"
   ],
   "V11.5.1": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V12.1.1": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V12.1.4": [
    "production"
@@ -398,14 +425,16 @@
    "tools"
   ],
   "V12.3.2": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V13.4.1": [
    "running"
   ],
   "V13.4.2": [
    "running",
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V13.4.4": [
    "running"
@@ -427,16 +456,17 @@
    "running"
   ],
   "V15.3.3": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V15.3.5": [
-   "tools"
+   "opt-in"
   ],
   "V15.3.6": [
-   "tools"
+   "opt-in"
   ],
   "V15.4.2": [
-   "tools"
+   "opt-in"
   ],
   "V16.2.1": [
    "signed-in"
@@ -448,7 +478,8 @@
    "signed-in"
   ],
   "V16.2.5": [
-   "tools"
+   "tools",
+   "opt-in"
   ],
   "V16.3.1": [
    "signed-in"
@@ -460,7 +491,7 @@
    "running"
   ],
   "V16.4.1": [
-   "tools"
+   "opt-in"
   ],
   "V16.5.1": [
    "running"
@@ -508,20 +539,10 @@
    "typescript"
   ],
   "V1.2.6": [
-   "java",
-   "python"
+   "java"
   ],
   "V1.2.7": [
-   "java",
-   "javascript",
-   "python",
-   "typescript"
-  ],
-  "V1.2.9": [
-   "javascript",
-   "python",
-   "ruby",
-   "typescript"
+   "java"
   ],
   "V1.3.2": [
    "*",
@@ -555,12 +576,10 @@
   "V1.3.10": [
    "c",
    "javascript",
-   "ruby",
    "typescript"
   ],
   "V1.3.12": [
    "javascript",
-   "python",
    "ruby",
    "typescript"
   ],
@@ -570,7 +589,6 @@
    "java",
    "javascript",
    "python",
-   "ruby",
    "scala",
    "typescript"
   ],
@@ -588,25 +606,17 @@
    "*",
    "go",
    "java",
-   "javascript",
    "kotlin",
    "python",
-   "ruby",
-   "typescript"
+   "ruby"
   ],
   "V3.3.2": [
-   "go",
-   "javascript",
-   "python",
-   "typescript"
+   "go"
   ],
   "V3.3.4": [
    "go",
    "java",
-   "javascript",
-   "kotlin",
-   "python",
-   "typescript"
+   "kotlin"
   ],
   "V3.4.2": [
    "java",
@@ -650,10 +660,7 @@
    "typescript"
   ],
   "V5.3.3": [
-   "go",
-   "javascript",
-   "python",
-   "typescript"
+   "go"
   ],
   "V9.1.1": [
    "go",
@@ -675,11 +682,9 @@
   "V11.2.3": [
    "go",
    "java",
-   "javascript",
    "kotlin",
    "python",
-   "ruby",
-   "typescript"
+   "ruby"
   ],
   "V11.3.1": [
    "csharp",
@@ -769,29 +774,8 @@
    "python",
    "ruby"
   ],
-  "V15.3.5": [
-   "javascript",
-   "typescript"
-  ],
-  "V15.3.6": [
-   "javascript",
-   "typescript"
-  ],
-  "V15.4.2": [
-   "javascript",
-   "typescript"
-  ],
   "V16.2.5": [
-   "javascript",
-   "python",
-   "ruby",
-   "typescript"
-  ],
-  "V16.4.1": [
-   "javascript",
-   "python",
-   "ruby",
-   "typescript"
+   "python"
   ]
  },
  "checks": {
@@ -846,19 +830,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "HTML output built without output encoding for its context (cross-site scripting)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "HTML output built without output encoding for its context (cross-site scripting)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "HTML output built without output encoding for its context (cross-site scripting)",
     "finding_only": false
    }
@@ -866,7 +850,7 @@
   "V1.2.2": [
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a URL scheme check that lets javascript: or data: URLs through",
     "finding_only": true
    }
@@ -924,19 +908,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a database query built from strings rather than parameterized (SQL or NoSQL injection)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a database query built from strings rather than parameterized (SQL or NoSQL injection)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a database query built from strings rather than parameterized (SQL or NoSQL injection)",
     "finding_only": false
    }
@@ -986,19 +970,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an operating system command built from data that may be untrusted (OS command injection)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an operating system command built from data that may be untrusted (OS command injection)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an operating system command built from data that may be untrusted (OS command injection); user input reaching Kernel.open, IO.read, or a similar call, which runs a command when the name starts with a pipe (|)",
     "finding_only": false
    }
@@ -1012,7 +996,7 @@
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an LDAP query built from untrusted data (LDAP injection)",
     "finding_only": false
    }
@@ -1026,13 +1010,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an XPath query built from untrusted data (XPath injection)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an XPath query built from untrusted data (XPath injection)",
     "finding_only": false
    }
@@ -1040,19 +1024,19 @@
   "V1.2.9": [
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a regular expression built from user input without escaping its special characters, so they are read as metacharacters",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a regular expression built from user input without escaping its special characters, so they are read as metacharacters",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a regular expression built from user input without escaping its special characters, so they are read as metacharacters",
     "finding_only": false
    }
@@ -1092,19 +1076,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "dynamic code execution, such as eval, on data that may be untrusted",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "dynamic code execution, such as eval, on data that may be untrusted",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "dynamic code execution, such as eval, on data that may be untrusted",
     "finding_only": false
    }
@@ -1144,19 +1128,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a server-side request to a URL taken from untrusted data (server-side request forgery)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a server-side request to a URL taken from untrusted data (server-side request forgery)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a server-side request to a URL taken from untrusted data (server-side request forgery)",
     "finding_only": false
    }
@@ -1182,13 +1166,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a template built from untrusted input (template injection)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a template built from untrusted input (template injection)",
     "finding_only": false
    }
@@ -1202,13 +1186,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a format string built from untrusted input",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a format string built from untrusted input",
     "finding_only": false
    }
@@ -1236,19 +1220,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a regular expression open to exponential backtracking (ReDoS)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a regular expression open to exponential backtracking (ReDoS)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a regular expression open to exponential backtracking (ReDoS)",
     "finding_only": false
    }
@@ -1278,19 +1262,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an XML parser that resolves external entities (XXE)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an XML parser that resolves external entities (XXE)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an XML parser that resolves external entities (XXE)",
     "finding_only": false
    }
@@ -1322,19 +1306,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "deserialization of untrusted data into arbitrary objects",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "deserialization of untrusted data into arbitrary objects",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "deserialization of untrusted data into arbitrary objects",
     "finding_only": false
    }
@@ -1408,13 +1392,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a cookie set without the 'Secure' attribute",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a cookie set without the 'Secure' attribute",
     "finding_only": false
    }
@@ -1440,13 +1424,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a cookie set without a suitable 'SameSite' attribute",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a cookie set without a suitable 'SameSite' attribute",
     "finding_only": false
    }
@@ -1480,13 +1464,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a cookie set without the 'HttpOnly' attribute",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a cookie set without the 'HttpOnly' attribute",
     "finding_only": false
    }
@@ -1520,7 +1504,7 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a CORS Access-Control-Allow-Origin header that is not a fixed value",
     "finding_only": false
    }
@@ -1624,19 +1608,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "cross-site request forgery protection turned off",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "cross-site request forgery protection turned off",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "cross-site request forgery protection turned off",
     "finding_only": false
    }
@@ -1666,7 +1650,7 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "postMessage data used without checking the origin of the message",
     "finding_only": false
    }
@@ -1722,19 +1706,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a redirect to a destination taken from the request (open redirect)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a redirect to a destination taken from the request (open redirect)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a redirect to a destination taken from the request (open redirect)",
     "finding_only": false
    }
@@ -1904,19 +1888,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a file path built from user-submitted data (path traversal)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a file path built from user-submitted data (path traversal)",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a file path built from user-submitted data (path traversal)",
     "finding_only": false
    }
@@ -1930,13 +1914,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "archive extraction that trusts the paths inside the archive (zip slip)",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "archive extraction that trusts the paths inside the archive (zip slip)",
     "finding_only": false
    }
@@ -2488,7 +2472,7 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a self-contained token (JWT) accepted without validating its signature",
     "finding_only": false
    }
@@ -2646,13 +2630,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a key size below 128 bits of security, such as a small RSA or DSA key",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a key size below 128 bits of security, such as a small RSA or DSA key",
     "finding_only": false
    }
@@ -2760,13 +2744,13 @@
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a disallowed hash function such as MD5 or SHA1",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a disallowed hash function such as MD5 or SHA1",
     "finding_only": false
    }
@@ -2786,7 +2770,7 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "passwords stored with a hash function that is not a slow key derivation function",
     "finding_only": false
    }
@@ -2828,7 +2812,7 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "random numbers that must not be guessable taken from a generator that is not cryptographically secure",
     "finding_only": false
    }
@@ -2842,7 +2826,7 @@
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "an outdated TLS or SSL protocol version enabled",
     "finding_only": false
    },
@@ -2934,19 +2918,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "TLS certificate validation turned off in a client",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "TLS certificate validation turned off in a client",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "TLS certificate validation turned off in a client",
     "finding_only": false
    }
@@ -3218,7 +3202,7 @@
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a web framework left in debug mode",
     "finding_only": false
    }
@@ -3434,7 +3418,7 @@
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "request parameters permitted wholesale (permit!) and passed to a model, so a request can set any field",
     "finding_only": false
    }
@@ -3450,7 +3434,7 @@
   "V15.3.5": [
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "type confusion: a request parameter assumed to be a string can be sent as an array, and the code does not check its type",
     "finding_only": false
    }
@@ -3458,7 +3442,7 @@
   "V15.3.6": [
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "prototype pollution: an object's prototype can be changed through property names taken from user input",
     "finding_only": false
    }
@@ -3472,13 +3456,13 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a file's state checked separately before the file is used, which another process can change in between",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "a temporary file name made with tempfile.mktemp, which another process can take before the file is created",
     "finding_only": true
    }
@@ -3524,19 +3508,19 @@
    },
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "sensitive data such as credentials written to logs",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "sensitive data such as credentials written to logs",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "sensitive data such as credentials written to logs",
     "finding_only": false
    }
@@ -3568,19 +3552,19 @@
   "V16.4.1": [
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "log injection: user input written to a log without encoding, so it can forge or break log entries",
     "finding_only": false
    },
    {
     "id": "codeql-python",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "log injection: user input written to a log without encoding, so it can forge or break log entries",
     "finding_only": false
    },
    {
     "id": "codeql-ruby",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "log injection: user input written to a log without encoding, so it can forge or break log entries",
     "finding_only": false
    }
@@ -3672,7 +3656,7 @@
   "C2.1.6": [
    {
     "id": "codeql-javascript",
-    "run": "Outside tools",
+    "run": "Outside tools you turn on",
     "looks_for": "user input placed into the system instructions, where it can override system and developer messages",
     "finding_only": true
    }
