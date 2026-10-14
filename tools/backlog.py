@@ -69,14 +69,15 @@ import re
 import sys
 import tempfile
 from pathlib import Path
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared import slug, write_text  # noqa: E402  (tools/_shared.py)
 
 
-def write_text(path, text):
-    """Writes `text` as UTF-8 with Unix line endings on every system. Path.write_text uses the
-    system's own encoding and, on Windows, CRLF, which would make a generated file differ from the
-    one committed (backlog 0120)."""
-    with open(path, "w", encoding="utf-8", newline="\n") as out:
-        out.write(text)
+def _named(title):
+    """`_shared.slug`, or "item" for a title with no letters or digits."""
+    return slug(title) or "item"
+
 
 ROOT = Path(__file__).resolve().parent.parent
 FOLDER = ROOT / "docs" / "backlog"
@@ -109,18 +110,6 @@ SESSION = re.compile(r"\bby session ([A-Za-z0-9_-]+)")
 def today():
     d = datetime.date.today()
     return f"{d.day} {d.strftime('%B %Y')}"
-
-
-def slug(title):
-    """A title made into a file name: lowercase letters and digits joined by hyphens, whole words up to 60
-    characters (the first word cut at 60 when it alone is longer), as design entries are named."""
-    words = [w for w in re.split(r"[^a-z0-9]+", title.lower()) if w]
-    name = ""
-    for word in words:
-        if name and len(name) + 1 + len(word) > 60:
-            break
-        name = f"{name}-{word}" if name else word
-    return (name or "item")[:60]
 
 
 def marker_status(text):
@@ -338,7 +327,7 @@ def write(folder, number, title, status, body):
     """Writes an item, under `done/` when its status is done."""
     place = folder / DONE_DIR if kind_of(status) == "done" else folder
     place.mkdir(parents=True, exist_ok=True)
-    path = place / f"{number:04d}-{slug(title)}.md"
+    path = place / f"{number:04d}-{_named(title)}.md"
     write_text(path, text_of(title, status, body))
     return path
 
@@ -804,7 +793,7 @@ rules
         for want in ("notes.md is not named", "0010-untitled.md does not open", "has no `**Status:**` line",
                      "is in none of the four forms", "share the title"):
             assert any(want in p for p in found), (want, found)
-        assert slug("One file per backlog item, with a status line.") == "one-file-per-backlog-item-with-a-status-line"
+        assert _named("One file per backlog item, with a status line.") == "one-file-per-backlog-item-with-a-status-line"
     # Parts (backlog 0228): each has its own line, set by claim and done, and the check holds them to it.
     with tempfile.TemporaryDirectory() as tmp:
         folder = Path(tmp) / "backlog"

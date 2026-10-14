@@ -48,6 +48,11 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import backlog  # noqa: E402  (tools/backlog.py: the items, their status lines, and the claim)
+import functools  # noqa: E402
+import _shared  # noqa: E402  (tools/_shared.py)
+
+# The board and the waiting files go in folders that may not be there yet.
+write_text = functools.partial(_shared.write_text, make_folder=True)
 
 ROOT = Path(__file__).resolve().parent.parent
 BOARD = "docs/coordination/board.md"
@@ -89,13 +94,6 @@ SESSION = re.compile(r"^- (?P<name>[A-Za-z0-9_-]+) — arm: (?P<arm>full|none) �
 AHEAD = 6
 QUEUE = re.compile(r"^\d+\. (?P<number>\d{4}) (?P<title>.*?) — (?P<state>ready|hold: .+)$")
 LOG = re.compile(r"^- (?P<when>\d{4}-\d{2}-\d{2} \d{2}:\d{2}) — (?P<text>.+)$")
-
-
-def write_text(path, text):
-    """UTF-8 with Unix line endings on every system (crates/sv-cli/tests/tools_text.rs)."""
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="\n") as out:
-        out.write(text)
 
 
 def now():

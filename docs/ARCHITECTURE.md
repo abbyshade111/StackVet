@@ -281,6 +281,7 @@ vulnerability in `sv` (`SECURITY.md`).
 | What the AI coding tool is told | `crates/sv-cli/src/mcp/catalog.rs` (tools and prompts), `check_text.rs` |
 | What a person can set aside or confirm | `crates/sv-check/src/review.rs`, `confirm.rs`, `seal.rs`; `sv review` in `crates/sv-cli/src/review.rs` |
 | A data file | `data/README.md` says what each is and what reads it; `sv_frameworks::data::file` finds it |
+| A helper two scripts in `tools/` need | `tools/_shared.py` (`write_text`, `slug`); a script imports it after putting its own folder on `sys.path`, since CI runs the tools with `python3 -I` (`crates/sv-cli/tests/tools_shared.rs`) |
 | What is still to do | `docs/backlog/`, one file per item with its status on its third line; `docs/BACKLOG.md` holds the rules and the roadmap. Claim an item with `python3 tools/backlog.py claim` before starting it |
 | A document, and whether it is live or a dated reading | `docs/README.md` lists every document in `docs/`; the dated readings are in `docs/research/`, and a document added there or in `docs/` needs a row (`crates/sv-cli/tests/docs_index.rs`) |
 | Who is building what, while the coordination trial runs | `docs/coordination/board.md`, written only by the orchestrating session with `tools/coordination.py`; the role is `docs/COORDINATION.md` |

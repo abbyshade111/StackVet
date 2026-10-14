@@ -1,6 +1,6 @@
 # tools/: `write_text` is defined in twelve scripts, `slug` in two, and `git` three ways
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -23,3 +23,20 @@ From the deep review of 13 October 2026 (backlog 0417), area: code quality and d
 - How verified: read; `grep` counts.
 - Overlap: 0319, 0321, 0322 (done or open; different faults in the same files).
 - Needs a decision record?: no.
+
+**What was built (14 October 2026, session documentation).** `tools/_shared.py` holds `write_text` (UTF-8, Unix line
+endings, and, when asked, the folder made first) and `slug`, with a self-test. The twelve scripts that each had
+`write_text`, and the two that had `slug`, import them instead; `coordination.py`, whose copy also made the folder,
+uses it with that set. The two `slug`s had come to differ: `backlog.py`'s did not cut a first word over 60 characters
+before its last step and fell back to "item", `design_entry.py`'s cut it and fell back to "entry"; the shared one cuts,
+as both docstrings said, and each script keeps its own fallback word in a one-line `_named`. The item assumed `import
+_shared` would work from the script's folder; it does not under `python3 -I`, as CI runs the tools, so each script puts
+its folder on `sys.path` first, as `coordination.py` already did for `import backlog`. Held by
+`crates/sv-cli/tests/tools_shared.rs`, which runs the self-test under `-I` and fails when a script defines either
+helper again; a copy put back in `merge_main.py`, and the shared helper set to write CRLF, each turned it red. Every
+changed script's self-test passes under `-I`, and those without one (four) start and reach their argument parsing.
+Not done, and why: the three `git` helpers stay their own, since they differ in what they return and how they fail,
+and callers rely on each (`coordination.py` catches `CalledProcessError`; `merge_main.py` returns the whole result and
+can be asked not to fail; `record_numbers.py` exits with git's message); `ROOT` stays one line in each script, since
+importing it would cost the `sys.path` line it saves. Not verified: whether anyone runs a script copied out of
+`tools/` (nothing in the repository does: `install.sh` and the workflows run them in place).
