@@ -484,7 +484,9 @@ pub fn credit(
             let Some(description) = describe(id) else {
                 continue;
             };
-            if shares_no_words(&test.text, &description) {
+            if shares_no_words(&test.text, &description)
+                && !shares_a_meaning(&test.text, &description)
+            {
                 findings.push(mismatch(test, id, &description));
             }
         }
@@ -655,6 +657,55 @@ pub fn shares_no_words(test_text: &str, requirement: &str) -> bool {
     in_test.is_disjoint(&words(requirement))
 }
 
+/// Words a test names a requirement by that its text says in other words: each group is one
+/// meaning, as the beginnings of words. Only the test-name check reads these (backlog 0387: three
+/// of the ten findings the second loop trial read by hand were sound tests, such as
+/// `test_V7_3_1_session_unused_past_the_limit_is_refused` for the inactivity timeout); the
+/// citation and threat guards keep comparing words alone, as they must.
+const MEANINGS: &[&[&str]] = &[
+    // Refusing someone what they are not allowed (V8 and its kin).
+    &[
+        "access", "restrict", "refus", "deni", "deny", "forbid", "permi", "authoriz", "authoris",
+        "admin", "role", "privileg", "unauthor",
+    ],
+    // A session or code that ends after time or disuse (V7.3 and its kin).
+    &[
+        "timeout", "expir", "idle", "inactiv", "unused", "lifetime", "stale",
+    ],
+    // Guessing and the limits on it.
+    &["brute", "guess", "lockout", "throttl", "rate", "attempt"],
+    // Keeping data secret in transit or at rest.
+    &[
+        "encrypt",
+        "cipher",
+        "tls",
+        "https",
+        "plaintext",
+        "cleartext",
+    ],
+    // A password kept so it cannot be read back.
+    &["hash", "bcrypt", "argon", "scrypt", "pbkdf"],
+];
+
+/// Whether the two texts each have a word of one of `MEANINGS`' groups.
+fn shares_a_meaning(test_text: &str, requirement: &str) -> bool {
+    let groups = |text: &str| -> BTreeSet<usize> {
+        text.split(|c: char| !c.is_ascii_alphanumeric())
+            .map(|w| w.to_lowercase())
+            .filter(|w| w.len() >= 3)
+            .flat_map(|w| {
+                MEANINGS
+                    .iter()
+                    .enumerate()
+                    .filter(move |(_, group)| group.iter().any(|start| w.starts_with(start)))
+                    .map(|(i, _)| i)
+                    .collect::<Vec<_>>()
+            })
+            .collect()
+    };
+    !groups(test_text).is_disjoint(&groups(requirement))
+}
+
 /// Enough of a stem that `passwords` and `password` are the same word, and no more.
 fn stem(word: &str) -> String {
     for suffix in ["ing", "ies", "es", "ed", "s"] {
@@ -669,6 +720,9 @@ fn stem(word: &str) -> String {
     }
     word.to_owned()
 }
+
+#[cfg(test)]
+mod meaning_tests;
 
 #[cfg(test)]
 mod tests {
