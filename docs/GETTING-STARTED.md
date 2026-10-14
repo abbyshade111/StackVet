@@ -12,20 +12,18 @@ the questions only you can answer.
 
 ![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](website/diagrams/how-it-works.svg)
 
-The steps below set this up, one at a time.
-
 It takes about fifteen minutes to set up, once. A word here you do not know is probably in
 [the glossary](GLOSSARY.md).
 
-**Or let your AI coding tool do steps 1 to 3.** [The setup prompts](prompts/setup.md) are for someone who has used
+**Easiest: let your AI coding tool do steps 1 to 3.** [The setup prompts](prompts/setup.md) are for someone who has used
 an AI chat but never built an app with one. Copied into your AI coding tool one at a time, they have it look at your
 computer, help you install what is missing, fetch StackVet (on Windows, install it with Scoop), and write the settings
 file with the paths already filled in, asking you before it installs or changes anything outside the folder.
 **Tried so far:** in Antigravity, on a Mac, on 13 October 2026, with the Gemini 3.8 Flash model. The setup worked. The
 build that followed went badly: the AI tool made choices it should have asked you about and said "done" for checks
 nobody had made. The prompts were changed for that on 14 October 2026, and until the changes are tried, the setup page does not
-recommend Antigravity with that model. They have not yet been tried in Claude Code, Cursor, or VS Code. The steps
-below do the same setup by hand, as commands.
+recommend Antigravity with that model. They have not yet been tried in Claude Code, Cursor, or VS Code. Steps 1
+to 3 below do it by hand, if you prefer or a prompt stops.
 
 ## What StackVet will and will not tell you
 
@@ -34,6 +32,8 @@ did not look at. A short report is not a good sign unless the part saying what w
 short too.
 
 ## 1. Install Docker, and start it
+
+Did the setup prompts do this? Go to step 4.
 
 StackVet runs inside [Docker](GLOSSARY.md#docker), so there is nothing else to install. (Starting your app to check
 it while it runs, an optional later step, needs StackVet installed on the computer itself: section 6.)
@@ -59,7 +59,7 @@ Make an empty folder for the app, for example `~/code/my-app`. Then, in a termin
 git init
 ```
 
-(Or ask your AI tool to do it.) This matters more than it looks: the check for a password or key that
+This matters more than it looks: the check for a password or key that
 was ever saved into your project's history only runs in a git folder. Without it, that check is
 reported as [*not assessed*](GLOSSARY.md#not-assessed).
 
