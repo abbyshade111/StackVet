@@ -77,6 +77,8 @@ mod report_writing;
 mod resource_fence_tests;
 mod resources;
 #[cfg(test)]
+mod since_all_gone_tests;
+#[cfg(test)]
 mod since_tests;
 #[cfg(test)]
 mod smoke_list_tests;

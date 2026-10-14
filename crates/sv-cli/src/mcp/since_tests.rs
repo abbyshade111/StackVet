@@ -5,7 +5,7 @@
 use super::tests::{call, conforms, scratch_app, text};
 use super::*;
 
-fn check(server: &Server, args: Value) -> Value {
+pub(super) fn check(server: &Server, args: Value) -> Value {
     let result = call(server, "stackvet_check", args);
     assert_eq!(result["isError"], false, "{}", text(&result));
     let declared = tools();
@@ -21,7 +21,7 @@ fn check(server: &Server, args: Value) -> Value {
     result
 }
 
-fn fingerprints(list: &Value, key: &str) -> Vec<String> {
+pub(super) fn fingerprints(list: &Value, key: &str) -> Vec<String> {
     let mut out: Vec<String> = list
         .as_array()
         .unwrap()
@@ -34,7 +34,7 @@ fn fingerprints(list: &Value, key: &str) -> Vec<String> {
 
 /// A small app that keeps only the owner's recipes, on their own computer, with `files` files of
 /// code each with three weak hashes: many findings, in a check short enough to come whole.
-fn recipes(tag: &str, files: usize) -> PathBuf {
+pub(super) fn recipes(tag: &str, files: usize) -> PathBuf {
     let root = std::env::temp_dir().join(format!("sv-mcp-{tag}-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();
     std::fs::create_dir_all(root.join("app")).unwrap();
