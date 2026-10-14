@@ -15,3 +15,5 @@
 **Fix.** A ruleset requiring a review from a code owner for `.github/workflows/**`, `tools/ci_scope.py`, `tools/adr_check.py`, `tools/record_numbers.py`, and `action.yml` (a `CODEOWNERS` file plus "require review from code owners"), which is the owner's setting to make; the `CODEOWNERS` file itself is a build.
 
 **Record.** ADR-103 and ADR-104 govern the two scripts; the ruleset is the owner's decision and wants a Later line on ADR-051 when made.
+
+**The ruleset is set, 14 October 2026:** "Main - ADR Check" on the default branch requires a review from a code owner (zero approvals otherwise), read back through the API; ADR-051, Later. What is left is the `CODEOWNERS` file (a build, queued): the owner for `.github/workflows/`, `tools/ci_scope.py`, `tools/adr_check.py`, `tools/record_numbers.py`, and `action.yml`, with a test that the file names only paths that exist.
