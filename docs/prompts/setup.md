@@ -150,8 +150,9 @@ Use the version for your computer.
 ### On Windows
 
 On Windows, StackVet is installed on the computer itself, with Scoop, rather than run in Docker. Nothing is built,
-and the checks that read your app's code need no Docker at all. (Docker Desktop is needed later only for the checks
-that start your app.)
+and the checks that read your app's code need no Docker at all. The checks that start your app (`sv report --run`)
+have not been tried on a Windows computer, even with Docker Desktop running: without them, the report says which
+requirements only they reach, and a Mac or Linux computer, or a cloud runner, is the known way to run them.
 
 <!-- setup-windows:start -->
 > Please set up StackVet in this folder so you can use its tools while we build. On Windows it is installed with
@@ -186,6 +187,9 @@ that start your app.)
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
 >    which settings file you wrote, since a new chat may not remember it.
+> 11. Tell me that on Windows, StackVet's checks that start the app (`stackvet report --run`) have not been tried
+>    yet: the checks that read the code work here, and the report will say what the others would have reached. Don't
+>    promise me the full report on this computer.
 <!-- setup-windows:end -->
 
 ## 4. Check that it's connected
@@ -288,7 +292,9 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    you starts the new one.
 > 4. In this folder, run `sv doctor` (`stackvet doctor` in PowerShell) and tell me in plain words what is ready for the
 >    full report and what is not.
-> 5. Ask me, then run `sv report . --run` here (`stackvet report . --run` in PowerShell). It starts the app in a
+> 5. On Windows, tell me first that this step has not been tried on a Windows computer, and that a Mac or Linux
+>    computer is the known way to run it. Ask me, then run `sv report . --run` here (`stackvet report . --run` in
+>    PowerShell). It starts the app in a
 >    container with no internet, tries things against it (signed in as test users too, when stackvet.toml names
 >    them), and runs the security tools that
 >    are installed; Semgrep downloads its rules from semgrep.dev as it runs. It takes several minutes. It needs Docker:

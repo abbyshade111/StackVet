@@ -463,6 +463,9 @@ pub(super) struct Flaws {
     pub(super) api_parses_any_type: bool,
     /// The JSON API also takes its fields as a form or as multipart.
     pub(super) api_takes_forms: bool,
+    /// The JSON API takes a comment's fields as a form or as multipart, though not a note's: the second
+    /// kind of record is the one left open (backlog 0232, part 3).
+    pub(super) api_comments_take_forms: bool,
     /// The JSON API refuses a request from another origin.
     pub(super) api_checks_origin: bool,
     /// The JSON API answers a request it will not take with a redirect, not a refusal.
@@ -2479,9 +2482,13 @@ impl FakeApp {
                     contents,
                 )
             }
-            ("POST", "/api/notes") => {
+            ("POST", api @ ("/api/notes" | "/api/comments")) => {
                 // A JSON API that relies on the browser asking first: no token, and unless
-                // told otherwise, no look at the Origin either.
+                // told otherwise, no look at the Origin either. Comments are a second kind of
+                // record through the same API, with a flaw of their own (backlog 0232, part 3).
+                let comments = api == "/api/comments";
+                let takes_forms =
+                    self.flaws.api_takes_forms || (comments && self.flaws.api_comments_take_forms);
                 let Some(owner) = user else {
                     return Some(Self::respond(401, vec![], "sign in"));
                 };
@@ -2520,13 +2527,11 @@ impl FakeApp {
                     || self.flaws.api_parses_any_type
                 {
                     as_json()
-                } else if self.flaws.api_takes_forms
+                } else if takes_forms
                     && content_type.starts_with("application/x-www-form-urlencoded")
                 {
                     pairs(&body).get("text").cloned()
-                } else if self.flaws.api_takes_forms
-                    && content_type.starts_with("multipart/form-data")
-                {
+                } else if takes_forms && content_type.starts_with("multipart/form-data") {
                     body.split("name=\"text\"\r\n\r\n")
                         .nth(1)
                         .and_then(|rest| rest.split("\r\n").next())
@@ -2537,6 +2542,14 @@ impl FakeApp {
                 let Some(text) = text else {
                     return Some(refuse(self, 400));
                 };
+                if comments {
+                    self.comments.push((owner, text));
+                    return Some(Self::respond(
+                        201,
+                        vec![],
+                        &format!("{{\"id\":{}}}", self.comments.len()),
+                    ));
+                }
                 self.notes.push((owner, text));
                 Self::respond(201, vec![], &format!("{{\"id\":{}}}", self.notes.len()))
             }

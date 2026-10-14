@@ -32,3 +32,5 @@ They are shown in `sv questions`, the MCP `questions` section, and report.html. 
 compliance.md, `report.json`, and the MCP structured result. Tried on V8 (V8.1.1 and V8.3.1) in Python, JavaScript,
 and TypeScript. The record is ADR-022's "Later" entry of this date. V2.2.3 and V13.2.5, which have no question at all,
 are backlog 0506.
+
+**The one-chapter trial, 14 October 2026** (the orchestrating session, with `sv questions` on the four example apps): the authorization locator found nothing on `notes-with-users`, whose check is inline (a 403 and `owner = ?`), and pointed at an OpenID URL on `oidc-notes` because its name starts with "authori". The findings and the fix are backlog 0516; the proposals 0488 to 0500 wait for its second reading.
