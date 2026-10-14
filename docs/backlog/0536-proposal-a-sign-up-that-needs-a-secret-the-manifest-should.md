@@ -19,3 +19,5 @@ value in the manifest will refuse sv's accounts, and let the app accept a test c
 reviewing session recommends (a): the value never leaves the fence and the manifest stays free of secrets.
 
 **Record.** A new ADR: what sv reads at run time and what the manifest may cite.
+
+**The owner's choice, 14 October 2026:** (a), the seed-made value: the manifest's seed command prints NAME=value lines and the sign-up form cites {seed:NAME}; the value is made inside the fence at run time and never written down. A new ADR in the pull request that builds it (what sv reads at run time and what the manifest may cite).
