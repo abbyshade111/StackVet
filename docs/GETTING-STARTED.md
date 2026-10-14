@@ -86,9 +86,8 @@ Docker. Not yet tried by hand; the checks that start your app, not at all
 
 ### Claude (the desktop app and Claude Code)
 
-A file named `.mcp.json` in the app's folder. A `.mcp.json` like this was tried in the Claude
-desktop app with StackVet installed directly; this container version of it has been tried by a
-test that talks to it the way the tool does, not yet in the app itself.
+A file named `.mcp.json` in the app's folder. One like it was tried in the Claude desktop app with
+StackVet installed directly; this container version only by a test that talks to it as the tool does.
 
 ```json
 { "mcpServers": { "stackvet": {
@@ -108,9 +107,8 @@ test that talks to it the way the tool does, not yet in the app itself.
 ### VS Code (GitHub Copilot)
 
 **Tried on 27 September 2026, by the owner, start to finish:** Copilot's agent called StackVet's
-tools, asked every question from `stackvet_questions` (since 9 October 2026, `stackvet_check`'s section
-`questions`) one at a time, wrote a fix for the path
-findings `stackvet_check` reported, and checked the fix by running the check again. The answers were
+tools, asked every question one at a time, fixed the path findings `stackvet_check` reported, and ran
+the check again to confirm the fix. The answers were
 saved in the app's folder, and a fresh report showed them and the fix. That was with `sv` installed
 directly; the container settings below have not been tried in VS Code yet.
 
@@ -161,8 +159,8 @@ until then the chat lists none. If it does not work for you, tell us:
 
 ### Did it connect?
 
-Check before you start building, in whichever tool you use. If StackVet is not connected, the tool
-does not say so: it simply builds without it, and nothing gets checked. In the tool's chat, ask:
+Check before you start building. If StackVet is not connected, the tool does not say so: it builds
+without it, and nothing gets checked. In the tool's chat, ask:
 
 > Which `stackvet_` tools can you call? List their names.
 
@@ -176,9 +174,8 @@ not start.
 
 If the tool stops mentioning StackVet later, ask again: after a restart, Docker may not have
 started yet.
-The prompt in step 4 tells the tool to stop and tell you when the tools are missing, and the rules
-file below (`sv rules`) says the same to any tool that reads `AGENTS.md`, so a tool that finds them
-gone later should say so rather than carry on.
+The prompt in step 4, and the rules file below (`sv rules`) for any tool that reads `AGENTS.md`, tell
+the tool to stop and tell you when the tools are missing.
 
 ### A tool without MCP
 
@@ -214,6 +211,8 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    what it keeps about people (`[data] categories`):** they decide whether it is held to ASVS
 >    level 1 or the stricter level 2. Name the app's pages and routes in it, under
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
+>    If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up
+>    on its own, and ask whether to seed a test code for the run, and where it would live.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
 >    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
