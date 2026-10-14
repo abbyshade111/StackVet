@@ -1289,13 +1289,44 @@ fn policy_short_of_v3_4_3(policy: &str) -> Vec<&'static str> {
 
 /// The headers one answer lacks.
 pub(crate) fn missing_headers(response: &ProbeResponse) -> Vec<&'static str> {
+    missing_headers_by_requirement(response)
+        .into_iter()
+        .map(|(_, what)| what)
+        .collect()
+}
+
+/// The requirements a finding on `rule` names: those of its own that `failing` holds, in the order
+/// the rule cites them. One missing header fails its own requirement, not the other three (backlog
+/// 0432; ADR-047, Later); the rule's whole list stays what a clean answer credits.
+pub(crate) fn only_failing(rule: &[&str], failing: &[&str]) -> Vec<String> {
+    rule.iter()
+        .filter(|id| failing.contains(id))
+        .map(|id| (*id).to_owned())
+        .collect()
+}
+
+/// What `missing_headers` lists, each beside the requirement it falls short of: the policy's minimum
+/// V3.4.3, `X-Content-Type-Options` V3.4.4, `frame-ancestors` V3.4.6, and `Referrer-Policy` V3.4.5.
+pub(crate) fn missing_headers_by_requirement(
+    response: &ProbeResponse,
+) -> Vec<(&'static str, &'static str)> {
     let mut missing = Vec::new();
     match response.header("content-security-policy") {
-        None => missing.push("Content-Security-Policy, which limits what a page may load and run"),
-        Some(policy) => missing.extend(policy_short_of_v3_4_3(policy)),
+        None => missing.push((
+            "V3.4.3",
+            "Content-Security-Policy, which limits what a page may load and run",
+        )),
+        Some(policy) => missing.extend(
+            policy_short_of_v3_4_3(policy)
+                .into_iter()
+                .map(|what| ("V3.4.3", what)),
+        ),
     }
     if response.header("x-content-type-options").is_none() {
-        missing.push("X-Content-Type-Options, which stops a browser guessing a file's type");
+        missing.push((
+            "V3.4.4",
+            "X-Content-Type-Options, which stops a browser guessing a file's type",
+        ));
     }
     // V3.4.6 asks for the policy's `frame-ancestors`, and says `X-Frame-Options` "is obsolete and
     // may not be relied upon": it alone is short of the requirement, and said so rather than
@@ -1307,15 +1338,22 @@ pub(crate) fn missing_headers(response: &ProbeResponse) -> Vec<&'static str> {
         v.to_lowercase().contains("deny") || v.to_lowercase().contains("sameorigin")
     });
     if !frame_ancestors && frame_options {
-        missing.push(
+        missing.push((
+            "V3.4.6",
             "a `frame-ancestors` directive in its Content-Security-Policy (it sends \
              X-Frame-Options, which V3.4.6 calls obsolete and not to be relied upon)",
-        );
+        ));
     } else if !frame_ancestors {
-        missing.push("a rule against being shown inside somebody else's page");
+        missing.push((
+            "V3.4.6",
+            "a rule against being shown inside somebody else's page",
+        ));
     }
     if response.header("referrer-policy").is_none() {
-        missing.push("Referrer-Policy, which stops addresses leaking to other sites");
+        missing.push((
+            "V3.4.5",
+            "Referrer-Policy, which stops addresses leaking to other sites",
+        ));
     }
     missing
 }
@@ -1339,7 +1377,12 @@ fn security_headers(pages: &[&ProbeResponse]) -> Option<Finding> {
     if short.is_empty() {
         return None;
     }
-    Some(finding_on(
+    let failing: Vec<&str> = pages
+        .iter()
+        .flat_map(|page| missing_headers_by_requirement(page))
+        .map(|(id, _)| id)
+        .collect();
+    let mut found = finding_on(
         pages
             .iter()
             .filter(|page| !missing_headers(page).is_empty())
@@ -1349,7 +1392,9 @@ fn security_headers(pages: &[&ProbeResponse]) -> Option<Finding> {
         "The app is missing headers a browser relies on",
         Severity::Medium,
         format!("{}.", capitalized(&short.join(". "))),
-    ))
+    );
+    found.requirement_ids = only_failing(SECURITY_HEADERS.requirement_ids, &failing);
+    Some(found)
 }
 
 fn capitalized(text: &str) -> String {
@@ -1376,6 +1421,8 @@ const COOKIE_ATTRIBUTES: Rule = Rule {
 fn cookie_attributes(pages: &[&ProbeResponse]) -> Option<Finding> {
     let mut problems = Vec::new();
     let mut named: Vec<String> = Vec::new();
+    // V3.3.4 is HttpOnly, V3.3.2 is SameSite: the finding names the ones a cookie lacked (backlog 0432).
+    let mut failing = Vec::new();
     for page in pages {
         let before = problems.len();
         for (k, cookie) in &page.headers {
@@ -1385,12 +1432,14 @@ fn cookie_attributes(pages: &[&ProbeResponse]) -> Option<Finding> {
             let lower = cookie.to_lowercase();
             let name = cookie.split('=').next().unwrap_or("a cookie").trim();
             if !lower.contains("httponly") {
+                failing.push("V3.3.4");
                 problems.push(format!(
                     "`{name}`, set by {}, can be read by any script on the page (no HttpOnly)",
                     page_name(page)
                 ));
             }
             if !lower.contains("samesite") {
+                failing.push("V3.3.2");
                 problems.push(format!(
                     "`{name}`, set by {}, does not say when it may travel to other sites (no \
                      SameSite)",
@@ -1405,13 +1454,15 @@ fn cookie_attributes(pages: &[&ProbeResponse]) -> Option<Finding> {
     if problems.is_empty() {
         return None;
     }
-    Some(finding_on(
+    let mut found = finding_on(
         named,
         &COOKIE_ATTRIBUTES,
         "A cookie is set without the attributes that protect it",
         Severity::High,
         problems.join("; "),
-    ))
+    );
+    found.requirement_ids = only_failing(COOKIE_ATTRIBUTES.requirement_ids, &failing);
+    Some(found)
 }
 
 const CORS_ANY_ORIGIN: Rule = Rule {
@@ -2414,6 +2465,9 @@ mod routes_cookie_tests;
 
 #[cfg(test)]
 mod routes_csp_tests;
+
+#[cfg(test)]
+mod failing_requirements_tests;
 
 #[cfg(test)]
 #[path = "probes_evidence_tests.rs"]
