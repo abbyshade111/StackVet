@@ -1,6 +1,6 @@
 # Each requirement in the report stated in plain language, with checks named in words
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -34,3 +34,9 @@ all, written from each one's own words and read against them one by one. Where a
 long requirement (a list of what is covered, or "in place of"), it was put back. The test now holds every requirement
 but ASVS's level-3 ones to having a line, and first checks that each framework's requirements loaded. **What remains:**
 ASVS's 92 level-3 requirements, which the owner did not ask for in this round.
+
+**Done, 14 October 2026:** closed at the owner's word of the same day. Every ASVS level-1 and level-2 requirement,
+every AISVS 1.0 requirement and its Appendix C's, and every Secure by Design control has a plain line. ASVS's 92
+level-3 requirements have none, and are not to be written yet: level 3 is held until backlog 0507 decides whether `sv`
+holds an app to it at all. If 0507 makes level 3 something an app can be held to, its lines are written then, as part
+of that work or an item of their own; until then a level-3 row shows the standard's words alone, as the report says.
