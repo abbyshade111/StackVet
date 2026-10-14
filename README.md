@@ -13,12 +13,6 @@ with your own AI tool until the app is what you wanted, and then `sv` picks up t
 installing Docker, connecting StackVet to your AI tool, the prompt to start with, and reading the report, one step
 at a time. The rest of this page is written for programmers, and its commands build StackVet from its source code.
 
-**SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
-archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
-`v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this
-repository held v1 at its top and `sv` under `agnostic/`; no history was rewritten, so every commit hash cited
-elsewhere still resolves.
-
 ## What `sv` checks, and what it writes
 
 The compliance engine, the scanners, the container runner, the checks and the reports all run. What is not
@@ -58,26 +52,13 @@ rule that has not been taught a language in your app claims nothing, and the rep
 
 ### Exit codes
 
-`sv check`, `sv report`, `sv audit`, and `sv run` end with a status a CI job can act on. 3 always means `sv` itself
-failed and there is no result: a folder that is not there, an option it does not know, a `stackvet.toml` that is
-there and cannot be read, or, for `sv report`, none at all (`sv check` and `sv audit` run without one, and read it
-when it is there; every other command uses 3 for a failure of its own too). `sv run` exits 2 when the app could not
-be started or never answered. `sv audit` exits 0 when every package was compared
-and none matched a known vulnerability, 1 when one did, and 2 when the comparison did not cover the whole app (no
-database, an ecosystem the database holds nothing about, or a list of packages `sv` could not complete).
-`sv check` and `sv report` exit 0 when they finished, and 2 when a check could not run: a file that could not be
-read, a file the parser could not make sense of, a language nothing here reads, a code rule that would not
-compile, no file of the app read at all, or (`sv report --run`) an app that could not be started. What a static
-run cannot see by its nature, such as requirements nothing verified or a check that needs a Dockerfile the app
-lacks, does not count, or every run would exit 2. Add `--fail-on attention` to exit 1 for any finding of low
-severity or worse, leaving out those marked only for information (or `attention:high` for high and critical
-only), `--fail-on not-assessed` to exit 2 also for a symbolic link not
-followed, an outside tool that did not run, or an `--advisories` comparison that did not cover the app, or
-`--fail-on any` for both; 1 outranks 2. To start using `sv` on an app that already has findings you know
-about, add `--baseline <an older report folder>`: `--fail-on attention` then exits 1 only for a finding that
-report did not have. Every finding is still listed and counted, and the ones already there are marked, so
-nothing is hidden; a baseline `sv` cannot read, or one for an app of another name, stops the run. Packages
-in folders `stackvet.toml` says are not the app, such as example apps and test fixtures, are listed apart
+`sv check`, `sv report`, `sv audit`, `sv run`, and `sv probe` end with a status a CI job can act on: 0 finished, 1
+something needs a person (`sv audit`'s known vulnerability, or a finding when you ask with `--fail-on`), 2 not
+assessed (part of what was asked could not be checked), and 3 `sv` itself failed. Findings alone never fail a run
+unless you ask; [the table in `docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-exit-codes) says exactly what each
+number means for each command, with `--fail-on` and `--baseline`.
+
+Packages in folders `stackvet.toml` says are not the app, such as example apps and test fixtures, are listed apart
 and still count: that file is written by your AI coding tool, and naming a folder there must never hide a
 vulnerability. `sv` holds itself to this every week, auditing the Rust files it is built from
 (`.github/workflows/audit.yml`).
@@ -318,10 +299,6 @@ What it cannot show: who was at the keyboard, unless your key has a passphrase; 
 yours, since whoever can change the list, or the repository variable, can add one. A tool set on faking
 it, running as you, could do either; it stops the easy way, not every way. Keep the key file private.
 
-Entries recorded before 6 October 2026 were sealed another way, with `~/.config/securevibe/review-key`,
-and count only on the computer that holds that key. The next time you run `sv review` there, it offers to
-sign them all again at one yes, without asking each question again.
-
 With the container, give it a terminal and somewhere to keep the key, made first so that it is yours
 (`mkdir -p ~/.config/stackvet && chmod 700 ~/.config/stackvet`; on Linux, add `--user` as below):
 `docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/stackvet":/sv-config/stackvet -e XDG_CONFIG_HOME=/sv-config ghcr.io/abbyshade111/stackvet-sv review .`
@@ -503,10 +480,6 @@ The loop the server is built for, and the two things it never does:
 | An answer is about 40,000 characters | A longer plan or check comes in parts, since Claude Code saves anything longer to a file instead of reading it. The first part starts with what to act on (for a plan, what to decide and what `sv run` needs; for a check, what was not examined and then the findings) and ends with every section and how to ask for it (`section`, and `page` for a long one). Nothing is left out, and `"section": "all"` still gives the whole answer at once. |
 | A request is 1 MiB | A longer request line gets an error in reply; a tool call is a few hundred bytes. |
 
-Until 9 October 2026 there were thirteen: `stackvet_questions` is now `stackvet_check`'s section `questions`, and
-`stackvet_notes_file` is `stackvet_record_answer` called with no question and no answer. An AI coding tool that
-still calls either old name gets the same answer, with a line naming the tool to call instead; neither is listed.
-
 It also offers [the design-time prompts](docs/prompts/design-time.md) as MCP prompts, for you to choose from
 your tool (where it shows them, for example as slash commands): what to decide with the tool before any code is
 written, each saying whether it has been shown to work. Its instructions ask the tool, for an app with no code yet, to
@@ -553,13 +526,7 @@ this repository, its workflow, and that commit. To check the one you pulled came
 gh attestation verify oci://ghcr.io/abbyshade111/stackvet-sv:latest --owner abbyshade111
 ```
 
-Images published before 9 October 2026 carry no signature (`docs/adr/ADR-080.md`). To build it yourself instead, from the
-repository root: `docker build -t ghcr.io/abbyshade111/stackvet-sv .`
-
-Until 9 October 2026 the product was called SecureVibe and the image was `ghcr.io/abbyshade111/securevibe-sv`.
-That name is left as it is and gets no further pushes; the files `sv` wrote under the old names (`securevibe.toml`,
-`securevibe-report`, `~/.config/securevibe`) are still read, and the report says once what to rename
-(`docs/adr/ADR-062.md`).
+To build it yourself instead, from the repository root: `docker build -t ghcr.io/abbyshade111/stackvet-sv .`
 
 Then the tool starts it in its `.mcp.json`. Use your own folder in all three places, and the full path
 to `docker`, since an app started from the Dock often cannot see `/opt/homebrew/bin`:
@@ -654,4 +621,29 @@ Where to start depends on who you are. Nobody reads the design record end to end
 | Not a programmer, building an app with an AI tool | [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md), the guide, step by step; its section 6 says what the report covers and what it leaves *not assessed*. [`docs/GLOSSARY.md`](docs/GLOSSARY.md) explains the words StackVet uses. |
 | A programmer using `sv` | This page: [What `sv` checks, and what it writes](#what-sv-checks-and-what-it-writes) (the commands, the languages, the exit codes, and the report files), [From inside your AI coding tool](#from-inside-your-ai-coding-tool) (the MCP server), and [the GitHub Action](#on-each-pull-request-the-github-action). |
 | Contributing to StackVet | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), the ten-minute map, first; then [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/adr/README.md`](docs/adr/README.md) (why things are as they are), and [`docs/BACKLOG.md`](docs/BACKLOG.md) (what is left to do). |
-| Researching how it was built | [`docs/paper/`](docs/paper/), starting with [`HOW-SV-WORKS.md`](docs/paper/HOW-SV-WORKS.md) and [`METHODOLOGY.md`](docs/paper/METHODOLOGY.md); then the design record, one dated entry per file in [`docs/design/`](docs/design/) ([`docs/DESIGN.md`](docs/DESIGN.md) says how it is kept), which explains the two changes from v1, why deleting the wizard was the hard part, and what the first run against real data turned up. |
+| Researching how it was built | [`docs/paper/`](docs/paper/), starting with [`HOW-SV-WORKS.md`](docs/paper/HOW-SV-WORKS.md) and [`METHODOLOGY.md`](docs/paper/METHODOLOGY.md); then the design record, one dated entry per file in [`docs/design/`](docs/design/) ([`docs/DESIGN.md`](docs/DESIGN.md) says how it is kept), which explains the two changes from v1, why deleting the wizard was the hard part, and what the first run against real data turned up. v1 itself is archived: see [the last section](#if-you-used-stackvet-before-9-october-2026). |
+
+## If you used StackVet before 9 October 2026
+
+Each note here is for someone who set StackVet up before a change; a first-time reader can skip all of them.
+
+- **The name.** Until 9 October 2026 the product was called SecureVibe and the image was
+  `ghcr.io/abbyshade111/securevibe-sv`. That name is left as it is and gets no further pushes; the files `sv` wrote
+  under the old names (`securevibe.toml`, `securevibe-report`, `~/.config/securevibe`) are still read, and the report
+  says once what to rename (`docs/adr/ADR-062.md`).
+- **Unsigned images.** Images published before 9 October 2026 carry no signature (`docs/adr/ADR-080.md`).
+- **Two MCP tools folded into others.** Until 9 October 2026 there were thirteen tools: `stackvet_questions` is now
+  `stackvet_check`'s section `questions`, and `stackvet_notes_file` is `stackvet_record_answer` called with no question
+  and no answer. An AI coding tool that still calls either old name gets the same answer, with a line naming the tool
+  to call instead; neither is listed.
+- **Answers recorded with `sv review` before 6 October 2026** were sealed another way, with
+  `~/.config/securevibe/review-key`, and count only on the computer that holds that key. The next time you run
+  `sv review` there, it offers to sign them all again at one yes, without asking each question again.
+- **An installed copy from before 5 October 2026.** The guide had you use the program in the build folder then; if
+  your `PATH` or your AI tool's settings name `…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`
+  ([`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md#if-you-set-stackvet-up-before-5-october-2026)).
+- **SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
+  archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
+  `v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this
+  repository held v1 at its top and `sv` under `agnostic/`; no history was rewritten, so every commit hash cited
+  elsewhere still resolves.

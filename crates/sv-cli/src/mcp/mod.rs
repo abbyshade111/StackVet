@@ -77,6 +77,8 @@ mod report_writing;
 mod resource_fence_tests;
 mod resources;
 #[cfg(test)]
+mod resources_seal_bytes_tests;
+#[cfg(test)]
 mod since_all_gone_tests;
 #[cfg(test)]
 mod since_paged_tests;
