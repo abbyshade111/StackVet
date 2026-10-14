@@ -16,3 +16,5 @@ labels for cleanup), and is what some Linux distributions ship instead of Docker
 Docker-specific questions that may answer differently), list what differs, and decide whether a second backend is one
 item or several. Nothing changes what the fence guarantees; a record only if Podman is adopted. **Held until the owner
 asks for it or a Mac or Linux user without Docker does.**
+
+**The owner's word, 14 October 2026:** take the look now. The hold is lifted; the item goes out with the next lane. Its first step is the measurement (the fence tests with `podman` as the backend, on a Mac with Podman installed, and what differs), written into this item before any code; whether a second backend is adopted is a decision of its own.
