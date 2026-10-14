@@ -1,6 +1,6 @@
 # The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them)
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: medium. Verified against the code by the reviewing session before filing.
 

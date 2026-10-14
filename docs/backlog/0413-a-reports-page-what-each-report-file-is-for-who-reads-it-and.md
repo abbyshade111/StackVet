@@ -1,6 +1,6 @@
 # A reports page: what each report file is for, who reads it, and an example of each
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

@@ -1,6 +1,6 @@
 # V1.3.1 and V1.3.5, rich text and user-supplied Markdown, are turned on only by an AI feature
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
