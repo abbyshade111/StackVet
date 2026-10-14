@@ -1,6 +1,6 @@
 # Podman as a second container backend for the fence, so a Mac or Linux user without Docker can run the running-app checks
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -76,3 +76,5 @@ it is the next thing to measure. Until then a Podman backend would refuse every 
 
 **The Mac half is still to be measured:** Podman on a Mac runs in a virtual machine (`podman machine`), whose gateway
 and network differ from Linux's; none of the above was tried there.
+
+**The owner's decision, 14 October 2026** (on the measurement above): Podman is not adopted now. The fence works on it except for the one thing the fence rests on, keeping a container from the computer through its network's gateway, which none of the options `sv` uses can do on this install; a Podman backend today would refuse every run. The measurement is split: the three small fixes it found are one build item (image names written in full, which helps Docker too; the backend check reading Podman's own field; the "container gone" wording), and the gateway question, with the Mac half, is a held measurement item; adoption is decided after that. This item closes as the measurement it was.
