@@ -15,6 +15,7 @@
 pub mod deps;
 pub mod ecosystems;
 pub mod files;
+pub mod glob;
 pub mod jvm;
 mod not_the_app;
 pub mod requirements;
