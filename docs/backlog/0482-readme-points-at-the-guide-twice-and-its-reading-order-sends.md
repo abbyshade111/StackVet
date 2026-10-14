@@ -1,6 +1,6 @@
 # README points at the guide twice, and its "Reading order" sends every reader to the 240,000-word design record
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

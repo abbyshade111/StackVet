@@ -1,6 +1,6 @@
 # Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: documentation. Severity: low. Verified against the code by the reviewing session before filing.
 

@@ -1,6 +1,6 @@
 # About 75 checks are printed in the coverage tables as able to mark *checked* where the code only ever credits in part, and no gate holds the list
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
