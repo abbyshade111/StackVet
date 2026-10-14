@@ -217,3 +217,66 @@ fn the_apps_commit_is_read_from_git_and_a_change_is_seen() {
     assert_eq!(AppCommit::of(&dir), AppCommit::Changed(commit));
     std::fs::remove_dir_all(&dir).ok();
 }
+
+#[test]
+fn reading_the_apps_commit_runs_no_program_the_repository_names() {
+    // ADR-032: `git status` and `git diff` hash a file whose time changed through the repository's
+    // clean filter, a program `.git/config` names. The app's commit is read without either.
+    let dir = std::env::temp_dir().join(format!("sv-ci-codeql-filter-{}", std::process::id()));
+    let marker = dir.with_extension("ran");
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::remove_file(&marker).ok();
+    std::fs::create_dir_all(&dir).unwrap();
+    let git = |args: &[&str]| {
+        let ok = std::process::Command::new("git")
+            .arg("-C")
+            .arg(&dir)
+            .args([
+                "-c",
+                "user.name=t",
+                "-c",
+                "user.email=t@example.test",
+                "-c",
+                "commit.gpgsign=false",
+            ])
+            .args(args)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false);
+        assert!(ok, "the setup: git {args:?}");
+    };
+    git(&["init", "-q"]);
+    std::fs::write(dir.join("app.js"), "console.log(1)\n").unwrap();
+    git(&["add", "app.js"]);
+    git(&["commit", "-q", "-m", "first"]);
+    std::fs::write(dir.join(".gitattributes"), "* filter=planted\n").unwrap();
+    git(&[
+        "config",
+        "filter.planted.clean",
+        &format!("touch '{}'; cat", marker.display()),
+    ]);
+    // The same content, a new time: the case in which git's own commands run the filter.
+    std::thread::sleep(std::time::Duration::from_millis(1100));
+    std::fs::write(dir.join("app.js"), "console.log(1)\n").unwrap();
+    // The setup: git's own status does run it here, so its not running below means something.
+    let _ = std::process::Command::new("git")
+        .arg("-C")
+        .arg(&dir)
+        .args(["status", "--porcelain"])
+        .output();
+    assert!(
+        marker.exists(),
+        "the setup: git status ran the planted filter"
+    );
+    std::fs::remove_file(&marker).unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(1100));
+    std::fs::write(dir.join("app.js"), "console.log(1)\n").unwrap();
+
+    let commit = AppCommit::of(&dir);
+    assert!(
+        !marker.exists(),
+        "reading the app's commit ran the repository's filter"
+    );
+    assert!(matches!(commit, AppCommit::Clean(_)), "{commit:?}");
+    std::fs::remove_dir_all(&dir).ok();
+}

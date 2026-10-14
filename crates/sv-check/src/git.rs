@@ -134,15 +134,67 @@ pub fn head_commit(app_dir: &Path) -> Option<String> {
 /// Whether a file git tracks under `app_dir` differs from the commit checked out, so the code is not
 /// exactly that commit: `None` when git could not say (ADR-113). Files git does not track are left
 /// out, as a commit says nothing about them either way.
+///
+/// Read without `git status` or `git diff`: both hash a file whose time changed through the
+/// repository's own clean filter, a program `.git/config` names, so they would run the app's choice
+/// of program on the owner's computer (tried on 14 October 2026; ADR-032). `git ls-tree` runs none:
+/// it gives each file's id in the commit, and each file here is hashed the way git names its content,
+/// with no filter. A repository that does filter its files (line endings, large-file storage) reads
+/// as changed, and is credited nothing, which is the safe way to be wrong.
 pub fn has_uncommitted_changes(app_dir: &Path) -> Option<bool> {
+    use sha1::Digest as _;
     let out = git(app_dir)
-        .args(["status", "--porcelain", "--untracked-files=no"])
+        .args(["ls-tree", "-r", "-z", "HEAD"])
         .output()
         .ok()?;
     if !out.status.success() {
         return None;
     }
-    Some(!out.stdout.iter().all(u8::is_ascii_whitespace))
+    for entry in out.stdout.split(|b| *b == 0).filter(|e| !e.is_empty()) {
+        let entry = String::from_utf8_lossy(entry);
+        let (meta, name) = entry.split_once('\t')?;
+        let mut parts = meta.split(' ');
+        let (mode, kind, id) = (parts.next()?, parts.next()?, parts.next()?);
+        if kind != "blob" {
+            // A submodule's commit: what is checked out in it cannot be told this way.
+            return None;
+        }
+        let path = app_dir.join(name);
+        let content = if mode == "120000" {
+            match std::fs::read_link(&path) {
+                Ok(target) => target.to_string_lossy().into_owned().into_bytes(),
+                Err(_) => return Some(true),
+            }
+        } else {
+            match std::fs::symlink_metadata(&path) {
+                Ok(meta) if meta.is_file() => match std::fs::read(&path) {
+                    Ok(bytes) => bytes,
+                    Err(_) => return None,
+                },
+                _ => return Some(true),
+            }
+        };
+        let header = format!("blob {}\0", content.len());
+        let here = if id.len() == 64 {
+            let mut hash = sha2::Sha256::new();
+            hash.update(header.as_bytes());
+            hash.update(&content);
+            hex(&hash.finalize())
+        } else {
+            let mut hash = sha1::Sha1::new();
+            hash.update(header.as_bytes());
+            hash.update(&content);
+            hex(&hash.finalize())
+        };
+        if !here.eq_ignore_ascii_case(id) {
+            return Some(true);
+        }
+    }
+    Some(false)
+}
+
+fn hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
 /// The AI coding tools a `Co-Authored-By:` trailer may name (ADR-092). An `Assisted-by:` trailer counts
