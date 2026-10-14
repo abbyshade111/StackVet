@@ -78,17 +78,24 @@ impl ConfigReport {
 }
 
 /// Runs every configuration check over the app folder.
+///
+/// The credential rules are read from `sv`'s data. When they cannot be read, a commit subject quoted in a note still
+/// has a named value, a `Bearer` token, and a key in a web address's parameters masked, which need no rules.
 pub fn check_dir(app_dir: &Path) -> ConfigReport {
     let listing = sv_scan::files::Listing::of(app_dir);
     let bill_of_materials = crate::sbom::build_in(&listing);
-    check_dir_in(&listing, &bill_of_materials)
+    let rules = crate::secrets::SecretRules::load(&sv_frameworks::data::file("secret-rules.json"))
+        .unwrap_or_else(|_| crate::secrets::SecretRules::none());
+    check_dir_in(&listing, &bill_of_materials, &rules)
 }
 
 /// `check_dir`, with the app's files and its bill of materials already made, so `sv report` walks
-/// the folder once and builds the bill once.
+/// the folder once and builds the bill once. `rules` are the credential rules, which mask a key in the app's own text
+/// a note quotes.
 pub fn check_dir_in(
     listing: &sv_scan::files::Listing,
     bill_of_materials: &crate::sbom::Sbom,
+    rules: &crate::secrets::SecretRules,
 ) -> ConfigReport {
     let app_dir = listing.root.as_path();
     let mut report = ConfigReport::default();
@@ -98,7 +105,7 @@ pub fn check_dir_in(
     );
     report.record(GITIGNORE_COVERS_ENV, gitignore_covers_env(app_dir));
     report.record("config.security-contact", security_contact(app_dir));
-    report.record(AI_COMMITS_OFF_MERGE, ai_commits_off_merge(app_dir));
+    report.record(AI_COMMITS_OFF_MERGE, ai_commits_off_merge(app_dir, rules));
     report.record(
         "config.versions-pinned",
         versions_pinned(listing, bill_of_materials),
@@ -303,7 +310,11 @@ const AI_COMMITS_OFF_MERGE: &str = "config.ai-commits-off-merge";
 /// worth knowing when there are some, never a finding that fails; none is a check that ran and found nothing
 /// (ADR-092, Later). Never a credit: a commit either names its tool or it does not, and the report says which of
 /// these it can and cannot see.
-fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
+///
+/// A commit's subject and the tool its trailer names are the app's own text: each is quoted as a tool's file is
+/// (`ai_tool::quote`), any key in it masked and at most 160 characters, since a key pasted into a commit subject
+/// cannot be taken out of the history, and the report would otherwise carry it (backlog 0443).
+fn ai_commits_off_merge(app_dir: &Path, rules: &crate::secrets::SecretRules) -> Outcome {
     let Some(commits) = crate::git::ai_commits_off_merge(app_dir) else {
         return Outcome::NotAssessed(
             "This folder is not a git repository, or git could not read its history, so `sv` cannot say which \
@@ -325,8 +336,8 @@ fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
                 format!(
                     "`{}` {} ({})",
                     &c.hash[..c.hash.len().min(8)],
-                    c.subject,
-                    c.tool
+                    crate::ai_tool::quote(rules, &c.subject),
+                    crate::ai_tool::quote(rules, &c.tool)
                 )
             })
             .collect();
@@ -952,6 +963,10 @@ fn security_contact(app_dir: &Path) -> Outcome {
 #[cfg(test)]
 #[path = "config_ai_tests.rs"]
 mod ai_tests;
+
+#[cfg(test)]
+#[path = "config_ai_quote_tests.rs"]
+mod ai_quote_tests;
 
 #[cfg(test)]
 #[path = "config_history_tests.rs"]

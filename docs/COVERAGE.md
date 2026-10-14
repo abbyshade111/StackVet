@@ -58,6 +58,14 @@ A requirement reached by more than one kind of check is counted under each.
 
 With nothing beyond plain `sv check`, 44 ASVS requirements can be settled. 25 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for.
 
+## AISVS 1.0 by level
+
+| Level | Requirements | Can settle | Can be credited |
+|---|---|---|---|
+| L1 | 51 | 24 | 16 |
+| L2 | 95 | 20 | 10 |
+| L3 | 45 | 2 | 1 |
+
 ### Semgrep: rules in its map that are not run
 
 Semgrep is counted above only through rules in a pack the adapter runs (`p/ai-best-practices`, 27 rules, run unless the app is known not to call a model, measured 2026-09-26 with semgrep 1.176.0, `p/default`, 1074 rules, measured 2026-09-26 with semgrep 1.176.0, `p/security-audit`, 225 rules, measured 2026-09-26 with semgrep 1.176.0). Its map names more requirements through rules no pack it runs loads; nothing counts those, and a report never credited them either, since a clean run is credited only with the rules its own report lists. 4 requirements are named that way and by no semgrep rule that runs:

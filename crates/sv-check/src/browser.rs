@@ -9,6 +9,7 @@
 //! Nothing is credited unless the browser was really signed in: each private page has to open in it
 //! as it did for the plain requests, or the checks here say why they were not made.
 
+use crate::encoding::{Alphabet, base64};
 use crate::finding::Severity;
 use crate::signed_in::{Account, Http, Outcome, Rule, Session, finding};
 use serde_json::{Value, json};
@@ -544,10 +545,8 @@ fn needles(account: &Account, cookies: &[(String, String)]) -> Vec<Needle> {
         },
     ];
     for (what, value) in [("email address", &email), ("password", &account.password)] {
-        for text in [
-            base64(value.as_bytes(), false),
-            base64(value.as_bytes(), true),
-        ] {
+        for alphabet in [Alphabet::Standard, Alphabet::Web] {
+            let text = base64(value.as_bytes(), alphabet, false);
             out.push(Needle {
                 what,
                 how: "in base64",
@@ -564,25 +563,6 @@ fn needles(account: &Account, cookies: &[(String, String)]) -> Vec<Needle> {
             text: value.clone(),
             any_case: false,
         });
-    }
-    out
-}
-
-/// Base64 without padding, in the standard alphabet or the one made for web addresses.
-pub(crate) fn base64(bytes: &[u8], url_safe: bool) -> String {
-    let alphabet: &[u8; 64] = if url_safe {
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-    } else {
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    };
-    let mut out = String::new();
-    for chunk in bytes.chunks(3) {
-        let n = (u32::from(chunk[0]) << 16)
-            | (u32::from(*chunk.get(1).unwrap_or(&0)) << 8)
-            | u32::from(*chunk.get(2).unwrap_or(&0));
-        for i in 0..=chunk.len() {
-            out.push(alphabet[((n >> (18 - 6 * i)) & 0x3f) as usize] as char);
-        }
     }
     out
 }
@@ -2061,10 +2041,6 @@ mod tests {
         // Not an escape, and not the end of the text either: left as it is.
         assert_eq!(readable("50%zz and 7%"), "50%zz and 7%");
         assert_eq!(readable("caf%C3%A9 é%4"), "café é%4");
-        assert_eq!(base64(b"foobar", false), "Zm9vYmFy");
-        assert_eq!(base64(b"fooba", false), "Zm9vYmE");
-        assert_eq!(base64(&[0xfb, 0xff], false), "+/8");
-        assert_eq!(base64(&[0xfb, 0xff], true), "-_8");
         assert_eq!(host_of("https://u:p@ads.example:8443/p?x=1"), "ads.example");
         assert_eq!(host_of("wss://live.example/socket"), "live.example");
     }

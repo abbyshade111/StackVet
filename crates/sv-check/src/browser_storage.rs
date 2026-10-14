@@ -15,7 +15,8 @@
 //! No value is ever written into the outcome: a place is named by its kind and key, and a token by
 //! what it is and its length.
 
-use crate::browser::{Action, Job, base64, field, opened, readable};
+use crate::browser::{Action, Job, field, opened, readable};
+use crate::encoding::{Alphabet, base64};
 use crate::finding::Severity;
 use crate::signed_in::{Account, Http, Outcome, Rule, finding};
 use serde_json::{Value, json};
@@ -248,9 +249,9 @@ fn tokens(key: &str, value: &str, found: &mut Vec<(Token, String, usize)>) {
 fn holds_secret(value: &str, secret: &str) -> bool {
     value.contains(secret)
         || readable(value).contains(secret)
-        || [true, false]
-            .iter()
-            .any(|url_safe| value.contains(&base64(secret.as_bytes(), *url_safe)))
+        || [Alphabet::Web, Alphabet::Standard]
+            .into_iter()
+            .any(|alphabet| value.contains(&base64(secret.as_bytes(), alphabet, false)))
 }
 
 /// V10.1.1 and V14.3.3, with a sign-in of the browser's own. Signing in again can end the other

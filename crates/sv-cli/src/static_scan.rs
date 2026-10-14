@@ -93,7 +93,7 @@ impl StaticScan {
         });
         starting(4);
         let config = keep(&mut crashed, "config", || {
-            sv_check::config::check_dir_in(&listing, &bill_of_materials)
+            sv_check::config::check_dir_in(&listing, &bill_of_materials, &loaded.secret_rules)
         });
         starting(5);
         let code = keep(&mut crashed, "code", || {

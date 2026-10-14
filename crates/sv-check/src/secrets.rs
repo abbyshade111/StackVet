@@ -87,6 +87,12 @@ impl SecretRules {
 }
 
 impl SecretRules {
+    /// No rules: what is left when the rules file cannot be read. `redact_text` still masks what needs no rule, a
+    /// value given a credential's name, a `Bearer` token, and a key in a web address's parameters.
+    pub fn none() -> Self {
+        Self { rules: Vec::new() }
+    }
+
     pub fn load(path: &Path) -> Result<Self> {
         let text =
             std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
