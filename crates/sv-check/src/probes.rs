@@ -517,7 +517,37 @@ pub fn verified_with_routes(
     responses: &[ProbeResponse],
     routes: &[String],
 ) -> Vec<crate::Verified> {
+    // The route answers each credit read, added to its evidence, so `seen.json` shows what a whole
+    // credit "on all N routes" rests on (backlog 0467): every route answer for the page checks, and
+    // those carrying a policy for the reporting check.
+    let route_ids = |answers: Vec<&ProbeResponse>| -> Vec<String> {
+        answers
+            .into_iter()
+            .filter(|r| r.id.starts_with(ROUTE_ID))
+            .map(|r| r.id.clone())
+            .collect()
+    };
+    let read = route_ids(pages(responses));
+    let with_policy = route_ids(policy_answers(responses));
     name_credits(verified_unnamed(responses, routes))
+        .into_iter()
+        .map(|credit| {
+            let more = match credit.check_id.as_str() {
+                id if id == SECURITY_HEADERS.rule_id
+                    || id == COOKIE_ATTRIBUTES.rule_id
+                    || id == CONTENT_TYPE.rule_id
+                    || id == OPENER_POLICY.rule_id =>
+                {
+                    &read
+                }
+                id if id == CSP_REPORTING.rule_id => &with_policy,
+                _ => return credit,
+            };
+            let mut evidence = credit.evidence.clone();
+            evidence.extend(more.iter().cloned());
+            credit.with_evidence(evidence)
+        })
+        .collect()
 }
 
 /// The answers each probe credit was read from, by their ids (ADR-082, backlog 0229, part 1): the same
@@ -2414,6 +2444,9 @@ mod routes_cookie_tests;
 
 #[cfg(test)]
 mod routes_csp_tests;
+
+#[cfg(test)]
+mod routes_evidence_tests;
 
 #[cfg(test)]
 #[path = "probes_evidence_tests.rs"]
