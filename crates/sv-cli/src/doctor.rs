@@ -135,7 +135,7 @@ pub fn answers(app_dir: &std::path::Path, asked: &Asked) -> Vec<Line> {
                 State::NotReady,
                 "There is no stackvet.toml in the folder yet. It says what the app is and does; \
                  `sv init` prints the description of it to hand to your AI coding tool, which \
-                 writes it.",
+                 writes it; a tool connected to StackVet can call stackvet_spec for the same.",
             ));
             None
         }
