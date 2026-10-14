@@ -777,14 +777,14 @@ impl FakeApp {
 
     /// A token for this user, signed with `jwt_key()`.
     fn issue_jwt(&mut self, who: &str, lifetime: u64) -> String {
-        let header = crate::browser::base64(br#"{"alg":"HS256","typ":"JWT"}"#, true);
+        let header = crate::encoding::token_part(br#"{"alg":"HS256","typ":"JWT"}"#);
         // An id of its own, so two sign-ins in the same second do not get the same token.
         let jti = self.new_id();
         let mut claims = serde_json::json!({ "sub": who, "iat": self.clock, "jti": jti });
         if !self.jwt_without_expiry {
             claims["exp"] = (self.clock + lifetime).into();
         }
-        let payload = crate::browser::base64(claims.to_string().as_bytes(), true);
+        let payload = crate::encoding::token_part(claims.to_string().as_bytes());
         let signed = format!("{header}.{payload}");
         let signature = jwt_signature(&signed, self.flaws.jwt_placeholder_key);
         format!("{signed}.{signature}")
@@ -799,7 +799,10 @@ impl FakeApp {
         if parts.next().is_some() {
             return None;
         }
-        let read = |part: &str| serde_json::from_slice::<serde_json::Value>(&unbase64(part)?).ok();
+        let read = |part: &str| {
+            serde_json::from_slice::<serde_json::Value>(&crate::encoding::read_token_part(part)?)
+                .ok()
+        };
         let (head, claims) = (read(header)?, read(payload)?);
         let signed = self.flaws.jwt_signature_ignored
             || match head.get("alg").and_then(|a| a.as_str()) {
@@ -838,7 +841,7 @@ impl FakeApp {
         let Some(header) = token
             .split('.')
             .next()
-            .and_then(unbase64)
+            .and_then(crate::encoding::read_token_part)
             .and_then(|h| serde_json::from_slice::<serde_json::Value>(&h).ok())
         else {
             return;
@@ -1097,7 +1100,7 @@ fn jwt_signature(signed: &str, placeholder: bool) -> String {
     let mut mac =
         <Hmac<sha2::Sha256>>::new_from_slice(&jwt_key(placeholder)).expect("HMAC takes any key");
     mac.update(signed.as_bytes());
-    crate::browser::base64(&mac.finalize().into_bytes(), true)
+    crate::encoding::token_part(&mac.finalize().into_bytes())
 }
 
 pub(super) fn pairs(text: &str) -> BTreeMap<String, String> {

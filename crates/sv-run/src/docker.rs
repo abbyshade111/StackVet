@@ -1264,7 +1264,15 @@ impl sv_check::signed_in::Http for DockerHttp<'_> {
             "app": format!("http://localhost:{}", self.port),
             "actions": job.actions.iter().map(|a| a.to_json()).collect::<Vec<_>>(),
         });
-        let env = format!("SV_JOB={}", base64(job.to_string().as_bytes()));
+        // Handed over in base64, so that nothing in the job can end the shell command it travels in.
+        let env = format!(
+            "SV_JOB={}",
+            sv_check::encoding::base64(
+                job.to_string().as_bytes(),
+                sv_check::encoding::Alphabet::Standard,
+                true,
+            )
+        );
         let network = format!("container:{container}");
         let (code, out) = self.backend.docker(&driver_args(&network, &env)).ok()?;
         if code != 0 {
@@ -2737,33 +2745,6 @@ fn next_run_number() -> u64 {
 
 // ---------------------------------------------------------------------------------------------
 // Probing the running app
-
-/// Base64, written out rather than taken as a dependency.
-///
-/// The request is handed to the sidecar encoded so that nothing in a header value can end the shell
-/// command it travels in. A probe that sends `Origin: https://x.invalid` is harmless; one that can be
-/// made to send a quote and a semicolon is a command injection in the security scanner, which would be
-/// a poor advertisement.
-fn base64(input: &[u8]) -> String {
-    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::new();
-    for chunk in input.chunks(3) {
-        let b = [
-            chunk[0],
-            *chunk.get(1).unwrap_or(&0),
-            *chunk.get(2).unwrap_or(&0),
-        ];
-        let n = ((b[0] as u32) << 16) | ((b[1] as u32) << 8) | b[2] as u32;
-        for i in 0..4 {
-            if i <= chunk.len() {
-                out.push(ALPHABET[((n >> (18 - i * 6)) & 0x3f) as usize] as char);
-            } else {
-                out.push('=');
-            }
-        }
-    }
-    out
-}
 
 /// Writes out the request to send, or refuses to send one at all.
 ///
@@ -5147,22 +5128,6 @@ http.createServer((q, s) => {
         assert!(
             raw.ends_with(b"`echo y`"),
             "the body is sent, as it is, as input"
-        );
-    }
-
-    #[test]
-    fn base64_matches_the_known_encodings() {
-        // Checked against values anybody can verify, rather than against this function's own output.
-        assert_eq!(base64(b""), "");
-        assert_eq!(base64(b"f"), "Zg==");
-        assert_eq!(base64(b"fo"), "Zm8=");
-        assert_eq!(base64(b"foo"), "Zm9v");
-        assert_eq!(base64(b"foob"), "Zm9vYg==");
-        assert_eq!(base64(b"fooba"), "Zm9vYmE=");
-        assert_eq!(base64(b"foobar"), "Zm9vYmFy");
-        assert_eq!(
-            base64(b"GET / HTTP/1.0\r\n\r\n"),
-            "R0VUIC8gSFRUUC8xLjANCg0K"
         );
     }
 
