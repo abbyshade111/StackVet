@@ -1,0 +1,81 @@
+//! What each file in a report folder holds and who it is for (backlog 0413). The owner found `security.md` and
+//! `compliance.md` read alike on a small app, and the README called them "the same". They are not: each file has a
+//! reader of its own, and this table says so once. `report.html` shows it at its foot, the two Markdown reports say
+//! their own line at their top, and `sv-cli`'s `report_files_described` test holds the README, the guide, and the
+//! website's reports page to the same names and readers, in the order `sv-cli`'s `report_files::REPORT_FILES` writes
+//! them.
+
+/// One file of a report folder, described for a person.
+pub struct FolderFile {
+    /// Its name in the report folder.
+    pub name: &'static str,
+    /// What it holds.
+    pub holds: &'static str,
+    /// Who it is for.
+    pub for_whom: &'static str,
+}
+
+/// The eight files, in the order they are written.
+pub const FILES: [FolderFile; 8] = [
+    FolderFile {
+        name: "report.html",
+        holds: "The whole report on one page: what to fix first, what was not examined, and every requirement that \
+                applies",
+        for_whom: "You, in a browser: double-click it",
+    },
+    FolderFile {
+        name: "compliance.md",
+        holds: "Every requirement that applies, chapter by chapter, with what is known of each; the threats; what \
+                only you can check; and the tests worth writing",
+        for_whom: "Anyone who needs the whole picture against the standards, you or someone you show it to",
+    },
+    FolderFile {
+        name: "security.md",
+        holds: "What the checks found, each in full (where, the code, how sure, why it matters, what to do, and how \
+                to set it aside), then what was not examined",
+        for_whom: "Whoever fixes the code, you or your AI coding tool",
+    },
+    FolderFile {
+        name: crate::LOW_FINDINGS_FILE,
+        holds: "Every low-severity finding in full, where the other reports group them by rule",
+        for_whom: "You or your AI coding tool, when you want the detail",
+    },
+    FolderFile {
+        name: crate::SARIF_FILE,
+        holds: "The findings as SARIF, a standard format for findings (named findings.sarif before 14 October 2026)",
+        for_whom: "Code editors and GitHub's code scanning, which show a finding beside its line",
+    },
+    FolderFile {
+        name: "report.json",
+        holds: "The report's data as JSON",
+        for_whom: "Programs, among them sv review, sv compare, and sv dashboard",
+    },
+    FolderFile {
+        name: crate::seen::FILE,
+        holds: "What sv saw of the running app, with every key and sign-in in it cut short",
+        for_whom: "You, to see what a finding rests on",
+    },
+    FolderFile {
+        name: crate::SBOM_FILE,
+        holds: "The app's bill of materials, every package it uses with its version, as CycloneDX JSON",
+        for_whom: "Tools that read a bill of materials",
+    },
+];
+
+/// The file named `name`. Panics on a name not in the table: every caller names one of its own.
+pub fn about(name: &str) -> &'static FolderFile {
+    FILES
+        .iter()
+        .find(|f| f.name == name)
+        .unwrap_or_else(|| panic!("{name} is not a report file"))
+}
+
+/// The line a Markdown report opens with, saying what it is and who it is for.
+pub fn markdown_line(name: &str) -> String {
+    let file = about(name);
+    format!(
+        "**This file:** {}. **For:** {}. The end of `report.html` lists every file in this folder and who each is \
+         for.\n\n",
+        file.holds, file.for_whom
+    )
+}
