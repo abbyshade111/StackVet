@@ -828,7 +828,11 @@ fn requirements_by_chapter(out: &mut String, report: &Report) {
             out.push_str(&format!(
                 "| {} | {} | {} |\n",
                 cell(&line.id),
-                cell(&status_cell(line)),
+                cell(&format!(
+                    "{}{}",
+                    status_cell(line),
+                    crate::could_settle_note(report, line)
+                )),
                 level
             ));
         }
@@ -1299,6 +1303,7 @@ mod tests {
             could_not_run: Vec::new(),
             partly_read: Vec::new(),
             not_run_this_time: None,
+            could_settle: Default::default(),
         };
         let md = security(&report);
         // The setup: all three reached the page.
