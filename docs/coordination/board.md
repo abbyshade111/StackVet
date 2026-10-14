@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0290, 0415, 0504, 0506, 0232
-- wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401, 0338, 0412, 0503, 0505
-- documentation — arm: full — holds: 0475 (since 2026-10-14) — next: 0374, 0413, 0370, 0510
+- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0415, 0504, 0506, 0232
+- wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401, 0412, 0503, 0505
+- documentation — arm: full — holds: 0413 (since 2026-10-14) — next: 0370, 0510
 
 ## Queue
 
@@ -391,3 +391,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 10:50 — finished 0478 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1887; now holds 0476
 - 2026-10-14 10:50 — finished 0476 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1888; now holds 0475
 - 2026-10-14 10:50 — assigned 0510 to documentation (full) as next: Windows users told the running-app checks are untried there (the guide, the setup page, sv doctor); the guide is free now that 0473 to 0478 are done, and 0370 in this lane shares the setup page
+- 2026-10-14 11:20 — finished 0290 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1889; from its lane, behind 0508
+- 2026-10-14 11:20 — finished 0338 by wording (full): https://github.com/abbyshade111/StackVet/pull/1890; from its lane, behind 0372
+- 2026-10-14 11:20 — finished 0374 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1893; from its lane, behind 0475
+- 2026-10-14 11:20 — finished 0475 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1892; now holds 0413
