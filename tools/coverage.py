@@ -29,7 +29,8 @@ A test (`crates/sv-check/tests/coverage_doc.rs`) runs `--check`, so a change to 
 followed by regenerating this document fails the build.
 
 `--credits` reads the file the test suite writes when `SV_CREDIT_LOG` names it (CI's test job does):
-one line for every credit a check gave, with the place in the code that gave it (`check_credits`).
+one line for every credit a check gave, with the place in the code that gave it, and one for every
+time a credit was marked in part or made whole again (`check_credits`).
 """
 
 import json
@@ -794,28 +795,55 @@ def check_credits(log):
     A credit made in a test module, or in a test of its own, is a test building its own evidence and
     is left out. Faults: a check listed as findings-only that was credited; a check never credited
     that is not listed, which is either findings-only or a credit no test reaches; a credit naming a
-    requirement the check does not cite; and a requirement a crediting check cites that it was never
-    seen crediting.
+    requirement the check does not cite; a requirement a crediting check cites that it was never
+    seen crediting; and a check whose every credit was in part that is not listed as only ever in part,
+    or one listed so that was seen credit whole (backlog 0430).
     """
     shipping = shipping_lines()
     credited = defaultdict(set)
+    # Per check: credits made, marked in part, and made whole again (`Verified::in_part`,
+    # `Verified::whole_after_all`, which write a line of four). Each mark follows the credit it marks.
+    made, marked, unmarked = Counter(), Counter(), Counter()
     lines = 0
     for line in Path(log).read_text(encoding="utf-8").splitlines():
-        check, ids, at = line.split("\t")
+        parts = line.split("\t")
+        check, ids, at = parts[0], parts[1], parts[-1]
         path, number = logged_place(at)
         if shipping.get(path, 0) < int(number):
             continue
+        if len(parts) == 4:
+            (marked if parts[2] == "in part" else unmarked)[check] += 1
+            continue
         lines += 1
+        made[check] += 1
         credited[check].update(q for q in ids.split(",") if q)
     if not lines:
         return [f"{log} holds no credit from a check: was the suite run with SV_CREDIT_LOG set?"]
     cites = {check: (set(ids), check in RUST_FINDINGS_ONLY) for check, (_, ids) in RUST_CHECKS.items()}
+    listed_in_part = set(RUST_IN_PART)
     for rule in load(ROOT / "data/ast-rules.json")["rules"]:
         # A requirement a clean run never credits (`findingsOnlyFor`) is not cited as a credit: the suite
         # seeing it credited is a fault, as for a findings-only check.
         cites[rule["id"]] = (set(rule["requirementIds"]) - set(rule.get("findingsOnlyFor", [])),
                              bool(rule.get("findingsOnly")))
+        if rule.get("inPart"):
+            listed_in_part.add(rule["id"])
     faults = []
+    # Backlog 0430: the documents print a check as able to mark a requirement *checked* unless it is listed
+    # as only ever in part, so the list is held to the suite. A check whose every credit the suite saw was
+    # in part belongs on it; one the suite saw credit whole even once does not (`in_part_if`, which is in
+    # part only on a single sample, is whole when the suite gives it more).
+    for check in sorted(made):
+        if check not in cites:
+            continue
+        whole = made[check] - marked[check] + unmarked[check]
+        if whole <= 0 and check not in listed_in_part:
+            faults.append(f"{check}: every one of its {made[check]} credits the suite saw was in part, and the "
+                          "documents print it as able to mark a requirement checked: add it to RUST_IN_PART "
+                          "(or `inPart` in data/ast-rules.json)")
+        if whole > 0 and check in listed_in_part:
+            faults.append(f"{check} is listed as only ever in part, and the suite saw {whole} of its credits "
+                          "whole: take it off the list, or mark the credit in part")
     for check, (ids, findings_only) in sorted(cites.items()):
         got = credited.get(check, set())
         if findings_only and got:

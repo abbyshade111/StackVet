@@ -2904,7 +2904,7 @@ pub fn account_changes_whole(
         .iter_mut()
         .filter(|v| v.requirement_ids.iter().any(|r| r == "V7.5.1"))
     {
-        credit.in_part = false;
+        credit.whole_after_all();
         if !on_the_owners_word.is_empty() {
             credit.scope = format!(
                 "{}; with {} not offered, on the owner's word through `sv review`",
