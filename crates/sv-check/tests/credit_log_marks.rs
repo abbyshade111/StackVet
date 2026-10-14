@@ -12,7 +12,7 @@ fn a_credit_marked_in_part_and_made_whole_writes_each_change_once() {
     let ci = std::env::var_os("SV_CREDIT_LOG");
     // SAFETY: the only test in this binary, and no thread of its own has started.
     unsafe { std::env::set_var("SV_CREDIT_LOG", &mine) };
-    let made = line!() + 1;
+    let made = line!() + 2;
     let credit =
         sv_check::Verified::new("probe.password-hints", &["V6.4.2"], "a test's own".into());
     let marked = line!() + 1;
