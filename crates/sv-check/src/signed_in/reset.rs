@@ -277,6 +277,15 @@ fn reset_flow(
     };
     reset_code_check(&codes, out);
     code_in_answer_check([&first, &second], &codes, &reset.request.path, out);
+    // The page at the emailed link, where a person finds the reset form and its token: an app that
+    // shows the form only there refuses a reset whose token was looked for at plain `reset.use`
+    // (backlog 0385).
+    let link_pages: Vec<String> = arrived
+        .iter()
+        .rev()
+        .find_map(|m| link_holding(m, &code))
+        .into_iter()
+        .collect();
 
     let set = |http: &mut dyn Http, new: &str, label: &str| {
         let values = Values {
@@ -292,7 +301,7 @@ fn reset_flow(
             &reset.use_code,
             &values,
             &mut session,
-            &[],
+            &link_pages,
         )
         .0
     };
@@ -467,6 +476,28 @@ fn code_in_answer_check(
 /// The floor is the one ASVS sets for codes sent out of band (V6.5.4), which names six random
 /// digits as enough; a code is compared against it by `most_bits`, an upper bound, so a code this
 /// calls too short is too short however it was made. A long code is credited with nothing.
+/// The path and query of the first link in `mail` that carries `code`, as it is written or
+/// percent-encoded: the page the email sends a person to.
+fn link_holding(mail: &str, code: &str) -> Option<String> {
+    static LINK: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"https?://[^/\s"'<>]+(/[^\s"'<>]*)"#).expect("the link pattern")
+    });
+    let encoded: String = code
+        .bytes()
+        .map(|b| {
+            if b.is_ascii_alphanumeric() || b"-._~".contains(&b) {
+                (b as char).to_string()
+            } else {
+                format!("%{b:02X}")
+            }
+        })
+        .collect();
+    LINK.captures_iter(mail)
+        .filter_map(|c| c.get(1))
+        .map(|m| m.as_str().replace("&amp;", "&"))
+        .find(|path| path.contains(code) || path.contains(&encoded))
+}
+
 fn reset_code_check(codes: &[String], out: &mut Outcome) {
     let Some(shortest) = codes.iter().min_by_key(|c| c.chars().count()) else {
         return;
