@@ -28,7 +28,7 @@ fn line(time: &str, tool: &str, findings: Option<usize>) -> Line {
 }
 
 fn record_file(dir: &Path) -> PathBuf {
-    sv_scan::ecosystems::default_report_dir_in(dir).join(sv_scan::ecosystems::BUILD_LOOP_RECORD)
+    sv_scan::ecosystems::build_loop_record_in(dir)
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn the_record_says_how_many_calls_and_checks_and_the_counts_at_each_end() {
 }
 
 #[test]
-fn a_call_is_written_down_in_the_app_s_report_folder_and_read_back() {
+fn a_call_is_written_down_in_the_app_s_stackvet_folder_and_read_back() {
     let dir = app("written");
     record(&dir, &line("10:00", "stackvet_check", Some(3))).unwrap();
     record(&dir, &line("10:10", "stackvet_check", Some(1))).unwrap();
@@ -115,7 +115,7 @@ fn a_link_where_the_record_goes_is_not_written_through() {
     let outside =
         std::env::temp_dir().join(format!("sv-build-loop-outside-{}", std::process::id()));
     std::fs::write(&outside, "the owner's file\n").unwrap();
-    let folder = sv_scan::ecosystems::default_report_dir_in(&dir);
+    let folder = dir.join(sv_scan::ecosystems::STATE_DIR);
     std::fs::create_dir_all(&folder).unwrap();
     std::os::unix::fs::symlink(&outside, record_file(&dir)).unwrap();
     assert!(record(&dir, &line("10:00", "stackvet_check", Some(3))).is_err());
@@ -125,7 +125,7 @@ fn a_link_where_the_record_goes_is_not_written_through() {
     );
     // Nor is it read: a link is no record sv wrote.
     assert_eq!(read(&dir).calls, 0);
-    // And a report folder that is itself a link is not made or written through.
+    // And a `.stackvet` folder that is itself a link is not made or written through.
     std::fs::remove_dir_all(&folder).unwrap();
     let elsewhere =
         std::env::temp_dir().join(format!("sv-build-loop-elsewhere-{}", std::process::id()));

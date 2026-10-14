@@ -1,6 +1,11 @@
 //! The record of the build loop (ADR-076): one line for each call an AI coding tool makes to `sv`'s
-//! MCP server for an app, written in the app's report folder, and read back when a report is written
-//! so the report can say how the app was built with `sv`, or that nothing shows it was.
+//! MCP server for an app, written in the app's hidden `.stackvet` folder, and read back when a report
+//! is written so the report can say how the app was built with `sv`, or that nothing shows it was.
+//!
+//! Until 14 October 2026 it was kept in the report folder, and an AI coding tool that cleared that
+//! folder before a report took the record with it: the report then said nothing showed `sv` was used,
+//! after dozens of calls (backlog 0404). It is kept apart from the report now, and a record found in
+//! the old place is moved to the new one when the next line is written.
 //!
 //! Each line holds the time, the tool's name, and, for a call that checked the app, how many findings
 //! and requirements it came to; never an argument, a path, or a finding's text. The record is not
@@ -303,17 +308,26 @@ fn key(app_dir: &Path) -> std::path::PathBuf {
     sv_frameworks::paths::canonical(app_dir).unwrap_or_else(|_| app_dir.to_path_buf())
 }
 
+/// The record in the report folder, where it was kept before 14 October 2026 (backlog 0404).
+fn old_place(app_dir: &Path) -> std::path::PathBuf {
+    sv_scan::ecosystems::default_report_dir_in(app_dir).join(sv_scan::ecosystems::BUILD_LOOP_RECORD)
+}
+
 fn append(app_dir: &Path, line: &Line) -> Result<()> {
-    let folder = sv_scan::ecosystems::default_report_dir_in(app_dir);
-    let relative = folder
-        .strip_prefix(app_dir)
-        .context("the report folder is not inside the app")?;
-    let (folder, _) = crate::mcp::create_below(app_dir, relative)?;
+    let (folder, _) = crate::mcp::create_below(app_dir, Path::new(sv_scan::ecosystems::STATE_DIR))?;
     let path = folder.join(sv_scan::ecosystems::BUILD_LOOP_RECORD);
     crate::refuse_link(
         &path,
         "Remove the link; sv writes its record only as a plain file.",
     )?;
+    // A record kept in the report folder before the move is `sv`'s own: moved, whole, so its chain carries on.
+    let old = old_place(app_dir);
+    if std::fs::symlink_metadata(&path).is_err()
+        && std::fs::symlink_metadata(&old).is_ok_and(|m| m.is_file())
+    {
+        std::fs::rename(&old, &path)
+            .with_context(|| format!("moving {} to {}", old.display(), path.display()))?;
+    }
     // A pipe here is opened to write and waits for a reader, on the server's one thread for answering
     // (backlog 0282). Only a plain file is written.
     if let Ok(meta) = std::fs::symlink_metadata(&path)
@@ -423,7 +437,61 @@ pub fn read(app_dir: &Path) -> BuildLoop {
         .unwrap_or(0);
     let mut summary = read_record(app_dir);
     summary.unwritten = unwritten;
+    if summary.calls == 0 && !summary.off {
+        summary.signs_of_use = signs_of_use(app_dir);
+    }
     summary
+}
+
+/// With no call recorded, what shows `sv` was used with the app all the same (backlog 0404, the owner's answer of
+/// 14 October 2026), in words for the report: the record may have been deleted. Each is something only `sv`'s own
+/// instructions or tools write; none is proof of a call to the MCP server, and the report says only that the record
+/// may have been deleted.
+pub fn signs_of_use(app_dir: &Path) -> Vec<String> {
+    let mut signs = Vec::new();
+    let manifest = sv_manifest::locate(app_dir)
+        .ok()
+        .flatten()
+        .and_then(|located| read_small(&located.path));
+    if manifest.is_some_and(|text| {
+        text.lines()
+            .any(|l| l.replace(' ', "").contains("by=\"ai-tool\""))
+    }) {
+        signs.push(
+            "stackvet.toml holds answers marked as the AI coding tool's (`by = \"ai-tool\"`), as sv \
+             asks the tool to mark them"
+                .to_owned(),
+        );
+    }
+    if read_small(&app_dir.join("security-notes.md")).is_some_and(|text| {
+        text.lines()
+            .any(|l| l.trim_start().starts_with("Written by:"))
+    }) {
+        signs.push(
+            "security-notes.md has sections with a `Written by:` line, the form sv gives them"
+                .to_owned(),
+        );
+    }
+    if sv_scan::ecosystems::report_marker_in(&sv_scan::ecosystems::default_report_dir_in(app_dir))
+        .and_then(|marker| read_small(&marker))
+        .is_some_and(|text| {
+            text.lines()
+                .any(|l| l.starts_with(crate::report_seal::SEAL_LINE))
+        })
+    {
+        signs.push("the report folder holds an earlier report that sv sealed".to_owned());
+    }
+    signs
+}
+
+/// A small text file's contents, when it is a plain file: never through a link, and never one larger than a person
+/// writes by hand.
+fn read_small(path: &Path) -> Option<String> {
+    let meta = std::fs::symlink_metadata(path).ok()?;
+    if !meta.is_file() || meta.len() > 1_000_000 {
+        return None;
+    }
+    std::fs::read_to_string(path).ok()
 }
 
 fn read_record(app_dir: &Path) -> BuildLoop {
@@ -433,8 +501,13 @@ fn read_record(app_dir: &Path) -> BuildLoop {
             ..BuildLoop::default()
         };
     }
-    let path = sv_scan::ecosystems::default_report_dir_in(app_dir)
-        .join(sv_scan::ecosystems::BUILD_LOOP_RECORD);
+    // The record where it is kept, or, before the next line moves it, where it was kept (backlog 0404).
+    let new = sv_scan::ecosystems::build_loop_record_in(app_dir);
+    let path = if std::fs::symlink_metadata(&new).is_err() {
+        old_place(app_dir)
+    } else {
+        new
+    };
     match std::fs::symlink_metadata(&path) {
         Ok(meta) if meta.is_file() => {
             let bytes = read_at_most(&path);
@@ -583,3 +656,7 @@ mod tests;
 mod chain_tail_tests;
 #[cfg(test)]
 mod chain_tests;
+
+// The record kept apart from the report folder, and what a report says when it is gone (backlog 0404).
+#[cfg(test)]
+mod kept_apart_tests;

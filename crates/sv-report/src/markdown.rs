@@ -380,6 +380,32 @@ pub fn compliance(report: &Report) -> String {
         }
     }
 
+    // The comments that tell a scanner to look away (backlog 0400), after the tools they speak to.
+    let look_away = &report.look_away;
+    if !look_away.comments.is_empty() {
+        out.push_str("## Comments that tell a scanner to look away\n\n");
+        out.push_str(&format!(
+            "{}\n\n| file | line | scanner | what it says |\n|---|---:|---|---|\n",
+            crate::LOOK_AWAY_SECTION
+        ));
+        for c in &look_away.comments {
+            out.push_str(&format!(
+                "| {} | {} | {} | {} |\n",
+                cell(&code(&c.file)),
+                c.line,
+                cell(c.scanner),
+                cell(&code(&c.says))
+            ));
+        }
+        out.push('\n');
+        if !look_away.not_read.is_empty() {
+            out.push_str(&format!(
+                "Not read for them: {}.\n\n",
+                inert(&look_away.not_read.join("; "))
+            ));
+        }
+    }
+
     // By chapter, with what does not apply counted beside what does, and the requirements' own
     // words in an appendix at the end. See `crate::chapters` for why.
     out.push_str("## Requirements that apply\n\n");
@@ -1254,6 +1280,7 @@ mod tests {
             only_you_can_check: Vec::new(),
             before_going_live: Vec::new(),
             ai_tool: Default::default(),
+            look_away: Default::default(),
             questions_for_you: Vec::new(),
             no_instructions_yet: 0,
             named_not_credited: vec![],

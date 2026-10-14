@@ -1143,6 +1143,10 @@ pub struct Report {
     /// What the AI coding tool's own files in the folder let it do (ADR-049). Not the app, so it
     /// credits nothing and finds nothing; the report says it apart from everything else.
     pub ai_tool: sv_check::ai_tool::AiToolFiles,
+    /// The comments in the app's code that tell a scanner to look away (backlog 0400): each on a line of its own in
+    /// a section of their own, counting against no requirement and crediting nothing (the owner's choice, 14
+    /// October 2026).
+    pub look_away: sv_check::look_away::LookAway,
     /// How many of those no catalog has an instruction for: the design-review controls, which are
     /// standards that are checklists already. Counted rather than listed.
     pub no_instructions_yet: usize,
@@ -1633,6 +1637,13 @@ pub fn no_outside_tool_ran(rows: &[ToolRow]) -> bool {
 pub const OUTSIDE_TOOLS_SECTION: &str = "The security tools each language already has, run beside StackVet's own \
      checks with every `sv report` at a terminal unless `--no-tools` is given. Their findings are among the things to fix above, each marked with the tool's \
      rule; one that found the same as StackVet on the same line is counted here as agreeing.";
+
+/// What the section of comments that tell a scanner to look away says first (backlog 0400).
+pub const LOOK_AWAY_SECTION: &str = "Each of these comments in the app's code, or entries in a scanner's own ignore \
+     file, tells a security scanner to skip a line or a warning. An AI coding tool asked to make a finding go away may \
+     add one rather than fix the problem. Where a scanner StackVet runs can be told to look anyway, it is, so a finding \
+     a comment tried to hide is still among the things to fix when the scanner found it. Nothing here counts toward \
+     any requirement or credits anything. If you did not mean something to be hidden, take the comment out.";
 
 /// The name of the bill of materials beside the report (backlog 0382).
 pub const SBOM_FILE: &str = "sbom.cdx.json";
@@ -2140,6 +2151,11 @@ pub struct BuildLoop {
     /// Between the first check and the last, which findings went and came (ADR-084, decision 6).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub findings_moved: Option<FindingsMoved>,
+    /// With no call recorded, the signs that `sv` was used with this app all the same, in plain words (backlog 0404):
+    /// the record may have been deleted, and the report says so rather than that nothing shows `sv` was used. Left out
+    /// when there are none, so a report written before it reads and seals the same.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub signs_of_use: Vec<String>,
 }
 
 /// Between the first check of the build loop and the last: findings no longer found, those of them
@@ -2331,10 +2347,14 @@ pub const REQUEST_TIMING: &str = "the request ";
 /// One paragraph saying what the record of the build loop shows, for the top of the report. `None`
 /// for a report that was not written into a report folder.
 pub fn build_loop_line(report: &Report) -> Option<String> {
-    let b = report.build_loop.as_ref()?;
+    report.build_loop.as_ref().map(build_loop_said)
+}
+
+/// What `build_loop_line` says of one record.
+pub fn build_loop_said(b: &BuildLoop) -> String {
     let caveat = " This is about how the app was built, not about the app: it credits nothing and \
-                  changes no count. sv writes the record beside this report, where the AI coding tool \
-                  can write too: these numbers are what the record said when this report was \
+                  changes no count. sv keeps the record in the app's .stackvet folder, where the AI \
+                  coding tool can write too: these numbers are what the record said when this report was \
                   written, sealed with the report, so a change to them afterwards is caught, and a \
                   change to the record before then is not.";
     let unreadable = match b.unreadable {
@@ -2343,19 +2363,27 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
         n => format!(" {n} lines of the record could not be read, and are left out."),
     };
     if b.off {
-        return Some(
-            "The record of the build loop is turned off in stackvet.toml (`build-loop-record = \
+        return "The record of the build loop is turned off in stackvet.toml (`build-loop-record = \
              false`), so this report cannot say whether sv was used while the app was built."
-                .to_owned(),
-        );
+            .to_owned();
     }
     let gaps = loop_gaps(b);
+    if b.calls == 0 && !b.signs_of_use.is_empty() {
+        return format!(
+            "No record of the build was found; it may have been deleted. No call from an AI coding \
+             tool to sv's MCP server is recorded for this app, but other signs show sv was used with \
+             it: {}. The record is kept in the app's .stackvet folder (build-loop.jsonl) and goes if \
+             that folder is deleted. That is not a finding, and it does not say how the app was \
+             built.{unreadable}{gaps}",
+            list_and(&b.signs_of_use)
+        );
+    }
     if b.calls == 0 {
-        return Some(format!(
+        return format!(
             "Nothing shows that sv was used while this app was built: no call from an AI coding \
              tool to sv's MCP server is recorded for it. That is not a finding. The app may have \
              been checked at a terminal, or built before sv kept this record.{unreadable}{gaps}"
-        ));
+        );
     }
     let span = match (&b.first, &b.last) {
         (Some(first), Some(last)) if first != last => format!(", from {first} to {last}"),
@@ -2447,7 +2475,7 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
         );
     }
     text.push_str(caveat);
-    Some(text)
+    text
 }
 
 impl Report {
@@ -2656,6 +2684,8 @@ pub struct Inputs<'a> {
     /// What the AI coding tool's own files in the folder let it do (ADR-049): its own section of
     /// the report, never counted toward the app's grade.
     pub ai_tool: sv_check::ai_tool::AiToolFiles,
+    /// See `Report::look_away`.
+    pub look_away: sv_check::look_away::LookAway,
     pub target_level: u8,
     pub generated: Option<String>,
     /// See `Report::sv`.
@@ -3345,6 +3375,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         tests_to_write,
         before_going_live,
         ai_tool: inputs.ai_tool,
+        look_away: inputs.look_away,
         only_you_can_check,
         no_instructions_yet,
         questions_for_you,

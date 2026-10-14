@@ -1,6 +1,6 @@
 # The build record survives the report folder being deleted, and the report says when it may have been
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -17,3 +17,9 @@ deleted" rather than implying none was kept. Other signs could be answers in `st
 write, `security-notes.md` sections in its form, or an earlier report's seal.
 
 **The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): (1): the record of the AI tool's calls lives in a hidden folder of its own in the app, `.stackvet/build-loop.jsonl`, so deleting or replacing `stackvet-report` leaves it, it still travels with the app folder, and the report's seal still covers it. One more name `sv` writes into somebody's folder: Later entries on ADR-017 and ADR-076, and the report says "no record of the build was found; it may have been deleted" when other signs show StackVet was used.
+
+**Done, 14 October 2026:** the record is kept in `.stackvet/build-loop.jsonl` in the app (`sv_scan::ecosystems::build_loop_record_in`),
+left out of every walk of the app. A record in the old place in the report folder is read there and moved whole when the
+next line is written. With no record, the report names the signs that `sv` was used (answers marked `by = "ai-tool"`,
+`security-notes.md` sections with a `Written by:` line, an earlier sealed report) and says the record may have been
+deleted. The records are Later entries on ADR-017 and ADR-076.

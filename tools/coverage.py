@@ -744,6 +744,8 @@ RUST_IN_PART |= {
     "probe.password-change-without-current",
     "probe.password-composition-rules",
     "probe.password-field-unmasked",
+    # A refused port 80 is in part too since backlog 0466, as the permanent redirect was (ADR-090, Later).
+    "probe.plain-http-served",
     "probe.preflight-skipped",
     "probe.private-files-served",
     "probe.retired-grants-offered",
