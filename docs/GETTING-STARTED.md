@@ -263,7 +263,9 @@ every one it writes starts with `Written by: AI coding tool`, even when it is wr
 terminal, shows you each answer the tool wrote and asks whose it is. Type `mine` where it says what you
 decided, and it counts as your own answer. Where the tool worked an answer out from the code and you have
 checked it and agree, type your name instead: the report then shows it as the tool's words a person
-confirmed, never as your own. Press Enter to leave one as the tool's word. Run it in your own terminal:
+confirmed, never as your own. Press Enter to leave one as the tool's word. An answer the tool wrote in
+`stackvet.toml` (`by = "ai-tool"`) is something you confirm in `sv review`, not something you own; changing it to
+`by = "owner"` by hand is for the rare one that is truly your own decision. Run it in your own terminal:
 
 ```bash
 sv review ~/code/my-app
