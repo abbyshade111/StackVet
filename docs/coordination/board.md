@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0559, 0560, 0561, 0539, 0232
-- wording — arm: full — holds: 0546 (since 2026-10-14) — next: 0547, 0548, 0549, 0550, 0558
+- wording — arm: full — holds: 0548 (since 2026-10-14) — next: 0549, 0550, 0558
 - documentation — arm: full — holds: 0532 (since 2026-10-14) — next: 0541, 0542, 0543, 0544
 
 ## Queue
@@ -18,19 +18,19 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 4. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
 5. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
 6. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
-7. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
-8. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
-9. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-10. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
-11. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
-12. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
-13. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
-14. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-15. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
-16. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
-17. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
-18. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
-19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+7. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — ready
+8. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
+9. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — ready
+10. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — ready
+11. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
+12. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — ready
+13. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
+14. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — ready
+15. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
+16. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — ready
+17. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
+18. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
+19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
 20. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
 21. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
 22. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
@@ -58,6 +58,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 44. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
 45. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
 46. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-118)
+47. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
+48. 0563 `sv --version` piped into `head` reports "sv itself failed: a fault in sv" on the closed pipe — ready
 
 ## Log
 
@@ -518,3 +520,20 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 19:31 — assigned 0543 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
 - 2026-10-14 19:31 — assigned 0544 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
 - 2026-10-14 19:31 — assigned 0558 to wording (full) into the lane after 0550: the owner's folder-name note; the prompt page, with the other prompt items
+- 2026-10-14 19:50 — finished 0546 by wording (full): https://github.com/abbyshade111/StackVet/pull/1933; now holds 0547
+- 2026-10-14 19:50 — finished 0547 by wording (full): https://github.com/abbyshade111/StackVet/pull/1936; now holds 0548
+- 2026-10-14 19:50 — queued 0562, marked
+- 2026-10-14 19:50 — queued 0563, marked
+- 2026-10-14 19:50 — released 0488
+- 2026-10-14 19:50 — released 0489
+- 2026-10-14 19:50 — released 0490
+- 2026-10-14 19:50 — released 0491
+- 2026-10-14 19:50 — released 0492
+- 2026-10-14 19:50 — released 0493
+- 2026-10-14 19:50 — released 0494
+- 2026-10-14 19:50 — released 0495
+- 2026-10-14 19:50 — released 0496
+- 2026-10-14 19:50 — released 0497
+- 2026-10-14 19:50 — released 0498
+- 2026-10-14 19:50 — released 0499
+- 2026-10-14 19:50 — released 0500
