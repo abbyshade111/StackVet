@@ -512,7 +512,8 @@ pub fn page(report: &Report) -> String {
         b.push_str("<h2>Outside tools</h2>\n");
         if crate::no_outside_tool_ran(&tools) {
             b.push_str(&format!(
-                "<p>None ran this time. They run only with <code>sv report --tools</code>, at a terminal: {}.</p>\n",
+                "<p>None ran this time: {}. They run with every <code>sv report</code> at a terminal unless <code>--no-tools</code> \
+                 is given; the MCP server and the GitHub Action never run them.</p>\n",
                 escape(&tools.iter().map(|r| r.name.as_str()).collect::<Vec<_>>().join(", "))
             ));
         } else {

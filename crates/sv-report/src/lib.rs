@@ -440,7 +440,7 @@ pub struct Gap {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum GapReason {
-    /// An option was not given: `--run`, `--tools`, `--advisories`, or the like.
+    /// An option was not given, or one was: `--run`, `--advisories`, `--no-tools`, or the like.
     NotAsked,
     /// A program it needs is not there: an outside tool, or the container backend.
     NotInstalled,
@@ -1182,7 +1182,7 @@ pub struct NotRunThisTime {
 /// The kinds of run this report did not have, and how many requirements only they reach.
 ///
 /// `reach` is `data/reach.json`: for each requirement, the kinds of run with a check that can
-/// credit it (written by `tools/coverage.py`). `tools_run` is whether `--tools` was given. Whether
+/// credit it (written by `tools/coverage.py`). `tools_run` is whether the outside tools ran. Whether
 /// the app ran, and signed in, is read from `run_status`; with none recorded, nothing is said about
 /// it. `None` when every kind of run happened.
 pub fn not_run_this_time(
@@ -1210,7 +1210,11 @@ pub fn not_run_this_time(
     }
     if !tools_run {
         not_run.push("tools");
-        kinds.push("outside tools such as Semgrep (`--tools`)".to_owned());
+        kinds.push(
+            "outside tools such as Semgrep (they run with `sv report` at a terminal; the MCP server never \
+             runs them)"
+                .to_owned(),
+        );
     }
     if kinds.is_empty() {
         return None;
@@ -1593,7 +1597,7 @@ pub fn no_outside_tool_ran(rows: &[ToolRow]) -> bool {
 
 /// What the "Outside tools" section says above its table.
 pub const OUTSIDE_TOOLS_SECTION: &str = "The security tools each language already has, run beside StackVet's own \
-     checks with `sv report --tools`. Their findings are among the things to fix above, each marked with the tool's \
+     checks with every `sv report` at a terminal unless `--no-tools` is given. Their findings are among the things to fix above, each marked with the tool's \
      rule; one that found the same as StackVet on the same line is counted here as agreeing.";
 
 /// The name of the bill of materials beside the report (backlog 0382).
