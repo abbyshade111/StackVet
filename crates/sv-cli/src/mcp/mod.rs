@@ -97,6 +97,8 @@ mod status_tests;
 #[cfg(test)]
 mod tell_the_person_tests;
 #[cfg(test)]
+mod terminal_words_tests;
+#[cfg(test)]
 mod tests;
 mod tools;
 

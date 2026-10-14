@@ -1,6 +1,6 @@
 # Error messages a person meets through the tool name terminal-only fixes
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -22,3 +22,14 @@ From the deep review of 13 October 2026 (backlog 0417), area: usability. Severit
 - How verified: read; whether the server rewrites any of these before answering is not verified.
 - Overlap: 0308 and 0282 are about other server answers; 0217 part 3 (`stackvet_status`). None found for this.
 - Needs a decision record?: no.
+
+**Done 14 October 2026 (session documentation).** Read first, by calling each tool through the server on an app
+with no stackvet.toml. The server already answered `stackvet_check`, `stackvet_write_report`, `stackvet_bundle`,
+`stackvet_plan`, and `stackvet_preflight` with its own words, naming `stackvet_spec` (`protocol::needs_manifest`). The
+report lock's message already passes the server's own words ("ask for a folder of its own with `out`"). Two did not:
+the refusal of a report folder holding someone else's files said only "with --out", and `stackvet_status`, which is
+`sv doctor`, said only "`sv init`". Both now name the tool's route too ("with --out at a terminal, or `out` in
+stackvet_write_report"; "a tool connected to StackVet can call stackvet_spec for the same"), and the message every
+command gives for a missing stackvet.toml adds "or have the tool call stackvet_spec". `crates/sv-cli/src/mcp/terminal_words_tests.rs`
+holds the six tools that need the file naming `stackvet_spec`, and the folder refusal naming `out`. The prompt
+`settings-file-first`, which says "run `sv init`", is a prompt shown to work and was left as it is.
