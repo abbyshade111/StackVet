@@ -939,7 +939,7 @@ pub fn page(report: &Report) -> String {
                 "<tr><td><code>{}</code></td><td>{}</td><td>{} ({})</td></tr>\n",
                 escape(&ex.id),
                 escape(&ex.reason),
-                escape(ex.rests_on),
+                escape(ex.rests_on_words()),
                 escape(&ex.condition)
             ));
         }

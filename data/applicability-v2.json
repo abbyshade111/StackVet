@@ -72,7 +72,7 @@
       "scope": "C12.3",
       "condition": "self-hosted-model",
       "source": "claim",
-      "notApplicableReason": "Model drift is monitored by the vendor hosting the model, not by this app."
+      "notApplicableReason": "This app does not host AI models of its own, so there is no model of its own whose drift to monitor."
     },
     {
       "scope": "C12.5",
@@ -114,7 +114,7 @@
       "scope": "C6.1.4",
       "condition": "self-hosted-model",
       "source": "claim",
-      "notApplicableReason": "No model files are promoted between environments; the vendor-hosted model is pinned by name."
+      "notApplicableReason": "This app does not host AI models of its own, so there are no model files to promote between environments."
     },
     {
       "scope": "C6.2.2",
