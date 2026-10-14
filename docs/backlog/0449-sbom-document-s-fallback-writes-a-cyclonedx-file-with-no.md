@@ -1,6 +1,6 @@
 # `sbom_document`'s fallback writes a CycloneDX file with no components and no caveat, though its comment says the file says so
 
-**Status:** open
+**Status:** claimed by wording, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

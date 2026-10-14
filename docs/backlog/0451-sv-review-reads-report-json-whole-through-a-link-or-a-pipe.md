@@ -1,6 +1,6 @@
 # `sv review` reads report.json whole, through a link or a pipe, and repeats its count without the seal
 
-**Status:** open
+**Status:** claimed by wording, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
