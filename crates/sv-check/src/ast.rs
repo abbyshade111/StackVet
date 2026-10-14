@@ -365,7 +365,7 @@ impl AstRules {
 }
 
 /// The languages a grammar is compiled in for.
-fn grammar(language: &str) -> Option<Language> {
+pub(crate) fn grammar(language: &str) -> Option<Language> {
     Some(match language {
         "python" => tree_sitter_python::LANGUAGE.into(),
         "javascript" => tree_sitter_javascript::LANGUAGE.into(),

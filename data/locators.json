@@ -1,0 +1,19 @@
+{
+  "_comment": "Locators: where in the app's code a question to the owner is about, found by the names in it and never judged (backlog 0487, ADR-022). A locator makes no finding and credits nothing; crates/sv-check/src/locate.rs says why, and data/README.md lists the fields.",
+  "locators": [
+    {
+      "id": "locate.authorization-checks",
+      "questions": [
+        "V8.1.1",
+        "V8.3.1"
+      ],
+      "finds": "functions whose names say they check a role or a permission, where they are written and where they are used",
+      "names": "^(authori[sz]\\w*|(require|ensure|verify|assert|check|enforce|must)(role|roles|permission|permissions|perm|perms|admin|owner|ownership|scope|scopes|access|policy|ability|abilities|staff|superuser)\\w*|has(role|roles|permission|permissions|perm|perms|scope|scopes|access|ability|anyrole|anyauthority|authority)\\w*|can(access|edit|view|delete|update|read|write|manage|create|modify)\\w*|is(admin|owner|authori[sz]ed|allowed|staff|superuser|permitted)|(permission|permissions|roles?|admin|owner|staff|superuser)required|userpassestest|preauthori[sz]e|rolesallowed)$",
+      "queries": {
+        "python": "[(function_definition name: (identifier) @defined)\n (call function: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))\n (decorator (identifier) @used)\n (decorator (attribute attribute: (identifier) @used))\n (argument_list (identifier) @used)]",
+        "javascript": "[(function_declaration name: (identifier) @defined)\n (method_definition name: (property_identifier) @defined)\n (variable_declarator name: (identifier) @defined value: [(arrow_function) (function_expression)])\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (identifier) @used)\n (arguments (member_expression property: (property_identifier) @used))]",
+        "typescript": "[(function_declaration name: (identifier) @defined)\n (method_definition name: (property_identifier) @defined)\n (variable_declarator name: (identifier) @defined value: [(arrow_function) (function_expression)])\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (identifier) @used)\n (arguments (member_expression property: (property_identifier) @used))]"
+      }
+    }
+  ]
+}
