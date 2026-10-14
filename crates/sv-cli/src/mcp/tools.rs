@@ -171,9 +171,11 @@ impl Server {
             });
             let data = structured_since(&report, &delta);
             // Only when it is shorter: with a finding or two, the line saying what "unchanged"
-            // means is longer than what it saves.
+            // means is longer than what it saves. With none left and some gone, all it adds is what
+            // went, the confirmation the fix took, so it is sent though it is longer (backlog 0452).
             let full = sv_report::fence::fenced(|fence| summary_with(&report, fence, false));
-            if text.len() < full.len()
+            let only_gone = report.findings.is_empty() && !delta.gone.is_empty();
+            if (text.len() < full.len() || only_gone)
                 && text.len() <= crate::parts::ANSWER_BUDGET
                 && data.to_string().len() <= crate::parts::ANSWER_BUDGET
             {

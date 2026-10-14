@@ -1,6 +1,6 @@
 # When every finding is fixed, the next check never names the ones that went
 
-**Status:** claimed by wording, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

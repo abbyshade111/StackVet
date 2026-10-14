@@ -1,6 +1,6 @@
 # `ast.dynamic-code-execution` credits V1.3.2 whole for Java without looking for SpEL, and three more AST rules credit whole from call lists with gaps
 
-**Status:** claimed by honesty, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

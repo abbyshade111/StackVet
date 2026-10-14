@@ -1,6 +1,6 @@
 # The README's MCP section lists twelve tools in one 230-word sentence, where a table and one loop diagram would do
 
-**Status:** claimed by documentation, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
