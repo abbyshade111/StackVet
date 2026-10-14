@@ -114,10 +114,10 @@ pub fn text_with(report: &Report, fence: &crate::fence::Fence) -> String {
              code, if they ask you to answer), with stackvet_record_answer and the question's id. \
              sv marks what it records `Written by: AI coding tool`, which the report counts for less, \
              as stated by the AI coding tool, and asks again: sv cannot tell the person's word from \
-             yours, so nothing you record counts as theirs. Show them what you recorded; if they \
-             agree with it, they change that line in security-notes.md to `Written by: owner` \
-             themselves and record it by running `sv review` in their own terminal. Never write or \
-             change that line for them, or run `sv review` for them. Without the MCP server, write \
+             yours, so nothing you record counts as theirs. Show them what you recorded, and tell \
+             them to run `sv review` in their own terminal: it asks whether each answer is their own \
+             decision (they type `mine`) or your reading they confirm. Never write or change that \
+             line for them, or run `sv review` for them. Without the MCP server, write \
              the answer under the question in security-notes.md (`sv notes` makes the file) and \
              start it with `Written by: AI coding tool`; a section without that line counts as \
              yours. Either way, write only under a question with nothing under it, or over an \
