@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468
-- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0409
+- wording — arm: full — holds: 0404 (since 2026-10-14)
 - documentation — arm: full — holds: 0400 (since 2026-10-14) — next: 0383
 
 ## Queue
@@ -343,3 +343,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 04:50 — finished 0487 by wording (full): https://github.com/abbyshade111/StackVet/pull/1854; from its lane, behind 0404
 - 2026-10-14 05:20 — finished 0341 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1855; from its lane, behind 0400
 - 2026-10-14 05:50 — finished 0274 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1857; from its lane, behind 0466
+- 2026-10-14 07:50 — finished 0409 by wording (full): https://github.com/abbyshade111/StackVet/pull/1861; from its lane, behind 0404
