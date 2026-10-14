@@ -35,7 +35,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 21. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 22. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 23. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-24. 0508 Podman as a second container backend for the fence, so a Mac or Linux user without Docker can run the running-app checks — hold: until the owner asks for it, or a Mac or Linux user without Docker does
+24. 0508 Podman as a second container backend for the fence, so a Mac or Linux user without Docker can run the running-app checks — ready
+25. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
 
 ## Log
 
@@ -348,3 +349,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 08:13 — finished 0409 by wording (full): https://github.com/abbyshade111/StackVet/pull/1861; from its lane, behind 0404
 - 2026-10-14 08:52 — queued 0507, on hold: after the proposals 0488 to 0500 are built; a record of its own, marked
 - 2026-10-14 08:52 — queued 0508, on hold: until the owner asks for it, or a Mac or Linux user without Docker does, marked
+- 2026-10-14 09:03 — released 0508
+- 2026-10-14 09:03 — released 0508
+- 2026-10-14 09:03 — queued 0510, marked
