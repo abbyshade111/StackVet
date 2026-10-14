@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0518 (since 2026-10-14) — next: 0519, 0232
-- wording — arm: full — holds: 0372 (since 2026-10-14)
+- honesty — arm: full — holds: 0518 (since 2026-10-14) — next: 0519, 0522, 0521, 0232
+- wording — arm: full — holds: 0545 (since 2026-10-14) — next: 0546, 0547, 0548, 0549, 0550
 - documentation — arm: full — holds: nothing
 
 ## Queue
@@ -32,10 +32,38 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 18. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 20. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-21. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
-22. 0513 Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name — hold: the owner's three licence judgments; ADR-018 Later with the answers
-23. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
-24. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+21. 0513 Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name — hold: the owner's three licence judgments; ADR-018 Later with the answers
+22. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
+23. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+24. 0523 The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding — ready
+25. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
+26. 0525 `ast.sql-built-by-hand` flags `executescript(f())` where `f` returns a constant schema, a high finding under V1.2.4 — ready
+27. 0526 The test-user step took 129 s on one trial app with 7 s of it itemized; the timings cannot say where the time went — ready
+28. 0527 When sign-in fails, the run shows only "(400)" and seen.json cuts the page before its error text — ready
+29. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+30. 0529 Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information — ready
+31. 0530 `config.versions-pinned` is titled "Python does not pin the versions it installs" when every version is pinned — ready
+32. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
+33. 0532 `sv preflight` does not say that the test command's program is not among the packages `install = true` installs — ready
+34. 0533 Without an `owned` record the forged-form and other-user checks do not run, and preflight does not say which checks a missing key costs — ready
+35. 0534 `.cursor/mcp.json` is listed as "not read" though `sv connect cursor` writes it and it has the shape `.mcp.json` has — ready
+36. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+37. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+38. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
+39. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
+40. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
+41. 0540 `tools/install.sh` copies `target/release/sv` after a build that `CARGO_TARGET_DIR` sent elsewhere, and reports the stale one installed — ready
+42. 0541 `stackvet_status` does not name the folder it serves, so a container for an older app passes as connected — ready
+43. 0542 A hand-written security-notes.md counts for nothing, and sv says so only in the counts — ready
+44. 0543 `confirmed = { by = "ai-tool" }` and `[checked-by-hand] ... by = "ai-tool"` are accepted without a word at write time — ready
+45. 0544 `sv doctor` inside a tool's sandboxed shell says there is no container backend when the socket is merely unreachable — ready
+46. 0551 Prompts 1 and 3: run in a chat on this computer, print the system and folder, and paste the settings written into the chat — ready
+47. 0552 Prompt 4: ask which folder the server serves, and stop an older container before going on — ready
+48. 0553 Prompt 6: a sandboxed shell, a kept copy of sv, and a commit that must match the pulled source — ready
+49. 0554 Prompt 6: "open report.html in my web browser" means the computer's browser, or says both are fine — ready
+50. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
+51. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
+52. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
 
 ## Log
 
@@ -428,3 +456,50 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 18:44 — withdrew 0232 from honesty (full), on hold: put behind 0518 and 0519: 0518 is small and blocks the orchestrator's second reading of the pointer; 0232 is long
 - 2026-10-14 18:44 — released 0232
 - 2026-10-14 18:44 — assigned 0232 to honesty (full) into the lane after 0519: its own claim, taken up again after the two short ones
+- 2026-10-14 18:53 — queued 0521, marked
+- 2026-10-14 18:53 — queued 0522, marked
+- 2026-10-14 18:53 — queued 0523, marked
+- 2026-10-14 18:53 — queued 0524, marked
+- 2026-10-14 18:53 — queued 0525, marked
+- 2026-10-14 18:53 — queued 0526, marked
+- 2026-10-14 18:53 — queued 0527, marked
+- 2026-10-14 18:53 — queued 0528, marked
+- 2026-10-14 18:53 — queued 0529, marked
+- 2026-10-14 18:54 — queued 0530, marked
+- 2026-10-14 18:54 — queued 0531, marked
+- 2026-10-14 18:54 — queued 0532, marked
+- 2026-10-14 18:54 — queued 0533, marked
+- 2026-10-14 18:54 — queued 0534, marked
+- 2026-10-14 18:54 — queued 0535, marked
+- 2026-10-14 18:54 — queued 0536, marked
+- 2026-10-14 18:54 — queued 0537, marked
+- 2026-10-14 18:54 — queued 0538, marked
+- 2026-10-14 18:54 — queued 0539, marked
+- 2026-10-14 18:54 — queued 0540, marked
+- 2026-10-14 18:54 — queued 0541, marked
+- 2026-10-14 18:54 — queued 0542, marked
+- 2026-10-14 18:54 — queued 0543, marked
+- 2026-10-14 18:54 — queued 0544, marked
+- 2026-10-14 18:54 — queued 0545, marked
+- 2026-10-14 18:54 — queued 0546, marked
+- 2026-10-14 18:54 — queued 0547, marked
+- 2026-10-14 18:54 — queued 0548, marked
+- 2026-10-14 18:54 — queued 0549, marked
+- 2026-10-14 18:54 — queued 0550, marked
+- 2026-10-14 18:54 — queued 0551, marked
+- 2026-10-14 18:54 — queued 0552, marked
+- 2026-10-14 18:54 — queued 0553, marked
+- 2026-10-14 18:54 — queued 0554, marked
+- 2026-10-14 18:54 — queued 0555, marked
+- 2026-10-14 18:54 — queued 0556, marked
+- 2026-10-14 18:54 — queued 0557, marked
+- 2026-10-14 18:54 — dropped 0502 from the queue
+- 2026-10-14 18:54 — finished 0372 by wording (full): https://github.com/abbyshade111/StackVet/pull/1925
+- 2026-10-14 18:54 — assigned 0522 to honesty (full) into the lane after 0519: a high finding that is false and a setup that fails quietly, the project's own rule; before the long 0232
+- 2026-10-14 18:54 — assigned 0521 to honesty (full) into the lane after 0522: a wrong needs-attention on two of three trial apps; adapters.json and ADR-111
+- 2026-10-14 18:54 — assigned 0545 to wording (full): the prompt library after the three-tool trial; one file, in order
+- 2026-10-14 18:54 — assigned 0546 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
+- 2026-10-14 18:54 — assigned 0547 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
+- 2026-10-14 18:54 — assigned 0548 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
+- 2026-10-14 18:54 — assigned 0549 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
+- 2026-10-14 18:54 — assigned 0550 to wording (full) as next: the prompt library after the three-tool trial; one file, in order
