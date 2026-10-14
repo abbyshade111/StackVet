@@ -40,3 +40,5 @@ against a real report kept in `crates/sv-check/tests/fixtures/suppressed/`. Open
 security-extended suites, as `sv` runs them, are not known here to include the alert-suppression query that reads
 `lgtm` and `codeql[...]` comments; a real run over a fixture is still owed. Whether the report lists the suppression
 comments themselves is the owner's question, in `docs/coordination/waiting/0400.md`.
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): yes: list every comment that tells a scanner to look away (`# nosec`, `// nosemgrep`, `#nosec`, `lgtm`, `codeql[...]`, and the rest), on a line of its own in a section of their own, counting against no requirement and crediting nothing, as test code's findings are shown apart; the finding a comment tried to hide stays as it is. A Later line on the record governing the report's sections (ADR-110) or the suppressed-findings decision, whichever governs.

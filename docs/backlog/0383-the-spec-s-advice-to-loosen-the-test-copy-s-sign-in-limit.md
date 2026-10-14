@@ -22,3 +22,5 @@ changes what `sv` tells the AI tool, so it is a decision with a record of its ow
 (the `[stack.run.users]` notes: "let the copy `sv` runs allow that many ... and keep the real limit everywhere else").
 The question, with three ways to settle it and a suggestion (A and C together), is in
 `docs/coordination/waiting/0383.md`. Nothing is built until the owner answers; the decision record is written then.
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): A and C together. A: the settings advice no longer asks the test copy to allow sixty sign-ins; it asks that the copy keep stopping wrong passwords at the number declared in `failed-sign-ins`, and raise only a limit that counts every sign-in, if the app has one. C: the wrong-password check says when the start command sets a limit-like value (backlog 0386), so the finding says it may be about a loosened copy. Both change what `sv` tells the AI tool: a decision record of its own, proposed in this item's build.

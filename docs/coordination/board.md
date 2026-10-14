@@ -6,47 +6,34 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468
-- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0409
-- documentation — arm: full — holds: 0400 (since 2026-10-14) — next: 0383
+- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468, 0425, 0427, 0477
+- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0424, 0426, 0372, 0397, 0401
+- documentation — arm: full — holds: 0400 (since 2026-10-14) — next: 0383, 0473, 0474, 0478, 0476, 0475
 
 ## Queue
 
-1. 0478 Small wording for the non-programmer reader in the guide and the glossary, and the glossary's "Report" entry that 0413 misses — ready
-2. 0424 The report's "What to do next" speaks the terminal's language and never names `sv review` or the full run — ready
-3. 0426 A "not verified" row never says what would verify it, though sv knows and the website's example promises it — ready
-4. 0427 The questions to the person are asked in the standard's own jargon, and only the AI tool stands between it and them — ready
-5. 0425 A person's own decision, typed to the tool, can only become theirs by hand-editing security-notes.md; `sv review` has no "this is mine" — ready
-6. 0473 The first thing a person who has never opened a terminal is told to do is open a terminal, and nothing says how — ready
-7. 0474 The person's last step, `sv review`, is the only step without a prompt that walks them to it — ready
-8. 0475 Error messages a person meets through the tool name terminal-only fixes — ready
-9. 0476 `sv --help` and every command's `--help` but `review` say nothing to a person who is not a programmer — ready
-10. 0477 The starter file tells the person to read 400 lines of TOML before trusting the report, where the report already shows the answers — ready
-11. 0372 Each requirement in the report stated in plain language, with checks named in words — ready
-12. 0397 Each question to the owner comes with the code it rests on — ready
-13. 0401 The AI tool tells the person everything it changes, and StackVet shows what changed between checks — ready
-14. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
-15. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
-16. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
-17. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
-18. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
-19. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
-20. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
-21. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
-22. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
-23. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
-24. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
-25. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-26. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
-27. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
-28. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
-29. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
-30. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-31. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
-32. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
-33. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
-34. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
-35. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+1. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
+2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
+3. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
+4. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
+5. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
+6. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
+7. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
+8. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
+9. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
+10. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
+11. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
+12. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+13. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
+14. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
+15. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
+16. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
+17. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+18. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
+19. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
+20. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
+21. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
+22. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 
 ## Log
 
@@ -343,3 +330,17 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 04:50 — finished 0487 by wording (full): https://github.com/abbyshade111/StackVet/pull/1854; from its lane, behind 0404
 - 2026-10-14 05:20 — finished 0341 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1855; from its lane, behind 0400
 - 2026-10-14 05:50 — finished 0274 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1857; from its lane, behind 0466
+- 2026-10-14 08:13 — assigned 0425 to honesty (full) as next: usability lane, the owner is back: a third sv review answer, this is my own decision (review.rs, interview.rs; ADR-026 Later, the owner's yes of 13 October)
+- 2026-10-14 08:13 — assigned 0427 to honesty (full) as next: usability lane: a plain sentence per question beside the standard's words (the three question data files, interview.rs)
+- 2026-10-14 08:13 — assigned 0477 to honesty (full) as next: usability lane: the starter file's first line sends the person to the report, not to 400 lines of TOML (spec.rs, same lane as 0468's spec change)
+- 2026-10-14 08:13 — assigned 0424 to wording (full) as next: usability lane: the report's What to do next in the person's language, naming sv review and the full run (bluf.rs, markdown.rs, html.rs)
+- 2026-10-14 08:13 — assigned 0426 to wording (full) as next: usability lane: each not-verified row says what would verify it (sv-report renderers, explain.rs, stackvet_explain)
+- 2026-10-14 08:13 — assigned 0372 to wording (full) as next: usability lane: each requirement in the report stated in plain language (sv-report, same lane as 0424 and 0426 for the renderers)
+- 2026-10-14 08:13 — assigned 0397 to wording (full) as next: usability lane: each question comes with the code it rests on; check what 0487 (the pointer, built by this session) already covers and finish or close it
+- 2026-10-14 08:13 — assigned 0401 to wording (full) as next: usability lane: the AI tool tells the person everything it changes, and StackVet shows what changed (the MCP server, the prompts)
+- 2026-10-14 08:13 — assigned 0473 to documentation (full) as next: usability lane: how to open a terminal, and one in a folder, in the glossary and the guide
+- 2026-10-14 08:13 — assigned 0474 to documentation (full) as next: usability lane: a setup prompt 7 that walks the person to sv review (docs/prompts/setup.md, its test)
+- 2026-10-14 08:13 — assigned 0478 to documentation (full) as next: usability lane: small wording for the non-programmer reader in the guide and the glossary, and the glossary's Report entry
+- 2026-10-14 08:13 — assigned 0476 to documentation (full) as next: usability lane: sv --help and each command's help say where a non-programmer's path is (main.rs)
+- 2026-10-14 08:13 — assigned 0475 to documentation (full) as next: usability lane: error messages a person meets through the tool name both routes (sv-cli lib.rs, sv-manifest, report_lock.rs, doctor.rs)
+- 2026-10-14 08:13 — finished 0409 by wording (full): https://github.com/abbyshade111/StackVet/pull/1861; from its lane, behind 0404
