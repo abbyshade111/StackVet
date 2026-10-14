@@ -660,7 +660,8 @@ pub(super) const SPEC_SECTIONS: &[&str] = &["app", "manifest", "instructions", "
 
 /// The starter stackvet.toml, how to fill it in, and the prompts shown to work: whole when it fits
 /// what an AI coding tool takes in whole, and otherwise in parts (`crate::parts`), first the start
-/// of the file and how to fill it in. Measured on 12 October 2026 at 47,187 characters, over the
+/// of the file, how to fill it in, and the prompts shown to work, which the server's instructions
+/// point to here rather than carry (backlog 0338). Measured on 12 October 2026 at 47,187 characters, over the
 /// 40,000 an answer is kept to, and each prompt shown to work adds about 800 (backlog 0347).
 ///
 /// It answers in text only, as it always has: the list of parts is in the text, and the
@@ -673,7 +674,7 @@ pub(super) fn spec(args: &Value) -> Result<Value> {
             tool: "stackvet_spec",
             what: "spec",
             sections: &|_| spec_sections(),
-            first: &["app", "instructions"],
+            first: &["app", "instructions", "prompts"],
             only_asked: &[],
             always: serde_json::Map::new(),
             whole_text: &|_| whole.clone(),
