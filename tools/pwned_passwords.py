@@ -42,6 +42,10 @@ import urllib.request
 from pathlib import Path
 
 
+# Kept here rather than taken from tools/_shared.py (backlog 0464): this script writes BREACHED, the public
+# password below, and CodeQL's clear-text alerts on that write (79 and 80) were dismissed as false positives
+# where they stand, in this file. Through the shared helper the same write was raised again as a new alert
+# (121, on pull request #1836); whether to dismiss that one instead is the owner's call, so it stays here.
 def write_text(path, text):
     """Writes `text` as UTF-8 with Unix line endings on every system. Path.write_text uses the
     system's own encoding and, on Windows, CRLF, which would make a generated file differ from the
