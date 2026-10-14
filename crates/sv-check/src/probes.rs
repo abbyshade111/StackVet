@@ -584,7 +584,11 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
         .map(|p| page_name(p))
         .collect::<Vec<_>>()
         .join(" and ");
-    if !judged.is_empty() && security_headers(&judged).is_none() {
+    // The health path's own answer has to be among them, as for the content-type credit: without it (the
+    // rate limiter answered it, and was left out) the credit rested on the routes alone and read "the
+    // app's answers on , and on all ..." (backlog 0444).
+    let home_judged = judged.iter().any(|p| p.id == "home");
+    if home_judged && security_headers(&judged).is_none() {
         out.push(
             crate::Verified::new(
                 SECURITY_HEADERS.rule_id,
@@ -600,7 +604,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
     let sets_a_cookie = judged
         .iter()
         .any(|p| p.headers.iter().any(|(k, _)| k == "set-cookie"));
-    if sets_a_cookie && cookie_attributes(&judged).is_none() {
+    if home_judged && sets_a_cookie && cookie_attributes(&judged).is_none() {
         out.push(
             crate::Verified::new(
                 COOKIE_ATTRIBUTES.rule_id,
@@ -2465,6 +2469,9 @@ mod routes_cookie_tests;
 
 #[cfg(test)]
 mod routes_csp_tests;
+
+#[cfg(test)]
+mod home_judged_tests;
 
 #[cfg(test)]
 mod failing_requirements_tests;
