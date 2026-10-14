@@ -319,10 +319,10 @@ impl DockerBackend {
         if let Ok(mut lost) = self.sidecar_lost.lock()
             && lost.is_none()
         {
+            // In `sv`'s own words, whatever the backend said and however it cased it (backlog 0519).
             *lost = Some(format!(
-                "the container the questions are sent from was gone when `{request_id}` was sent \
-                 ({})",
-                first_line(out).trim()
+                "the container the questions are sent from was gone when `{request_id}` was sent: \
+                 it had stopped, or been removed, before the request reached it"
             ));
         }
         true
@@ -523,6 +523,16 @@ impl DockerBackend {
 /// bridge`, `read-only mode is not supported`). Said here instead, with what to change (backlog 0120).
 pub(crate) fn linux_containers(code: i32, answer: &str) -> Result<(), CannotRun> {
     if code != 0 {
+        // Podman answers `docker info` too, through its `docker` command, but its info has no `OSType`, and the
+        // template it is asked for fails on its own type (`*define.Info`). `sv` does not run the app under Podman yet:
+        // its network, as `sv` builds it, keeps a way to this computer that `sv` cannot close (backlogs 0508, 0520).
+        if answer.contains("define.Info") {
+            return Err(CannotRun::NoBackend {
+                checked: "the `docker` command here is Podman, which `sv` does not run the app under yet; \
+                          the running-app checks need Docker"
+                    .to_owned(),
+            });
+        }
         return Err(CannotRun::NoBackend {
             checked: format!("`docker info` failed: {}", first_line(answer)),
         });
@@ -3257,9 +3267,11 @@ impl DockerBackend {
     }
 }
 
-/// Whether Docker's answer to an `exec` says the container is not there to run it in.
+/// Whether the backend's answer to an `exec` says the container is not there to run it in, in any case: Docker says
+/// "No such container", Podman "no such container" (backlog 0519).
 fn sidecar_gone(out: &str) -> bool {
-    out.contains("No such container") || out.contains("is not running")
+    let out = out.to_lowercase();
+    out.contains("no such container") || out.contains("is not running")
 }
 
 /// Turns a raw HTTP response into the shape the probes read; `None` when it has no status line.
@@ -3550,7 +3562,7 @@ mod probe_tests {
         ));
         let lost = backend.sidecar_lost().expect("written down");
         assert!(
-            lost.contains("`probe-2`") && lost.contains("No such container"),
+            lost.contains("`probe-2`") && lost.contains("had stopped, or been removed"),
             "{lost}"
         );
         assert!(backend.note_if_sidecar_lost(
@@ -5686,6 +5698,9 @@ mod at_once_tests {
 
 #[cfg(test)]
 mod backend_tests;
+
+#[cfg(test)]
+mod podman_words_tests;
 
 #[cfg(test)]
 mod gateway_said_tests;
