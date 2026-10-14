@@ -370,13 +370,6 @@ Each question first shows the thing it depends on actually worked — the sessio
 the owner can read back what they made, the admin can open the admin page — and when it cannot show
 that, the answer is *not assessed*, not a pass. `examples/notes-with-users` is a complete example.
 
-## Building an app from scratch with `sv` alongside
-
-If you are not a programmer and want to build an app with an AI coding tool, start with
-[`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md): installing Docker, connecting StackVet to your
-tool, a prompt to start the build with, what is and is not checked, and how to build `sv` on your own
-computer for `sv report --run`, step by step.
-
 ## Rules your AI coding tool follows while it codes
 
 `sv rules ./my-app` writes a short set of security rules into the app's `AGENTS.md`, the file many AI
@@ -622,5 +615,11 @@ goes through [SECURITY.md](SECURITY.md), not a public issue.
 
 ## Reading order
 
-The design record, one dated entry per file in `docs/design/` (`docs/DESIGN.md` says how it is kept), explains the two changes from v1 (the design was written when the two were side by side), why deleting the wizard was the hard part, and what the
-first run against real data turned up.
+Where to start depends on who you are. Nobody reads the design record end to end; it is the dated history.
+
+| You are | Start with |
+|---|---|
+| Not a programmer, building an app with an AI tool | [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md), the guide, step by step; its section 6 says what the report covers and what it leaves *not assessed*. [`docs/GLOSSARY.md`](docs/GLOSSARY.md) explains the words StackVet uses. |
+| A programmer using `sv` | This page: [Where it is](#where-it-is) (what is checked, and the exit codes), [From inside your AI coding tool](#from-inside-your-ai-coding-tool) (the MCP server), and [the GitHub Action](#on-each-pull-request-the-github-action). |
+| Contributing to StackVet | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), the ten-minute map, first; then [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/adr/README.md`](docs/adr/README.md) (why things are as they are), and [`docs/BACKLOG.md`](docs/BACKLOG.md) (what is left to do). |
+| Researching how it was built | [`docs/paper/`](docs/paper/), starting with [`HOW-SV-WORKS.md`](docs/paper/HOW-SV-WORKS.md) and [`METHODOLOGY.md`](docs/paper/METHODOLOGY.md); then the design record, one dated entry per file in [`docs/design/`](docs/design/) ([`docs/DESIGN.md`](docs/DESIGN.md) says how it is kept), which explains the two changes from v1, why deleting the wizard was the hard part, and what the first run against real data turned up. |
