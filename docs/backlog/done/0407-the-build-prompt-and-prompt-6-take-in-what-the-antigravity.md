@@ -1,6 +1,6 @@
 # The build prompt and prompt 6 take in what the Antigravity trial showed
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -29,3 +29,20 @@ in the AI tool, which showed its source, unreadable. Also ask before deleting th
 
 Then try the changed prompts in the same app and tool, and see whether the tool does better (the setup page's "Tried so
 far" says Antigravity, with that model, is not recommended until then).
+
+**What was built (14 October 2026, session documentation).** The build prompt (the guide's step 4, and the setup
+page's step 5, held to it word for word) now says: ask the person before deciding where the app runs, whether anyone
+signs in, or how it is reached (`auth`, `tls`, the `[stack.run]` lines), and say when one changes; name the app's
+pages and routes under `[stack.run.users]`, not only `/` and the health path (ADR-096); use StackVet only through the
+`stackvet_` tools and never run commands inside its container; never silence a finding or hide it from a scanner (no
+`# nosec`, no `nosemgrep`, no rewrite whose only effect is that the check stops seeing it), but tell the person and let
+them decide; after each change say in plain words what changed, and ask before deleting anything; when saying what
+the code does for a question, quote the lines and call it a reading, not a check; and never mark a check by hand as
+done or write `by = "owner"`, which only the person can do with `sv review`. Prompt 6 now opens `report.html` in the
+person's web browser (`open`, `start`, or `xdg-open`), not in the chat, and asks before deleting the report's folder or
+anything else. The guide's and the setup page's "Tried so far" say the prompts were changed and not yet tried again.
+Held by `crates/sv-cli/tests/build_prompt_rules.rs`, which names each rule; with `# nosec` dropped from the prompt it
+went red. Backlog 0397 (the code behind each question) and 0401 (what changed, and deleting) remain the larger parts.
+
+**Closed 14 October 2026:** the trial again in Antigravity, which this item left open, is backlog 0502, so this item
+closes with what it built.
