@@ -1626,7 +1626,13 @@
       "source": {
         "python": [
           "0.0.0.0",
-          "allowed_hosts"
+          "allowed_hosts",
+          "((\"\", ",
+          "(('', ",
+          "\"host\", \"\")",
+          "'host', '')",
+          "\"::\"",
+          "'::'"
         ],
         "javascript": [
           "0.0.0.0"
