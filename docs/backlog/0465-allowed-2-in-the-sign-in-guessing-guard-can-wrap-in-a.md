@@ -1,6 +1,6 @@
 # `allowed + 2` in the sign-in guessing guard can wrap in a release build
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
