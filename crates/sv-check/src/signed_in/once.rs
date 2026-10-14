@@ -28,7 +28,7 @@ pub(super) fn once_check(
         out.not_assessed.push((
             IDS.to_owned(),
             "Whether an action can go through twice when sent twice at the same instant: \
-             stackvet.toml names no `once` action under [stack.run.users]."
+             stackvet.toml names no `once` action under `[stack.run.users]`."
                 .to_owned(),
         ));
         return;

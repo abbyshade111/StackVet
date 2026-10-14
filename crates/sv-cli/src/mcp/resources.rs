@@ -19,10 +19,12 @@ impl Server {
         folders.sort();
         let mut resources = Vec::new();
         for folder in folders {
-            if crate::report_seal::proven(&folder).is_err() {
+            // The bytes of report.json the seal was checked against: the date is read from them, not
+            // from a second read of a file that could have been replaced since (backlog 0454).
+            let Ok(report) = crate::report_seal::proven_report(&folder) else {
                 continue;
-            }
-            let when = written_when(&folder);
+            };
+            let when = written_when(&report);
             // Its parts joined by `/` on every system, so the name reads the same on Windows,
             // where the folder's own form has `\` (backlog 0120).
             let shown = folder
@@ -217,11 +219,10 @@ pub(super) fn fenced_when_read(name: &str) -> bool {
 /// What each report file is, for a person or a model choosing which to open.
 /// When the run that wrote the report in `folder` started, as the description of each of its files
 /// says it, so a report kept from an earlier run reads as that run's and not as the current one
-/// (backlog 0286). Read from `report.json`, whose bytes the seal was just checked against.
-fn written_when(folder: &Path) -> String {
-    let started = std::fs::read(folder.join("report.json"))
+/// (backlog 0286). Read from `report`, the bytes of `report.json` the seal was just checked against.
+fn written_when(report: &[u8]) -> String {
+    let started = serde_json::from_slice::<Value>(report)
         .ok()
-        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok())
         .and_then(|report| report["run_record"]["started_unix_ms"].as_u64());
     let Some(ms) = started else {
         return "at a time its report does not record".to_owned();
@@ -247,7 +248,7 @@ pub(super) fn report_file_description(name: &str) -> &'static str {
         "low-findings.md" => {
             "Every low-severity finding in full; the other reports group them by rule."
         }
-        "findings.sarif" => "The findings in SARIF, for code-scanning tools.",
+        "stackvet.sarif" => "The findings in SARIF, for code-scanning tools.",
         "seen.json" => {
             "What the running app answered when sv asked it, credentials cut out: the app's own text."
         }
@@ -343,14 +344,4 @@ pub(super) fn path_text_from_uri(uri: &str, windows: bool) -> Option<String> {
     }
 }
 
-/// Whether two looks at a path saw the same file.
-#[cfg(unix)]
-pub(super) fn same_file(a: &std::fs::Metadata, b: &std::fs::Metadata) -> bool {
-    use std::os::unix::fs::MetadataExt;
-    a.dev() == b.dev() && a.ino() == b.ino()
-}
-
-#[cfg(not(unix))]
-pub(super) fn same_file(a: &std::fs::Metadata, b: &std::fs::Metadata) -> bool {
-    a.len() == b.len() && b.is_file()
-}
+pub(super) use crate::report_lock::same_file;

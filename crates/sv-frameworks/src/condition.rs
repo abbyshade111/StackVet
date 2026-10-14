@@ -55,6 +55,26 @@ macro_rules! conditions {
             }
 
             pub const ALL: &'static [Condition] = &[$(Condition::$variant),*];
+
+            /// The condition this one is a part of, when it is one: what the AI does, its history, its tools,
+            /// its moderation, is asked only of an app that has an AI feature (backlog 0403). When that larger
+            /// answer is no, the reason a requirement does not apply is that, not a statement about an AI the
+            /// app does not have.
+            pub fn within(self) -> Option<Condition> {
+                match self {
+                    Condition::AiActions
+                    | Condition::AiHistory
+                    | Condition::AiModeration
+                    | Condition::Rag
+                    | Condition::WebSearch
+                    | Condition::GeneratesMedia
+                    | Condition::Mcp
+                    | Condition::MultiAgent
+                    | Condition::MultimodalAi
+                    | Condition::SelfHostedModel => Some(Condition::Ai),
+                    _ => None,
+                }
+            }
         }
     };
 }

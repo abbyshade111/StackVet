@@ -3,8 +3,8 @@
 use super::*;
 use sv_report::seen::KEPT_CHARS;
 
-fn rules() -> SecretRules {
-    SecretRules::load(&crate::secret_rules_path()).expect("sv's secret rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 /// A key the secrets scan knows, and a session id no rule could know from any other letters,
@@ -86,14 +86,14 @@ fn no_credential_the_app_answered_with_reaches_the_record() {
     // The setup: the scan really knows the key, and the answers really carry both, so their absence
     // below is the record's doing.
     assert!(
-        redact_text(&rules, &key).1 >= 1,
+        redact_text(rules, &key).1 >= 1,
         "the planted key is not one the scan knows"
     );
     let (asked, answered) = answers(&key, &session);
     let raw = format!("{answered:?}");
     assert!(raw.contains(&key) && raw.contains(&session), "{raw}");
 
-    let seen = record(&rules, &asked, &answered, &[]);
+    let seen = record(rules, &asked, &answered, &[]);
     assert_eq!(seen.exchanges.len(), asked.len(), "{seen:#?}");
     let kept = serde_json::to_string(&seen).unwrap();
     assert!(!kept.contains(&key), "a key reached the record: {kept}");
@@ -125,7 +125,7 @@ fn a_question_with_no_answer_is_said_and_the_record_stops_at_its_most() {
     asked.push(request("silent", "/s"));
     asked.push(request("limited", "/l"));
     answered.push(response("unasked", Vec::new(), String::new()));
-    let seen = record(&rules, &asked, &answered, &["limited (429)".to_owned()]);
+    let seen = record(rules, &asked, &answered, &["limited (429)".to_owned()]);
     assert_eq!(seen.exchanges.len(), MOST_EXCHANGES);
     assert_eq!(seen.left_out, 3);
     assert_eq!(
@@ -144,7 +144,7 @@ fn a_question_with_no_answer_is_said_and_the_record_stops_at_its_most() {
 fn a_rate_limited_id_is_matched_whole() {
     let rules = rules();
     let asked = vec![request("home", "/")];
-    let seen = record(&rules, &asked, &[], &["home-page (429)".to_owned()]);
+    let seen = record(rules, &asked, &[], &["home-page (429)".to_owned()]);
     assert_eq!(seen.not_answered, ["home (no answer)"]);
 }
 
@@ -177,7 +177,7 @@ fn no_credential_a_stand_in_received_reaches_the_record() {
     // The setup: the key is in every kind of record.
     assert!(format!("{received:?}").matches(key.as_str()).count() >= 4);
     let mut seen = Seen::default();
-    stand_ins(&rules, &received, &mut seen);
+    stand_ins(rules, &received, &mut seen);
     let kept = serde_json::to_string(&seen).unwrap();
     assert!(!kept.contains(&key), "a key reached the record: {kept}");
     assert!(seen.credentials_removed >= 4, "{seen:#?}");
@@ -206,7 +206,7 @@ fn a_stand_in_record_is_bounded_and_says_what_was_cut() {
         ..Default::default()
     };
     let mut seen = Seen::default();
-    stand_ins(&rules, &received, &mut seen);
+    stand_ins(rules, &received, &mut seen);
     let model = seen.stand_ins.model.as_ref().unwrap();
     let system = model["seen"][0]["system"].as_str().unwrap();
     assert!(
@@ -237,7 +237,7 @@ fn no_credential_the_app_logged_reaches_the_record() {
     // The setup: the key is in both kinds of kept line.
     assert_eq!(format!("{asked:?}").matches(key.as_str()).count(), 2);
     let mut seen = Seen::default();
-    app_log(&rules, Some(&asked), None, &mut seen);
+    app_log(rules, Some(&asked), None, &mut seen);
     let kept = serde_json::to_string(&seen).unwrap();
     assert!(!kept.contains(&key), "a key reached the record: {kept}");
     assert!(seen.credentials_removed >= 2, "{seen:#?}");
@@ -250,7 +250,7 @@ fn no_credential_the_app_logged_reaches_the_record() {
     assert_eq!(seen.app_log.cut, 1);
     // No suite that read the log, nothing kept.
     let mut none = Seen::default();
-    app_log(&rules, None, None, &mut none);
+    app_log(rules, None, None, &mut none);
     assert!(none.app_log.is_empty());
 }
 
@@ -268,7 +268,7 @@ fn the_lines_the_ai_feature_read_are_kept_and_a_key_in_them_is_not() {
     // The setup: the AI line is found and carries the key before anything is cut.
     assert_eq!(format!("{ai:?}").matches(key.as_str()).count(), 1);
     let mut seen = Seen::default();
-    app_log(&rules, None, Some(&ai), &mut seen);
+    app_log(rules, None, Some(&ai), &mut seen);
     let kept = serde_json::to_string(&seen).unwrap();
     assert!(!kept.contains(&key), "a key reached the record: {kept}");
     assert_eq!(seen.app_log.lines_read.len(), 1, "{seen:#?}");
@@ -302,7 +302,7 @@ fn no_credential_a_tool_quoted_reaches_the_kept_tool_output() {
         sv_report::Examined::not_run("config.", "a test"),
     ];
     let mut seen = Seen::default();
-    tool_output(&rules, &examined, &mut seen);
+    tool_output(rules, &examined, &mut seen);
     assert_eq!(seen.tool_output.len(), 1, "{seen:#?}");
     let kept = &seen.tool_output[0];
     assert!(
@@ -324,7 +324,7 @@ fn a_tool_report_past_its_most_is_cut_and_says_by_how_much() {
     let rules = rules();
     let long = "a".repeat(sv_report::seen::MOST_TOOL_CHARS + 7);
     let mut seen = Seen::default();
-    tool_output(&rules, &[examined_with(Some(long))], &mut seen);
+    tool_output(rules, &[examined_with(Some(long))], &mut seen);
     assert_eq!(seen.tool_output[0].cut_chars, 7);
     assert_eq!(
         seen.tool_output[0].report.chars().count(),
@@ -367,7 +367,7 @@ fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
     // The setup: the key and the session are in what the signed-in suite was answered with.
     assert!(format!("{asked:?}").matches(key.as_str()).count() >= 2);
     let mut seen = Seen::default();
-    signed_in(&rules, Some(&asked), &mut seen);
+    signed_in(rules, Some(&asked), &mut seen);
     let kept = serde_json::to_string(&seen).unwrap();
     assert!(!kept.contains(&key), "a key reached the record: {kept}");
     assert!(
@@ -385,7 +385,7 @@ fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
     assert!(seen.credentials_removed >= 2, "{seen:#?}");
     // No signed-in suite ran, nothing kept.
     let mut none = Seen::default();
-    signed_in(&rules, None, &mut none);
+    signed_in(rules, None, &mut none);
     assert!(none.signed_in.is_empty());
 }
 
@@ -394,11 +394,11 @@ fn a_test_secret_marker_in_an_address_is_left_whole_not_cut_as_a_password() {
     let rules = rules();
     // What sv-run leaves where a test password was in the address: the marker after `password=`.
     let address = format!("/login?email=sv-a%40example.test&password={TEST_SECRET}&next=/account");
-    let (out, _) = redact_around_markers(&rules, &address);
+    let (out, _) = redact_around_markers(rules, &address);
     assert_eq!(out, address, "the marker was cut: {out}");
     // A real password in the same place is still cut.
     let (key, _) = planted();
-    let (out, n) = redact_around_markers(&rules, &format!("/login?password={key}"));
+    let (out, n) = redact_around_markers(rules, &format!("/login?password={key}"));
     assert!(!out.contains(&key) && n >= 1, "{out}");
 }
 
@@ -423,7 +423,7 @@ fn each_reading_of_the_container_is_kept_with_the_id_it_is_named_by() {
         reading("the signed-in questions as well", "exited", 1, false),
     ];
     let mut seen = Seen::default();
-    liveness(&rules(), &readings, &mut seen);
+    liveness(rules(), &readings, &mut seen);
     let ids: Vec<&str> = seen.liveness.iter().map(|r| r.id.as_str()).collect();
     assert_eq!(ids, ["liveness-1", "liveness-2"]);
     assert_eq!(seen.liveness[1].status, "exited");

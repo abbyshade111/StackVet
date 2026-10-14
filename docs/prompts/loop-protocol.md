@@ -111,3 +111,10 @@ spending more.
    AI feature is sent) and says "look at this" when nothing handles them (ADR-035, Later). It credits nothing. Item 6's
    builds had the preflight without it, so the next trial measures whether its running apps' findings fall, and is
    reported apart from item 6, with the `sv` commit it used.
+7. **14 October 2026, after the second loop trial and before any later one: one check holds the outside tools too
+   (backlog 0377).** The second trial checked each build twice, with `--run` and again with `--tools`
+   (`loop-2/protocol.md`), and neither report had both: one build's `--tools` report had a high Bandit finding in the
+   app's own code that its `--run` report never mentioned. "The check" is now `sv report --run --tools`, in
+   `tools/prompt_trial.py`'s `run`: one report with the running app and the outside tools that are installed. The
+   outside tools run with every `sv report` since ADR-111; `--tools` says so in the command, whatever the default. The
+   builder still never sees this view: the MCP server never runs an outside tool.

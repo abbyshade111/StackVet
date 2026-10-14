@@ -471,15 +471,18 @@ fn ago(seconds: u64) -> String {
     }
 }
 
+/// Whether two looks at a path saw one plain file: on Unix, the same device and inode; elsewhere, where neither is
+/// read, both plain files of one length. The one answer for the report lock and the MCP server's resources, which had
+/// a copy each that answered differently off Unix (backlog 0461).
 #[cfg(unix)]
-fn same_file(a: &Metadata, b: &Metadata) -> bool {
+pub(crate) fn same_file(a: &Metadata, b: &Metadata) -> bool {
     use std::os::unix::fs::MetadataExt;
     a.dev() == b.dev() && a.ino() == b.ino() && a.file_type().is_file()
 }
 
 #[cfg(not(unix))]
-fn same_file(a: &Metadata, _b: &Metadata) -> bool {
-    a.file_type().is_file()
+pub(crate) fn same_file(a: &Metadata, b: &Metadata) -> bool {
+    a.file_type().is_file() && b.file_type().is_file() && a.len() == b.len()
 }
 
 /// How far ahead of this computer's clock a report's start may be and still be believed: clocks
@@ -615,6 +618,9 @@ fn manifest_changed_since(
 
 #[cfg(test)]
 mod holder_tests;
+
+#[cfg(test)]
+mod same_file_tests;
 
 #[cfg(test)]
 mod tests {

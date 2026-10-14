@@ -214,7 +214,7 @@ pub fn check(listing: &Listing, sbom: &Sbom, report: &mut ConfigReport) {
         let Ok(text) = entry.read_text() else {
             continue;
         };
-        let line_of = |at: usize| text[..at].matches('\n').count() + 1;
+        let line_of = |at: usize| sv_scan::text::line_of(&text, at);
         for (pattern, what) in PLUG_INS.iter() {
             if let Some(found) = pattern.find(&text) {
                 report.findings.push(plug_in_finding(
@@ -326,13 +326,7 @@ mod tests {
     use super::*;
     use std::fs;
 
-    fn scratch(name: &str) -> std::path::PathBuf {
-        let dir =
-            std::env::temp_dir().join(format!("sv-client-tech-{name}-{}", std::process::id()));
-        fs::remove_dir_all(&dir).ok();
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
+    use crate::test_support::scratch;
 
     fn run(dir: &std::path::Path) -> ConfigReport {
         let listing = Listing::of(dir);

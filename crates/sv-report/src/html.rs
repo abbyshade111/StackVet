@@ -747,7 +747,7 @@ pub fn page(report: &Report) -> String {
                         escape(w)
                     ),
                     None => escape(&item.how),
-                }
+                } + &rests_on(item)
             ));
         }
         b.push_str("</table>\n");
@@ -939,7 +939,7 @@ pub fn page(report: &Report) -> String {
                 "<tr><td><code>{}</code></td><td>{}</td><td>{} ({})</td></tr>\n",
                 escape(&ex.id),
                 escape(&ex.reason),
-                escape(ex.rests_on),
+                escape(ex.rests_on_words()),
                 escape(&ex.condition)
             ));
         }
@@ -1055,6 +1055,43 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
         ));
     }
     b.push_str("</ul>\n");
+}
+
+/// The lines of the app's code a question is about (backlog 0487), with the sentence that says they are where to look
+/// and not evidence; empty when no locator found any.
+fn rests_on(item: &sv_check::human::Item) -> String {
+    let Some(rests_on) = &item.rests_on else {
+        return String::new();
+    };
+    let mut b = format!(
+        "<br><span class=\"note\"><strong>In the code</strong>, {}. {}</span>",
+        escape(&rests_on.finds),
+        escape(sv_check::human::POINTERS_SAY)
+    );
+    for place in &rests_on.places {
+        b.push_str(&format!(
+            "<pre class=\"code\">{}, line {}\n",
+            escape(&place.file),
+            place.line
+        ));
+        for (n, text) in &place.lines {
+            let mark = if *n == place.line { "&gt;" } else { " " };
+            b.push_str(&format!("{mark} {n:>4}  {}\n", escape(text)));
+        }
+        b.push_str("</pre>");
+    }
+    if rests_on.more > 0 {
+        b.push_str(&format!(
+            "<span class=\"note\">And {} more {} like these, not shown.</span>",
+            rests_on.more,
+            if rests_on.more == 1 {
+                "place"
+            } else {
+                "places"
+            }
+        ));
+    }
+    b
 }
 
 #[cfg(test)]

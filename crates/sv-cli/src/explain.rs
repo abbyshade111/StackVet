@@ -349,11 +349,7 @@ pub fn explain(
 pub fn command(id: &str, app: Option<&Path>, report_file: Option<&Path>) -> Result<String> {
     let frameworks = crate::load_frameworks(&crate::data_dir()?)?;
     let reach_path = sv_frameworks::data::file("reach.json");
-    let reach: Value = serde_json::from_str(
-        &std::fs::read_to_string(&reach_path)
-            .with_context(|| format!("reading {}", reach_path.display()))?,
-    )
-    .with_context(|| sv_frameworks::data::not_understood(&reach_path))?;
+    let reach: Value = sv_frameworks::data::read_json(&reach_path)?;
     let rules = sv_check::coding_rules::CodingRules::load(&crate::coding_rules_path())?;
     let paths = crate::prompts_paths();
     let prompts = sv_check::prompts::Prompts::load_all(&[&paths[0], &paths[1]])?;

@@ -235,7 +235,7 @@ fn switched_on(listing: &Listing, sbom: &Sbom) -> (Vec<Place>, bool) {
                     continue;
                 }
                 let at = captures.get(0).map_or(0, |m| m.start());
-                let line = code[..at].matches('\n').count() + 1;
+                let line = sv_scan::text::line_of(&code, at);
                 found.push((entry.relative.clone(), line, library.name, grants));
             }
         }
@@ -320,12 +320,7 @@ mod tests {
     use super::*;
     use std::fs;
 
-    fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("sv-grants-{name}-{}", std::process::id()));
-        fs::remove_dir_all(&dir).ok();
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
+    use crate::test_support::scratch;
 
     fn run(dir: &std::path::Path) -> ConfigReport {
         let listing = Listing::of(dir);

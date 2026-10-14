@@ -35,24 +35,96 @@ pub fn read(
         if line == 0 || out.contains_key(&(file.clone(), line)) || !inside(file) {
             continue;
         }
-        let lines = texts
-            .entry(file.clone())
-            .or_insert_with(|| file_lines(app_dir, &app_dir.join(file)));
-        let Some(lines) = lines else { continue };
-        if line > lines.len() {
+        let Some(kept) = window(app_dir, &mut texts, file, line, rules) else {
             continue;
-        }
-        let first = line.saturating_sub(1).max(1);
-        let last = (line + 1).min(lines.len());
-        let window: Vec<&str> = (first..=last).map(|n| lines[n - 1].as_str()).collect();
-        let (redacted, _) = redact_text_in(rules, file, &window.join("\n"));
-        let kept: Vec<(usize, String)> = (first..)
-            .zip(redacted.split('\n'))
-            .map(|(n, text)| (n, bounded(text)))
-            .collect();
+        };
         out.insert((file.clone(), line), kept);
     }
     out
+}
+
+/// The line `line` of `file`, with the line before and the line after, redacted together; `None` when the file is
+/// not one to read or has no such line. `texts` keeps each file read once.
+fn window(
+    app_dir: &Path,
+    texts: &mut BTreeMap<String, Option<Vec<String>>>,
+    file: &str,
+    line: usize,
+    rules: &SecretRules,
+) -> Option<Vec<(usize, String)>> {
+    if line == 0 || !inside(file) {
+        return None;
+    }
+    let lines = texts
+        .entry(file.to_owned())
+        .or_insert_with(|| file_lines(app_dir, &app_dir.join(file)))
+        .as_ref()?;
+    if line > lines.len() {
+        return None;
+    }
+    let first = line.saturating_sub(1).max(1);
+    let last = (line + 1).min(lines.len());
+    let window: Vec<&str> = (first..=last).map(|n| lines[n - 1].as_str()).collect();
+    let (redacted, _) = redact_text_in(rules, file, &window.join("\n"));
+    Some(
+        (first..)
+            .zip(redacted.split('\n'))
+            .map(|(n, text)| (n, bounded(text)))
+            .collect(),
+    )
+}
+
+/// Gives each question a locator speaks to the places it found, with their lines (backlog 0487): the first
+/// `human::MOST_POINTERS` whose lines could be read, and how many more. The same places on both of the report's lists
+/// of questions, so `report.json` can still name the one list by the other's ids.
+pub fn point_questions(
+    app_dir: &Path,
+    locators: &sv_check::locate::Locators,
+    found: &sv_check::locate::Found,
+    rules: &SecretRules,
+    report: &mut sv_report::Report,
+) {
+    use sv_check::human::{MOST_POINTERS, Pointer, RestsOn};
+    let mut texts: BTreeMap<String, Option<Vec<String>>> = BTreeMap::new();
+    let mut by_question: BTreeMap<String, RestsOn> = BTreeMap::new();
+    for locator in locators.all() {
+        let Some(places) = found.places.get(&locator.id) else {
+            continue;
+        };
+        let mut shown = Vec::new();
+        let mut more = found.more.get(&locator.id).copied().unwrap_or(0);
+        for place in places {
+            if shown.len() == MOST_POINTERS {
+                more += 1;
+                continue;
+            }
+            match window(app_dir, &mut texts, &place.file, place.line, rules) {
+                Some(lines) => shown.push(Pointer {
+                    file: place.file.clone(),
+                    line: place.line,
+                    lines,
+                }),
+                None => more += 1,
+            }
+        }
+        if shown.is_empty() {
+            continue;
+        }
+        for id in &locator.questions {
+            by_question.entry(id.clone()).or_insert_with(|| RestsOn {
+                finds: locator.finds.clone(),
+                places: shown.clone(),
+                more,
+            });
+        }
+    }
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+    {
+        item.rests_on = by_question.get(&item.id).cloned();
+    }
 }
 
 /// Whether `file` names a place inside the app's folder: relative, and never climbing out of it.
@@ -82,12 +154,7 @@ fn file_lines(app_dir: &Path, path: &Path) -> Option<Vec<String>> {
 
 /// A line, cut at `LINE_CHARS` characters with how many more there were said.
 fn bounded(text: &str) -> String {
-    let n = text.chars().count();
-    if n <= LINE_CHARS {
-        return text.to_owned();
-    }
-    let head: String = text.chars().take(LINE_CHARS).collect();
-    format!("{head}… ({} more characters)", n - LINE_CHARS)
+    sv_check::text::cut_with_count(text, LINE_CHARS)
 }
 
 #[cfg(test)]

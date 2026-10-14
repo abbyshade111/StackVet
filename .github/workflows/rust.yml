@@ -467,7 +467,7 @@ jobs:
           NO_MANIFEST: ${{ steps.no-manifest.outcome }}
         run: |
           test "$CODE" = 0 || { echo "the example app's report exited $CODE"; exit 1; }
-          for f in findings.sarif security.md report.json report.html; do
+          for f in stackvet.sarif security.md report.json report.html; do
             test -s "$DIR/$f" || { echo "the Action wrote no $f"; exit 1; }
           done
           test "$NO_MANIFEST" = failure || { echo "the Action ran on a folder with no stackvet.toml"; exit 1; }

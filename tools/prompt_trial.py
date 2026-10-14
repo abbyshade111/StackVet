@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Runs `sv report --run` on builds of the design-time prompts' test app and prints what each prompt's checks said.
+"""Runs `sv report --run --tools` on builds of the design-time prompts' test app and prints what each prompt's checks said.
 
     python3 tools/prompt_trial.py TRIAL_DIR BUILD[:slow] ...
 
@@ -83,7 +83,8 @@ def run(build, slow):
     subprocess.run(git[:3] + ['init', '-q'], check=True)
     subprocess.run(git + ['add', '-A'], check=True)
     subprocess.run(git + ['commit', '-qm', 'build', '--allow-empty'], check=True)
-    cmd = [SV, 'report', dst, '--run', '--out', out] + (['--slow'] if slow else [])
+    # The running app and the outside tools in one report (backlog 0377, loop-protocol.md amendment 7).
+    cmd = [SV, 'report', dst, '--run', '--tools', '--out', out] + (['--slow'] if slow else [])
     with open(dst + '.log', 'w', encoding='utf-8', newline='\n') as log:
         code = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT, timeout=3600).returncode
     if os.environ.get('PT_TOOLS') == '1':

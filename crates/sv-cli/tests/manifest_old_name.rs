@@ -6,12 +6,7 @@ use std::path::{Path, PathBuf};
 use sv_frameworks::names::{MANIFEST, OLD_MANIFEST};
 use sv_scan::ecosystems::DEFAULT_REPORT_DIR;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-old-manifest-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 fn copy(from: &Path, to: &Path) {
     std::fs::create_dir_all(to).unwrap();

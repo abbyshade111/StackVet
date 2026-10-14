@@ -244,7 +244,7 @@ fn same_email_check(http: &mut dyn Http, section: &OidcSection, out: &mut Outcom
         not_assessed(
             out,
             "Whether the app tells apart two people who share an email address at the provider \
-             was not asked. Add `create` under [stack.run.oidc], a request that saves something \
+             was not asked. Add `create` under `[stack.run.oidc]`, a request that saves something \
              with `{marker}` in a field, and `shows`, a page where it appears, and it will be."
                 .to_owned(),
         );
@@ -297,7 +297,7 @@ fn same_email_check(http: &mut dyn Http, section: &OidcSection, out: &mut Outcom
             format!(
                 "What the first person saved through `create` ({}) did not show on {page} when \
                  they signed in again, so its absence could not show anything. Check `create` \
-                 and `shows` under [stack.run.oidc].",
+                 and `shows` under `[stack.run.oidc]`.",
                 status(&saved)
             ),
         );

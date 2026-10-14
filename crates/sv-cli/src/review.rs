@@ -53,7 +53,7 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
     };
     format!(
         "That is about entries only. A finding with no entry is never offered here: a real one is fixed in the code and \
-         checked again, and one that is a false alarm needs a [[finding-review]] entry first, written by you or \
+         checked again, and one that is a false alarm needs a `[[finding-review]]` entry first, written by you or \
          proposed by your AI coding tool, which you then confirm here. {last}"
     )
 }
@@ -390,7 +390,7 @@ fn review(
     // Signed for this app alone, so an answer copied into another app does not count there.
     let key = signing.for_app(&app);
     let checker = Checker::in_folder(Some(&folder), app_dir);
-    let rules = sv_check::secrets::SecretRules::load(&super::secret_rules_path())?;
+    let rules = sv_check::secrets::SecretRules::shared().map_err(anyhow::Error::msg)?;
 
     let mut waiting = Vec::new();
     // Entries whose seal was made with the review key and holds here: signed again at one yes.
@@ -564,7 +564,7 @@ fn review(
         let done = match item {
             Waiting::Finding(i) => {
                 let entry = &manifest.finding_review[i];
-                match record_finding(app_dir, entry, &rules, today, &key, input, out)? {
+                match record_finding(app_dir, entry, rules, today, &key, input, out)? {
                     Some(recorded) => {
                         set_finding(&mut doc, i, &recorded).context("writing the entry")?;
                         Some(Waiting::Finding(i))

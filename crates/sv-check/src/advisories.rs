@@ -142,43 +142,64 @@ pub struct Database {
 /// whole database over one would trade a partial answer for none; but it is counted and named, since a
 /// vulnerability in a file nobody read is not one the app is clear of (the deep review's improvement 4).
 pub fn read_database(dir: &Path) -> std::io::Result<Database> {
+    let mut files = Vec::new();
+    walk(dir, &mut files)?;
+    // Parsed on one thread per core (backlog 0411): OSV's PyPI export is tens of thousands of files, and reading them
+    // took several times what matching them did. Each thread takes a run of the files in the walk's order, and the
+    // runs are put back in that order, since it is the order the findings are listed in.
+    let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
+    let chunk = files.len().div_ceil(threads).max(1);
+    let read: Vec<Vec<Result<Advisory, (String, String)>>> = std::thread::scope(|scope| {
+        let handles: Vec<_> = files
+            .chunks(chunk)
+            .map(|run| scope.spawn(move || run.iter().map(|path| read_one(dir, path)).collect()))
+            .collect();
+        handles
+            .into_iter()
+            // A thread that panicked passes its panic on, rather than its files going missing without a word.
+            .map(|h| h.join().unwrap_or_else(|e| std::panic::resume_unwind(e)))
+            .collect()
+    });
     let mut out = Database::default();
-    load_into(dir, dir, &mut out)?;
+    for result in read.into_iter().flatten() {
+        match result {
+            Ok(advisory) => out.records.push(advisory),
+            Err(unread) => out.unread.push(unread),
+        }
+    }
     out.unread.sort();
     Ok(out)
 }
 
-fn load_into(root: &Path, dir: &Path, out: &mut Database) -> std::io::Result<()> {
+/// Every `.json` file under `dir`, in the order the folders are read.
+fn walk(dir: &Path, files: &mut Vec<std::path::PathBuf>) -> std::io::Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let path = entry?.path();
         if path.is_dir() {
-            load_into(root, &path, out)?;
-            continue;
-        }
-        if path.extension().and_then(|e| e.to_str()) != Some("json") {
-            continue;
-        }
-        let name = path
-            .strip_prefix(root)
-            .unwrap_or(&path)
-            .to_string_lossy()
-            .into_owned();
-        let text = match std::fs::read_to_string(&path) {
-            Ok(text) => text,
-            Err(e) => {
-                out.unread
-                    .push((name, format!("it could not be read ({e})")));
-                continue;
-            }
-        };
-        match serde_json::from_str::<Advisory>(&text) {
-            Ok(advisory) => out.records.push(advisory),
-            Err(e) => out
-                .unread
-                .push((name, format!("it is not an OSV record `sv` can read ({e})"))),
+            walk(&path, files)?;
+        } else if path.extension().and_then(|e| e.to_str()) == Some("json") {
+            files.push(path);
         }
     }
     Ok(())
+}
+
+/// One advisory file, or its name under `root` and why it was not read.
+fn read_one(root: &Path, path: &Path) -> Result<Advisory, (String, String)> {
+    let name = || {
+        path.strip_prefix(root)
+            .unwrap_or(path)
+            .to_string_lossy()
+            .into_owned()
+    };
+    let text = std::fs::read_to_string(path)
+        .map_err(|e| (name(), format!("it could not be read ({e})")))?;
+    serde_json::from_str::<Advisory>(&text).map_err(|e| {
+        (
+            name(),
+            format!("it is not an OSV record `sv` can read ({e})"),
+        )
+    })
 }
 
 /// The OSV ecosystem name for one of `sv`'s.
@@ -1184,10 +1205,12 @@ mod tests {
 
     #[test]
     fn the_guide_lists_every_download_sv_names_and_no_other() {
-        // The guide's table is what the owner reads before running anything: it must hold the same
-        // addresses `sv` prints, so a new ecosystem cannot be compared without being written up.
+        // The page's table is what the owner reads before running anything: it must hold the same
+        // addresses `sv` prints, so a new ecosystem cannot be compared without being written up. The table
+        // left the guide for a page of its own in backlog 0440.
         let guide = std::fs::read_to_string(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/GETTING-STARTED.md"),
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../docs/KNOWN-VULNERABILITIES.md"),
         )
         .unwrap();
         let in_guide: std::collections::BTreeSet<&str> = guide
@@ -1203,7 +1226,7 @@ mod tests {
         assert_eq!(
             in_guide,
             named.iter().map(String::as_str).collect(),
-            "docs/GETTING-STARTED.md and osv_download disagree"
+            "docs/KNOWN-VULNERABILITIES.md and osv_download disagree"
         );
     }
 
@@ -2377,3 +2400,7 @@ mod deadline_tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "advisories_read_order_tests.rs"]
+mod read_order_tests;

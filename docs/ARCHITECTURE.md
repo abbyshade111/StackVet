@@ -29,7 +29,7 @@ written inside another file is counted), rounded to the hundred, on 13 October 2
 | `sv-scan` | 4,300 | One walk of the app's folder (`files::Listing`), its languages and frameworks by signature, what the manifest sets apart as not the app (ADR-031), and the names of a report folder so the walk leaves it out. |
 | `sv-check` | 93,500 | Every check: keys and passwords (`secrets`), configuration (`config`), rules that read code with tree-sitter (`ast`, `data/ast-rules.json`), the bill of materials (`sbom`) and advisories, outside tools through adapters, and the checks of a running app (`signed_in`, `probes`, `oidc`, `ai`, `mcp_server`, `fetch`, `live`) written against a trait `Http`, so each runs against a fake app in its unit tests. Also what a person's word is worth: `design`, `hand`, `notes`, `confirm`, `review`, and the seals (`seal`). Produces `Finding` and `Verified`, never a verdict. |
 | `sv-run` | 8,700 | Starts the app behind the fence: a Docker network with no gateway, a sidecar that sends every request from inside it, the helpers a run needs (a mail server, a test identity provider, a test model, a headless browser), every container read-only with every capability dropped (ADR-019, `prepared`), the install step for the app's packages (ADR-052), and the run's script (`run_after_cleanup`). Implements `Http` for the checks. Depends on `sv-check` today, the reverse of this layering (BACKLOG, 8 October, item 4). |
-| `sv-report` | 10,400 | From findings and credits to a status per requirement (`status_of`), the counts, the gaps, and the eight files a report is written as: `report.html`, `compliance.md`, `security.md`, `low-findings.md`, `findings.sarif`, `report.json`, `seen.json`, `sbom.cdx.json`. The one place a conclusion is drawn. |
+| `sv-report` | 10,400 | From findings and credits to a status per requirement (`status_of`), the counts, the gaps, and the eight files a report is written as: `report.html`, `compliance.md`, `security.md`, `low-findings.md`, `stackvet.sarif`, `report.json`, `seen.json`, `sbom.cdx.json`. The one place a conclusion is drawn. |
 | `sv-cli` | 24,600 | The `sv` binary and a library under it. The library (`lib.rs`) holds everything a run, a report, a plan, a brief, or a preflight does: the stages of a run (`static_scan`, then `assemble`, one function per stage of putting the report together), what they read (`Loaded`, `ReportOptions`), `report_folder`, the report folder's lock and seal, the exit codes, the bundle, and the MCP server (`mcp/`), which can reach nothing of the command line. The binary (`main.rs`) reads the arguments, runs the commands, and prints. |
 
 The rule of the layering: a crate below decides nothing a crate above would want to overrule. `sv-check` says what
@@ -47,9 +47,11 @@ it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a 
    settle their findings the same way (`static_scan::settle`), so they exit alike on the same folder (ADR-023, Later,
    8 October 2026).
 4. **Which requirements apply**: the manifest's claims resolved against what the scan saw (`sv_manifest::resolve`),
-   then the frameworks' applicability rules (`sv_frameworks`). A claim the code contradicts is reported as such.
+   then the frameworks' applicability rules (`sv_frameworks`). A claim the code contradicts is reported as such. Drawn in
+   [How `sv` decides what applies](#how-sv-decides-what-applies).
 5. **What else was asked for**, each opt-in and each saying in the report when it did not run: a local advisory
    database (`--advisories`), the language's own security tools (on unless `--no-tools`, ADR-111; ADR-032: never a program inside the app),
+   a CodeQL results file from the owner's own CI (`--codeql-results`, read only for the commit checked out: ADR-113),
    and the running app (`--run`): the fence, the helpers, the anonymous questions, the signed-in suites as two users
    and an admin, sign-in through a test provider, the AI feature through a test model, the app's own tests inside its
    container (ADR-050), and whether the app was still up at the end (ADR-021).
@@ -66,25 +68,87 @@ it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a 
    folder sealed with this computer's report key so the MCP server can tell `sv`'s report from one anything else wrote
    (ADR-034). The lock goes; the folder stays.
 
+## How `sv` decides what applies
+
+Every requirement of ASVS, AISVS, and the Secure by Design checklist lands in one of four bins for an app
+(`sv_frameworks::applicability::bucket`), from what `stackvet.toml` claims and what the code shows
+(`sv_manifest::resolve`). This is the part of `sv` a person most affects: every line of `stackvet.toml` they or their
+AI coding tool writes.
+
+```text
+ stackvet.toml says                        the code shows (signatures:
+ (true / false / left out)                 packages, frameworks, files)
+          │                                          │
+          └──────────────► resolve ◄─────────────────┘
+                              │   a yes from either side is a yes: the code can add, never remove
+                              │   left out stays unknown, even when the code found nothing
+                              │   a false the code contradicts is reported, and counts as yes
+                              ▼
+               each condition: yes / no / unknown
+
+ [app] audience ──┐
+ [data] categories┴──► the level: 2 if customers or the public use it, or it holds sensitive information,
+                        or the list of what it holds is missing; otherwise 1. Both answers are the AI
+                        coding tool's until you confirm them with sv review.
+
+ for each requirement, in this order:
+   above the level ......................................► ABOVE THE APP'S LEVEL
+   no rule ties it to a condition .......................► APPLIES
+   a condition that brings it in is yes .................► APPLIES
+   a condition that brings it in is unknown .............► NOT ASSESSED (the question that would settle it)
+   every condition that brings it in is no ..............► DOES NOT APPLY (with its reason)
+
+ A Secure by Design control takes the level of the ASVS requirement that asks the same thing
+ (data/sbd-asvs-crosswalk.json), or every level when nothing in ASVS does.
+```
+
+So a line left out of `stackvet.toml` costs nothing but a question in the report, while a wrong `false` switches
+whole sets of requirements off until the code shows otherwise: that is why the guide's prompt says to leave a line
+commented out rather than guess `false`.
+
 ## The nine statuses, strongest evidence first
 
 What a requirement that applies is called in a report (`crates/sv-report/src/lib.rs`, `Status`), decided by
 `status_of` from its findings and the tiers of its credits: a finding beats every credit, and otherwise the strongest
-tier there decides.
+tier there decides. This is the one drawing of them; the README, the guide, and the glossary link here. Who can grant
+each tier is the whole reason `sv review` exists, and why the AI coding tool's word ranks last.
 
-| Status | Means |
-|---|---|
-| needs attention | A check found something and named this requirement. |
-| checked | A check of `sv`'s own ran and was satisfied. One automated check, never a pass. |
-| checked in part | Every check behind it tried only part of what it asks (ADR-053). |
-| tested by the app's own tests | The app's tests name the requirement, in code, and passed (ADR-050). The tool wrote both the test and the command. |
-| documented by the owner | The owner answered its question in the security notes, recorded through `sv review`. A decision, not a reading of the code. |
-| checked by hand by the owner | The owner watched the app behave and recorded what they saw. |
-| attested by the owner | The owner answered `yes` to a design question. Asserting a property is not the property. |
-| stated by the AI coding tool | The tool answered, or nobody recorded that the owner did: the author grading its own work. |
-| not verified | Nothing produced evidence either way. The honest default, and the common one. |
+```text
+  strongest                                                    who can grant it
+ ┌──────────────────────────────────────┐
+ │ needs attention                      │  a check sv runs, its own or an outside tool's, finding a problem
+ │ checked                              │  a check of sv's own, satisfied
+ │ checked in part                      │  a check of sv's own that tried only part of what is asked
+ ├──────────────────────────────────────┤  ── nothing below this line is ever checked, or counts toward a threat
+ │ tested by the app's own tests        │  the app's tests, run when sv starts the app
+ │ documented by the owner              │  the owner, at their own terminal, through sv review
+ │ checked by hand by the owner         │  the owner, at their own terminal, through sv review
+ │ attested by the owner                │  the owner, at their own terminal, through sv review
+ │ stated by the AI coding tool         │  the AI coding tool, or an owner's entry never recorded through sv review
+ │ not verified                         │  nobody: nothing produced evidence either way
+ └──────────────────────────────────────┘
+  weakest
 
-Nothing below *checked* ever becomes *checked*, settles a threat, or leaves the list of tests to write.
+  Not a tier: "does not apply" (left out of the app's requirements) and "not assessed" (a check that could not run,
+  or a question nobody answered); neither is a pass, and neither is a failure.
+```
+
+| Status | Means | Who can grant it |
+|---|---|---|
+| needs attention | A check found something and named this requirement. | A check `sv` runs, its own or an outside tool's |
+| checked | A check of `sv`'s own ran and was satisfied. One automated check, never a pass. | A check of `sv`'s own |
+| checked in part | Every check behind it tried only part of what it asks (ADR-053). | A check of `sv`'s own |
+| tested by the app's own tests | The app's tests name the requirement, in code, and passed (ADR-050). The tool wrote both the test and the command. | The app's tests, run when `sv` starts the app (`sv run`, `sv report --run`) |
+| documented by the owner | The owner answered its question in the security notes, recorded through `sv review`. A decision, not a reading of the code. | The owner, through `sv review` |
+| checked by hand by the owner | The owner watched the app behave and recorded what they saw. | The owner, through `sv review` |
+| attested by the owner | The owner answered `yes` to a design question. Asserting a property is not the property. | The owner, through `sv review` |
+| stated by the AI coding tool | The tool answered, or nobody recorded that the owner did: the author grading its own work. | The AI coding tool |
+| not verified | Nothing produced evidence either way. The honest default, and the common one. | Nobody |
+
+Nothing below *checked in part* is ever *checked*, and none of it counts toward a threat (`threats.rs`). An answer of
+the tool's that the owner confirmed through `sv review` keeps its tier and says so ("confirmed through sv review").
+*Attested*, *checked by hand*, *stated*, and *not verified* stay on the list of tests to write, unless no test could
+show the requirement or a test already names it: a person's word never retires a test (`lib.rs`, `tests_to_write`).
 
 ## The five kinds of rule, and where a new one goes
 
@@ -107,11 +171,26 @@ its rules cites, and nothing else.
 
 ## The exit codes
 
-`sv check`, `sv report`, `sv audit`, and `sv run` (`crates/sv-cli/src/exit.rs`): 0, finished; 1, something needs a person (a
-known vulnerability for `sv audit`; a finding at or above the bar with `--fail-on attention`); 2, not assessed (a
-check could not run, or no file of the app was read; more with `--fail-on not-assessed`); 3, `sv` itself failed. By
-default findings alone do not fail a run (ADR-029): an AI coding tool that reads a failure rewrites the code until
-it stops, so the bar is the person's to set.
+This is the one table of them; the README and the guide link here (`crates/sv-cli/src/exit.rs` decides them,
+`crates/sv-cli/src/probe_verdict.rs` for `sv probe`).
+
+| Command | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| `sv check`, `sv report` | Finished | Only with `--fail-on attention`: a finding of low severity or worse, leaving out those marked only for information (`attention:high` for high and critical only) | A check could not run (a file that could not be read or parsed, a language nothing here reads, a code rule that would not compile), no file of the app was read, or, for `sv report --run`, the app could not be started; with `--fail-on not-assessed`, also a symbolic link not followed, an outside tool that did not run, or an `--advisories` comparison that did not cover the app | `sv` itself failed: a folder that is not there, an option it does not know, a `stackvet.toml` that is there and cannot be read (for `sv report`, none at all), or a fault in `sv`; there is no result |
+| `sv audit` | Every package was compared, and none matched a known vulnerability | A package matched a known vulnerability | The comparison did not cover the whole app: no database, an ecosystem the database holds nothing about, or a list of packages `sv` could not complete | As above |
+| `sv run` | The app started and answered | Never | The app could not be started, or never answered, so nothing about it running was checked | As above |
+| `sv probe` | The address answered | Never | The address was not reached, so nothing about it was checked | As above |
+| Every other command | Finished | Never | Never | Its own failure |
+
+- `--fail-on any` is both `attention` and `not-assessed`. 1 outranks 2, and 3 is never combined with anything, since a
+  run that failed has no result to rank. Ctrl-C keeps 130, the usual code for it.
+- `--baseline <an older report folder>`: `--fail-on attention` then exits 1 only for a finding that report did not
+  hold. Every finding is still listed and counted, and those it held are marked; a baseline `sv` cannot read, or one
+  for an app of another name, stops the run (3).
+- What a static run cannot see by its nature, such as requirements nothing verified or a check that needs a Dockerfile
+  the app lacks, does not count toward 2, or every run would exit 2 and the status would say nothing.
+- By default findings alone do not fail a run (ADR-029): an AI coding tool that reads a failure rewrites the code until
+  it stops, so the bar is the person's to set.
 
 ## The MCP server (`crates/sv-cli/src/mcp/`)
 
@@ -203,7 +282,9 @@ vulnerability in `sv` (`SECURITY.md`).
 | What the AI coding tool is told | `crates/sv-cli/src/mcp/catalog.rs` (tools and prompts), `check_text.rs` |
 | What a person can set aside or confirm | `crates/sv-check/src/review.rs`, `confirm.rs`, `seal.rs`; `sv review` in `crates/sv-cli/src/review.rs` |
 | A data file | `data/README.md` says what each is and what reads it; `sv_frameworks::data::file` finds it |
+| A helper two scripts in `tools/` need | `tools/_shared.py` (`write_text`, `slug`); a script imports it after putting its own folder on `sys.path`, since CI runs the tools with `python3 -I` (`crates/sv-cli/tests/tools_shared.rs`) |
 | What is still to do | `docs/backlog/`, one file per item with its status on its third line; `docs/BACKLOG.md` holds the rules and the roadmap. Claim an item with `python3 tools/backlog.py claim` before starting it |
+| A document, and whether it is live or a dated reading | `docs/README.md` lists every document in `docs/`; the dated readings are in `docs/research/`, and a document added there or in `docs/` needs a row (`crates/sv-cli/tests/docs_index.rs`) |
 | Who is building what, while the coordination trial runs | `docs/coordination/board.md`, written only by the orchestrating session with `tools/coordination.py`; the role is `docs/COORDINATION.md` |
 
 `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings`, and `cargo test --workspace` are what CI runs;

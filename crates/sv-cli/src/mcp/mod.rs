@@ -77,6 +77,8 @@ mod report_writing;
 mod resource_fence_tests;
 mod resources;
 #[cfg(test)]
+mod resources_seal_bytes_tests;
+#[cfg(test)]
 mod since_all_gone_tests;
 #[cfg(test)]
 mod since_paged_tests;
@@ -209,7 +211,7 @@ fn terminal_command(
     if in_container {
         return format!(
             "{} in a terminal, with `sv` installed on the computer itself rather than this \
-             container, which cannot start the app (docs/GETTING-STARTED.md says how to install it)",
+             container, which cannot start the app (docs/INSTALL.md says how to install it)",
             command("sv")
         );
     }

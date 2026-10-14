@@ -4,7 +4,11 @@
 
 use super::*;
 
-fn run(dir: &Path, args: &[&str]) {
+pub(super) fn rules() -> &'static crate::secrets::SecretRules {
+    crate::secrets::SecretRules::shared().expect("the rules sv ships")
+}
+
+pub(super) fn run(dir: &Path, args: &[&str]) {
     let ok = std::process::Command::new("git")
         .arg("-C")
         .arg(dir)
@@ -22,7 +26,7 @@ fn run(dir: &Path, args: &[&str]) {
     assert!(ok, "git {args:?} failed in the test's setup");
 }
 
-fn commit(dir: &Path, file: &str, message: &str) {
+pub(super) fn commit(dir: &Path, file: &str, message: &str) {
     std::fs::write(dir.join(file), format!("{message}\n")).unwrap();
     run(dir, &["add", file]);
     run(dir, &["commit", "-qm", message]);
@@ -40,7 +44,7 @@ fn repo(name: &str, ai_commit: bool) -> std::path::PathBuf {
     dir
 }
 
-fn finding_of(outcome: Outcome) -> Finding {
+pub(super) fn finding_of(outcome: Outcome) -> Finding {
     match outcome {
         Outcome::Failed(f) => *f,
         _ => panic!("the note is a finding when the history is read"),
@@ -58,7 +62,7 @@ fn an_ai_commit_outside_a_merge_is_a_info_note_that_names_it() {
         return;
     }
     let dir = repo("named", true);
-    let f = finding_of(ai_commits_off_merge(&dir));
+    let f = finding_of(ai_commits_off_merge(&dir, rules()));
     assert_eq!(f.rule_id, "config.ai-commits-off-merge");
     assert_eq!(f.severity, Severity::Info, "a note, not a failure");
     assert!(
@@ -90,14 +94,14 @@ fn a_branch_with_no_ai_commit_is_a_check_that_found_nothing_not_a_finding() {
     let dir = repo("clean", false);
     // None outside a merge is good news, so it must not reach the report as a thing to fix (ADR-092, Later), and it
     // names no requirement, so it credits none.
-    match ai_commits_off_merge(&dir) {
+    match ai_commits_off_merge(&dir, rules()) {
         Outcome::Passed(ids) => assert!(ids.is_empty(), "it credits no requirement: {ids:?}"),
         Outcome::Failed(f) => panic!("good news reported as a finding: {}", f.title),
         Outcome::NotAssessed(why) => panic!("the test's repository could not be read: {why}"),
     }
     // The setup: the same history with an AI commit outside a merge is found, so the check really looked.
     let found = repo("clean-but-one", true);
-    let f = finding_of(ai_commits_off_merge(&found));
+    let f = finding_of(ai_commits_off_merge(&found, rules()));
     assert_eq!(f.severity, Severity::Info);
 }
 
@@ -106,7 +110,7 @@ fn a_folder_that_is_no_repository_is_not_assessed() {
     let dir = std::env::temp_dir().join(format!("sv-config-ai-plain-{}", std::process::id()));
     std::fs::remove_dir_all(&dir).ok();
     std::fs::create_dir_all(&dir).unwrap();
-    match ai_commits_off_merge(&dir) {
+    match ai_commits_off_merge(&dir, rules()) {
         Outcome::NotAssessed(why) => assert!(why.contains("not a git repository")),
         _ => panic!("no repository is not assessed, and is not a note"),
     }

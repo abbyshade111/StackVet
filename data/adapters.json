@@ -3702,11 +3702,12 @@
         },
         "go.lang.security.audit.crypto.tls.tls-with-insecure-cipher": {
           "what": "TLS cipher suites that are not recommended",
-          "requirements": [
-            "V12.1.2"
-          ],
+          "requirements": [],
           "languages": [
             "go"
+          ],
+          "findings_against": [
+            "V12.1.2"
           ]
         },
         "go.lang.security.audit.crypto.use_of_weak_crypto.use-of-DES": {
@@ -8344,11 +8345,12 @@
         },
         "python.lang.security.audit.insecure-transport.ssl.no-set-ciphers.no-set-ciphers": {
           "what": "TLS cipher suites that are not recommended",
-          "requirements": [
-            "V12.1.2"
-          ],
+          "requirements": [],
           "languages": [
             "python"
+          ],
+          "findings_against": [
+            "V12.1.2"
           ]
         },
         "python.lang.security.audit.insecure-transport.urllib.insecure-openerdirector-open-ftp.insecure-openerdirector-open-ftp": {

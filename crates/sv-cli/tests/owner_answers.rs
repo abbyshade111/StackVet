@@ -6,13 +6,7 @@ use std::process::Command;
 use sv_check::advisories::Day;
 
 /// The status column of the requirement's row in compliance.md.
-fn status_of<'a>(compliance: &'a str, id: &str) -> &'a str {
-    let row = compliance
-        .lines()
-        .find(|line| line.starts_with(&format!("| {id} |")))
-        .unwrap_or_else(|| panic!("no row for {id} in the report:\n{compliance}"));
-    row.split('|').nth(2).unwrap_or("").trim()
-}
+use sv_check::test_support::status_of;
 
 #[test]
 fn an_owners_answer_is_theirs_only_as_recorded_and_not_changed_since() {

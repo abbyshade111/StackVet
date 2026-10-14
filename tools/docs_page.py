@@ -26,14 +26,10 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared import write_text  # noqa: E402  (tools/_shared.py)
 
-
-def write_text(path, text):
-    """Writes `text` as UTF-8 with Unix line endings on every system. Path.write_text uses the
-    system's own encoding and, on Windows, CRLF, which would make a generated file differ from the
-    one committed (backlog 0120)."""
-    with open(path, "w", encoding="utf-8", newline="\n") as out:
-        out.write(text)
 
 ROOT = Path(__file__).resolve().parent.parent
 MARK = ".stackvet-docs"
@@ -43,7 +39,8 @@ LEFT_OUT = ("docs/paper/", "examples/", "target/", "crates/", "v1/")
 
 # The sections the index lists, in order: (title, test on the document's path).
 SECTIONS = [
-    ("Start here", lambda p: p in ("README.md", "docs/GETTING-STARTED.md")),
+    ("Start here", lambda p: p in ("README.md", "docs/GETTING-STARTED.md", "docs/INSTALL.md", "docs/REVIEW.md",
+                                   "docs/ALL-YOUR-APPS.md", "docs/KNOWN-VULNERABILITIES.md")),
     ("Decision records", lambda p: p.startswith("docs/adr/")),
     ("Prompts", lambda p: p.startswith("docs/prompts/") or p == "docs/PROMPTS.md"),
     # The backlog, one item per file (docs/adr/ADR-061.md), and the design record, one entry per file (ADR-060),

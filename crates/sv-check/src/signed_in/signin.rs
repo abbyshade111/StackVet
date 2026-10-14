@@ -1,3 +1,4 @@
+use super::limit::{PastTheLimit, past_the_limit};
 use super::*;
 
 /// Accounts somebody might leave in place, tried with their name as the password and with
@@ -277,7 +278,7 @@ pub(super) fn brute_force_check(
         out.not_assessed.push((
             "V6.3.1".to_owned(),
             "Whether the app resists password guessing: say how many wrong passwords in a row it \
-             should allow, as `failed-sign-ins` under [policy] in stackvet.toml, and this will \
+             should allow, as `failed-sign-ins` under `[policy]` in stackvet.toml, and this will \
              make two more attempts than that and watch what the app does."
                 .to_owned(),
         ));
@@ -296,8 +297,10 @@ pub(super) fn brute_force_check(
     }
     // A cap, so a large number cannot turn one check into thousands of requests against somebody's
     // app. Above it the check says what it did rather than pretending to have tested the policy.
+    // Compared without adding, so the largest number a u32 holds cannot wrap past the cap in a
+    // release build, where overflow is not checked (backlog 0465).
     const MOST_ATTEMPTS: u32 = 26;
-    if allowed + 2 > MOST_ATTEMPTS {
+    if allowed > MOST_ATTEMPTS - 2 {
         out.not_assessed.push((
             "V6.3.1".to_owned(),
             format!(
@@ -373,95 +376,71 @@ pub(super) fn brute_force_check(
         }
     }
 
-    let Some(&(first_status, first_ms)) = answers.first() else {
-        return;
-    };
-    // The app was already pushing back before this check made its first attempt, so whatever it is
-    // refusing, it is not refusing because of the number the owner stated. Found by session
-    // securevibe-e9 reviewing this after it merged: the test below is the witness. Reachable
-    // exactly where this check is most careful — it runs last *because* it provokes refusals, and
-    // by then the suite has made dozens of sign-in attempts from one address, so a limiter counting
-    // by address is already tripped. Crediting here would be a false *checked* on no evidence.
-    if matches!(first_status, 0 | 423 | 429) {
-        out.not_assessed.push((
-            "V6.3.1".to_owned(),
-            format!(
-                "The app was already refusing sign-in attempts ({first_status}) before this check \
-                 made its first one, so nothing here can say whether it pushes back at {allowed}. \
-                 Something earlier in the run has most likely tripped a limit that counts by \
-                 address rather than by account."
-            ),
-        ));
-        return;
-    }
-    // The first attempt past the limit, whose answer says whether the app pushed back.
-    let last = answers[allowed as usize];
-    // The second attempt past the limit is read too. An app that answers it differently, having
-    // answered the first past the limit as it answered the first of all, let one more through than
-    // was stated; saying it "answered the same every time" would be untrue (the review of 6 October,
-    // item 13).
-    let next = answers[allowed as usize + 1].0;
-    // Only from real answers: a crash (5xx) or no answer is not the app pushing back, and must not
-    // read as a status that changed, a refusal, or a delay (backlog 0280). Past the limit, either
-    // one makes the whole question unanswered rather than credited.
-    let real = |status: u16| status != 0 && status < 500;
-    if !real(last.0) || !real(next) {
-        out.steps.push(format!(
-            "made {attempts} wrong sign-in attempts; the app answered {first_status} at first, and \
-             {} and {next} past the limit",
-            last.0
-        ));
-        out.not_assessed.push((
-            "V6.3.1".to_owned(),
-            format!(
-                "Whether the app resists password guessing: past the limit of {allowed} it \
-                 answered {} and {next}, where 0 is no answer at all and 500 or above is the app \
-                 failing. A crash or silence is not a limit, so nothing here says whether it \
-                 pushes back.",
-                last.0
-            ),
-        ));
-        return;
-    }
-    // Pushing back is any of: a different status past the limit than the first, a status that
-    // says refused outright, or both attempts past the limit markedly slower than any before it.
-    let status_changed = last.0 != first_status;
-    let refused = matches!(last.0, 423 | 429) || (last.0 >= 400 && first_status < 400);
-    // One more let through is read only from real answers, every one up to the limit the same.
-    let alike = answers[..=allowed as usize]
-        .iter()
-        .all(|a| a.0 == first_status);
-    if !(status_changed || refused)
-        && alike
-        && real(first_status)
-        && real(next)
-        && next != first_status
-    {
-        out.steps.push(format!(
-            "made {attempts} wrong sign-in attempts; the app answered {first_status} to the first \
-             {}, and {next} only to the last",
-            allowed + 1
-        ));
-        out.findings.push(finding_on(
-            (0..attempts).map(|n| format!("guess-{n}")).collect(),
-            &NO_BRUTE_FORCE_LIMIT,
-            "One more wrong password than stated is let through",
-            Severity::Medium,
-            format!(
-                "stackvet.toml says the app should allow {allowed} wrong passwords in a row. \
-                 Asked {attempts} times in a row with a wrong password, the app answered \
-                 {first_status} to the first {}, the one past the limit included, and pushed back \
-                 ({next}) only at the attempt after it.",
+    let reading = match past_the_limit(&answers, allowed, &pages[allowed as usize..]) {
+        // The app was already pushing back before this check made its first attempt, so whatever it
+        // is refusing, it is not refusing because of the number the owner stated. Found by session
+        // securevibe-e9 reviewing this after it merged: the test below is the witness. Reachable
+        // exactly where this check is most careful — it runs last *because* it provokes refusals,
+        // and by then the suite has made dozens of sign-in attempts from one address, so a limiter
+        // counting by address is already tripped. Crediting here would be a false *checked* on no
+        // evidence.
+        PastTheLimit::AlreadyRefusing { first } => {
+            out.not_assessed.push((
+                "V6.3.1".to_owned(),
+                format!(
+                    "The app was already refusing sign-in attempts ({first}) before this check \
+                     made its first one, so nothing here can say whether it pushes back at {allowed}. \
+                     Something earlier in the run has most likely tripped a limit that counts by \
+                     address rather than by account."
+                ),
+            ));
+            return;
+        }
+        // Past the limit, a crash or silence makes the whole question unanswered rather than
+        // credited (backlog 0280).
+        PastTheLimit::NotReal { first, last, next } => {
+            out.steps.push(format!(
+                "made {attempts} wrong sign-in attempts; the app answered {first} at first, and \
+                 {last} and {next} past the limit"
+            ));
+            out.not_assessed.push((
+                "V6.3.1".to_owned(),
+                format!(
+                    "Whether the app resists password guessing: past the limit of {allowed} it \
+                     answered {last} and {next}, where 0 is no answer at all and 500 or above is the \
+                     app failing. A crash or silence is not a limit, so nothing here says whether it \
+                     pushes back."
+                ),
+            ));
+            return;
+        }
+        // Saying it "answered the same every time" would be untrue (the review of 6 October, item 13).
+        PastTheLimit::OneMoreLetThrough { first, next } => {
+            out.steps.push(format!(
+                "made {attempts} wrong sign-in attempts; the app answered {first} to the first \
+                 {}, and {next} only to the last",
                 allowed + 1
-            ),
-        ));
-        return;
-    }
-    let times: Vec<u128> = answers.iter().map(|a| a.1).collect();
-    let (within, past) = times.split_at(allowed as usize);
-    let slowing = slowing(within, past, &pages[allowed as usize..]);
-    if !(status_changed || refused)
-        && let Slowing::Unclear(why) = &slowing
+            ));
+            out.findings.push(finding_on(
+                (0..attempts).map(|n| format!("guess-{n}")).collect(),
+                &NO_BRUTE_FORCE_LIMIT,
+                "One more wrong password than stated is let through",
+                Severity::Medium,
+                format!(
+                    "stackvet.toml says the app should allow {allowed} wrong passwords in a row. \
+                     Asked {attempts} times in a row with a wrong password, the app answered \
+                     {first} to the first {}, the one past the limit included, and pushed back \
+                     ({next}) only at the attempt after it.",
+                    allowed + 1
+                ),
+            ));
+            return;
+        }
+        PastTheLimit::Read(reading) => reading,
+    };
+    let first_status = reading.first;
+    if !reading.answered_differently()
+        && let Slowing::Unclear(why) = &reading.slowing
     {
         out.steps.push(format!(
             "made {attempts} wrong sign-in attempts; the app answered {first_status} to each, \
@@ -476,14 +455,16 @@ pub(super) fn brute_force_check(
         ));
         return;
     }
-    let slowed = slowing == Slowing::Slowed;
-    let pushed_back = status_changed || refused || slowed;
-    let quickest = within.iter().copied().min().unwrap_or(first_ms);
+    let pushed_back = reading.answered_differently() || reading.slowing == Slowing::Slowed;
+    let (past, quickest) = (reading.past, reading.quickest);
 
-    let how = if refused {
-        format!("refused it outright ({})", last.0)
-    } else if status_changed {
-        format!("answered {} where the first got {first_status}", last.0)
+    let how = if reading.refused {
+        format!("refused it outright ({})", reading.last)
+    } else if reading.status_changed {
+        format!(
+            "answered {} where the first got {first_status}",
+            reading.last
+        )
     } else {
         format!(
             "took {}ms and {}ms over the two attempts past the limit, against {quickest}ms at \
@@ -508,7 +489,7 @@ pub(super) fn brute_force_check(
 
     // V15.3.4, only where the app pushed back with a different answer: a delay is too noisy to
     // tell apart from a delay the next attempt happens to get.
-    if refused || status_changed {
+    if reading.answered_differently() {
         forwarded_check(http, login, &wrong, first_status, out);
     }
 
@@ -522,6 +503,22 @@ pub(super) fn brute_force_check(
                  because every attempt landed within a few seconds"
             ),
         ).in_part());
+    } else if !real_account {
+        // A name no account has shows only a limit that counts by address. An app that counts wrong
+        // passwords for each real account, a sound design, never locks a name that has none, so
+        // answering it alike every time says nothing about the limit stackvet.toml states
+        // (backlog 0384, from the second loop trial).
+        out.not_assessed.push((
+            "V6.3.1".to_owned(),
+            format!(
+                "Whether the app resists password guessing: with no `signup` in stackvet.toml, \
+                 this check tried {attempts} wrong passwords against a user name no account has, \
+                 so as not to lock out the accounts the other checks use, and the app answered \
+                 {first_status} every time. That shows the app has no limit by address; it cannot \
+                 show whether the app limits wrong passwords on a real account, which is the usual \
+                 way. Add a `signup` section so this check can make an account of its own to try."
+            ),
+        ));
     } else {
         out.findings.push(finding_on(
             (0..attempts).map(|n| format!("guess-{n}")).collect(),
@@ -711,7 +708,7 @@ pub(super) fn sign_out_on_get_check(
             SIGN_OUT_ON_GET.requirement_ids.join(", "),
             if users.logout.is_none() {
                 "Whether a plain link signs the user out: stackvet.toml sets no `logout` under \
-                 [stack.run.users]."
+                 `[stack.run.users]`."
             } else {
                 "Whether a plain link signs the user out: no private page opened for a signed-in \
                  user, so a session ended by it could not be told from one that never worked."
@@ -851,7 +848,7 @@ pub(super) fn password_in_url_check(
             PASSWORD_IN_URL.requirement_ids.join(", "),
             if users.login.is_none() {
                 "Whether a password in the address signs the user in: stackvet.toml sets no \
-                 `login` under [stack.run.users]."
+                 `login` under `[stack.run.users]`."
             } else {
                 "Whether a password in the address signs the user in: no private page opened for \
                  a signed-in user, so a sign-in that worked could not be told from one that did \
@@ -2031,4 +2028,8 @@ mod tests {
 }
 
 #[cfg(test)]
+mod largest_number_tests;
+#[cfg(test)]
 mod log_pages_tests;
+#[cfg(test)]
+mod made_up_name_tests;

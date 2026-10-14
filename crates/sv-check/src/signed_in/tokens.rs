@@ -58,10 +58,11 @@ impl Jwt {
         if parts.next().is_some() || signature.is_empty() {
             return None;
         }
-        let object = |part: &str| match serde_json::from_slice(&unbase64(part)?) {
-            Ok(serde_json::Value::Object(map)) => Some(map),
-            _ => None,
-        };
+        let object =
+            |part: &str| match serde_json::from_slice(&crate::encoding::read_token_part(part)?) {
+                Ok(serde_json::Value::Object(map)) => Some(map),
+                _ => None,
+            };
         let header = object(header)?;
         header.get("alg")?.as_str()?;
         Some(Jwt {
@@ -101,32 +102,7 @@ impl Jwt {
 
 /// One part of a token, written back.
 fn part(map: &serde_json::Map<String, serde_json::Value>) -> String {
-    crate::browser::base64(&serde_json::to_vec(map).unwrap_or_default(), true)
-}
-
-/// Base64 for web addresses, without padding, read back; `None` for anything else.
-pub(super) fn unbase64(text: &str) -> Option<Vec<u8>> {
-    let text = text.trim_end_matches('=');
-    let mut bits: u32 = 0;
-    let mut held = 0;
-    let mut out = Vec::new();
-    for c in text.bytes() {
-        let value = match c {
-            b'A'..=b'Z' => c - b'A',
-            b'a'..=b'z' => c - b'a' + 26,
-            b'0'..=b'9' => c - b'0' + 52,
-            b'-' => 62,
-            b'_' => 63,
-            _ => return None,
-        };
-        bits = (bits << 6) | u32::from(value);
-        held += 6;
-        if held >= 8 {
-            held -= 8;
-            out.push((bits >> held) as u8);
-        }
-    }
-    Some(out)
+    crate::encoding::token_part(&serde_json::to_vec(map).unwrap_or_default())
 }
 
 /// The control: whether the real token, carried alone, opens `confirm`. Says why not when it
@@ -335,8 +311,10 @@ fn placeholder_secret_check(jwt: &Jwt, out: &mut Outcome) {
     if !matches!(alg, "HS256" | "HS384" | "HS512") {
         return;
     }
-    let (Some((signed, _)), Some(signature)) = (jwt.raw.rsplit_once('.'), unbase64(&jwt.signature))
-    else {
+    let (Some((signed, _)), Some(signature)) = (
+        jwt.raw.rsplit_once('.'),
+        crate::encoding::read_token_part(&jwt.signature),
+    ) else {
         return;
     };
     let sign = |secret: &str| -> Option<Vec<u8>> {
@@ -1079,7 +1057,7 @@ mod tests {
 
     #[test]
     fn a_token_is_read_only_when_it_has_the_shape_of_one() {
-        let part = |text: &str| crate::browser::base64(text.as_bytes(), true);
+        let part = |text: &str| crate::encoding::token_part(text.as_bytes());
         let (h, p) = (part(r#"{"alg":"HS256"}"#), part(r#"{"sub":"a"}"#));
         assert!(Jwt::read(&format!("{h}.{p}.c2ln"), Carried::Bearer).is_some());
         for not_one in [
@@ -1094,17 +1072,12 @@ mod tests {
         ] {
             assert!(Jwt::read(&not_one, Carried::Bearer).is_none(), "{not_one}");
         }
-        assert_eq!(
-            unbase64(&part("any bytes at all?")).unwrap(),
-            b"any bytes at all?"
-        );
-        assert_eq!(unbase64("YQ==").unwrap(), b"a");
     }
 
     #[test]
     fn an_expiry_is_read_whole_or_with_a_fraction() {
         // RFC 7519 lets the time be a number with a fraction, and some libraries write one.
-        let part = |text: &str| crate::browser::base64(text.as_bytes(), true);
+        let part = |text: &str| crate::encoding::token_part(text.as_bytes());
         let h = part(r#"{"alg":"HS256"}"#);
         let expiry = |claims: &str| {
             Jwt::read(&format!("{h}.{}.c2ln", part(claims)), Carried::Bearer)
@@ -1361,9 +1334,9 @@ mod tests {
     fn each_shared_secret_signing_method_is_checked_and_a_key_pair_is_left_alone() {
         use hmac::{Hmac, KeyInit, Mac};
         let secret = "sec".to_owned() + "ret";
-        let payload = crate::browser::base64(br#"{"sub":"a@example.com"}"#, true);
+        let payload = crate::encoding::token_part(br#"{"sub":"a@example.com"}"#);
         let token = |alg: &str| -> String {
-            let header = crate::browser::base64(format!(r#"{{"alg":"{alg}"}}"#).as_bytes(), true);
+            let header = crate::encoding::token_part(format!(r#"{{"alg":"{alg}"}}"#).as_bytes());
             let signed = format!("{header}.{payload}");
             let mac = match alg {
                 "HS384" => {
@@ -1382,7 +1355,7 @@ mod tests {
                     m.finalize().into_bytes().to_vec()
                 }
             };
-            format!("{signed}.{}", crate::browser::base64(&mac, true))
+            format!("{signed}.{}", crate::encoding::token_part(&mac))
         };
         for alg in ["HS256", "HS384", "HS512"] {
             let jwt = Jwt::read(&token(alg), Carried::Bearer).expect("a token");
@@ -1396,8 +1369,8 @@ mod tests {
         }
         // The same signature under a key-pair method has no shared secret to guess.
         let rs = token("HS256").replacen(
-            &crate::browser::base64(br#"{"alg":"HS256"}"#, true),
-            &crate::browser::base64(br#"{"alg":"RS256"}"#, true),
+            &crate::encoding::token_part(br#"{"alg":"HS256"}"#),
+            &crate::encoding::token_part(br#"{"alg":"RS256"}"#),
             1,
         );
         let jwt = Jwt::read(&rs, Carried::Bearer).expect("a token");

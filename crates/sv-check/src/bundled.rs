@@ -63,8 +63,8 @@ static KNOWN: LazyLock<Vec<(&'static str, Regex)>> = LazyLock::new(|| {
 /// writes, or from the comment the file opens with (`library_banner`). `None` for anything else,
 /// which is what an app's own code is.
 pub fn library_in(text: &str) -> Option<String> {
-    let head = &text[..floor_char_boundary(text, READ)];
-    let start = &text[..floor_char_boundary(text, KNOWN_WITHIN)];
+    let head = &text[..text.floor_char_boundary(READ)];
+    let start = &text[..text.floor_char_boundary(KNOWN_WITHIN)];
     for (name, pattern) in KNOWN.iter() {
         if let Some(found) = pattern.captures(start) {
             return Some(match found.get(1) {
@@ -115,15 +115,6 @@ fn library_banner(text: &str) -> Option<String> {
     None
 }
 
-/// The largest index no greater than `at` that falls between two characters of `text`.
-fn floor_char_boundary(text: &str, at: usize) -> usize {
-    let mut at = at.min(text.len());
-    while !text.is_char_boundary(at) {
-        at -= 1;
-    }
-    at
-}
-
 /// Whether a file is one a library could be copied in as: a script or a style sheet.
 fn could_be_a_copy(relative: &str) -> bool {
     let name = relative
@@ -157,6 +148,10 @@ pub fn mark_bundled_libraries(app_dir: &Path, findings: &mut [Finding]) {
         f.bundled_library.clone_from(library);
     }
 }
+
+#[cfg(test)]
+#[path = "bundled_boundary_tests.rs"]
+mod boundary_tests;
 
 #[cfg(test)]
 mod tests {

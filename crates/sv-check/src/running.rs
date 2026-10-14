@@ -811,12 +811,7 @@ mod tests {
         assert!(credit_evidence(&stopped, STAYED_UP).is_empty());
     }
 
-    fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("sv-running-{name}-{}", std::process::id()));
-        fs::remove_dir_all(&dir).ok();
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
+    use crate::test_support::scratch;
 
     #[test]
     fn private_files_are_chosen_from_the_folder_and_found_only_by_their_own_contents() {

@@ -31,29 +31,18 @@ import re
 import sys
 import tempfile
 from pathlib import Path
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared import slug, write_text  # noqa: E402  (tools/_shared.py)
 
 
-def write_text(path, text):
-    """Writes `text` as UTF-8 with Unix line endings on every system. Path.write_text uses the
-    system's own encoding and, on Windows, CRLF, which would make a generated file differ from the
-    one committed (backlog 0120)."""
-    with open(path, "w", encoding="utf-8", newline="\n") as out:
-        out.write(text)
+def _named(title):
+    """`_shared.slug`, or "entry" for a title with no letters or digits."""
+    return slug(title) or "entry"
+
 
 ROOT = Path(__file__).resolve().parent.parent
 NAME = re.compile(r"^(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
-
-
-def slug(title):
-    """A title made into a file name: lowercase letters and digits, joined by hyphens, whole words up to 60
-    characters (the first word cut at 60 when it alone is longer)."""
-    words = [w for w in re.split(r"[^a-z0-9]+", title.lower()) if w]
-    name = ""
-    for word in words:
-        if name and len(name) + 1 + len(word) > 60:
-            break
-        name = f"{name}-{word}" if name else word[:60]
-    return name or "entry"
 
 
 def sections(text):
@@ -91,7 +80,7 @@ def text_of(title, body):
 
 
 def write(folder, number, title, body):
-    path = folder / f"{number:04d}-{slug(title)}.md"
+    path = folder / f"{number:04d}-{_named(title)}.md"
     write_text(path, text_of(title, body))
     return path
 
@@ -169,9 +158,9 @@ def self_test():
         assert any("notes.md is not named" in p for p in found), found
         assert any("0004-untitled.md does not open" in p for p in found), found
         assert any("share the title" in p for p in found), found
-        assert slug("A sign-in token signed with a placeholder secret (8 October 2026)") == \
+        assert _named("A sign-in token signed with a placeholder secret (8 October 2026)") == \
             "a-sign-in-token-signed-with-a-placeholder-secret-8-october"
-        assert slug("`sv` — ünïcode!") == "sv-n-code"
+        assert _named("`sv` — ünïcode!") == "sv-n-code"
     print("design_entry self-test: ok")
 
 

@@ -1,6 +1,6 @@
 # A suppression comment in the app's code shows in the report as a suppressed finding
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -31,3 +31,14 @@ line, so a person sees that something tried to silence a scanner even when Stack
 adding them is worth knowing about); and whether any tool StackVet runs (CodeQL's `lgtm`, Opengrep) hides a suppressed
 result in a way not yet covered. Check each before building, with a fixture.
 
+
+**Checked 14 October 2026 (session documentation), waiting on the owner.** Of the tools `sv` runs, Bandit (run with
+`--ignore-nosec`), gosec (`-track-suppressions`), Semgrep (`// nosemgrep`), and Brakeman (`config/brakeman.ignore`) each
+report a suppressed result, and `suppressed_by` shows it marked as such; `crates/sv-check/tests/suppressed.rs` holds each
+against a real report kept in `crates/sv-check/tests/fixtures/suppressed/`. Opengrep is not among the tools `sv` runs
+(`data/adapters.json`). CodeQL was not checked: no `codeql` is installed in the session's container, and its
+security-extended suites, as `sv` runs them, are not known here to include the alert-suppression query that reads
+`lgtm` and `codeql[...]` comments; a real run over a fixture is still owed. Whether the report lists the suppression
+comments themselves is the owner's question, in `docs/coordination/waiting/0400.md`.
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): yes: list every comment that tells a scanner to look away (`# nosec`, `// nosemgrep`, `#nosec`, `lgtm`, `codeql[...]`, and the rest), on a line of its own in a section of their own, counting against no requirement and crediting nothing, as test code's findings are shown apart; the finding a comment tried to hide stays as it is. A Later line on the record governing the report's sections (ADR-110) or the suppressed-findings decision, whichever governs.

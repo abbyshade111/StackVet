@@ -17,6 +17,7 @@ pub mod browser;
 pub mod browser_storage;
 pub mod bundled;
 pub mod cert_checks;
+pub mod ci_codeql;
 pub mod client_tech;
 pub mod coding_rules;
 pub mod config;
@@ -26,6 +27,7 @@ pub mod cvss4;
 mod cvss4_tables;
 pub mod decisions;
 pub mod design;
+pub mod encoding;
 pub mod fetch;
 pub mod finding;
 pub mod git;
@@ -37,6 +39,7 @@ pub mod junit;
 pub mod launch;
 pub mod level_hints;
 pub mod live_tls;
+pub mod locate;
 pub mod logs;
 pub mod manifest_lock;
 pub mod mcp_server;
@@ -54,12 +57,14 @@ pub mod sbom;
 pub mod script;
 pub mod seal;
 pub mod secrets;
+pub mod security_contact;
 pub mod signed;
 pub mod signed_in;
 mod ssh_format;
 pub mod stand_in;
 pub mod suite;
 pub mod test_report;
+pub mod text;
 // Built always, not only for this crate's tests, so the tests of `sv-run` and `sv-cli` write their
 // programs the same way (backlog 0501); nothing in `sv` calls it.
 #[doc(hidden)]

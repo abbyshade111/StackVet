@@ -82,7 +82,7 @@ pub(super) fn account_change_checks(
                 IDS.to_owned(),
                 format!(
                     "Whether changing {} needs the password again: stackvet.toml sets no `{key}` \
-                     under [stack.run.users], and `not-offered` does not list `{kind}`.",
+                     under `[stack.run.users]`, and `not-offered` does not list `{kind}`.",
                     what(kind)
                 ),
             )),
@@ -266,6 +266,27 @@ fn one_change(
     ));
     if !opened {
         unread(out);
+        return;
+    }
+    // Refused before it was tried: the change never reached the account, and the page is not to
+    // blame (backlog 0385).
+    let refused = answer
+        .as_ref()
+        .map(|r| r.status)
+        .filter(|s| matches!(s, 403 | 405 | 429));
+    if !shown && let Some(code) = refused {
+        out.not_assessed.push((
+            IDS.to_owned(),
+            format!(
+                "A change of {what} through {} with the right password was refused ({code}) before \
+                 it was tried, so whether a wrong password is refused cannot be told from it. A 403 \
+                 is most often a missing or stale form token: if the form is on another page than \
+                 {}, check that page is the change's `shows` or among `private`; a 405 means the \
+                 app takes the change at another address or by another method (check `{key}` in \
+                 stackvet.toml); a 429 is the app's limit on requests.",
+                change.path, change.path
+            ),
+        ));
         return;
     }
     if !shown {

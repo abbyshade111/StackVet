@@ -15,6 +15,7 @@ use regex::Regex;
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 use sv_scan::files::Listing;
+use sv_scan::text::line_of;
 
 pub const FIREBASE_OPEN: &str = "config.firebase-rules-open";
 pub const TABLE_WITHOUT_RLS: &str = "config.supabase-table-without-rls";
@@ -101,10 +102,6 @@ fn without_sql_comments(text: &str) -> String {
     blank(text, comment)
 }
 
-fn line_at(text: &str, at: usize) -> usize {
-    text[..at].matches('\n').count() + 1
-}
-
 /// Each `allow` in a Firestore or Storage rules file that lets anybody in: one with no condition,
 /// `if true`, or only the date "test mode" sets (`request.time < timestamp.date(...)`), which lets
 /// everybody in until that day.
@@ -133,7 +130,7 @@ fn firebase_open(file: &str, text: &str) -> Vec<Finding> {
                 Some(_) => return None,
             };
             let at = c.get(0).map_or(0, |m| m.start());
-            Some(open_rule(file, line_at(&code, at), &format!("`allow {what}` {how}")))
+            Some(open_rule(file, line_of(&code, at), &format!("`allow {what}` {how}")))
         })
         .collect()
 }
@@ -148,7 +145,7 @@ fn realtime_open(file: &str, text: &str) -> Vec<Finding> {
     open.captures_iter(&code)
         .map(|c| {
             let at = c.get(0).map_or(0, |m| m.start());
-            open_rule(file, line_at(&code, at), &format!("`\".{}\": true`", &c[1]))
+            open_rule(file, line_of(&code, at), &format!("`\".{}\": true`", &c[1]))
         })
         .collect()
 }
@@ -179,7 +176,7 @@ fn created_tables(sql: &str) -> Vec<(String, usize)> {
         .captures_iter(sql)
         .filter_map(|c| {
             let at = c.get(0).map_or(0, |m| m.start());
-            table_key(&c[1]).map(|t| (t, line_at(sql, at)))
+            table_key(&c[1]).map(|t| (t, line_of(sql, at)))
         })
         .collect()
 }
@@ -240,7 +237,7 @@ fn policies_allowing_all(file: &str, sql: &str) -> Vec<Finding> {
             };
             Some(policy_allows_all(
                 file,
-                line_at(sql, m.start()),
+                line_of(sql, m.start()),
                 who,
                 &command,
             ))

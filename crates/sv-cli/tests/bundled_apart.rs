@@ -1,15 +1,9 @@
 //! A copy of another project's library kept in the app, listed apart from the app's own code, end
 //! to end: `sv report` on an app with jQuery in `public/js` (Semgrep follow-up 1).
 
-use std::path::PathBuf;
 use std::process::Command;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-bundled-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 /// The same code-running call in the app's own script and in a copy of jQuery, whose build opens
 /// with its own banner.
@@ -46,7 +40,7 @@ fn a_finding_in_a_copied_library_is_listed_apart_named_for_it_and_still_counts()
             .unwrap_or_default();
     let compliance = std::fs::read_to_string(out.join("compliance.md")).unwrap_or_default();
     let sarif: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(out.join("findings.sarif")).unwrap_or_default(),
+        &std::fs::read_to_string(out.join("stackvet.sarif")).unwrap_or_default(),
     )
     .unwrap_or_default();
     std::fs::remove_dir_all(&app).ok();
