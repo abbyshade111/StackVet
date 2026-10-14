@@ -22,9 +22,8 @@ fn real_adapters() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/adapters.json")
 }
 
-fn secret_rules() -> SecretRules {
-    SecretRules::load(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"))
-        .unwrap()
+fn secret_rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 /// A Go module at `dir` with the given files.
@@ -157,7 +156,7 @@ fn gosec_runs_no_c_compiler_downloads_nothing_says_what_it_read_and_follows_no_l
         "the control: gosec run bare over a cgo file starts the C compiler"
     );
     std::fs::remove_file(&mark).unwrap();
-    let outcome = adapters::run_one(&gosec, &cgo, &dir.join("cgo.sarif"), &secret_rules());
+    let outcome = adapters::run_one(&gosec, &cgo, &dir.join("cgo.sarif"), secret_rules());
     assert!(
         !mark.exists(),
         "through `sv`, the C compiler is never started"
@@ -209,7 +208,7 @@ fn gosec_runs_no_c_compiler_downloads_nothing_says_what_it_read_and_follows_no_l
         println!("the download control could not be shown here (no way to the module proxy)");
     }
     std::fs::remove_dir_all(&modcache).ok();
-    let outcome = adapters::run_one(&gosec, &deps, &dir.join("deps.sarif"), &secret_rules());
+    let outcome = adapters::run_one(&gosec, &deps, &dir.join("deps.sarif"), secret_rules());
     assert_eq!(
         archives(&modcache),
         0,
@@ -254,7 +253,7 @@ fn gosec_runs_no_c_compiler_downloads_nothing_says_what_it_read_and_follows_no_l
         ["linked.go"],
         "the control: gosec run bare reads through the link and reports the file outside"
     );
-    let outcome = adapters::run_one(&gosec, &linked, &dir.join("linked.sarif"), &secret_rules());
+    let outcome = adapters::run_one(&gosec, &linked, &dir.join("linked.sarif"), secret_rules());
     let Outcome::NotRun { why, .. } = &outcome else {
         panic!("{outcome:?}");
     };

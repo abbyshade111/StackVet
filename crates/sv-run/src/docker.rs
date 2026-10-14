@@ -2502,16 +2502,10 @@ fn seed_failed(code: i32, out: &str, accounts: &sv_check::signed_in::Accounts) -
     for secret in secrets.iter().filter(|s| !s.is_empty()) {
         line = line.replace(secret.as_str(), BLANK);
     }
-    line =
-        match sv_check::secrets::SecretRules::load(&sv_frameworks::data::file("secret-rules.json"))
-        {
-            Ok(rules) => sv_check::secrets::redact_text(&rules, &line).0,
-            Err(_) => {
-                "what it printed is left out, because sv's own rules for finding credentials in \
-                   it could not be read"
-                    .to_owned()
-            }
-        };
+    line = match sv_check::secrets::SecretRules::shared() {
+        Ok(rules) => sv_check::secrets::redact_text(rules, &line).0,
+        Err(_) => format!("what it printed is {}", sv_check::secrets::RULES_UNREAD),
+    };
     let line = line.replace(BLANK, "[a test secret, left out]");
     format!(
         "The seed command in stackvet.toml failed (exit {code}): {line}. With no accounts there \

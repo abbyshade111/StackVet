@@ -151,7 +151,7 @@ fn run_with_leftover(
         &languages,
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     // Its working state goes when it is done: a database left behind would be the next run's.
     let leftovers: Vec<_> = std::fs::read_dir(&dir)
@@ -409,7 +409,7 @@ fn the_real_codeql_finds_the_same_things_when_it_is_installed() {
         &["javascript".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     std::fs::remove_dir_all(&dir).ok();
     let not_run: Vec<_> = out
@@ -498,7 +498,7 @@ fn the_real_codeql_for_ruby_runs_nothing_the_app_plants_and_follows_no_link() {
         &["ruby".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     let left: Vec<String> = std::fs::read_dir(&marks)
         .unwrap()
@@ -593,7 +593,7 @@ fn the_real_codeql_runs_nothing_the_app_plants_and_follows_no_link() {
         &["javascript".to_owned(), "typescript".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     let codeql_not_run: Vec<_> = out
         .not_run
@@ -653,7 +653,7 @@ fn the_real_codeql_runs_nothing_the_app_plants_and_follows_no_link() {
         &["python".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     let codeql_not_run: Vec<_> = out
         .not_run
@@ -841,9 +841,6 @@ fn an_entry_reading_several_languages_is_offered_for_each_of_them() {
 }
 
 /// `sv`'s own credential rules, which redact what a tool says.
-fn secret_rules() -> sv_check::secrets::SecretRules {
-    sv_check::secrets::SecretRules::load(
-        &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("the secret rules load")
+fn secret_rules() -> &'static sv_check::secrets::SecretRules {
+    sv_check::secrets::SecretRules::shared().expect("the rules sv ships")
 }

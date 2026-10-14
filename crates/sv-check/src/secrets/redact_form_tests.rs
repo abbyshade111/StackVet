@@ -4,11 +4,8 @@
 
 use super::*;
 
-fn rules() -> SecretRules {
-    SecretRules::load(
-        &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 /// A random token no vendor's shape describes, built from pieces so this file holds none.
@@ -29,7 +26,7 @@ fn a_form_token_is_cut_whichever_order_its_attributes_come_in() {
     ] {
         // The setup: the token is in the page before it is cut.
         assert!(page.contains(&t), "{page}");
-        let (cut, n) = redact_text(&rules(), &page);
+        let (cut, n) = redact_text(rules(), &page);
         assert!(!cut.contains(&t), "the token survived: {cut}");
         assert!(n >= 1, "the cut is counted: {cut}");
     }
@@ -38,7 +35,7 @@ fn a_form_token_is_cut_whichever_order_its_attributes_come_in() {
 #[test]
 fn a_field_that_holds_no_credential_keeps_its_value() {
     let page = r#"<input type="text" name="title" value="Club evening"><input type="hidden" name="next" value="/account">"#;
-    let (cut, n) = redact_text(&rules(), page);
+    let (cut, n) = redact_text(rules(), page);
     assert!(
         cut.contains("Club evening") && cut.contains("/account"),
         "{cut}"

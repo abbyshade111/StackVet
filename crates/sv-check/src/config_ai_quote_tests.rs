@@ -38,11 +38,11 @@ fn a_key_in_a_commit_subject_is_masked_in_the_note() {
     );
     let rules = rules();
     // The setup: the rules know the key's shape, so the test is about the note and not about them.
-    assert_eq!(crate::secrets::redact_text(&rules, &key).1, 1);
-    let f = finding_of(ai_commits_off_merge(&dir, &rules));
+    assert_eq!(crate::secrets::redact_text(rules, &key).1, 1);
+    let f = finding_of(ai_commits_off_merge(&dir, rules));
     std::fs::remove_dir_all(&dir).ok();
     // A failure shows the note masked, so not even this test's made-up key is printed.
-    let shown = crate::secrets::redact_text(&rules, &f.description).0;
+    let shown = crate::secrets::redact_text(rules, &f.description).0;
     assert!(!f.description.contains(&key), "{shown}");
     assert!(
         !f.description.contains(&key[8..]),
@@ -66,7 +66,7 @@ fn a_long_subject_is_cut_short() {
     }
     let long = "word ".repeat(200);
     let dir = repo_with("long", &format!("{}\n\nAssisted-by: Cursor", long.trim()));
-    let f = finding_of(ai_commits_off_merge(&dir, &rules()));
+    let f = finding_of(ai_commits_off_merge(&dir, rules()));
     std::fs::remove_dir_all(&dir).ok();
     let quoted = f
         .description

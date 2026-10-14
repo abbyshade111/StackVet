@@ -89,11 +89,11 @@ impl StaticScan {
         });
         starting(3);
         let secrets = keep(&mut crashed, "secrets", || {
-            sv_check::secrets::scan_listing(&loaded.secret_rules, &listing)
+            sv_check::secrets::scan_listing(loaded.secret_rules, &listing)
         });
         starting(4);
         let config = keep(&mut crashed, "config", || {
-            sv_check::config::check_dir_in(&listing, &bill_of_materials, &loaded.secret_rules)
+            sv_check::config::check_dir_in(&listing, &bill_of_materials, loaded.secret_rules)
         });
         starting(5);
         let code = keep(&mut crashed, "code", || {
@@ -376,7 +376,7 @@ pub fn settle(
         code: &scan.code,
         secrets: &scan.secrets,
         ast_rules: &loaded.ast_rules,
-        secret_rules: &loaded.secret_rules,
+        secret_rules: loaded.secret_rules,
     };
     let mut outcome = decisions_then_reviews(findings, decided, |mut findings| {
         sv_check::review::fill_fingerprints(app_dir, &mut findings);

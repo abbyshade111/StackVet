@@ -79,14 +79,13 @@ fn run(dir: &Path, adapter: Adapter) -> AdapterRun {
         &["python".to_owned()],
         &BTreeSet::new(),
         dir,
-        &secret_rules(),
+        secret_rules(),
     )
 }
 
 /// `sv`'s own credential rules, which redact what a tool says.
-fn secret_rules() -> SecretRules {
-    SecretRules::load(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"))
-        .unwrap()
+fn secret_rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 fn scratch(name: &str) -> PathBuf {
@@ -268,7 +267,7 @@ fn handed(name: &str, report: &str) -> (AdapterRun, Vec<String>) {
         &["python".to_owned(), "javascript".to_owned()],
         &BTreeSet::new(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     let given = std::fs::read_to_string(&seen)
         .unwrap_or_default()
@@ -320,10 +319,10 @@ fn only_an_error_or_an_unsuccessful_run_counts_against_a_report() {
     let report =
         |invocation: &str| format!(r#"{{"runs":[{{"invocations":[{invocation}],"results":[]}}]}}"#);
     // A warning is not a part of the run that failed.
-    assert!(did_not_finish(&secret_rules(), &report(r#"{"executionSuccessful":true,"toolExecutionNotifications":[{"level":"warning","message":{"text":"slow"}}]}"#), app).is_empty());
+    assert!(did_not_finish(secret_rules(), &report(r#"{"executionSuccessful":true,"toolExecutionNotifications":[{"level":"warning","message":{"text":"slow"}}]}"#), app).is_empty());
     assert!(
         did_not_finish(
-            &secret_rules(),
+            secret_rules(),
             &report(r#"{"executionSuccessful":true}"#),
             app
         )
@@ -331,7 +330,7 @@ fn only_an_error_or_an_unsuccessful_run_counts_against_a_report() {
     );
     // Unsuccessful with nothing said, and an error with no file, still count.
     let quiet = did_not_finish(
-        &secret_rules(),
+        secret_rules(),
         &report(r#"{"executionSuccessful":false}"#),
         app,
     );
@@ -340,7 +339,7 @@ fn only_an_error_or_an_unsuccessful_run_counts_against_a_report() {
         ["its report says its run did not succeed, without saying why"]
     );
     let config = did_not_finish(
-        &secret_rules(),
+        secret_rules(),
         &report(
             r#"{"executionSuccessful":true,"toolConfigurationNotifications":[{"level":"error","message":{"text":"bad profile\nmore"}}]}"#,
         ),
@@ -352,7 +351,7 @@ fn only_an_error_or_an_unsuccessful_run_counts_against_a_report() {
     );
     // A file named by its full path is shown from the app folder.
     let full = did_not_finish(
-        &secret_rules(),
+        secret_rules(),
         &report(
             r#"{"toolExecutionNotifications":[{"level":"error","message":{"text":"x"},"locations":[{"physicalLocation":{"artifactLocation":{"uri":"file:///app/pkg/a.py"}}}]}]}"#,
         ),
@@ -362,7 +361,7 @@ fn only_an_error_or_an_unsuccessful_run_counts_against_a_report() {
     // A message quoting the line it could not read is quoted with its credential redacted.
     let value = ["Xk7mQ92v", "LpR4sTzW"].concat();
     let quoted = did_not_finish(
-        &secret_rules(),
+        secret_rules(),
         &report(&format!(
             r#"{{"toolExecutionNotifications":[{{"level":"error","message":{{"text":"could not parse: db_password = \"{value}\""}},"locations":[{{"physicalLocation":{{"artifactLocation":{{"uri":"file:///app/settings.py"}}}}}}]}}]}}"#
         )),
@@ -374,7 +373,7 @@ fn only_an_error_or_an_unsuccessful_run_counts_against_a_report() {
     );
     // And one that names no file.
     let unfiled = did_not_finish(
-        &secret_rules(),
+        secret_rules(),
         &report(&format!(
             r#"{{"toolExecutionNotifications":[{{"level":"error","message":{{"text":"could not parse: db_password = \"{value}\""}}}}]}}"#
         )),
@@ -493,7 +492,7 @@ fn only_a_report_the_tool_wrote_in_this_run_is_read() {
     std::fs::create_dir_all(&app).unwrap();
     std::fs::write(app.join("app.py"), "print(1)\n").unwrap();
     // The tool writes nothing.
-    let silent = run_one(&tool(&dir, &rule, "exit 0"), &app, &report, &secret_rules());
+    let silent = run_one(&tool(&dir, &rule, "exit 0"), &app, &report, secret_rules());
     // The tool puts a link to the planted report in its report's place.
     let linked = run_one(
         &tool(
@@ -503,7 +502,7 @@ fn only_a_report_the_tool_wrote_in_this_run_is_read() {
         ),
         &app,
         &report,
-        &secret_rules(),
+        secret_rules(),
     );
     std::fs::remove_dir_all(&dir).ok();
     for outcome in [silent, linked] {
@@ -694,7 +693,7 @@ fn a_tool_that_does_not_finish_is_stopped_with_what_it_started_and_not_read() {
     let app = one_file_app(&dir);
     let report = dir.join("out.sarif");
     let begun = std::time::Instant::now();
-    let outcome = run_one(&stuck, &app, &report, &secret_rules());
+    let outcome = run_one(&stuck, &app, &report, secret_rules());
     let took = begun.elapsed();
     let Outcome::NotRun { why, .. } = &outcome else {
         panic!("a tool stopped by the limit was read: {outcome:?}");
@@ -723,7 +722,7 @@ fn a_tool_that_does_not_finish_is_stopped_with_what_it_started_and_not_read() {
     quick.time_limit_seconds = Some(30);
     assert!(
         !matches!(
-            run_one(&quick, &app, &report, &secret_rules()),
+            run_one(&quick, &app, &report, secret_rules()),
             Outcome::NotRun { .. }
         ),
         "a tool inside its limit was not read"
@@ -744,7 +743,7 @@ fn a_tool_is_handed_only_the_environment_it_needs() {
     let mut probe = tool(&dir, &rule, &format!("env > '{}'; CLEAN", seen.display()));
     probe.env.insert("TOOL_OWN".into(), "1".into());
     let app = one_file_app(&dir);
-    let outcome = run_one(&probe, &app, &dir.join("out.sarif"), &secret_rules());
+    let outcome = run_one(&probe, &app, &dir.join("out.sarif"), secret_rules());
     assert!(!matches!(outcome, Outcome::NotRun { .. }), "{outcome:?}");
     let seen = std::fs::read_to_string(&seen).unwrap();
     let names: Vec<&str> = seen.lines().filter_map(|l| l.split('=').next()).collect();
@@ -859,7 +858,7 @@ fn a_tool_s_secret_rules_spare_a_stored_hash_and_keep_a_hexy_password_and_test_c
         &format!("cp '{}' \"$1\"; exit 0", written.display()),
     );
     semgrep.id = "semgrep".into();
-    let outcome = run_one(&semgrep, &app, &dir.join("out.sarif"), &secret_rules());
+    let outcome = run_one(&semgrep, &app, &dir.join("out.sarif"), secret_rules());
 
     // Bandit's rule for a password written as a string, on the same two lines.
     let bandit_sarif = serde_json::json!({
@@ -877,12 +876,7 @@ fn a_tool_s_secret_rules_spare_a_stored_hash_and_keep_a_hexy_password_and_test_c
         &format!("cp '{}' \"$1\"; exit 0", bandit_written.display()),
     );
     bandit.id = "bandit".into();
-    let bandit_outcome = run_one(
-        &bandit,
-        &app,
-        &dir.join("bandit-out.sarif"),
-        &secret_rules(),
-    );
+    let bandit_outcome = run_one(&bandit, &app, &dir.join("bandit-out.sarif"), secret_rules());
     std::fs::remove_dir_all(&dir).ok();
     let Outcome::Ran {
         findings: by_bandit,

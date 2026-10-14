@@ -160,7 +160,7 @@ fn semgrep_runs_quietly_and_opengrep_only_in_its_place() {
             &["python".to_owned()],
             &Default::default(),
             &scratch,
-            &secret_rules(),
+            secret_rules(),
         )
     };
 
@@ -259,9 +259,6 @@ fn semgrep_runs_quietly_and_opengrep_only_in_its_place() {
 }
 
 /// `sv`'s own credential rules, which redact what a tool says.
-fn secret_rules() -> sv_check::secrets::SecretRules {
-    sv_check::secrets::SecretRules::load(
-        &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("the secret rules load")
+fn secret_rules() -> &'static sv_check::secrets::SecretRules {
+    sv_check::secrets::SecretRules::shared().expect("the rules sv ships")
 }

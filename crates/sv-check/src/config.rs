@@ -84,9 +84,10 @@ impl ConfigReport {
 pub fn check_dir(app_dir: &Path) -> ConfigReport {
     let listing = sv_scan::files::Listing::of(app_dir);
     let bill_of_materials = crate::sbom::build_in(&listing);
-    let rules = crate::secrets::SecretRules::load(&sv_frameworks::data::file("secret-rules.json"))
-        .unwrap_or_else(|_| crate::secrets::SecretRules::none());
-    check_dir_in(&listing, &bill_of_materials, &rules)
+    static NONE: std::sync::LazyLock<crate::secrets::SecretRules> =
+        std::sync::LazyLock::new(crate::secrets::SecretRules::none);
+    let rules = crate::secrets::SecretRules::shared().unwrap_or(&NONE);
+    check_dir_in(&listing, &bill_of_materials, rules)
 }
 
 /// `check_dir`, with the app's files and its bill of materials already made, so `sv report` walks
