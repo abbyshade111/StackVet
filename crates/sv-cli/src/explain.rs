@@ -199,6 +199,12 @@ fn from_report(report: &Value, which: &str, id: &str, checks: &[CheckLine]) -> S
             findings.join("\n")
         ));
     }
+    if status == "not-verified"
+        && let Some(said) = report["could_settle"][id].as_str()
+    {
+        // What that report said could settle it (backlog 0426).
+        out.push_str(&format!("What could settle it: {said}.\n"));
+    }
     if status == "not-verified" {
         // What the report could not have had: a check that needs a kind of run that did not happen.
         let ran: Vec<String> = report["not_run_this_time"]["kinds"]

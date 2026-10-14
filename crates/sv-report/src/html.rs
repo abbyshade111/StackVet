@@ -632,7 +632,7 @@ pub fn page(report: &Report) -> String {
                         .collect::<Vec<_>>()
                         .join("; ")
                 ),
-                Status::NotVerified => String::new(),
+                Status::NotVerified => crate::could_settle_note(report, line),
             };
             b.push_str(&format!(
                 "<tr><td><code>{}</code></td><td class=\"{class}\">{}{}</td><td>{}</td></tr>\n",
@@ -1381,6 +1381,7 @@ mod tests {
             could_not_run: Vec::new(),
             partly_read: Vec::new(),
             not_run_this_time: None,
+            could_settle: Default::default(),
         }
     }
 
