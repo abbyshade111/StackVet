@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0504, 0506, 0232
+- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0504, 0506, 0232, 0516
 - wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401, 0412, 0503, 0505
 - documentation — arm: full — holds: 0370 (since 2026-10-14) — next: 0510, 0512
 
@@ -403,3 +403,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 11:50 — queued 0513, on hold: the owner's three licence judgments; ADR-018 Later with the answers, marked
 - 2026-10-14 11:50 — queued 0514, on hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository, marked
 - 2026-10-14 11:50 — assigned 0512 to documentation (full) as next: left from 0473: the guide's first three steps lead with the AI tool doing them; its condition (0428) is done; same lane as 0510 for the guide
+- 2026-10-14 12:39 — queued 0516, marked
+- 2026-10-14 12:39 — assigned 0516 to honesty (full) as next: the pointer's trial result, before any proposal is taken: shape-based locators and the example apps as fixtures (data/locators.json, locate.rs); honesty's lane holds sv-run and the suites only
