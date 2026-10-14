@@ -954,21 +954,34 @@ fn the_guidance_topics_offered_are_the_data_files_topics() {
 #[test]
 fn the_prompts_shown_to_work_are_where_every_builder_starts_and_no_others() {
     // The backlog's "Put the prompts shown to work where every builder starts": the end of the
-    // opening instructions, and of the specification (`stackvet_spec`, as `sv init` prints it).
+    // specification (`stackvet_spec`, as `sv init` prints it, and its first answer). Since backlog
+    // 0338 the opening instructions say where they are and carry none of them, since the client
+    // pays for its instructions on every turn.
     let library = crate::coding_prompts().unwrap();
     let server = Server::new(&examples()).unwrap();
     let hello = server
         .handle(&json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}))
         .unwrap();
     let instructions = hello["result"]["instructions"].as_str().unwrap().to_owned();
-    // The whole spec, as `sv init` prints it; asked with no section, a long one comes in parts.
+    assert!(
+        instructions.ends_with(super::PROMPTS_ARE_IN_THE_SPEC),
+        "{instructions}"
+    );
+    // The whole spec, as `sv init` prints it; asked with no section, a long one comes in parts,
+    // and its first answer holds them too.
     let spec = text(&call(&server, "stackvet_spec", json!({ "section": "all" }))).to_owned();
+    let first = text(&call(&server, "stackvet_spec", json!({}))).to_owned();
     let mut shown = 0;
     for p in &library.prompts {
         let named = format!("(`{}`)", p.id);
         let is_shown = p.status == sv_check::prompts::Status::Shown;
         shown += usize::from(is_shown);
-        for (place, said) in [("instructions", &instructions), ("spec", &spec)] {
+        assert!(
+            !instructions.contains(&named) && !instructions.contains(&p.prompt),
+            "instructions: {} is there",
+            p.id
+        );
+        for (place, said) in [("spec", &spec), ("the spec's first answer", &first)] {
             assert_eq!(
                 said.contains(&named),
                 is_shown,

@@ -9,8 +9,10 @@ is for was in at least five of the builds without it and in at most one with it.
 anything should not be trusted as if it had. The trials are written up in `docs/prompts/library-trial/`.
 
 **You do not need to paste the ones shown to work.** Since 7 October 2026, `sv` gives every prompt shown to work, in
-full, at the end of the specification an AI tool reads before writing any code (`sv init`, `stackvet_spec`) and of
-the MCP server's opening instructions, and the ones for a feature in that feature's brief (`stackvet_before`).
+full, at the end of the specification an AI tool reads before writing any code (`sv init`, and `stackvet_spec`'s
+first answer), and the ones for a feature in that feature's brief (`stackvet_before`). Until 14 October 2026 they
+were in the MCP server's opening instructions too, which an AI tool pays for on every turn; those now say where the
+prompts are.
 
 `sv prompts` prints the same prompts at a terminal (`sv prompts --requirement V1.2.4` for those aimed at one
 requirement), and an AI coding tool connected to `sv mcp` can fetch them with `stackvet_prompts`. Once `sv report`
