@@ -24,6 +24,13 @@ AISVS, and the Secure by Design checklist.
 **Level 2, 14 October 2026:** at the owner's word of 14 October ("the plain lines for the level-2 requirements first;
 AISVS and the Secure by Design checklist after, or as a remainder note if they would take more than a day"), every one
 of ASVS 5.0's 183 level-2 requirements has a plain line too, written from its own words, and the test now holds levels 1
-and 2 to having one. **What remains**, a note rather than a build, since it is more than a day's writing: ASVS's 92
+and 2 to having one. **What remains** was given here as ASVS's 92
 level-3 requirements, AISVS 1.0's 235 and its Appendix C's 82, and the Secure by Design checklist's 36 controls. The
 report already says how many of its rows have a line, so a row without one shows the standard's words alone.
+
+**AISVS and the Secure by Design checklist, 14 October 2026:** the counts above were wrong: the data holds 191 AISVS
+requirements and 68 in Appendix C. Those 259, and the checklist's 36 controls, now each have a plain line, 295 in
+all, written from each one's own words and read against them one by one. Where a line first dropped part of a
+long requirement (a list of what is covered, or "in place of"), it was put back. The test now holds every requirement
+but ASVS's level-3 ones to having a line, and first checks that each framework's requirements loaded. **What remains:**
+ASVS's 92 level-3 requirements, which the owner did not ask for in this round.
