@@ -53,7 +53,7 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
     };
     format!(
         "That is about entries only. A finding with no entry is never offered here: a real one is fixed in the code and \
-         checked again, and one that is a false alarm needs a [[finding-review]] entry first, written by you or \
+         checked again, and one that is a false alarm needs a `[[finding-review]]` entry first, written by you or \
          proposed by your AI coding tool, which you then confirm here. {last}"
     )
 }

@@ -2134,7 +2134,7 @@ fn the_owners_word(
             ),
             why: format!(
                 "No tool can settle these — whether input is validated on the server, whether the \
-                 app's own services authenticate to each other. Answer them in the [design] \
+                 app's own services authenticate to each other. Answer them in the `[design]` \
                  section of stackvet.toml: {}. Your AI coding tool can ask you them: `sv \
                  questions` prints them for its chat.",
                 design.unanswered.join(", ")
@@ -2190,7 +2190,7 @@ fn the_owners_word(
                 if hand.unreadable.len() == 1 { "" } else { "s" }
             ),
             why: format!(
-                "stackvet.toml records {} in [checked-by-hand] in a way nothing could be made \
+                "stackvet.toml records {} in `[checked-by-hand]` in a way nothing could be made \
                  of, so it counts for nothing: {}.",
                 if hand.unreadable.len() == 1 {
                     "this"
@@ -2872,7 +2872,7 @@ pub fn account_changes_whole(
         gaps.push(sv_report::Gap {
             what: "Account changes listed as not offered, not confirmed by the owner".to_owned(),
             why: format!(
-                "stackvet.toml lists {} under [stack.run.users] `not-offered`, and nobody has \
+                "stackvet.toml lists {} under `[stack.run.users]` `not-offered`, and nobody has \
                  confirmed it through `sv review`, so it is the AI coding tool's word or a file \
                  edited by hand, and counts for nothing. Until the owner confirms it, V7.5.1 is at \
                  most checked in part: run `sv review` and confirm the list if it is right.",

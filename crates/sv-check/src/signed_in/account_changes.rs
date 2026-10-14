@@ -82,7 +82,7 @@ pub(super) fn account_change_checks(
                 IDS.to_owned(),
                 format!(
                     "Whether changing {} needs the password again: stackvet.toml sets no `{key}` \
-                     under [stack.run.users], and `not-offered` does not list `{kind}`.",
+                     under `[stack.run.users]`, and `not-offered` does not list `{kind}`.",
                     what(kind)
                 ),
             )),

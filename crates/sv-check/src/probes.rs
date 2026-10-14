@@ -302,7 +302,7 @@ pub fn unassessed_requirements(signed_in_ran: bool) -> Vec<(&'static str, &'stat
         out.push((
             "V8, V7",
             "Authorization and session handling need a signed-in user. `sv` signs in only when \
-             stackvet.toml says how, under [stack.run.users], and this one does not.",
+             stackvet.toml says how, under `[stack.run.users]`, and this one does not.",
         ));
         // V3.5.1 is the request forgery requirement in ASVS 5.0. This line cited V4.2 until
         // 25 September 2026, which is HTTP message structure validation — a different subject.
@@ -1053,7 +1053,7 @@ pub fn evaluate_api(
                         "V4.3.2".to_owned(),
                         "Introspection is on. That is right for an API other programs are meant to \
                          use and wrong otherwise, and stackvet.toml does not say which this is \
-                         (`public-api` under [capabilities])."
+                         (`public-api` under `[capabilities]`)."
                             .to_owned(),
                     )),
                 }

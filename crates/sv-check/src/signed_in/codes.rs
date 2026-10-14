@@ -282,7 +282,7 @@ pub(super) fn email_code_guessing(
             match policy.failed_codes {
                 None => {
                     "Whether emailed sign-in codes can be guessed: say how many wrong codes in \
-                         a row the app should allow, as `failed-codes` under [policy] in \
+                         a row the app should allow, as `failed-codes` under `[policy]` in \
                          stackvet.toml, and this will make two more attempts than that."
                         .to_owned()
                 }
@@ -559,7 +559,7 @@ impl<'a> EmailCode<'a> {
             out.not_assessed.push((
                 ids.to_owned(),
                 "Signing in with an emailed code: stackvet.toml sets no `email-code` under \
-                 [stack.run.users]."
+                 `[stack.run.users]`."
                     .to_owned(),
             ));
             return None;

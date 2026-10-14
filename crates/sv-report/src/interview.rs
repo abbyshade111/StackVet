@@ -42,7 +42,7 @@ How to ask them. These are for the person you are building this app with, not fo
   running `sv review` in their own terminal. Never run `sv review` for them, and never write their
   name or a `seal` yourself: you cannot confirm your own answer.
 - A finding you think is a false alarm: read the code first, and tell the person what you found. You
-  may write it under [[finding-review]] with by = \"ai-tool\" as a proposal; it counts for nothing
+  may write it under `[[finding-review]]` with by = \"ai-tool\" as a proposal; it counts for nothing
   until the person has looked and recorded it by running `sv review` in their own terminal. Never
   run it for them or write their name or a `seal` yourself, and never change correct code only to
   make a warning go away.
@@ -83,7 +83,7 @@ pub fn text_with(report: &Report, fence: &crate::fence::Fence) -> String {
 
     if !design.is_empty() {
         out.push_str(&format!(
-            "\n1. HOW THE APP IS BUILT ({}). Record each answer in stackvet.toml, in the [design] \
+            "\n1. HOW THE APP IS BUILT ({}). Record each answer in stackvet.toml, in the `[design]` \
              section, keyed by its id:\n   \"V8.3.1\" = {{ answer = \"yes\", where = \"server/auth.py\", \
              by = \"owner\" }}\n   `answer` is yes, no, not-sure, or planned (decided, not built yet); \
              `where` names the file that does it, or will, and is left out when there is none.\n",
@@ -135,7 +135,7 @@ pub fn text_with(report: &Report, fence: &crate::fence::Fence) -> String {
         out.push_str(&format!(
             "\n{}. CHECKS TO MAKE BY HAND ({}). Walk the person through each one, and help with the \
              part that is in the code. Then record what happened in stackvet.toml, in the \
-             [checked-by-hand] section, keyed by its id:\n   \"V12.2.2\" = {{ result = \"done\", on = \
+             `[checked-by-hand]` section, keyed by its id:\n   \"V12.2.2\" = {{ result = \"done\", on = \
              \"2026-09-26\", by = \"owner\", how = \"Opened the live site; the padlock shows a \
              trusted certificate.\" }}\n   `result` is done, problem, or not-yet; `on` is the day; \
              `how` is one sentence of what was done and seen, in the person's words, and is \

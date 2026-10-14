@@ -277,7 +277,7 @@ pub(super) fn brute_force_check(
         out.not_assessed.push((
             "V6.3.1".to_owned(),
             "Whether the app resists password guessing: say how many wrong passwords in a row it \
-             should allow, as `failed-sign-ins` under [policy] in stackvet.toml, and this will \
+             should allow, as `failed-sign-ins` under `[policy]` in stackvet.toml, and this will \
              make two more attempts than that and watch what the app does."
                 .to_owned(),
         ));
@@ -711,7 +711,7 @@ pub(super) fn sign_out_on_get_check(
             SIGN_OUT_ON_GET.requirement_ids.join(", "),
             if users.logout.is_none() {
                 "Whether a plain link signs the user out: stackvet.toml sets no `logout` under \
-                 [stack.run.users]."
+                 `[stack.run.users]`."
             } else {
                 "Whether a plain link signs the user out: no private page opened for a signed-in \
                  user, so a session ended by it could not be told from one that never worked."
@@ -851,7 +851,7 @@ pub(super) fn password_in_url_check(
             PASSWORD_IN_URL.requirement_ids.join(", "),
             if users.login.is_none() {
                 "Whether a password in the address signs the user in: stackvet.toml sets no \
-                 `login` under [stack.run.users]."
+                 `login` under `[stack.run.users]`."
             } else {
                 "Whether a password in the address signs the user in: no private page opened for \
                  a signed-in user, so a sign-in that worked could not be told from one that did \

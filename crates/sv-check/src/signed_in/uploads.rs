@@ -1250,7 +1250,7 @@ pub(super) fn client_side_validation_check(
         out.not_assessed.push((
             "V2.2.2".to_owned(),
             "Whether the server applies the rules its own form states: this needs `signup` in \
-             [stack.run.users], so a value that breaks one of them can be sent."
+             `[stack.run.users]`, so a value that breaks one of them can be sent."
                 .to_owned(),
         ));
         return;

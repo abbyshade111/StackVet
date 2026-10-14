@@ -35,7 +35,7 @@ pub(super) fn session_timeout_checks(
         say(
             "V7.3.1, V7.3.2",
             "Whether sessions time out: say after how long, as `idle-timeout-minutes` and \
-             `session-lifetime-minutes` under [policy] in stackvet.toml, and run `sv run --slow`, \
+             `session-lifetime-minutes` under `[policy]` in stackvet.toml, and run `sv run --slow`, \
              which waits that long and then asks."
                 .to_owned(),
             out,

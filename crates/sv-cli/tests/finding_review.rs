@@ -332,7 +332,7 @@ fn a_persons_review_sets_findings_aside_and_the_tools_proposal_does_not() {
         "{tool}"
     );
     assert!(
-        tool.contains("NOT COUNTED in [[finding-review]]")
+        tool.contains("NOT COUNTED in `[[finding-review]]`")
             && tool.contains("never run `sv review` for them, and never write a `seal` or a person's name in `by`")
             && tool.contains("the AI coding tool's proposal"),
         "{tool}"
@@ -449,7 +449,7 @@ fn sv_check_counts_what_sv_report_counts_on_the_same_folder() {
         "{check_said}"
     );
     assert!(
-        check_said.contains("Not counted in [[finding-review]]")
+        check_said.contains("Not counted in `[[finding-review]]`")
             && check_said.contains("the AI coding tool's proposal"),
         "{check_said}"
     );

@@ -51,9 +51,9 @@ fn more_help(name: &str) -> &'static str {
     match name {
         "review" => {
             "\nIt goes through each entry that does not yet count as yours, shows it, and asks your name:\n\
-             \x20 - a finding you set aside, with your reason ([[finding-review]] in stackvet.toml)\n\
+             \x20 - a finding you set aside, with your reason (`[[finding-review]]` in stackvet.toml)\n\
              \x20 - an answer the AI coding tool proposed that you confirm after looking (`confirmed`\n\
-             \x20   under [design] or [checked-by-hand] in stackvet.toml)\n\
+             \x20   under `[design]` or `[checked-by-hand]` in stackvet.toml)\n\
              \x20 - your own answers in security-notes.md\n\
              Each is written back with your name, the date, and a seal. It runs only in your own\n\
              terminal. The whole flow: docs/GETTING-STARTED.md, section 5, \"Answer the questions\".\n"
@@ -1702,7 +1702,7 @@ fn cmd_check(args: &[String]) -> Result<i32> {
         }
     }
     if !settled.not_counted.is_empty() {
-        println!("\nNot counted in [[finding-review]], so each finding stands:");
+        println!("\nNot counted in `[[finding-review]]`, so each finding stands:");
         for why in &settled.not_counted {
             println!("  {why}");
         }
@@ -2837,7 +2837,7 @@ fn report_command(
     }
     if c.attested > 0 {
         println!(
-            "The {} you answered yes to in the [design] section of stackvet.toml, or confirmed \
+            "The {} you answered yes to in the `[design]` section of stackvet.toml, or confirmed \
              after your AI coding tool did, {} your word about how the app is built, which is the \
              weakest thing this report says: each one is still listed as a test to write.",
             c.attested,

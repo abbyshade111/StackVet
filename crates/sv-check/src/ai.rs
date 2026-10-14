@@ -1388,7 +1388,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
             MCP_IDS,
             "Whether MCP tool results are checked before they reach the model: if the AI feature \
              gives the model tools from an MCP server, name the variable it reads the server's \
-             address from, as `mcp-url-env` under [stack.run.ai] in stackvet.toml, and it is \
+             address from, as `mcp-url-env` under `[stack.run.ai]` in stackvet.toml, and it is \
              given a test MCP server there."
                 .to_owned(),
             &mut out,
@@ -1403,7 +1403,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
         None => say(
             "C11.2.2",
             "Whether the AI feature limits how often it can be asked: say how many messages a \
-             minute it should pass on, as `ai-requests-per-minute` under [policy] in \
+             minute it should pass on, as `ai-requests-per-minute` under `[policy]` in \
              stackvet.toml, and this will send one more than that."
                 .to_owned(),
             &mut out,
@@ -1558,7 +1558,7 @@ fn prepare_notes(
     if !section.reads_owned {
         return Err(
             "Whether the AI feature's search keeps each person to their own notes: if it reads the \
-             people's own records to answer, say `reads-owned = true` under [stack.run.ai] in \
+             people's own records to answer, say `reads-owned = true` under `[stack.run.ai]` in \
              stackvet.toml, and the second test user asks about a private note the first saved."
                 .to_owned(),
         );
@@ -1567,14 +1567,14 @@ fn prepare_notes(
     else {
         return Err(
             "Whether the AI feature's search keeps each person to their own notes: that needs \
-             `signed-in = true` under [stack.run.ai] and two test users under [stack.run.users]."
+             `signed-in = true` under `[stack.run.ai]` and two test users under `[stack.run.users]`."
                 .to_owned(),
         );
     };
     if users.owned.is_none() {
         return Err(
             "Whether the AI feature's search keeps each person to their own notes: \
-             [stack.run.users] names no `owned` record for the test users to save."
+             `[stack.run.users]` names no `owned` record for the test users to save."
                 .to_owned(),
         );
     }
@@ -1809,7 +1809,7 @@ fn prepare_records(
     let Some(tool) = &section.record_tool else {
         return Err(
             "Whether the AI feature's own tools check who may see a record: if it gives the model a \
-             tool that reads one record, name it as `record-tool` under [stack.run.ai] in \
+             tool that reads one record, name it as `record-tool` under `[stack.run.ai]` in \
              stackvet.toml, with `{id}` where the record's id goes, and the test model asks it for \
              another user's record."
                 .to_owned(),
@@ -1819,13 +1819,13 @@ fn prepare_records(
     else {
         return Err(format!(
             "Whether the tool `{}` checks who may see a record: that needs `signed-in = true` under \
-             [stack.run.ai] and two test users under [stack.run.users].",
+             `[stack.run.ai]` and two test users under `[stack.run.users]`.",
             tool.name
         ));
     };
     if users.owned.is_none() {
         return Err(format!(
-            "Whether the tool `{}` checks who may see a record: [stack.run.users] names no `owned` \
+            "Whether the tool `{}` checks who may see a record: `[stack.run.users]` names no `owned` \
              record for the test users to create.",
             tool.name
         ));
@@ -3198,7 +3198,7 @@ pub fn kill_switch(
     let Some(switch) = &section.kill_switch else {
         say(
             "Whether the AI feature can be switched off: name the setting that does it, as \
-             `kill-switch = \"NAME=value\"` under [stack.run.ai] in stackvet.toml, and a copy \
+             `kill-switch = \"NAME=value\"` under `[stack.run.ai]` in stackvet.toml, and a copy \
              of the app is started with it on and asked."
                 .to_owned(),
             out,

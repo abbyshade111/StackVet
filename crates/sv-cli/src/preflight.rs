@@ -314,7 +314,7 @@ pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
         items.push(Item::new(
             "users",
             Answer::Unknown,
-            vec![sv("There is no [stack.run.users], so nothing about signing in was looked for, and `sv run` will report what a signed-in user can reach as not assessed.")],
+            vec![sv("There is no `[stack.run.users]`, so nothing about signing in was looked for, and `sv run` will report what a signed-in user can reach as not assessed.")],
         ));
         return sorted(items);
     };
@@ -464,7 +464,7 @@ pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
                     sv(format!(
                         ". The checks that ask each listed {what} page ({asked}) can then credit \
                          only in part: one page is one sample of every page the requirement names. \
-                         List the app's other {what} pages under `{what}` in [stack.run.users]."
+                         List the app's other {what} pages under `{what}` in `[stack.run.users]`."
                     )),
                 ],
             ));
@@ -656,7 +656,7 @@ pub fn of(app_dir: &Path) -> anyhow::Result<Found> {
     let manifest_path = sv_manifest::locate(app_dir)?
         .ok_or_else(|| {
             anyhow::anyhow!(
-                "no {} in {}: write it first (`sv init` gives the spec), and the preflight reads what its [stack.run] asks for",
+                "no {} in {}: write it first (`sv init` gives the spec), and the preflight reads what its `[stack.run]` asks for",
                 sv_frameworks::names::MANIFEST,
                 app_dir.display()
             )
@@ -689,7 +689,7 @@ fn install(manifest: &Manifest, app_dir: &Path) -> Option<Item> {
             "install",
             Answer::Look,
             vec![sv(format!(
-                "The app names packages in {named}, and [stack.run] does not say `install = true`. The app runs with no network, so it cannot download them itself, and an app that needs them never starts. If the image already holds them, or the app does not need them to run, ignore this."
+                "The app names packages in {named}, and `[stack.run]` does not say `install = true`. The app runs with no network, so it cannot download them itself, and an app that needs them never starts. If the image already holds them, or the app does not need them to run, ignore this."
             ))],
         ));
     }
@@ -755,7 +755,7 @@ fn build_installs(manifest: &Manifest) -> Option<Item> {
             sv("The build step ("),
             app(format!("`{build}`")),
             sv(format!(
-                ") runs `{found}`, which downloads packages. The build step runs inside the fence, where nothing can be downloaded and nothing outside /tmp written, so it fails there. Two ways work: `install = true` under [stack.run] has `sv` install the packages in requirements.txt or package.json before the run, outside the fence; or build an image of your own that already holds them and name it in `image` (docs/GETTING-STARTED.md, \"An image of your own\")."
+                ") runs `{found}`, which downloads packages. The build step runs inside the fence, where nothing can be downloaded and nothing outside /tmp written, so it fails there. Two ways work: `install = true` under `[stack.run]` has `sv` install the packages in requirements.txt or package.json before the run, outside the fence; or build an image of your own that already holds them and name it in `image` (docs/GETTING-STARTED.md, \"An image of your own\")."
             )),
         ],
     ))

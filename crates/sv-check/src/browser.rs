@@ -954,7 +954,7 @@ pub(crate) fn sign_out_check(
         not_assessed(
             out,
             "whether signing out empties the browser's storage needs `login`, `logout`, and a \
-             private page in [stack.run.users].",
+             private page in `[stack.run.users]`.",
         );
         return;
     };

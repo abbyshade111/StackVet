@@ -170,7 +170,7 @@ pub fn answers(app_dir: &std::path::Path, asked: &Asked) -> Vec<Line> {
             Ok(_) => line(
                 "how to start the app",
                 State::Ready,
-                "stackvet.toml says how to start the app ([stack.run] names an image and a start \
+                "stackvet.toml says how to start the app (`[stack.run]` names an image and a start \
                  command). Whether the app really starts that way is only known by starting it.",
             ),
             Err(why) => line("how to start the app", State::NotReady, why.explain()),
