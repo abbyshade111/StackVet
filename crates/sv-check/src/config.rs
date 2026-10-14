@@ -16,7 +16,7 @@
 
 use crate::finding::{Confidence, Finding, Location, Severity};
 use crate::verified::Verified;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use sv_scan::ecosystems::Pinning;
 
 /// What a configuration check concluded.
@@ -104,7 +104,12 @@ pub fn check_dir_in(
         secrets_file_committed(app_dir),
     );
     report.record(GITIGNORE_COVERS_ENV, gitignore_covers_env(app_dir));
-    report.record("config.security-contact", security_contact(app_dir));
+    let security_files = security_contact_files(app_dir);
+    report.record("config.security-contact", security_contact(&security_files));
+    report.record(
+        crate::security_contact::PLACEHOLDER,
+        crate::security_contact::placeholder(app_dir, &security_files),
+    );
     report.record(AI_COMMITS_OFF_MERGE, ai_commits_off_merge(app_dir, rules));
     report.record(
         "config.versions-pinned",
@@ -890,8 +895,9 @@ fn listed(versions: &[sv_scan::jvm::VersionAt]) -> String {
 /// Whether the app says how to report a security problem: a `SECURITY` file (`.md`, `.txt`, `.rst`,
 /// `.adoc`, or none) at its root, in `.github/`, or in `docs/`, or a `security.txt` where a site
 /// serves it from (RFC 9116: `.well-known/`, also under `public/` or `static/`, and at the root).
-/// Any capitalization. Until 5 October 2026 only four exact paths counted (H23 of the deep review).
-fn has_security_contact(app_dir: &Path) -> bool {
+/// Any capitalization. Until 5 October 2026 only four exact paths counted (H23 of the deep review). Every one
+/// found, in a fixed order, so `crate::security_contact` can read what each gives as the contact.
+fn security_contact_files(app_dir: &Path) -> Vec<PathBuf> {
     const FOLDERS: &[&str] = &[
         "",
         ".github",
@@ -909,20 +915,28 @@ fn has_security_contact(app_dir: &Path) -> bool {
         "security.adoc",
         "security",
     ];
-    FOLDERS.iter().any(|folder| {
+    let mut out = Vec::new();
+    for folder in FOLDERS {
         let Ok(entries) = std::fs::read_dir(app_dir.join(folder)) else {
-            return false;
+            continue;
         };
-        entries.flatten().any(|e| {
-            let name = e.file_name().to_string_lossy().to_lowercase();
-            NAMES.contains(&name.as_str()) && e.file_type().is_ok_and(|k| k.is_file())
-        })
-    })
+        let mut here: Vec<PathBuf> = entries
+            .flatten()
+            .filter(|e| {
+                let name = e.file_name().to_string_lossy().to_lowercase();
+                NAMES.contains(&name.as_str()) && e.file_type().is_ok_and(|k| k.is_file())
+            })
+            .map(|e| e.path())
+            .collect();
+        here.sort();
+        out.extend(here);
+    }
+    out
 }
 
 /// Whether there is a way to report a security problem. Not a vulnerability; an absence.
-fn security_contact(app_dir: &Path) -> Outcome {
-    if has_security_contact(app_dir) {
+fn security_contact(files: &[PathBuf]) -> Outcome {
+    if !files.is_empty() {
         // Deliberately empty. Nothing in ASVS, AISVS or Appendix C requires a way to report a
         // vulnerability; it is an organizational control rather than an application one. This check
         // is worth running and is evidence about no requirement in particular, which the reports

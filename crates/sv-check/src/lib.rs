@@ -55,6 +55,7 @@ pub mod sbom;
 pub mod script;
 pub mod seal;
 pub mod secrets;
+pub mod security_contact;
 pub mod signed;
 pub mod signed_in;
 mod ssh_format;
