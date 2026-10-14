@@ -32,38 +32,37 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 18. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 20. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-21. 0513 Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name — hold: the owner's three licence judgments; ADR-018 Later with the answers
-22. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
-23. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
-24. 0523 The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding — ready
-25. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
-26. 0525 `ast.sql-built-by-hand` flags `executescript(f())` where `f` returns a constant schema, a high finding under V1.2.4 — ready
-27. 0526 The test-user step took 129 s on one trial app with 7 s of it itemized; the timings cannot say where the time went — ready
-28. 0527 When sign-in fails, the run shows only "(400)" and seen.json cuts the page before its error text — ready
-29. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-30. 0529 Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information — ready
-31. 0530 `config.versions-pinned` is titled "Python does not pin the versions it installs" when every version is pinned — ready
-32. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
-33. 0532 `sv preflight` does not say that the test command's program is not among the packages `install = true` installs — ready
-34. 0533 Without an `owned` record the forged-form and other-user checks do not run, and preflight does not say which checks a missing key costs — ready
-35. 0534 `.cursor/mcp.json` is listed as "not read" though `sv connect cursor` writes it and it has the shape `.mcp.json` has — ready
-36. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-37. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-38. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
-39. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
-40. 0540 `tools/install.sh` copies `target/release/sv` after a build that `CARGO_TARGET_DIR` sent elsewhere, and reports the stale one installed — ready
-41. 0541 `stackvet_status` does not name the folder it serves, so a container for an older app passes as connected — ready
-42. 0542 A hand-written security-notes.md counts for nothing, and sv says so only in the counts — ready
-43. 0543 `confirmed = { by = "ai-tool" }` and `[checked-by-hand] ... by = "ai-tool"` are accepted without a word at write time — ready
-44. 0544 `sv doctor` inside a tool's sandboxed shell says there is no container backend when the socket is merely unreachable — ready
-45. 0551 Prompts 1 and 3: run in a chat on this computer, print the system and folder, and paste the settings written into the chat — ready
-46. 0552 Prompt 4: ask which folder the server serves, and stop an older container before going on — ready
-47. 0553 Prompt 6: a sandboxed shell, a kept copy of sv, and a commit that must match the pulled source — ready
-48. 0554 Prompt 6: "open report.html in my web browser" means the computer's browser, or says both are fine — ready
-49. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
-50. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
-51. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
-52. 0558 Prompt 2 and the page say the person may call the folder anything, not only my-app — ready
+21. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
+22. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+23. 0523 The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding — ready
+24. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
+25. 0525 `ast.sql-built-by-hand` flags `executescript(f())` where `f` returns a constant schema, a high finding under V1.2.4 — ready
+26. 0526 The test-user step took 129 s on one trial app with 7 s of it itemized; the timings cannot say where the time went — ready
+27. 0527 When sign-in fails, the run shows only "(400)" and seen.json cuts the page before its error text — ready
+28. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+29. 0529 Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information — ready
+30. 0530 `config.versions-pinned` is titled "Python does not pin the versions it installs" when every version is pinned — ready
+31. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
+32. 0532 `sv preflight` does not say that the test command's program is not among the packages `install = true` installs — ready
+33. 0533 Without an `owned` record the forged-form and other-user checks do not run, and preflight does not say which checks a missing key costs — ready
+34. 0534 `.cursor/mcp.json` is listed as "not read" though `sv connect cursor` writes it and it has the shape `.mcp.json` has — ready
+35. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+36. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+37. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
+38. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
+39. 0540 `tools/install.sh` copies `target/release/sv` after a build that `CARGO_TARGET_DIR` sent elsewhere, and reports the stale one installed — ready
+40. 0541 `stackvet_status` does not name the folder it serves, so a container for an older app passes as connected — ready
+41. 0542 A hand-written security-notes.md counts for nothing, and sv says so only in the counts — ready
+42. 0543 `confirmed = { by = "ai-tool" }` and `[checked-by-hand] ... by = "ai-tool"` are accepted without a word at write time — ready
+43. 0544 `sv doctor` inside a tool's sandboxed shell says there is no container backend when the socket is merely unreachable — ready
+44. 0551 Prompts 1 and 3: run in a chat on this computer, print the system and folder, and paste the settings written into the chat — ready
+45. 0552 Prompt 4: ask which folder the server serves, and stop an older container before going on — ready
+46. 0553 Prompt 6: a sandboxed shell, a kept copy of sv, and a commit that must match the pulled source — ready
+47. 0554 Prompt 6: "open report.html in my web browser" means the computer's browser, or says both are fine — ready
+48. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
+49. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
+50. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
+51. 0558 Prompt 2 and the page say the person may call the folder anything, not only my-app — ready
 
 ## Log
 
@@ -508,3 +507,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 19:04 — released 0536
 - 2026-10-14 19:18 — finished 0518 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1928; now holds 0519
 - 2026-10-14 19:18 — queued 0558, marked
+- 2026-10-14 19:20 — dropped 0513 from the queue
