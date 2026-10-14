@@ -68,17 +68,17 @@ reported as [*not assessed*](GLOSSARY.md#not-assessed).
 
 Your AI tool talks to StackVet over [MCP](GLOSSARY.md#mcp), a standard way for AI tools to use other programs. You add
 one small file to the app's folder. In each example, replace `/Users/you/code/my-app` with your app
-folder's full path, in all three places. On a Mac, `pwd` in a terminal in that folder prints it.
+folder's full path, in all three places; `pwd` in a terminal there prints it.
 
-StackVet can print the file for you with the paths already right. In a terminal in the app's folder (put
-`claude`, `vscode`, or `cursor` for your tool):
+StackVet can print the file with the paths filled in. In a terminal in the app's folder, `which docker` prints
+Docker's full path; run this with yours after `--docker`, and `claude`, `vscode`, or `cursor` for your tool:
 
 ```bash
-docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect claude --docker "$(command -v docker)"
+docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect claude --docker /usr/local/bin/docker
 ```
 
-It prints the settings and the name of the file they go in, and writes nothing itself. On Linux, add
-`--user "$(id -u):$(id -g)"` at the end. The examples below show what it prints.
+It prints the settings and the name of the file they go in, and writes nothing. On Linux, add
+`--user "$(id -u):$(id -g)"` at the end.
 
 **On Windows, the Docker settings do not work yet:** `sv connect --docker` takes only a Mac or Linux path for
 Docker. Install StackVet with Scoop instead ("On Windows: Scoop", in section 6), and in the app's folder, in
@@ -100,7 +100,7 @@ test that talks to it the way the tool does, not yet in the app itself.
 ```
 
 - `command` is the full path to `docker`, because an app started from the Dock often cannot find it.
-  `which docker` in a terminal prints yours. With Docker Desktop it is often `/usr/local/bin/docker`.
+  With Docker Desktop it is often `/usr/local/bin/docker`.
 - The first time you open the folder, the tool asks whether to use the new server. Say yes.
 - On Linux, add `"--user", "1000:1000"` (your own `id -u` and `id -g`) before the image name, so the
   files it writes are yours. Without it the image runs as a user of its own, never root, and that user
@@ -259,10 +259,11 @@ counts it for less than your own answer.
 
 The answers to the questions about the app's rules go in `security-notes.md`. The tool writes them there, and
 every one it writes starts with `Written by: AI coding tool`, even when it is writing down what you told it:
-`sv` cannot tell your words from the tool's. Read what it wrote, and where it says what you decided, change
-that line to `Written by: owner` yourself. Where the tool worked an answer out from the code and you have
-checked it and agree, leave its line as it is: `sv review` offers it for you to confirm, and the report then
-shows it as the tool's words a person confirmed, never as your own. Then record it, in your own terminal:
+`sv` cannot tell your words from the tool's. You do not need to open the file: `sv review`, in your own
+terminal, shows you each answer the tool wrote and asks whose it is. Type `mine` where it says what you
+decided, and it counts as your own answer. Where the tool worked an answer out from the code and you have
+checked it and agree, type your name instead: the report then shows it as the tool's words a person
+confirmed, never as your own. Press Enter to leave one as the tool's word. Run it in your own terminal:
 
 ```bash
 sv review ~/code/my-app
@@ -282,6 +283,8 @@ docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/
 ```
 
 On Linux, add `--user "$(id -u):$(id -g)"` after `docker run`, as in section 3.
+
+Once StackVet is installed on the computer itself (section 6), this is just `sv review .`.
 
 It shows each answer that does not yet count as yours, asks your name or `owner`, and signs it with a key of its own,
 kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose

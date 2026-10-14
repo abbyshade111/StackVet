@@ -1180,6 +1180,15 @@ pub struct Report {
     /// `None` when a report is built without it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub not_run_this_time: Option<NotRunThisTime>,
+    /// For each requirement left *not verified*, what could settle it, in a short phrase for its row (backlog 0426):
+    /// a check of the running app, an outside tool, the app's own tests, or only the person. Filled by `sv report`
+    /// (`could_settle`); never a credit, and empty when a report is built without it.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub could_settle: BTreeMap<String, String>,
+    /// A plain-language line for each requirement that has one (`data/plain-requirements.json`, backlog 0372), shown
+    /// beside the framework's own words, never in place of them. Not in `report.json`: it is `sv`'s data, not the app's.
+    #[serde(skip)]
+    pub plain: BTreeMap<String, String>,
 }
 
 /// What kind of run a report came from, said by what it was not: the short version's line about
@@ -1280,6 +1289,165 @@ pub struct Reach {
     /// Requirement id to the languages the outside tools that can credit it read, `*` for any.
     #[serde(default)]
     pub tools_languages: BTreeMap<String, Vec<String>>,
+}
+
+/// For each requirement left *not verified*, what could settle it, in a phrase for its row (backlog 0426).
+///
+/// Read from `reach` as `not_run_this_time` reads it, with the same rule for the outside tools' languages. A kind of
+/// run that did not happen is named with how to run it; one that happened and settled nothing is said to have, so the
+/// row does not invite the same run again. A requirement no check reaches is the app's tests' to settle when a test
+/// could, and otherwise the person's. The phrase is about what *could* settle the row, never a credit.
+pub fn could_settle(
+    report: &Report,
+    reach: &Reach,
+    tools_run: bool,
+    app_languages: &std::collections::BTreeSet<String>,
+) -> BTreeMap<String, String> {
+    let (app_ran, signed_in) = match &report.run_status {
+        Some(RunStatus::Started { signed_in, .. }) => (true, *signed_in),
+        Some(_) => (false, false),
+        // Nothing recorded about the app's run: nothing is said about it.
+        None => (true, true),
+    };
+    let a_test_could: std::collections::BTreeSet<&str> = report
+        .tests_to_write
+        .iter()
+        .map(|t| t.id.as_str())
+        .collect();
+    let listed: std::collections::BTreeSet<&str> = report
+        .only_you_can_check
+        .iter()
+        .map(|i| i.id.as_str())
+        .collect();
+    let mut out = BTreeMap::new();
+    for r in report
+        .requirements
+        .iter()
+        .filter(|r| r.status == Status::NotVerified)
+    {
+        let tools_read_it = reach
+            .tools_languages
+            .get(&r.id)
+            .is_none_or(|langs| langs.iter().any(|l| l == "*" || app_languages.contains(l)));
+        let kinds: Vec<&str> = reach
+            .requirements
+            .get(&r.id)
+            .map(|k| {
+                k.iter()
+                    .map(String::as_str)
+                    .filter(|k| *k != "tools" || tools_read_it)
+                    .collect()
+            })
+            .unwrap_or_default();
+        let mut said: Vec<&str> = Vec::new();
+        let running = kinds.contains(&"running");
+        let needs_sign_in = kinds.contains(&"signed-in");
+        if (running || needs_sign_in) && !app_ran {
+            said.push("a check of the running app could settle it (`sv report --run`)");
+        } else if needs_sign_in && !signed_in {
+            said.push(
+                "a check signed in as a test user could settle it (a `users` section in stackvet.toml, and \
+                 `sv report --run`)",
+            );
+        } else if running || needs_sign_in {
+            said.push("the app ran, and no check of it settled this");
+        }
+        if kinds.contains(&"tools") {
+            said.push(if tools_run {
+                "the outside tools ran, and none settled this"
+            } else {
+                "an outside tool could (they run with `sv report` at a terminal)"
+            });
+        }
+        if kinds.contains(&"production") {
+            said.push("only the live site can show it (`sv probe` once it is on the internet)");
+        }
+        if kinds.contains(&"advisories") {
+            said.push("the advisory data could, once it is downloaded");
+        }
+        if kinds.contains(&"static") && said.is_empty() {
+            said.push("sv's own reading of the code looked, and settled nothing");
+        }
+        if a_test_could.contains(r.id.as_str()) {
+            said.push("a test of the app's could (ask your AI coding tool to write one)");
+        }
+        if said.is_empty() {
+            said.push(if listed.contains(r.id.as_str()) {
+                "only you can (it is in \"What only you can check\")"
+            } else {
+                "only you can: no check of sv's speaks to it"
+            });
+        }
+        out.insert(r.id.clone(), said.join("; "));
+    }
+    out
+}
+
+/// What could settle a row left *not verified*, as its status cell says it after the status (backlog 0426); empty for
+/// any other row, a row with supporting checks (whose cell already says a person has to answer it), and a report built
+/// without `could_settle`.
+pub fn could_settle_note(report: &Report, line: &RequirementLine) -> String {
+    if line.status != Status::NotVerified || !line.supported_by.is_empty() {
+        return String::new();
+    }
+    report
+        .could_settle
+        .get(&line.id)
+        .map(|said| format!(" \u{2014} {said}"))
+        .unwrap_or_default()
+}
+
+/// What could settle a requirement, from its kinds of run in `data/reach.json` alone, for an answer that has no report
+/// to read the run from (`stackvet_explain`, backlog 0426): each kind with how to run it.
+pub fn could_settle_kinds(kinds: &[String]) -> String {
+    let said: Vec<&str> = kinds
+        .iter()
+        .filter_map(|k| {
+            Some(match k.as_str() {
+                "static" => "sv's own reading of the code",
+                "running" => "a check of the running app (`sv report --run`)",
+                "signed-in" => {
+                    "a check signed in as a test user (a `users` section in stackvet.toml, and `sv report --run`)"
+                }
+                "tools" => "an outside tool (they run with `sv report` at a terminal)",
+                "production" => "the live site (`sv probe` once it is on the internet)",
+                "advisories" => "the advisory data, once it is downloaded",
+                _ => return None,
+            })
+        })
+        .collect();
+    if said.is_empty() {
+        "no check of sv's speaks to it: a test of the app's, or the person's own answer, can"
+            .to_owned()
+    } else {
+        said.join("; ")
+    }
+}
+
+/// How many of the requirements that apply have a plain-language line, said above them (backlog 0372); `None` when
+/// none has, or all have.
+pub fn plain_note(report: &Report) -> Option<String> {
+    let all = report.requirements.len();
+    let with = report
+        .requirements
+        .iter()
+        .filter(|r| report.plain.contains_key(&r.id))
+        .count();
+    (with > 0 && with < all).then(|| {
+        format!(
+            "{with} of these {all} requirements have a line in plain words, with the standard's own words beside \
+             it; the rest show the standard's words only, for now. The standard's words are what a requirement \
+             means."
+        )
+    })
+}
+
+/// `data/plain-requirements.json`, read: requirement id to its plain-language line (backlog 0372).
+#[derive(Debug, serde::Deserialize)]
+pub struct PlainRequirements {
+    #[serde(rename = "_comment", default)]
+    _comment: String,
+    pub plain: BTreeMap<String, String>,
 }
 
 /// `data/reach.json`, read.
@@ -3389,6 +3557,8 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         could_not_run: Vec::new(),
         partly_read: Vec::new(),
         not_run_this_time: None,
+        could_settle: Default::default(),
+        plain: Default::default(),
     }
 }
 
@@ -3757,3 +3927,11 @@ mod one_line_tests {
 #[cfg(test)]
 #[path = "utc_tests.rs"]
 mod utc_tests;
+
+// What could settle each row left not verified, as the report says it beside the row (backlog 0426).
+#[cfg(test)]
+mod could_settle_tests;
+
+// The plain-language line beside a requirement's own words (backlog 0372).
+#[cfg(test)]
+mod plain_tests;

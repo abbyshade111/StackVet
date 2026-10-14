@@ -385,7 +385,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
             json!({
                 "id": string, "chapter": string, "level": count,
                 "levelBasis": { "type": ["string", "null"] },
-                "description": string, "counterparts": strings,
+                "description": string, "counterparts": strings, "couldSettle": string,
             }),
             &[
                 "id",
@@ -394,6 +394,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                 "levelBasis",
                 "description",
                 "counterparts",
+                "couldSettle",
             ],
         ),
         _ => return None,
@@ -627,7 +628,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_explain",
             "title": "Explain a requirement",
-            "description": "What a requirement asks for, in its framework's own words, with its level and where the level comes from. Takes an id such as V1.2.4, C9.5.4, AC.4.1 or SBD-AC-05.",
+            "description": "What a requirement asks for, in its framework's own words, with its level, where the level comes from, and what kind of run could settle it. Takes an id such as V1.2.4, C9.5.4, AC.4.1 or SBD-AC-05.",
             "inputSchema": {
                 "type": "object",
                 "properties": { "id": { "type": "string", "description": "The requirement id." } },
@@ -769,6 +770,18 @@ pub(super) fn explain(frameworks: &sv_frameworks::Frameworks, args: &Value) -> R
             r.counterparts.join(", ")
         ));
     }
+    // What could settle it, so the AI tool can answer "what would it take?" without the terminal (backlog 0426).
+    let reach_path = sv_frameworks::data::file("reach.json");
+    let reach = std::fs::read_to_string(&reach_path)
+        .map_err(anyhow::Error::from)
+        .and_then(|text| sv_report::read_reach(&text))
+        .with_context(|| format!("reading {}", reach_path.display()))?;
+    let could_settle =
+        sv_report::could_settle_kinds(reach.requirements.get(id).map_or(&[][..], Vec::as_slice));
+    text.push_str(&format!(
+        "\n\nWhat could settle it: {could_settle}. That is what could, not a credit: a check settles it only by \
+         running and finding it met."
+    ));
     Ok(json!({
         "content": [{ "type": "text", "text": text }],
         "structuredContent": {
@@ -778,6 +791,7 @@ pub(super) fn explain(frameworks: &sv_frameworks::Frameworks, args: &Value) -> R
             "levelBasis": r.level_basis,
             "description": r.description,
             "counterparts": r.counterparts,
+            "couldSettle": could_settle,
         },
         "isError": false,
     }))

@@ -2771,6 +2771,13 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         .with_context(|| format!("reading {}", reach_path.display()))?;
     report.not_run_this_time =
         sv_report::not_run_this_time(&report, &reach, options.run_tools, &scan_report.languages);
+    // A plain-language line beside each requirement that has one (backlog 0372).
+    let plain: sv_report::PlainRequirements =
+        sv_frameworks::data::read_json(&sv_frameworks::data::file("plain-requirements.json"))?;
+    report.plain = plain.plain;
+    // What could settle each row left not verified (backlog 0426).
+    report.could_settle =
+        sv_report::could_settle(&report, &reach, options.run_tools, &scan_report.languages);
     let file_gaps = static_scan.file_gaps();
     report.could_not_run = file_gaps.could_not_run;
     report.partly_read = file_gaps.partly;

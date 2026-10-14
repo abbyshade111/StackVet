@@ -1121,6 +1121,44 @@ pub fn with_seal_in(catalog: &Catalog, text: &str, id: &str, seal: &str) -> Opti
     Some(joined)
 }
 
+/// The notes file with the section for `id` made the owner's: its `Written by:` line says `owner`,
+/// and `seal`, made over the owner's fields (`seal::notes_fields`), is put under it as `with_seal_in`
+/// puts one. What `sv review` writes when the owner says a section the AI coding tool wrote down is
+/// their own decision (backlog 0425; ADR-026, Later, 14 October 2026), and the same as changing the
+/// line by hand and recording it. `None` when there is no such section or it has no `Written by:`
+/// line. Nothing else changes.
+pub fn as_owners_in(catalog: &Catalog, text: &str, id: &str, seal: &str) -> Option<String> {
+    let lines: Vec<&str> = text.lines().collect();
+    let start = lines
+        .iter()
+        .position(|l| catalog.section_of(l).as_deref() == Some(id))?;
+    let end = lines[start + 1..]
+        .iter()
+        .position(|l| ends_section(l))
+        .map_or(lines.len(), |i| start + 1 + i);
+    let mut rewritten = false;
+    let out: Vec<String> = lines
+        .iter()
+        .enumerate()
+        .map(|(i, line)| {
+            if i > start && i < end && written_by(line).is_some() {
+                rewritten = true;
+                format!("{WRITTEN_BY} {BY_OWNER}")
+            } else {
+                (*line).to_owned()
+            }
+        })
+        .collect();
+    if !rewritten {
+        return None;
+    }
+    let mut joined = out.join("\n");
+    if text.ends_with('\n') {
+        joined.push('\n');
+    }
+    with_seal_in(catalog, &joined, id, seal)
+}
+
 /// `## V6.1.1 — …` or `### V6.1.1 — …`, giving the requirement id.
 /// A heading of the first three levels, the ones `sv` writes, that is not a section's: the words
 /// after its `#`s. A deeper heading (`####`) stays part of the answer it is in, so an answer can

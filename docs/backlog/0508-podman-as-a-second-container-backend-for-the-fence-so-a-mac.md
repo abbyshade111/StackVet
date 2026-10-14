@@ -1,6 +1,6 @@
 # Podman as a second container backend for the fence, so a Mac or Linux user without Docker can run the running-app checks
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

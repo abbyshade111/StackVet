@@ -12,3 +12,11 @@ in place of it (the formal text is what the requirement means, and a citation is
 words. Several hundred requirements: it can start with those that come up most in reports, saying in the report which
 have no plain line yet. Plain lines drift from what they paraphrase, so a test holds each to its requirement, as
 `crates/sv-check/tests/notes.rs` does for the questions.
+
+**Partly done, 14 October 2026:** `data/plain-requirements.json` holds a plain-language line for each of ASVS 5.0's 70
+level-1 requirements, written from each requirement's own words. report.html shows the line above the standard's words
+("In its own words: …"); compliance.md shows it in a fourth column, with the standard's words in its appendix as before;
+both say how many rows have a plain line, while some do not. A check beside a status is named by what it covered first,
+its id after it in parentheses. `crates/sv-report/tests/plain_requirements.rs` holds every line to a real requirement
+whose words it shares, and every ASVS level-1 requirement to having one. What remains: the requirements above level 1,
+AISVS, and the Secure by Design checklist.

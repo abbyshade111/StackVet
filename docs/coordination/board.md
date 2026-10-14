@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468, 0425, 0427, 0477
-- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0424, 0426, 0372, 0397, 0401
-- documentation — arm: full — holds: 0400 (since 2026-10-14) — next: 0383, 0473, 0474, 0478, 0476, 0475
+- honesty — arm: full — holds: 0425 (since 2026-10-14) — next: 0427, 0477, 0508
+- wording — arm: full — holds: 0426 (since 2026-10-14) — next: 0372, 0397, 0401
+- documentation — arm: full — holds: 0383 (since 2026-10-14) — next: 0473, 0474, 0478, 0476, 0475
 
 ## Queue
 
@@ -35,8 +35,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 21. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 22. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 23. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-24. 0508 Podman as a second container backend for the fence, so a Mac or Linux user without Docker can run the running-app checks — ready
-25. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
+24. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
 
 ## Log
 
@@ -352,3 +351,10 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 09:03 — released 0508
 - 2026-10-14 09:03 — released 0508
 - 2026-10-14 09:03 — queued 0510, marked
+- 2026-10-14 09:20 — finished 0466 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1865; now holds 0467
+- 2026-10-14 09:20 — finished 0467 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1793; now holds 0468
+- 2026-10-14 09:20 — finished 0468 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1869; now holds 0425
+- 2026-10-14 09:20 — finished 0404 by wording (full): https://github.com/abbyshade111/StackVet/pull/1867; now holds 0424
+- 2026-10-14 09:20 — finished 0424 by wording (full): https://github.com/abbyshade111/StackVet/pull/1872; now holds 0426
+- 2026-10-14 09:20 — finished 0400 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1871; now holds 0383
+- 2026-10-14 09:20 — assigned 0508 to honesty (full) as next: the owner's word of 14 October: the Podman look, measurement first (sv-run, the fence tests); no other lane touches sv-run

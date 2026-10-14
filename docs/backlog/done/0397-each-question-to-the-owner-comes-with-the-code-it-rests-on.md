@@ -1,6 +1,6 @@
 # Each question to the owner comes with the code it rests on
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -31,3 +31,13 @@ Two parts to look into:
 
 Neither may make a tip count as evidence: a tip with lines is still the AI tool's reading, and an answer stays the
 tool's word until the owner records it with `sv review` (ADR-026).
+
+**Done, 14 October 2026:**
+- **The AI tool cites its evidence.** `HOW_TO_ASK` (`crates/sv-report/src/interview.rs`), given with every `questions`
+  section and `sv questions`, now asks for each tip to quote the exact lines it rests on, with the file and line, and to
+  say plainly it is the tool's reading of the code, not a check; with no lines to quote, to say so. Whether tools follow
+  it is what the next trial shows.
+- **StackVet supplies its own.** That is backlog 0487, merged the same day: a question can carry lines a locator found by
+  their names, tried on V8.1.1 and V8.3.1, with the list of questions that never get a pointer in 0487's text. The
+  fourteen proposals that extend it (0488 to 0499) wait on what the trial shows, as the owner decided.
+- **Neither credits anything:** a tip with lines is still the tool's word until the owner records it with `sv review`.

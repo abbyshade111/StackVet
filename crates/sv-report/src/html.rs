@@ -564,6 +564,9 @@ pub fn page(report: &Report) -> String {
     }
 
     b.push_str("<h2>Requirements that apply</h2>\n");
+    if let Some(note) = crate::plain_note(report) {
+        b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&note)));
+    }
     for group in crate::groups::by_level(&report.requirements) {
         b.push_str(&format!(
             "<h3>{} <span class=\"note\">— {} of them</span></h3>\n",
@@ -581,7 +584,7 @@ pub fn page(report: &Report) -> String {
                     " ({})",
                     line.checked_by
                         .iter()
-                        .map(|c| format!("{}: {}", c.check_id, c.scope))
+                        .map(|c| format!("{} ({})", c.scope, c.check_id))
                         .collect::<Vec<_>>()
                         .join("; ")
                 ),
@@ -628,11 +631,11 @@ pub fn page(report: &Report) -> String {
                     " \u{2014} a person has to answer it; supporting: {}",
                     line.supported_by
                         .iter()
-                        .map(|c| format!("{}: {}", c.check_id, c.scope))
+                        .map(|c| format!("{} ({})", c.scope, c.check_id))
                         .collect::<Vec<_>>()
                         .join("; ")
                 ),
-                Status::NotVerified => String::new(),
+                Status::NotVerified => crate::could_settle_note(report, line),
             };
             b.push_str(&format!(
                 "<tr><td><code>{}</code></td><td class=\"{class}\">{}{}</td><td>{}</td></tr>\n",
@@ -644,7 +647,16 @@ pub fn page(report: &Report) -> String {
                     line.counting_note(),
                     line.information_note()
                 )),
-                escape(&line.description)
+                // The plain line first, and the framework's own words beside it: those are what the requirement
+                // means (backlog 0372).
+                match report.plain.get(&line.id) {
+                    Some(plain) => format!(
+                        "{}<br><span class=\"note\">In its own words: {}</span>",
+                        escape(plain),
+                        escape(&line.description)
+                    ),
+                    None => escape(&line.description),
+                }
             ));
         }
         b.push_str("</table>\n");
@@ -1392,6 +1404,8 @@ mod tests {
             could_not_run: Vec::new(),
             partly_read: Vec::new(),
             not_run_this_time: None,
+            could_settle: Default::default(),
+            plain: Default::default(),
         }
     }
 
