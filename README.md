@@ -9,6 +9,8 @@ StackVet checks an app against the OWASP standards and writes reports that say p
 what was not. You write the app in whatever AI coding tool you like, in any language; you have the back-and-forth
 with your own AI tool until the app is what you wanted, and then `sv` picks up the code and grades it.
 
+![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](docs/website/diagrams/how-it-works.svg)
+
 **If you are not a programmer, start with [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md).** It walks through
 installing Docker, connecting StackVet to your AI tool, the prompt to start with, and reading the report, one step
 at a time. The rest of this page is written for programmers, and its commands build StackVet from its source code.

@@ -10,6 +10,10 @@ you go. You do not need to know how to program, and you do not need to know abou
 writes the code, StackVet checks it against the OWASP security standards, and the two of them ask you
 the questions only you can answer.
 
+![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](website/diagrams/how-it-works.svg)
+
+The steps below set this up, one at a time.
+
 It takes about fifteen minutes to set up, once. A word here you do not know is probably in
 [the glossary](GLOSSARY.md).
 
