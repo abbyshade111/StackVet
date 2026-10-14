@@ -668,11 +668,11 @@ impl Server {
             format!(
                 "Recorded under {} in {}, marked `Written by: AI coding tool`. The report counts \
                      it as stated by the AI coding tool, which is less than the person's own word, and \
-                     asks again. Show the person what you wrote; if they agree with it, they can change \
-                     that line to `Written by: owner` themselves and record it by running `sv review` \
-                     in their own terminal. If you worked it out from the code and they agree, they \
-                     leave the line as it is and confirm it through `sv review`, and the report shows \
-                     it as your words a person confirmed. Do not change it or run `sv review` for them.",
+                     asks again. Show the person what you wrote, and tell them to run `sv review` in \
+                     their own terminal: it asks whether it is their own decision, which they say by \
+                     typing `mine`, or your reading they checked and confirm, which the report shows \
+                     as your words a person confirmed. Do not change the line or run `sv review` for \
+                     them.",
                 fence.wrap(id),
                 fence.wrap(&written.path.display().to_string())
             )
