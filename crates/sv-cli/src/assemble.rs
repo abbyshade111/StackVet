@@ -95,6 +95,9 @@ pub fn stage_finished(ended: Option<(usize, std::time::Instant)>) {
 pub(crate) fn guarded<T>(name: &str, run: impl FnOnce() -> T) -> std::result::Result<T, String> {
     #[cfg(debug_assertions)]
     let inject = std::env::var("SV_PANIC_IN_STAGE").ok().as_deref() == Some(name);
+    // A release build has no injected panic, so it never reads the name (backlog 0393).
+    #[cfg(not(debug_assertions))]
+    let _ = name;
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         #[cfg(debug_assertions)]
         if inject {
