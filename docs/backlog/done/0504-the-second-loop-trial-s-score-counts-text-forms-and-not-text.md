@@ -1,6 +1,6 @@
 # The second loop trial's score counts text-forms and not text-form
 
-**Status:** partly done: the builds scored again on the owner's computer, where they are, and finding 6 written from the new count
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -20,5 +20,5 @@ one `browser` beside `users` that it must not count. Breaking either half of the
 `crates/sv-check/tests/loop_measures.rs` runs it. `results.md`'s finding 6 now says the count was wrong and why, and
 that `scores.json`'s `text_forms_listed` is not a measurement until the builds are scored again.
 
-**What remains:** scoring the builds again, on the owner's computer, where they are (`~/sv-loop2`): `sh
-docs/prompts/loop-2/run_loop2.sh score`, then `scores.json` copied in and finding 6 written from the new count.
+**What remains** is backlog 0515: scoring the builds again, on the owner's computer, where they are (`~/sv-loop2`),
+and writing finding 6 from the new count.
