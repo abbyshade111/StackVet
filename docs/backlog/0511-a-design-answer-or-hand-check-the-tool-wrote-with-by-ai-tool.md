@@ -18,3 +18,5 @@ October 2026). Severity: low. Needs the owner's word before it is built.
   as the person's words (a new field, which the tool cannot make true, so it would only choose what is asked); or
   (c) leave it, since the person can still write `by = "owner"` and record it.
 - Needs a decision record?: yes, a Later entry on ADR-026 if built.
+
+**The owner's decision, 14 October 2026** (asked by session honesty): (c), leave it. A design entry or a hand check the tool wrote is confirmed in `sv review`, not owned; the answers a person gives in chat reach `security-notes.md`, where `mine` is; the two design answers that are the person's own (the level) are confirmed through the scope step; and for the rare entry that is truly the person's, `by = "owner"` by hand remains. Close the item with this reason, add one sentence to the guide saying so, and record the choice as a Later line on ADR-026 in the same pull request.
