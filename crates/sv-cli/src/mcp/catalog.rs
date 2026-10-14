@@ -117,6 +117,17 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
             "where_to_look": { "type": ["string", "null"] },
             "route": { "type": "string", "enum": ["write-it-down", "answer-in-the-manifest", "go-and-look"] },
             "where_means": { "type": ["string", "null"] },
+            // Where in the code the question is about, file and line only (backlog 0487): where to look, not evidence.
+            "rests_on": {
+                "type": ["object", "null"],
+                "properties": {
+                    "finds": string,
+                    "places": { "type": "array", "items": object(json!({ "file": string, "line": count }), &["file", "line"]) },
+                    "more": count,
+                },
+                "required": ["finds", "places", "more"],
+                "additionalProperties": false
+            },
         }),
         &[
             "id",
@@ -125,6 +136,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
             "where_to_look",
             "route",
             "where_means",
+            "rests_on",
         ],
     );
     let schema = match tool {
@@ -585,7 +597,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_write_report",
             "title": "Write the full report",
-            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, low-findings.md (every low-severity finding in full), findings.sarif, report.json, seen.json (what the running app answered, credentials cut out) and sbom.cdx.json (the bill of materials). Same checks as stackvet_check.",
+            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, low-findings.md (every low-severity finding in full), stackvet.sarif (the findings, for code-scanning tools), report.json, seen.json (what the running app answered, credentials cut out) and sbom.cdx.json (the bill of materials). Same checks as stackvet_check.",
             "inputSchema": {
                 "type": "object",
                 "properties": {

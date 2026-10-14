@@ -11,8 +11,8 @@ If you have used a terminal or Docker before, [the guide](../GETTING-STARTED.md)
 to StackVet connected and a first build. That trial is where most of these words come from. The setup worked. In the
 build, though, the AI tool decided where the app runs and who signs in without asking, offered "done" for checks
 nobody had made, and made two security findings disappear without changing what the app does, which only the app's
-git history showed. Until changes to these prompts are tried there and do better, we don't recommend Antigravity with
-that model. Tests hold the prompts to the image name StackVet is published under, to the options `sv connect` takes,
+git history showed. The prompts were changed for each of these on 14 October 2026 (backlog 0407); until the changed
+prompts are tried there and do better, we don't recommend Antigravity with that model. Tests hold the prompts to the image name StackVet is published under, to the options `sv connect` takes,
 and to the Scoop commands that install it on Windows (`crates/sv-cli/tests/connect.rs`,
 `crates/sv-cli/tests/setup_prompts.rs`). If anything here goes wrong, the guide has the same steps as commands. The
 website names only the AI tools these prompts have really been tried in.
@@ -218,18 +218,27 @@ word.
 > 1. Call `stackvet_spec` and write `stackvet.toml` for this app, from what it will really do.
 >    Its capability lines start commented out: answer each one you can with true or false, and
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
->    assessed; a wrong `false` switches whole sets of checks off.
+>    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
+>    app runs, whether anyone signs in, or how it is reached** (`auth`, `tls`, and the `[stack.run]`
+>    lines), and tell me whenever you change one. Name the app's pages and routes in it, under
+>    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
+>    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
 >
 > Then, as we build:
 > 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
 >    it finds that is real. If a finding looks wrong, tell me instead of rewriting working code to
->    make it go away.
-> 4. Never tell me the app is secure. Tell me what was checked and what was not.
-> 5. When the first version works, call `stackvet_check` with section `questions` and ask me the
->    questions one at a time. Record my answers with `stackvet_record_answer`, and only what I
->    actually answer as mine.
+>    make it go away. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
+>    `nosemgrep`, no rewrite whose only effect is that the check stops seeing it): tell me, and let
+>    me decide.
+> 4. After each change, tell me in plain words what you changed. Ask me before you delete anything.
+> 5. Never tell me the app is secure. Tell me what was checked and what was not.
+> 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
+>    questions one at a time. When you tell me what the code does for one, quote the lines and say
+>    it is your reading, not a check. Record my answers with `stackvet_record_answer`, and only what
+>    I actually answer as mine. Never mark a check by hand as done, or write `by = "owner"`: only I
+>    can, with `sv review`.
 <!-- setup-step-5:end -->
 
 What happens next:
@@ -259,7 +268,7 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 <!-- setup-step-6:start -->
 > I'd like the full StackVet report for this app: the one that starts the app in its own container, with no
 > internet, and runs the security tools each language has. Your `stackvet_` tools can't make it: it is made at the
-> terminal, by StackVet installed on this computer itself. StackVet's guide on GitHub (`docs/GETTING-STARTED.md`, the
+> terminal, by StackVet installed on this computer itself. StackVet's page on GitHub (`docs/INSTALL.md`, the
 > section "Installing StackVet on your computer, for `--run`") says how. Walk me through it one step at a time, and
 > ask me before you install, update, or run anything.
 >
@@ -279,8 +288,10 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    are installed; Semgrep downloads its rules from semgrep.dev as it runs. It takes several minutes. It needs Docker:
 >    if your own commands are kept from Docker, say so and ask me to allow it, or tell me the command to type myself.
 >    Never give StackVet's container access to Docker, and never run commands inside a container.
-> 6. Tell me where the report is, and walk me through `report.html` from the top: the most important things to fix
->    first, then what was not examined. Never tell me the app is secure.
+> 6. Tell me where the report is, and open `report.html` in my web browser for me (`open` on a Mac, `start` in
+>    PowerShell, `xdg-open` on Linux), not in this chat, where it shows as code. Walk me through it from the top: the
+>    most important things to fix first, then what was not examined. Never tell me the app is secure. Ask me before
+>    you delete the report's folder, or anything else.
 <!-- setup-step-6:end -->
 
 **Your answers count as yours only once you record them yourself.** The report shows the answers your AI tool wrote

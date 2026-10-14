@@ -98,10 +98,7 @@ pub enum OldTls {
 
 impl Answer {
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers
-            .iter()
-            .find(|(n, _)| n == name)
-            .map(|(_, v)| v.as_str())
+        crate::probes::header_in(&self.headers, name)
     }
 
     pub fn reached(&self) -> bool {
@@ -1612,35 +1609,12 @@ pub fn stapling_from(code: Option<i32>, stderr: &str) -> Stapling {
     }
 }
 
-/// Reads curl's `--head` output: a status line, then headers.
+/// Reads curl's `--head` output: a status line, then headers (`probes::read_head`); a status of 0 when there is none.
 fn parse_head(text: &str) -> Answer {
-    let mut status = 0;
-    let mut headers = Vec::new();
-    for line in text.lines() {
-        let line = line.trim_end();
-        if let Some(rest) = line.strip_prefix("HTTP/") {
-            // A proxy answers CONNECT with its own status line before the site says anything. It is
-            // not a response from the site, and counting it would make the site's own headers
-            // vanish when they arrive before it — found by running this behind one.
-            if line.to_ascii_lowercase().contains("connection established") {
-                continue;
-            }
-            // A new status line means a new response; the last one is the one that answered.
-            if let Some(code) = rest.split_whitespace().nth(1)
-                && let Ok(n) = code.parse::<u16>()
-            {
-                status = n;
-                headers.clear();
-            }
-            continue;
-        }
-        if let Some((name, value)) = line.split_once(':') {
-            headers.push((name.trim().to_lowercase(), value.trim().to_owned()));
-        }
-    }
+    let (status, headers) = crate::probes::read_head(text);
     Answer {
         revocation: None,
-        status,
+        status: status.unwrap_or(0),
         headers,
         failure: None,
     }
@@ -1648,6 +1622,9 @@ fn parse_head(text: &str) -> Answer {
 
 #[cfg(test)]
 mod curl_tests;
+
+#[cfg(test)]
+mod header_case_tests;
 
 #[cfg(test)]
 mod curl_capped_tests;

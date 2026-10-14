@@ -276,12 +276,7 @@ mod tests {
     use super::*;
     use std::fs;
 
-    fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("sv-certs-{name}-{}", std::process::id()));
-        fs::remove_dir_all(&dir).ok();
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
+    use crate::test_support::scratch;
 
     fn run(dir: &std::path::Path) -> ConfigReport {
         let mut report = ConfigReport::default();

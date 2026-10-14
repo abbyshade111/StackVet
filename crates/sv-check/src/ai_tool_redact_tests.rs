@@ -38,7 +38,7 @@ fn a_key_in_any_quoted_setting_is_cut_to_its_first_four_characters_and_length() 
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(path, json.to_string()).unwrap();
     }
-    let files = read(&Listing::of(&dir), &rules());
+    let files = read(&Listing::of(&dir), rules());
     let _ = std::fs::remove_dir_all(&dir);
     // The setup: every place the key was planted gave a note, so none passes by being left out.
     assert_eq!(files.notes.len(), 7, "{:#?}", files.notes);

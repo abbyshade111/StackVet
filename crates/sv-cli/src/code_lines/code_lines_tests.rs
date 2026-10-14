@@ -3,11 +3,8 @@
 
 use super::*;
 
-fn rules() -> SecretRules {
-    SecretRules::load(
-        &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 fn at(file: &str, line: usize) -> sv_check::Finding {
@@ -55,7 +52,7 @@ fn a_finding_gets_its_line_and_the_one_either_side_with_a_key_on_them_cut() {
         format!("import os\nSTRIPE = \"{key}\"\nquery = \"SELECT * FROM notes WHERE id = \" + id\nprint(query)\n"),
     )
     .unwrap();
-    let got = read(&dir, &[at("app.py", 3)], &rules());
+    let got = read(&dir, &[at("app.py", 3)], rules());
     let lines = got
         .get(&("app.py".to_owned(), 3))
         .expect("the finding's lines");
@@ -85,7 +82,7 @@ fn nothing_outside_the_apps_folder_is_read() {
     std::fs::write(dir.join("secret.txt"), "outside the app\n").unwrap();
     for file in ["../secret.txt", "/etc/hosts", ""] {
         assert!(
-            read(&app, &[at(file, 1)], &rules()).is_empty(),
+            read(&app, &[at(file, 1)], rules()).is_empty(),
             "{file} was read"
         );
     }
@@ -93,7 +90,7 @@ fn nothing_outside_the_apps_folder_is_read() {
     {
         std::os::unix::fs::symlink(dir.join("secret.txt"), app.join("linked.txt")).unwrap();
         assert!(
-            read(&app, &[at("linked.txt", 1)], &rules()).is_empty(),
+            read(&app, &[at("linked.txt", 1)], rules()).is_empty(),
             "a link out of the folder was followed"
         );
     }
@@ -104,7 +101,7 @@ fn nothing_outside_the_apps_folder_is_read() {
 fn the_first_and_last_lines_have_no_line_past_them_and_a_long_line_is_cut() {
     let dir = folder("edges");
     std::fs::write(dir.join("a.js"), format!("{}\nend\n", "x".repeat(500))).unwrap();
-    let got = read(&dir, &[at("a.js", 1), at("a.js", 2)], &rules());
+    let got = read(&dir, &[at("a.js", 1), at("a.js", 2)], rules());
     assert_eq!(
         got[&("a.js".to_owned(), 1)]
             .iter()

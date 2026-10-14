@@ -25,3 +25,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: requirements and t
 - Overlap: none found (`grep -rli out-of-band-auth docs/backlog/` is empty).
 - Needs a decision record?: yes, a small one: a condition's meaning changes which requirements apply (a Later
   line on the record that governs `data/applicability-v2.json`, or a new short ADR if none does).
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): (a): a new condition for V6.6.2 alone, true when `out-of-band-auth` is true or `stackvet.toml` has an `email-code` entry under `[stack.run.users]`, so V6.6.2 applies to emailed codes and V6.6.1 stays phone and SMS only. A Later line on the record that governs `data/applicability-v2.json` (or a short new record if none does), with the condition's wording and the reason.

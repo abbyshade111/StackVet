@@ -1,6 +1,6 @@
 # Each requirement in the report stated in plain language, with checks named in words
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

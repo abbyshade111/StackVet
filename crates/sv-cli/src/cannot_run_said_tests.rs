@@ -3,8 +3,8 @@
 use super::*;
 use sv_run::CannotRun;
 
-fn rules() -> SecretRules {
-    SecretRules::load(&secret_rules_path()).expect("sv's secret rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 /// A key, a password, and a crash line that prints both, built from pieces so this file holds neither.
@@ -50,7 +50,7 @@ fn a_credential_the_app_printed_never_reaches_the_reason() {
         // the redaction's doing.
         let raw = why.explain();
         assert!(raw.contains(&key) && raw.contains(&password), "{raw}");
-        let said = said_without_credentials(&raw, why.kind(), Some(&rules));
+        let said = said_without_credentials(&raw, why.kind(), Some(rules));
         assert!(!said.contains(&key), "a key reached the reason: {said}");
         assert!(
             !said.contains(&password),

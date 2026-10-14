@@ -3,14 +3,9 @@
 //! is not waited on.
 
 use crate::review::findings_without_entries;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-review-read-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 #[test]
 fn a_sealed_report_is_counted_from() {

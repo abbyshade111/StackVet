@@ -1,6 +1,6 @@
 # The report's "What to do next" speaks the terminal's language and never names `sv review` or the full run
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

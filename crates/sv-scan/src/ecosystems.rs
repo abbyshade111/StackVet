@@ -637,7 +637,8 @@ fn workspace_members(dir: &Path) -> Option<Vec<String>> {
 }
 
 /// A workspace member pattern against a path below the workspace root: `*` is one folder name,
-/// `**` any number of them. That is all the workspace formats use.
+/// `**` any number of them. That is all the workspace formats use, which name whole folders, so this is kept apart
+/// from `crate::glob`, the wildcard matcher for `.gitignore` lines and semgrep's `paths` (backlog 0456).
 fn glob_matches(pattern: &str, path: &str) -> bool {
     fn go(p: &[&str], s: &[&str]) -> bool {
         match (p.first(), s.first()) {
@@ -939,7 +940,7 @@ pub const REPORT_FILES: [&str; 8] = [
     "compliance.md",
     "security.md",
     "low-findings.md",
-    "findings.sarif",
+    "stackvet.sarif",
     "report.json",
     "seen.json",
     "sbom.cdx.json",
@@ -950,19 +951,26 @@ pub const REPORT_FILES: [&str; 8] = [
 /// Not a report file and not sealed: it grows between reports, and the report carries what it read.
 pub const BUILD_LOOP_RECORD: &str = "build-loop.jsonl";
 
+/// The SARIF file's name until 14 October 2026, when it became `stackvet.sarif` (backlog 0409): read
+/// by a person as "problems with the app" even when it held none. A report folder from before then
+/// holds it, so it is still `sv`'s own, and writing a new report there removes it.
+pub const OLD_SARIF_FILE: &str = "findings.sarif";
+
 /// Every name `sv` writes in a report folder: the marker, the lock, their old forms (a report folder
-/// from before the rename holds those), the record of the build loop, and the six report files.
+/// from before the rename holds those), the record of the build loop, the SARIF file's old name, and
+/// the report files.
 pub const REPORT_FOLDER_NAMES: &[&str] = &{
-    let mut names = [""; 6 + REPORT_FILES.len()];
+    let mut names = [""; 7 + REPORT_FILES.len()];
     names[0] = REPORT_MARKER;
     names[1] = REPORT_LOCK;
     names[2] = sv_frameworks::names::OLD_REPORT_MARKER;
     names[3] = sv_frameworks::names::OLD_REPORT_LOCK;
     names[4] = BUILD_LOOP_RECORD;
     names[5] = REPORT_HOLDER;
+    names[6] = OLD_SARIF_FILE;
     let mut i = 0;
     while i < REPORT_FILES.len() {
-        names[6 + i] = REPORT_FILES[i];
+        names[7 + i] = REPORT_FILES[i];
         i += 1;
     }
     names

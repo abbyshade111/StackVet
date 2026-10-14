@@ -6,97 +6,34 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0431 (since 2026-10-13) — next: 0432, 0434, 0466, 0467, 0468
-- wording — arm: full — holds: 0453 (since 2026-10-13) — next: 0454, 0450, 0393, 0406, 0399
-- documentation — arm: full — holds: 0481 (since 2026-10-13) — next: 0479, 0439, 0438, 0436
+- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468, 0425, 0427, 0477
+- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0424, 0426, 0372, 0397, 0401
+- documentation — arm: full — holds: 0400 (since 2026-10-14) — next: 0383, 0473, 0474, 0478, 0476, 0475
 
 ## Queue
 
-1. 0469 `config.workflow-checkout-keeps-token` credits AC.12.2 whole for one of its two clauses — ready
-2. 0470 "Can be credited" says "the ones a check can mark *checked*", and counts three that can only ever be *checked in part* — ready
-3. 0433 The website's "StackVet can check" column is the "can settle" number, which counts 40 requirements it can only ever fail — ready
-4. 0471 The short version's "only these kinds of run could have reached N requirements" counts a tool of another language as a reach — ready
-5. 0472 COVERAGE.md's "Level 1 with no check at all (9)" calls them every app's baseline, though four apply only to an OAuth authorization server — ready
-6. 0444 The group A credits can be whole with the health path's answer left out by the rate limiter, and then read "the app's answers on ," — ready
-7. 0446 `sign_out_visible` is now always in part, but its chain and comment still say "one drawn is one sample" — ready
-8. 0447 A threat's "n of m requirements checked" counts a requirement checked in part as checked — ready
-9. 0383 The spec's advice to loosen the test copy's sign-in limit defeats the wrong-password check — ready
-10. 0384 The wrong-password check on a made-up name reads a lock on real accounts as no limit — ready
-11. 0385 An account change's form token is read from the change's own address, and the refusal is blamed on the page — ready
-12. 0388 The open-redirect rule flags a redirect to a fixed address — ready
-13. 0387 Test names are matched to their requirement by shared words, which flags sound tests — ready
-14. 0478 Small wording for the non-programmer reader in the guide and the glossary, and the glossary's "Report" entry that 0413 misses — ready
-15. 0442 After a rate limiter's wait, an AI finding names the limiter's answer as its evidence, not the answer it judged — ready
-16. 0443 Commit subjects and trailers are quoted into the AI-commits note unredacted, and a key there cannot be taken out of history — ready
-17. 0391 Nightly: Windows fails: the_second_loop_trials_scorer_passes_its_self_test — ready
-18. 0392 Nightly: Windows fails: sv-run's stopped-command tests, now and then — ready
-19. 0400 A suppression comment in the app's code shows in the report as a suppressed finding — ready
-20. 0403 A requirement's reason for not applying never states something untrue about the app — ready
-21. 0405 A placeholder security contact is noted — ready
-22. 0409 Rename findings.sarif to a name that does not read as problems, when no other session is working — ready
-23. 0395 fuzz/seed.sh prints macOS's padded counts, so its test fails on a Mac — ready
-24. 0424 The report's "What to do next" speaks the terminal's language and never names `sv review` or the full run — ready
-25. 0426 A "not verified" row never says what would verify it, though sv knows and the website's example promises it — ready
-26. 0427 The questions to the person are asked in the standard's own jargon, and only the AI tool stands between it and them — ready
-27. 0425 A person's own decision, typed to the tool, can only become theirs by hand-editing security-notes.md; `sv review` has no "this is mine" — ready
-28. 0473 The first thing a person who has never opened a terminal is told to do is open a terminal, and nothing says how — ready
-29. 0474 The person's last step, `sv review`, is the only step without a prompt that walks them to it — ready
-30. 0475 Error messages a person meets through the tool name terminal-only fixes — ready
-31. 0476 `sv --help` and every command's `--help` but `review` say nothing to a person who is not a programmer — ready
-32. 0477 The starter file tells the person to read 400 lines of TOML before trusting the report, where the report already shows the answers — ready
-33. 0372 Each requirement in the report stated in plain language, with checks named in words — ready
-34. 0397 Each question to the owner comes with the code it rests on — ready
-35. 0401 The AI tool tells the person everything it changes, and StackVet shows what changed between checks — ready
-36. 0404 The build record survives the report folder being deleted, and the report says when it may have been — ready
-37. 0407 The build prompt and prompt 6 take in what the Antigravity trial showed — ready
-38. 0386 The settings a start command gives the copy sv runs are not shown in the report — ready
-39. 0389 The typed-text check was answered in few of the second loop trial's builds — ready
-40. 0487 A question to the owner carries the lines it rests on: a locator rule and a pointer on every question item — ready
-41. 0423 The reading of answers past the sign-in and code limits is one algorithm written twice, and the copies have drifted — ready
-42. 0465 `allowed + 2` in the sign-in guessing guard can wrap in a release build — ready
-43. 0455 Five base64 implementations in two crates, with two decoders that disagree on the alphabet — ready
-44. 0456 Three wildcard matchers, two of them in the same crate — ready
-45. 0457 Seven hand-rolled "move to a character boundary" loops in three files — ready
-46. 0458 Line number from a byte offset is written nine times, in two conventions — ready
-47. 0459 The secret rules are loaded by six separate paths, each with its own story when they cannot be read — ready
-48. 0460 The four-line JSON data-file reader is pasted into every `load` — ready
-49. 0461 Six small pairs that should be one function each — ready
-50. 0462 The test helpers are written once per file: scratch folders in 52 files, the binary runner in 28, and five more — ready
-51. 0463 Two page readers compile a regular expression on every call — ready
-52. 0464 tools/: `write_text` is defined in twelve scripts, `slug` in two, and `git` three ways — ready
-53. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-54. 0411 Parse the OSV advisory files on one thread per core, keeping the findings' order — ready
-55. 0276 A Docker teardown test once named another container than the one it made (sv-run, 12 October 2026) — ready
-56. 0274 Read a CodeQL results file from the owner's own CI, credited only for the commit being checked — ready
-57. 0440 The getting-started guide carries three readers' material in one 6,300-word file, and the setup is the smallest third — ready
-58. 0441 `docs/` mixes live references with five dated investigations and two generated files, and no index says which is which — ready
-59. 0483 The coverage tables are the data for a chart that would show in one glance what forty rows say, and the website will need it — ready
-60. 0485 How `sv` decides what applies (the level, the chapters, the corroborated claims) is told in four places in prose and drawn nowhere — ready
-61. 0486 BACKLOG.md's roadmap is four dated amendments and a 1,000-word status snapshot, where a table from the status lines would do — ready
-62. 0377 One report holds both the running app's findings and the outside tools' — ready
-63. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-64. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
-65. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
-66. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
-67. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
-68. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
-69. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
-70. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
-71. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
-72. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
-73. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
-74. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
-75. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-76. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
-77. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
-78. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
-79. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
-80. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-81. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
-82. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
-83. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
-84. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
-85. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+1. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
+2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
+3. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
+4. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
+5. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
+6. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
+7. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
+8. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
+9. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
+10. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
+11. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
+12. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+13. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
+14. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
+15. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
+16. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
+17. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+18. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
+19. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
+20. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
+21. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
+22. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 
 ## Log
 
@@ -283,3 +220,127 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 22:30 — assigned 0436 to documentation (full) as next: lane 2 of documentation: the flow from an app to a report drawn where a person reads (README, guide)
 - 2026-10-13 22:50 — finished 0420 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1780; now holds 0431
 - 2026-10-13 22:50 — finished 0435 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1782; now holds 0481
+- 2026-10-13 23:21 — finished 0431 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1784; now holds 0432
+- 2026-10-13 23:21 — finished 0432 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1787; now holds 0434
+- 2026-10-13 23:21 — finished 0434 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1790; now holds 0466
+- 2026-10-13 23:21 — finished 0453 by wording (full): https://github.com/abbyshade111/StackVet/pull/1783; now holds 0454
+- 2026-10-13 23:21 — finished 0454 by wording (full): https://github.com/abbyshade111/StackVet/pull/1788; now holds 0450
+- 2026-10-13 23:21 — finished 0450 by wording (full): https://github.com/abbyshade111/StackVet/pull/1791; now holds 0393
+- 2026-10-13 23:21 — finished 0481 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1785; now holds 0479
+- 2026-10-13 23:21 — finished 0479 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1789; now holds 0439
+- 2026-10-13 23:21 — finished 0439 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1792; now holds 0438
+- 2026-10-13 23:21 — assigned 0469 to honesty (full) as next: lane 3 of honesty: AC.12.2 credited whole for one of two clauses (workflows.rs)
+- 2026-10-13 23:21 — assigned 0470 to honesty (full) as next: lane 3 of honesty: the coverage summary's can-be-credited definition (coverage.py)
+- 2026-10-13 23:21 — assigned 0472 to honesty (full) as next: lane 3 of honesty: the level-1-with-no-check paragraph, one line in coverage.py
+- 2026-10-13 23:21 — assigned 0444 to honesty (full) as next: lane 3 of honesty: group A credits whole with the health path left out (probes.rs)
+- 2026-10-13 23:21 — assigned 0447 to wording (full) as next: lane 3 of wording: a threat's n-of-m count reads in part as checked (sv-report threats.rs)
+- 2026-10-13 23:21 — assigned 0442 to wording (full) as next: lane 3 of wording: an AI finding names the limiter's answer as its evidence (ai.rs, recording.rs)
+- 2026-10-13 23:21 — assigned 0443 to wording (full) as next: lane 3 of wording: commit subjects quoted into the AI-commits note unredacted (config.rs, git.rs)
+- 2026-10-13 23:21 — assigned 0440 to documentation (full) as next: lane 3 of documentation: the guide split by the day the reader needs it (GETTING-STARTED.md)
+- 2026-10-13 23:21 — assigned 0485 to documentation (full) as next: lane 3 of documentation: how sv decides what applies, drawn once (README, ARCHITECTURE, home-page)
+- 2026-10-13 23:21 — assigned 0486 to documentation (full) as next: lane 3 of documentation: the roadmap as a table from the status lines (BACKLOG.md, backlog.py)
+- 2026-10-13 23:50 — finished 0393 by wording (full): https://github.com/abbyshade111/StackVet/pull/1794; now holds 0406
+- 2026-10-13 23:50 — finished 0438 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1796; now holds 0436
+- 2026-10-13 23:50 — finished 0436 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1797; now holds 0440
+- 2026-10-13 23:50 — assigned 0455 to documentation (full) as next: lane 4 of documentation: five base64 implementations made one (ssh_format.rs, browser.rs, tokens.rs, public_keys.rs, docker.rs); no other lane touches these
+- 2026-10-13 23:50 — assigned 0457 to documentation (full) as next: lane 4 of documentation: the seven char-boundary loops made two helpers (bundled.rs, files.rs, docker.rs)
+- 2026-10-13 23:50 — assigned 0458 to documentation (full) as next: lane 4 of documentation: line number from a byte offset written once (sv-scan, sv-check readers)
+- 2026-10-14 00:21 — finished 0469 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1798; from its lane, behind 0466
+- 2026-10-14 00:21 — finished 0470 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1802; from its lane, behind 0466
+- 2026-10-14 00:21 — finished 0472 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1804; from its lane, behind 0466
+- 2026-10-14 00:21 — finished 0444 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1805; from its lane, behind 0466
+- 2026-10-14 00:21 — finished 0406 by wording (full): https://github.com/abbyshade111/StackVet/pull/1800; now holds 0399
+- 2026-10-14 00:21 — finished 0440 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1799; now holds 0485
+- 2026-10-14 00:21 — finished 0485 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1803; now holds 0486
+- 2026-10-14 00:21 — assigned 0433 to honesty (full) as next: lane 4 of honesty: the website's column reads the credited count, the owner's choice; the coverage items it waited on are done
+- 2026-10-14 00:21 — assigned 0423 to honesty (full) as next: lane 4 of honesty: the past-the-limit reading written twice (signin.rs, codes.rs)
+- 2026-10-14 00:21 — assigned 0384 to honesty (full) as next: lane 4 of honesty: the wrong-password check on a made-up name reads a lock as no lock (signin.rs, the example app)
+- 2026-10-14 00:50 — finished 0399 by wording (full): https://github.com/abbyshade111/StackVet/pull/1807; now holds 0447
+- 2026-10-14 00:50 — finished 0447 by wording (full): https://github.com/abbyshade111/StackVet/pull/1809; now holds 0442
+- 2026-10-14 00:50 — finished 0442 by wording (full): https://github.com/abbyshade111/StackVet/pull/1810; now holds 0443
+- 2026-10-14 00:50 — finished 0486 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1806; now holds 0455
+- 2026-10-14 00:51 — assigned 0404 to wording (full) as next: lane 5 of wording: the build record survives the report folder being deleted (sv-cli)
+- 2026-10-14 00:51 — assigned 0392 to wording (full) as next: lane 5 of wording: sv-run's stopped-command tests fail on Windows now and then (sv-run lib.rs)
+- 2026-10-14 00:51 — assigned 0395 to wording (full) as next: lane 5 of wording: fuzz/seed.sh prints macOS's padded counts (fuzz, one sv-cli test)
+- 2026-10-14 00:51 — assigned 0391 to wording (full) as next: lane 5 of wording: the second loop trial's scorer self-test fails on Windows (tools/score_loop2.py)
+- 2026-10-14 00:51 — assigned 0409 to wording (full) as next: lane 5 of wording: findings.sarif renamed to a name that does not read as problems (report_files.rs, action.yml)
+- 2026-10-14 00:51 — assigned 0405 to documentation (full) as next: lane 5 of documentation: a placeholder security contact is noted (SECURITY.md and the check)
+- 2026-10-14 00:51 — assigned 0400 to documentation (full) as next: lane 5 of documentation: a suppression comment shows in the report as a suppressed finding (adapters.rs); no other lane touches it now
+- 2026-10-14 00:51 — assigned 0276 to documentation (full) as next: lane 5 of documentation: the Docker teardown test that named another container (container_record_tests.rs)
+- 2026-10-14 01:20 — finished 0433 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1812; from its lane, behind 0466
+- 2026-10-14 01:20 — finished 0423 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1816; from its lane, behind 0466
+- 2026-10-14 01:20 — finished 0443 by wording (full): https://github.com/abbyshade111/StackVet/pull/1813; now holds 0404
+- 2026-10-14 01:20 — finished 0455 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1811; now holds 0457
+- 2026-10-14 01:20 — finished 0457 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1815; now holds 0458
+- 2026-10-14 01:21 — assigned 0465 to honesty (full) as next: lane 5 of honesty: allowed + 2 can wrap in a release build (signin.rs, sv-manifest's bound)
+- 2026-10-14 01:21 — assigned 0446 to honesty (full) as next: lane 5 of honesty: sign_out_visible's dead in_part_if (browser.rs; 0455 is done, so nothing else touches it)
+- 2026-10-14 01:21 — assigned 0388 to honesty (full) as next: lane 5 of honesty: the open-redirect rule flags a redirect to a fixed address (ast-rules.json, the example app)
+- 2026-10-14 01:50 — finished 0384 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1817; from its lane, behind 0466
+- 2026-10-14 01:50 — finished 0392 by wording (full): https://github.com/abbyshade111/StackVet/pull/1821; from its lane, behind 0404
+- 2026-10-14 01:50 — finished 0458 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1819; now holds 0405
+- 2026-10-14 01:51 — assigned 0386 to wording (full) as next: lane 6 of wording: the settings a start command gives the copy sv runs are not shown in the report (sv-run, sv-report)
+- 2026-10-14 01:51 — assigned 0411 to wording (full) as next: lane 6 of wording: the OSV advisory files parsed on one thread per core (sbom/advisories.rs; honesty's lane does not touch it)
+- 2026-10-14 01:51 — assigned 0441 to documentation (full) as next: lane 6 of documentation: the docs index and the move of the dated investigations; the coverage items it waited on are done
+- 2026-10-14 01:51 — assigned 0483 to documentation (full) as next: lane 6 of documentation: the coverage chart generated by coverage.py, same lane as the docs move
+- 2026-10-14 01:51 — assigned 0464 to documentation (full) as next: lane 6 of documentation: tools/ shared helpers (write_text, slug, git) made one
+- 2026-10-14 02:20 — finished 0465 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1826; from its lane, behind 0466
+- 2026-10-14 02:20 — finished 0395 by wording (full): https://github.com/abbyshade111/StackVet/pull/1822; from its lane, behind 0404
+- 2026-10-14 02:20 — finished 0391 by wording (full): https://github.com/abbyshade111/StackVet/pull/1827; from its lane, behind 0404
+- 2026-10-14 02:20 — finished 0405 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1823; now holds 0400
+- 2026-10-14 02:20 — finished 0276 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1825; from its lane, behind 0400
+- 2026-10-14 02:20 — assigned 0463 to honesty (full) as next: lane 6 of honesty: two page readers compile a regex per call (signed_in/mod.rs, owner_field.rs)
+- 2026-10-14 02:20 — assigned 0459 to wording (full) as next: lane 7 of wording: the secret rules loaded by six paths made one (sv-cli lib.rs, main.rs, review.rs; docker.rs)
+- 2026-10-14 02:20 — assigned 0369 to wording (full) as next: lane 7 of wording: small run-speed tidiness (files.rs, script.rs, docker.rs, tech-signatures.json), same lane as 0459 for docker.rs
+- 2026-10-14 02:21 — assigned 0407 to documentation (full) as next: lane 7 of documentation: the build prompt and prompt 6 take in what the Antigravity trial showed (data/prompts.json, docs/prompts)
+- 2026-10-14 02:21 — assigned 0462 to documentation (full) as next: lane 7 of documentation: the test helpers written once per file, shared (sv-cli tests, test_support.rs)
+- 2026-10-14 02:50 — finished 0446 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1828; from its lane, behind 0466
+- 2026-10-14 02:50 — finished 0388 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1832; from its lane, behind 0466
+- 2026-10-14 02:50 — finished 0463 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1835; from its lane, behind 0466
+- 2026-10-14 02:50 — finished 0386 by wording (full): https://github.com/abbyshade111/StackVet/pull/1829; from its lane, behind 0404
+- 2026-10-14 02:50 — finished 0411 by wording (full): https://github.com/abbyshade111/StackVet/pull/1833; from its lane, behind 0404
+- 2026-10-14 02:50 — finished 0441 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1830; from its lane, behind 0400
+- 2026-10-14 02:50 — finished 0483 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1834; from its lane, behind 0400
+- 2026-10-14 02:51 — assigned 0385 to honesty (full) as next: lane 7 of honesty: an account change's form token read from the change's own address (signed_in/account_changes.rs)
+- 2026-10-14 02:51 — assigned 0387 to honesty (full) as next: lane 7 of honesty: test names matched to their requirement by shared words (the app's-tests credit)
+- 2026-10-14 02:51 — assigned 0471 to honesty (full) as next: lane 7 of honesty: the short version's reach count counts a tool of another language (coverage.py reach_json, sv-report lib.rs)
+- 2026-10-14 02:51 — assigned 0377 to wording (full) as next: lane 8 of wording: one report holds both the running app's findings and the outside tools' (sv-cli, sv-report, the example app)
+- 2026-10-14 02:51 — assigned 0389 to documentation (full) as next: lane 8 of documentation: the typed-text check answered in few of the loop trial's builds (sv-check ai; no other lane touches it)
+- 2026-10-14 03:20 — finished 0459 by wording (full): https://github.com/abbyshade111/StackVet/pull/1837; from its lane, behind 0404
+- 2026-10-14 03:20 — finished 0369 by wording (full): https://github.com/abbyshade111/StackVet/pull/1839; from its lane, behind 0404
+- 2026-10-14 03:20 — finished 0377 by wording (full): https://github.com/abbyshade111/StackVet/pull/1841; from its lane, behind 0404
+- 2026-10-14 03:20 — finished 0464 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1836; from its lane, behind 0400
+- 2026-10-14 03:20 — finished 0407 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1840; from its lane, behind 0400
+- 2026-10-14 03:21 — assigned 0487 to wording (full) as next: lane 9 of wording: the pointer on every question item, the owner's first proposal, built alone before 0488 to 0500 (human-checks.json, ast-rules.json, mcp check_text.rs)
+- 2026-10-14 03:21 — assigned 0456 to wording (full) as next: lane 9 of wording: three wildcard matchers made one (config.rs, adapters.rs, ecosystems.rs)
+- 2026-10-14 03:21 — assigned 0460 to wording (full) as next: lane 9 of wording: the JSON data-file reader written once (the sv-check loaders, data.rs); same lane as 0456 for adapters.rs
+- 2026-10-14 03:21 — assigned 0403 to wording (full) as next: lane 9 of wording: a requirement's reason for not applying never states something untrue (the applicability data's reasons; 0468's branch holds no code yet)
+- 2026-10-14 03:21 — assigned 0383 to documentation (full) as next: lane 9 of documentation: the spec's advice to loosen the test copy's sign-in limit (sv-manifest spec text)
+- 2026-10-14 03:21 — assigned 0461 to documentation (full) as next: lane 9 of documentation: six small pairs made one function each (resources.rs, report_lock.rs, finding.rs, seen.rs, production.rs, probes.rs's header)
+- 2026-10-14 03:50 — finished 0385 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1844; from its lane, behind 0466
+- 2026-10-14 03:50 — finished 0462 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1843; from its lane, behind 0400
+- 2026-10-14 03:50 — finished 0389 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1845; from its lane, behind 0400
+- 2026-10-14 03:50 — assigned 0341 to documentation (full) as next: lane 10 of documentation: each signed-in request is its own docker exec; batch them (signed_in, docker.rs); honesty's signed_in items are done
+- 2026-10-14 04:20 — finished 0387 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1846; from its lane, behind 0466
+- 2026-10-14 04:20 — finished 0471 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1849; from its lane, behind 0466
+- 2026-10-14 04:20 — finished 0456 by wording (full): https://github.com/abbyshade111/StackVet/pull/1848; from its lane, behind 0404
+- 2026-10-14 04:20 — finished 0460 by wording (full): https://github.com/abbyshade111/StackVet/pull/1850; from its lane, behind 0404
+- 2026-10-14 04:20 — finished 0403 by wording (full): https://github.com/abbyshade111/StackVet/pull/1851; from its lane, behind 0404
+- 2026-10-14 04:20 — assigned 0274 to honesty (full) as next: lane 8 of honesty: a CodeQL results file from the owner's own CI, credited only for the commit (adapters); the adapters items in wording's lane are done
+- 2026-10-14 04:50 — finished 0461 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1852; from its lane, behind 0400
+- 2026-10-14 04:50 — finished 0487 by wording (full): https://github.com/abbyshade111/StackVet/pull/1854; from its lane, behind 0404
+- 2026-10-14 05:20 — finished 0341 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1855; from its lane, behind 0400
+- 2026-10-14 05:50 — finished 0274 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1857; from its lane, behind 0466
+- 2026-10-14 08:13 — assigned 0425 to honesty (full) as next: usability lane, the owner is back: a third sv review answer, this is my own decision (review.rs, interview.rs; ADR-026 Later, the owner's yes of 13 October)
+- 2026-10-14 08:13 — assigned 0427 to honesty (full) as next: usability lane: a plain sentence per question beside the standard's words (the three question data files, interview.rs)
+- 2026-10-14 08:13 — assigned 0477 to honesty (full) as next: usability lane: the starter file's first line sends the person to the report, not to 400 lines of TOML (spec.rs, same lane as 0468's spec change)
+- 2026-10-14 08:13 — assigned 0424 to wording (full) as next: usability lane: the report's What to do next in the person's language, naming sv review and the full run (bluf.rs, markdown.rs, html.rs)
+- 2026-10-14 08:13 — assigned 0426 to wording (full) as next: usability lane: each not-verified row says what would verify it (sv-report renderers, explain.rs, stackvet_explain)
+- 2026-10-14 08:13 — assigned 0372 to wording (full) as next: usability lane: each requirement in the report stated in plain language (sv-report, same lane as 0424 and 0426 for the renderers)
+- 2026-10-14 08:13 — assigned 0397 to wording (full) as next: usability lane: each question comes with the code it rests on; check what 0487 (the pointer, built by this session) already covers and finish or close it
+- 2026-10-14 08:13 — assigned 0401 to wording (full) as next: usability lane: the AI tool tells the person everything it changes, and StackVet shows what changed (the MCP server, the prompts)
+- 2026-10-14 08:13 — assigned 0473 to documentation (full) as next: usability lane: how to open a terminal, and one in a folder, in the glossary and the guide
+- 2026-10-14 08:13 — assigned 0474 to documentation (full) as next: usability lane: a setup prompt 7 that walks the person to sv review (docs/prompts/setup.md, its test)
+- 2026-10-14 08:13 — assigned 0478 to documentation (full) as next: usability lane: small wording for the non-programmer reader in the guide and the glossary, and the glossary's Report entry
+- 2026-10-14 08:13 — assigned 0476 to documentation (full) as next: usability lane: sv --help and each command's help say where a non-programmer's path is (main.rs)
+- 2026-10-14 08:13 — assigned 0475 to documentation (full) as next: usability lane: error messages a person meets through the tool name both routes (sv-cli lib.rs, sv-manifest, report_lock.rs, doctor.rs)
+- 2026-10-14 08:13 — finished 0409 by wording (full): https://github.com/abbyshade111/StackVet/pull/1861; from its lane, behind 0404

@@ -76,8 +76,13 @@ fn the_report_counts_findings_gone_set_aside_and_new_between_the_first_check_and
     fingerprint("config.security-contact");
 
     // The AI tool adds a SECURITY.md, which takes one finding away, and code with a new one; the
-    // person sets the redirect aside as a false alarm.
-    std::fs::write(app.join("SECURITY.md"), "Write to security@example.com.\n").unwrap();
+    // person sets the redirect aside as a false alarm. Its address is not a placeholder, which would
+    // be a finding of its own (config.security-contact-placeholder).
+    std::fs::write(
+        app.join("SECURITY.md"),
+        "Write to security@stackvet-owner.dev.\n",
+    )
+    .unwrap();
     std::fs::write(app.join("app.py"), format!("{APP}{SQL}")).unwrap();
     std::fs::write(
         app.join("stackvet.toml"),

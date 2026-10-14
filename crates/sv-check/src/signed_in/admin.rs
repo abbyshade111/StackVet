@@ -173,7 +173,7 @@ pub(super) fn admin_checks(
     if users.admin.is_empty() {
         out.not_assessed.push((
             "V8.2.1".to_owned(),
-            "Admin pages: stackvet.toml lists none under [stack.run.users] admin.".to_owned(),
+            "Admin pages: stackvet.toml lists none under `[stack.run.users]` admin.".to_owned(),
         ));
         return;
     }
@@ -299,7 +299,7 @@ pub(super) fn role_field_check(
         out.not_assessed.push((
             IDS.to_owned(),
             "A role written into the sign-up form: this needs both `signup` and an `admin` page \
-             under [stack.run.users]."
+             under `[stack.run.users]`."
                 .to_owned(),
         ));
         return;
@@ -439,7 +439,7 @@ pub(super) fn admin_action_checks(
     if users.admin_actions.is_empty() {
         out.not_assessed.push((
             "V8.3.1".to_owned(),
-            "Admin actions: stackvet.toml lists none under [stack.run.users] admin-actions, so no \
+            "Admin actions: stackvet.toml lists none under `[stack.run.users]` admin-actions, so no \
              request only an admin should make was sent by an ordinary user."
                 .to_owned(),
         ));
@@ -692,7 +692,7 @@ pub(super) fn owned_checks(
         out.not_assessed.push((
             "V8.2.2, V3.5.1, V3.5.2".to_owned(),
             "Another user's records, and requests from another site: stackvet.toml lists no \
-             `owned` record under [stack.run.users]."
+             `owned` record under `[stack.run.users]`."
                 .to_owned(),
         ));
         return None;

@@ -23,12 +23,7 @@ fn s(p: &Path) -> &str {
     p.to_str().unwrap()
 }
 
-fn scratch(tag: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-dashboard-{tag}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 /// A copy of one of the example apps, with a fresh report of its own.
 fn reported(root: &Path, example: &str) -> PathBuf {

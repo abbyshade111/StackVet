@@ -59,12 +59,48 @@ pub struct ProbeResponse {
 
 impl ProbeResponse {
     pub fn header(&self, name: &str) -> Option<&str> {
-        let name = name.to_lowercase();
-        self.headers
-            .iter()
-            .find(|(k, _)| *k == name)
-            .map(|(_, v)| v.as_str())
+        header_in(&self.headers, name)
     }
+}
+
+/// The value of the header `name` among `headers`, whose names are lowercased, in whatever case `name` is asked for.
+/// Read in one place for the running app's answers and the live site's (backlog 0461).
+pub fn header_in<'a>(headers: &'a [(String, String)], name: &str) -> Option<&'a str> {
+    let name = name.to_lowercase();
+    headers
+        .iter()
+        .find(|(k, _)| *k == name)
+        .map(|(_, v)| v.as_str())
+}
+
+/// A response's status line and `name: value` headers, the names lowercased: the status is `None` when no status
+/// line could be read. When there is more than one status line (a redirect followed, a `100 Continue`), the last is
+/// the one that answered, and only its headers are kept. A proxy's own answer to `CONNECT` ("Connection
+/// established") is not a response from the site: counting it would make the site's headers vanish when they arrive
+/// before it, which was found by running behind one. Read in one place for curl's `--head` output and the sidecar's
+/// raw answers (backlog 0461).
+pub fn read_head(text: &str) -> (Option<u16>, Vec<(String, String)>) {
+    let mut status = None;
+    let mut headers = Vec::new();
+    for line in text.lines() {
+        let line = line.trim_end();
+        if let Some(rest) = line.strip_prefix("HTTP/") {
+            if line.to_ascii_lowercase().contains("connection established") {
+                continue;
+            }
+            if let Some(code) = rest.split_whitespace().nth(1)
+                && let Ok(n) = code.parse::<u16>()
+            {
+                status = Some(n);
+                headers.clear();
+            }
+            continue;
+        }
+        if let Some((name, value)) = line.split_once(':') {
+            headers.push((name.trim().to_lowercase(), value.trim().to_owned()));
+        }
+    }
+    (status, headers)
 }
 
 /// A path that will not exist, to see what the app says when something goes wrong.
@@ -302,7 +338,7 @@ pub fn unassessed_requirements(signed_in_ran: bool) -> Vec<(&'static str, &'stat
         out.push((
             "V8, V7",
             "Authorization and session handling need a signed-in user. `sv` signs in only when \
-             stackvet.toml says how, under [stack.run.users], and this one does not.",
+             stackvet.toml says how, under `[stack.run.users]`, and this one does not.",
         ));
         // V3.5.1 is the request forgery requirement in ASVS 5.0. This line cited V4.2 until
         // 25 September 2026, which is HTTP message structure validation — a different subject.
@@ -614,7 +650,11 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
         .map(|p| page_name(p))
         .collect::<Vec<_>>()
         .join(" and ");
-    if !judged.is_empty() && security_headers(&judged).is_none() {
+    // The health path's own answer has to be among them, as for the content-type credit: without it (the
+    // rate limiter answered it, and was left out) the credit rested on the routes alone and read "the
+    // app's answers on , and on all ..." (backlog 0444).
+    let home_judged = judged.iter().any(|p| p.id == "home");
+    if home_judged && security_headers(&judged).is_none() {
         out.push(
             crate::Verified::new(
                 SECURITY_HEADERS.rule_id,
@@ -630,7 +670,7 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
     let sets_a_cookie = judged
         .iter()
         .any(|p| p.headers.iter().any(|(k, _)| k == "set-cookie"));
-    if sets_a_cookie && cookie_attributes(&judged).is_none() {
+    if home_judged && sets_a_cookie && cookie_attributes(&judged).is_none() {
         out.push(
             crate::Verified::new(
                 COOKIE_ATTRIBUTES.rule_id,
@@ -1083,7 +1123,7 @@ pub fn evaluate_api(
                         "V4.3.2".to_owned(),
                         "Introspection is on. That is right for an API other programs are meant to \
                          use and wrong otherwise, and stackvet.toml does not say which this is \
-                         (`public-api` under [capabilities])."
+                         (`public-api` under `[capabilities]`)."
                             .to_owned(),
                     )),
                 }
@@ -2485,6 +2525,9 @@ fn csp_reporting(answers: &[&ProbeResponse]) -> Option<Finding> {
 mod tests;
 
 #[cfg(test)]
+mod read_head_tests;
+
+#[cfg(test)]
 mod quoted_tests;
 
 #[cfg(test)]
@@ -2495,6 +2538,9 @@ mod routes_cookie_tests;
 
 #[cfg(test)]
 mod routes_csp_tests;
+
+#[cfg(test)]
+mod home_judged_tests;
 
 #[cfg(test)]
 mod failing_requirements_tests;

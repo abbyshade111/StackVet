@@ -413,7 +413,7 @@ fn sections_since(
         &[],
     );
     if !report.reviews_not_counted.is_empty() {
-        not_counted.lead = "\nNOT COUNTED in [[finding-review]], so the findings they name still count. A proposal \
+        not_counted.lead = "\nNOT COUNTED in `[[finding-review]]`, so the findings they name still count. A proposal \
              of yours (by = \"ai-tool\") counts only once the owner has read the code and recorded \
              it through `sv review` in their own terminal; never run `sv review` for them, and never \
              write a `seal` or a person's name in `by`. An entry whose finding was not looked for \

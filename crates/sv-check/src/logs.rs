@@ -349,7 +349,7 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
         out.not_assessed.push((
             "V16.3.1".to_owned(),
             "This needs both a sign-in the app accepts and one it refuses, by accounts used for \
-             nothing else. Without `signup` in [stack.run.users] there is no way to make them, so \
+             nothing else. Without `signup` in `[stack.run.users]` there is no way to make them, so \
              nothing here could tell a logged authentication from any other line."
                 .to_owned(),
         ));
@@ -377,7 +377,7 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
         out.not_assessed.push((
             "V16.3.2".to_owned(),
             "This needs a page only a signed-in user should see, listed under `private` in \
-             [stack.run.users], to be refused to somebody who has not signed in."
+             `[stack.run.users]`, to be refused to somebody who has not signed in."
                 .to_owned(),
         ));
         return out;

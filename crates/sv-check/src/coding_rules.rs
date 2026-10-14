@@ -19,7 +19,7 @@
 //! Nothing, as evidence. Handing the tool a rule says nothing about whether the rule was kept, so no
 //! requirement changes status because the rules were written or read.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -80,10 +80,7 @@ const OLD_END: &str = sv_frameworks::names::OLD_RULES_END;
 
 impl CodingRules {
     pub fn load(path: &Path) -> Result<CodingRules> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        let rules: CodingRules = serde_json::from_str(&text)
-            .with_context(|| sv_frameworks::data::not_understood(path))?;
+        let rules: CodingRules = sv_frameworks::data::read_json(path)?;
         for rule in &rules.rules {
             anyhow::ensure!(
                 rules.topics.iter().any(|t| t.id == rule.topic),

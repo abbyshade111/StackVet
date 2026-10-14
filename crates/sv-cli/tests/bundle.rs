@@ -21,12 +21,7 @@ fn planted_key() -> String {
 const ENV_VALUE: &str = "value-that-lives-only-in-the-env-file-7731";
 const PEM_BODY: &str = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC-private-body";
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-bundle-test-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 /// A small app with one file of every kind a bundle has to decide about.
 fn app(root: &Path) -> PathBuf {
@@ -263,7 +258,7 @@ fn the_bundle_holds_the_app_the_report_the_bill_of_materials_and_the_listing() {
         "notes-app/report/report.html",
         "notes-app/report/compliance.md",
         "notes-app/report/security.md",
-        "notes-app/report/findings.sarif",
+        "notes-app/report/stackvet.sarif",
         "notes-app/report/report.json",
         "notes-app/report/sbom.cdx.json",
         "notes-app/BUNDLE.json",

@@ -248,7 +248,7 @@ pub(super) fn report_file_description(name: &str) -> &'static str {
         "low-findings.md" => {
             "Every low-severity finding in full; the other reports group them by rule."
         }
-        "findings.sarif" => "The findings in SARIF, for code-scanning tools.",
+        "stackvet.sarif" => "The findings in SARIF, for code-scanning tools.",
         "seen.json" => {
             "What the running app answered when sv asked it, credentials cut out: the app's own text."
         }
@@ -344,14 +344,4 @@ pub(super) fn path_text_from_uri(uri: &str, windows: bool) -> Option<String> {
     }
 }
 
-/// Whether two looks at a path saw the same file.
-#[cfg(unix)]
-pub(super) fn same_file(a: &std::fs::Metadata, b: &std::fs::Metadata) -> bool {
-    use std::os::unix::fs::MetadataExt;
-    a.dev() == b.dev() && a.ino() == b.ino()
-}
-
-#[cfg(not(unix))]
-pub(super) fn same_file(a: &std::fs::Metadata, b: &std::fs::Metadata) -> bool {
-    a.len() == b.len() && b.is_file()
-}
+pub(super) use crate::report_lock::same_file;

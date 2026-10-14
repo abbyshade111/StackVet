@@ -12,6 +12,8 @@
 use ed25519_dalek::{Signer as _, SigningKey, VerifyingKey};
 use zeroize::Zeroize;
 
+use crate::encoding::{Alphabet, Padding, base64, unbase64};
+
 const KEY_TYPE: &str = "ssh-ed25519";
 const SIG_MAGIC: &[u8] = b"SSHSIG";
 const KEY_MAGIC: &[u8] = b"openssh-key-v1\0";
@@ -56,7 +58,10 @@ impl PublicKey {
 
     /// The line `ssh-keygen` writes in a `.pub` file: `ssh-ed25519 <base64> <comment>`.
     pub(crate) fn to_openssh(self, comment: &str) -> String {
-        format!("{KEY_TYPE} {} {comment}", base64(&self.blob(), true))
+        format!(
+            "{KEY_TYPE} {} {comment}",
+            base64(&self.blob(), Alphabet::Standard, true)
+        )
     }
 
     /// The key in such a line. `None` for a key of another type, which never signs a seal `sv`
@@ -68,14 +73,18 @@ impl PublicKey {
         if kind != KEY_TYPE {
             return Ok(None);
         }
-        let blob = unbase64(data).ok_or("its key is not base64")?;
+        let blob =
+            unbase64(data, Alphabet::Standard, Padding::Required).ok_or("its key is not base64")?;
         PublicKey::from_blob(&blob).map(Some)
     }
 
     /// `SHA256:` and the unpadded base64 of the SHA-256 of the key, as `ssh-keygen -l` shows it.
     pub(crate) fn fingerprint(&self) -> String {
         use sha2::{Digest, Sha256};
-        format!("SHA256:{}", base64(&Sha256::digest(self.blob()), false))
+        format!(
+            "SHA256:{}",
+            base64(&Sha256::digest(self.blob()), Alphabet::Standard, false)
+        )
     }
 }
 
@@ -341,7 +350,7 @@ fn aes_ctr(
 
 /// `bytes` between `-----BEGIN <label>-----` and `-----END <label>-----`, in base64 lines of 70.
 pub(crate) fn armor(label: &str, bytes: &[u8]) -> String {
-    let body = base64(bytes, true);
+    let body = base64(bytes, Alphabet::Standard, true);
     let mut out = format!("-----BEGIN {label}-----\n");
     for chunk in body.as_bytes().chunks(70) {
         out.push_str(std::str::from_utf8(chunk).expect("base64 is ASCII"));
@@ -358,58 +367,7 @@ pub(crate) fn unarmor(label: &str, text: &str) -> Option<Vec<u8>> {
         .strip_prefix(&format!("-----BEGIN {label}-----"))?
         .strip_suffix(&format!("-----END {label}-----"))?;
     let joined: String = body.split_whitespace().collect();
-    unbase64(&joined)
-}
-
-const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-/// Standard base64, padded or not.
-pub(crate) fn base64(bytes: &[u8], pad: bool) -> String {
-    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
-    for chunk in bytes.chunks(3) {
-        let n = chunk
-            .iter()
-            .enumerate()
-            .fold(0u32, |n, (i, b)| n | u32::from(*b) << (16 - 8 * i));
-        for i in 0..=chunk.len() {
-            out.push(ALPHABET[(n >> (18 - 6 * i) & 63) as usize] as char);
-        }
-        if pad {
-            for _ in chunk.len()..3 {
-                out.push('=');
-            }
-        }
-    }
-    out
-}
-
-/// Standard base64, padded to a whole number of groups of four, or `None`.
-pub(crate) fn unbase64(text: &str) -> Option<Vec<u8>> {
-    let text = text.as_bytes();
-    if !text.len().is_multiple_of(4) {
-        return None;
-    }
-    let mut out = Vec::with_capacity(text.len() / 4 * 3);
-    for (g, group) in text.chunks(4).enumerate() {
-        let last = g == text.len() / 4 - 1;
-        let pads = group.iter().rev().take_while(|b| **b == b'=').count();
-        if pads > 2 || (pads > 0 && !last) {
-            return None;
-        }
-        let mut n = 0u32;
-        for (i, b) in group[..4 - pads].iter().enumerate() {
-            let v = ALPHABET.iter().position(|a| a == b)? as u32;
-            n |= v << (18 - 6 * i);
-        }
-        let bytes = [(n >> 16) as u8, (n >> 8) as u8, n as u8];
-        let keep = 3 - pads;
-        // Bits a padded group does not use must be zero, so each text decodes one way only.
-        if bytes[keep..].iter().any(|b| *b != 0) {
-            return None;
-        }
-        out.extend_from_slice(&bytes[..keep]);
-    }
-    Some(out)
+    unbase64(&joined, Alphabet::Standard, Padding::Required)
 }
 
 fn put_string(out: &mut Vec<u8>, bytes: &[u8]) {
@@ -544,26 +502,5 @@ mod tests {
         longer.push(0);
         assert!(Signature::parse(&longer).is_err());
         assert!(Signature::parse(&blob[..blob.len() - 1]).is_err());
-    }
-
-    #[test]
-    fn base64_is_the_standard_one_and_reads_back_one_way_only() {
-        for (bytes, text) in [
-            (&b""[..], ""),
-            (b"f", "Zg=="),
-            (b"fo", "Zm8="),
-            (b"foo", "Zm9v"),
-            (b"foob", "Zm9vYg=="),
-            (b"fooba", "Zm9vYmE="),
-            (b"foobar", "Zm9vYmFy"),
-            (&[0xfb, 0xff], "+/8="),
-        ] {
-            assert_eq!(base64(bytes, true), text);
-            assert_eq!(unbase64(text).as_deref(), Some(bytes), "{text}");
-        }
-        assert_eq!(base64(b"f", false), "Zg");
-        for bad in ["Zg=", "Zh==", "Zg==Zg==", "Z===", "Zm9v!A==", "Zm9"] {
-            assert_eq!(unbase64(bad), None, "{bad}");
-        }
     }
 }

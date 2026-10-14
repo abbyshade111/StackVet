@@ -1,6 +1,6 @@
 # The AI tool tells the person everything it changes, and StackVet shows what changed between checks
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

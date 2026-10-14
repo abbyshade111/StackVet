@@ -38,14 +38,10 @@ import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared import write_text  # noqa: E402  (tools/_shared.py)
 
-
-def write_text(path, text):
-    """Writes `text` as UTF-8 with Unix line endings on every system. Path.write_text uses the
-    system's own encoding and, on Windows, CRLF, which would make a generated file differ from the
-    one committed (backlog 0120)."""
-    with open(path, "w", encoding="utf-8", newline="\n") as out:
-        out.write(text)
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -54,6 +50,9 @@ LIST_OUT = ROOT / "docs" / "REQUIREMENTS.md"
 # Which kinds of run can credit each requirement, read by the report's short version to say how many
 # requirements only a kind of run that did not happen could have reached.
 REACH_OUT = ROOT / "data" / "reach.json"
+# The two tables a picture reads best from, drawn from the same counts (backlog 0483).
+CHAPTER_SVG = ROOT / "docs" / "coverage-by-chapter.svg"
+LEVEL_SVG = ROOT / "docs" / "coverage-by-level.svg"
 
 # What each kind of check needs before it can run at all.
 TIERS = [
@@ -436,6 +435,72 @@ MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.
 ID = r"(?:V|C)\d+\.\d+\.\d+|AC\.\d+\.\d+|SBD-[A-Z]+-\d+"
 
 
+# The chart's four parts, in the order they are drawn, with the colors they are drawn in. The three hues were checked
+# with a palette validator for lightness, chroma, color-blind separation, and contrast on light and dark backgrounds;
+# "nothing" is drawn in the page's own gray, so what no check reaches looks like the background it is. The brand's
+# palette has not chosen status colors yet (docs/brand/README.md, "Not yet chosen"), so these are from its family.
+SEGMENTS = (
+    ("can be credited", "#3A9470"),
+    ("can only be found failing", "#D9692B"),
+    ("a check helps, a person decides", "#5470C0"),
+    ("no check", None),
+)
+
+
+def coverage_svg(title, rows):
+    """A stacked bar per row of (label, credited, found failing only, supporting only, nothing), each bar as long as
+    the row's requirements, with every part's count written beside it, so no part is shown by color alone."""
+    def esc(text):
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    label_w, bar_w, count_w, row_h, top = 300, 380, 230, 26, 92
+    width = label_w + bar_w + count_w + 24
+    height = top + row_h * len(rows) + 40
+    most = max(sum(r[1:]) for r in rows)
+    out = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" '
+        f'height="{height}" role="img" aria-labelledby="t d" '
+        'font-family="Atkinson Hyperlegible, -apple-system, Segoe UI, sans-serif">',
+        f'<title id="t">{esc(title)}</title>',
+        '<desc id="d">' + esc("; ".join(
+            f"{r[0]}: {sum(r[1:])} requirements, "
+            + ", ".join(f"{n} {name}" for (name, _), n in zip(SEGMENTS, r[1:]))
+            for r in rows)) + ". The same counts are the table in docs/COVERAGE.md.</desc>",
+        "<style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}"
+        "@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}"
+        ".none{fill:#182A23;stroke:#3B4842}}</style>",
+        f'<rect class="bg" width="{width}" height="{height}"/>',
+        f'<text class="ink" x="12" y="28" font-size="18" font-weight="700">{esc(title)}</text>',
+    ]
+    # The key, one line, each part's swatch beside its words.
+    x = 12
+    for name, colour in SEGMENTS:
+        cls = ' class="none"' if colour is None else f' fill="{colour}"'
+        out.append(f'<rect{cls} x="{x}" y="46" width="14" height="14" rx="2"/>')
+        out.append(f'<text class="soft" x="{x + 20}" y="58" font-size="13">{esc(name)}</text>')
+        x += 32 + 7 * len(name)
+    out.append(f'<text class="soft" x="{label_w + bar_w + 12}" y="{top - 10}" font-size="12">'
+               "counts, in the key's order</text>")
+    for i, (label, *parts) in enumerate(rows):
+        y = top + i * row_h
+        out.append(f'<text class="ink" x="12" y="{y + 17}" font-size="13">{esc(label)}</text>')
+        bx = label_w
+        for (name, colour), n in zip(SEGMENTS, parts):
+            if not n:
+                continue
+            w_ = bar_w * n / most
+            cls = ' class="none"' if colour is None else f' fill="{colour}"'
+            out.append(f'<rect{cls} x="{bx:.1f}" y="{y + 4}" width="{max(w_ - 2, 1):.1f}" height="{row_h - 8}" '
+                       f'rx="2"><title>{esc(label)}: {n} {esc(name)}</title></rect>')
+            bx += w_
+        counts = " · ".join(str(n) for n in parts)
+        out.append(f'<text class="soft" x="{label_w + bar_w + 12}" y="{y + 17}" font-size="13">'
+                   f'{counts}  of {sum(parts)}</text>')
+    out.append(f'<text class="soft" x="12" y="{height - 14}" font-size="12">Drawn by tools/coverage.py from the '
+               "checks' own citations, with docs/COVERAGE.md; a bar is as long as its requirements.</text>")
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 def load(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
@@ -611,6 +676,7 @@ RUST_IN_PART |= {"config.versions-pinned", "sbom"}
 # suite: a check it saw credit only in part must be here, and one it saw credit whole once must not.
 RUST_IN_PART |= {
     "config.gitignore-covers-env",
+    "config.workflow-checkout-keeps-token",
     "config.secrets-file-committed",
     "probe.action-done-twice",
     "probe.ai-agent-unbounded",
@@ -704,6 +770,8 @@ RUST_IN_PART |= {
 IN_PART = set(RUST_IN_PART)
 # Requirement id -> {tool}: tools with some rule a clean run credits to it.
 CREDITED_BY_TOOL = defaultdict(set)
+# Requirement id -> {language}: the languages the tool rules that credit it read; `*` for any (backlog 0471).
+TOOL_LANGUAGES = defaultdict(set)
 # Requirement id -> {rule}: semgrep rules in the map that name it, in no pack the adapter runs.
 NOT_RUN = defaultdict(set)
 
@@ -801,6 +869,8 @@ def evidence():
                 if adapter["id"] not in ev[q]["tools"]:
                     ev[q]["tools"].append(adapter["id"])
                 CREDITED_BY_TOOL[q].add(adapter["id"])
+                TOOL_LANGUAGES[q] |= (set(rule.get("languages") or ["*"]) if adapter["language"] == "*"
+                                      else set(adapter["language"].split(",")))
                 TOOL_RULE_IDS[q][adapter["id"]].add(rule_id)
                 if rule.get("what"):
                     TOOL_RULES[q][adapter["id"]].append(rule["what"])
@@ -919,11 +989,16 @@ def check_credits(log):
         path, number = logged_place(at)
         if shipping.get(path, 0) < int(number):
             continue
+        # A credit that names no requirement can make none *checked*, so it says nothing about whether
+        # the check is only ever in part (backlog 0469: the checkout check's credit for a workflow that
+        # checks nothing out).
         if len(parts) == 4:
-            (marked if parts[2] == "in part" else unmarked)[check] += 1
+            if ids:
+                (marked if parts[2] == "in part" else unmarked)[check] += 1
             continue
         lines += 1
-        made[check] += 1
+        if ids:
+            made[check] += 1
         credited[check].update(q for q in ids.split(",") if q)
     if not lines:
         return [f"{log} holds no credit from a check: was the suite run with SV_CREDIT_LOG set?"]
@@ -1088,8 +1163,12 @@ def reach_json(asvs, aisvs, ev, tiers, settles, checks=None):
                     "advisories, running (--run), signed-in (--run with test accounts), tools (sv report, unless --no-tools), "
                     "production (sv probe). Read by the report's short version. `checks` gives, for "
                     "every requirement any check speaks to, each check, the kind of run it needs, what "
-                    "it looks for, and whether it is only ever a finding; read by `sv explain`.",
+                    "it looks for, and whether it is only ever a finding; read by `sv explain`. "
+                    "`tools_languages` gives, for each requirement an outside tool can credit, the "
+                    "languages those tools' crediting rules read (`*` for any), so the short version "
+                    "counts a tool's reach only for an app in one of them.",
         "requirements": reach,
+        "tools_languages": {q: sorted(TOOL_LANGUAGES[q]) for q in reach if "tools" in reach[q]},
         "checks": checks or {},
     }, indent=1) + "\n"
 
@@ -1184,19 +1263,32 @@ def main():
             c in CREDITED_BY_TOOL[q] if tier == "tools" else c not in sv_only
             for tier, checks in ev[q].items() for c in checks)
 
+    def credited_whole(q):
+        """A check can mark q *checked*, not only *checked in part*: a crediting check of `sv`'s that is not
+        only ever in part, or a tool with a rule a clean run credits to q (backlog 0470)."""
+        sv_only = {r for tool, r in FINDINGS_ONLY.get(q, ()) if tool == "sv"}
+        return settles(q) and any(
+            c in CREDITED_BY_TOOL[q] if tier == "tools" else (c not in sv_only and c not in IN_PART)
+            for tier, checks in ev[q].items() for c in checks)
+
     out = []
     w = out.append
 
     w("# Coverage: what the checks can speak to\n")
     w("Generated by `tools/coverage.py` from the checks' own citations. Do not edit by hand; run")
     w("`python3 tools/coverage.py` after changing a check, and the build fails until you do.\n")
+    w("The ASVS tables by chapter and by level below, drawn as bars from the same counts:\n")
+    w("![ASVS 5.0 by chapter: what a check can reach](coverage-by-chapter.svg)\n")
+    w("![ASVS 5.0 by level: what a check can reach](coverage-by-level.svg)\n")
     w("## How to read this\n")
     w("- **Can settle**: at least one check can mark the requirement *checked* or *needs attention*.")
     w("  A check is almost always about part of a requirement: a clean result is one automated check")
     w("  that was satisfied, not a pass.")
-    w("- **Can be credited**: of those, the ones a check can mark *checked*. The rest can only ever be")
-    w("  found failing: a check can show the control missing, and finding nothing does not show it")
-    w("  present, so a clean run credits nothing for them.")
+    w("- **Can be credited**: of those, the ones a check can mark *checked* or *checked in part*. The rest")
+    w("  can only ever be found failing: a check can show the control missing, and finding nothing does not")
+    w("  show it present, so a clean run credits nothing for them. Some can only ever be *checked in part*,")
+    w("  because every check that credits them tries part of what they ask; the sentence under the level")
+    w("  table counts them, and docs/REQUIREMENTS.md marks each \"(only ever in part)\".")
     w("- **Supporting only**: a check speaks to it, but the requirement asks something no check can")
     w("  answer, such as a documented policy or a design decision. The check is shown beside it and")
     w("  a person still has to answer it. No Secure by Design control is ever settled by a check: each")
@@ -1256,11 +1348,25 @@ def main():
       "it present, so a clean run credits none of them. They are counted under *Can settle* and not under "
       "*Can be credited*, and the kinds of check above count every requirement a check can settle either "
       "way.\n")
+    credited_asvs = [q for q in asvs if credited(q)]
+    part_only = [q for q in credited_asvs if not credited_whole(q)]
+    w(f"{len(part_only)} of the {len(credited_asvs)} ASVS requirements that can be credited can only ever be "
+      "*checked in part*: every check that credits them tries part of what they ask, so the most a clean run "
+      "gives them is *checked in part*, never *checked*.\n")
     plain = [q for q in asvs if settles(q) and tiers(q) == ["static"]]
     only_tools = [q for q in asvs if settles(q) and tiers(q) == ["tools"]]
     w(f"With nothing beyond plain `sv check`, {sum(settles(q) and 'static' in tiers(q) for q in asvs)} "
       f"ASVS requirements can be settled. {len(only_tools)} can be settled only by an outside tool, "
       "almost all by semgrep and CodeQL, and only for the languages their rules are written for.\n")
+
+    # ---- AISVS by level, so a count on the ASVS basis (levels 1 and 2) can be read for AISVS too (backlog 0433)
+    w("## AISVS 1.0 by level\n")
+    w("| Level | Requirements | Can settle | Can be credited |")
+    w("|---|---|---|---|")
+    for level in sorted({v["level"] for v in aisvs.values()}):
+        reqs = [q for q, v in aisvs.items() if v["level"] == level]
+        w(f"| L{level} | {len(reqs)} | {sum(settles(q) for q in reqs)} | {sum(credited(q) for q in reqs)} |")
+    w("")
 
     # ---- semgrep rules in the map that no pack it runs loads
     packs = load(ROOT / "data/semgrep-packs.json")["packs"]
@@ -1300,6 +1406,7 @@ def main():
     w("| Chapter | Requirements | Can settle | Can be credited | Supporting only | Nothing |")
     w("|---|---|---|---|---|---|")
     chapters = defaultdict(list)
+    chapter_rows = []
     for q, v in asvs.items():
         chapters[(v["chapter"], v["chapter_name"])].append(q)
     for (cid, name), reqs in sorted(chapters.items(), key=lambda x: int(x[0][0][1:])):
@@ -1307,6 +1414,7 @@ def main():
         c = sum(credited(q) for q in reqs)
         p = sum(supports_only(q) for q in reqs)
         w(f"| {cid} {name} | {len(reqs)} | {s} | {c} | {p} | {len(reqs) - s - p} |")
+        chapter_rows.append((f"{cid} {name}", c, s - c, p, len(reqs) - s - p))
     w("")
 
     # ---- ASVS lists
@@ -1345,8 +1453,30 @@ def main():
     l1 = sorted((q for q, v in asvs.items() if v["level"] == 1 and not tiers(q)),
                 key=lambda q: [int(x) for x in re.findall(r"\d+", q)])
     w(f"### Level 1 with no check at all ({len(l1)})\n")
-    w("The baseline every app is assessed against, and where a new check does the most good.\n")
-    w(", ".join(l1) + "\n")
+    # Not every one is every app's (backlog 0472): read which each applies to from the applicability rules,
+    # the most specific scope that names it, as the report does.
+    rules = load(ROOT / "data/knowledge/applicability.json")["rules"]
+
+    def condition_of(q):
+        scopes = [r for r in rules if q == r["scope"] or q.startswith(r["scope"] + ".")]
+        return max(scopes, key=lambda r: len(r["scope"]))["condition"] if scopes else "always"
+
+    by_condition = defaultdict(list)
+    for q in l1:
+        by_condition[condition_of(q)].append(q)
+    # Each condition's question as `sv` asks it, from `sv-frameworks`, so the paragraph is in a person's words.
+    questions = dict(re.findall(r'=> "([a-z0-9-]+)", (?:Claim|Derived), "(?:[^"\\]|\\.)*",\s*"((?:[^"\\]|\\.)*)";',
+                                (ROOT / "crates/sv-frameworks/src/condition.rs").read_text(encoding="utf-8")))
+    every = by_condition.pop("always", [])
+    w("Where a new check would do the most good. Which of them apply to an app depends on what the app is "
+      "(`data/knowledge/applicability.json`):\n")
+    w(f"- Every app ({len(every)}): " + (", ".join(every) or "none"))
+    for condition in sorted(by_condition):
+        qs = by_condition[condition]
+        if condition not in questions:
+            sys.exit(f"coverage.py: no question for the condition `{condition}` in crates/sv-frameworks/src/condition.rs")
+        w(f"- Only where the answer to \"{questions[condition]}\" is yes ({len(qs)}): " + ", ".join(qs))
+    w("")
 
     # ---- AISVS
     w("## AISVS 1.0 by chapter\n")
@@ -1446,8 +1576,15 @@ def main():
         write_text(path, json.dumps({"tiers": [{"id": t, "name": n, "needs": d} for t, n, d in TIERS],
                                     "requirements": rows}, indent=1) + "\n")
         print(f"wrote {path}")
+    level_rows = []
+    for level in sorted({v["level"] for v in asvs.values()}):
+        reqs = [q for q, v in asvs.items() if v["level"] == level]
+        s_, c_, p_ = (sum(f(q) for q in reqs) for f in (settles, credited, supports_only))
+        level_rows.append((f"Level {level}", c_, s_ - c_, p_, len(reqs) - s_ - p_))
+    charts = ((CHAPTER_SVG, coverage_svg("ASVS 5.0 by chapter: what a check can reach", chapter_rows)),
+              (LEVEL_SVG, coverage_svg("ASVS 5.0 by level: what a check can reach", level_rows)))
     if check:
-        for path, want in ((OUT, text), (LIST_OUT, listing_text), (REACH_OUT, reach_text)):
+        for path, want in ((OUT, text), (LIST_OUT, listing_text), (REACH_OUT, reach_text)) + charts:
             current = path.read_text(encoding="utf-8") if path.exists() else ""
             if current != want:
                 sys.exit(f"{path.relative_to(ROOT)} is out of date: run `python3 tools/coverage.py` at "
@@ -1456,7 +1593,10 @@ def main():
     write_text(OUT, text)
     write_text(LIST_OUT, listing_text)
     write_text(REACH_OUT, reach_text)
-    print(f"wrote {OUT.relative_to(ROOT)}, {LIST_OUT.relative_to(ROOT)} and {REACH_OUT.relative_to(ROOT)}")
+    for path, svg in charts:
+        write_text(path, svg)
+    print(f"wrote {OUT.relative_to(ROOT)}, {LIST_OUT.relative_to(ROOT)}, {REACH_OUT.relative_to(ROOT)}, "
+          f"{CHAPTER_SVG.relative_to(ROOT)} and {LEVEL_SVG.relative_to(ROOT)}")
 
 
 # How each coverage status reads in the list, in words a person who is not a programmer reads easily.

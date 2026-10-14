@@ -3,11 +3,8 @@
 
 use super::*;
 
-fn rules() -> SecretRules {
-    SecretRules::load(
-        &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 /// A random value no vendor's shape describes, built from pieces so this file holds none.
@@ -24,9 +21,9 @@ fn a_password_under_a_name_ending_in_pass_is_found_and_masked() {
         ("app.js", format!("const dbPass = \"{value}\";\n")),
         ("settings.py", format!("REDIS_PASS = \"{value}\"\n")),
     ] {
-        let found = scan_text(&rules, relative, &text);
+        let found = scan_text(rules, relative, &text);
         assert_eq!(found.len(), 1, "{relative}: {found:#?}");
-        let (out, n) = redact_text(&rules, &text);
+        let (out, n) = redact_text(rules, &text);
         assert!(!out.contains(&value) && n == 1, "{relative}: {out}");
     }
 }
@@ -39,8 +36,8 @@ fn a_dot_env_line_ending_in_pass_is_masked_where_sv_repeats_it() {
     let value = value();
     for name in ["DB_PASS", "DB_PASSWORD"] {
         let text = format!("{name}={value}\n");
-        assert!(scan_text(&rules, ".env", &text).is_empty(), "{name}");
-        let (out, n) = redact_text(&rules, &text);
+        assert!(scan_text(rules, ".env", &text).is_empty(), "{name}");
+        let (out, n) = redact_text(rules, &text);
         assert!(!out.contains(&value) && n == 1, "{name}: {out}");
     }
 }
@@ -56,9 +53,9 @@ fn a_name_that_only_holds_the_letters_pass_is_not_a_password() {
         "passengerCount",
     ] {
         let text = format!("{name}={value}\n");
-        let found = scan_text(&rules, ".env", &text);
+        let found = scan_text(rules, ".env", &text);
         assert!(found.is_empty(), "{name}: {found:#?}");
-        let (out, n) = redact_text(&rules, &text);
+        let (out, n) = redact_text(rules, &text);
         assert_eq!((out.as_str(), n), (text.as_str(), 0), "{name}");
     }
 }

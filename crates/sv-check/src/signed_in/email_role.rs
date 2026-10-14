@@ -24,7 +24,7 @@ pub(super) fn email_role_check(
         out.not_assessed.push((
             IDS.to_owned(),
             "A role written into the email change: stackvet.toml sets no `change-email` under \
-             [stack.run.users]."
+             `[stack.run.users]`."
                 .to_owned(),
         ));
         return;

@@ -484,7 +484,9 @@ pub fn credit(
             let Some(description) = describe(id) else {
                 continue;
             };
-            if shares_no_words(&test.text, &description) {
+            if shares_no_words(&test.text, &description)
+                && !shares_a_meaning(&test.text, &description)
+            {
                 findings.push(mismatch(test, id, &description));
             }
         }
@@ -655,6 +657,55 @@ pub fn shares_no_words(test_text: &str, requirement: &str) -> bool {
     in_test.is_disjoint(&words(requirement))
 }
 
+/// Words a test names a requirement by that its text says in other words: each group is one
+/// meaning, as the beginnings of words. Only the test-name check reads these (backlog 0387: three
+/// of the ten findings the second loop trial read by hand were sound tests, such as
+/// `test_V7_3_1_session_unused_past_the_limit_is_refused` for the inactivity timeout); the
+/// citation and threat guards keep comparing words alone, as they must.
+const MEANINGS: &[&[&str]] = &[
+    // Refusing someone what they are not allowed (V8 and its kin).
+    &[
+        "access", "restrict", "refus", "deni", "deny", "forbid", "permi", "authoriz", "authoris",
+        "admin", "role", "privileg", "unauthor",
+    ],
+    // A session or code that ends after time or disuse (V7.3 and its kin).
+    &[
+        "timeout", "expir", "idle", "inactiv", "unused", "lifetime", "stale",
+    ],
+    // Guessing and the limits on it.
+    &["brute", "guess", "lockout", "throttl", "rate", "attempt"],
+    // Keeping data secret in transit or at rest.
+    &[
+        "encrypt",
+        "cipher",
+        "tls",
+        "https",
+        "plaintext",
+        "cleartext",
+    ],
+    // A password kept so it cannot be read back.
+    &["hash", "bcrypt", "argon", "scrypt", "pbkdf"],
+];
+
+/// Whether the two texts each have a word of one of `MEANINGS`' groups.
+fn shares_a_meaning(test_text: &str, requirement: &str) -> bool {
+    let groups = |text: &str| -> BTreeSet<usize> {
+        text.split(|c: char| !c.is_ascii_alphanumeric())
+            .map(|w| w.to_lowercase())
+            .filter(|w| w.len() >= 3)
+            .flat_map(|w| {
+                MEANINGS
+                    .iter()
+                    .enumerate()
+                    .filter(move |(_, group)| group.iter().any(|start| w.starts_with(start)))
+                    .map(|(i, _)| i)
+                    .collect::<Vec<_>>()
+            })
+            .collect()
+    };
+    !groups(test_text).is_disjoint(&groups(requirement))
+}
+
 /// Enough of a stem that `passwords` and `password` are the same word, and no more.
 fn stem(word: &str) -> String {
     for suffix in ["ing", "ies", "es", "ed", "s"] {
@@ -669,6 +720,9 @@ fn stem(word: &str) -> String {
     }
     word.to_owned()
 }
+
+#[cfg(test)]
+mod meaning_tests;
 
 #[cfg(test)]
 mod tests {
@@ -927,12 +981,8 @@ mod failing_output_tests {
     use super::*;
     use crate::secrets::SecretRules;
 
-    fn rules() -> SecretRules {
-        SecretRules::load(
-            &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("../../data/secret-rules.json"),
-        )
-        .expect("rules load")
+    fn rules() -> &'static SecretRules {
+        SecretRules::shared().expect("the rules sv ships")
     }
 
     /// Assembled at run time, so the source holds nothing shaped like a key.
@@ -942,13 +992,13 @@ mod failing_output_tests {
 
     #[test]
     fn a_passing_suite_keeps_no_output() {
-        assert_eq!(failing_output(0, "1 passing", &rules()), None);
+        assert_eq!(failing_output(0, "1 passing", rules()), None);
     }
 
     #[test]
     fn a_failing_suite_keeps_its_last_lines_where_the_summary_is() {
         let output: String = (1..=50).map(|n| format!("line {n}\n")).collect();
-        let t = failing_output(1, &format!("{output}\n\n  \n"), &rules()).expect("kept");
+        let t = failing_output(1, &format!("{output}\n\n  \n"), rules()).expect("kept");
         assert_eq!(t.exit_code, 1);
         assert_eq!((t.lines_kept, t.lines_total), (FAILING_OUTPUT_LINES, 50));
         let lines: Vec<&str> = t.text.lines().collect();
@@ -962,17 +1012,17 @@ mod failing_output_tests {
 
     #[test]
     fn a_short_output_is_kept_whole() {
-        let t = failing_output(2, "not ok 1 - sign-in\n# fail 1\n", &rules()).expect("kept");
+        let t = failing_output(2, "not ok 1 - sign-in\n# fail 1\n", rules()).expect("kept");
         assert_eq!(t.text, "not ok 1 - sign-in\n# fail 1");
         assert_eq!((t.lines_kept, t.lines_total), (2, 2));
-        let t = failing_output(1, "", &rules()).expect("kept");
+        let t = failing_output(1, "", rules()).expect("kept");
         assert_eq!((t.text.as_str(), t.lines_total), ("", 0));
     }
 
     #[test]
     fn colors_and_redrawn_progress_lines_read_as_they_did_in_the_terminal() {
         let output = "\x1b[31m✖ 1 failing\x1b[0m\r\n 10%\r 50%\r100% done\n\x1b]0;title\x07end\n";
-        let t = failing_output(1, output, &rules()).expect("kept");
+        let t = failing_output(1, output, rules()).expect("kept");
         assert_eq!(t.text, "✖ 1 failing\n100% done\nend");
     }
 
@@ -984,7 +1034,7 @@ mod failing_output_tests {
              DB_PASSWORD=Tr0ub4dor-and-3\n{{\"client_secret\": \"a9Fq2mWz7Lr\"}}\n\
              1 failing\n"
         );
-        let t = failing_output(1, &output, &rules()).expect("kept");
+        let t = failing_output(1, &output, rules()).expect("kept");
         // The failure message names which one by position, and prints neither it nor the output
         // holding it: a test about keeping credentials out of output does not print one either.
         for (i, value) in [key.as_str(), "Tr0ub4dor-and-3", "a9Fq2mWz7Lr"]
@@ -1003,7 +1053,7 @@ mod failing_output_tests {
     #[test]
     fn a_summary_right_after_the_last_kept_line_is_not_lost_to_blank_lines() {
         let output: String = (1..=31).map(|n| format!("case {n}\n")).collect();
-        let t = failing_output(1, &format!("{output}\n\n\n"), &rules()).expect("kept");
+        let t = failing_output(1, &format!("{output}\n\n\n"), rules()).expect("kept");
         let lines: Vec<&str> = t.text.lines().collect();
         assert_eq!(lines.len(), FAILING_OUTPUT_LINES);
         assert_eq!((lines[0], lines[29]), ("case 2", "case 31"));
@@ -1013,14 +1063,14 @@ mod failing_output_tests {
     fn a_runner_that_colors_its_failures_reads_as_plain_text() {
         // Jest's own shape: bold, then red, around the name of the failing test.
         let output = "\x1b[1m\x1b[31m  ● sign-in › refuses a wrong password\x1b[39m\x1b[22m\n";
-        let t = failing_output(1, output, &rules()).expect("kept");
+        let t = failing_output(1, output, rules()).expect("kept");
         assert_eq!(t.text, "  ● sign-in › refuses a wrong password");
     }
 
     #[test]
     fn a_progress_bar_reads_as_where_it_stopped() {
         let output = "[##    ] 33%\r[####  ] 66%\r[######] 100%\nFAILED tests/test_login.py\n";
-        let t = failing_output(1, output, &rules()).expect("kept");
+        let t = failing_output(1, output, rules()).expect("kept");
         assert_eq!(t.text, "[######] 100%\nFAILED tests/test_login.py");
     }
 
@@ -1028,14 +1078,14 @@ mod failing_output_tests {
     fn a_suite_that_passed_while_printing_failures_keeps_nothing() {
         // A runner that retried a flaky test prints the failure and still exits 0; the suite passed.
         let output = "FAILED test_upload (attempt 1)\nPASSED test_upload (attempt 2)\n";
-        assert_eq!(failing_output(0, output, &rules()), None);
+        assert_eq!(failing_output(0, output, rules()), None);
     }
 
     #[test]
     fn a_placeholder_or_an_ordinary_line_is_left_alone() {
         let output =
             "API_KEY=your-key-here\nexpected 200, got 401 at token check\ntoken: ${TOKEN}\n";
-        let t = failing_output(1, output, &rules()).expect("kept");
+        let t = failing_output(1, output, rules()).expect("kept");
         assert_eq!(t.redacted, 0, "{}", t.text);
         assert_eq!(t.text, output.trim_end());
     }

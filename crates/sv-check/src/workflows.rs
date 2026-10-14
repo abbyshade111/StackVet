@@ -723,14 +723,19 @@ pub fn check(app_dir: &Path) -> WorkflowReport {
                 &[],
                 format!("{scope}, none of them checking out the repository"),
             )),
-            None => report.passed.push(Verified::new(
-                CHECKOUT_TOKEN,
-                &["AC.12.2"],
-                format!(
-                    "{scope}: every checkout sets `persist-credentials: false`; credentials kept on \
-                     the runner some other way are not in any file"
-                ),
-            )),
+            // AC.12.2 also asks that runners be scrubbed of cached credentials before AI tooling runs,
+            // which no file shows, so this is its checkout half (backlog 0469; ADR-053).
+            None => report.passed.push(
+                Verified::new(
+                    CHECKOUT_TOKEN,
+                    &["AC.12.2"],
+                    format!(
+                        "{scope}: every checkout sets `persist-credentials: false`; credentials kept \
+                         on the runner some other way are not in any file"
+                    ),
+                )
+                .in_part(),
+            ),
         }
     }
 
@@ -1066,6 +1071,9 @@ fn actions_not_pinned(workflow: &Value, name: &str, report: &mut WorkflowReport)
         ],
     ));
 }
+
+#[cfg(test)]
+mod checkout_in_part_tests;
 
 #[cfg(test)]
 mod tests {

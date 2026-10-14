@@ -191,6 +191,17 @@ fn files_in_command(command: &str, source: &Source) -> (Vec<String>, Vec<String>
     (found, missing)
 }
 
+/// The ways a Python app gives its server an empty host, which binds every address as `0.0.0.0` does: the address
+/// tuple `socket.bind` and `http.server` take, and a `HOST` that defaults to empty (backlog 0399).
+const EMPTY_HOST: &[&str] = &[
+    "((\"\", ",
+    "(('', ",
+    "\"HOST\", \"\")",
+    "'HOST', '')",
+    "HOST = \"\"",
+    "HOST = ''",
+];
+
 /// Looks for each thing `sv run` will need, in `source`, as `manifest` asks for it.
 pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
     let run = &manifest.stack.run;
@@ -236,9 +247,14 @@ pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
         items.push(Item::new("start", Answer::Look, words));
     }
 
-    // Listening on every address.
-    let everywhere =
-        |text: &str| text.contains("0.0.0.0") || text.contains("\"::\"") || text.contains("'::'");
+    // Listening on every address. In Python an empty host (`("", port)`) binds every address as `0.0.0.0` does
+    // (backlog 0399): the owner's trial app changed its default to `""` and its server listened as before.
+    let everywhere = |text: &str| {
+        ["0.0.0.0", "\"::\"", "'::'"]
+            .iter()
+            .chain(EMPTY_HOST)
+            .any(|form| text.contains(form))
+    };
     let loopback = |text: &str| text.contains("127.0.0.1") || quoted(text, "localhost");
     if everywhere(&start) {
         items.push(Item::new(
@@ -251,7 +267,7 @@ pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
             "listen",
             Answer::Looks,
             vec![
-                sv("Every address (`0.0.0.0`) is named in "),
+                sv("Every address (`0.0.0.0`, `::`, or an empty host) is named in "),
                 app(file),
                 sv("."),
             ],
@@ -314,7 +330,7 @@ pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
         items.push(Item::new(
             "users",
             Answer::Unknown,
-            vec![sv("There is no [stack.run.users], so nothing about signing in was looked for, and `sv run` will report what a signed-in user can reach as not assessed.")],
+            vec![sv("There is no `[stack.run.users]`, so nothing about signing in was looked for, and `sv run` will report what a signed-in user can reach as not assessed.")],
         ));
         return sorted(items);
     };
@@ -464,7 +480,7 @@ pub fn preflight(manifest: &Manifest, source: &Source) -> Vec<Item> {
                     sv(format!(
                         ". The checks that ask each listed {what} page ({asked}) can then credit \
                          only in part: one page is one sample of every page the requirement names. \
-                         List the app's other {what} pages under `{what}` in [stack.run.users]."
+                         List the app's other {what} pages under `{what}` in `[stack.run.users]`."
                     )),
                 ],
             ));
@@ -656,7 +672,7 @@ pub fn of(app_dir: &Path) -> anyhow::Result<Found> {
     let manifest_path = sv_manifest::locate(app_dir)?
         .ok_or_else(|| {
             anyhow::anyhow!(
-                "no {} in {}: write it first (`sv init` gives the spec), and the preflight reads what its [stack.run] asks for",
+                "no {} in {}: write it first (`sv init` gives the spec), and the preflight reads what its `[stack.run]` asks for",
                 sv_frameworks::names::MANIFEST,
                 app_dir.display()
             )
@@ -689,7 +705,7 @@ fn install(manifest: &Manifest, app_dir: &Path) -> Option<Item> {
             "install",
             Answer::Look,
             vec![sv(format!(
-                "The app names packages in {named}, and [stack.run] does not say `install = true`. The app runs with no network, so it cannot download them itself, and an app that needs them never starts. If the image already holds them, or the app does not need them to run, ignore this."
+                "The app names packages in {named}, and `[stack.run]` does not say `install = true`. The app runs with no network, so it cannot download them itself, and an app that needs them never starts. If the image already holds them, or the app does not need them to run, ignore this."
             ))],
         ));
     }
@@ -755,7 +771,7 @@ fn build_installs(manifest: &Manifest) -> Option<Item> {
             sv("The build step ("),
             app(format!("`{build}`")),
             sv(format!(
-                ") runs `{found}`, which downloads packages. The build step runs inside the fence, where nothing can be downloaded and nothing outside /tmp written, so it fails there. Two ways work: `install = true` under [stack.run] has `sv` install the packages in requirements.txt or package.json before the run, outside the fence; or build an image of your own that already holds them and name it in `image` (docs/GETTING-STARTED.md, \"An image of your own\")."
+                ") runs `{found}`, which downloads packages. The build step runs inside the fence, where nothing can be downloaded and nothing outside /tmp written, so it fails there. Two ways work: `install = true` under `[stack.run]` has `sv` install the packages in requirements.txt or package.json before the run, outside the fence; or build an image of your own that already holds them and name it in `image` (docs/INSTALL.md, \"An image of your own\")."
             )),
         ],
     ))
@@ -814,6 +830,9 @@ fn installer_in(build: &str) -> Option<String> {
 
 #[cfg(test)]
 mod build_install_tests;
+
+#[cfg(test)]
+mod empty_host_tests;
 
 const OPENING: &str = "# Preflight: what `sv run` will need, looked for in the code\n\nNothing was run. Each answer is a reading of the app's files: \"looks right\" means what `sv run` needs was found in the text, not that it works, and \"look at this\" may be a route or a name built from parts. Nothing here is evidence for any requirement, and nothing is credited.\n";
 

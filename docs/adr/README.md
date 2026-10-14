@@ -158,6 +158,8 @@ source files, and in two tests:
 | [ADR-109](ADR-109.md) | The second loop trial tests `sv`'s waiting features on two briefs, with an outside check the builder never sees (accepted, 12 October 2026) |
 | [ADR-110](ADR-110.md) | The reports lead with the things to fix, and say what was not examined right after (accepted, 12 October 2026) |
 | [ADR-111](ADR-111.md) | The outside tools run with every `sv report` and `sv bundle` unless `--no-tools` is given (accepted, 13 October 2026) |
+| [ADR-112](ADR-112.md) | A security contact that is a placeholder is a finding of its own, and cites no requirement (accepted, 14 October 2026) |
+| [ADR-113](ADR-113.md) | A CodeQL results file from the owner's own CI is read when given, and credited only for the commit checked out (accepted, 14 October 2026) |
 
 ## Names in the records
 

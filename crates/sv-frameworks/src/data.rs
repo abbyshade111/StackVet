@@ -116,6 +116,16 @@ pub fn dir() -> Result<PathBuf, String> {
         .clone()
 }
 
+/// A data file `sv` ships, read and parsed as JSON (backlog 0460): "reading" and the path when it cannot be read, and
+/// `not_understood` when it does not parse. Each loader made the same two calls before; what it checks after the parse
+/// stays with it.
+pub fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> anyhow::Result<T> {
+    use anyhow::Context;
+    let text =
+        std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
+    serde_json::from_str(&text).with_context(|| not_understood(path))
+}
+
 /// What to say when a data file `sv` ships does not parse (backlog 226, part 2, item 16). The person
 /// cannot fix the file, and it most likely belongs to another version of `sv`, so it says that, what
 /// to do, and that nothing about the app was checked.
@@ -243,3 +253,7 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "data_read_json_tests.rs"]
+mod read_json_tests;

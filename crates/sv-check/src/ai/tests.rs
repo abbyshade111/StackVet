@@ -118,6 +118,8 @@ pub(super) struct Flaws {
     mcp_calls_once: bool,
     /// Its injection screen knows English only: the same attack translated or in base64 passes.
     screen_english_only: bool,
+    /// Its injection screen knows the translations and not base64: only the base64 attack passes.
+    pub(super) screen_misses_base64: bool,
     /// It cuts every message to its first 4,000 characters before passing it on.
     truncates_input: bool,
     /// It keeps only a message's last 4,000 characters.
@@ -133,7 +135,7 @@ pub(super) struct Flaws {
     /// Its answer is the model service's response object, id and all.
     raw_response: bool,
     /// When the model service fails, it passes the service's error on to the person.
-    passes_model_error: bool,
+    pub(super) passes_model_error: bool,
     /// When the model service fails, it writes the service's error to its output (V16.3.4).
     logs_model_error: bool,
     /// It sets no time limit on the model: a message the model never answers is never answered.
@@ -175,10 +177,10 @@ pub(super) struct Flaws {
     /// this many more rounds each time sv reads them (0: it does not).
     loop_in_background: u64,
     /// After the model service fails once, every message is answered 500.
-    down_after_model_error: bool,
+    pub(super) down_after_model_error: bool,
     /// After the model service fails once, it is busy for this many seconds: every message is
     /// answered by a limiter, 503 with `Retry-After: 7`, as a busy service answers.
-    busy_after_model_error: u64,
+    pub(super) busy_after_model_error: u64,
     /// It asks for its model by a name that moves (`gpt-4o-latest`).
     floating_model: bool,
     /// Its record of each model call names the signed-in user.
@@ -652,7 +654,7 @@ impl FakeChat {
             .to_lowercase()
             .contains("ignore all previous instructions")
             || (!self.flaws.screen_english_only
-                && (message.contains(ENCODED)
+                && ((message.contains(ENCODED) && !self.flaws.screen_misses_base64)
                     || TRANSLATED.iter().any(|(_, words)| message.contains(words))));
         match self.logs {
             Logs::RawMessages => self.log.push(format!("received message: {message}")),

@@ -114,13 +114,10 @@ pub fn masked(line: &str) -> String {
 /// `masked`, for a line of the file at `relative` in the app, masked in the shapes the scan reads
 /// that file's values in (`secrets::redact_text_in`), so a line is masked as far as it is found.
 pub fn masked_in(relative: &str, line: &str) -> String {
-    static RULES: std::sync::LazyLock<Option<crate::secrets::SecretRules>> =
-        std::sync::LazyLock::new(|| {
-            crate::secrets::SecretRules::load(&sv_frameworks::data::file("secret-rules.json")).ok()
-        });
-    match &*RULES {
-        Some(rules) => crate::secrets::redact_text_in(rules, relative, line.trim()).0,
-        None => String::new(),
+    // Without the rules nothing is shown: a run cannot get here then, since loading `sv`'s data fails first.
+    match crate::secrets::SecretRules::shared() {
+        Ok(rules) => crate::secrets::redact_text_in(rules, relative, line.trim()).0,
+        Err(_) => String::new(),
     }
 }
 

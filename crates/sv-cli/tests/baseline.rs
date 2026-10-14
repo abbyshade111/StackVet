@@ -157,7 +157,7 @@ fn every_report_file_marks_the_old_findings_and_sarif_says_new_or_unchanged() {
         );
     }
     let sarif: serde_json::Value =
-        serde_json::from_str(&s.read("after", "findings.sarif")).unwrap();
+        serde_json::from_str(&s.read("after", "stackvet.sarif")).unwrap();
     let states: Vec<&str> = sarif["runs"][0]["results"]
         .as_array()
         .unwrap()
@@ -169,7 +169,7 @@ fn every_report_file_marks_the_old_findings_and_sarif_says_new_or_unchanged() {
         "{states:?}"
     );
     // Without a baseline, no result carries a state.
-    let plain: serde_json::Value = serde_json::from_str(&s.read("old", "findings.sarif")).unwrap();
+    let plain: serde_json::Value = serde_json::from_str(&s.read("old", "stackvet.sarif")).unwrap();
     assert!(
         plain["runs"][0]["results"]
             .as_array()
@@ -321,7 +321,7 @@ fn report_html_marks_the_old_findings_and_not_the_new_one() {
 fn sarif_gives_one_new_result_and_the_rest_unchanged() {
     let s = compared("sarif");
     let sarif: serde_json::Value =
-        serde_json::from_str(&s.read("after", "findings.sarif")).unwrap();
+        serde_json::from_str(&s.read("after", "stackvet.sarif")).unwrap();
     let states: Vec<&str> = sarif["runs"][0]["results"]
         .as_array()
         .unwrap()

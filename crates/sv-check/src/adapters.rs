@@ -249,33 +249,14 @@ impl MappedRule {
 
 /// A semgrep `paths` pattern against a path relative to the app's folder, as gitignore reads one: a
 /// pattern with no `/` in it matches the name of the file or of any folder it is in; one with a `/`
-/// matches the whole path. `*` and `?` stay within a name, and `**` crosses folders.
+/// matches the whole path. The wildcards are git's, as `sv_scan::glob` reads them (backlog 0456).
 pub fn path_matches(pattern: &str, path: &str) -> bool {
     let pattern = pattern.trim_start_matches('/').trim_end_matches('/');
     if pattern.contains('/') {
-        glob(pattern.as_bytes(), path.as_bytes())
+        sv_scan::glob::matches(pattern, path)
     } else {
         path.split('/')
-            .any(|name| glob(pattern.as_bytes(), name.as_bytes()))
-    }
-}
-
-fn glob(p: &[u8], s: &[u8]) -> bool {
-    match p {
-        [] => s.is_empty(),
-        [b'*', b'*', b'/', rest @ ..] => {
-            // No folders, or any number of whole ones.
-            glob(rest, s)
-                || s.iter()
-                    .enumerate()
-                    .any(|(i, &c)| c == b'/' && glob(rest, &s[i + 1..]))
-        }
-        [b'*', b'*', rest @ ..] => (0..=s.len()).any(|i| glob(rest, &s[i..])),
-        [b'*', rest @ ..] => (0..=s.len())
-            .take_while(|&i| i == 0 || s[i - 1] != b'/')
-            .any(|i| glob(rest, &s[i..])),
-        [b'?', rest @ ..] => s.first().is_some_and(|&c| c != b'/') && glob(rest, &s[1..]),
-        [c, rest @ ..] => s.first() == Some(c) && glob(rest, &s[1..]),
+            .any(|name| sv_scan::glob::matches(pattern, name))
     }
 }
 
@@ -325,10 +306,7 @@ const MOST_FILE_ARGUMENT_BYTES: usize = 256 * 1024;
 
 impl Adapters {
     pub fn load(path: &Path) -> Result<Self> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        let file: AdapterFile = serde_json::from_str(&text)
-            .with_context(|| sv_frameworks::data::not_understood(path))?;
+        let file: AdapterFile = sv_frameworks::data::read_json(path)?;
 
         for adapter in &file.adapters {
             // The commands come from this repository rather than from the app, so this is not the
@@ -520,7 +498,7 @@ impl Adapter {
     }
 
     /// What the tool reads, in the words a report uses.
-    fn subject(&self) -> String {
+    pub(crate) fn subject(&self) -> String {
         if self.language == "*" {
             "code".to_owned()
         } else {
@@ -2023,11 +2001,11 @@ pub fn did_not_finish(rules: &SecretRules, sarif: &str, app_dir: &Path) -> Vec<S
                     (Some(file), false) => {
                         format!(
                             "`{file}` ({})",
-                            said(rules, first_line(message), LINE_CHARS)
+                            said(rules, &crate::text::first_line(message), LINE_CHARS)
                         )
                     }
                     (Some(file), true) => format!("`{file}`"),
-                    (None, false) => said(rules, first_line(message), LINE_CHARS),
+                    (None, false) => said(rules, &crate::text::first_line(message), LINE_CHARS),
                     (None, true) => "an error it did not describe".to_owned(),
                 });
             }
@@ -2052,10 +2030,6 @@ pub fn did_not_finish(rules: &SecretRules, sarif: &str, app_dir: &Path) -> Vec<S
         out.push("its report says its run did not succeed, without saying why".to_owned());
     }
     out
-}
-
-fn first_line(text: &str) -> &str {
-    text.lines().next().unwrap_or("").trim()
 }
 
 /// A SARIF location as a path from the app folder: `file://` taken off, and the folder too.

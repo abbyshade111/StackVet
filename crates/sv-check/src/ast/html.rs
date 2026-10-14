@@ -55,7 +55,8 @@ pub(super) fn page_fragments(source: &str, typescript_scripts: bool) -> HtmlScan
             return out;
         }
     };
-    let line_of = |at: usize| source[..at].matches('\n').count();
+    // The lines before a fragment, which is its offset in the page: one fewer than the line it starts on.
+    let lines_before = |at: usize| sv_scan::text::line_of(source, at) - 1;
 
     // Script elements.
     let mut accounted = 0usize;
@@ -70,7 +71,7 @@ pub(super) fn page_fragments(source: &str, typescript_scripts: bool) -> HtmlScan
                     script.language
                 },
                 code: body.to_owned(),
-                line_offset: line_of(script.body.start),
+                line_offset: lines_before(script.body.start),
             });
         }
     }
@@ -95,14 +96,14 @@ pub(super) fn page_fragments(source: &str, typescript_scripts: bool) -> HtmlScan
                 out.fragments.push(Fragment {
                     language: "javascript",
                     code: value,
-                    line_offset: line_of(attribute.value.start),
+                    line_offset: lines_before(attribute.value.start),
                 });
             }
         } else if let Some(program) = program {
             out.fragments.push(Fragment {
                 language: "javascript",
                 code: percent_decode(&program),
-                line_offset: line_of(attribute.value.start),
+                line_offset: lines_before(attribute.value.start),
             });
         } else if looks_like_a_disguised_scheme(&value) {
             out.left_behind = Some(

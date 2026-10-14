@@ -9,6 +9,8 @@ StackVet checks an app against the OWASP standards and writes reports that say p
 what was not. You write the app in whatever AI coding tool you like, in any language; you have the back-and-forth
 with your own AI tool until the app is what you wanted, and then `sv` picks up the code and grades it.
 
+![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](docs/website/diagrams/how-it-works.svg)
+
 **If you are not a programmer, start with [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md).** It walks through
 installing Docker, connecting StackVet to your AI tool, the prompt to start with, and reading the report, one step
 at a time. The rest of this page is written for programmers, and its commands build StackVet from its source code.
@@ -18,7 +20,8 @@ at a time. The rest of this page is written for programmers, and its commands bu
 The compliance engine, the scanners, the container runner, the checks and the reports all run. What is not
 built is listed in `docs/backlog/` (one file per item; `docs/BACKLOG.md` is its guide and roadmap), and the reports say plainly which parts of an app nothing has examined. Which
 requirements of ASVS, AISVS, and the Secure by Design checklist any check can speak to at all, and what
-each check needs to run, is counted in `docs/COVERAGE.md`. `docs/REQUIREMENTS.md` lists every ASVS and AISVS requirement by level and
+each check needs to run, is counted in `docs/COVERAGE.md`, and drawn as one bar per ASVS chapter in
+[`docs/coverage-by-chapter.svg`](docs/coverage-by-chapter.svg) (by level: [`docs/coverage-by-level.svg`](docs/coverage-by-level.svg)). `docs/REQUIREMENTS.md` lists every ASVS and AISVS requirement by level and
 family, with the checks that speak to each.
 
 ### The commands
@@ -134,7 +137,7 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 | `report.html` | The whole report, in one page | You: open it by double-clicking it |
 | `compliance.md`, `security.md` | The same, in Markdown | You, or your AI coding tool |
 | `low-findings.md` | Every low-severity finding in full, where the reports group them by rule | You, when you want the detail |
-| `findings.sarif` | The findings as SARIF | Editors and CI |
+| `stackvet.sarif` | The findings as SARIF (named `findings.sarif` before 14 October 2026) | Editors and CI |
 | `report.json` | The data as JSON | Programs, among them `sv review`, `sv compare`, and `sv dashboard` |
 | `seen.json` | What `sv` saw of the running app, with credentials cut out | You, to see what a finding rests on |
 | `sbom.cdx.json` | The app's bill of materials as CycloneDX JSON, as `sv sbom` prints it | Tools that read a bill of materials |
@@ -142,10 +145,11 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 The reports lead with what was **not** examined, say what each check covered when it found nothing wrong, and
 nothing in them says a requirement passed — `sv` is not able to establish that, so it does not claim it.
 
-Each requirement gets one of nine statuses, strongest evidence first: *needs attention* (a check found a problem),
-*checked*, *checked in part* (a check ran, but tried only part of what the requirement asks, ADR-053), *tested by
-the app's own tests*, *documented by the owner*, *checked by hand by the owner*, *attested by the owner*, *stated by
-the AI coding tool*, and *not verified*.
+Each requirement gets one of nine statuses, strongest evidence first, from *needs attention* and *checked* down to
+*stated by the AI coding tool* and *not verified*. Only a check of `sv`'s own can make one *checked*; the app's tests,
+your own word through `sv review`, and the tool's word each rank lower. [The ladder in
+`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first) draws all nine with who can
+grant each.
 
 They also list the tests worth writing: every requirement that applies and has no evidence yet, and no
 test in the app naming it, lowest level first. A passing test that names the requirement's id is the one way
@@ -157,8 +161,8 @@ each threat concerns (sign-in, stored data, the AI model, uploads, payments, and
 checks showed about each: found, checked in part, not verified, or not known to apply until a question
 in stackvet.toml is answered. (For a threat, *checked in part* means some of its requirements were checked; the
 app's own tests and the owner's word never move one.) It is made from rules, not by asking an AI, and it never calls a threat
-handled, because a threat is only as settled as the requirements that answer it. See
-`docs/THREAT-MODELING.md`.
+handled, because a threat is only as settled as the requirements that answer it. How it came to be made this way is a
+dated reading, `docs/research/THREAT-MODELING.md`, kept as history.
 
 ### Your AI coding tool's own files
 
@@ -241,71 +245,33 @@ A section marked as yours and recorded with `sv review` counts as *documented by
 file ever counts as checked. Its ids are written
 `SBD-AC-01` to keep them apart from AISVS Appendix C, which numbers its own requirements `AC.1.1`.
 The checklist has no levels; each control takes the level of the ASVS requirement that asks the same
-thing (`data/sbd-asvs-crosswalk.json`), or is shown at every level when nothing in ASVS does.
+thing (`data/sbd-asvs-crosswalk.json`), or is shown at every level when nothing in ASVS does. How `sv` decides which requirements
+apply, from `stackvet.toml` and the code, and the two answers that set the level, are drawn in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#how-sv-decides-what-applies).
 
 ## Setting a finding aside, confirming an answer, or giving your own: `sv review`
 
-When a finding is a false alarm, or a risk you choose to live with for now, it can be set aside under
-`[[finding-review]]` in `stackvet.toml`, with a reason. When your AI coding tool answered a question
-and you have looked for yourself, you can confirm its answer. Either counts only once **you** record it,
-by running this in your own terminal:
+A finding set aside as a false alarm or a risk you accept, an answer of your AI coding tool's that you have checked and
+confirm, and your own answers (`by = "owner"` in `stackvet.toml`, `Written by: owner` in `security-notes.md`) count as
+yours only once **you** record them, in your own terminal:
 
 ```bash
 sv review ./my-app
 ```
 
-The same goes for your own answers: a `[design]` answer or a `[checked-by-hand]` result written with
-`by = "owner"`, and a section of `security-notes.md` marked `Written by: owner`, count as yours only once
-recorded this way. Until then they count as your AI coding tool's word, a step lower, and the report says
-so.
+Until then they count as the tool's word, a step lower, and the report says so: the tool rewrites code until a warning
+stops, and writing `owner` into a file is the easiest way to stop one. `sv review` needs a terminal someone is typing
+in, which an AI coding tool does not have. It shows each entry, asks your name or `owner`, and *signs* it with a key of
+its own in `~/.config/stackvet/`, outside the app, protected by a passphrase if you choose one; reports made anywhere
+else count the entry only if they are given the key's public half, one line `sv review` shows you. It also asks you to
+confirm the two answers that set the app's level.
 
-It goes through every entry that is not yet yours, shows the finding's line of code (never a line that
-may hold a key), and asks for your name, or `owner`. What you record is written back into
-`stackvet.toml` with the date and a *seal*. Your AI coding tool may write entries too, as proposals
-(`by = "ai-tool"`), and the report lists them, but a proposal counts for nothing.
-
-Last, it shows the two answers that set the app's level, who uses the app (`[app] audience`) and what it
-holds about people (`[data] categories`), and asks you to confirm them. Your AI coding tool usually writes
-both. Once you have, the report says the level rests on answers you confirmed, and when; change either
-answer later and it says they are unconfirmed again until you run `sv review` once more. Confirming them
-never changes the level: it says whose word the level rests on.
-
-Why the extra step: the tool rewrites code until a warning stops, and writing `by = "owner"` into the
-file is the easiest way to stop one. `sv review` runs only in a terminal someone is typing in, which an
-AI coding tool does not have, and *signs* each entry with a key of its own, kept in your own settings
-folder (`~/.config/stackvet/review-signing-key`), outside the app. The first time, it makes the key and
-asks for a passphrase to protect it with: press Enter to choose one, or type `none` to go without. With one,
-nothing can sign as you without it, your AI coding tool included, since the passphrase is only in your head;
-you type it each time you run `sv review`. Without one, every entry the key signed says so in the report, on
-the computer that holds the key.
-
-A signature is checked with the key's *public half*, which can check a signature but never make one. `sv
-review` puts that public half, with the app it may sign for, on a list of trusted keys beside the key
-(`~/.config/stackvet/allowed_signers`), and shows you one line to give any other computer that should
-count what you record: CI, the container, or a second computer of yours. Give it as the variable
-`SV_TRUSTED_SEALS` (on GitHub: the repository's Settings, then Secrets and variables, then Actions, then
-Variables, and pass `SV_TRUSTED_SEALS: ${{ vars.SV_TRUSTED_SEALS }}` to the step that runs `sv`). The
-line is not a secret: anyone can read it, and nobody can sign with it.
-
-Wherever the report is made, it checks each signature against the list: an entry that was changed
-afterwards, never signed, or signed with a key the list does not name, is a proposal again, and the
-report names the key it trusted and where the list came from, so you can tell it is yours. A signature
-also names the app, so an entry copied into another app is a proposal there. On your own computer that
-means the app's folder: an app moved to another folder is a proposal until you run `sv review` in it. On
-a computer with no list at all the signature cannot be checked, so the entry does not count, and the
-report says how to make it count.
-
-What it cannot show: who was at the keyboard, unless your key has a passphrase; and that a trusted key is
-yours, since whoever can change the list, or the repository variable, can add one. A tool set on faking
-it, running as you, could do either; it stops the easy way, not every way. Keep the key file private.
-
-With the container, give it a terminal and somewhere to keep the key, made first so that it is yours
-(`mkdir -p ~/.config/stackvet && chmod 700 ~/.config/stackvet`; on Linux, add `--user` as below):
+With only Docker, the same from the container (make `~/.config/stackvet` first; the full steps are linked below):
 `docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/stackvet":/sv-config/stackvet -e XDG_CONFIG_HOME=/sv-config ghcr.io/abbyshade111/stackvet-sv review .`
-The container that writes your reports needs only the list, and never the key beside it: pass
-`-e SV_TRUSTED_SEALS="$(cat ~/.config/stackvet/allowed_signers)"`, or mount the list alone, read-only,
-with `-v "$HOME/.config/stackvet/allowed_signers":/sv-config/stackvet/allowed_signers:ro -e XDG_CONFIG_HOME=/sv-config`.
-For the container your AI coding tool starts, the guide (`docs/GETTING-STARTED.md`, step 5) gives the whole `.mcp.json`.
+
+[`docs/REVIEW.md`](docs/REVIEW.md) is the whole of it, with a picture: what each kind of entry is, the key and its
+passphrase, the list of trusted keys and how a signature is checked, what a seal cannot show, and the setup for the
+container and for CI (`SV_TRUSTED_SEALS`, and where GitHub keeps it).
 
 ## Signing in
 
@@ -641,7 +607,7 @@ Each note here is for someone who set StackVet up before a change; a first-time 
   `sv review` there, it offers to sign them all again at one yes, without asking each question again.
 - **An installed copy from before 5 October 2026.** The guide had you use the program in the build folder then; if
   your `PATH` or your AI tool's settings name `…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`
-  ([`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md#if-you-set-stackvet-up-before-5-october-2026)).
+  ([`docs/INSTALL.md`](docs/INSTALL.md#if-you-set-stackvet-up-before-5-october-2026)).
 - **SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
   archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
   `v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this
