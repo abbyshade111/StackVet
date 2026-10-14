@@ -324,6 +324,12 @@ download them first, in a separate box that sees only the list of packages, neve
 one time StackVet uses the internet for your app, and the report says when it did. Without it, an app that needs
 packages does not start, and everything that needs it running is *not assessed*.
 
+**The full check is that one command.** `sv report --run` also runs the other security tools that are installed on
+your computer, such as Bandit and Semgrep, and puts what they find in the same report as what running the app found.
+Your AI coding tool's StackVet connection never runs them, and never starts the app: each of those runs code, which
+stays your decision at a terminal. So a report your AI tool wrote, or a check it made while building, leaves both out,
+and says so. To leave the other tools out of a check of your own, add `--no-tools`.
+
 **Where the report is.** When your AI tool writes the report (`stackvet_write_report`), or you run
 `sv report`, it goes in a folder named `stackvet-report` inside the app's folder. Open `report.html` in
 a browser; `compliance.md` and `security.md` say the same in plain text for your AI tool. To have your AI tool
