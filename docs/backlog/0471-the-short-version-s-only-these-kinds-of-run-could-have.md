@@ -1,6 +1,6 @@
 # The short version's "only these kinds of run could have reached N requirements" counts a tool of another language as a reach
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
