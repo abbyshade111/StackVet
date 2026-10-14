@@ -164,6 +164,7 @@ source files, and in two tests:
 | [ADR-115](ADR-115.md) | CodeQL runs only when the owner turns it on, for the uses its license allows (accepted, 14 October 2026) |
 | [ADR-116](ADR-116.md) | The report is also written as a PDF, by `sv` itself (accepted, 14 October 2026) |
 | [ADR-117](ADR-117.md) | Rich text and user-supplied markup are asked about, and an AI feature is one way in (accepted, 14 October 2026) |
+| [ADR-118](ADR-118.md) | A probe reads its answer against its own setup and its own control (proposed, 14 October 2026) |
 
 ## Names in the records
 

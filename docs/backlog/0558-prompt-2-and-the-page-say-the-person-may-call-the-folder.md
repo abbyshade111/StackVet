@@ -1,6 +1,8 @@
 # Prompt 2 and the page say the person may call the folder anything, not only my-app
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 The owner's note, 14 October 2026, after the three-tool trial: in the VS Code trial the tool found `new-app` already there and the
 owner said "choose a different name"; the prompts and the page name `my-app` as if it were the name. `docs/prompts/setup.md:30`
