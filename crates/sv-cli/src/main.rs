@@ -58,6 +58,23 @@ fn more_help(name: &str) -> &'static str {
              Each is written back with your name, the date, and a seal. It runs only in your own\n\
              terminal. The whole flow: docs/GETTING-STARTED.md, section 5, \"Answer the questions\".\n"
         }
+        "report" => {
+            "\nIt writes eight files into stackvet-report in the app's folder, unless --out names another.\n\
+             Open report.html in a browser first: it is the whole report on one page. compliance.md and\n\
+             security.md say the same in plain text, for you or your AI coding tool; the rest are for\n\
+             programs. What each file is for: README.md, \"What a report holds\". What --run needs\n\
+             first: docs/INSTALL.md, \"Installing StackVet on your computer, for `--run`\".\n"
+        }
+        "doctor" => {
+            "\nRun it in your app's folder before `sv report --run`: one line each says whether that part is\n\
+             ready, and what to do when it is not. The whole flow: docs/INSTALL.md, \"Installing StackVet\n\
+             on your computer, for `--run`\".\n"
+        }
+        "connect" => {
+            "\nRun it in your app's folder, then put what it prints in the file it names, or ask your AI\n\
+             coding tool to. The whole flow: docs/GETTING-STARTED.md, section 3, \"Connect StackVet to\n\
+             your AI tool\".\n"
+        }
         _ => "",
     }
 }
@@ -487,6 +504,9 @@ fn print_help() {
     );
     text.push_str(
         "\nEXIT STATUS:\n  For sv check, sv report, sv audit, and sv run: 0 finished; 1 needs attention (sv audit, or\n  --fail-on); 2 not assessed (a check could not run); 3 sv itself failed. `sv COMMAND --help`\n  says what each means for it. Every other command ends with 0, or 3 when it failed.\n",
+    );
+    text.push_str(
+        "\nNEW TO THIS?\n  docs/GETTING-STARTED.md walks through setup, the build, and the report; `sv doctor` says\n  whether everything is ready.\n",
     );
     println!("{text}");
 }
