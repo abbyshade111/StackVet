@@ -43,7 +43,14 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0371-the-cross-site-check-on-every-create-request-12-october-2026.md`): every create request named is
    forged; whole only when two or more were refused and no other changing request is named.
-   **Part status:** partly done: the simple-request and null-Origin checks, the flow, and the WebSocket
+   **Scope of the next claim (14 October 2026, by honesty):** the simple-request check (`probe.preflight-skipped`,
+   V3.5.2, which asks it of sensitive functionality) sent for every JSON create request stackvet.toml names, the
+   `owned` create and each `creates` entry, each `creates` entry beside a control as the cross-site check's are (0420).
+   A form create request is left to V3.5.1, since no preflight guards a form. Whole only when two or more refused all
+   three forms, none was left unjudged, and the manifest names no other changing request.
+   **Built 14 October 2026** (ADR-053, "Later, 14 October 2026: the simple-request check on every JSON create
+   request"; `docs/design/0386-the-simple-request-check-on-every-json-create-request-14.md`).
+   **Part status:** partly done: the null-Origin check, the flow, and the WebSocket
 4. **D. Each upload route, more than one file.** Every upload route the manifest names, with a small set of files
    per check rather than one.
    **Scope of this claim (12 October 2026):** a small set of files for the two served-file checks, on the one

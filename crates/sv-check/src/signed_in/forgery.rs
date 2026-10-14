@@ -361,29 +361,51 @@ pub(super) fn null_origin_check(
     }
 }
 
-/// Whether the create request can be made in a form browsers send across sites without a CORS
+/// Whether the create requests can be made in a form browsers send across sites without a CORS
 /// preflight (V3.5.2).
 ///
 /// A JSON request from another site makes the browser ask the app first, and an app that answers no
 /// is safe from it; many apps rely on exactly that. But the same fields sent as `text/plain`, as a
 /// form, or as multipart are "simple" requests a page on any site can send with the person's cookies
 /// and no asking. Each goes out with another site's Origin and no token. Taken in any of the three
-/// forms is a finding; refused in all three is credit, for this request. Only a 2xx is taken and only
+/// forms is a finding; refused in all three is credit, for that request. Only a 2xx is taken and only
 /// a 4xx is refused: a redirect or a server error says neither, and credits nothing.
+///
+/// Every JSON create request stackvet.toml names is sent this way, the `owned` one first: V3.5.2 asks
+/// it of sensitive functionality, not of one request (backlog 0232, part 3; ADR-053, Later). A
+/// `creates` entry is first sent as the app's own page would send it, and judged only when that was
+/// accepted, as the cross-site check does (backlog 0420). The credit is whole only when two or more
+/// requests refused all three forms, none was left unjudged, and the manifest names no other changing
+/// request, since those are not sent.
 pub(super) fn simple_request_check(
     http: &mut dyn Http,
+    users: &sv_manifest::UsersSection,
     owned: &sv_manifest::OwnedSection,
     session: &Session,
     a: &SignedIn,
     out: &mut Outcome,
 ) {
     const ID: &str = "V3.5.2";
-    if owned.create.json.is_empty() {
+    // Each JSON create request, with the prefix its requests' ids start with. A form create request
+    // is left out: a browser sends a form from another site without asking first anyway, so no
+    // preflight is relied on there, and whether it is refused is the cross-site check's question.
+    let creates: Vec<(String, sv_manifest::RequestTemplate)> =
+        std::iter::once(("simple-request".to_owned(), owned.create.clone()))
+            .chain(
+                users
+                    .creates
+                    .iter()
+                    .enumerate()
+                    .map(|(i, c)| (format!("simple-request-{}", i + 1), c.request())),
+            )
+            .filter(|(_, t)| !t.json.is_empty())
+            .collect();
+    if creates.is_empty() {
         out.not_assessed.push((
             ID.to_owned(),
-            "The `owned` create request is a form, which a browser sends from another site without \
-             asking the app first anyway, so no preflight is being relied on; whether the app \
-             refuses it is the cross-site check's question (V3.5.1)."
+            "Every create request stackvet.toml names is a form, which a browser sends from another \
+             site without asking the app first anyway, so no preflight is being relied on; whether \
+             the app refuses it is the cross-site check's question (V3.5.1)."
                 .to_owned(),
         ));
         return;
@@ -398,85 +420,152 @@ pub(super) fn simple_request_check(
             .push((ID.to_owned(), TOKEN_ONLY.to_owned()));
         return;
     };
-    let base = request("simple-request", &owned.create, &values, &cross);
-    let fields: Vec<(String, String)> = owned
-        .create
-        .json
-        .iter()
-        .map(|(k, v)| (k.clone(), fill(v, &values)))
-        .collect();
-    let boundary = "sv-probe-boundary-5c1e";
-    let multipart: String = fields
-        .iter()
-        .map(|(k, v)| {
-            format!("--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n")
-        })
-        .chain(std::iter::once(format!("--{boundary}--\r\n")))
-        .collect();
-    let form: String = fields
-        .iter()
-        .map(|(k, v)| format!("{}={}", form_encode(k), form_encode(v)))
-        .collect::<Vec<_>>()
-        .join("&");
-    let variants = [
-        (
-            "text/plain",
-            "text/plain;charset=UTF-8".to_owned(),
-            base.body_text().into_owned(),
-        ),
-        (
-            "a form",
-            "application/x-www-form-urlencoded".to_owned(),
-            form,
-        ),
-        (
-            "multipart",
-            format!("multipart/form-data; boundary={boundary}"),
-            multipart,
-        ),
-    ];
-    let mut taken = Vec::new();
-    let mut refused = 0;
-    let mut unclear = Vec::new();
-    for (name, content_type, body) in variants {
-        let mut simple = base.clone();
-        simple.id = format!("simple-request-{}", name.replace([' ', '/'], "-"));
-        simple.headers.retain(|(n, _)| {
-            let n = n.to_lowercase();
-            n != "content-type" && !n.contains("csrf") && !n.contains("xsrf")
-        });
-        simple.headers.extend([
-            ("Content-Type".to_owned(), content_type),
-            ("Origin".to_owned(), STRANGER.to_owned()),
-            ("Referer".to_owned(), format!("{STRANGER}/")),
-        ]);
-        simple.body = Some(body.into_bytes());
-        let response = http.send(&simple);
-        match response.as_ref().map(|r| r.status) {
-            Some(200..=299) => taken.push(name),
-            Some(400..=499) => refused += 1,
-            _ => unclear.push(format!("{name} ({})", status(&response))),
+    // (evidence id, path, form) for each form taken; the paths refused in all three; and each path
+    // not judged, with why.
+    let mut taken: Vec<(String, String, &str)> = Vec::new();
+    let mut refused_at: Vec<String> = Vec::new();
+    let mut unjudged: Vec<(String, String)> = Vec::new();
+    for (prefix, template) in &creates {
+        if prefix != "simple-request" {
+            let mut own = session.clone();
+            let control_id = format!("{prefix}-control");
+            let v = with_token(
+                http,
+                &control_id,
+                template,
+                &Values {
+                    marker: "sv-probe-control-4c1d",
+                    ..Default::default()
+                },
+                &mut own,
+                &users.private,
+            );
+            let control = http.send(&request(&control_id, template, &v, &own));
+            if !works(&control, users) {
+                unjudged.push((
+                    template.path.clone(),
+                    format!(
+                        "sent with the session and its token, as the app's own page would send it, \
+                         it was not accepted ({}), so a refusal from another site would show nothing",
+                        status(&control)
+                    ),
+                ));
+                continue;
+            }
+        }
+        let base = request(prefix, template, &values, &cross);
+        let fields: Vec<(String, String)> = template
+            .json
+            .iter()
+            .map(|(k, v)| (k.clone(), fill(v, &values)))
+            .collect();
+        let boundary = "sv-probe-boundary-5c1e";
+        let multipart: String = fields
+            .iter()
+            .map(|(k, v)| {
+                format!(
+                    "--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n"
+                )
+            })
+            .chain(std::iter::once(format!("--{boundary}--\r\n")))
+            .collect();
+        let form: String = fields
+            .iter()
+            .map(|(k, v)| format!("{}={}", form_encode(k), form_encode(v)))
+            .collect::<Vec<_>>()
+            .join("&");
+        let variants = [
+            (
+                "text/plain",
+                "text/plain;charset=UTF-8".to_owned(),
+                base.body_text().into_owned(),
+            ),
+            (
+                "a form",
+                "application/x-www-form-urlencoded".to_owned(),
+                form,
+            ),
+            (
+                "multipart",
+                format!("multipart/form-data; boundary={boundary}"),
+                multipart,
+            ),
+        ];
+        let mut refused = 0;
+        let mut unclear = Vec::new();
+        let mut taken_here = Vec::new();
+        for (name, content_type, body) in variants {
+            let mut simple = base.clone();
+            simple.id = format!("{prefix}-{}", name.replace([' ', '/'], "-"));
+            simple.headers.retain(|(n, _)| {
+                let n = n.to_lowercase();
+                n != "content-type" && !n.contains("csrf") && !n.contains("xsrf")
+            });
+            simple.headers.extend([
+                ("Content-Type".to_owned(), content_type),
+                ("Origin".to_owned(), STRANGER.to_owned()),
+                ("Referer".to_owned(), format!("{STRANGER}/")),
+            ]);
+            simple.body = Some(body.into_bytes());
+            let response = http.send(&simple);
+            match response.as_ref().map(|r| r.status) {
+                Some(200..=299) => taken_here.push(name),
+                Some(400..=499) => refused += 1,
+                _ => unclear.push(format!("{name} ({})", status(&response))),
+            }
+        }
+        out.steps.push(format!(
+            "the create request at {} as another site could send it without a preflight: taken as \
+             {}; refused {refused} of 3",
+            template.path,
+            if taken_here.is_empty() {
+                "none".to_owned()
+            } else {
+                taken_here.join(", ")
+            }
+        ));
+        if !taken_here.is_empty() {
+            taken.extend(taken_here.into_iter().map(|name| {
+                (
+                    format!("{prefix}-{}", name.replace([' ', '/'], "-")),
+                    template.path.clone(),
+                    name,
+                )
+            }));
+        } else if refused == 3 {
+            refused_at.push(template.path.clone());
+        } else {
+            unjudged.push((
+                template.path.clone(),
+                format!(
+                    "sent as another site could send it without a preflight, it got answers that \
+                     neither took it nor refused it: {}",
+                    unclear.join(", ")
+                ),
+            ));
         }
     }
-    out.steps.push(format!(
-        "the create request as another site could send it without a preflight: taken as {}; \
-         refused {refused} of 3",
-        if taken.is_empty() {
-            "none".to_owned()
-        } else {
-            taken.join(", ")
-        }
-    ));
+    for (path, why) in &unjudged {
+        out.not_assessed.push((
+            ID.to_owned(),
+            format!("The create request at {path}: {why}."),
+        ));
+    }
     if !taken.is_empty() {
         let protected_by_same_site = !a.set_at_login.is_empty()
             && a.set_at_login
                 .iter()
                 .all(|c| matches!(c.same_site.as_deref(), Some("lax") | Some("strict")));
+        // The forms each path took, in the order sent: "/api/notes as text/plain and as a form".
+        let mut by_path: Vec<(String, Vec<&str>)> = Vec::new();
+        for (_, path, name) in &taken {
+            match by_path.iter_mut().find(|(p, _)| p == path) {
+                Some((_, names)) => names.push(name),
+                None => by_path.push((path.clone(), vec![name])),
+            }
+        }
         out.findings.push(finding_on(
-            taken
-                .iter()
-                .map(|name| format!("simple-request-{}", name.replace([' ', '/'], "-")))
-                .collect(),
+            taken.iter().map(|(id, _, _)| id.clone()).collect(),
             &SIMPLE_REQUEST,
             "A request another site can send without asking is accepted",
             if protected_by_same_site {
@@ -485,11 +574,17 @@ pub(super) fn simple_request_check(
                 Severity::High
             },
             format!(
-                "The create request at {} was taken when its fields came as {}, with the signed-in \
-                 user's cookies, an Origin of {STRANGER}, and no token. A browser sends those from \
-                 any site without a preflight.{}",
-                owned.create.path,
-                taken.join(" and as "),
+                "The create request at {} was taken, with the signed-in user's cookies, an Origin \
+                 of {STRANGER}, and no token. A browser sends those from any site without a \
+                 preflight.{}",
+                by_path
+                    .iter()
+                    .map(|(path, names)| format!(
+                        "{path} when its fields came as {}",
+                        names.join(" and as ")
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(", and at "),
                 if protected_by_same_site {
                     " The session cookie's SameSite would stop a browser sending it from another \
                      site, which is why this is not rated higher."
@@ -498,33 +593,55 @@ pub(super) fn simple_request_check(
                 }
             ),
         ));
-    } else if refused == 3 && session.bearer.is_some() {
+    } else if refused_at.is_empty() {
+        // Nothing judged: each create request is in `not_assessed` above, with its reason.
+    } else if session.bearer.is_some() {
         out.not_assessed.push((
             ID.to_owned(),
             refused_without_the_token("in all three forms a browser sends without a preflight"),
         ));
-    } else if refused == 3 {
-        out.verified.push(crate::Verified::new(
-            SIMPLE_REQUEST.rule_id,
-            SIMPLE_REQUEST.requirement_ids,
-            format!(
-                "the JSON create request at {}, sent from another origin in each of the three forms \
-                 a browser sends without a preflight (text/plain, a form, multipart), refused all \
-                 three",
-                owned.create.path
-            ),
-        )
-        // One request, the one creating the `owned` record (ADR-053, Later).
-        .in_part());
     } else {
-        out.not_assessed.push((
-            ID.to_owned(),
-            format!(
-                "The create request, sent as another site could send it without a preflight, got \
-                 answers that neither took it nor refused it: {}.",
-                unclear.join(", ")
-            ),
-        ));
+        let untried = not_forged(users);
+        out.verified.push(
+            crate::Verified::new(
+                SIMPLE_REQUEST.rule_id,
+                SIMPLE_REQUEST.requirement_ids,
+                format!(
+                    "{} sent from another origin in each of the three forms a browser sends \
+                     without a preflight (text/plain, a form, multipart), and refused all three at \
+                     {}{}{}",
+                    if refused_at.len() == 1 {
+                        "a JSON request that creates a record,".to_owned()
+                    } else {
+                        format!(
+                            "{} JSON requests that create records, each",
+                            refused_at.len()
+                        )
+                    },
+                    refused_at.join(", "),
+                    if untried.is_empty() {
+                        String::new()
+                    } else {
+                        format!("; not sent this way: {}", untried.join(", "))
+                    },
+                    if unjudged.is_empty() {
+                        String::new()
+                    } else {
+                        format!(
+                            "; not judged: {}",
+                            unjudged
+                                .iter()
+                                .map(|(path, _)| path.as_str())
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        )
+                    }
+                ),
+            )
+            // Every JSON create request named; one, a changing request not sent this way, or one
+            // that could not be judged, is in part (ADR-053, Later).
+            .in_part_if(refused_at.len() == 1 || !untried.is_empty() || !unjudged.is_empty()),
+        );
     }
 }
 
@@ -1098,3 +1215,6 @@ mod creates_tests;
 
 #[cfg(test)]
 mod control_tests;
+
+#[cfg(test)]
+mod simple_request_tests;
