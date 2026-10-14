@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0518 (since 2026-10-14) — next: 0519, 0522, 0521, 0539, 0232
+- honesty — arm: full — holds: 0519 (since 2026-10-14) — next: 0522, 0521, 0539, 0232
 - wording — arm: full — holds: 0545 (since 2026-10-14) — next: 0546, 0547, 0548, 0549, 0550
 - documentation — arm: full — holds: nothing
 
@@ -63,6 +63,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 49. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
 50. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
 51. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
+52. 0558 Prompt 2 and the page say the person may call the folder anything, not only my-app — ready
 
 ## Log
 
@@ -505,3 +506,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 19:04 — released 0539
 - 2026-10-14 19:04 — assigned 0539 to honesty (full) into the lane after 0521: the owner's yes of 14 October: a multi-arch image; the workflow file, routed to the owner's review
 - 2026-10-14 19:04 — released 0536
+- 2026-10-14 19:18 — finished 0518 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1928; now holds 0519
+- 2026-10-14 19:18 — queued 0558, marked
