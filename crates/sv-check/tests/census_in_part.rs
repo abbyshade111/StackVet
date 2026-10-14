@@ -81,3 +81,21 @@ fn a_check_listed_as_in_part_that_the_suite_saw_credit_whole_is_a_fault() {
     let as_listed = said("listed-in-part", check, &[&made, &in_part]);
     assert!(!as_listed.contains("in part"), "{as_listed}");
 }
+
+#[test]
+fn a_credit_naming_no_requirement_does_not_count_as_whole() {
+    // Backlog 0469: the checkout check credits nothing when a workflow checks nothing out, and that credit,
+    // whole, made the check read as able to be whole though every credit of AC.12.2 is in part.
+    let check = "config.workflow-checkout-keeps-token";
+    let made = format!("{check}\tAC.12.2");
+    let in_part = format!("{check}\tAC.12.2\tin part");
+    let nothing = format!("{check}\t");
+    let mixed = said("no-requirement", check, &[&made, &in_part, &nothing]);
+    assert!(!mixed.contains("in part"), "{mixed}");
+    // The control: a whole credit that names AC.12.2 is still seen as whole.
+    let whole = said("named-whole", check, &[&made]);
+    assert!(
+        whole.contains(&format!("{check} is listed as only ever in part")),
+        "the setup or the gate: {check} must be listed in RUST_IN_PART\n{whole}"
+    );
+}
