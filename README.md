@@ -91,19 +91,17 @@ package list, never the app's code or its `.env`: from `requirements.txt` with e
 from `package.json` with its `package-lock.json`. It runs none of the packages' own install code, so a Python package
 with no ready-made download cannot be installed this way (ADR-052).
 
-`sv` opens no network connection of its own, with two exceptions you ask for by name. `sv probe <address>`
-sends at most four read-only requests to the address you type (five with `--api`), through `curl`, and asks this computer's own
-DNS resolver one question about that name. And with `install = true`, the install step above downloads the app's
-packages from PyPI or npm before the run; the report says when it did. Advisory data is something you download and point it at; the list
-of packages your app depends on is yours, and a check that quietly phones out is one you did not agree to.
-The outside tools, which `sv report` and `sv bundle` run unless you pass `--no-tools` (ADR-111), are other people's
-programs, and semgrep fetches its rule packs
-(`p/security-audit`, `p/default`, and `p/ai-best-practices` for an app that may call a model) from semgrep.dev every
-time it runs, so a report reaches that third party though `sv` itself opens no connection, unless you pass
-`--no-tools` or semgrep is not installed. Those rules are under the Semgrep Rules License, which allows them for
-internal use and not for resale; `sv` uses them only while nothing built on them is sold. gosec is started
-so that it cannot download your app's modules or run a C compiler, and a tool that
-would read through a link in your app is not run while the link is there. `sv run` starts containers, and Docker downloads any image it does not have yet.
+`sv` opens no network connection of its own, with three exceptions, drawn and listed in [the
+fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on). Two you ask for by name: `sv
+probe <address>` (a few read-only requests to the address you type) and `install = true` (the install step above). The
+third is on unless you pass `--no-tools`: the outside tools, which `sv report` and `sv bundle` run (ADR-111), are
+other people's programs, and semgrep fetches its rule packs (`p/security-audit`, `p/default`, and
+`p/ai-best-practices` for an app that may call a model) from semgrep.dev every time it runs. Advisory data is
+something you download and point it at; the list of packages your app depends on is yours, and a check that quietly
+phones out is one you did not agree to. Semgrep's rules are under the Semgrep Rules License, which allows them for
+internal use and not for resale; `sv` uses them only while nothing built on them is sold. gosec is started so that it
+cannot download your app's modules or run a C compiler, and a tool that would read through a link in your app is not
+run while the link is there. `sv run` starts containers, and Docker downloads any image it does not have yet.
 
 `sv run` also asks the running app questions as somebody who has not signed in: among them, what headers
 and cookies it sends, what it says when asked for a page that is not there, whether it accepts a site it has

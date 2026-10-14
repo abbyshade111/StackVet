@@ -27,9 +27,11 @@ A vulnerability in `sv` is something that lets it be used against the person run
 
 - it reads or writes a file outside the folder it was given (the MCP server refuses `..` and symbolic links that lead
   outside it);
-- it opens a network connection of its own (it is designed to open none, apart from `sv probe <address>` and the
-  install step with `install = true`, each asked for by name);
-- it runs code from the app it is checking, when it was not asked to (`--run` and `--tools` are the only ways it does);
+- it opens a network connection of its own (it is designed to open none but three exceptions: `sv probe <address>`
+  and the install step with `install = true`, each asked for by name, and the outside tools, which run unless
+  `--no-tools` and of which Semgrep fetches its rule packs from semgrep.dev; all three are drawn and listed in
+  [the fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on));
+- it runs code from the app it is checking, when it was not asked to (`--run` and the outside tools are the only ways it does, and `--no-tools` turns the second off);
 - a report, or a message to the AI tool, shows a whole key or password (secrets are shown as their first four
   characters and their length);
 - the published image is not what this repository builds.
