@@ -34,30 +34,30 @@ the no-backend path; the comparison is with what the tests assert, which CI chec
 
 What differs, in the order the run met it:
 
-1. **The backend check.** `sv` asks `docker info --format {{.OSType}}`; Podman's `info` has no `OSType` (it is
-   `.Host.OS`), so `sv` reads "no container backend" and every fence test takes the honest-absence path. To measure
-   past it, the shim translated this one question.
-2. **The gateway (0410, 0414): the fence cannot be closed on Podman as `sv` builds it, and `sv` refuses.** Podman
-   rejects both of Docker's ways of leaving the gateway out (`-o com.docker.network.bridge.gateway_mode_ipv4=isolated`
-   and `-o com.docker.network.bridge.inhibit_ipv4=true`: "unsupported bridge network option"), so `sv` falls back to
-   a plain `--internal` network. That network has a gateway address on this computer, and a container on it reached
-   a server listening on this computer through it (checked by hand: `wget` from an Alpine container on a Podman
-   `--internal` network to the gateway's address got the page). Its gateway is also read differently: Docker's
-   `network inspect` field `.IPAM.Config` is `.Subnets` in Podman, so `sv` first failed reading it. With that one
-   question translated too, `verify_gateway_closed` knocked, found the gateway reachable, and refused to start the
-   app ("a container on the fenced network reached its gateway ... so it was not started"). `sv` fails safe here;
-   no app ran with the way to this computer open. Every fence, install, leftovers, limits, stays-up, and interrupt
-   test that starts an app fails for this reason alone.
-3. **A sidecar that has gone.** `sv` recognizes it by Docker's words, "No such container" or "is not running";
-   Podman says "no such container" in lower case, so `sv` does not say the sidecar went
-   (`requests_through_one_session_reach_a_real_server_with_one_exec`).
-4. **Short image names.** Podman resolves a short name only through its alias list or a search registry, and this
-   install has neither for `chromedp/headless-shell`, so the browser does not start ("short-name ... did not resolve
-   to an alias"); `node` and `busybox` worked only because Podman ships aliases for them. A name written in full
-   (`docker.io/chromedp/headless-shell`) works on both. The four browser tests in `docker.rs` fail for this.
-5. **The IPv6 rules (0410, 0414)** take their fallbacks: Podman refuses the isolated-gateway options, so the
-   runner falls back to IPv4 alone and `--internal` alone. The tests pass by those paths and exercise nothing about
-   IPv6 on Podman.
+- **The backend check.** `sv` asks `docker info --format {{.OSType}}`; Podman's `info` has no `OSType` (it is
+  `.Host.OS`), so `sv` reads "no container backend" and every fence test takes the honest-absence path. To measure
+  past it, the shim translated this one question.
+- **The gateway (0410, 0414): the fence cannot be closed on Podman as `sv` builds it, and `sv` refuses.** Podman
+  rejects both of Docker's ways of leaving the gateway out (`-o com.docker.network.bridge.gateway_mode_ipv4=isolated`
+  and `-o com.docker.network.bridge.inhibit_ipv4=true`: "unsupported bridge network option"), so `sv` falls back to
+  a plain `--internal` network. That network has a gateway address on this computer, and a container on it reached
+  a server listening on this computer through it (checked by hand: `wget` from an Alpine container on a Podman
+  `--internal` network to the gateway's address got the page). Its gateway is also read differently: Docker's
+  `network inspect` field `.IPAM.Config` is `.Subnets` in Podman, so `sv` first failed reading it. With that one
+  question translated too, `verify_gateway_closed` knocked, found the gateway reachable, and refused to start the
+  app ("a container on the fenced network reached its gateway ... so it was not started"). `sv` fails safe here;
+  no app ran with the way to this computer open. Every fence, install, leftovers, limits, stays-up, and interrupt
+  test that starts an app fails for this reason alone.
+- **A sidecar that has gone.** `sv` recognizes it by Docker's words, "No such container" or "is not running";
+  Podman says "no such container" in lower case, so `sv` does not say the sidecar went
+  (`requests_through_one_session_reach_a_real_server_with_one_exec`).
+- **Short image names.** Podman resolves a short name only through its alias list or a search registry, and this
+  install has neither for `chromedp/headless-shell`, so the browser does not start ("short-name ... did not resolve
+  to an alias"); `node` and `busybox` worked only because Podman ships aliases for them. A name written in full
+  (`docker.io/chromedp/headless-shell`) works on both. The four browser tests in `docker.rs` fail for this.
+- **The IPv6 rules (0410, 0414)** take their fallbacks: Podman refuses the isolated-gateway options, so the
+  runner falls back to IPv4 alone and `--internal` alone. The tests pass by those paths and exercise nothing about
+  IPv6 on Podman.
 
 What works as on Docker: `network create --internal`, `run --read-only --cap-drop ALL --security-opt
 no-new-privileges --pids-limit --memory`, labels and the label filters `sv` cleans up by, `exec -i`, `rm -f`, and
@@ -67,9 +67,9 @@ Not Podman's doing, and the same on Docker in this container: the outbound check
 from an ordinary network (a container here reaches no outside address), and the install test's `pip` fails on this
 session's proxy certificate.
 
-**So a second backend is several items, and one is a question first.** Items 1, 3, and 4 are small (the backend
+**So a second backend is several items, and one is a question first.** The first, third, and fourth are small (the backend
 check by Podman's field, the gone-container words in any case, image names written in full, which helps Docker too).
-Item 2 is the one that decides adoption: Podman as installed here gives no way, through the options `sv` uses, to
+The second, the gateway, is the one that decides adoption: Podman as installed here gives no way, through the options `sv` uses, to
 keep a container from reaching this computer through its network's gateway, and the fence's guarantee rests on
 that. Whether rootless Podman (pasta or slirp4netns networking), a newer netavark, or a rule `sv` adds itself closes
 it is the next thing to measure. Until then a Podman backend would refuse every run, honestly.
