@@ -2,7 +2,8 @@
 //! ordinary file, so a `report.json` the AI coding tool wrote is not repeated as `sv`'s count, and a pipe in its place
 //! is not waited on.
 
-use super::*;
+use crate::review::findings_without_entries;
+use std::path::{Path, PathBuf};
 
 fn scratch(name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("sv-review-read-{name}-{}", std::process::id()));

@@ -34,6 +34,8 @@ mod baseline;
 mod history;
 mod probe_verdict;
 mod review;
+#[cfg(test)]
+mod review_report_read_tests;
 
 /// Runs the command, and ends with its status: 3 for any error `sv` could not get past, whichever
 /// command met it, so a pipeline can tell "`sv` did not run" from anything a run found (DESIGN, "Exit

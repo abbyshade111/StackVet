@@ -88,10 +88,6 @@ fn counted_findings(folder: &Path) -> Result<usize, String> {
 mod gap_tests;
 
 #[cfg(test)]
-#[path = "review_report_read_tests.rs"]
-mod report_read_tests;
-
-#[cfg(test)]
 #[path = "review_left_out_tests.rs"]
 mod left_out_tests;
 #[cfg(test)]
