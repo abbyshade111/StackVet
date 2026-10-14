@@ -276,6 +276,7 @@ health = "/"              # a path that returns 200 once the app is up
 # webrtc = ?                  # real-time audio or video calls
 # out-of-band-auth = ?        # sign-in codes sent by phone, SMS, or push (emailed ones: `email-code`, above)
 # shared-hostname = ?         # do other applications share this app's address?
+# rich-text = ?               # does it show formatted text people write: an editor's rich text, Markdown, CSS, templates?
 # (No `ai` here: whether the app has an AI feature is `enabled` under [capabilities.ai], below.)
 # multiple-services = ?       # does this run as more than one service talking over a network?
 # external-apis = ["api.example.com"]   # host names it calls; [] if it calls none

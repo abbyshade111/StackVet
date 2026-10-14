@@ -163,6 +163,7 @@ source files, and in two tests:
 | [ADR-114](ADR-114.md) | The copy `sv` runs keeps the app's limit on wrong passwords; only a limit on every sign-in is raised for it (accepted, 14 October 2026) |
 | [ADR-115](ADR-115.md) | CodeQL runs only when the owner turns it on, for the uses its license allows (accepted, 14 October 2026) |
 | [ADR-116](ADR-116.md) | The report is also written as a PDF, by `sv` itself (accepted, 14 October 2026) |
+| [ADR-117](ADR-117.md) | Rich text and user-supplied markup are asked about, and an AI feature is one way in (accepted, 14 October 2026) |
 
 ## Names in the records
 

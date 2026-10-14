@@ -1,6 +1,6 @@
 # V1.3.1 and V1.3.5, rich text and user-supplied Markdown, are turned on only by an AI feature
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -18,3 +18,9 @@ Found 14 October 2026 by session wording, building backlog 0403. Severity: unkno
   own such as a rich-text editor), with `ai` as one of the rules that turns them on. That changes what applies, so it
   is a decision with a record of its own, and the citation's text should be read first.
 - How verified: read the two rules and their reasons; not read against the ASVS text yet.
+
+**The owner's decision, 14 October 2026:** option A. "A new rich-text capability in stackvet.toml, asked like the
+others; unanswered, V1.3.1 and V1.3.5 are not assessed; yes, or an AI feature, makes them apply." The record is
+proposed in the build (ADR-117), and the waiting file goes in the same pull request. Read against the ASVS text: V1.3.1
+asks about "untrusted HTML input from WYSIWYG editors or similar", V1.3.5 about "user-supplied scriptable or expression
+template language content, such as Markdown, CSS or XSL stylesheets, BBCode, or similar"; neither is about AI.

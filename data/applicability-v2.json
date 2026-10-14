@@ -363,6 +363,30 @@
       "notApplicableReason": "No WebSocket library is used; every request is a normal web request."
     },
     {
+      "scope": "V1.3.1",
+      "condition": "rich-text",
+      "source": "claim",
+      "notApplicableReason": "This app takes no rich text from an editor, and has no AI feature whose answers it shows as HTML, so there is no untrusted HTML to sanitize."
+    },
+    {
+      "scope": "V1.3.1",
+      "condition": "ai",
+      "source": "claim",
+      "notApplicableReason": "This app takes no rich text from an editor, and has no AI feature whose answers it shows as HTML, so there is no untrusted HTML to sanitize."
+    },
+    {
+      "scope": "V1.3.5",
+      "condition": "rich-text",
+      "source": "claim",
+      "notApplicableReason": "This app takes no Markdown, stylesheets, templates, BBCode, or similar from people, and has no AI feature whose answers it renders, so there is none to sanitize or turn off."
+    },
+    {
+      "scope": "V1.3.5",
+      "condition": "ai",
+      "source": "claim",
+      "notApplicableReason": "This app takes no Markdown, stylesheets, templates, BBCode, or similar from people, and has no AI feature whose answers it renders, so there is none to sanitize or turn off."
+    },
+    {
       "scope": "V6.6.1",
       "condition": "out-of-band-auth",
       "source": "claim",
