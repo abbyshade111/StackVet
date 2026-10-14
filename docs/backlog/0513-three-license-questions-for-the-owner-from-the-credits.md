@@ -1,6 +1,6 @@
 # Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name
 
-**Status:** open
+**Status:** partly done: parts 1 (Brakeman's non-commercial clause) and 3 (CodeQL's name) wait on the owner
 
 From backlog 0374 (14 October 2026), which read every credited tool's and data source's license from its source and
 wrote each beside its credit in `docs/website/home-page.md`. These three need the owner's judgment; the rest do not.
@@ -24,7 +24,8 @@ stays open until these are answered.
    accepted it while nothing is sold (ADR-018); on 3 October chose Opengrep to run the same rules when Semgrep is
    not installed. **The question:** the owner, reading that page, confirms that it allows the rules to be run by an
    engine other than Semgrep's own (Opengrep). Nothing here says it does not; it was not read.
-   **Part status:** open
+   **The owner read the page, 14 October 2026.** Its answer to "Is it OK to run Semgrep or Semgrep, Inc. rules on my work projects?": "Yes! Semgrep is safe to run on your private code. The Semgrep Rules License v. 1.0 restrictions only come into effect if you are selling a product using rules provided in the Semgrep Registry. If that's the case, contact partnerships@semgrep.com to learn more." The restriction is on selling a product built with the registry's rules, not on which engine runs them, so running them under Opengrep is within the licence on the condition already recorded: nothing built on them is sold (ADR-018, Later). Confirmed.
+   **Part status:** done, 14 October 2026
 
 3. **CodeQL's name.** The GitHub CodeQL Terms and Conditions (`LICENSE.md` in github/codeql-cli-binaries): "These
    Terms do not grant any right or license to use any of GitHub's trademarks or logos, including, without
@@ -33,6 +34,7 @@ stays open until these are answered.
    other. **The question:** is naming them in the credits, with "StackVet is not made by or endorsed by ... GitHub",
    enough, or does the owner want GitHub's Logos and Usage Policy read first? Suggestion: read it before launch;
    naming a tool one runs is what credits do, and no logo is used.
+   **The owner read a CodeQL licence, 14 October 2026:** the MIT License (copyright 2006-2025 GitHub, Inc.), which is the licence of `github/codeql`, the queries and libraries. The clause quoted above is from the GitHub CodeQL Terms and Conditions on `github/codeql-cli-binaries`, the command-line program `sv` runs, which are not MIT (and are why 0415 limits CodeQL to the uses they allow). MIT grants no trademark right either, so the naming question stands as written: read GitHub's Logos and Usage Policy before launch; the credits name the tool and its maker and use no logo.
    **Part status:** open
 
 - How verified: read from each source on 14 October 2026; the Semgrep Rules License's own page not read (above).
