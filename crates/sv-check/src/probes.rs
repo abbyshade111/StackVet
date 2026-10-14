@@ -727,18 +727,29 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
     // Only when there was a policy to read on the health path. No policy is the security-headers
     // finding, not this.
     let policies = policy_answers(responses);
+    // A named route that answered with no policy at all reports nowhere, and is not in `policies`: for
+    // this credit, every route means every named route answered with a policy (backlog 0419).
+    let every_policy = every_route
+        && routes
+            .iter()
+            .all(|path| policies.iter().any(|r| r.id == format!("{ROUTE_ID}{path}")));
     if policies.iter().any(|r| r.id == "home") && csp_reporting(&policies).is_none() {
         out.push(
             crate::Verified::new(
                 CSP_REPORTING.rule_id,
                 CSP_REPORTING.requirement_ids,
                 format!(
-                    "the Content-Security-Policy on the app's answer on its health path{and_routes}"
+                    "the Content-Security-Policy on the app's answer on its health path{}",
+                    if every_policy {
+                        and_routes.as_str()
+                    } else {
+                        ""
+                    }
                 ),
             )
             // The policy on one answer stands for no other page's, unless every named route was
-            // asked too (ADR-053, Later; ADR-096).
-            .in_part_if(!every_route),
+            // asked too and had one (ADR-053, Later; ADR-096).
+            .in_part_if(!every_policy),
         );
     }
     // Both asked and both answered, or nothing is shown about the folder.
@@ -2400,6 +2411,9 @@ mod routes_tests;
 
 #[cfg(test)]
 mod routes_cookie_tests;
+
+#[cfg(test)]
+mod routes_csp_tests;
 
 #[cfg(test)]
 #[path = "probes_evidence_tests.rs"]
