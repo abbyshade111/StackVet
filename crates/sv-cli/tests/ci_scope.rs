@@ -61,4 +61,14 @@ fn a_claim_of_a_real_item_takes_the_short_path_and_one_more_file_takes_the_long_
     let (ok, said) = scope("", &[]);
     assert!(ok, "{said}");
     assert_eq!(said.trim(), "true", "no paths at all runs everything");
+
+    // The board and a waiting file are read by the same short path (ADR-104, Later, 14 October 2026).
+    let board = format!("{claim}docs/coordination/board.md\ndocs/coordination/waiting/0466.md\n");
+    let (ok, said) = scope(&board, &[]);
+    assert!(ok, "{said}");
+    assert_eq!(said.trim(), "false", "{board}");
+    let with_tool = "docs/coordination/board.md\ntools/coordination.py\n";
+    let (ok, said) = scope(with_tool, &[]);
+    assert!(ok, "{said}");
+    assert_eq!(said.trim(), "true", "{with_tool}");
 }
