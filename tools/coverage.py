@@ -770,6 +770,8 @@ RUST_IN_PART |= {
 IN_PART = set(RUST_IN_PART)
 # Requirement id -> {tool}: tools with some rule a clean run credits to it.
 CREDITED_BY_TOOL = defaultdict(set)
+# Requirement id -> {language}: the languages the tool rules that credit it read; `*` for any (backlog 0471).
+TOOL_LANGUAGES = defaultdict(set)
 # Requirement id -> {rule}: semgrep rules in the map that name it, in no pack the adapter runs.
 NOT_RUN = defaultdict(set)
 
@@ -867,6 +869,8 @@ def evidence():
                 if adapter["id"] not in ev[q]["tools"]:
                     ev[q]["tools"].append(adapter["id"])
                 CREDITED_BY_TOOL[q].add(adapter["id"])
+                TOOL_LANGUAGES[q] |= (set(rule.get("languages") or ["*"]) if adapter["language"] == "*"
+                                      else set(adapter["language"].split(",")))
                 TOOL_RULE_IDS[q][adapter["id"]].add(rule_id)
                 if rule.get("what"):
                     TOOL_RULES[q][adapter["id"]].append(rule["what"])
@@ -1159,8 +1163,12 @@ def reach_json(asvs, aisvs, ev, tiers, settles, checks=None):
                     "advisories, running (--run), signed-in (--run with test accounts), tools (sv report, unless --no-tools), "
                     "production (sv probe). Read by the report's short version. `checks` gives, for "
                     "every requirement any check speaks to, each check, the kind of run it needs, what "
-                    "it looks for, and whether it is only ever a finding; read by `sv explain`.",
+                    "it looks for, and whether it is only ever a finding; read by `sv explain`. "
+                    "`tools_languages` gives, for each requirement an outside tool can credit, the "
+                    "languages those tools' crediting rules read (`*` for any), so the short version "
+                    "counts a tool's reach only for an app in one of them.",
         "requirements": reach,
+        "tools_languages": {q: sorted(TOOL_LANGUAGES[q]) for q in reach if "tools" in reach[q]},
         "checks": checks or {},
     }, indent=1) + "\n"
 

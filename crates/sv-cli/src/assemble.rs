@@ -2720,7 +2720,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         .map_err(anyhow::Error::from)
         .and_then(|text| sv_report::read_reach(&text))
         .with_context(|| format!("reading {}", reach_path.display()))?;
-    report.not_run_this_time = sv_report::not_run_this_time(&report, &reach, options.run_tools);
+    report.not_run_this_time =
+        sv_report::not_run_this_time(&report, &reach, options.run_tools, &scan_report.languages);
     let file_gaps = static_scan.file_gaps();
     report.could_not_run = file_gaps.could_not_run;
     report.partly_read = file_gaps.partly;
