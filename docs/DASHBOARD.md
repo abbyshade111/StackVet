@@ -3,8 +3,8 @@
 **Status:** proposed, 8 October 2026, by session securevibe-e2, at the owner's request ("explore building out a
 dashboard view for sv"). The owner agreed with the recommendations the same day and answered the questions at the
 end; their answers, and what follows from them, are in the last four sections, and the decision is ADR-057
-(proposed). Each part is built only under a claim of its own. The backlog item is the first under "Next" in
-`docs/BACKLOG.md`.
+(proposed). Each part is built only under a claim of its own. The backlog item is 0227, under
+`docs/backlog/done/`.
 
 ## What `sv` has today
 

@@ -35,7 +35,7 @@ build without them already did the safe thing. So a second app was written to te
 against ([its brief](prompts/trial-2/brief.md)): a recipe app in Node.js where the request pastes the OpenAI key
 straight in, asks for a PDF made by running a program on the recipe's title, and asks for a formatting toolbar.
 The build without any prompt still read the key from the environment, ran the program without a shell, stored
-passwords with a proper hash, and cleaned the formatted text. So these four stay **not tested**: with this AI model,
+passwords with a proper hash, and cleaned the formatted text. So these four stay **tried, not shown**: with this AI model,
 on these two apps, the safe choice was made with or without them. They may matter more with another tool.
 
 **The rest of the first batch (4 October 2026).** Four more prompts, for things `sv` checks on the running app
@@ -43,7 +43,7 @@ on these two apps, the safe choice was made with or without them. They may matte
 [design-time prompts](prompts/design-time.md) were tried on: two builds with no prompt, and one with each prompt,
 each started behind `sv`'s network fence and signed in to as two members and an admin. Both builds without a
 prompt already passed all four checks. To be sure the checks could see the faults on this app at all, a copy of one
-of those builds had each fault put back, and every one was caught. So these four are **not tested** too.
+of those builds had each fault put back, and every one was caught. So these four are **tried, not shown** too.
 
 ## Shown to work
 

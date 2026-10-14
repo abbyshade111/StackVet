@@ -131,7 +131,7 @@ prompt-library blind spots (0021), the cato limits (0061), and the MCP server (0
 (0023 and 0024) are done in the code except two points: a test is needed to show that range events are read in version
 order (0023, H18), and the per-run marker and the stdin seeding for one improvement (0024, improvement 5) are not
 confirmed. The running-app checks (0029) are partly done: the tar archive read is now built (0241), and what remains is
-7z and rar (0242), the container's CPU, memory, disk and network readings (0243), and a real email change in the example
+7z and rar (0242), the container's CPU, memory, disk, and network readings (0243), and a real email change in the example
 app (0244).
 
 **Phase 4 (the product), in its order:**

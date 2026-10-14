@@ -478,7 +478,7 @@ fn print_help() {
         "  sv --version       the version, the commit it was built from, and the folder it reads its\n                     data from\n",
     );
     text.push_str(
-        "\nEXIT STATUS:\n  For sv check, sv report, sv audit and sv run: 0 finished; 1 needs attention (sv audit, or\n  --fail-on); 2 not assessed (a check could not run); 3 sv itself failed. `sv COMMAND --help`\n  says what each means for it. Every other command ends with 0, or 3 when it failed.\n",
+        "\nEXIT STATUS:\n  For sv check, sv report, sv audit, and sv run: 0 finished; 1 needs attention (sv audit, or\n  --fail-on); 2 not assessed (a check could not run); 3 sv itself failed. `sv COMMAND --help`\n  says what each means for it. Every other command ends with 0, or 3 when it failed.\n",
     );
     println!("{text}");
 }
