@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0420 (since 2026-10-13) — next: 0431, 0432, 0434, 0466, 0467, 0468
+- honesty — arm: full — holds: 0431 (since 2026-10-13) — next: 0432, 0434, 0466, 0467, 0468
 - wording — arm: full — holds: 0453 (since 2026-10-13) — next: 0454, 0450, 0393, 0406, 0399
-- documentation — arm: full — holds: 0435 (since 2026-10-13) — next: 0481, 0479, 0439, 0438, 0436
+- documentation — arm: full — holds: 0481 (since 2026-10-13) — next: 0479, 0439, 0438, 0436
 
 ## Queue
 
@@ -281,3 +281,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 22:30 — assigned 0439 to documentation (full) as next: lane 2 of documentation: sv review explained once, with a sequence diagram (README, guide)
 - 2026-10-13 22:30 — assigned 0438 to documentation (full) as next: lane 2 of documentation: the nine tiers drawn once with who grants each (README, guide, ARCHITECTURE)
 - 2026-10-13 22:30 — assigned 0436 to documentation (full) as next: lane 2 of documentation: the flow from an app to a report drawn where a person reads (README, guide)
+- 2026-10-13 22:50 — finished 0420 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1780; now holds 0431
+- 2026-10-13 22:50 — finished 0435 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1782; now holds 0481
