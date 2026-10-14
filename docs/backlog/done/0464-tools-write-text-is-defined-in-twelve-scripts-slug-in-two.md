@@ -27,9 +27,9 @@ From the deep review of 13 October 2026 (backlog 0417), area: code quality and d
 **What was built (14 October 2026, session documentation).** `tools/_shared.py` holds `write_text` (UTF-8, Unix line
 endings, and, when asked, the folder made first) and `slug`, with a self-test. The twelve scripts that each had
 `write_text`, and the two that had `slug`, import them instead; `coordination.py`, whose copy also made the folder,
-uses it with that set. The two `slug`s had come to differ: `backlog.py`'s did not cut a first word over 60 characters
-before its last step and fell back to "item", `design_entry.py`'s cut it and fell back to "entry"; the shared one cuts,
-as both docstrings said, and each script keeps its own fallback word in a one-line `_named`. The item assumed `import
+uses it with that set. The two `slug`s were written differently: `backlog.py`'s cut the whole name to 60 characters at its last step and
+fell back to "item", `design_entry.py`'s cut the first word and fell back to "entry"; both give the same names, so the
+shared one is `design_entry.py`'s, and each script keeps its own fallback word in a one-line `_named`. The item assumed `import
 _shared` would work from the script's folder; it does not under `python3 -I`, as CI runs the tools, so each script puts
 its folder on `sys.path` first, as `coordination.py` already did for `import backlog`. Held by
 `crates/sv-cli/tests/tools_shared.rs`, which runs the self-test under `-I` and fails when a script defines either
