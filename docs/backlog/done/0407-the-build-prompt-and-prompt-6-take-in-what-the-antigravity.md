@@ -1,6 +1,6 @@
 # The build prompt and prompt 6 take in what the Antigravity trial showed
 
-**Status:** partly done: Try the changed prompts in Antigravity with the same model and app, and see whether the tool does better; until then the setup page does not recommend it.
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -43,3 +43,6 @@ person's web browser (`open`, `start`, or `xdg-open`), not in the chat, and asks
 anything else. The guide's and the setup page's "Tried so far" say the prompts were changed and not yet tried again.
 Held by `crates/sv-cli/tests/build_prompt_rules.rs`, which names each rule; with `# nosec` dropped from the prompt it
 went red. Backlog 0397 (the code behind each question) and 0401 (what changed, and deleting) remain the larger parts.
+
+**Closed 14 October 2026:** the trial again in Antigravity, which this item left open, is backlog 0502, so this item
+closes with what it built.
