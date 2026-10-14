@@ -1185,6 +1185,10 @@ pub struct Report {
     /// (`could_settle`); never a credit, and empty when a report is built without it.
     #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub could_settle: BTreeMap<String, String>,
+    /// A plain-language line for each requirement that has one (`data/plain-requirements.json`, backlog 0372), shown
+    /// beside the framework's own words, never in place of them. Not in `report.json`: it is `sv`'s data, not the app's.
+    #[serde(skip)]
+    pub plain: BTreeMap<String, String>,
 }
 
 /// What kind of run a report came from, said by what it was not: the short version's line about
@@ -1418,6 +1422,32 @@ pub fn could_settle_kinds(kinds: &[String]) -> String {
     } else {
         said.join("; ")
     }
+}
+
+/// How many of the requirements that apply have a plain-language line, said above them (backlog 0372); `None` when
+/// none has, or all have.
+pub fn plain_note(report: &Report) -> Option<String> {
+    let all = report.requirements.len();
+    let with = report
+        .requirements
+        .iter()
+        .filter(|r| report.plain.contains_key(&r.id))
+        .count();
+    (with > 0 && with < all).then(|| {
+        format!(
+            "{with} of these {all} requirements have a line in plain words, with the standard's own words beside \
+             it; the rest show the standard's words only, for now. The standard's words are what a requirement \
+             means."
+        )
+    })
+}
+
+/// `data/plain-requirements.json`, read: requirement id to its plain-language line (backlog 0372).
+#[derive(Debug, serde::Deserialize)]
+pub struct PlainRequirements {
+    #[serde(rename = "_comment", default)]
+    _comment: String,
+    pub plain: BTreeMap<String, String>,
 }
 
 /// `data/reach.json`, read.
@@ -3528,6 +3558,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         partly_read: Vec::new(),
         not_run_this_time: None,
         could_settle: Default::default(),
+        plain: Default::default(),
     }
 }
 
@@ -3900,3 +3931,7 @@ mod utc_tests;
 // What could settle each row left not verified, as the report says it beside the row (backlog 0426).
 #[cfg(test)]
 mod could_settle_tests;
+
+// The plain-language line beside a requirement's own words (backlog 0372).
+#[cfg(test)]
+mod plain_tests;

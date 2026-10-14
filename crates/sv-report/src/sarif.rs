@@ -378,6 +378,7 @@ mod tests {
             partly_read: Vec::new(),
             not_run_this_time: None,
             could_settle: Default::default(),
+            plain: Default::default(),
         }
     }
 
