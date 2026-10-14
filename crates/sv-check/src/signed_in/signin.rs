@@ -297,8 +297,10 @@ pub(super) fn brute_force_check(
     }
     // A cap, so a large number cannot turn one check into thousands of requests against somebody's
     // app. Above it the check says what it did rather than pretending to have tested the policy.
+    // Compared without adding, so the largest number a u32 holds cannot wrap past the cap in a
+    // release build, where overflow is not checked (backlog 0465).
     const MOST_ATTEMPTS: u32 = 26;
-    if allowed + 2 > MOST_ATTEMPTS {
+    if allowed > MOST_ATTEMPTS - 2 {
         out.not_assessed.push((
             "V6.3.1".to_owned(),
             format!(
@@ -2025,6 +2027,8 @@ mod tests {
     }
 }
 
+#[cfg(test)]
+mod largest_number_tests;
 #[cfg(test)]
 mod log_pages_tests;
 #[cfg(test)]
