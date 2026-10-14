@@ -36,25 +36,17 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
         // 34 lines, no authorization code.
         ("flask-booking", &[]),
         // Inline checks: the admin page refused with a 403 and an `authorization-refused` event (209, 210), each note
-        // read only with its owner (241). The other 403s refuse a forged form or a wrong password: where to look, and
-        // the person decides. 316 and 336 delete and move a person's own notes by owner.
+        // read only with its owner (241). The other 403s refuse a forged form (`if self.forged(...)`) or a wrong
+        // password (`hash_password(...)`), and are left out by `unless` (backlog 0518). 316 and 336 delete and move a
+        // person's own notes by owner.
         (
             "notes-with-users",
             &[
                 "locate.owner-checks app.py:241",
                 "locate.owner-checks app.py:316",
                 "locate.owner-checks app.py:336",
-                "locate.refusals app.py:133",
                 "locate.refusals app.py:209",
                 "locate.refusals app.py:210",
-                "locate.refusals app.py:257",
-                "locate.refusals app.py:264",
-                "locate.refusals app.py:265",
-                "locate.refusals app.py:273",
-                "locate.refusals app.py:295",
-                "locate.refusals app.py:314",
-                "locate.refusals app.py:329",
-                "locate.refusals app.py:347",
             ],
         ),
         // Notes are kept by account (`notes.get(s.user)`), with no 403 and no owner compared: nothing to point at,
@@ -180,4 +172,42 @@ fn a_records_owner_compared_or_queried_is_found() {
             "locate.owner-checks server.js:3",
         ]
     );
+}
+
+/// Backlog 0518: a 403 whose nearest `if` is about an anti-forgery token or a password is left out; one about who the
+/// person is stays, even inside an `if` about a token, since only the nearest counts; an `elif` is an `if` of its own.
+#[test]
+fn a_refusal_for_a_forged_form_or_a_wrong_password_is_left_out() {
+    let python = found_in(
+        "app.py",
+        "def a():\n\
+         \x20   if not csrf_ok(form):\n\
+         \x20       abort(403)\n\
+         \x20   if not check_password(user, form['password']):\n\
+         \x20       abort(403)\n\
+         \x20   if not user.is_admin:\n\
+         \x20       abort(403)\n\
+         \x20   if token_valid(form):\n\
+         \x20       if note.owner != user:\n\
+         \x20           abort(403)\n\
+         \x20   if user.is_staff:\n\
+         \x20       pass\n\
+         \x20   elif forged:\n\
+         \x20       abort(403)\n",
+    );
+    assert_eq!(
+        python,
+        vec![
+            "locate.owner-checks app.py:9",
+            "locate.refusals app.py:7",
+            "locate.refusals app.py:10",
+        ]
+    );
+    let javascript = found_in(
+        "server.js",
+        "if (req.body._csrf !== req.session.csrf) return res.status(403).end();\n\
+         if (!(await bcrypt.compare(req.body.password, user.hash))) { res.status(403); }\n\
+         if (!req.user.isAdmin) { return res.sendStatus(403); }\n",
+    );
+    assert_eq!(javascript, vec!["locate.refusals server.js:3"]);
 }
