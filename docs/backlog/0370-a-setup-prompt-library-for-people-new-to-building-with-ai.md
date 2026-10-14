@@ -12,3 +12,5 @@ Today there is one prompt, `docs/prompts/setup.md`, not yet tried in any AI tool
 has not been tried on Windows yet"), which is out of date since Docker and Scoop work there (backlog 0120). To build:
 the library, a prompt per step where one prompt is too much at once, Windows taken in; then **the owner tests it**,
 and the tools it really worked in are the ones the site names. Until then the site's line naming them stays blank.
+
+**The owner's plan, 14 October 2026:** when this library is finalized, the owner tries it in Antigravity, Cursor, and VS Code (backlog 0502, widened to the three), so the library's "Tried so far" rests on all three before the website names the tools it works in. Finalize first; the trial follows.
