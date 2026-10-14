@@ -2645,14 +2645,6 @@
     "finding_only": true
    }
   ],
-  "V13.2.3": [
-   {
-    "id": "secrets.credential-assignment",
-    "run": "Reads the code",
-    "looks_for": "A value that looks like a credential, a secret or a password is written into the code",
-    "finding_only": true
-   }
-  ],
   "V13.2.4": [
    {
     "id": "ast.fetch-address-from-request",

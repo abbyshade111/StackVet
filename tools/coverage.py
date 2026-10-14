@@ -105,7 +105,7 @@ RUST_CHECKS = {
     "config.workflow-hands-out-all-secrets": ("static", ["V13.3.2"]),
     "config.workflow-untrusted-text-in-run": ("static", ["AC.12.1"]),
     "sbom": ("static", ["V15.1.2"]),
-    "secrets.credential-assignment": ("static", ["V13.3.1", "V13.2.3", "SBD-AC-05"]),
+    "secrets.credential-assignment": ("static", ["V13.3.1", "SBD-AC-05"]),
     "secrets.password-in-url": ("static", ["V13.3.1", "SBD-AC-05"]),
     "advisories": ("advisories", ["V15.2.1"]),
     "probe.security-headers": ("running", ["V3.4.3", "V3.4.4", "V3.4.5", "V3.4.6"]),

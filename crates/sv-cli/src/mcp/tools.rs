@@ -146,7 +146,9 @@ impl Server {
             .unwrap_or_else(std::sync::PoisonError::into_inner)
             .get(&app_dir)
             .cloned();
-        let shown_all = || {
+        // What the person's tool was given in full, recorded as seen; a finding only listed, on a page
+        // of the first answer it did not ask for, is not (backlog 0453).
+        let shown = |given: &dyn Fn(&sv_check::Finding) -> bool| {
             let at = crate::bundle::utc_time(
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
@@ -160,7 +162,12 @@ impl Server {
                     app_dir.clone(),
                     Seen {
                         at,
-                        findings: report.findings.iter().map(Shown::of).collect(),
+                        findings: report
+                            .findings
+                            .iter()
+                            .filter(|f| given(f))
+                            .map(Shown::of)
+                            .collect(),
                     },
                 );
         };
@@ -179,7 +186,8 @@ impl Server {
                 && text.len() <= crate::parts::ANSWER_BUDGET
                 && data.to_string().len() <= crate::parts::ANSWER_BUDGET
             {
-                shown_all();
+                // The new ones come in full, and the unchanged were given in full before.
+                shown(&|_| true);
                 return Ok(json!({
                     "content": [{ "type": "text", "text": text }],
                     "structuredContent": data,
@@ -209,9 +217,17 @@ impl Server {
             &ask,
         )?;
         // An answer that gave the findings, or started them and listed the rest: asked for with no
-        // section, or as `all`. A section asked for on its own may not have shown them.
+        // section, or as `all`. A section asked for on its own may not have shown them. Of a first
+        // answer that came in parts, only the findings on the pages it held were given in full: their
+        // fingerprints are in its structured result.
         if !matches!(ask, crate::parts::Ask::Part { .. }) {
-            shown_all();
+            let given: std::collections::HashSet<&str> = result["structuredContent"]["findings"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|f| f["fingerprint"].as_str())
+                .collect();
+            shown(&|f| given.contains(f.fingerprint.as_str()));
         }
         Ok(result)
     }

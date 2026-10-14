@@ -19,13 +19,15 @@ archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and
 repository held v1 at its top and `sv` under `agnostic/`; no history was rewritten, so every commit hash cited
 elsewhere still resolves.
 
-## Where it is
+## What `sv` checks, and what it writes
 
 The compliance engine, the scanners, the container runner, the checks and the reports all run. What is not
 built is listed in `docs/backlog/` (one file per item; `docs/BACKLOG.md` is its guide and roadmap), and the reports say plainly which parts of an app nothing has examined. Which
 requirements of ASVS, AISVS, and the Secure by Design checklist any check can speak to at all, and what
 each check needs to run, is counted in `docs/COVERAGE.md`. `docs/REQUIREMENTS.md` lists every ASVS and AISVS requirement by level and
 family, with the checks that speak to each.
+
+### The commands
 
 ```bash
 cargo run -p sv-cli -- init              # the stackvet.toml spec to hand to your AI tool
@@ -41,18 +43,20 @@ cargo run -p sv-cli -- dashboard ./app-one ./app-two --out ~/sv-dashboard.html  
 cargo run -p sv-cli -- mcp --root ~/code  # serve the checks to your AI coding tool (see below)
 ```
 
-The rules that read code understand Python, JavaScript, TypeScript, Go, Ruby, PHP, Java, C#, Kotlin,
-Rust, C, C++, Dart, Swift, and shell scripts. A language
-outside that list is not guessed at: while a file `sv` cannot parse is present, no code rule claims
-anything about the app at all, and the report says which language stopped it. The same holds one rule at
-a time: a rule that has not been taught a language in your app claims nothing, and the report names the
-rule and the language. A script written into a web page —
-in a <script> block, an event handler or a javascript: link — is taken out and read as JavaScript, and anything found in it is reported against the page and the line it
-is really on. A page counts as unreadable only when something in it could not be taken out that way.
-Jupyter notebooks are read as Python, cell by cell. Astro and EJS pages have their code taken out and read the same
-way. Templates that cannot run code (Handlebars, Mustache, Jinja, Liquid, Twig, Nunjucks) are read as pages. While a
-`.pug`, `.erb`, `.jsp`, `.cshtml` or `.razor` file is present, no code rule claims anything, because nothing reads
-the code in those yet, and the report names the files (ADR-054).
+### The languages it reads
+
+| How `sv` reads it | What |
+|---|---|
+| As code | Python, JavaScript, TypeScript, Go, Ruby, PHP, Java, C#, Kotlin, Rust, C, C++, Dart, Swift, and shell scripts |
+| Its code taken out, then read as code | A script written into a web page (a `<script>` block, an event handler, or a `javascript:` link) as JavaScript, reported against the page and the line it is really on; Jupyter notebooks as Python, cell by cell; Astro and EJS pages |
+| As pages | Templates that cannot run code: Handlebars, Mustache, Jinja, Liquid, Twig, and Nunjucks |
+| Not read, and no code rule claims anything while one is present | `.pug`, `.erb`, `.jsp`, `.cshtml`, and `.razor` files (the report names them, ADR-054), a page whose code could not be taken out, and any language not listed above |
+
+A language outside that list is not guessed at: while a file `sv` cannot parse is present, no code rule claims
+anything about the app at all, and the report says which language stopped it. The same holds one rule at a time: a
+rule that has not been taught a language in your app claims nothing, and the report names the rule and the language.
+
+### Exit codes
 
 `sv check`, `sv report`, `sv audit`, and `sv run` end with a status a CI job can act on. 3 always means `sv` itself
 failed and there is no result: a folder that is not there, an option it does not know, a `stackvet.toml` that is
@@ -78,6 +82,8 @@ and still count: that file is written by your AI coding tool, and naming a folde
 vulnerability. `sv` holds itself to this every week, auditing the Rust files it is built from
 (`.github/workflows/audit.yml`).
 
+### Running the app
+
 Running the app needs a container backend (Docker or Colima). Without one, everything that needs the app
 running reports *not assessed* — never a pass, and never a failure.
 
@@ -91,6 +97,8 @@ package list, never the app's code or its `.env`: from `requirements.txt` with e
 from `package.json` with its `package-lock.json`. It runs none of the packages' own install code, so a Python package
 with no ready-made download cannot be installed this way (ADR-052).
 
+### The network
+
 `sv` opens no network connection of its own, with three exceptions, drawn and listed in [the
 fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on). Two you ask for by name: `sv
 probe <address>` (a few read-only requests to the address you type) and `install = true` (the install step above). The
@@ -103,12 +111,16 @@ internal use and not for resale; `sv` uses them only while nothing built on them
 cannot download your app's modules or run a C compiler, and a tool that would read through a link in your app is not
 run while the link is there. `sv run` starts containers, and Docker downloads any image it does not have yet.
 
+### What a run asks the app
+
 `sv run` also asks the running app questions as somebody who has not signed in: among them, what headers
 and cookies it sends, what it says when asked for a page that is not there, whether it accepts a site it has
 never heard of, whether it echoes requests back, and whether it leaves source control, documentation, or a
 development console open to anyone. What those questions cannot reach — anything behind a login — is
 printed as *not assessed* before any finding, because a suite that only tries the front door and says
 nothing reads exactly like one that found nothing wrong.
+
+### The app's own tests
 
 If your app has its own tests, they can count too — but only for requirements they name. They run only when
 `sv` starts the app (`sv run`, or `sv report --run`), with the command given as `test` under `[stack.run]`.
@@ -129,18 +141,25 @@ exit code and one broken test costs the credit of every other test. There is no 
 somebody chose for other reasons. A test that names nothing is not evidence about anything in particular,
 which is a perfectly fair thing for a test to be — most tests are.
 
-`sv report` writes the whole thing out, into a folder named `stackvet-report` inside the app's folder
-unless you give `--out` (add `--run` to start the app behind the fence and include what it answers; the outside
-security tools that are installed, Bandit, gosec, Brakeman, Semgrep, and CodeQL, run unless you add `--no-tools`,
-which is the quick run, since CodeQL can take minutes on a large app):
-`report.html`, one file you can open by double-clicking it; `compliance.md` and `security.md`, the same in
-Markdown; the findings as SARIF (`findings.sarif`) for editors and CI; and the data as JSON (`report.json`). Beside them
-are three more: `low-findings.md`, every low-severity finding in full, where the reports group them by rule;
-`seen.json`, what `sv` saw of the running app, with credentials cut out; and `sbom.cdx.json`, the app's bill of
-materials as CycloneDX JSON, as `sv sbom` prints it. Eight files in all. The reports lead with
-what was **not** examined, say what each check covered when it found nothing wrong, and nothing in them
-says a requirement passed — `sv` is not able to establish
-that, so it does not claim it.
+### What a report holds
+
+`sv report` writes the whole thing out, into a folder named `stackvet-report` inside the app's folder unless you
+give `--out`. Add `--run` to start the app behind the fence and include what it answers. The outside security tools
+that are installed (Bandit, gosec, Brakeman, Semgrep, and CodeQL) run unless you add `--no-tools`, which is the quick
+run, since CodeQL can take minutes on a large app. It writes eight files:
+
+| File | What it holds | Who opens it |
+|---|---|---|
+| `report.html` | The whole report, in one page | You: open it by double-clicking it |
+| `compliance.md`, `security.md` | The same, in Markdown | You, or your AI coding tool |
+| `low-findings.md` | Every low-severity finding in full, where the reports group them by rule | You, when you want the detail |
+| `findings.sarif` | The findings as SARIF | Editors and CI |
+| `report.json` | The data as JSON | Programs, among them `sv review`, `sv compare`, and `sv dashboard` |
+| `seen.json` | What `sv` saw of the running app, with credentials cut out | You, to see what a finding rests on |
+| `sbom.cdx.json` | The app's bill of materials as CycloneDX JSON, as `sv sbom` prints it | Tools that read a bill of materials |
+
+The reports lead with what was **not** examined, say what each check covered when it found nothing wrong, and
+nothing in them says a requirement passed — `sv` is not able to establish that, so it does not claim it.
 
 Each requirement gets one of nine statuses, strongest evidence first: *needs attention* (a check found a problem),
 *checked*, *checked in part* (a check ran, but tried only part of what the requirement asks, ADR-053), *tested by
@@ -160,7 +179,9 @@ app's own tests and the owner's word never move one.) It is made from rules, not
 handled, because a threat is only as settled as the requirements that answer it. See
 `docs/THREAT-MODELING.md`.
 
-They also read your AI coding tool's own files in the app's folder, in a section of their own, apart from the app's
+### Your AI coding tool's own files
+
+The reports also read your AI coding tool's own files in the app's folder, in a section of their own, apart from the app's
 grade: the commands its settings run, the permissions that let it act without asking, the MCP servers it starts, and
 any characters hidden in its instruction files (`AGENTS.md`, `CLAUDE.md`, and the like) that a person reading them
 cannot see (ADR-049).
@@ -631,6 +652,6 @@ Where to start depends on who you are. Nobody reads the design record end to end
 | You are | Start with |
 |---|---|
 | Not a programmer, building an app with an AI tool | [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md), the guide, step by step; its section 6 says what the report covers and what it leaves *not assessed*. [`docs/GLOSSARY.md`](docs/GLOSSARY.md) explains the words StackVet uses. |
-| A programmer using `sv` | This page: [Where it is](#where-it-is) (what is checked, and the exit codes), [From inside your AI coding tool](#from-inside-your-ai-coding-tool) (the MCP server), and [the GitHub Action](#on-each-pull-request-the-github-action). |
+| A programmer using `sv` | This page: [What `sv` checks, and what it writes](#what-sv-checks-and-what-it-writes) (the commands, the languages, the exit codes, and the report files), [From inside your AI coding tool](#from-inside-your-ai-coding-tool) (the MCP server), and [the GitHub Action](#on-each-pull-request-the-github-action). |
 | Contributing to StackVet | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), the ten-minute map, first; then [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/adr/README.md`](docs/adr/README.md) (why things are as they are), and [`docs/BACKLOG.md`](docs/BACKLOG.md) (what is left to do). |
 | Researching how it was built | [`docs/paper/`](docs/paper/), starting with [`HOW-SV-WORKS.md`](docs/paper/HOW-SV-WORKS.md) and [`METHODOLOGY.md`](docs/paper/METHODOLOGY.md); then the design record, one dated entry per file in [`docs/design/`](docs/design/) ([`docs/DESIGN.md`](docs/DESIGN.md) says how it is kept), which explains the two changes from v1, why deleting the wizard was the hard part, and what the first run against real data turned up. |
