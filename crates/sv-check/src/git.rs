@@ -117,6 +117,34 @@ pub fn is_shallow(app_dir: &Path) -> Option<bool> {
     }
 }
 
+/// The commit checked out in `app_dir`, in full: `None` when it is not a git checkout or git could
+/// not say (ADR-113).
+pub fn head_commit(app_dir: &Path) -> Option<String> {
+    let out = git(app_dir)
+        .args(["rev-parse", "--verify", "--quiet", "HEAD"])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let commit = String::from_utf8_lossy(&out.stdout).trim().to_lowercase();
+    (commit.len() >= 40 && commit.chars().all(|c| c.is_ascii_hexdigit())).then_some(commit)
+}
+
+/// Whether a file git tracks under `app_dir` differs from the commit checked out, so the code is not
+/// exactly that commit: `None` when git could not say (ADR-113). Files git does not track are left
+/// out, as a commit says nothing about them either way.
+pub fn has_uncommitted_changes(app_dir: &Path) -> Option<bool> {
+    let out = git(app_dir)
+        .args(["status", "--porcelain", "--untracked-files=no"])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    Some(!out.stdout.iter().all(u8::is_ascii_whitespace))
+}
+
 /// The AI coding tools a `Co-Authored-By:` trailer may name (ADR-092). An `Assisted-by:` trailer counts
 /// whatever it names, since the repository's own rules ask for that line from any tool.
 const AI_TOOL_NAMES: [&str; 12] = [
