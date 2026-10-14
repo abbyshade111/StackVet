@@ -64,7 +64,7 @@ pub const REPORT_FILES: [ReportFile; 9] = [
         mime: "application/json",
         render: sv_report::sbom_document,
     },
-    // The same report as one file to read or print, written by `sv` itself (ADR-115).
+    // The same report as one file to read or print, written by `sv` itself (ADR-116).
     ReportFile {
         name: sv_report::pdf::FILE,
         mime: "application/pdf",

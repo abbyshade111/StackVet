@@ -283,7 +283,7 @@ pub fn page(report: &Report) -> String {
         1,
     );
     b.push_str(&format!("<p class=\"note\">{sarif}</p>\n"));
-    // The same report as one file to read or print (ADR-115).
+    // The same report as one file to read or print (ADR-116).
     let pdf = escape(&crate::pdf_line(report)).replacen(
         crate::pdf::FILE,
         &format!("<a href=\"{0}\">{0}</a>", crate::pdf::FILE),

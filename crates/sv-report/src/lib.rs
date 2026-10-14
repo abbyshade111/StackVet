@@ -1190,7 +1190,7 @@ pub struct Report {
     /// beside the framework's own words, never in place of them. Not in `report.json`: it is `sv`'s data, not the app's.
     #[serde(skip)]
     pub plain: BTreeMap<String, String>,
-    /// The paper `report.pdf` is laid out on, from stackvet.toml's `report-paper` (ADR-115).
+    /// The paper `report.pdf` is laid out on, from stackvet.toml's `report-paper` (ADR-116).
     #[serde(skip)]
     pub paper: pdf::Paper,
 }
@@ -1870,7 +1870,7 @@ pub const SARIF_FILE: &str = "stackvet.sarif";
 /// The line near the top of the report saying what the SARIF file beside it is, and what it holds (backlog 0408): its
 /// name reads to a person as "problems with the app" even when it holds none, so the page says how many findings it
 /// holds and how many notes on what was not examined, counted from the file itself.
-/// The line naming `report.pdf` beside the report (ADR-115): the same report as one file, and the paper it is on.
+/// The line naming `report.pdf` beside the report (ADR-116): the same report as one file, and the paper it is on.
 pub fn pdf_line(report: &Report) -> String {
     format!(
         "{} beside this report is the same report as one file to read or print, on {} paper{}.",

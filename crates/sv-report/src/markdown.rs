@@ -172,7 +172,7 @@ pub fn compliance(report: &Report) -> String {
     compliance_as(report, false)
 }
 
-/// The text `report.pdf` is laid out from (ADR-115): `compliance.md`'s order, with each finding written out in full
+/// The text `report.pdf` is laid out from (ADR-116): `compliance.md`'s order, with each finding written out in full
 /// where `compliance.md` gives a line and points to `security.md`, what was set aside with them, and every low-severity
 /// finding in full before the appendix, so the one file holds the whole report and nothing in it twice.
 pub fn pdf_text(report: &Report) -> String {
@@ -939,7 +939,7 @@ pub fn security(report: &Report) -> String {
     if let Some(line) = crate::build_loop_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
-    // The same report as one file to read or print (ADR-115).
+    // The same report as one file to read or print (ADR-116).
     out.push_str(&format!("{}\n\n", crate::pdf_line(report)));
 
     // The things to fix lead, then what was set aside, then what was not examined (ADR-110).

@@ -106,7 +106,7 @@ pub struct AppSection {
     /// report to say how it was built (ADR-076). On unless `false`; a report says when it is off.
     #[serde(default)]
     pub build_loop_record: Option<bool>,
-    /// The paper `report.pdf` is laid out on: `"a4"`, or US Letter when it is left out (ADR-115).
+    /// The paper `report.pdf` is laid out on: `"a4"`, or US Letter when it is left out (ADR-116).
     #[serde(default)]
     pub report_paper: Option<String>,
 }

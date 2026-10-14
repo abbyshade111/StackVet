@@ -20,7 +20,7 @@ fn the_apps_text_in_a_report_read_back_is_inside_the_fence() {
         let on_disk = std::fs::read_to_string(&path).unwrap();
         // The setup: the planted name has to be in the report, or its absence below proves nothing. Every file
         // names the app, the bill of materials too since it lists the app itself (backlog 0402), and the PDF in
-        // the text it draws, which is written in hexadecimal and so is read back to be seen (ADR-115).
+        // the text it draws, which is written in hexadecimal and so is read back to be seen (ADR-116).
         let quoted = if name == sv_report::pdf::FILE {
             sv_report::pdf::back::read(&on_disk).unwrap().text()
         } else {

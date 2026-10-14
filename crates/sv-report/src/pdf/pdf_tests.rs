@@ -1,4 +1,4 @@
-//! Backlog 0412 (ADR-115): the PDF's own pieces. The reports' Markdown is read as the renderers write it, a table's
+//! Backlog 0412 (ADR-116): the PDF's own pieces. The reports' Markdown is read as the renderers write it, a table's
 //! header row is drawn again on each page it runs onto, a row taller than a page is split rather than cut off, and
 //! the file is one a reader can follow: the read-back refuses a file whose table of objects is wrong.
 

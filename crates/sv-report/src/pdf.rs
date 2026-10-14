@@ -1,4 +1,4 @@
-//! The report as a PDF, `report.pdf`, written by `sv` itself (ADR-115): no browser, no print dialog, no new
+//! The report as a PDF, `report.pdf`, written by `sv` itself (ADR-116): no browser, no print dialog, no new
 //! dependency, and nothing downloaded. It is laid out from the same Markdown the other reports are written from
 //! (`markdown::pdf_text`: `compliance.md`'s order, each finding written out in full), so it cannot say something they
 //! do not. US Letter unless stackvet.toml asks for A4.
