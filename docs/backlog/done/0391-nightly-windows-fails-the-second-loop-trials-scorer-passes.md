@@ -1,6 +1,6 @@
 # Nightly: Windows fails: the_second_loop_trials_scorer_passes_its_self_test
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -19,3 +19,9 @@ passed on the same pushes. It was not there the night before (the script is new)
 `main`'s Windows job has passed since #1600 (`14e632c`, 00:24 UTC on 13 October), which took the loop trials'
 script tests out of the Windows build at the owner's word (`21af08d`, ADR-109, Later). **What stays open:** only
 whether that is the end state; if it is, mark this done with that note.
+
+**Done, 14 October 2026, with no build (session wording):** the owner's word of 12 October is the end state. ADR-109's
+"Later, 12 October 2026" entry takes `crates/sv-check/tests/loop_measures.rs` out of the Windows build because the
+trials' scripts are the trials' own tools, run on Mac and Linux and not part of `sv`, and it leaves why the scorer fails
+on Windows to the trials' session. Linux and Mac CI still run the scorer's self-test, and `main`'s Windows job has
+passed since #1600. Nothing here puts it back.
