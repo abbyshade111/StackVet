@@ -201,9 +201,7 @@ pub fn compliance(report: &Report) -> String {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
     // The bill of materials beside the report (backlog 0382).
-    if let Some(line) = crate::sbom_line(report) {
-        out.push_str(&format!("{line}\n\n"));
-    }
+    out.push_str(&format!("{}\n\n", crate::sbom_line(report)));
     out.push_str(&format!("{}\n\n", crate::sarif_line(report)));
     if let Some(line) = crate::advisories_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));

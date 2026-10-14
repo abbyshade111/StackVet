@@ -271,13 +271,11 @@ pub fn page(report: &Report) -> String {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
     }
     // The bill of materials beside the report, linked (backlog 0382).
-    if let Some(line) = crate::sbom_line(report) {
-        let linked = escape(&line).replace(
-            crate::SBOM_FILE,
-            &format!("<a href=\"{0}\">{0}</a>", crate::SBOM_FILE),
-        );
-        b.push_str(&format!("<p class=\"note\">{linked}</p>\n"));
-    }
+    let linked = escape(&crate::sbom_line(report)).replace(
+        crate::SBOM_FILE,
+        &format!("<a href=\"{0}\">{0}</a>", crate::SBOM_FILE),
+    );
+    b.push_str(&format!("<p class=\"note\">{linked}</p>\n"));
     // What the SARIF file beside it is, and what it holds (backlog 0408).
     let sarif = escape(&crate::sarif_line(report)).replacen(
         crate::SARIF_FILE,
