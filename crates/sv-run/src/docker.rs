@@ -208,6 +208,8 @@ const MOST_CPUS: u64 = 2;
 mod container_record_tests;
 #[cfg(all(test, unix))]
 mod resource_reading_tests;
+#[cfg(all(test, unix))]
+mod stand_in_ready_tests;
 
 /// How the wait for the app to answer ended: whether it answered, after how many seconds, and how
 /// it ended when it stopped of its own accord first.
@@ -876,6 +878,8 @@ impl DockerBackend {
             provider,
             browser,
             model,
+            model_up: std::sync::OnceLock::new(),
+            provider_up: std::sync::OnceLock::new(),
         };
         let sv_check::script::Outcome {
             probe_responses,
@@ -1066,6 +1070,30 @@ struct DockerRun<'a> {
     provider: Option<&'a str>,
     browser: Option<&'a str>,
     model: Option<&'a str>,
+    /// Whether the test model answered, asked once for the run (backlog 0369): asked on each of the script's calls, a
+    /// model that never came up cost ten seconds of waiting every time. The AI suite asks the model itself before it
+    /// relies on it, so one that stops answering later is still said.
+    model_up: std::sync::OnceLock<bool>,
+    /// The same, for the test sign-in provider.
+    provider_up: std::sync::OnceLock<bool>,
+}
+
+impl DockerRun<'_> {
+    fn model_answering(&self) -> Option<&str> {
+        self.model.filter(|host| {
+            *self
+                .model_up
+                .get_or_init(|| self.backend.model_ready(self.via, host))
+        })
+    }
+
+    fn provider_answering(&self) -> Option<&str> {
+        self.provider.filter(|host| {
+            *self
+                .provider_up
+                .get_or_init(|| self.backend.provider_ready(self.via, host))
+        })
+    }
 }
 
 impl sv_check::script::Services for DockerRun<'_> {
@@ -1084,16 +1112,15 @@ impl sv_check::script::Services for DockerRun<'_> {
             },
             port: self.plan.port,
             mail: self.mail.filter(|_| with.mail),
-            provider: self
-                .provider
-                .filter(|_| with.provider)
-                .filter(|host| self.backend.provider_ready(self.via, host)),
+            provider: if with.provider {
+                self.provider_answering()
+            } else {
+                None
+            },
             browser: self.browser.filter(|_| with.browser),
             model: match with.model {
                 Model::None => None,
-                Model::IfAnswering => self
-                    .model
-                    .filter(|host| self.backend.model_ready(self.via, host)),
+                Model::IfAnswering => self.model_answering(),
                 Model::AsStarted => self.model,
             },
             on_step: self.plan.on_step,
@@ -1101,8 +1128,7 @@ impl sv_check::script::Services for DockerRun<'_> {
     }
 
     fn model_canary(&self) -> Option<String> {
-        self.model
-            .filter(|host| self.backend.model_ready(self.via, host))
+        self.model_answering()
             .map(|host| format!("http://{host}:{MODEL_PORT}"))
     }
 

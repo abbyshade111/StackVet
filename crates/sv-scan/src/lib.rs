@@ -291,6 +291,12 @@ pub fn scan_listing_app(
         }
         report.files_read += 1;
         report.languages.insert(language.to_owned());
+        // Lowercased only while a signature not yet found has patterns for this language (backlog 0369): once each
+        // is found, or for a language none speaks to, no copy of the file is made.
+        let wanted = |i: usize| source_hits[i].is_none() && lowered[i].contains_key(language);
+        if !(0..signatures.signatures.len()).any(wanted) {
+            continue;
+        }
         let haystack = contents.to_lowercase();
         for (i, sig) in signatures.signatures.iter().enumerate() {
             if source_hits[i].is_some() {
