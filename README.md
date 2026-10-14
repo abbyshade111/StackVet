@@ -434,35 +434,57 @@ or, for a tool configured with JSON:
 { "mcpServers": { "stackvet": { "command": "/path/to/sv", "args": ["mcp", "--root", "/home/you/code"] } } }
 ```
 
-It offers twelve tools: `stackvet_status` (whether everything is ready, as `sv doctor` says), `stackvet_spec` (the `stackvet.toml` to write), `stackvet_plan` (the plan for the
-app from it, below), `stackvet_preflight` (what `sv run` will need, read from the code without running it),
-`stackvet_before` (one feature's brief before it is built, below), `stackvet_guidance` (the
-rules to follow while coding; see "Rules your AI coding tool follows while it codes" above),
-`stackvet_prompts` (prompts from [the prompt library](docs/PROMPTS.md), each saying whether it has been shown to
-work; `sv prompts`, or `sv prompts --requirement V1.2.4`, prints them at a terminal; the ten coding prompts shown to
-work are also given in full at the end of `sv init`, `stackvet_spec`, and the server's opening instructions, since
-a prompt given where the tool starts did better than the same prompt fetched mid-build),
-`stackvet_check` (what
-applies, what was found, and first of all what was not examined; its section `questions` gives the questions only
-you can answer, for the tool to ask you one at a time), `stackvet_explain` (a requirement in
-its framework's own words; at a terminal, `sv explain V7.4.1` adds the checks that speak to it and the kind of run
-each needs, what to do about it, and, with `--app DIR`, what that app's last report said), `stackvet_write_report` (the full reports, into the app's folder),
-`stackvet_record_answer`
-(an answer written under one of those questions in `security-notes.md`, the file your written decisions go in, which
-it makes if it is not there; always marked as the tool's own: once you have read it and agree, you change its
-`Written by:` line to `owner` yourself and record it with `sv review`), and `stackvet_bundle`
-(one zip beside the app, for you to keep or hand on; see "A zip to keep or hand on" above. A tool offers it when the report
-is written, if you want one).
+It offers twelve tools. Three write a file, and only the check, the report, and an answer recorded as the tool's
+own can count toward a requirement; everything else is advice for the tool, written nowhere and crediting nothing.
+
+| Tool | What it gives | Writes | Counts toward a requirement | At a terminal |
+|---|---|---|---|---|
+| `stackvet_status` | Whether everything is ready, one line each | nothing | no | `sv doctor` |
+| `stackvet_spec` | The `stackvet.toml` to write, for the tool to write with you | nothing itself | no | `sv init` |
+| `stackvet_plan` | The plan from `stackvet.toml`, before any code (below) | nothing | no | `sv plan` |
+| `stackvet_before` | One feature's brief before it is built (below) | nothing | no | `sv brief --feature` |
+| `stackvet_preflight` | What `sv run` will need, read from the code without running it (below) | nothing | no | `sv preflight` |
+| `stackvet_guidance` | The rules to follow while coding ("Rules your AI coding tool follows while it codes", above) | nothing | no | `sv rules --print` |
+| `stackvet_prompts` | Prompts from [the prompt library](docs/PROMPTS.md), each saying whether it has been shown to work | nothing | no | `sv prompts` |
+| `stackvet_check` | What applies, what was found, and first of all what was not examined; its section `questions` gives the questions only you can answer, for the tool to ask you one at a time | nothing | yes: the checks' own results | `sv check`, `sv questions` |
+| `stackvet_explain` | A requirement in its framework's own words | nothing | no | `sv explain ID`, which adds the checks that speak to it and, with `--app DIR`, what that app's last report said |
+| `stackvet_write_report` | The full reports | the report folder inside the app | yes: the report | `sv report` |
+| `stackvet_record_answer` | An answer under one question in `security-notes.md`, the file your written decisions go in, made if it is not there | `security-notes.md` | only as the tool's own word, the lowest rank, until you change its `Written by:` line to `owner` and record it with `sv review` | `sv notes` makes the file |
+| `stackvet_bundle` | One zip of the app and its report, to keep or hand on ("A zip to keep or hand on", above); a tool offers it once the report is written | a zip beside the app, never inside it | no | `sv bundle` |
+
+The ten coding prompts shown to work are also given in full at the end of `sv init`, `stackvet_spec`, and the
+server's opening instructions, since a prompt given where the tool starts did better than the same prompt fetched
+mid-build.
+
+The loop the server is built for, and the two things it never does:
+
+```text
+ you ──prompt──► AI coding tool ──► stackvet_spec ──► stackvet.toml, written with you
+                      │
+                      ▼
+               writes a feature ──► stackvet_check ──► what was not examined, then the findings
+                      ▲                                        │
+                      └──────────── fixes ◄────────────────────┘
+                      │
+                      ▼
+       stackvet_check's questions ──► asked to you, one at a time
+                      │
+                      ▼
+       stackvet_record_answer (the tool's word) ──► stackvet_write_report ──► the report folder
+
+    ✗ never starts the app: that is `sv report --run`, at a terminal
+    ✗ never runs the outside tools (Semgrep and the rest): that is `sv report`, at a terminal
+```
+
+| Limit | What happens past it |
+|---|---|
+| A check runs 50 seconds | The tool is told it did not finish and that nothing was assessed, rather than left waiting. Checking this whole repository takes about six seconds; `sv mcp --time-limit SECONDS` changes the limit, and `sv report` at a terminal has none. A tool that asks to hear how a check is going is told each stage as it starts. |
+| An answer is about 40,000 characters | A longer plan or check comes in parts, since Claude Code saves anything longer to a file instead of reading it. The first part starts with what to act on (for a plan, what to decide and what `sv run` needs; for a check, what was not examined and then the findings) and ends with every section and how to ask for it (`section`, and `page` for a long one). Nothing is left out, and `"section": "all"` still gives the whole answer at once. |
+| A request is 1 MiB | A longer request line gets an error in reply; a tool call is a few hundred bytes. |
 
 Until 9 October 2026 there were thirteen: `stackvet_questions` is now `stackvet_check`'s section `questions`, and
 `stackvet_notes_file` is `stackvet_record_answer` called with no question and no answer. An AI coding tool that
 still calls either old name gets the same answer, with a line naming the tool to call instead; neither is listed.
-
-A plan or a check too long for an AI coding tool to take in as one answer (over about 40,000 characters; Claude Code
-saves anything longer to a file instead of reading it) comes in parts. The first answer starts with what to act on:
-for a plan, what to decide and what `sv run` needs; for a check, what was not examined and then the findings. It ends
-with a list of every section and how to ask for each (`section`, and `page` for a long one). Nothing is left out, and
-`"section": "all"` still gives the whole answer at once. A short plan or check is answered whole, as before.
 
 It also offers [the design-time prompts](docs/prompts/design-time.md) as MCP prompts, for you to choose from
 your tool (where it shows them, for example as slash commands): what to decide with the tool before any code is
@@ -470,35 +492,24 @@ written, each saying whether it has been shown to work. Its instructions ask the
 write `stackvet.toml` with you first, for the app as it will be, and to go through the prompt for each feature
 before writing it.
 
-**A plan before any code.** `sv plan` (and `stackvet_plan`, for the tool) turns `stackvet.toml` into a plan:
-the requirements that will apply, the design-time prompts and questions to settle before each feature, the tests
-worth writing (named so they count once they pass), what the app must give `sv run` so it can be tested running
-(test accounts, the sign-in and sign-out forms, the pages only a signed-in person should see, and so on, worked out
-from your answers), and the threats your answers raise. It needs no code, writes nothing, and credits nothing: a plan
-is what the app will be held to, not evidence that anything was built. It is built from the same parts as the report,
-so the two agree about what applies.
+**A plan before any code** (`sv plan`, `stackvet_plan`) turns `stackvet.toml` into the requirements that will
+apply, the decisions and questions to settle before each feature, the tests worth writing (named so they count once
+they pass), what the app must give `sv run` to be tested running (test accounts, the sign-in and sign-out forms, the
+private pages, and so on), and the threats your answers raise. It is what the app will be held to, not evidence that
+anything was built, and it is built from the same parts as the report, so the two agree about what applies.
 
-**Before each feature.** `sv brief --feature uploads` (and `stackvet_before`, for the tool) gives one feature's brief
-before it is built: sign-in, sign-in through another service, admin pages, uploads, payments, email, an AI feature,
-fetching a web address, records people own or share, API keys for other programs, background jobs, or several
-customer organizations in one app (`sv brief` with no feature lists them). It gives the requirements the feature brings that
-apply to the app now, and, if `stackvet.toml` does not say yet that the app has the feature, those that will apply
-once it does; the design-time prompts for the decisions to make first, in full; the coding rules that bear on it; the
-tests to write; and the settings `sv run` needs to test it, quoted from the spec. With the coding prompts shown to
-work that bear on the feature, it answers before `stackvet.toml` exists too, saying that which requirements apply
-cannot be known yet. Like the plan, it writes nothing and credits nothing.
+**Before each feature** (`sv brief --feature uploads`, `stackvet_before`; `sv brief` alone lists the twelve features,
+from sign-in and uploads to payments, an AI feature, and several customer organizations in one app) gives the
+requirements the feature brings, including those that will apply once `stackvet.toml` says the app has it; the
+design-time prompts for the decisions to make first, in full; the coding rules, the coding prompts shown to work, and the tests for it; and the settings
+`sv run` needs to test it. It answers before `stackvet.toml` exists too, saying that which requirements apply cannot
+be known yet.
 
-**Before `--run`.** `sv preflight` (and `stackvet_preflight`, for the tool) looks in the app's files for what
-`sv run` will need from `[stack.run]`: a server listening on every address at `$PORT`, a seed that makes the test
-accounts, the sign-in form at the path and with the fields the settings give, the tables the app makes for itself,
-and so on. Each item says *looks right*, *look at this*, or *could not tell*. It reads text and runs nothing, so
-"looks right" means the thing was found, not that it works; the point is that the AI tool can fix a wrong setting in
-the same conversation, before a run is spent on it. It credits nothing.
-
-A check that takes longer than 50 seconds is stopped waiting for, and the tool is told it did not finish and that
-nothing was assessed, rather than being left waiting. Checking this whole repository takes about six seconds.
-`--time-limit SECONDS` changes the limit, and `sv report` at a terminal has none. A tool that asks to hear how a check
-is going is told each stage as it starts.
+**Before `--run`** (`sv preflight`, `stackvet_preflight`) looks in the app's files for what `sv run` will need from
+`[stack.run]` (a server listening on every address at `$PORT`, a seed that makes the test accounts, the sign-in form
+the settings name, and so on) and marks each *looks right*, *look at this*, or *could not tell*. It reads text and
+runs nothing, so "looks right" means the thing was found, not that it works; the point is that the tool can fix a
+wrong setting in the same conversation, before a run is spent on it.
 
 A `.mcp.json` in the app's folder, with the JSON above, works in tools that have no `claude` command,
 such as the Claude desktop app.
