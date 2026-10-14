@@ -1877,6 +1877,7 @@ fn cmd_doctor(args: &[String]) -> Result<()> {
         data: sv_frameworks::data::dir(),
         in_container: sv_cli::connect::in_a_container(),
         backend: &backend,
+        windows: cfg!(windows),
     };
     let lines = sv_cli::doctor::answers(&app_dir, &asked);
     print!("{}", sv_cli::doctor::text(&app_dir, &lines));

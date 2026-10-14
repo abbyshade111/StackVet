@@ -35,12 +35,11 @@ short too.
 
 ## 1. Install Docker, and start it
 
-StackVet runs inside [Docker](GLOSSARY.md#docker), so there is nothing else to install. (One later step, which starts
-your app to check it while it runs, needs StackVet installed on the computer itself; section 6 says
-how, and it is optional.)
+StackVet runs inside [Docker](GLOSSARY.md#docker), so there is nothing else to install. (Starting your app to check
+it while it runs, an optional later step, needs StackVet installed on the computer itself: section 6.)
 
 - **On a Mac:** Docker Desktop (docker.com), or Colima if you prefer something smaller.
-- **On Windows or Linux:** Docker Desktop, or Docker itself on Linux.
+- **On Linux:** Docker itself, or Docker Desktop. **On Windows,** skip Docker: see step 3.
 
 **Docker has to be running before you open your AI tool.** If it is not, the StackVet tools are
 simply missing from the tool, and nothing tells you why. After a restart, start Docker first.
@@ -82,8 +81,9 @@ It prints the settings and the name of the file they go in, and writes nothing. 
 
 **On Windows, the Docker settings do not work yet:** `sv connect --docker` takes only a Mac or Linux path for
 Docker. Install StackVet with Scoop instead ("On Windows: Scoop", in section 6), and in the app's folder, in
-PowerShell, run `stackvet connect claude` (or `vscode`, or `cursor`). It prints settings that start the installed
-copy directly, with no Docker, which the checks that read your code do not need. Not yet tried by hand.
+PowerShell, run `stackvet connect claude` (or `vscode`, or `cursor`). Its settings start the installed copy, with no
+Docker; the checks that read your code need none. Not yet tried by hand; the checks that start your app, not at all
+(section 6).
 
 ### Claude (the desktop app and Claude Code)
 
@@ -326,8 +326,9 @@ the app is started. That is honest, not a pass.
 
 Those checks need `sv report --run` at a terminal, with StackVet installed directly on your computer
 rather than in Docker, because starting your app means starting containers of its own. On Windows that is a
-download, installed with Scoop; on a Mac or Linux it means building StackVet, which Homebrew does for you. The steps
-are on their own page, [Installing StackVet on your computer](INSTALL.md), with how to keep it up to date.
+download, installed with Scoop, though these checks are untried on Windows: a Mac or Linux computer is the known way.
+On a Mac or Linux it means building StackVet, which Homebrew does for you. The steps, and how to keep it up to date,
+are on [Installing StackVet on your computer](INSTALL.md).
 
 If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in
 `stackvet.toml`. The app runs with no internet, so it cannot fetch its own packages; this line lets StackVet

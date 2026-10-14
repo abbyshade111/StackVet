@@ -1,6 +1,6 @@
 # On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -23,3 +23,18 @@ honest-absence path. What is missing is the warning before the fact, where a Win
 Not a code change to the fence. Once somebody tries `sv report --run` on Windows with Docker Desktop and it works (or
 does not), the sentences change to what was seen; 0375 (StackVet itself in Docker on Windows) stays separate.
 **Record:** ADR-108 governs the Windows route: a Later line.
+
+**Done, 14 October 2026.** `sv doctor` built for Windows adds a line after its Docker line, *can't tell*, from
+`doctor::WINDOWS_RUN_UNTRIED`: the checks that start the app have not been tried on a Windows computer, even with
+Docker Desktop running; without them the report says which requirements only they reach; a Mac or Linux computer, or a
+cloud runner, is the known way. It counts as nothing missing, and `stackvet_status` says the same. The setup page's
+"On Windows" section opens with that sentence in place of "needed later only"; the Windows prompt has a step 11 in
+which the AI tool tells the person and does not promise the full report; prompt 6 says it first on Windows. The guide's
+step 3 and section 6 say it in fewer words (the guide stays at 4,199 of its 4,200), and its install step no longer
+tells a Windows user to install Docker Desktop for a route that does not work there. ADR-108 has a Later entry. Tests:
+`doctor/windows_tests.rs` and `tests/windows_run_untried.rs`, broken on purpose four ways (the prompt's promise
+softened, the page's sentence turned into a claim it works, the guide's sentence dropped, the doctor line switched
+off), each turning the one expected test red.
+
+Not done: nothing was tried on a Windows computer; the sentences change when somebody does. Backlog 0375 (StackVet in
+Docker on Windows) stays separate.
