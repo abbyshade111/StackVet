@@ -1085,15 +1085,21 @@ pub fn run(http: &mut dyn Fetch, target: &Target) -> Outcome {
         ));
         return out;
     }
+    // In part, as the permanent redirect below is: one host's port 80 asked once is one sample of
+    // the connections V12.2.1 names, and says nothing of an API host, another port, or the app's own
+    // calls out (backlog 0466; ADR-090, Later, 14 October 2026).
     if !plain.reached() {
-        out.verified.push(Verified::new(
-            PLAIN_HTTP_SERVED.rule_id,
-            PLAIN_HTTP_SERVED.requirement_ids,
-            format!(
-                "{} refused the connection, so there is no plain-HTTP way in",
-                target.http
-            ),
-        ));
+        out.verified.push(
+            Verified::new(
+                PLAIN_HTTP_SERVED.rule_id,
+                PLAIN_HTTP_SERVED.requirement_ids,
+                format!(
+                    "{} refused the connection, so there is no plain-HTTP way in",
+                    target.http
+                ),
+            )
+            .in_part(),
+        );
         return out;
     }
     let to = redirect_host(&plain);
@@ -1634,3 +1640,6 @@ mod error_answer_tests;
 
 #[cfg(test)]
 mod quoted_tests;
+
+#[cfg(test)]
+mod refused_port_tests;
