@@ -266,26 +266,19 @@ Then, each time, in a terminal in the app's folder:
 docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/stackvet":/sv-config/stackvet -e XDG_CONFIG_HOME=/sv-config ghcr.io/abbyshade111/stackvet-sv review .
 ```
 
-`-it` gives it your terminal to ask its questions in, and the second `-v` lets it keep its key in that
-folder on your computer rather than inside the container, which is thrown away when it ends. On Linux,
-add `--user "$(id -u):$(id -g)"` after `docker run`, as in section 3.
+On Linux, add `--user "$(id -u):$(id -g)"` after `docker run`, as in section 3.
 
-It goes through each answer that does not yet count as yours, shows it, asks your name or `owner`, and
-signs it with a key of its own, kept in your own settings folder. The first time, it makes that key and
-asks for a passphrase to protect it with (press Enter to choose one, or type `none`); with one, nothing can sign as you
-without it, and without one the report says so beside each entry. Only then does the report count it as yours: a line
-saying `owner` that was never recorded this way still counts as the tool's word, because a tool trying to
-quiet a warning could write that line too. The same goes for an answer the tool confirmed and you looked
-at yourself, and for a finding set aside as a false alarm. `sv review` is only for those: a real finding is fixed in the code and
-checked again, and recording it does not make it go away. `sv review` needs a terminal someone is typing
-in, so your AI tool cannot run it for you. The README ("Setting a finding aside, confirming an answer, or
-giving your own") says more.
+It shows each answer that does not yet count as yours, asks your name or `owner`, and signs it with a key of its own,
+kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose
+one, or type `none`). Only then does the report count the answer as yours: a line saying `owner` that was never recorded
+this way still counts as the tool's word, because a tool trying to quiet a warning could write that line too. A real
+finding is fixed in the code and checked again; recording it does not make it go away. `sv review` needs a terminal
+someone is typing in, so your AI tool cannot run it for you. [`docs/REVIEW.md`](REVIEW.md) is the whole of it, with a
+picture of how a signature is made and checked.
 
-**If your AI tool uses the container** (section 3), the report it writes cannot check those signatures
-unless it can see your list of trusted keys, `allowed_signers`, which `sv review` keeps beside its key.
-Give the container that one file, read-only, and not the folder: the folder also holds the key that
-signs as you, and the container your AI tool drives has no need of it. The `.mcp.json` from section 3
-becomes, with your own paths (this has not been tried in an AI tool yet):
+**If your AI tool uses the container** (section 3), give it your list of trusted keys, `allowed_signers`, one file,
+read-only, and not the folder, which also holds the key that signs as you. The `.mcp.json` from section 3 becomes,
+with your own paths (this has not been tried in an AI tool yet):
 
 ```json
 { "mcpServers": { "stackvet": {
@@ -297,12 +290,8 @@ becomes, with your own paths (this has not been tried in an AI tool yet):
            "ghcr.io/abbyshade111/stackvet-sv", "mcp", "--root", "/Users/you/code/my-app"] } } }
 ```
 
-Make the file first, with the `mkdir` line above: if it is not there when the container starts, Docker
-makes a folder in its place, and `sv review` can no longer add to it. `sv review` adds to the same file,
-so the container sees each app you add without a change here. Without this line, recorded answers count
-as the tool's word in those reports. CI is the same, by another route: give it the one line `sv review`
-showed you as the variable `SV_TRUSTED_SEALS` (the README says where). That line can check a signature
-but never make one, so it is safe to share.
+Make the file first, with the `mkdir` line above, or Docker makes a folder in its place. Without this line, recorded
+answers count as the tool's word in those reports. For CI, see [`docs/REVIEW.md`](REVIEW.md#setting-it-up-where-the-report-is-made).
 
 Some questions are checks to make by hand, such as opening the live site and looking at the padlock.
 The tool walks you through them and records what you saw; that record, too, counts as yours once you

@@ -1,6 +1,6 @@
 # `sv review` and the seals are explained in full twice for the same reader, with different details in each
 
-**Status:** claimed by documentation, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

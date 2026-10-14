@@ -245,67 +245,27 @@ thing (`data/sbd-asvs-crosswalk.json`), or is shown at every level when nothing 
 
 ## Setting a finding aside, confirming an answer, or giving your own: `sv review`
 
-When a finding is a false alarm, or a risk you choose to live with for now, it can be set aside under
-`[[finding-review]]` in `stackvet.toml`, with a reason. When your AI coding tool answered a question
-and you have looked for yourself, you can confirm its answer. Either counts only once **you** record it,
-by running this in your own terminal:
+A finding set aside as a false alarm or a risk you accept, an answer of your AI coding tool's that you have checked and
+confirm, and your own answers (`by = "owner"` in `stackvet.toml`, `Written by: owner` in `security-notes.md`) count as
+yours only once **you** record them, in your own terminal:
 
 ```bash
 sv review ./my-app
 ```
 
-The same goes for your own answers: a `[design]` answer or a `[checked-by-hand]` result written with
-`by = "owner"`, and a section of `security-notes.md` marked `Written by: owner`, count as yours only once
-recorded this way. Until then they count as your AI coding tool's word, a step lower, and the report says
-so.
+Until then they count as the tool's word, a step lower, and the report says so: the tool rewrites code until a warning
+stops, and writing `owner` into a file is the easiest way to stop one. `sv review` needs a terminal someone is typing
+in, which an AI coding tool does not have. It shows each entry, asks your name or `owner`, and *signs* it with a key of
+its own in `~/.config/stackvet/`, outside the app, protected by a passphrase if you choose one; reports made anywhere
+else count the entry only if they are given the key's public half, one line `sv review` shows you. It also asks you to
+confirm the two answers that set the app's level.
 
-It goes through every entry that is not yet yours, shows the finding's line of code (never a line that
-may hold a key), and asks for your name, or `owner`. What you record is written back into
-`stackvet.toml` with the date and a *seal*. Your AI coding tool may write entries too, as proposals
-(`by = "ai-tool"`), and the report lists them, but a proposal counts for nothing.
-
-Last, it shows the two answers that set the app's level, who uses the app (`[app] audience`) and what it
-holds about people (`[data] categories`), and asks you to confirm them. Your AI coding tool usually writes
-both. Once you have, the report says the level rests on answers you confirmed, and when; change either
-answer later and it says they are unconfirmed again until you run `sv review` once more. Confirming them
-never changes the level: it says whose word the level rests on.
-
-Why the extra step: the tool rewrites code until a warning stops, and writing `by = "owner"` into the
-file is the easiest way to stop one. `sv review` runs only in a terminal someone is typing in, which an
-AI coding tool does not have, and *signs* each entry with a key of its own, kept in your own settings
-folder (`~/.config/stackvet/review-signing-key`), outside the app. The first time, it makes the key and
-asks for a passphrase to protect it with: press Enter to choose one, or type `none` to go without. With one,
-nothing can sign as you without it, your AI coding tool included, since the passphrase is only in your head;
-you type it each time you run `sv review`. Without one, every entry the key signed says so in the report, on
-the computer that holds the key.
-
-A signature is checked with the key's *public half*, which can check a signature but never make one. `sv
-review` puts that public half, with the app it may sign for, on a list of trusted keys beside the key
-(`~/.config/stackvet/allowed_signers`), and shows you one line to give any other computer that should
-count what you record: CI, the container, or a second computer of yours. Give it as the variable
-`SV_TRUSTED_SEALS` (on GitHub: the repository's Settings, then Secrets and variables, then Actions, then
-Variables, and pass `SV_TRUSTED_SEALS: ${{ vars.SV_TRUSTED_SEALS }}` to the step that runs `sv`). The
-line is not a secret: anyone can read it, and nobody can sign with it.
-
-Wherever the report is made, it checks each signature against the list: an entry that was changed
-afterwards, never signed, or signed with a key the list does not name, is a proposal again, and the
-report names the key it trusted and where the list came from, so you can tell it is yours. A signature
-also names the app, so an entry copied into another app is a proposal there. On your own computer that
-means the app's folder: an app moved to another folder is a proposal until you run `sv review` in it. On
-a computer with no list at all the signature cannot be checked, so the entry does not count, and the
-report says how to make it count.
-
-What it cannot show: who was at the keyboard, unless your key has a passphrase; and that a trusted key is
-yours, since whoever can change the list, or the repository variable, can add one. A tool set on faking
-it, running as you, could do either; it stops the easy way, not every way. Keep the key file private.
-
-With the container, give it a terminal and somewhere to keep the key, made first so that it is yours
-(`mkdir -p ~/.config/stackvet && chmod 700 ~/.config/stackvet`; on Linux, add `--user` as below):
+With only Docker, the same from the container (make `~/.config/stackvet` first; the full steps are linked below):
 `docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/stackvet":/sv-config/stackvet -e XDG_CONFIG_HOME=/sv-config ghcr.io/abbyshade111/stackvet-sv review .`
-The container that writes your reports needs only the list, and never the key beside it: pass
-`-e SV_TRUSTED_SEALS="$(cat ~/.config/stackvet/allowed_signers)"`, or mount the list alone, read-only,
-with `-v "$HOME/.config/stackvet/allowed_signers":/sv-config/stackvet/allowed_signers:ro -e XDG_CONFIG_HOME=/sv-config`.
-For the container your AI coding tool starts, the guide (`docs/GETTING-STARTED.md`, step 5) gives the whole `.mcp.json`.
+
+[`docs/REVIEW.md`](docs/REVIEW.md) is the whole of it, with a picture: what each kind of entry is, the key and its
+passphrase, the list of trusted keys and how a signature is checked, what a seal cannot show, and the setup for the
+container and for CI (`SV_TRUSTED_SEALS`, and where GitHub keeps it).
 
 ## Signing in
 
