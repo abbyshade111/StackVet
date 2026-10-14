@@ -604,7 +604,7 @@ Each note here is for someone who set StackVet up before a change; a first-time 
   `sv review` there, it offers to sign them all again at one yes, without asking each question again.
 - **An installed copy from before 5 October 2026.** The guide had you use the program in the build folder then; if
   your `PATH` or your AI tool's settings name `…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`
-  ([`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md#if-you-set-stackvet-up-before-5-october-2026)).
+  ([`docs/INSTALL.md`](docs/INSTALL.md#if-you-set-stackvet-up-before-5-october-2026)).
 - **SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
   archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
   `v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this

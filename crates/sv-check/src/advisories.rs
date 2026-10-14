@@ -1184,10 +1184,12 @@ mod tests {
 
     #[test]
     fn the_guide_lists_every_download_sv_names_and_no_other() {
-        // The guide's table is what the owner reads before running anything: it must hold the same
-        // addresses `sv` prints, so a new ecosystem cannot be compared without being written up.
+        // The page's table is what the owner reads before running anything: it must hold the same
+        // addresses `sv` prints, so a new ecosystem cannot be compared without being written up. The table
+        // left the guide for a page of its own in backlog 0440.
         let guide = std::fs::read_to_string(
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/GETTING-STARTED.md"),
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../docs/KNOWN-VULNERABILITIES.md"),
         )
         .unwrap();
         let in_guide: std::collections::BTreeSet<&str> = guide
@@ -1203,7 +1205,7 @@ mod tests {
         assert_eq!(
             in_guide,
             named.iter().map(String::as_str).collect(),
-            "docs/GETTING-STARTED.md and osv_download disagree"
+            "docs/KNOWN-VULNERABILITIES.md and osv_download disagree"
         );
     }
 
