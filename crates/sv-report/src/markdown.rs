@@ -357,7 +357,7 @@ pub fn compliance(report: &Report) -> String {
         out.push_str("## Outside tools\n\n");
         if crate::no_outside_tool_ran(&tools) {
             out.push_str(&format!(
-                "None ran this time. They run only with `sv report --tools`, at a terminal: {}.\n\n",
+                "None ran this time: {}. They run with every `sv report` at a terminal unless `--no-tools` is given; the MCP server and the GitHub Action never run them.\n\n",
                 tools.iter().map(|r| r.name.as_str()).collect::<Vec<_>>().join(", ")
             ));
         } else {

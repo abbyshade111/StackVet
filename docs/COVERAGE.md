@@ -28,7 +28,7 @@ What each kind of check needs before it can run:
 | Known vulnerabilities | a local copy of the OSV database (`--advisories DIR`) |
 | The running app | a container backend and a `run` section (`--run`); for the AI checks, an `ai` section too |
 | Signed in | the above, and a `users` section with test accounts, or an `oidc` section for a sign-in through another service |
-| Outside tools | the tool installed (`--tools`) |
+| Outside tools | the tool installed; runs with `sv report` unless `--no-tools` |
 | Your own live site | the address your app is served from, typed at the terminal (`sv probe https://…`) |
 
 ## Summary
@@ -337,7 +337,7 @@ does not reach.
 20 of these 49 can only ever be marked *needs attention*: a check can
 show the control missing, and finding nothing does not show it present, so a clean run credits
 none of them. Most are `sv`'s own checks: rules that read the code, and questions asked of the
-running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's, and need `--tools`.
+running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's, which run with `sv report` unless `--no-tools`.
 
 - C2.1.2: checked in part only, by `probe.ai-hidden-input`.
 - C2.1.3: checked in part only, by `probe.ai-injection-unscreened`; and found failing by sv's `probe.ai-stored-injection-unscreened`.

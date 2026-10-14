@@ -31,7 +31,7 @@ decided per app, from its `stackvet.toml` and its code.
 | Known vulnerabilities | a local copy of the OSV database (`--advisories DIR`) |
 | The running app | a container backend and a `run` section (`--run`); for the AI checks, an `ai` section too |
 | Signed in | the above, and a `users` section with test accounts, or an `oidc` section for a sign-in through another service |
-| Outside tools | the tool installed (`--tools`) |
+| Outside tools | the tool installed; runs with `sv report` unless `--no-tools` |
 | Your own live site | the address your app is served from, typed at the terminal (`sv probe https://…`) |
 
 ## OWASP ASVS 5.0
