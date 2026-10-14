@@ -2,15 +2,9 @@
 //! line holds two problems with nothing in common (Semgrep follow-up 3; ADR-023, Later, 6 October
 //! 2026).
 
-use std::path::PathBuf;
 use std::process::Command;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-one-line-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 #[test]
 fn two_problems_on_one_line_are_one_entry_naming_both_and_two_sarif_results() {

@@ -7,15 +7,10 @@
 //! hundred characters long, and stopped only because the operating system refuses a link chain past
 //! thirty-two.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-one-walk-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 fn check(app: &Path) -> String {
     let out = Command::new(env!("CARGO_BIN_EXE_sv"))

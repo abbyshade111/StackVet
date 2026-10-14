@@ -1,15 +1,9 @@
 //! Findings in test code, listed apart from the app's own, end to end: `sv report` on a Rust app
 //! whose unit tests sit in the same file as the code, as Rust's do.
 
-use std::path::PathBuf;
 use std::process::Command;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-test-code-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 /// The same weak hash twice: on line 2 in the app, and on line 8 inside its tests.
 const LIB: &str = "pub fn digest(b: &[u8]) -> [u8; 16] {\n    md5::compute(b).0\n}\n\n#[cfg(test)]\nmod tests {\n    fn old(b: &[u8]) -> [u8; 16] {\n        md5::compute(b).0\n    }\n}\n";

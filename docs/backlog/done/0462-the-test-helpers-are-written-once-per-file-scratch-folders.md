@@ -1,6 +1,6 @@
 # The test helpers are written once per file: scratch folders in 52 files, the binary runner in 28, and five more
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -25,3 +25,20 @@ From the deep review of 13 October 2026 (backlog 0417), area: code quality and d
 - Overlap: 0020 (done; the names, not the copies), 0335 (link cost of the 118 binary-driving files; different), 0339
   (container tests one per file; different).
 - Needs a decision record?: no.
+
+**What was built (14 October 2026, session documentation).** `sv_check::test_support` (built always and hidden, as
+backlog 0501 made it, so the tests of `sv-cli` and `sv-run` already reach it) holds two of the helpers:
+`scratch(name)`, an empty folder named `sv-`, the calling file's name (read with `#[track_caller]`), the name, the
+process id, and a number counted up on each call, so no two calls share one (0020's rule, now per call as well as per
+run); and `status_of(compliance, id)`, the status column of a `compliance.md` row. 28 files' own `scratch` and six
+files' `status_of` are gone; their tests use the shared ones. Held by `crates/sv-check/src/test_support/scratch_tests.rs`;
+with the per-call number taken out, its first test went red ("two calls with one name share a folder"). The whole
+workspace's tests pass.
+
+Not done, and why: 23 files keep a `scratch` of their own because each does more or other than the shared one (a
+`Scratch` that removes its folder when dropped, in six `sv-check/tests` files; a subfolder made with it; a thread id or
+the time in the name; a folder left unmade), and `sv-scan`, `sv-frameworks`, and `sv-manifest` cannot reach `sv-check`,
+which depends on them. The `sv` runner in 28 `sv-cli` tests has 18 different bodies (whether a failed run fails the
+test, and whether it returns the output, the text, or the exit code); one helper for them is a change of each file's
+calls, not a move, and is left for an item of its own. `real_adapters`, `secret_rules`, and `docker_ok` are one line
+each, and a shared copy would cost each file the same line to import it.

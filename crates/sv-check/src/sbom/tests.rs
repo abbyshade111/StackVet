@@ -4,12 +4,7 @@
 use super::*;
 use std::fs;
 
-fn scratch(name: &str) -> std::path::PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-sbom-{name}-{}", std::process::id()));
-    fs::remove_dir_all(&dir).ok();
-    fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use crate::test_support::scratch;
 
 #[test]
 fn a_locked_npm_app_lists_what_is_installed() {

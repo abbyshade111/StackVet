@@ -1,15 +1,9 @@
 //! A copy of another project's library kept in the app, listed apart from the app's own code, end
 //! to end: `sv report` on an app with jQuery in `public/js` (Semgrep follow-up 1).
 
-use std::path::PathBuf;
 use std::process::Command;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-bundled-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 /// The same code-running call in the app's own script and in a copy of jQuery, whose build opens
 /// with its own banner.

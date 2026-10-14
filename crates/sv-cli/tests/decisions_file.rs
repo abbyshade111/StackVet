@@ -6,13 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// The status column of the row for `id` in compliance.md.
-fn status_of<'a>(compliance: &'a str, id: &str) -> &'a str {
-    let row = compliance
-        .lines()
-        .find(|line| line.starts_with(&format!("| {id} |")))
-        .unwrap_or_else(|| panic!("no row for {id} in the report:\n{compliance}"));
-    row.split('|').nth(2).unwrap_or("").trim()
-}
+use sv_check::test_support::status_of;
 
 fn fresh(name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("sv-decisions-{name}-{}", std::process::id()));

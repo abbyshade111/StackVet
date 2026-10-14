@@ -1,7 +1,7 @@
 //! What the tests of this crate, and of the crates built on it, share. Not part of `sv`: no code
 //! outside a test calls it (backlog 0501).
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 #[cfg(unix)]
 use std::process::{Command, Stdio};
 
@@ -43,6 +43,45 @@ pub fn executable(path: &Path, text: &str) {
 pub fn executable(path: &Path, text: &str) {
     std::fs::write(path, text).expect("the script is written");
 }
+
+/// A scratch folder for one test, empty and made: the system's temporary folder, then `sv-`, the calling file's name,
+/// `name`, this run's process id, and a number counted up on every call, so two tests, two runs, and two calls never
+/// share one (backlog 0020, which made the names unique per run; backlog 0462, which wrote it once instead of in each
+/// test file). A folder of that name left by an earlier run is removed first. Nothing removes it afterward: a failing
+/// test leaves its files to be read.
+#[track_caller]
+pub fn scratch(name: &str) -> PathBuf {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static NEXT: AtomicUsize = AtomicUsize::new(0);
+    let file = Path::new(std::panic::Location::caller().file())
+        .file_stem()
+        .map(|s| s.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let n = NEXT.fetch_add(1, Ordering::Relaxed);
+    let label = if name.is_empty() {
+        file
+    } else {
+        format!("{file}-{name}")
+    };
+    let dir = std::env::temp_dir().join(format!("sv-{label}-{}-{n}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    std::fs::create_dir_all(&dir).expect("a scratch folder can be made");
+    dir
+}
+
+/// The status `compliance.md` gives requirement `id`: the second column of its row. Six of `sv-cli`'s tests each had
+/// a copy until backlog 0462. A report with no row for `id` fails the test, naming it.
+pub fn status_of<'a>(compliance: &'a str, id: &str) -> &'a str {
+    let row = compliance
+        .lines()
+        .find(|line| line.starts_with(&format!("| {id} |")))
+        .unwrap_or_else(|| panic!("no row for {id} in the report:\n{compliance}"));
+    row.split('|').nth(2).unwrap_or("").trim()
+}
+
+#[cfg(test)]
+#[path = "test_support/scratch_tests.rs"]
+mod scratch_tests;
 
 #[cfg(test)]
 mod tests;
