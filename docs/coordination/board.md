@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0421 (since 2026-10-13) — next: 0430, 0429, 0418, 0419, 0420
+- honesty — arm: full — holds: 0421 (since 2026-10-13) — next: 0501, 0430, 0429, 0418, 0419, 0420
 - wording — arm: full — holds: 0428 (since 2026-10-13) — next: 0445, 0449, 0448, 0451, 0452
 - documentation — arm: full — holds: 0437 (since 2026-10-13) — next: 0325, 0322, 0484, 0482, 0480
 
@@ -261,3 +261,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 20:44 — assigned 0484 to documentation (full) as next: lane 1 of documentation: CLAUDE.md stays self-contained and CONTRIBUTING points to it (the owner's choice)
 - 2026-10-13 20:44 — assigned 0482 to documentation (full) as next: lane 1 of documentation: README's second pointer and its reading order, same file as 0437
 - 2026-10-13 20:44 — assigned 0480 to documentation (full) as next: lane 1 of documentation: README's MCP section as a table, same file as 0437
+- 2026-10-13 21:03 — queued 0501, marked
+- 2026-10-13 21:03 — assigned 0501 to honesty (full) into the lane after 0421: a flaky test in sv-run's own suite that can fail any pull request; found by honesty on 0421, so it goes next on that line
