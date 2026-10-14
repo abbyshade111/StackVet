@@ -19,8 +19,9 @@ Found 14 October 2026 by session wording, building backlog 0403. Severity: unkno
   is a decision with a record of its own, and the citation's text should be read first.
 - How verified: read the two rules and their reasons; not read against the ASVS text yet.
 
-**The owner's decision, 14 October 2026:** option A. "A new rich-text capability in stackvet.toml, asked like the
-others; unanswered, V1.3.1 and V1.3.5 are not assessed; yes, or an AI feature, makes them apply." The record is
-proposed in the build (ADR-117), and the waiting file goes in the same pull request. Read against the ASVS text: V1.3.1
+**The owner's answer, 14 October 2026** (asked by session wording through the board's waiting line): A. A new capability in `stackvet.toml`, `rich-text`, asked like the others: unanswered, V1.3.1 and V1.3.5 are not assessed (silence is not a no, ADR-015); yes, or an AI feature, makes them apply. A decision record of its own, proposed in this item's build and accepted in its pull request, since it changes which requirements apply.
+
+**Built, 14 October 2026:** ADR-117 records the decision, and the waiting file goes in the same pull request, as the
+owner asked. Read against the ASVS text: V1.3.1
 asks about "untrusted HTML input from WYSIWYG editors or similar", V1.3.5 about "user-supplied scriptable or expression
 template language content, such as Markdown, CSS or XSL stylesheets, BBCode, or similar"; neither is about AI.
