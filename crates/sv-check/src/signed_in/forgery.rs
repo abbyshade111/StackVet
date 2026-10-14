@@ -51,6 +51,20 @@ fn not_forged(users: &sv_manifest::UsersSection) -> Vec<&'static str> {
     .collect()
 }
 
+/// A control request that worked: done, or sent elsewhere than the sign-in page. A redirect to the
+/// sign-in page is the app turning away somebody it does not see signed in.
+fn works(response: &Option<ProbeResponse>, users: &sv_manifest::UsersSection) -> bool {
+    let to_sign_in = response
+        .as_ref()
+        .and_then(|r| r.header("location"))
+        .zip(users.login.as_ref())
+        .is_some_and(|(location, login)| {
+            location.split('?').next() == Some(login.path.as_str())
+                || location.ends_with(login.path.as_str())
+        });
+    accepted(response) && !to_sign_in
+}
+
 pub(super) fn forgery_check(
     http: &mut dyn Http,
     users: &sv_manifest::UsersSection,
@@ -87,7 +101,41 @@ pub(super) fn forgery_check(
             )
             .collect();
     let (mut accepted_at, mut refused_at, mut answers) = (Vec::new(), Vec::new(), Vec::new());
+    // Each create request that cannot be judged, by its path, and why.
+    let mut unjudged: Vec<(String, String)> = Vec::new();
     for (id, template) in &creates {
+        // The control (backlog 0420): the `owned` create was made by this user just
+        // before, so its refusal below means something. A `creates` entry is first sent as the app's
+        // own page would send it, with the session and its token; only if that was accepted does a
+        // refusal of the forged copy say anything. An app that answers 400 to an empty field, 404 to a
+        // mistyped path, or 405 to a form where it wants JSON refuses both.
+        if id != "forged-create" {
+            let mut own = session.clone();
+            let control_id = format!("{id}-control");
+            let v = with_token(
+                http,
+                &control_id,
+                template,
+                &Values {
+                    marker: "sv-probe-control-4c1d",
+                    ..Default::default()
+                },
+                &mut own,
+                &users.private,
+            );
+            let control = http.send(&request(&control_id, template, &v, &own));
+            if !works(&control, users) {
+                unjudged.push((
+                    template.path.clone(),
+                    format!(
+                        "sent with the session and its token, as the app's own page would send it, it \
+                         was not accepted ({}), so a refusal from another site would show nothing",
+                        status(&control)
+                    ),
+                ));
+                continue;
+            }
+        }
         let mut forged = request(id, template, &values, &cross);
         forged.headers.retain(|(n, _)| {
             !n.to_lowercase().contains("csrf") && !n.to_lowercase().contains("xsrf")
@@ -103,8 +151,16 @@ pub(super) fn forgery_check(
         if accepted(&response) {
             accepted_at.push((id.clone(), template.path.clone(), status(&response)));
         } else {
+            // No answer, or a crash, is not a refusal either: the check's guard withholds the whole
+            // credit then, and says so (backlog 0280).
             refused_at.push(template.path.clone());
         }
+    }
+    for (path, why) in &unjudged {
+        out.not_assessed.push((
+            FORGERY.requirement_ids.join(", "),
+            format!("Whether {path} takes a request from another site: {why}."),
+        ));
     }
     if !accepted_at.is_empty() {
         // SameSite on the session cookie means a browser would not have sent it from another site,
@@ -139,6 +195,8 @@ pub(super) fn forgery_check(
                 }
             ),
         ));
+    } else if refused_at.is_empty() {
+        // Nothing judged: each create request is in `not_assessed` above, with its reason.
     } else if session.bearer.is_some() {
         out.not_assessed.push((
             FORGERY.requirement_ids.join(", "),
@@ -152,7 +210,7 @@ pub(super) fn forgery_check(
                 FORGERY.requirement_ids,
                 format!(
                     "{} sent with a signed-in user's cookies from another origin and without a \
-                     token, and refused at {}{}",
+                     token, and refused at {}{}{}",
                     if refused_at.len() == 1 {
                         "a request that creates a record,".to_owned()
                     } else {
@@ -163,12 +221,24 @@ pub(super) fn forgery_check(
                         String::new()
                     } else {
                         format!("; not sent this way: {}", untried.join(", "))
+                    },
+                    if unjudged.is_empty() {
+                        String::new()
+                    } else {
+                        format!(
+                            "; not judged: {}",
+                            unjudged
+                                .iter()
+                                .map(|(path, _)| path.as_str())
+                                .collect::<Vec<_>>()
+                                .join(", ")
+                        )
                     }
                 ),
             )
-            // Every create request named; one, or a changing request not sent this way, is in
-            // part (ADR-053, Later).
-            .in_part_if(refused_at.len() == 1 || !untried.is_empty()),
+            // Every create request named; one, a changing request not sent this way, or one that
+            // could not be judged, is in part (ADR-053, Later).
+            .in_part_if(refused_at.len() == 1 || !untried.is_empty() || !unjudged.is_empty()),
         );
     }
 }
@@ -1025,3 +1095,6 @@ mod tests {
 
 #[cfg(test)]
 mod creates_tests;
+
+#[cfg(test)]
+mod control_tests;
