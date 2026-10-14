@@ -1,6 +1,6 @@
 # The refusals locator shows the first 403 in a file, which in notes-with-users refuses a forged form, not a person
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -16,3 +16,10 @@ kind of check.
 leave out a 403 whose condition is about a token or a password, by shape (a call or comparison whose names say
 `csrf`, `forged`, `token`, or `password` in the `if` that leads to it). Hold it to `notes-with-users`: V8.3.1 must
 show `:209` or `:210`, and not `:133`. Where to look, never evidence, as now (ADR-022).
+
+**Built 14 October 2026, by honesty**
+(`docs/design/0388-a-refusal-for-a-forged-form-or-a-wrong-password-is-not.md`). A locator may say `unless`, and
+`locate.refusals` leaves out a 403 whose nearest `if` names a token, a forged form, or a password. On
+`notes-with-users`, V8.1.1 and V8.3.1 now show `app.py:241`, `:209`, and `:316`, and never `:133`; the other
+four example apps still get no pointer. Ordering by nearness was not built: leaving out the other checks was enough.
+The pointer's second reading can go ahead.

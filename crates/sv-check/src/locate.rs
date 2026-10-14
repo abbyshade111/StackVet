@@ -38,6 +38,11 @@ pub struct Locator {
     /// `require_role` and `requireRole` are one name. A locator that finds a shape rather than a name
     /// (a query with `owner = ?`, a 403 sent) matches the captured text made plain the same way.
     pub names: String,
+    /// Places to leave out: a place is not kept when the condition of the nearest `if` it sits under,
+    /// made plain the same way, matches. A 403 sent because a form's anti-forgery token or a password
+    /// was wrong is not a check of what a person may do (backlog 0518).
+    #[serde(default)]
+    pub unless: Option<String>,
     /// Per language, a tree-sitter query whose `@defined` captures the name of a function being
     /// written and `@used` the name of one being called or passed.
     pub queries: BTreeMap<String, String>,
@@ -54,6 +59,7 @@ struct LocatorFile {
 struct Compiled {
     locator: Locator,
     names: Regex,
+    unless: Option<Regex>,
     queries: BTreeMap<String, Query>,
 }
 
@@ -98,6 +104,14 @@ impl Locators {
             let names = Regex::new(&locator.names).map_err(|e| {
                 anyhow::anyhow!("{}: the names of {}: {e}", path.display(), locator.id)
             })?;
+            let unless = locator
+                .unless
+                .as_deref()
+                .map(Regex::new)
+                .transpose()
+                .map_err(|e| {
+                    anyhow::anyhow!("{}: the unless of {}: {e}", path.display(), locator.id)
+                })?;
             let mut queries = BTreeMap::new();
             for (language, source) in &locator.queries {
                 for (grammar_name, key) in grammars_for(language) {
@@ -129,6 +143,7 @@ impl Locators {
             compiled.push(Compiled {
                 locator,
                 names,
+                unless,
                 queries,
             });
         }
@@ -255,6 +270,12 @@ fn places(c: &Compiled, key: &str, relative: &str, source: &str) -> Vec<Located>
             if !c.names.is_match(&plain(text)) {
                 continue;
             }
+            if let Some(unless) = &c.unless
+                && guarding_condition(capture.node, source)
+                    .is_some_and(|condition| unless.is_match(&plain(condition)))
+            {
+                continue;
+            }
             let line = capture.node.start_position().row + 1;
             let was = by_line.entry(line).or_insert(defined);
             *was = *was || defined;
@@ -268,6 +289,24 @@ fn places(c: &Compiled, key: &str, relative: &str, source: &str) -> Vec<Located>
             defined,
         })
         .collect()
+}
+
+/// The condition of the nearest `if` (or `elif`) a node sits under, not counting one whose condition
+/// the node is part of.
+fn guarding_condition<'a>(node: tree_sitter::Node, source: &'a str) -> Option<&'a str> {
+    let mut child = node;
+    while let Some(parent) = child.parent() {
+        if matches!(parent.kind(), "if_statement" | "elif_clause")
+            && let Some(condition) = parent.child_by_field_name("condition")
+            && condition.id() != child.id()
+            && !(condition.start_byte() <= node.start_byte()
+                && node.end_byte() <= condition.end_byte())
+        {
+            return condition.utf8_text(source.as_bytes()).ok();
+        }
+        child = parent;
+    }
+    None
 }
 
 #[cfg(test)]
