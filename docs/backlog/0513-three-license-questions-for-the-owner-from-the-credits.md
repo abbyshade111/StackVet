@@ -1,6 +1,6 @@
 # Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name
 
-**Status:** partly done: parts 1 (Brakeman's non-commercial clause) and 3 (CodeQL's name) wait on the owner
+**Status:** partly done: part 3 (CodeQL's name: GitHub's logo policy to read before launch) waits on the owner
 
 From backlog 0374 (14 October 2026), which read every credited tool's and data source's license from its source and
 wrote each beside its credit in `docs/website/home-page.md`. These three need the owner's judgment; the rest do not.
@@ -16,7 +16,8 @@ stays open until these are answered.
    as the Semgrep rules (StackVet is not sold), or ask the maintainer, as the license invites ("if Licensee is
    unsure whether it needs to purchase a Commercial Use license, contact the maintainer")? Suggestion: the same
    condition as Semgrep's, recorded in ADR-018 beside it.
-   **Part status:** open
+   **The owner's decision, 14 October 2026:** accept it, on the same condition as the Semgrep rules: StackVet runs Brakeman, when the person has installed it, on the person's own app, and nothing built on it is sold. Recorded beside Semgrep's in ADR-018 (Later, 14 October 2026).
+   **Part status:** done, 14 October 2026
 
 2. **The Semgrep Rules License, under Opengrep.** `LICENSE` in semgrep/semgrep-rules says only "Semgrep Rules
    License v1.0. For more details, visit https://semgrep.dev/legal/rules-license", and that page could not be read
