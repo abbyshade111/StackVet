@@ -257,13 +257,12 @@ should do with a file that is too big, who may see what. It offers what it found
 tip. "I'm not sure" is a fine answer. If you ask the tool to answer for you, the report says so, and
 counts it for less than your own answer.
 
-The answers to the questions about the app's rules go in `security-notes.md`. The tool writes them there, and
-every one it writes starts with `Written by: AI coding tool`, even when it is writing down what you told it:
-`sv` cannot tell your words from the tool's. You do not need to open the file: `sv review`, in your own
-terminal, shows you each answer the tool wrote and asks whose it is. Type `mine` where it says what you
-decided, and it counts as your own answer. Where the tool worked an answer out from the code and you have
-checked it and agree, type your name instead: the report then shows it as the tool's words a person
-confirmed, never as your own. Press Enter to leave one as the tool's word. Run it in your own terminal:
+The tool writes your answers about the app's rules in `security-notes.md`, each marked `Written by: AI coding
+tool`, since `sv` cannot tell your words from the tool's. `sv review`, in your own terminal, shows each one and asks
+whose it is: type `mine` where it says what you decided; your name where the tool worked it out from the code and
+you checked it, which the report shows as the tool's words a person confirmed; or Enter to leave it. An answer the
+tool wrote in `stackvet.toml` (`by = "ai-tool"`) is confirmed, not owned; `by = "owner"` by hand is for the rare
+one that is truly your own decision. Run it in your own terminal:
 
 ```bash
 sv review ~/code/my-app

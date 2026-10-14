@@ -1,6 +1,6 @@
 # V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

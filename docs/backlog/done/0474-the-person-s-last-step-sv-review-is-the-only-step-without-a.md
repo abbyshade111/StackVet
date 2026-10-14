@@ -1,6 +1,6 @@
 # The person's last step, `sv review`, is the only step without a prompt that walks them to it
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -24,3 +24,10 @@ From the deep review of 13 October 2026 (backlog 0417), area: usability. Severit
 - How verified: read.
 - Overlap: 0398 (done: prompt 6), 0217 part 5 (the report prompt), 0401 (what changed). New.
 - Needs a decision record?: no.
+
+**Done 14 October 2026 (session documentation).** `docs/prompts/setup.md` has prompt 7, "Record my answers as mine",
+in its table and as a section of its own after prompt 6, marked not yet tried in any AI tool. The paragraph that
+described `sv review` in prose now leads into it. The prompt is the item's words with one sentence added: "Don't
+change either file to say an answer is mine: only I can do that, with `sv review`." `crates/sv-cli/tests/setup_prompt_seven.rs`
+holds its place, its words, that `sv review` is a command `sv` takes, and that it never has the tool write
+`by = "owner"` or a `Written by: owner` line.

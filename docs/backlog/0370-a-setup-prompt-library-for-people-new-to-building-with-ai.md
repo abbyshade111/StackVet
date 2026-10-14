@@ -1,6 +1,6 @@
 # A setup prompt library for people new to building with AI
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

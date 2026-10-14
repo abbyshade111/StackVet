@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0427 (since 2026-10-14) — next: 0477, 0508, 0290, 0415, 0504
+- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0290, 0415, 0504, 0506, 0232
 - wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401, 0338, 0412, 0503, 0505
-- documentation — arm: full — holds: 0473 (since 2026-10-14) — next: 0474, 0478, 0476, 0475, 0374, 0413
+- documentation — arm: full — holds: 0478 (since 2026-10-14) — next: 0476, 0475, 0374, 0413, 0370
 
 ## Queue
 
@@ -33,10 +33,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 20. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
 21. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
-22. 0370 A setup prompt library for people new to building with AI — ready
-23. 0232 More samples for the checks that rest on one sample (groups A to H) — ready
-24. 0506 V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them — ready
-25. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
+22. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
 
 ## Log
 
@@ -385,3 +382,10 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 09:51 — assigned 0504 to honesty (full) as next: filed by documentation overnight: the loop trial's scorer counts text-forms and not text (tools/score_loop2.py and its test)
 - 2026-10-14 09:51 — assigned 0374 to documentation (full) as next: the owner's word of 14 October: read each credited tool's and data source's licence from its source, CodeQL first, and bring the owner only what needs a judgment
 - 2026-10-14 09:51 — assigned 0413 to documentation (full) as next: released from the archived session: the reports page, what each report file is for and who reads it, with the two lifecycle diagrams (docs/)
+- 2026-10-14 10:21 — finished 0427 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1882; now holds 0477
+- 2026-10-14 10:21 — finished 0477 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1878; now holds 0508
+- 2026-10-14 10:21 — finished 0473 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1883; now holds 0474
+- 2026-10-14 10:21 — finished 0474 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1885; now holds 0478
+- 2026-10-14 10:21 — assigned 0506 to honesty (full) as next: filed by a session overnight: V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them (human-checks.json; 0427 is done, so the file is free)
+- 2026-10-14 10:21 — assigned 0232 to honesty (full) as next: released from the archived session: the remaining sample groups B to F for the checks that rest on one sample (sv-check suites); honesty's lane holds no sv-check file now
+- 2026-10-14 10:21 — assigned 0370 to documentation (full) as next: released from the archived session, and first in the owner's plan: finalize the setup prompt library (docs/prompts/setup.md) before the three-tool trial
