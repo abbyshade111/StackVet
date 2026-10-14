@@ -71,9 +71,27 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "a reading of the code is not a check",
             "say it is your reading, not a check",
         ),
+        // Backlog 0546: in the Cursor trial of 14 October 2026, the tool wrote security-notes.md by hand and never
+        // called stackvet_record_answer, so nothing it wrote counted.
+        (
+            "record answers only through stackvet_record_answer",
+            "Record my answers only with `stackvet_record_answer`, under the question ids it gives you",
+        ),
+        (
+            "say that text outside the questions is not read",
+            "Text you write yourself in `security-notes.md`, outside its questions, is not read as an answer.",
+        ),
         (
             "never by = owner",
-            "Never mark a check by hand as done, or write `by = \"owner\"`",
+            "Never mark a check by hand as done yourself, and never write `confirmed` or `by = \"owner\"`",
+        ),
+        // Backlog 0547, the owner's choice of 14 October 2026 (B): in the trial Antigravity wrote twelve
+        // `confirmed` blocks of its own and VS Code marked a check done with `by = "ai-tool"`. The tool still writes a
+        // hand check the person made, as a proposal for `sv review`, since that is the only way one is recorded.
+        (
+            "write a hand check only for one the person made",
+            "Write a `[checked-by-hand]` entry only for a check I made and described to you, with `by = \"ai-tool\"` \
+             and my words in `how`.",
         ),
         ("never secure", "Never tell me the app is secure"),
     ] {

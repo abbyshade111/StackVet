@@ -59,9 +59,8 @@ Make an empty folder for the app, for example `~/code/my-app`. Then, in a termin
 git init
 ```
 
-This matters more than it looks: the check for a password or key that
-was ever saved into your project's history only runs in a git folder. Without it, that check is
-reported as [*not assessed*](GLOSSARY.md#not-assessed).
+The check for a password or key ever saved into your project's history only runs in a git folder.
+Without git, that check is reported as [*not assessed*](GLOSSARY.md#not-assessed).
 
 ## 3. Connect StackVet to your AI tool
 
@@ -228,9 +227,12 @@ Open the app's folder in your AI tool and paste this, with your app described at
 > 5. Never tell me the app is secure. Tell me what was checked and what was not.
 > 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
 >    questions one at a time. When you tell me what the code does for one, quote the lines and say
->    it is your reading, not a check. Record my answers with `stackvet_record_answer`, and only what
->    I actually answer as mine. Never mark a check by hand as done, or write `by = "owner"`: only I
->    can, with `sv review`.
+>    it is your reading, not a check. Record my answers only with `stackvet_record_answer`, under the
+>    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
+>    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
+>    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
+>    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
+>    `by = "ai-tool"` and my words in `how`.
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
@@ -261,7 +263,7 @@ tool`, since `sv` cannot tell your words from the tool's. `sv review`, in your o
 whose it is: type `mine` where it says what you decided; your name where the tool worked it out from the code and
 you checked it, which the report shows as the tool's words a person confirmed; or Enter to leave it. An answer the
 tool wrote in `stackvet.toml` (`by = "ai-tool"`) is confirmed, not owned; `by = "owner"` by hand is for the rare
-one that is truly your own decision. Run it in your own terminal:
+one that is truly your own decision. Run it:
 
 ```bash
 sv review ~/code/my-app
@@ -358,8 +360,8 @@ a browser. Each file in the folder has a reader of its own:
 | `sbom.cdx.json` | Tools that read a bill of materials |
 | `report.pdf` | You, or whoever you hand it to |
 
-`security.md` is what to fix; `compliance.md` is the whole picture against the standards. On a small app the two
-open alike, but they are not the same: [the reports page](website/reports-page.md) shows an example of each. To have your AI tool
+On a small app `security.md` and `compliance.md` open alike, but they are not the same:
+[the reports page](website/reports-page.md) shows an example of each. To have your AI tool
 read it with you, starting with what was not checked, give it [the report prompt](prompts/report.md) (not yet tried
 in an AI tool).
 
@@ -380,8 +382,8 @@ is met. Only StackVet's own checks can make a requirement *checked*; your word c
 `sv review`, and the tool's word counts least. [A picture of the nine](ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first)
 shows who can grant each.
 
-If you later run StackVet in an automatic check (CI) whenever the code changes, the number it ends with says what
-happened: [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes) says what each number means.
+If you later run StackVet in an automatic check (CI), [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes)
+says what the number it ends with means.
 
 ## Later
 
