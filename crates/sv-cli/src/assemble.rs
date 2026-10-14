@@ -1023,8 +1023,9 @@ fn running_app(
                     }
                     .to_owned(),
                 };
-                let (running_findings, running_verified, signed_in_not_assessed) =
+                let (mut running_findings, running_verified, signed_in_not_assessed) =
                     running_app_evidence(&outcome, &plan, &private_files);
+                limits_set_for_the_run(&mut running_findings, &plan.start);
                 let mut record = crate::seen::record(
                     secret_rules,
                     &anonymous_requests(&plan, &private_files),
@@ -1136,6 +1137,13 @@ fn running_app(
                         " {}",
                         sv_run::resources::sentence(outcome.resources.as_ref())
                     ));
+                }
+                // The settings the start command gave the copy run, by name (backlog 0386), then any that look like they
+                // weaken it.
+                if let (Some(note), Some(settings)) =
+                    (run_note.as_mut(), sv_run::start_settings::note(&plan.start))
+                {
+                    note.push_str(&format!(" {settings}"));
                 }
                 if let (Some(note), Some(weaker)) =
                     (run_note.as_mut(), sv_run::weakening_note(&plan.start))
@@ -2793,6 +2801,21 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     Ok(report)
 }
 
+/// A wrong-password finding says when the start command sets something that looks like a sign-in limit (backlog 0386):
+/// in the second loop trial, seven of nine such findings were about a limit raised for the copy `sv` ran alone.
+pub(crate) fn limits_set_for_the_run(findings: &mut [sv_check::Finding], start: &str) {
+    let Some(said) = sv_run::start_settings::sign_in_limit_note(start) else {
+        return;
+    };
+    for finding in findings
+        .iter_mut()
+        .filter(|f| f.rule_id == "probe.failed-sign-ins-unlimited")
+    {
+        finding.description.push(' ');
+        finding.description.push_str(&said);
+    }
+}
+
 /// A finding the manifest's answers made, pointed at the manifest by the name it has in this app.
 fn at_the_manifest(mut finding: sv_check::Finding, manifest_file: &str) -> sv_check::Finding {
     if finding.location.file == sv_frameworks::names::MANIFEST {
@@ -2965,3 +2988,7 @@ fn split_test_information(
 #[cfg(test)]
 #[path = "assemble_counts_tests.rs"]
 mod counts_tests;
+
+#[cfg(test)]
+#[path = "assemble_start_limits_tests.rs"]
+mod start_limits_tests;
