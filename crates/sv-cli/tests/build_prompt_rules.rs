@@ -71,6 +71,16 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "a reading of the code is not a check",
             "say it is your reading, not a check",
         ),
+        // Backlog 0546: in the Cursor trial of 14 October 2026, the tool wrote security-notes.md by hand and never
+        // called stackvet_record_answer, so nothing it wrote counted.
+        (
+            "record answers only through stackvet_record_answer",
+            "Record my answers only with `stackvet_record_answer`, under the question ids it gives you",
+        ),
+        (
+            "say that text outside the questions is not read",
+            "Text you write yourself in `security-notes.md`, outside its questions, is not read as an answer.",
+        ),
         (
             "never by = owner",
             "Never mark a check by hand as done, or write `by = \"owner\"`",
