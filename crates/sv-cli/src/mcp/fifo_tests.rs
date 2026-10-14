@@ -75,8 +75,7 @@ fn a_pipe_where_the_build_loop_record_goes_is_refused_and_the_server_still_answe
     // every tool call, on the server's one thread for answering.
     let root = scratch_app("fifo-build-loop", "flask-booking");
     let app = root.join("app");
-    let record = sv_scan::ecosystems::default_report_dir_in(&app)
-        .join(sv_scan::ecosystems::BUILD_LOOP_RECORD);
+    let record = sv_scan::ecosystems::build_loop_record_in(&app);
     pipe_at(&record);
     let refused = {
         let app = app.clone();

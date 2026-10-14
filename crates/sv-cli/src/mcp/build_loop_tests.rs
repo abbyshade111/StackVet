@@ -10,12 +10,9 @@ fn report_json(app: &Path) -> Value {
 }
 
 fn record_lines(app: &Path) -> usize {
-    std::fs::read_to_string(
-        sv_scan::ecosystems::default_report_dir_in(app)
-            .join(sv_scan::ecosystems::BUILD_LOOP_RECORD),
-    )
-    .map(|t| t.lines().count())
-    .unwrap_or(0)
+    std::fs::read_to_string(sv_scan::ecosystems::build_loop_record_in(app))
+        .map(|t| t.lines().count())
+        .unwrap_or(0)
 }
 
 #[test]
@@ -103,12 +100,9 @@ fn turned_off_the_report_says_it_cannot_tell() {
     // (ADR-084); no call is written down, the check's or the report's.
     assert_eq!(record_lines(&app), 1, "a call written though turned off");
     let line: Value = serde_json::from_str(
-        std::fs::read_to_string(
-            sv_scan::ecosystems::default_report_dir_in(&app)
-                .join(sv_scan::ecosystems::BUILD_LOOP_RECORD),
-        )
-        .unwrap()
-        .trim(),
+        std::fs::read_to_string(sv_scan::ecosystems::build_loop_record_in(&app))
+            .unwrap()
+            .trim(),
     )
     .unwrap();
     // The chain (backlog 0239) is integrity metadata, not a fact about the call, so it is left out of the keys.

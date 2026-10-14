@@ -29,7 +29,7 @@ use sv_check::seal::{Key, REPORT_KEY_FILE};
 pub const SEALED: [&str; crate::report_files::NAMES.len()] = crate::report_files::NAMES;
 
 /// How the seal's line in the marker starts.
-const SEAL_LINE: &str = "seal: ";
+pub(crate) const SEAL_LINE: &str = "seal: ";
 
 /// How the marker's line naming the folder the report was sealed in starts: the id `seal::App` gives
 /// that folder, sealed with the files, so a report copied or moved to another folder is refused

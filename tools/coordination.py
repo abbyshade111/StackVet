@@ -397,10 +397,14 @@ def waiting_files(root, branches=True):
         return found
     try:
         refs = git(root, "for-each-ref", "--format=%(refname:short) %(committerdate:unix)", "refs/remotes/origin/")
+        # A branch already merged into main is history: a waiting file it carries was either answered and removed
+        # on main since, or is on main itself, which the checkout shows. Only an unmerged branch can hold a live wait.
+        merged = {b.strip().lstrip("* ") for b in git(root, "branch", "-r", "--merged", "origin/main").splitlines()}
+        merged.discard("origin/main")
         cutoff = datetime.datetime.now().timestamp() - WAIT_DAYS * 86400
         for line in refs.splitlines():
             ref, _, when = line.rpartition(" ")
-            if not when.isdigit() or int(when) < cutoff or ref.endswith("/HEAD"):
+            if not when.isdigit() or int(when) < cutoff or ref.endswith("/HEAD") or ref in merged:
                 continue
             tree = subprocess.run(["git", "-C", str(root), "ls-tree", "--name-only", ref, f"{WAITING}/"],
                                   capture_output=True, text=True, encoding="utf-8")
@@ -1041,10 +1045,19 @@ def self_test():
         g("checkout", "-q", "-b", "asks")
         commit("docs/coordination/waiting/0001.md", "# Waiting on the owner: 0001\n\n**Asked:** 2026-10-13 10:00\n\nMay I?\n", "Waiting on the owner")
         g("checkout", "-q", "main")
+        # A branch merged into main is history: its waiting file, removed on main since, is not a wait any more.
+        g("checkout", "-q", "-b", "answered")
+        commit("docs/coordination/waiting/0002.md", "# Waiting on the owner: 0002\n\n**Asked:** 2026-10-13 10:00\n\nAnd this?\n", "Waiting, answered later")
+        g("checkout", "-q", "main")
+        g("merge", "-q", "--no-ff", "answered", "-m", "Merge pull request #4 from x/answered")
+        g("rm", "-q", "docs/coordination/waiting/0002.md")
+        g("commit", "-q", "-m", "0002 answered: the waiting file goes")
         # The no-context clone: the stub is there, and git does not see it as a change.
         clone = setup_no_context(repo, tmp / "noctx")
         found = waiting_files(clone)
         assert [(w["number"], w["where"], w["question"]) for w in found] == [("0001", "origin/asks", "May I?")], found
+        assert subprocess.run(["git", "-C", str(clone), "ls-tree", "--name-only", "origin/answered", "docs/coordination/waiting/"],
+                              capture_output=True, text=True, encoding="utf-8").stdout.strip(), "the merged branch still carries its file"
         with open(clone / "CLAUDE.md", encoding="utf-8") as f:
             assert f.read() == STUB
         flags = subprocess.run(["git", "-C", str(clone), "ls-files", "-v", "CLAUDE.md"], capture_output=True, text=True, encoding="utf-8").stdout
