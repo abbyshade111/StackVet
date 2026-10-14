@@ -36,7 +36,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 122 can be checked, 51 can only be found failing, 9 where a check helps but a person decides, and 163 with no check.
+345 requirements: 121 can be checked, 52 can only be found failing, 9 where a check helps but a person decides, and 163 with no check.
 
 ### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
 
@@ -185,7 +185,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 69 can be checked, 25 can only be found failing)
+### Level 2 (183 requirements, 68 can be checked, 26 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -371,7 +371,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 | Requirement | Coverage | Checks |
 |---|---|---|
-| **V12.1.2** Verify that only recommended cipher suites are enabled, with the strongest cipher suites set as preferred. L3 applications must only support cipher suites which provide forward secrecy. | Can be checked | Outside tools: semgrep, 2 rules, its rules look for: TLS cipher suites that are not recommended |
+| **V12.1.2** Verify that only recommended cipher suites are enabled, with the strongest cipher suites set as preferred. L3 applications must only support cipher suites which provide forward secrecy. | Can only be found failing | Outside tools: semgrep, 2 rules, its rules look for: TLS cipher suites that are not recommended (found failing only) |
 | **V12.1.3** Verify that the application validates that mTLS client certificates are trusted before using the certificate identity for authentication or authorization. | No check | – |
 | **V12.3.1** Verify that an encrypted protocol such as TLS is used for all inbound and outbound connections to and from the application, including monitoring systems, management tools, remote access and SSH, middleware, databases, mainframes, partner systems, or external APIs. The server must not fall back to insecure or unencrypted protocols. | Can be checked | Outside tools: semgrep, 54 rules, its rules look for: a WebSocket connection over ws:// rather than WebSocket over TLS (WSS); a connection made without an encrypted protocol such as TLS |
 | **V12.3.2** Verify that TLS clients validate certificates received before communicating with a TLS server. | Can be checked | Reads the code: `config.certificate-checks-off`, looks for: A setting that switches off certificate checking for every connection the app makes (found failing only)<br>Outside tools: bandit, 1 rule, its rules look for: a TLS request made without validating the server certificate<br>Outside tools: gosec, 1 rule, its rules look for: a TLS connection made without validating the server certificate<br>Outside tools: brakeman, 1 rule, its rules look for: TLS certificate verification is turned off, so the TLS client does not validate certificates<br>Outside tools: semgrep, 14 rules, its rules look for: TLS certificate validation turned off in a client<br>Outside tools: codeql-javascript, 1 rule, its rules look for: TLS certificate validation turned off in a client<br>Outside tools: codeql-python, 1 rule, its rules look for: TLS certificate validation turned off in a client<br>Outside tools: codeql-ruby, 1 rule, its rules look for: TLS certificate validation turned off in a client |

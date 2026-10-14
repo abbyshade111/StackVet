@@ -385,9 +385,6 @@
   "V12.1.1": [
    "tools"
   ],
-  "V12.1.2": [
-   "tools"
-  ],
   "V12.1.4": [
    "production"
   ],
@@ -2536,7 +2533,7 @@
     "id": "semgrep",
     "run": "Outside tools",
     "looks_for": "TLS cipher suites that are not recommended",
-    "finding_only": false
+    "finding_only": true
    }
   ],
   "V12.1.4": [
