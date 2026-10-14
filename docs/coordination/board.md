@@ -57,7 +57,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 43. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
 44. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
 45. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
-46. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-118)
+46. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
 47. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
 48. 0563 `sv --version` piped into `head` reports "sv itself failed: a fault in sv" on the closed pipe — ready
 
@@ -507,13 +507,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 19:20 — dropped 0513 from the queue
 - 2026-10-14 19:31 — finished 0519 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1931; now holds 0522
 - 2026-10-14 19:31 — finished 0545 by wording (full): https://github.com/abbyshade111/StackVet/pull/1930; now holds 0546
-- 2026-10-14 19:31 — withdrew 0522 from honesty (full), on hold: built as the first case of sweep 0559 (ADR-118)
+- 2026-10-14 19:31 — withdrew 0522 from honesty (full), on hold: built as the first case of sweep 0559 (ADR-119)
 - 2026-10-14 19:31 — queued 0559, marked
 - 2026-10-14 19:31 — queued 0560, marked
 - 2026-10-14 19:31 — queued 0561, marked
-- 2026-10-14 19:31 — assigned 0559 to honesty (full) into the lane after 0521: the owner's choice of 14 October: the setup rule across every probe, ADR-118 accepted here
-- 2026-10-14 19:31 — assigned 0560 to honesty (full) into the lane after 0559: the control rule across every probe (ADR-118)
-- 2026-10-14 19:31 — assigned 0561 to honesty (full) into the lane after 0560: the one-more-request rule, lockout and anonymous token first (ADR-118)
+- 2026-10-14 19:31 — assigned 0559 to honesty (full) into the lane after 0521: the owner's choice of 14 October: the setup rule across every probe, ADR-119 accepted here
+- 2026-10-14 19:31 — assigned 0560 to honesty (full) into the lane after 0559: the control rule across every probe (ADR-119)
+- 2026-10-14 19:31 — assigned 0561 to honesty (full) into the lane after 0560: the one-more-request rule, lockout and anonymous token first (ADR-119)
 - 2026-10-14 19:31 — assigned 0532 to documentation (full): sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
 - 2026-10-14 19:31 — assigned 0541 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
 - 2026-10-14 19:31 — assigned 0542 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts

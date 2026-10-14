@@ -4,7 +4,7 @@
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
-From the three-tool prompt trial of 14 October 2026; the owner's choice the same day. The record is ADR-118. Severity:
+From the three-tool prompt trial of 14 October 2026; the owner's choice the same day. The record is ADR-119. Severity:
 medium.
 
 **What to build.** After the lockout's push-back, try the account's real password once: if it signs in, report "after
@@ -20,5 +20,5 @@ backlog 0537 (the Antigravity app's anonymous token is one value per process). B
 **How to know it works.** Fake-app cases: a lockout that checks the password first; a token that is a constant. Before
 the fix the credit stands; after it, the finding appears and the credit goes.
 
-**Record.** ADR-118: a Later line if the one-more-request list changes what counts as evidence for a requirement the
+**Record.** ADR-119: a Later line if the one-more-request list changes what counts as evidence for a requirement the
 decision does not name.

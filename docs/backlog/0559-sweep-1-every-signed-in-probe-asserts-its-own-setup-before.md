@@ -5,7 +5,7 @@
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 From the three-tool prompt trial of 14 October 2026 (`docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`); the owner's
-choice the same day: fix the pattern across the probes, not one item at a time. The record is ADR-118 (proposed in this
+choice the same day: fix the pattern across the probes, not one item at a time. The record is ADR-119 (proposed in this
 claim; accepted by the pull request that builds this sweep). Severity: high.
 
 **What to build.** For every probe under `crates/sv-check/src/signed_in/` that makes an account, a record, or a session
@@ -23,4 +23,4 @@ finding). It closes with this sweep.
 findings and credits still appear; after it, each is "not assessed" with its reason. A list of the probes swept, in
 the pull request, with the ones that already asserted their setup named too.
 
-**Record.** ADR-118, accepted in this pull request.
+**Record.** ADR-119, accepted in this pull request.

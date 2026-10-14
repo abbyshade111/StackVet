@@ -18,4 +18,4 @@ and stops after the push-back.
 
 **Record.** The probe's record: a Later entry (what counts as evidence for V6.3.1).
 
-**Built by the sweep:** this is the first case of backlog 0561 (ADR-118); it closes with it.
+**Built by the sweep:** this is the first case of backlog 0561 (ADR-119); it closes with it.

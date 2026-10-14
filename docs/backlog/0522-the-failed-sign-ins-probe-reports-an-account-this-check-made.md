@@ -27,4 +27,4 @@ have" path and its honest wording. Add the fake-app case: a sign-up that answers
 **Record.** The probe's record (ADR-085 or the one that governs `signed_in/`): a Later entry, since what counts as
 evidence for V6.3.1 changes.
 
-**Built by the sweep:** this is the first case of backlog 0559 (ADR-118); it closes with it.
+**Built by the sweep:** this is the first case of backlog 0559 (ADR-119); it closes with it.

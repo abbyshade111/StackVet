@@ -4,7 +4,7 @@
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
-From the three-tool prompt trial of 14 October 2026; the owner's choice the same day. The record is ADR-118. Severity:
+From the three-tool prompt trial of 14 October 2026; the owner's choice the same day. The record is ADR-119. Severity:
 high.
 
 **What to build.** For every probe under `crates/sv-check/src/signed_in/` that has a control request in hand: accepted
@@ -21,5 +21,5 @@ email address", read as accepted). It closes with this sweep.
 finding goes, and the step reads "could not tell: 200 where the control redirected" or, with the second request, the
 right answer.
 
-**Record.** ADR-118 (accepted by sweep 1's pull request; this one says `ADR-118: unchanged, because ...` or adds a Later
+**Record.** ADR-119 (accepted by sweep 1's pull request; this one says `ADR-119: unchanged, because ...` or adds a Later
 line if a rule is refined).

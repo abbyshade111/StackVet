@@ -47,4 +47,4 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   the secret rules already read past when they look for the password. *Attested by the owner*; `sv`'s own for the
   finding.
 
-**The owner's choice, 14 October 2026:** build it, after the three probe sweeps (0559 to 0561) land, so the provider's checks are written to ADR-118's rules; a record of its own, since it changes what sv runs inside the fence.
+**The owner's choice, 14 October 2026:** build it, after the three probe sweeps (0559 to 0561) land, so the provider's checks are written to ADR-119's rules; a record of its own, since it changes what sv runs inside the fence.

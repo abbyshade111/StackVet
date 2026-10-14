@@ -16,4 +16,4 @@ two strangers" under V3.5.1 (read its text first), crediting nothing when they d
 
 **Record.** A Later entry on the forged-form check's record.
 
-**Built by the sweep:** this is the first case of backlog 0561 (ADR-118); it closes with it.
+**Built by the sweep:** this is the first case of backlog 0561 (ADR-119); it closes with it.

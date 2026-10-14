@@ -20,4 +20,4 @@ compared. Fake-app case: a sign-up that re-renders the form with 200 on a bad va
 **Record.** ADR-0NN: unchanged, because the probe's bar is unchanged; only its reading of an answer is corrected.
 (Check which record governs `signed_in/uploads.rs` before the build.)
 
-**Built by the sweep:** this is the first case of backlog 0560 (ADR-118); it closes with it.
+**Built by the sweep:** this is the first case of backlog 0560 (ADR-119); it closes with it.
