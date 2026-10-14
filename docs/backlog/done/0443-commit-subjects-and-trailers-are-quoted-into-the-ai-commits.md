@@ -1,6 +1,6 @@
 # Commit subjects and trailers are quoted into the AI-commits note unredacted, and a key there cannot be taken out of history
 
-**Status:** claimed by wording, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
