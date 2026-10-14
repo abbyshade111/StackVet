@@ -327,6 +327,15 @@ pub(crate) fn opened(v: &Value, path: &str) -> bool {
             == Some(path.split('?').next().unwrap_or(path))
 }
 
+/// What the report says under V3.2.2 when the signed-in checks run and stackvet.toml names no text form (backlog 0503): the
+/// typed-text check was not made, and the one line that makes it. Without this the report said nothing of it, and the
+/// reasons it gave under V3.2.2 came from other checks.
+pub const NO_TEXT_FORM: &str = "In a real browser: the typed-text check, which types markup into a form and looks \
+    whether the page shows it as text or runs it, was not made, because stackvet.toml names no form for it; sv does \
+    not look for forms of its own. A line under `[stack.run.users]` such as \
+    `browser = { text-form = \"/notes/new\", shows = \"/notes\" }` makes it: the page with the form, and the page \
+    that shows what was typed.";
+
 /// The browser checks, with the first user's session. `works` says whether the plain requests
 /// showed that session opening the private pages; without that, nothing here would mean anything.
 pub(crate) fn checks(
@@ -338,6 +347,12 @@ pub(crate) fn checks(
     token: &str,
     out: &mut Outcome,
 ) {
+    // With no form named, the report says the typed-text check was not made and what makes it (backlog 0503). Said
+    // whether or not signing in worked, since it is true either way and every run names what it could not do.
+    if users.browser.as_ref().is_none_or(|b| b.forms().is_empty()) {
+        out.not_assessed
+            .push(("V3.2.2".to_owned(), NO_TEXT_FORM.to_owned()));
+    }
     let Some(section) = &users.browser else {
         return;
     };
@@ -1086,6 +1101,7 @@ mod tests {
     use sv_manifest::RequestTemplate;
 
     mod in_part_tests;
+    mod no_text_form_tests;
     mod text_forms_tests;
 
     /// How the fake browser's app behaves.
@@ -1846,7 +1862,8 @@ mod tests {
         // No `text-form`: every private page, and nothing typed.
         let (o, jobs) = run_on(App::default(), &users(None, None));
         assert_eq!(credited(&o), vec![HIDDEN_SIGN_OUT.rule_id]);
-        assert!(unassessed(&o, "V3.2.2").is_none());
+        // Nothing typed, and V3.2.2 says only that, with the line that would make it (backlog 0503).
+        assert_eq!(unassessed(&o, "V3.2.2").as_deref(), Some(NO_TEXT_FORM));
         let actions = &jobs[0].actions;
         // The cookies, with what the app set them with; two pages, each opened and asked about;
         // then what they tried to send elsewhere.
