@@ -20,3 +20,10 @@ both say how many rows have a plain line, while some do not. A check beside a st
 its id after it in parentheses. `crates/sv-report/tests/plain_requirements.rs` holds every line to a real requirement
 whose words it shares, and every ASVS level-1 requirement to having one. What remains: the requirements above level 1,
 AISVS, and the Secure by Design checklist.
+
+**Level 2, 14 October 2026:** at the owner's word of 14 October ("the plain lines for the level-2 requirements first;
+AISVS and the Secure by Design checklist after, or as a remainder note if they would take more than a day"), every one
+of ASVS 5.0's 183 level-2 requirements has a plain line too, written from its own words, and the test now holds levels 1
+and 2 to having one. **What remains**, a note rather than a build, since it is more than a day's writing: ASVS's 92
+level-3 requirements, AISVS 1.0's 235 and its Appendix C's 82, and the Secure by Design checklist's 36 controls. The
+report already says how many of its rows have a line, so a row without one shows the standard's words alone.
