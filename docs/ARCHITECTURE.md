@@ -132,13 +132,65 @@ terminal command the person can run.
 - **Whose word, at which rank.** A check of `sv`'s own, then the app's tests, then the owner's written answer, a check
   by hand, the owner's yes, the tool's yes; nothing a model says makes a requirement *checked* (ADR-022, ADR-050).
 - **The fence.** The app runs on a Docker network with no gateway, read-only, every capability dropped; every request
-  to it is sent from inside; `sv` opens no network connection of its own but `sv probe` and the install step (ADR-019,
-  ADR-027, ADR-052). Verified by asking Docker, not by trusting the flag.
+  to it is sent from inside; `sv` opens no network connection of its own, with three exceptions, drawn and listed in
+  [The fence](#the-fence-what-can-reach-the-internet-and-what-turns-it-on) below (ADR-019, ADR-027, ADR-052,
+  ADR-111). Verified by asking Docker, not by trusting the flag.
 - **What `sv` writes into somebody's folder** is the report folder (the record of the build loop, ADR-076, included),
   `security-notes.md`, its section of `AGENTS.md`, and, when the owner runs `sv review` at their own terminal, what
   they recorded and its seal in `stackvet.toml` and seal lines in `design-decisions.md`; nothing else (ADR-017, with
   its Later entry of 5 October 2026); never through a link.
 - **Every decision has a record** in the same pull request, and the "Decision records" check holds it (`docs/adr/README.md`).
+
+## The fence: what can reach the internet, and what turns it on
+
+This is the one place the network rule is written out in full; every other page says it in a sentence and links here.
+`sv` opens no network connection of its own, with **three exceptions**. Two are off until the person turns them on by
+name; the third is on unless they turn it off. The app being checked has no way out at all.
+
+```text
+                                          the internet
+          ▲                         ▲                              ▲
+          │ 1. sv probe <address>   │ 2. install = true            │ 3. outside tools,
+          │    (asked for by name)  │    (asked for by name)       │    unless --no-tools
+          │                         │                              │    (on by default)
+ ┌────────┴─────────────────────────┴──────────────────────────────┴───────────────────┐
+ │ this computer                                                                       │
+ │                                                                                     │
+ │   sv ─── curl, to the address typed      install container      Semgrep (or         │
+ │      ─── one DNS question about it       (Docker's python or    Opengrep) fetching  │
+ │                                          node image; sees the   its rule packs      │
+ │                                          dependency files only, from semgrep.dev    │
+ │                                          never the code)                            │
+ │                                                                                     │
+ │   ┌─ the fence: a Docker network made for the run, with no gateway ──────────────┐  │
+ │   │                                                                              │  │
+ │   │   ┌───────────────────────────┐        ┌──────────────────────────────────┐  │  │
+ │   │   │ the app's container       │ ◄───── │ the sidecar: every request sv    │  │  │
+ │   │   │ folder read-only,         │        │ sends to the app starts here     │  │  │
+ │   │   │ every capability dropped, │        └──────────────────────────────────┘  │  │
+ │   │   │ no keys but placeholders  │                                              │  │
+ │   │   └───────────────────────────┘        the stand-ins, when the run needs     │  │
+ │   │                                        them: mail catcher, test sign-in      │  │
+ │   │                                        provider, test model, name server,    │  │
+ │   │                                        headless browser                      │  │
+ │   └──────────────────────────────────────────────────────────────────────────────┘  │
+ └─────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| | What turns it on | What leaves this computer | Where it is held |
+|---|---|---|---|
+| 1 | `sv probe <address>`, typed by the person: **off** until asked for | At most four read-only requests through `curl` to the public address typed (five with `--api`), and one question to this computer's own DNS resolver about that name | ADR-027 |
+| 2 | `install = true` under `[stack.run]`: **off** until asked for | The app's packages, downloaded from PyPI or npm before the run, in a container of its own that sees only the dependency files, never the app's code or its `.env`, and runs none of the packages' own install code; the report says when it did | ADR-052 |
+| 3 | The outside tools, which `sv report` and `sv bundle` run: **on** unless `--no-tools` | Semgrep (or Opengrep in its place) fetches its rule packs from semgrep.dev every time it runs, with its usage reporting off; nothing of the app's is sent. gosec is started so that it cannot download the app's modules | ADR-111 |
+
+Two more things are worth knowing, though neither is `sv` opening a connection. `sv run` (and `sv report --run`)
+starts containers, and Docker itself downloads any image it does not have yet. And the advisory data is something the
+person downloads and points `sv` at; `sv` never fetches it. The MCP server opens no connection and runs none of the
+outside tools.
+
+The fence is checked, not assumed: `sv run` asks Docker whether the network it made has a gateway and refuses to run
+if it does (`crates/sv-run/src/docker.rs`, ADR-019). A report that reached the internet any other way is a
+vulnerability in `sv` (`SECURITY.md`).
 
 ## Where to look
 
