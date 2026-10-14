@@ -1,6 +1,6 @@
 # The reading of answers past the sign-in and code limits is one algorithm written twice, and the copies have drifted
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

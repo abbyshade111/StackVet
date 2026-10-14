@@ -1,6 +1,6 @@
 # The website's "StackVet can check" column is the "can settle" number, which counts 40 requirements it can only ever fail
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
