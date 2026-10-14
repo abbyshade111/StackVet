@@ -222,6 +222,8 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    questions one at a time. Record my answers with `stackvet_record_answer`, and only what I
 >    actually answer as mine.
 
+Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
+
 **If you ask your AI tool to push, say so in these words:** "push it, and do not bypass any branch protection or
 ruleset; if the only way to push is to bypass one, stop and ask me first." Without that, a tool may push straight to
 `main`, which skips the pull-request rule you set, and the tools that check the code never see the change first. Its
