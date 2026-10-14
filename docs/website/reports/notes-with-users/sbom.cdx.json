@@ -1,0 +1,210 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": [
+      {
+        "vendor": "StackVet",
+        "name": "sv"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "app:Notes with users",
+      "name": "Notes with users"
+    },
+    "properties": [
+      {
+        "name": "securevibe:complete",
+        "value": "true"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "container",
+      "bom-ref": "image:python:3.12-slim",
+      "name": "python",
+      "version": "3.12-slim",
+      "properties": [
+        {
+          "name": "securevibe:source",
+          "value": "stackvet.toml, `[stack.run]` image: the image sv starts the app in"
+        },
+        {
+          "name": "securevibe:digest",
+          "value": "not read: the app was not started here, so which build of this tag it is is not known"
+        }
+      ]
+    },
+    {
+      "type": "platform",
+      "bom-ref": "python",
+      "name": "python",
+      "version": "3.12",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "the tag of the image stackvet.toml starts the app in, python:3.12-slim: the version it names, not one read from the running app"
+        },
+        {
+          "name": "securevibe:modules",
+          "value": "the modules of python's own library the app's code imports, read from its import lines: 10, listed under this component"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "python/datetime",
+          "name": "datetime",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/hashlib",
+          "name": "hashlib",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/hmac",
+          "name": "hmac",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/html",
+          "name": "html",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/http.cookies",
+          "name": "http.cookies",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/http.server",
+          "name": "http.server",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/os",
+          "name": "os",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py, seed.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/secrets",
+          "name": "secrets",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py, seed.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/sqlite3",
+          "name": "sqlite3",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/urllib.parse",
+          "name": "urllib.parse",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "app.py"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
