@@ -83,7 +83,15 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
         ),
         (
             "never by = owner",
-            "Never mark a check by hand as done, or write `by = \"owner\"`",
+            "Never mark a check by hand as done yourself, and never write `confirmed` or `by = \"owner\"`",
+        ),
+        // Backlog 0547, the owner's choice of 14 October 2026 (B): in the trial Antigravity wrote twelve
+        // `confirmed` blocks of its own and VS Code marked a check done with `by = "ai-tool"`. The tool still writes a
+        // hand check the person made, as a proposal for `sv review`, since that is the only way one is recorded.
+        (
+            "write a hand check only for one the person made",
+            "Write a `[checked-by-hand]` entry only for a check I made and described to you, with `by = \"ai-tool\"` \
+             and my words in `how`.",
         ),
         ("never secure", "Never tell me the app is secure"),
     ] {
