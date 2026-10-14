@@ -59,12 +59,48 @@ pub struct ProbeResponse {
 
 impl ProbeResponse {
     pub fn header(&self, name: &str) -> Option<&str> {
-        let name = name.to_lowercase();
-        self.headers
-            .iter()
-            .find(|(k, _)| *k == name)
-            .map(|(_, v)| v.as_str())
+        header_in(&self.headers, name)
     }
+}
+
+/// The value of the header `name` among `headers`, whose names are lowercased, in whatever case `name` is asked for.
+/// Read in one place for the running app's answers and the live site's (backlog 0461).
+pub fn header_in<'a>(headers: &'a [(String, String)], name: &str) -> Option<&'a str> {
+    let name = name.to_lowercase();
+    headers
+        .iter()
+        .find(|(k, _)| *k == name)
+        .map(|(_, v)| v.as_str())
+}
+
+/// A response's status line and `name: value` headers, the names lowercased: the status is `None` when no status
+/// line could be read. When there is more than one status line (a redirect followed, a `100 Continue`), the last is
+/// the one that answered, and only its headers are kept. A proxy's own answer to `CONNECT` ("Connection
+/// established") is not a response from the site: counting it would make the site's headers vanish when they arrive
+/// before it, which was found by running behind one. Read in one place for curl's `--head` output and the sidecar's
+/// raw answers (backlog 0461).
+pub fn read_head(text: &str) -> (Option<u16>, Vec<(String, String)>) {
+    let mut status = None;
+    let mut headers = Vec::new();
+    for line in text.lines() {
+        let line = line.trim_end();
+        if let Some(rest) = line.strip_prefix("HTTP/") {
+            if line.to_ascii_lowercase().contains("connection established") {
+                continue;
+            }
+            if let Some(code) = rest.split_whitespace().nth(1)
+                && let Ok(n) = code.parse::<u16>()
+            {
+                status = Some(n);
+                headers.clear();
+            }
+            continue;
+        }
+        if let Some((name, value)) = line.split_once(':') {
+            headers.push((name.trim().to_lowercase(), value.trim().to_owned()));
+        }
+    }
+    (status, headers)
 }
 
 /// A path that will not exist, to see what the app says when something goes wrong.
@@ -2457,6 +2493,9 @@ fn csp_reporting(answers: &[&ProbeResponse]) -> Option<Finding> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod read_head_tests;
 
 #[cfg(test)]
 mod quoted_tests;

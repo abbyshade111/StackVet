@@ -361,13 +361,11 @@ pub fn redact_around_markers(rules: &SecretRules, text: &str) -> (String, usize)
 
 /// `text`, cut at `KEPT_CHARS` characters with how many more there were said, counting a cut.
 fn bounded(text: String, cuts: &std::cell::Cell<usize>) -> String {
-    let n = text.chars().count();
-    if n <= KEPT_CHARS {
+    if text.chars().count() <= KEPT_CHARS {
         return text;
     }
     cuts.set(cuts.get() + 1);
-    let head: String = text.chars().take(KEPT_CHARS).collect();
-    format!("{head}… ({} more characters)", n - KEPT_CHARS)
+    sv_check::text::cut_with_count(&text, KEPT_CHARS)
 }
 
 /// `value` with `each` applied to every string in it, keys included, and every list cut at

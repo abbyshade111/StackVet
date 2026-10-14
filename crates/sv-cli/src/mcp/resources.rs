@@ -344,14 +344,4 @@ pub(super) fn path_text_from_uri(uri: &str, windows: bool) -> Option<String> {
     }
 }
 
-/// Whether two looks at a path saw the same file.
-#[cfg(unix)]
-pub(super) fn same_file(a: &std::fs::Metadata, b: &std::fs::Metadata) -> bool {
-    use std::os::unix::fs::MetadataExt;
-    a.dev() == b.dev() && a.ino() == b.ino()
-}
-
-#[cfg(not(unix))]
-pub(super) fn same_file(a: &std::fs::Metadata, b: &std::fs::Metadata) -> bool {
-    a.len() == b.len() && b.is_file()
-}
+pub(super) use crate::report_lock::same_file;
