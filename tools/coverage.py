@@ -1283,6 +1283,15 @@ def main():
       f"ASVS requirements can be settled. {len(only_tools)} can be settled only by an outside tool, "
       "almost all by semgrep and CodeQL, and only for the languages their rules are written for.\n")
 
+    # ---- AISVS by level, so a count on the ASVS basis (levels 1 and 2) can be read for AISVS too (backlog 0433)
+    w("## AISVS 1.0 by level\n")
+    w("| Level | Requirements | Can settle | Can be credited |")
+    w("|---|---|---|---|")
+    for level in sorted({v["level"] for v in aisvs.values()}):
+        reqs = [q for q, v in aisvs.items() if v["level"] == level]
+        w(f"| L{level} | {len(reqs)} | {sum(settles(q) for q in reqs)} | {sum(credited(q) for q in reqs)} |")
+    w("")
+
     # ---- semgrep rules in the map that no pack it runs loads
     packs = load(ROOT / "data/semgrep-packs.json")["packs"]
     when = semgrep_packs(next(a for a in load(ROOT / "data/adapters.json")["adapters"]
