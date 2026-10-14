@@ -1,6 +1,6 @@
 # One missing header marks all four header requirements *needs attention*, and one missing cookie attribute marks both cookie requirements
 
-**Status:** claimed by honesty, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

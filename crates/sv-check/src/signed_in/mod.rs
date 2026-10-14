@@ -2473,6 +2473,8 @@ mod check_guard_tests;
 #[cfg(test)]
 mod email_role_tests;
 #[cfg(test)]
+mod failing_requirements_tests;
+#[cfg(test)]
 mod fake_app;
 #[cfg(test)]
 mod in_part_tests;
