@@ -567,9 +567,7 @@ than a dozen of its own files (the security standards and its rules). The instal
 the script put beside it, so moving, renaming, or deleting the folder you built it in does not stop it.
 Use `~/.local/bin/sv` wherever a full path is asked for, as in your AI tool's settings; it stays the same
 when you build again. A copy of the program on its own, without its `data` folder beside it, falls back to
-the folder it was built in; once that is gone, it cannot find those files and says where it looked. Before 5 October 2026 the guide had you use the program in
-the build folder; if your `PATH` or your AI tool's settings name `…/stackvet/target/release/sv`, change
-them to `~/.local/bin/sv`.
+the folder it was built in; once that is gone, it cannot find those files and says where it looked.
 
 **The build folder can be deleted.** Building leaves a folder named `target` inside `~/stackvet`, of 1 to 7 GB,
 which the installed copy does not use. To get the space back:
@@ -641,3 +639,9 @@ does not touch the copy you are using.
 Found in the first real build. Each is an item under `docs/backlog/`. The two listed here before, a rate limiter
 counted as a public API and security notes the AI tool wrote counted as yours, were fixed on
 27 September 2026. Nothing from that build is known to be open.
+
+## If you set StackVet up before 5 October 2026
+
+The guide had you use the program in the build folder then. If your `PATH` or your AI tool's settings name
+`…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`, the installed copy, which keeps working when the
+build folder moves or goes.
