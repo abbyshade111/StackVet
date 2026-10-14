@@ -81,8 +81,8 @@ It prints the settings and the name of the file they go in, and writes nothing. 
 
 **On Windows, the Docker settings do not work yet:** `sv connect --docker` takes only a Mac or Linux path for
 Docker. Install StackVet with Scoop instead ("On Windows: Scoop", in section 6), and in the app's folder, in
-PowerShell, run `stackvet connect claude` (or `vscode`, or `cursor`). Its settings start the installed copy, with no
-Docker; the checks that read your code need none. Not yet tried by hand; the checks that start your app, not at all
+PowerShell, run `stackvet connect claude` (or `vscode`, or `cursor`). Its settings start the installed copy, without
+Docker. Not yet tried by hand; the checks that start your app, not at all
 (section 6).
 
 ### Claude (the desktop app and Claude Code)
@@ -327,7 +327,7 @@ the app is started. That is honest, not a pass.
 Those checks need `sv report --run` at a terminal, with StackVet installed directly on your computer
 rather than in Docker, because starting your app means starting containers of its own. On Windows that is a
 download, installed with Scoop, though these checks are untried on Windows: a Mac or Linux computer is the known way.
-On a Mac or Linux it means building StackVet, which Homebrew does for you. The steps, and how to keep it up to date,
+On a Mac or Linux it means building StackVet, which Homebrew does for you. The steps, and updates,
 are on [Installing StackVet on your computer](INSTALL.md).
 
 If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in

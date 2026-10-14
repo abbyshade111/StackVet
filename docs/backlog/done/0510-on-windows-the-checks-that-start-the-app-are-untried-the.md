@@ -30,7 +30,7 @@ Docker Desktop running; without them the report says which requirements only the
 cloud runner, is the known way. It counts as nothing missing, and `stackvet_status` says the same. The setup page's
 "On Windows" section opens with that sentence in place of "needed later only"; the Windows prompt has a step 11 in
 which the AI tool tells the person and does not promise the full report; prompt 6 says it first on Windows. The guide's
-step 3 and section 6 say it in fewer words (the guide stays at 4,199 of its 4,200), and its install step no longer
+step 3 and section 6 say it in fewer words (the guide stays under its 4,200 words), and its install step no longer
 tells a Windows user to install Docker Desktop for a route that does not work there. ADR-108 has a Later entry. Tests:
 `doctor/windows_tests.rs` and `tests/windows_run_untried.rs`, broken on purpose four ways (the prompt's promise
 softened, the page's sentence turned into a claim it works, the guide's sentence dropped, the doctor line switched
