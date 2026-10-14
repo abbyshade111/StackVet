@@ -1,6 +1,6 @@
 # Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name
 
-**Status:** partly done: part 3 (CodeQL's name: GitHub's logo policy to read before launch) waits on the owner
+**Status:** done, 14 October 2026
 
 From backlog 0374 (14 October 2026), which read every credited tool's and data source's license from its source and
 wrote each beside its credit in `docs/website/home-page.md`. These three need the owner's judgment; the rest do not.
@@ -36,7 +36,8 @@ stays open until these are answered.
    enough, or does the owner want GitHub's Logos and Usage Policy read first? Suggestion: read it before launch;
    naming a tool one runs is what credits do, and no logo is used.
    **The owner read a CodeQL licence, 14 October 2026:** the MIT License (copyright 2006-2025 GitHub, Inc.), which is the licence of `github/codeql`, the queries and libraries. The clause quoted above is from the GitHub CodeQL Terms and Conditions on `github/codeql-cli-binaries`, the command-line program `sv` runs, which are not MIT (and are why 0415 limits CodeQL to the uses they allow). MIT grants no trademark right either, so the naming question stands as written: read GitHub's Logos and Usage Policy before launch; the credits name the tool and its maker and use no logo.
-   **Part status:** open
+   **The owner's decision, 14 October 2026:** the owner read GitHub's Logos and Usage Policy; naming CodeQL and GitHub in the credits, as the tool and its maker, with no logo and the line that StackVet is not made by or endorsed by GitHub, is fine. The owner also read the GitHub CodeQL Terms and Conditions in full the same day: the uses they allow are the ones 0415 names when a person turns CodeQL on, and StackVet ships none of the program.
+   **Part status:** done, 14 October 2026
 
 - How verified: read from each source on 14 October 2026; the Semgrep Rules License's own page not read (above).
 - Needs a decision record?: yes for 1 and 2, a Later entry on ADR-018 with the owner's answer.
