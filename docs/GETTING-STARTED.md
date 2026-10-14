@@ -16,9 +16,12 @@ It takes about fifteen minutes to set up, once. A word here you do not know is p
 **Or let your AI coding tool do steps 1 to 3.** [The setup prompts](prompts/setup.md) are for someone who has used
 an AI chat but never built an app with one. Copied into your AI coding tool one at a time, they have it look at your
 computer, help you install what is missing, fetch StackVet (on Windows, install it with Scoop), and write the settings
-file with the paths already filled in, asking you before it installs or changes anything outside the folder. They
-are new and have not yet been tried in any AI coding tool, so the steps below are still the way that is known to
-work.
+file with the paths already filled in, asking you before it installs or changes anything outside the folder.
+**Tried so far:** in Antigravity, on a Mac, on 13 October 2026, with the Gemini 3.8 Flash model. The setup worked. The
+build that followed went badly: the AI tool made choices it should have asked you about and said "done" for checks
+nobody had made. The prompts are being changed for that, and until the changes are tried, the setup page does not
+recommend Antigravity with that model. They have not yet been tried in Claude Code, Cursor, or VS Code. The steps
+below do the same setup by hand, as commands.
 
 ## What StackVet will and will not tell you
 
