@@ -49,6 +49,7 @@ pub mod install;
 pub mod name_server;
 pub mod resources;
 pub mod stand_ins;
+pub mod start_settings;
 
 /// Why the app could not be run. Every one of these produces `not assessed`.
 #[derive(Debug, Clone, PartialEq, Eq)]
