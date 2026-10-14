@@ -35,7 +35,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 174 (50%) | 122 (35%) | 9 | 162 |
+| OWASP ASVS 5.0 | 345 | 174 (50%) | 121 (35%) | 9 | 162 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -47,10 +47,10 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 21 | 3 |
-| L2 | 183 | 95 | 69 | 24 | 0 | 21 | 47 | 28 | 2 |
+| L2 | 183 | 95 | 68 | 24 | 0 | 21 | 47 | 28 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 |
 
-52 of the 174 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+53 of the 174 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 With nothing beyond plain `sv check`, 45 ASVS requirements can be settled. 25 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for.
 
@@ -77,7 +77,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V9 Self-contained Tokens | 7 | 5 | 3 | 0 | 2 |
 | V10 OAuth and OIDC | 36 | 8 | 6 | 0 | 28 |
 | V11 Cryptography | 24 | 11 | 7 | 0 | 13 |
-| V12 Secure Communication | 12 | 9 | 7 | 1 | 2 |
+| V12 Secure Communication | 12 | 9 | 6 | 1 | 2 |
 | V13 Configuration | 21 | 10 | 3 | 1 | 10 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 7 |
 | V15 Secure Coding and Architecture | 21 | 12 | 7 | 0 | 9 |
@@ -283,7 +283,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V11.2.3 | L2 | Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` |
 | V11.3.4 | L3 | Outside tools: `gosec`, `semgrep` (gosec only ever as a finding: `G407`; semgrep only ever as a finding: `gcm-nonce-reuse`, `openssl-cbc-static-iv`) |
 | V11.4.3 | L2 | Outside tools: `semgrep` |
-| V12.1.2 | L2 | Outside tools: `semgrep` |
+| V12.1.2 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `no-set-ciphers`, `tls-with-insecure-cipher`) |
 | V12.3.1 | L2 | Outside tools: `semgrep` |
 | V12.3.3 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `grpc-client-insecure-connection`, `grpc-nodejs-insecure-connection`, `grpc-server-insecure-connection`) |
 | V15.3.5 | L2 | Outside tools: `codeql-javascript` |
