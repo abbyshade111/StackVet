@@ -27,7 +27,7 @@ fn line(time: &str, tool: &str) -> Line {
 }
 
 fn record_file(dir: &Path) -> PathBuf {
-    sv_scan::ecosystems::default_report_dir_in(dir).join(sv_scan::ecosystems::BUILD_LOOP_RECORD)
+    sv_scan::ecosystems::build_loop_record_in(dir)
 }
 
 /// Three calls, written through the record as the server writes them.

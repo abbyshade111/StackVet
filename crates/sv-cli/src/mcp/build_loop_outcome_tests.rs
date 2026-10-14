@@ -6,14 +6,11 @@ use super::tests::{call, scratch_app, text};
 use super::*;
 
 fn record(app: &Path) -> Vec<Value> {
-    std::fs::read_to_string(
-        sv_scan::ecosystems::default_report_dir_in(app)
-            .join(sv_scan::ecosystems::BUILD_LOOP_RECORD),
-    )
-    .unwrap_or_default()
-    .lines()
-    .map(|l| serde_json::from_str(l).unwrap())
-    .collect()
+    std::fs::read_to_string(sv_scan::ecosystems::build_loop_record_in(app))
+        .unwrap_or_default()
+        .lines()
+        .map(|l| serde_json::from_str(l).unwrap())
+        .collect()
 }
 
 fn page(app: &Path) -> String {

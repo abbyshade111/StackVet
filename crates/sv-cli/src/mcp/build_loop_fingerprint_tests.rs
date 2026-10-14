@@ -96,11 +96,7 @@ fn the_report_counts_findings_gone_set_aside_and_new_between_the_first_check_and
     assert_eq!(checked["isError"], false, "{}", text(&checked));
 
     // The record keeps hashes only: no finding's words.
-    let record = std::fs::read_to_string(
-        sv_scan::ecosystems::default_report_dir_in(&app)
-            .join(sv_scan::ecosystems::BUILD_LOOP_RECORD),
-    )
-    .unwrap();
+    let record = std::fs::read_to_string(sv_scan::ecosystems::build_loop_record_in(&app)).unwrap();
     assert!(record.contains(&redirect), "{record}");
     assert!(!record.contains("redirect("), "{record}");
 

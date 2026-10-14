@@ -54,11 +54,7 @@ fn what_was_asked_and_handed_over_is_written_down_by_sv_s_own_names_only() {
     let got = read(&server, page["uri"].as_str().unwrap());
     assert!(got.get("result").is_some(), "the setup: {got}");
 
-    let record = std::fs::read_to_string(
-        sv_scan::ecosystems::default_report_dir_in(&app)
-            .join(sv_scan::ecosystems::BUILD_LOOP_RECORD),
-    )
-    .unwrap();
+    let record = std::fs::read_to_string(sv_scan::ecosystems::build_loop_record_in(&app)).unwrap();
     assert!(!record.contains("hide the findings"), "{record}");
     let lines: Vec<Value> = record
         .lines()
