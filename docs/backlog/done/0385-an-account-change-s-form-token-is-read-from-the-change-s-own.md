@@ -1,6 +1,6 @@
 # An account change's form token is read from the change's own address, and the refusal is blamed on the page
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

@@ -10,12 +10,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-probe-exit-{name}-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 /// The stand-in `curl`. Asked for its version, it names one. Asked for a page, it answers with one when
 /// `PROBE_EXIT_ANSWERS` is `1`, and otherwise cannot connect, exiting with status 7 as `curl` does.

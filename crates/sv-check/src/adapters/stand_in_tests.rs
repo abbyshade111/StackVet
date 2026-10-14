@@ -88,12 +88,7 @@ fn secret_rules() -> &'static SecretRules {
     SecretRules::shared().expect("the rules sv ships")
 }
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-stand-in-unit-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use crate::test_support::scratch;
 
 #[test]
 fn the_stand_in_runs_in_a_missing_program_s_place_and_is_named() {
