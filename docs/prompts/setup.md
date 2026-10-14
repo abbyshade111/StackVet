@@ -259,7 +259,7 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 <!-- setup-step-6:start -->
 > I'd like the full StackVet report for this app: the one that starts the app in its own container, with no
 > internet, and runs the security tools each language has. Your `stackvet_` tools can't make it: it is made at the
-> terminal, by StackVet installed on this computer itself. StackVet's guide on GitHub (`docs/GETTING-STARTED.md`, the
+> terminal, by StackVet installed on this computer itself. StackVet's page on GitHub (`docs/INSTALL.md`, the
 > section "Installing StackVet on your computer, for `--run`") says how. Walk me through it one step at a time, and
 > ask me before you install, update, or run anything.
 >

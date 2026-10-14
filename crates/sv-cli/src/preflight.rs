@@ -755,7 +755,7 @@ fn build_installs(manifest: &Manifest) -> Option<Item> {
             sv("The build step ("),
             app(format!("`{build}`")),
             sv(format!(
-                ") runs `{found}`, which downloads packages. The build step runs inside the fence, where nothing can be downloaded and nothing outside /tmp written, so it fails there. Two ways work: `install = true` under [stack.run] has `sv` install the packages in requirements.txt or package.json before the run, outside the fence; or build an image of your own that already holds them and name it in `image` (docs/GETTING-STARTED.md, \"An image of your own\")."
+                ") runs `{found}`, which downloads packages. The build step runs inside the fence, where nothing can be downloaded and nothing outside /tmp written, so it fails there. Two ways work: `install = true` under [stack.run] has `sv` install the packages in requirements.txt or package.json before the run, outside the fence; or build an image of your own that already holds them and name it in `image` (docs/INSTALL.md, \"An image of your own\")."
             )),
         ],
     ))
