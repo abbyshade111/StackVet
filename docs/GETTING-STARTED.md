@@ -337,7 +337,9 @@ Each requirement in it has one of these words, strongest first:
 - *not verified*: nothing speaks to it yet.
 
 None of them means "passed": even *checked* means one check found nothing wrong, not that the whole requirement
-is met.
+is met. Only StackVet's own checks can make a requirement *checked*; your word counts once you record it with
+`sv review`, and the tool's word counts least. [A picture of the nine](ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first)
+shows who can grant each.
 
 If you later run StackVet in an automatic check (CI) whenever the code changes, the number it ends with
 says what happened. 0: it finished. 2: some check could not run, such as a file it could not read or a

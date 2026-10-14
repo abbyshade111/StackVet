@@ -70,21 +70,45 @@ it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a 
 
 What a requirement that applies is called in a report (`crates/sv-report/src/lib.rs`, `Status`), decided by
 `status_of` from its findings and the tiers of its credits: a finding beats every credit, and otherwise the strongest
-tier there decides.
+tier there decides. This is the one drawing of them; the README, the guide, and the glossary link here. Who can grant
+each tier is the whole reason `sv review` exists, and why the AI coding tool's word ranks last.
 
-| Status | Means |
-|---|---|
-| needs attention | A check found something and named this requirement. |
-| checked | A check of `sv`'s own ran and was satisfied. One automated check, never a pass. |
-| checked in part | Every check behind it tried only part of what it asks (ADR-053). |
-| tested by the app's own tests | The app's tests name the requirement, in code, and passed (ADR-050). The tool wrote both the test and the command. |
-| documented by the owner | The owner answered its question in the security notes, recorded through `sv review`. A decision, not a reading of the code. |
-| checked by hand by the owner | The owner watched the app behave and recorded what they saw. |
-| attested by the owner | The owner answered `yes` to a design question. Asserting a property is not the property. |
-| stated by the AI coding tool | The tool answered, or nobody recorded that the owner did: the author grading its own work. |
-| not verified | Nothing produced evidence either way. The honest default, and the common one. |
+```text
+  strongest                                                    who can grant it
+ ┌──────────────────────────────────────┐
+ │ needs attention                      │  a check sv runs, its own or an outside tool's, finding a problem
+ │ checked                              │  a check of sv's own, satisfied
+ │ checked in part                      │  a check of sv's own that tried only part of what is asked
+ ├──────────────────────────────────────┤  ── nothing below this line is ever checked, or counts toward a threat
+ │ tested by the app's own tests        │  the app's tests, run when sv starts the app
+ │ documented by the owner              │  the owner, at their own terminal, through sv review
+ │ checked by hand by the owner         │  the owner, at their own terminal, through sv review
+ │ attested by the owner                │  the owner, at their own terminal, through sv review
+ │ stated by the AI coding tool         │  the AI coding tool, or an owner's entry never recorded through sv review
+ │ not verified                         │  nobody: nothing produced evidence either way
+ └──────────────────────────────────────┘
+  weakest
 
-Nothing below *checked* ever becomes *checked*, settles a threat, or leaves the list of tests to write.
+  Not a tier: "does not apply" (left out of the app's requirements) and "not assessed" (a check that could not run,
+  or a question nobody answered); neither is a pass, and neither is a failure.
+```
+
+| Status | Means | Who can grant it |
+|---|---|---|
+| needs attention | A check found something and named this requirement. | A check `sv` runs, its own or an outside tool's |
+| checked | A check of `sv`'s own ran and was satisfied. One automated check, never a pass. | A check of `sv`'s own |
+| checked in part | Every check behind it tried only part of what it asks (ADR-053). | A check of `sv`'s own |
+| tested by the app's own tests | The app's tests name the requirement, in code, and passed (ADR-050). The tool wrote both the test and the command. | The app's tests, run when `sv` starts the app (`sv run`, `sv report --run`) |
+| documented by the owner | The owner answered its question in the security notes, recorded through `sv review`. A decision, not a reading of the code. | The owner, through `sv review` |
+| checked by hand by the owner | The owner watched the app behave and recorded what they saw. | The owner, through `sv review` |
+| attested by the owner | The owner answered `yes` to a design question. Asserting a property is not the property. | The owner, through `sv review` |
+| stated by the AI coding tool | The tool answered, or nobody recorded that the owner did: the author grading its own work. | The AI coding tool |
+| not verified | Nothing produced evidence either way. The honest default, and the common one. | Nobody |
+
+Nothing below *checked in part* is ever *checked*, and none of it counts toward a threat (`threats.rs`). An answer of
+the tool's that the owner confirmed through `sv review` keeps its tier and says so ("confirmed through sv review").
+*Attested*, *checked by hand*, *stated*, and *not verified* stay on the list of tests to write, unless no test could
+show the requirement or a test already names it: a person's word never retires a test (`lib.rs`, `tests_to_write`).
 
 ## The five kinds of rule, and where a new one goes
 
