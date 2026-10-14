@@ -18,3 +18,5 @@ Found 14 October 2026 by session wording, building backlog 0403. Severity: unkno
   own such as a rich-text editor), with `ai` as one of the rules that turns them on. That changes what applies, so it
   is a decision with a record of its own, and the citation's text should be read first.
 - How verified: read the two rules and their reasons; not read against the ASVS text yet.
+
+**The owner's answer, 14 October 2026** (asked by session wording through the board's waiting line): A. A new capability in `stackvet.toml`, `rich-text`, asked like the others: unanswered, V1.3.1 and V1.3.5 are not assessed (silence is not a no, ADR-015); yes, or an AI feature, makes them apply. A decision record of its own, proposed in this item's build and accepted in its pull request, since it changes which requirements apply.
