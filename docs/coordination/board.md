@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0504, 0506, 0232
-- wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401, 0412, 0503, 0505
-- documentation — arm: full — holds: 0370 (since 2026-10-14) — next: 0510, 0512
+- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0232
+- wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401, 0503, 0505
+- documentation — arm: full — holds: 0510 (since 2026-10-14) — next: 0512
 
 ## Queue
 
@@ -35,6 +35,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 21. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
 22. 0513 Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name — hold: the owner's three licence judgments; ADR-018 Later with the answers
 23. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
+24. 0515 Score the second loop trial's builds again for the typed-text forms, on the owner's computer — hold: the owner's own computer holds the loop trial's builds; a few minutes at the terminal when convenient
 
 ## Log
 
@@ -403,3 +404,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 11:50 — queued 0513, on hold: the owner's three licence judgments; ADR-018 Later with the answers, marked
 - 2026-10-14 11:50 — queued 0514, on hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository, marked
 - 2026-10-14 11:50 — assigned 0512 to documentation (full) as next: left from 0473: the guide's first three steps lead with the AI tool doing them; its condition (0428) is done; same lane as 0510 for the guide
+- 2026-10-14 12:20 — finished 0370 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1899; now holds 0510
+- 2026-10-14 12:20 — finished 0412 by wording (full): https://github.com/abbyshade111/StackVet/pull/1896; from its lane, behind 0372
+- 2026-10-14 12:20 — finished 0504 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1902; from its lane, behind 0508
+- 2026-10-14 12:20 — finished 0506 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1903; from its lane, behind 0508
+- 2026-10-14 12:20 — queued 0515, on hold: the owner's own computer holds the loop trial's builds; a few minutes at the terminal when convenient, marked
