@@ -521,7 +521,20 @@ def rust_code():
         for m in re.finditer(r"#\[cfg\(test\)\]\s*(?:pub(?:\([^)]*\))?\s+)?mod\s+(\w+)\s*;", path.read_text(encoding="utf-8")):
             test_only.add(folder / f"{m.group(1)}.rs")
             test_only.add(folder / m.group(1) / "mod.rs")
-    return [(p, p.read_text(encoding="utf-8").split("#[cfg(test)]")[0]) for p in paths if p not in test_only]
+    return [(p, shipped(p.read_text(encoding="utf-8"))) for p in paths if p not in test_only]
+
+
+# `#[cfg(test)]` before a module of tests kept in a file of its own (`mod name;`, with or without
+# `#[path = "..."]`) declares that file; it does not start the test code of this one.
+TEST_MODULE_DECLARED = re.compile(r'#\[cfg\(test\)\]\s*(?:#\[path\s*=\s*"[^"]*"\]\s*)?(?:pub(?:\([^)]*\))?\s+)?mod\s+\w+\s*;')
+
+
+def shipped(code):
+    """`code` up to its first `#[cfg(test)]` that is not a test module's declaration."""
+    at = code.find("#[cfg(test)]")
+    while at >= 0 and TEST_MODULE_DECLARED.match(code, at):
+        at = code.find("#[cfg(test)]", at + 1)
+    return code if at < 0 else code[:at]
 
 
 def check_words():
@@ -592,6 +605,101 @@ FINDINGS_ONLY = defaultdict(set)
 # a pinned lockfile and a complete bill of materials are the inventory, and the repositories are not read
 # (backlog 0307).
 RUST_IN_PART |= {"config.versions-pinned", "sbom"}
+# Backlog 0430: every other check whose each credit is marked in part where it is made (`.in_part()`, or
+# `.in_part_if` on a condition that always holds for it), each with its reason beside that credit in the code.
+# Until then they were printed as able to mark a requirement *checked*. `--credits` holds this list to the
+# suite: a check it saw credit only in part must be here, and one it saw credit whole once must not.
+RUST_IN_PART |= {
+    "config.gitignore-covers-env",
+    "config.secrets-file-committed",
+    "probe.action-done-twice",
+    "probe.ai-agent-unbounded",
+    "probe.ai-call-log-incomplete",
+    "probe.ai-call-log-session",
+    "probe.ai-flagged-reply-shown",
+    "probe.ai-hidden-content-passed",
+    "probe.ai-injection-logged",
+    "probe.ai-injection-unscreened",
+    "probe.ai-instructions-leaked",
+    "probe.ai-mcp-injection-unscreened",
+    "probe.ai-mcp-output-unvalidated",
+    "probe.ai-output-shape-unchecked",
+    "probe.ai-output-unbounded",
+    "probe.ai-rate-unlimited",
+    "probe.ai-service-failure-handled",
+    "probe.ai-tool-reads-others-records",
+    "probe.app-stopped-during-questions",
+    "probe.app-token-alg-none",
+    "probe.app-token-expired-accepted",
+    "probe.app-token-signature-not-checked",
+    "probe.archive-unchecked",
+    "probe.authentication-logged",
+    "probe.breached-password-accepted",
+    "probe.clear-site-data",
+    "probe.common-password-accepted",
+    "probe.context-word-password-accepted",
+    "probe.cookie-without-host-prefix",
+    "probe.cors-any-origin",
+    "probe.create-rate-unlimited",
+    "probe.download-name-injected",
+    "probe.download-unnamed",
+    "probe.email-code-guessing-unlimited",
+    "probe.email-code-long-lived",
+    "probe.email-code-reusable",
+    "probe.email-code-unbound",
+    "probe.error-detail-leak",
+    "probe.failed-sign-ins-unlimited",
+    "probe.fetch-follows-redirect",
+    "probe.file-contents-unchecked",
+    "probe.flow-step-skipped",
+    "probe.graphql-introspection",
+    "probe.graphql-no-amount-limit",
+    "probe.log-common-format",
+    "probe.log-line-metadata",
+    "probe.log-timestamp-zoned",
+    "probe.logout-keeps-session",
+    "probe.mcp-server-origin-unchecked",
+    "probe.mcp-server-takes-unknown-or-oversized-arguments",
+    "probe.mcp-server-takes-wrong-types",
+    "probe.mcp-server-token-unchecked",
+    "probe.mcp-session-survives-end",
+    "probe.no-hsts",
+    "probe.oidc-audience-not-checked",
+    "probe.oidc-issuer-not-checked",
+    "probe.oidc-nonce-not-checked",
+    "probe.oidc-sign-in-from-another-session",
+    "probe.oidc-signature-not-checked",
+    "probe.oidc-user-keyed-on-email",
+    "probe.other-users-data",
+    "probe.oversized-file-accepted",
+    "probe.password-altered",
+    "probe.password-change-ends-sessions",
+    "probe.password-change-notified",
+    "probe.password-change-without-current",
+    "probe.password-composition-rules",
+    "probe.password-field-unmasked",
+    "probe.preflight-skipped",
+    "probe.private-files-served",
+    "probe.retired-grants-offered",
+    "probe.session-cookie-attributes",
+    "probe.session-idle-timeout",
+    "probe.session-lifetime",
+    "probe.session-not-renewed",
+    "probe.session-token-static",
+    "probe.sessions-survive-deletion",
+    "probe.short-password-accepted",
+    "probe.sign-out-control-hidden",
+    "probe.source-control-exposed",
+    "probe.storage-kept-after-sign-out",
+    "probe.totp-old-code-accepted",
+    "probe.totp-reused",
+    "probe.trace-enabled",
+    "probe.upload-not-scanned",
+    "probe.upload-path-traversal",
+    "probe.uploaded-svg-keeps-script",
+    "probe.websocket-origin-unchecked",
+    "probe.websocket-without-session",
+}
 
 IN_PART = set(RUST_IN_PART)
 # Requirement id -> {tool}: tools with some rule a clean run credits to it.

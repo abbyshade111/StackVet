@@ -2399,6 +2399,9 @@ mod quoted_tests;
 mod routes_tests;
 
 #[cfg(test)]
+mod routes_cookie_tests;
+
+#[cfg(test)]
 #[path = "probes_evidence_tests.rs"]
 mod probes_evidence_tests;
 

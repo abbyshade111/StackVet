@@ -2465,6 +2465,8 @@ pub(crate) fn sign_up(
 #[cfg(test)]
 mod account_changes_tests;
 #[cfg(test)]
+mod admin_actions_two_tests;
+#[cfg(test)]
 mod asked_tests;
 #[cfg(test)]
 mod check_guard_tests;
