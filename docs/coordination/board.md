@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468, 0465, 0446, 0388
-- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0395, 0391, 0409, 0386, 0411
-- documentation — arm: full — holds: 0405 (since 2026-10-14) — next: 0400, 0276, 0441, 0483, 0464
+- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468, 0446, 0388, 0463
+- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0409, 0386, 0411, 0459, 0369
+- documentation — arm: full — holds: 0400 (since 2026-10-14) — next: 0441, 0483, 0464, 0407, 0462
 
 ## Queue
 
@@ -30,41 +30,36 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 16. 0372 Each requirement in the report stated in plain language, with checks named in words — ready
 17. 0397 Each question to the owner comes with the code it rests on — ready
 18. 0401 The AI tool tells the person everything it changes, and StackVet shows what changed between checks — ready
-19. 0407 The build prompt and prompt 6 take in what the Antigravity trial showed — ready
-20. 0389 The typed-text check was answered in few of the second loop trial's builds — ready
-21. 0487 A question to the owner carries the lines it rests on: a locator rule and a pointer on every question item — ready
-22. 0456 Three wildcard matchers, two of them in the same crate — ready
-23. 0459 The secret rules are loaded by six separate paths, each with its own story when they cannot be read — ready
-24. 0460 The four-line JSON data-file reader is pasted into every `load` — ready
-25. 0461 Six small pairs that should be one function each — ready
-26. 0462 The test helpers are written once per file: scratch folders in 52 files, the binary runner in 28, and five more — ready
-27. 0463 Two page readers compile a regular expression on every call — ready
-28. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-29. 0274 Read a CodeQL results file from the owner's own CI, credited only for the commit being checked — ready
-30. 0377 One report holds both the running app's findings and the outside tools' — ready
-31. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-32. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
-33. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
-34. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
-35. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
-36. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
-37. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
-38. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
-39. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
-40. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
-41. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
-42. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
-43. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-44. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
-45. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
-46. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
-47. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
-48. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-49. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
-50. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
-51. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
-52. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
-53. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+19. 0389 The typed-text check was answered in few of the second loop trial's builds — ready
+20. 0487 A question to the owner carries the lines it rests on: a locator rule and a pointer on every question item — ready
+21. 0456 Three wildcard matchers, two of them in the same crate — ready
+22. 0460 The four-line JSON data-file reader is pasted into every `load` — ready
+23. 0461 Six small pairs that should be one function each — ready
+24. 0274 Read a CodeQL results file from the owner's own CI, credited only for the commit being checked — ready
+25. 0377 One report holds both the running app's findings and the outside tools' — ready
+26. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+27. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
+28. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
+29. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
+30. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
+31. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
+32. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
+33. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
+34. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
+35. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
+36. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
+37. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
+38. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+39. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
+40. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
+41. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
+42. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
+43. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+44. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
+45. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
+46. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
+47. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
+48. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 
 ## Log
 
@@ -314,3 +309,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 01:51 — assigned 0441 to documentation (full) as next: lane 6 of documentation: the docs index and the move of the dated investigations; the coverage items it waited on are done
 - 2026-10-14 01:51 — assigned 0483 to documentation (full) as next: lane 6 of documentation: the coverage chart generated by coverage.py, same lane as the docs move
 - 2026-10-14 01:51 — assigned 0464 to documentation (full) as next: lane 6 of documentation: tools/ shared helpers (write_text, slug, git) made one
+- 2026-10-14 02:20 — finished 0465 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1826; from its lane, behind 0466
+- 2026-10-14 02:20 — finished 0395 by wording (full): https://github.com/abbyshade111/StackVet/pull/1822; from its lane, behind 0404
+- 2026-10-14 02:20 — finished 0391 by wording (full): https://github.com/abbyshade111/StackVet/pull/1827; from its lane, behind 0404
+- 2026-10-14 02:20 — finished 0405 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1823; now holds 0400
+- 2026-10-14 02:20 — finished 0276 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1825; from its lane, behind 0400
+- 2026-10-14 02:20 — assigned 0463 to honesty (full) as next: lane 6 of honesty: two page readers compile a regex per call (signed_in/mod.rs, owner_field.rs)
+- 2026-10-14 02:20 — assigned 0459 to wording (full) as next: lane 7 of wording: the secret rules loaded by six paths made one (sv-cli lib.rs, main.rs, review.rs; docker.rs)
+- 2026-10-14 02:20 — assigned 0369 to wording (full) as next: lane 7 of wording: small run-speed tidiness (files.rs, script.rs, docker.rs, tech-signatures.json), same lane as 0459 for docker.rs
+- 2026-10-14 02:21 — assigned 0407 to documentation (full) as next: lane 7 of documentation: the build prompt and prompt 6 take in what the Antigravity trial showed (data/prompts.json, docs/prompts)
+- 2026-10-14 02:21 — assigned 0462 to documentation (full) as next: lane 7 of documentation: the test helpers written once per file, shared (sv-cli tests, test_support.rs)

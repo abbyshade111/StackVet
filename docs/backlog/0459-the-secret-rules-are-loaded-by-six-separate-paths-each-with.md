@@ -1,6 +1,6 @@
 # The secret rules are loaded by six separate paths, each with its own story when they cannot be read
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
