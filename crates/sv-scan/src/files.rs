@@ -228,13 +228,15 @@ fn holds_no_written_text(bytes: &[u8]) -> Option<&'static str> {
     // A signature of plain letters (`GIF89a`, `WEBP`, `OTTO`, `wOFF`) can begin a text file too: a
     // `.env` whose first line is `OTTO_API_KEY=…` is not a font (the review of 6 October, item 2).
     // Such a signature counts only in a file that is not text, as every real image and font is not.
-    let is_text = !bytes.contains(&0) && std::str::from_utf8(bytes).is_ok();
+    // Asked only when such a signature matches: `decode` reads the bytes as UTF-8 after this, and every file was read
+    // through twice (backlog 0369).
+    let is_text = || !bytes.contains(&0) && std::str::from_utf8(bytes).is_ok();
     KINDS
         .iter()
         .find(|(magic, at, _)| {
             bytes.get(*at..at + magic.len()) == Some(*magic)
                 && (*magic != b"WEBP" || bytes.starts_with(b"RIFF"))
-                && !(is_text && magic.iter().all(|b| b.is_ascii_graphic()))
+                && !(magic.iter().all(|b| b.is_ascii_graphic()) && is_text())
         })
         .map(|(_, _, what)| *what)
 }
