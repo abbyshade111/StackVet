@@ -55,6 +55,8 @@ pub struct Loaded {
     pub threat_rules: sv_report::threats::ThreatRules,
     pub secret_rules: &'static SecretRules,
     pub ast_rules: ast::AstRules,
+    /// Where in the code a question to the owner is about (backlog 0487): found, never judged.
+    pub locators: sv_check::locate::Locators,
     /// The outside tools `sv` can run, or why `adapters.json` could not be read. Read here once
     /// for a report rather than three times (the review of 8 October 2026, item 7), and kept as a
     /// result rather than failing the load: only `--tools` needs the tools, so a broken file stops
@@ -77,6 +79,9 @@ impl Loaded {
             .with_atlas()?,
             secret_rules: SecretRules::shared().map_err(anyhow::Error::msg)?,
             ast_rules: ast::AstRules::load(&ast_rules_path())?,
+            locators: sv_check::locate::Locators::load(&sv_frameworks::data::file(
+                "locators.json",
+            ))?,
             adapters: sv_check::adapters::Adapters::load(&adapters_path())
                 .map_err(|e| format!("{e:#}")),
         })

@@ -67,6 +67,38 @@ pub struct Item {
     pub route: Route,
     /// For a design question, what its `where` should name. Absent for the other two routes.
     pub where_means: Option<String>,
+    /// Lines of the app's code the question is about, found by a locator (backlog 0487). Where to
+    /// look, never evidence: it changes nothing about the requirement's state. Absent when no locator
+    /// speaks to the question, or one does and found nothing.
+    pub rests_on: Option<RestsOn>,
+}
+
+/// What a question shows of the app's code, and the sentence that says what it is.
+pub const POINTERS_SAY: &str = "These are where to look, not evidence: StackVet found them by their names and did not read what they do.";
+
+/// The most places one question shows; the rest are counted.
+pub const MOST_POINTERS: usize = 3;
+
+/// The places in the app's code a question is about.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct RestsOn {
+    /// What the lines are, in plain words: the locator's own `finds`.
+    pub finds: String,
+    pub places: Vec<Pointer>,
+    /// Places found and not shown.
+    pub more: usize,
+}
+
+/// One place in the app's code.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct Pointer {
+    pub file: String,
+    pub line: usize,
+    /// The line, with the one before and the one after, redacted (`Secret::redact` through
+    /// `secrets::redact_text_in`) and cut to a length a person reads. Never in `report.json`, which
+    /// holds no code of the app's (`Report::code_lines` says the same of a finding's lines).
+    #[serde(skip)]
+    pub lines: Vec<(usize, String)>,
 }
 
 /// What kind of thing would settle this requirement.
@@ -113,6 +145,7 @@ pub fn checklist(
                 where_to_look: section.how_to_find_out.clone(),
                 route: Route::WriteItDown,
                 where_means: None,
+                rests_on: None,
             });
         }
     }
@@ -125,6 +158,7 @@ pub fn checklist(
                 where_to_look: question.how_to_find_out.clone(),
                 route: Route::AnswerInTheManifest,
                 where_means: Some(question.where_means.clone()),
+                rests_on: None,
             });
         }
     }
@@ -137,6 +171,7 @@ pub fn checklist(
                 where_to_look: None,
                 route: Route::GoAndLook,
                 where_means: None,
+                rests_on: None,
             });
         }
     }

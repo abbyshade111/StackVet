@@ -57,8 +57,8 @@ pub fn text(report: &Report) -> String {
     text_with(report, &crate::fence::Fence::none())
 }
 
-/// The same, with the one piece of the app's own text in it, its name, put through `fence`: the
-/// questions and how to ask them are `sv`'s own (deep review R9).
+/// The same, with the app's own text in it, its name and the lines of its code a question is about (backlog 0487),
+/// put through `fence`: the questions and how to ask them are `sv`'s own (deep review R9).
 pub fn text_with(report: &Report, fence: &crate::fence::Fence) -> String {
     let design: Vec<&Item> = of(report, Route::AnswerInTheManifest);
     let notes: Vec<&Item> = of(report, Route::WriteItDown);
@@ -90,7 +90,7 @@ pub fn text_with(report: &Report, fence: &crate::fence::Fence) -> String {
             design.len()
         ));
         for item in &design {
-            out.push_str(&question(item));
+            out.push_str(&question(item, fence));
             if let Some(means) = &item.where_means {
                 out.push_str(&format!("   `where` names {means}.\n"));
             }
@@ -127,7 +127,7 @@ pub fn text_with(report: &Report, fence: &crate::fence::Fence) -> String {
             notes.len()
         ));
         for item in &notes {
-            out.push_str(&question(item));
+            out.push_str(&question(item, fence));
         }
     }
 
@@ -147,7 +147,7 @@ pub fn text_with(report: &Report, fence: &crate::fence::Fence) -> String {
             by_hand.len()
         ));
         for item in &by_hand {
-            out.push_str(&question(item));
+            out.push_str(&question(item, fence));
         }
     }
     out
@@ -169,7 +169,7 @@ fn status_of(report: &Report, id: &str) -> Option<Status> {
         .map(|r| r.status)
 }
 
-fn question(item: &Item) -> String {
+fn question(item: &Item, fence: &crate::fence::Fence) -> String {
     let mut out = format!(
         "\n - {}: {}\n   Ask: {}\n",
         item.id,
@@ -178,6 +178,42 @@ fn question(item: &Item) -> String {
     );
     if let Some(look) = &item.where_to_look {
         out.push_str(&format!("   Where to look: {}\n", one_line(look)));
+    }
+    out.push_str(&rests_on(item, fence));
+    out
+}
+
+/// The lines of the app's code a question is about (backlog 0487), each piece of the app's text through `fence`, and
+/// the sentence that says they are where to look and not evidence.
+fn rests_on(item: &Item, fence: &crate::fence::Fence) -> String {
+    let Some(rests_on) = &item.rests_on else {
+        return String::new();
+    };
+    let mut out = format!(
+        "   In the code, {}. {}\n",
+        rests_on.finds,
+        sv_check::human::POINTERS_SAY
+    );
+    for place in &rests_on.places {
+        out.push_str(&format!(
+            "     {}, line {}:\n",
+            fence.wrap(&place.file),
+            place.line
+        ));
+        for (n, text) in &place.lines {
+            out.push_str(&format!("       {n} | {}\n", fence.wrap(text)));
+        }
+    }
+    if rests_on.more > 0 {
+        out.push_str(&format!(
+            "     And {} more {} like these, not shown.\n",
+            rests_on.more,
+            if rests_on.more == 1 {
+                "place"
+            } else {
+                "places"
+            }
+        ));
     }
     out
 }

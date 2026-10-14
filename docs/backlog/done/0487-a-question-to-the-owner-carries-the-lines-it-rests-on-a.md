@@ -1,6 +1,6 @@
 # A question to the owner carries the lines it rests on: a locator rule and a pointer on every question item
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -24,3 +24,11 @@ nothing in the folder can show it, which `data/human-checks.json` already does f
 (V2.2.3, V13.2.5) should get one.
 
 **The owner's decision, 13 October 2026** (asked by session stackvet-deep-review): build this first, alone, and try it on one chapter's questions before any of the fourteen proposals that assume it (0488 to 0499) is taken; what the trial shows may change the rest. The proposals wait for it.
+
+**Done, 14 October 2026:** built as a locator kept apart from the rules (`data/locators.json`, read by
+`crates/sv-check/src/locate.rs`), so nothing that credits or fails a requirement can read it. `human::Item` gained
+`rests_on`: at most three places, the line with one either side, redacted, and the sentence `human::POINTERS_SAY`.
+They are shown in `sv questions`, the MCP `questions` section, and report.html. Only the file and line go in
+compliance.md, `report.json`, and the MCP structured result. Tried on V8 (V8.1.1 and V8.3.1) in Python, JavaScript,
+and TypeScript. The record is ADR-022's "Later" entry of this date. V2.2.3 and V13.2.5, which have no question at all,
+are backlog 0506.

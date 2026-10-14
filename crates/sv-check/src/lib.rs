@@ -38,6 +38,7 @@ pub mod junit;
 pub mod launch;
 pub mod level_hints;
 pub mod live_tls;
+pub mod locate;
 pub mod logs;
 pub mod manifest_lock;
 pub mod mcp_server;
