@@ -6,97 +6,87 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0431 (since 2026-10-13) — next: 0432, 0434, 0466, 0467, 0468
-- wording — arm: full — holds: 0453 (since 2026-10-13) — next: 0454, 0450, 0393, 0406, 0399
-- documentation — arm: full — holds: 0481 (since 2026-10-13) — next: 0479, 0439, 0438, 0436
+- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468, 0469, 0470, 0472, 0444
+- wording — arm: full — holds: 0393 (since 2026-10-13) — next: 0406, 0399, 0447, 0442, 0443
+- documentation — arm: full — holds: 0438 (since 2026-10-13) — next: 0436, 0440, 0485, 0486
 
 ## Queue
 
-1. 0469 `config.workflow-checkout-keeps-token` credits AC.12.2 whole for one of its two clauses — ready
-2. 0470 "Can be credited" says "the ones a check can mark *checked*", and counts three that can only ever be *checked in part* — ready
-3. 0433 The website's "StackVet can check" column is the "can settle" number, which counts 40 requirements it can only ever fail — ready
-4. 0471 The short version's "only these kinds of run could have reached N requirements" counts a tool of another language as a reach — ready
-5. 0472 COVERAGE.md's "Level 1 with no check at all (9)" calls them every app's baseline, though four apply only to an OAuth authorization server — ready
-6. 0444 The group A credits can be whole with the health path's answer left out by the rate limiter, and then read "the app's answers on ," — ready
-7. 0446 `sign_out_visible` is now always in part, but its chain and comment still say "one drawn is one sample" — ready
-8. 0447 A threat's "n of m requirements checked" counts a requirement checked in part as checked — ready
-9. 0383 The spec's advice to loosen the test copy's sign-in limit defeats the wrong-password check — ready
-10. 0384 The wrong-password check on a made-up name reads a lock on real accounts as no limit — ready
-11. 0385 An account change's form token is read from the change's own address, and the refusal is blamed on the page — ready
-12. 0388 The open-redirect rule flags a redirect to a fixed address — ready
-13. 0387 Test names are matched to their requirement by shared words, which flags sound tests — ready
-14. 0478 Small wording for the non-programmer reader in the guide and the glossary, and the glossary's "Report" entry that 0413 misses — ready
-15. 0442 After a rate limiter's wait, an AI finding names the limiter's answer as its evidence, not the answer it judged — ready
-16. 0443 Commit subjects and trailers are quoted into the AI-commits note unredacted, and a key there cannot be taken out of history — ready
-17. 0391 Nightly: Windows fails: the_second_loop_trials_scorer_passes_its_self_test — ready
-18. 0392 Nightly: Windows fails: sv-run's stopped-command tests, now and then — ready
-19. 0400 A suppression comment in the app's code shows in the report as a suppressed finding — ready
-20. 0403 A requirement's reason for not applying never states something untrue about the app — ready
-21. 0405 A placeholder security contact is noted — ready
-22. 0409 Rename findings.sarif to a name that does not read as problems, when no other session is working — ready
-23. 0395 fuzz/seed.sh prints macOS's padded counts, so its test fails on a Mac — ready
-24. 0424 The report's "What to do next" speaks the terminal's language and never names `sv review` or the full run — ready
-25. 0426 A "not verified" row never says what would verify it, though sv knows and the website's example promises it — ready
-26. 0427 The questions to the person are asked in the standard's own jargon, and only the AI tool stands between it and them — ready
-27. 0425 A person's own decision, typed to the tool, can only become theirs by hand-editing security-notes.md; `sv review` has no "this is mine" — ready
-28. 0473 The first thing a person who has never opened a terminal is told to do is open a terminal, and nothing says how — ready
-29. 0474 The person's last step, `sv review`, is the only step without a prompt that walks them to it — ready
-30. 0475 Error messages a person meets through the tool name terminal-only fixes — ready
-31. 0476 `sv --help` and every command's `--help` but `review` say nothing to a person who is not a programmer — ready
-32. 0477 The starter file tells the person to read 400 lines of TOML before trusting the report, where the report already shows the answers — ready
-33. 0372 Each requirement in the report stated in plain language, with checks named in words — ready
-34. 0397 Each question to the owner comes with the code it rests on — ready
-35. 0401 The AI tool tells the person everything it changes, and StackVet shows what changed between checks — ready
-36. 0404 The build record survives the report folder being deleted, and the report says when it may have been — ready
-37. 0407 The build prompt and prompt 6 take in what the Antigravity trial showed — ready
-38. 0386 The settings a start command gives the copy sv runs are not shown in the report — ready
-39. 0389 The typed-text check was answered in few of the second loop trial's builds — ready
-40. 0487 A question to the owner carries the lines it rests on: a locator rule and a pointer on every question item — ready
-41. 0423 The reading of answers past the sign-in and code limits is one algorithm written twice, and the copies have drifted — ready
-42. 0465 `allowed + 2` in the sign-in guessing guard can wrap in a release build — ready
-43. 0455 Five base64 implementations in two crates, with two decoders that disagree on the alphabet — ready
-44. 0456 Three wildcard matchers, two of them in the same crate — ready
-45. 0457 Seven hand-rolled "move to a character boundary" loops in three files — ready
-46. 0458 Line number from a byte offset is written nine times, in two conventions — ready
-47. 0459 The secret rules are loaded by six separate paths, each with its own story when they cannot be read — ready
-48. 0460 The four-line JSON data-file reader is pasted into every `load` — ready
-49. 0461 Six small pairs that should be one function each — ready
-50. 0462 The test helpers are written once per file: scratch folders in 52 files, the binary runner in 28, and five more — ready
-51. 0463 Two page readers compile a regular expression on every call — ready
-52. 0464 tools/: `write_text` is defined in twelve scripts, `slug` in two, and `git` three ways — ready
-53. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-54. 0411 Parse the OSV advisory files on one thread per core, keeping the findings' order — ready
-55. 0276 A Docker teardown test once named another container than the one it made (sv-run, 12 October 2026) — ready
-56. 0274 Read a CodeQL results file from the owner's own CI, credited only for the commit being checked — ready
-57. 0440 The getting-started guide carries three readers' material in one 6,300-word file, and the setup is the smallest third — ready
-58. 0441 `docs/` mixes live references with five dated investigations and two generated files, and no index says which is which — ready
-59. 0483 The coverage tables are the data for a chart that would show in one glance what forty rows say, and the website will need it — ready
-60. 0485 How `sv` decides what applies (the level, the chapters, the corroborated claims) is told in four places in prose and drawn nowhere — ready
-61. 0486 BACKLOG.md's roadmap is four dated amendments and a 1,000-word status snapshot, where a table from the status lines would do — ready
-62. 0377 One report holds both the running app's findings and the outside tools' — ready
-63. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-64. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
-65. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
-66. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
-67. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
-68. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
-69. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
-70. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
-71. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
-72. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
-73. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
-74. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
-75. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-76. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
-77. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
-78. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
-79. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
-80. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
-81. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
-82. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
-83. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
-84. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
-85. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+1. 0433 The website's "StackVet can check" column is the "can settle" number, which counts 40 requirements it can only ever fail — ready
+2. 0471 The short version's "only these kinds of run could have reached N requirements" counts a tool of another language as a reach — ready
+3. 0446 `sign_out_visible` is now always in part, but its chain and comment still say "one drawn is one sample" — ready
+4. 0383 The spec's advice to loosen the test copy's sign-in limit defeats the wrong-password check — ready
+5. 0384 The wrong-password check on a made-up name reads a lock on real accounts as no limit — ready
+6. 0385 An account change's form token is read from the change's own address, and the refusal is blamed on the page — ready
+7. 0388 The open-redirect rule flags a redirect to a fixed address — ready
+8. 0387 Test names are matched to their requirement by shared words, which flags sound tests — ready
+9. 0478 Small wording for the non-programmer reader in the guide and the glossary, and the glossary's "Report" entry that 0413 misses — ready
+10. 0391 Nightly: Windows fails: the_second_loop_trials_scorer_passes_its_self_test — ready
+11. 0392 Nightly: Windows fails: sv-run's stopped-command tests, now and then — ready
+12. 0400 A suppression comment in the app's code shows in the report as a suppressed finding — ready
+13. 0403 A requirement's reason for not applying never states something untrue about the app — ready
+14. 0405 A placeholder security contact is noted — ready
+15. 0409 Rename findings.sarif to a name that does not read as problems, when no other session is working — ready
+16. 0395 fuzz/seed.sh prints macOS's padded counts, so its test fails on a Mac — ready
+17. 0424 The report's "What to do next" speaks the terminal's language and never names `sv review` or the full run — ready
+18. 0426 A "not verified" row never says what would verify it, though sv knows and the website's example promises it — ready
+19. 0427 The questions to the person are asked in the standard's own jargon, and only the AI tool stands between it and them — ready
+20. 0425 A person's own decision, typed to the tool, can only become theirs by hand-editing security-notes.md; `sv review` has no "this is mine" — ready
+21. 0473 The first thing a person who has never opened a terminal is told to do is open a terminal, and nothing says how — ready
+22. 0474 The person's last step, `sv review`, is the only step without a prompt that walks them to it — ready
+23. 0475 Error messages a person meets through the tool name terminal-only fixes — ready
+24. 0476 `sv --help` and every command's `--help` but `review` say nothing to a person who is not a programmer — ready
+25. 0477 The starter file tells the person to read 400 lines of TOML before trusting the report, where the report already shows the answers — ready
+26. 0372 Each requirement in the report stated in plain language, with checks named in words — ready
+27. 0397 Each question to the owner comes with the code it rests on — ready
+28. 0401 The AI tool tells the person everything it changes, and StackVet shows what changed between checks — ready
+29. 0404 The build record survives the report folder being deleted, and the report says when it may have been — ready
+30. 0407 The build prompt and prompt 6 take in what the Antigravity trial showed — ready
+31. 0386 The settings a start command gives the copy sv runs are not shown in the report — ready
+32. 0389 The typed-text check was answered in few of the second loop trial's builds — ready
+33. 0487 A question to the owner carries the lines it rests on: a locator rule and a pointer on every question item — ready
+34. 0423 The reading of answers past the sign-in and code limits is one algorithm written twice, and the copies have drifted — ready
+35. 0465 `allowed + 2` in the sign-in guessing guard can wrap in a release build — ready
+36. 0455 Five base64 implementations in two crates, with two decoders that disagree on the alphabet — ready
+37. 0456 Three wildcard matchers, two of them in the same crate — ready
+38. 0457 Seven hand-rolled "move to a character boundary" loops in three files — ready
+39. 0458 Line number from a byte offset is written nine times, in two conventions — ready
+40. 0459 The secret rules are loaded by six separate paths, each with its own story when they cannot be read — ready
+41. 0460 The four-line JSON data-file reader is pasted into every `load` — ready
+42. 0461 Six small pairs that should be one function each — ready
+43. 0462 The test helpers are written once per file: scratch folders in 52 files, the binary runner in 28, and five more — ready
+44. 0463 Two page readers compile a regular expression on every call — ready
+45. 0464 tools/: `write_text` is defined in twelve scripts, `slug` in two, and `git` three ways — ready
+46. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+47. 0411 Parse the OSV advisory files on one thread per core, keeping the findings' order — ready
+48. 0276 A Docker teardown test once named another container than the one it made (sv-run, 12 October 2026) — ready
+49. 0274 Read a CodeQL results file from the owner's own CI, credited only for the commit being checked — ready
+50. 0441 `docs/` mixes live references with five dated investigations and two generated files, and no index says which is which — ready
+51. 0483 The coverage tables are the data for a chart that would show in one glance what forty rows say, and the website will need it — ready
+52. 0377 One report holds both the running app's findings and the outside tools' — ready
+53. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+54. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
+55. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
+56. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
+57. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
+58. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
+59. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
+60. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
+61. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
+62. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
+63. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
+64. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
+65. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+66. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — hold: a proposal; waits on the pointer's trial (0487)
+67. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — hold: a proposal; waits on the pointer's trial (0487)
+68. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — hold: a proposal; waits on the pointer's trial (0487)
+69. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — hold: a proposal; waits on the pointer's trial (0487)
+70. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+71. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — hold: a proposal; waits on the pointer's trial (0487)
+72. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — hold: a proposal; waits on the pointer's trial (0487)
+73. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
+74. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
+75. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 
 ## Log
 
@@ -283,3 +273,22 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 22:30 — assigned 0436 to documentation (full) as next: lane 2 of documentation: the flow from an app to a report drawn where a person reads (README, guide)
 - 2026-10-13 22:50 — finished 0420 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1780; now holds 0431
 - 2026-10-13 22:50 — finished 0435 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1782; now holds 0481
+- 2026-10-13 23:21 — finished 0431 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1784; now holds 0432
+- 2026-10-13 23:21 — finished 0432 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1787; now holds 0434
+- 2026-10-13 23:21 — finished 0434 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1790; now holds 0466
+- 2026-10-13 23:21 — finished 0453 by wording (full): https://github.com/abbyshade111/StackVet/pull/1783; now holds 0454
+- 2026-10-13 23:21 — finished 0454 by wording (full): https://github.com/abbyshade111/StackVet/pull/1788; now holds 0450
+- 2026-10-13 23:21 — finished 0450 by wording (full): https://github.com/abbyshade111/StackVet/pull/1791; now holds 0393
+- 2026-10-13 23:21 — finished 0481 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1785; now holds 0479
+- 2026-10-13 23:21 — finished 0479 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1789; now holds 0439
+- 2026-10-13 23:21 — finished 0439 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1792; now holds 0438
+- 2026-10-13 23:21 — assigned 0469 to honesty (full) as next: lane 3 of honesty: AC.12.2 credited whole for one of two clauses (workflows.rs)
+- 2026-10-13 23:21 — assigned 0470 to honesty (full) as next: lane 3 of honesty: the coverage summary's can-be-credited definition (coverage.py)
+- 2026-10-13 23:21 — assigned 0472 to honesty (full) as next: lane 3 of honesty: the level-1-with-no-check paragraph, one line in coverage.py
+- 2026-10-13 23:21 — assigned 0444 to honesty (full) as next: lane 3 of honesty: group A credits whole with the health path left out (probes.rs)
+- 2026-10-13 23:21 — assigned 0447 to wording (full) as next: lane 3 of wording: a threat's n-of-m count reads in part as checked (sv-report threats.rs)
+- 2026-10-13 23:21 — assigned 0442 to wording (full) as next: lane 3 of wording: an AI finding names the limiter's answer as its evidence (ai.rs, recording.rs)
+- 2026-10-13 23:21 — assigned 0443 to wording (full) as next: lane 3 of wording: commit subjects quoted into the AI-commits note unredacted (config.rs, git.rs)
+- 2026-10-13 23:21 — assigned 0440 to documentation (full) as next: lane 3 of documentation: the guide split by the day the reader needs it (GETTING-STARTED.md)
+- 2026-10-13 23:21 — assigned 0485 to documentation (full) as next: lane 3 of documentation: how sv decides what applies, drawn once (README, ARCHITECTURE, home-page)
+- 2026-10-13 23:21 — assigned 0486 to documentation (full) as next: lane 3 of documentation: the roadmap as a table from the status lines (BACKLOG.md, backlog.py)

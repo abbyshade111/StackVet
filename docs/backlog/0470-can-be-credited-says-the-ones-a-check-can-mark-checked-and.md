@@ -1,6 +1,6 @@
 # "Can be credited" says "the ones a check can mark *checked*", and counts three that can only ever be *checked in part*
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

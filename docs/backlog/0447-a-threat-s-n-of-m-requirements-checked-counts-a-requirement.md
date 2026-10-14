@@ -1,6 +1,6 @@
 # A threat's "n of m requirements checked" counts a requirement checked in part as checked
 
-**Status:** open
+**Status:** claimed by wording, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

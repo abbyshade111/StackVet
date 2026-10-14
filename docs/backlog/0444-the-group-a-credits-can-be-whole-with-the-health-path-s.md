@@ -1,6 +1,6 @@
 # The group A credits can be whole with the health path's answer left out by the rate limiter, and then read "the app's answers on ,"
 
-**Status:** open
+**Status:** claimed by honesty, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
