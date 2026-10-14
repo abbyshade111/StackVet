@@ -44,4 +44,7 @@ printf '%s\n' \
     '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"stackvet_check","arguments":{"path":"."}}}' \
     '{"jsonrpc":"2.0","id":4,"method":"resources/list"}' \
     > "$corpus/mcp_line/seed-session"
-echo "seeded: $(ls "$corpus/manifest" | wc -l) manifests, $(ls "$corpus/lockfiles" | wc -l) lockfiles and test reports, $(ls "$corpus/tool_reports" | wc -l) tool reports, 1 MCP session"
+# The files in one target's folder, as a bare number: macOS's `wc` pads its count with spaces, which Linux's does not
+# (backlog 0395).
+count() { ls "$corpus/$1" | wc -l | tr -d ' '; }
+echo "seeded: $(count manifest) manifests, $(count lockfiles) lockfiles and test reports, $(count tool_reports) tool reports, 1 MCP session"
