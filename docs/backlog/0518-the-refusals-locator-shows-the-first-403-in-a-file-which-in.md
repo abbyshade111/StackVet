@@ -1,6 +1,8 @@
 # The refusals locator shows the first 403 in a file, which in notes-with-users refuses a forged form, not a person
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 Filed 14 October 2026 by honesty, from the second reading of 0516. `locate.refusals` (0516) finds every 403 an app
 sends, and a question shows the first few in file order. In `notes-with-users` the first is `app.py:133`, the refusal
