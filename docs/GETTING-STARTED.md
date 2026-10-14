@@ -10,6 +10,10 @@ you go. You do not need to know how to program, and you do not need to know abou
 writes the code, StackVet checks it against the OWASP security standards, and the two of them ask you
 the questions only you can answer.
 
+![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](website/diagrams/how-it-works.svg)
+
+The steps below set this up, one at a time.
+
 It takes about fifteen minutes to set up, once. A word here you do not know is probably in
 [the glossary](GLOSSARY.md).
 
@@ -301,8 +305,8 @@ have recorded it with `sv review`.
 
 With the steps above, StackVet reads the code, the settings, and the list of packages the app uses,
 and asks you the questions. It lists those packages but does not compare them with known vulnerabilities:
-that needs a downloaded copy of the list of known ones, at a terminal ("Checking the packages against known
-vulnerabilities", below). **It does not start the app.** The checks that need a running app, such
+that needs a downloaded copy of the list of known ones, at a terminal ([Checking the packages against known
+vulnerabilities](KNOWN-VULNERABILITIES.md)). **It does not start the app.** The checks that need a running app, such
 as what it sends to a browser, whether signing out really ends the session, and whether one person
 can see another's data, are reported as *not assessed*, and so are your app's own tests, which run only when
 the app is started. That is honest, not a pass.
@@ -310,7 +314,7 @@ the app is started. That is honest, not a pass.
 Those checks need `sv report --run` at a terminal, with StackVet installed directly on your computer
 rather than in Docker, because starting your app means starting containers of its own. On Windows that is a
 download, installed with Scoop; on a Mac or Linux it means building StackVet, which Homebrew does for you. The steps
-are at the end of this section, under "Installing StackVet on your computer, for `--run`".
+are on their own page, [Installing StackVet on your computer](INSTALL.md), with how to keep it up to date.
 
 If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in
 `stackvet.toml`. The app runs with no internet, so it cannot fetch its own packages; this line lets StackVet
@@ -337,7 +341,9 @@ Each requirement in it has one of these words, strongest first:
 - *not verified*: nothing speaks to it yet.
 
 None of them means "passed": even *checked* means one check found nothing wrong, not that the whole requirement
-is met.
+is met. Only StackVet's own checks can make a requirement *checked*; your word counts once you record it with
+`sv review`, and the tool's word counts least. [A picture of the nine](ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first)
+shows who can grant each.
 
 If you later run StackVet in an automatic check (CI) whenever the code changes, the number it ends with
 says what happened. 0: it finished. 2: some check could not run, such as a file it could not read or a
@@ -348,289 +354,16 @@ known vulnerability) or when you ask for it: `sv check . --fail-on attention:hig
 anything high or critical is found. Without `--fail-on`, findings alone never fail it. [A table in
 `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes) says exactly what each number covers for each command.
 
-### An image of your own
-
-`install = true` downloads Python packages (from `requirements.txt`) and Node packages (from `package.json`)
-only. An app in another language, or one that needs something else installed first, can instead start from
-an image of its own: a ready-made box that already holds the language and the packages. You make it once,
-with Docker, and name it in `stackvet.toml`.
-
-Do not put the download in `build` (for example `build = "pip install -r requirements.txt"` or
-`build = "npm ci"`). The build step runs inside the same fence as the app, with no internet, so it fails, and
-`sv preflight` says so before you try.
-
-To make the image, ask your AI tool to write a file named `Dockerfile` in the app's folder that starts from the
-language's own image and installs the packages, and nothing more. For a Python app it reads:
-
-```
-FROM python:3.12-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-```
-
-Then, in a terminal in the app's folder, run `docker build -t my-app-packages .` (any name will do), and in
-`stackvet.toml` name it under `[stack.run]`: `image = "my-app-packages"`, with no `install = true` line. StackVet
-still puts the app's own files in and runs it behind the fence; the image only brings the packages. Build the
-image again whenever the list of packages changes, since StackVet runs whatever the image holds.
-
-### All your apps on one page
-
-Once each app has a report, `sv dashboard` puts them on one page you open in a browser: every app in alphabetical
-order, each with its own view of what was found, what was not examined, and where its requirements went. It reads
-the reports already there and checks nothing itself, so run `sv report` on an app first to bring its part up to
-date. Give it the app folders, and the file to write:
-
-```bash
-sv dashboard ~/code/app-one ~/code/app-two --out ~/sv-dashboard.html
-```
-
-It writes only that file, never inside an app's folder, and never over a file it did not make.
-
-To see how each app changes from one check to the next, turn on history once: `sv history on`. From then on, each
-`sv report` you run keeps a small record of the run in your home folder, readable only by you and never your code, and
-`sv dashboard --out ~/sv-dashboard.html` shows every app you have checked, each with its runs over time. A run is only
-compared with an earlier one of the same kind, so a quick check after a full one does not make the app look worse.
-`sv history off` stops it, and `sv history forget --all` deletes what was kept.
-
-To see what changed between two particular reports, history on or not, keep a copy of the older report folder and run
-`sv compare`:
-
-```bash
-cp -R stackvet-report ~/report-before   # before the change
-sv report .                             # after it
-sv compare ~/report-before              # the newer is this folder's report
-```
-
-It lists each requirement whose status moved, with what it gained or lost (a check that now credits it, a finding
-that went away), the findings that came or went, and the counts. It writes nothing. It says first when it cannot show
-that a report is one StackVet wrote on this computer, or when the two runs were not alike (a different kind of run,
-level, `stackvet.toml`, security notes, or version of StackVet), since a requirement can then move for that reason
-alone.
-
-### Checking the packages against known vulnerabilities
-
-Whether any package the app uses has a published vulnerability is *not assessed* until you give
-StackVet a copy of the list of known ones. It never downloads that list itself: the names of the
-packages your app depends on are yours, and a check that quietly sends them somewhere is one you did not
-agree to. The list comes from OSV, a free public database, as one zip file per kind of package:
-
-| Kind of package | Download |
-|---|---|
-| JavaScript (npm) | https://osv-vulnerabilities.storage.googleapis.com/npm/all.zip |
-| Python | https://osv-vulnerabilities.storage.googleapis.com/PyPI/all.zip |
-| Rust | https://osv-vulnerabilities.storage.googleapis.com/crates.io/all.zip |
-| Ruby | https://osv-vulnerabilities.storage.googleapis.com/RubyGems/all.zip |
-| PHP | https://osv-vulnerabilities.storage.googleapis.com/Packagist/all.zip |
-| Go | https://osv-vulnerabilities.storage.googleapis.com/Go/all.zip |
-
-You do not need to work out which ones your app needs: run `sv audit .` without anything more and it
-names the kinds your app uses, with the address of each download. Make a folder called `osv` beside
-the app, unpack each download into a folder of its own inside it (for example `osv/PyPI`), and run
-`sv audit . --advisories ./osv`, or `sv report . --advisories ./osv` to put the result in the report.
-The list grows every day, so download it again before a check you rely on; a copy from last month says
-nothing about what was found since. A kind of package with no download here is reported as not assessed.
-
-### Installing StackVet on your computer, for `--run`
-
-You only need this for `sv report --run`. Everything in steps 1 to 5 keeps working through Docker as it
-is, and your AI tool keeps using the container: the copy you build here is for typing at a terminal.
-
-On Windows there is a ready-made download, installed with Scoop (below). On a Mac or Linux you build it from its
-source code (the program written out as text, which a builder turns into a program you can run), with Homebrew or by
-hand. It is done once and takes a few commands. The hand steps were tried on a Mac on 5 October 2026, from a fresh
-copy of StackVet. The Linux steps have not been tried by hand, though StackVet is built on Linux every time its code
-changes.
-
-**On Windows: Scoop.** [Scoop](https://scoop.sh) is a free installer for Windows programs. StackVet's Windows program
-is published with each release, zipped with its data and signed where GitHub built it, and Scoop downloads it, checks
-it against the published checksum, and puts it on your path. Nothing is built on your computer. In PowerShell:
-
-```powershell
-scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet
-scoop install stackvet/sv
-stackvet --version
-```
-
-**In PowerShell, type `stackvet` wherever this guide says `sv`.** PowerShell already uses `sv` as a short name for
-one of its own commands (`Set-Variable`), so plain `sv` there does nothing visible. Scoop installs the program under
-both names; `sv.exe` works too, and in the older Command Prompt plain `sv` does. `scoop update sv` updates it.
-
-This install is tried automatically on a Windows computer at GitHub every week and on every change to the bucket
-([github.com/abbyshade111/scoop-stack-vet](https://github.com/abbyshade111/scoop-stack-vet)): Scoop installs the
-latest release and it checks an example app. It has not yet been tried by hand on a person's own Windows computer.
-For `--run`, Docker Desktop must be set to Linux containers (its default); if it is set to Windows containers,
-StackVet says so and what to change, and the run is reported as not assessed. That has not been tried by hand on
-Windows either.
-
-**The quickest way, on a Mac or on Linux: Homebrew.** If you have [Homebrew](https://brew.sh), one command builds
-StackVet on your computer, fetching what the build needs by itself, and puts `sv` on your path with its data beside
-it. The first install takes a few minutes:
-
-```bash
-brew install --HEAD abbyshade111/stackvet/sv
-sv --version
-```
-
-`--HEAD` means the latest StackVet, since it has no numbered release yet; `brew upgrade --fetch-HEAD sv` updates it.
-This is tried automatically on a Mac and on Linux every week and on every change to the formula
-([github.com/abbyshade111/homebrew-stackvet](https://github.com/abbyshade111/homebrew-stackvet)), but not yet by hand
-on a person's own computer. If it fails, the steps below do the same thing by hand.
-
-**1. The basic tools.** On a Mac, in a terminal:
-
-```bash
-xcode-select --install
-```
-
-This installs Apple's command-line tools, which include `git` and the parts Rust needs to finish
-building a program. If it says they are already installed, go on. On Linux (Debian or Ubuntu):
-`sudo apt install build-essential git curl`.
-
-**2. Install Rust.** Rust is the programming language StackVet is written in. Installing it gives you
-`cargo`, the program that builds StackVet. The official installer, from rust-lang.org:
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-When it asks how to install, press Enter for the standard choice. Then close the terminal window and
-open a new one, so it sees what was installed, and type `cargo --version`. It should print a version
-number: StackVet needs 1.95 or newer. If yours is older, `rustup update` brings it up to date.
-
-**3. Get StackVet's source code**, into a folder named `stackvet` in your home folder:
-
-```bash
-cd ~
-git clone https://github.com/abbyshade111/StackVet.git stackvet
-```
-
-Or, without `git`: on StackVet's GitHub page, choose **Code**, then **Download ZIP**, unzip it,
-rename the folder it makes (`StackVet-main`) to `stackvet`, and move it into your home folder.
-Built that way, `sv --version` says `commit unknown` rather than which version of the code it is, and
-updating means downloading it again.
-
-**4. Build and install it:**
-
-```bash
-cd ~/stackvet
-sh tools/install.sh
-```
-
-The first time, `cargo` downloads the pieces StackVet is made from, and the build takes a few
-minutes. Then the script copies the program and the files it reads into a folder of their own,
-`~/.local/share/stackvet`, and puts a link to the program at `~/.local/bin/sv`. It ends by printing
-the version and `Installed.` If `~/.local/bin/sv` is already there and is not its own link, it stops
-and says so rather than replace it.
-
-**5. Let the terminal find it.** When you type a command, the terminal looks for it in a list of
-folders called your `PATH`. This adds the folder with the link to that list, for every terminal you
-open from now on. On a Mac:
-
-```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-```
-
-On Linux, the same line with `~/.bashrc` at the end instead of `~/.zshrc`. Then close the terminal
-window and open a new one.
-
-**6. Check it:**
-
-```bash
-sv --version
-sv check ~/stackvet/examples/flask-booking
-```
-
-The first prints `sv 0.1.0` and the version of the code it was built from, and on a second line the
-folder of files it reads (`data: …/.local/share/stackvet/data`). The second checks one of the example apps that come with it: it
-should say what it read and what it found, not `Error`. If it says `command not found: sv`, step 5 has
-not taken effect: open a new terminal window, or look for the line at the end of `~/.zshrc`.
-
-Then, in your app's folder, `sv doctor` says in one line each whether everything `--run` needs is in
-place: the folder in git, `stackvet.toml` there and readable, how to start the app written in it, and
-Docker running. It writes nothing and opens no network connection, so it cannot say whether a newer
-StackVet is out.
-
-**The installed copy does not need the `stackvet` folder.** Each time StackVet runs, it reads more
-than a dozen of its own files (the security standards and its rules). The installed copy reads the ones
-the script put beside it, so moving, renaming, or deleting the folder you built it in does not stop it.
-Use `~/.local/bin/sv` wherever a full path is asked for, as in your AI tool's settings; it stays the same
-when you build again. A copy of the program on its own, without its `data` folder beside it, falls back to
-the folder it was built in; once that is gone, it cannot find those files and says where it looked.
-
-**The build folder can be deleted.** Building leaves a folder named `target` inside `~/stackvet`, of 1 to 7 GB,
-which the installed copy does not use. To get the space back:
-
-```bash
-rm -rf ~/stackvet/target
-```
-
-That removes only the build's leftovers: `sv` keeps working, and so does your AI tool's link to it. The next
-time you update StackVet, the build takes its few minutes again, as it did the first time.
-
-**Docker or Colima has to be running** for `--run`, as in step 1 of this guide, because that is what
-starts your app. With Colima on a Mac, your app's folder has to be inside your home folder (Colima
-shares only that unless you tell it otherwise); if it is not, the report says so and why.
-
-Your AI tool tells you the exact command to type. It looks like this, with your own app folder:
-
-```bash
-sv report /Users/you/code/my-app --run
-```
-
-To update StackVet later: `cd ~/stackvet`, then `git pull`, then `sh tools/install.sh` again. It
-replaces the program and its files together.
-
-## Keeping StackVet up to date
-
-StackVet changes often, and a new container image is published each time a change is added to it.
-Your computer keeps the copy it fetched until you fetch again. To get the newest, in a terminal:
-
-```bash
-docker pull ghcr.io/abbyshade111/stackvet-sv
-```
-
-**Then restart your AI tool, or at least StackVet inside it.** The tool starts StackVet's container
-when it starts the StackVet server, and keeps the one it started until the server starts again. In the
-Claude desktop app, quit it and open it again; in Claude Code, end the session and start a new one. In VS Code, open the Command Palette (Cmd+Shift+P on a
-Mac, Ctrl+Shift+P elsewhere), choose "MCP: List Servers", pick `stackvet`, and choose Restart.
-
-**To see which version you have**, ask the copy itself:
-
-```bash
-docker run --rm ghcr.io/abbyshade111/stackvet-sv --version
-```
-
-It prints a line such as `sv 0.1.0 (commit 3f9c…)`, the commit being 40 letters and digits long: it is
-the exact version of StackVet's code the copy was built from, and is what to quote if you report a problem. If you also built StackVet on
-your computer (for `--run`, above), `sv --version` prints the same line for that copy.
-
-**Keep the two at the same version.** The container your AI tool uses and a copy built on your
-computer are updated separately, and two versions can disagree: a check one of them has, or a fix, the
-other may not. When you update one, update the other: `docker pull` as above, and for the copy on your
-computer, `cd ~/stackvet`, then `git pull`, then `sh tools/install.sh`. Compare the two `--version`
-lines afterwards. They can still differ for a short while after a change, because the image is
-published only once the change has passed its tests.
-
-**To stay on one version on purpose**, for example while you finish an app, use the commit's own
-image instead of the newest. Every image is also published under the commit it was built from, so
-`ghcr.io/abbyshade111/stackvet-sv:` followed by the whole commit that `--version` prints always
-means the same version. Put that name in place of
-`ghcr.io/abbyshade111/stackvet-sv` in your `.mcp.json` and in the commands above, and nothing
-changes until you change it back.
-
-**Old copies take up space.** Each `docker pull` that fetches a new version keeps the old one on your
-disk, no longer named. `docker image prune` deletes the ones no longer named, and asks first; it
-does not touch the copy you are using.
-
 ## Known problems while this is new
 
 Found in the first real build. Each is an item under `docs/backlog/`. The two listed here before, a rate limiter
 counted as a public API and security notes the AI tool wrote counted as yours, were fixed on
 27 September 2026. Nothing from that build is known to be open.
 
-## If you set StackVet up before 5 October 2026
+## Later
 
-The guide had you use the program in the build folder then. If your `PATH` or your AI tool's settings name
-`…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`, the installed copy, which keeps working when the
-build folder moves or goes.
+- **The checks of the running app**, and keeping StackVet up to date: [`INSTALL.md`](INSTALL.md). An app in a language
+  `install = true` does not cover can start from [an image of its own](INSTALL.md#an-image-of-your-own).
+- **Several apps on one page**, their history, and what changed between two reports: [`ALL-YOUR-APPS.md`](ALL-YOUR-APPS.md).
+- **The packages against known vulnerabilities:** [`KNOWN-VULNERABILITIES.md`](KNOWN-VULNERABILITIES.md).
+- **If you set StackVet up before 5 October 2026:** [`INSTALL.md`](INSTALL.md#if-you-set-stackvet-up-before-5-october-2026).

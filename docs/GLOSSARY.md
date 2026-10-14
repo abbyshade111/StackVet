@@ -90,7 +90,8 @@ is only good news when its list of what was not assessed is short too.
 ## Verified
 
 A check produced evidence that a requirement is met. How strong that evidence is depends on how it was gathered:
-reading the code, running the app, or a person's own answer.
+reading the code, running the app, or a person's own answer. [The nine statuses](ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first), drawn
+strongest first, say who can grant each.
 
 ## The running app
 

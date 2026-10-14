@@ -374,14 +374,15 @@ fn prompt_six_walks_the_person_through_the_full_report() {
     for never in ["docker.sock", "docker exec", "--tools"] {
         assert!(!text.contains(never), "{never} in prompt 6");
     }
-    // The guide section it points to is there, by that name.
+    // The section it points to is there, by that name, on the page it names (backlog 0440 moved it there).
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let guide = std::fs::read_to_string(root.join("docs/GETTING-STARTED.md")).unwrap();
+    let install = std::fs::read_to_string(root.join("docs/INSTALL.md")).unwrap();
+    assert!(text.contains("(`docs/INSTALL.md`, the"), "{text}");
     assert!(
         text.contains("\"Installing StackVet on your computer, for `--run`\""),
         "{text}"
     );
-    assert!(guide.contains("### Installing StackVet on your computer, for `--run`"));
+    assert!(install.contains("\n## Installing StackVet on your computer, for `--run`\n"));
     // And the page says answers count as the person's own only through `sv review`, typed by them.
     let page = page();
     assert!(

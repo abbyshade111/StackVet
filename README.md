@@ -9,6 +9,8 @@ StackVet checks an app against the OWASP standards and writes reports that say p
 what was not. You write the app in whatever AI coding tool you like, in any language; you have the back-and-forth
 with your own AI tool until the app is what you wanted, and then `sv` picks up the code and grades it.
 
+![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](docs/website/diagrams/how-it-works.svg)
+
 **If you are not a programmer, start with [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md).** It walks through
 installing Docker, connecting StackVet to your AI tool, the prompt to start with, and reading the report, one step
 at a time. The rest of this page is written for programmers, and its commands build StackVet from its source code.
@@ -142,10 +144,11 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 The reports lead with what was **not** examined, say what each check covered when it found nothing wrong, and
 nothing in them says a requirement passed — `sv` is not able to establish that, so it does not claim it.
 
-Each requirement gets one of nine statuses, strongest evidence first: *needs attention* (a check found a problem),
-*checked*, *checked in part* (a check ran, but tried only part of what the requirement asks, ADR-053), *tested by
-the app's own tests*, *documented by the owner*, *checked by hand by the owner*, *attested by the owner*, *stated by
-the AI coding tool*, and *not verified*.
+Each requirement gets one of nine statuses, strongest evidence first, from *needs attention* and *checked* down to
+*stated by the AI coding tool* and *not verified*. Only a check of `sv`'s own can make one *checked*; the app's tests,
+your own word through `sv review`, and the tool's word each rank lower. [The ladder in
+`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first) draws all nine with who can
+grant each.
 
 They also list the tests worth writing: every requirement that applies and has no evidence yet, and no
 test in the app naming it, lowest level first. A passing test that names the requirement's id is the one way
@@ -601,7 +604,7 @@ Each note here is for someone who set StackVet up before a change; a first-time 
   `sv review` there, it offers to sign them all again at one yes, without asking each question again.
 - **An installed copy from before 5 October 2026.** The guide had you use the program in the build folder then; if
   your `PATH` or your AI tool's settings name `…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`
-  ([`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md#if-you-set-stackvet-up-before-5-october-2026)).
+  ([`docs/INSTALL.md`](docs/INSTALL.md#if-you-set-stackvet-up-before-5-october-2026)).
 - **SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
   archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
   `v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this
