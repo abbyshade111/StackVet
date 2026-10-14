@@ -500,21 +500,21 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 19:04 — released 0539
 - 2026-10-14 19:04 — assigned 0539 to honesty (full) into the lane after 0521: the owner's yes of 14 October: a multi-arch image; the workflow file, routed to the owner's review
 - 2026-10-14 19:04 — released 0536
-- 2026-10-14 19:27 — finished 0518 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1928; now holds 0519
-- 2026-10-14 19:27 — finished 0519 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1931; now holds 0522
-- 2026-10-14 19:27 — finished 0545 by wording (full): https://github.com/abbyshade111/StackVet/pull/1930; now holds 0546
-- 2026-10-14 19:27 — queued 0558, marked
-- 2026-10-14 19:27 — dropped 0513 from the queue
-- 2026-10-14 19:28 — withdrew 0522 from honesty (full), on hold: built as the first case of sweep 0559 (ADR-118)
-- 2026-10-14 19:28 — assigned 0532 to documentation (full): sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
-- 2026-10-14 19:28 — assigned 0541 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
-- 2026-10-14 19:28 — assigned 0542 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
-- 2026-10-14 19:28 — assigned 0543 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
-- 2026-10-14 19:28 — assigned 0544 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
-- 2026-10-14 19:28 — assigned 0558 to wording (full) into the lane after 0550: the owner's folder-name note; the prompt page, with the other prompt items
-- 2026-10-14 19:29 — queued 0559, marked
-- 2026-10-14 19:29 — queued 0560, marked
-- 2026-10-14 19:29 — queued 0561, marked
-- 2026-10-14 19:29 — assigned 0559 to honesty (full) into the lane after 0521: the owner's choice of 14 October: the setup rule across every probe, ADR-118 accepted here
-- 2026-10-14 19:29 — assigned 0560 to honesty (full) into the lane after 0559: the control rule across every probe (ADR-118)
-- 2026-10-14 19:29 — assigned 0561 to honesty (full) into the lane after 0560: the one-more-request rule, lockout and anonymous token first (ADR-118)
+- 2026-10-14 19:18 — finished 0518 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1928; now holds 0519
+- 2026-10-14 19:18 — queued 0558, marked
+- 2026-10-14 19:20 — dropped 0513 from the queue
+- 2026-10-14 19:31 — finished 0519 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1931; now holds 0522
+- 2026-10-14 19:31 — finished 0545 by wording (full): https://github.com/abbyshade111/StackVet/pull/1930; now holds 0546
+- 2026-10-14 19:31 — withdrew 0522 from honesty (full), on hold: built as the first case of sweep 0559 (ADR-118)
+- 2026-10-14 19:31 — queued 0559, marked
+- 2026-10-14 19:31 — queued 0560, marked
+- 2026-10-14 19:31 — queued 0561, marked
+- 2026-10-14 19:31 — assigned 0559 to honesty (full) into the lane after 0521: the owner's choice of 14 October: the setup rule across every probe, ADR-118 accepted here
+- 2026-10-14 19:31 — assigned 0560 to honesty (full) into the lane after 0559: the control rule across every probe (ADR-118)
+- 2026-10-14 19:31 — assigned 0561 to honesty (full) into the lane after 0560: the one-more-request rule, lockout and anonymous token first (ADR-118)
+- 2026-10-14 19:31 — assigned 0532 to documentation (full): sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
+- 2026-10-14 19:31 — assigned 0541 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
+- 2026-10-14 19:31 — assigned 0542 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
+- 2026-10-14 19:31 — assigned 0543 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
+- 2026-10-14 19:31 — assigned 0544 to documentation (full) as next: sv-cli and sv-run wording from the three-tool trial: preflight, status, check, doctor say what the tool is not told today; no file shared with the probes or the prompts
+- 2026-10-14 19:31 — assigned 0558 to wording (full) into the lane after 0550: the owner's folder-name note; the prompt page, with the other prompt items

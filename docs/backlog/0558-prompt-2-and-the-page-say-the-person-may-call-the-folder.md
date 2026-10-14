@@ -4,6 +4,8 @@
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 The owner's note, 14 October 2026, after the three-tool trial: in the VS Code trial the tool found `new-app` already there and the
 owner said "choose a different name"; the prompts and the page name `my-app` as if it were the name. `docs/prompts/setup.md:30`
 ("an empty folder called `my-app` in your home folder is a good one") and prompt 2 ("offer to make one called `my-app` in
