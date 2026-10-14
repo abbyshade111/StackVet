@@ -150,7 +150,7 @@ your computer, and one of them, Semgrep (or Opengrep in its place), downloads it
 checks your app. It checks your code on your computer, with its usage reporting turned off. To check without any of
 these tools, add `--no-tools`.
 
-- The rule is CLAUDE.md's, ADR-027 (`sv probe`), ADR-052 (`install = true`), and ADR-111 (the outside tools run by
+- The rule is drawn and tabled in `docs/ARCHITECTURE.md`, "The fence", and is CLAUDE.md's, ADR-027 (`sv probe`), ADR-052 (`install = true`), and ADR-111 (the outside tools run by
   default since 13 October 2026, the owner's decision, Semgrep's download included). "Usage reporting turned off" is
   the `--metrics=off` `sv` passes Semgrep (`data/adapters.json`); Opengrep has no such option and sends no metrics.
 

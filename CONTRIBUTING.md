@@ -50,11 +50,11 @@ These are exactly what CI runs, and all three must pass. A few more things to kn
   is known to work when you disable the thing it guards, run the tests, and see them fail. Do that for every
   guard you add, count how many tests catch each break, and say so in the pull request. If only one test
   catches it where you expected several, add the test that makes it deliberate.
-- **`sv` opens no network connection of its own**, with two exceptions the person asks for by name: `sv probe
-  <address>` sends a few read-only requests to the address they type ([ADR-027](docs/adr/ADR-027.md)), and with
-  `install = true` the install step downloads the app's packages before the run, outside the fence
-  ([ADR-052](docs/adr/ADR-052.md)). Anything else it needs from outside is something the user downloads and points
-  it at.
+- **`sv` opens no network connection of its own**, with three exceptions, drawn and listed in
+  [the fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on): two the person asks
+  for by name (`sv probe <address>` and `install = true`), and one on unless they pass `--no-tools` (the outside
+  tools, Semgrep's rule download among them). Anything else it needs from outside is something the user downloads
+  and points it at; a new exception is a decision, with its record.
 - **Never print, log, or commit a key or password**, including in a test. Test data that must look like a key
   is built from pieces at run time.
 - **History is never rewritten.** No force-pushing to `main`, no squashing old commits: papers and documents

@@ -1,6 +1,6 @@
 # A backlog-only pull request skips the board test, so a done note on a queued item turns main red after a green check
 
-**Status:** claimed by honesty, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
