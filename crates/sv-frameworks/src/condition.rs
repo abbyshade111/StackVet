@@ -174,6 +174,12 @@ conditions! {
         "Does the assistant take images, video, or audio, not only typed text?";
     SharedHostname => "shared-hostname", Claim, "This is a single application on its own address; no separate applications share its hostname.",
         "Do other applications share this app's hostname?";
+    // V1.3.1 (rich text from an editor) and V1.3.5 (Markdown, stylesheets, templates, and the like
+    // that people supply) were turned on by `ai` alone, which no rule about either says; they now
+    // apply on this answer or `ai`, each a rule of its own at their scope, so an unanswered one leaves
+    // them not assessed (backlog 0505, the owner's choice of 14 October 2026; ADR-117).
+    RichText => "rich-text", Claim, "This app takes no rich text from an editor, and no Markdown, stylesheets, templates, or similar that people supply, so there is none to sanitize.",
+        "Does the app take formatted text that people supply and show it: rich text from an editor, or Markdown, stylesheets, templates, BBCode, or similar?";
     MultipleServices => "multiple-services", Claim, "This app runs as one service, so there are no boundaries between services to design, no traffic between them to protect, and no cross-service transactions to get right.",
         "Does the app run as more than one service?";
     // Using OAuth and *being* the authorization server are different jobs with different rules.
