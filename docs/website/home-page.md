@@ -140,6 +140,9 @@ than guessing.
   asks; `docs/COVERAGE.md` gives that count under the level table.
 - "Left out so far" is `stackvet.toml`'s own wording: level 3 is one `sv` "does not yet hold any app to". The level
   3 examples are to be checked against ASVS's own wording before launch.
+- A picture for this section: `docs/coverage-by-level.svg` draws the ASVS level table as bars, and
+  `docs/coverage-by-chapter.svg` the chapter table, each part labeled with its count. `tools/coverage.py` draws both
+  from the same counts as `docs/COVERAGE.md`, so the site can show one beside the table (backlog 0483).
 - Secure by Design in planning: `stackvet_plan`, `stackvet_before`, and each library prompt's list of the controls it
   helps answer. None counts as checked in the report.
 
