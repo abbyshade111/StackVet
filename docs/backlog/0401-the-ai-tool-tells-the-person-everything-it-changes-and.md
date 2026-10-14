@@ -31,3 +31,17 @@ Ways to look into, from the cheapest:
 
 Whatever is built, the report must keep saying what it could not see: StackVet cannot know what the AI tool did
 outside the app's folder, or what it told the person.
+
+**Partly done, 14 October 2026:**
+- **The prompts.** The build prompt (guide step 4 and the setup page) already asks the tool to say in plain words
+  what it changed after each change, to ask before deleting anything, and never to silence a finding or hide it from
+  a scanner; `crates/sv-cli/tests/build_prompt_rules.rs` holds those rules.
+- **StackVet's MCP answers.** Every `stackvet_check` now ends its summary with a line for the tool to act on: tell
+  the person in plain words what changed since the last check and why (each file, each stackvet.toml setting, anything
+  deleted, any finding made to go away rather than fixed), and ask before deleting anything or silencing a finding.
+  It also says that `sv` cannot see what the tool tells them (`check_text::TELL_THE_PERSON`, held by
+  `crates/sv-cli/src/mcp/tell_the_person_tests.rs`).
+- **What remains:** StackVet itself comparing two checks of the same app, and saying which findings went and what
+  changed on their lines. A finding gone while its line still does the same thing is the case to make loud. The record
+  of the build loop already keeps each check's findings' fingerprints (ADR-084), which such a comparison would start
+  from.

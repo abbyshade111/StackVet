@@ -63,6 +63,13 @@ pub(super) const CHECK_FIRST: &[&str] = &[
 /// `stackvet_questions` gave them before it was folded in here (backlog 0187, part 10). Without it the
 /// section only counts them and says how to ask for them: in full they are long enough to make a short
 /// check come in parts, so the whole answer keeps the count, and the parts carry the questions.
+/// The line every check ends its summary with, for the AI coding tool to act on (backlog 0401): `sv` cannot see what
+/// the tool told the person, so it asks the tool to tell them.
+pub(super) const TELL_THE_PERSON: &str = "Before your next step, tell the person in plain words what you changed in \
+the app since the last check, and why: each file, each setting in stackvet.toml, anything you deleted, and any \
+finding you changed code to make go away rather than fixed. Ask them before you delete anything or silence a \
+finding. sv cannot see what you tell them.\n";
+
 pub(super) fn check_sections(
     report: &sv_report::Report,
     fence: &sv_report::fence::Fence,
@@ -125,6 +132,9 @@ fn sections_since(
             .lead
             .push_str(&format!("{}\n", report.ai_process.summary()));
     }
+    // In the Antigravity trial the AI coding tool fixed findings on its own, silenced two, committed a change and
+    // deleted the report folder, and said only that the findings were "resolved" (backlog 0401). Said on every check.
+    summary.lead.push_str(TELL_THE_PERSON);
     for id in needs_attention {
         summary
             .items
