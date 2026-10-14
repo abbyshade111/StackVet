@@ -1051,7 +1051,7 @@ pub(super) fn owned_checks(
     stored_markup_check(http, users, owned, &session, out);
 
     forgery_check(http, users, owned, &session, a, out);
-    simple_request_check(http, owned, &session, a, out);
+    simple_request_check(http, users, owned, &session, a, out);
     null_origin_check(http, owned, &users.private, a, out);
     Some(read_path)
 }
