@@ -234,15 +234,18 @@ fn language_component(runs_on: &RunsOn) -> Option<CycloneComponent> {
             property("securevibe:version-source", language.version_from.clone()),
             property(
                 "securevibe:modules",
-                format!(
-                    "the modules of {}'s own library the app's code imports, read from its import lines: {}",
-                    language.name,
-                    if language.modules.is_empty() {
-                        "none".to_owned()
-                    } else {
-                        format!("{}, listed under this component", language.modules.len())
-                    }
-                ),
+                match &language.modules_not_read {
+                    Some(why) => why.clone(),
+                    None => format!(
+                        "the modules of {}'s own library the app's code imports, read from its import lines: {}",
+                        language.name,
+                        if language.modules.is_empty() {
+                            "none".to_owned()
+                        } else {
+                            format!("{}, listed under this component", language.modules.len())
+                        }
+                    ),
+                },
             ),
         ],
         components: modules,

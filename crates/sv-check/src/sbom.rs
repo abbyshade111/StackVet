@@ -767,3 +767,6 @@ mod not_compared_tests;
 
 #[cfg(test)]
 mod runs_on_tests;
+
+#[cfg(test)]
+mod runs_on_stdlib_tests;

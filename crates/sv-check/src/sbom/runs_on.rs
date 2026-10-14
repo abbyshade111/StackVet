@@ -35,6 +35,9 @@ pub struct Language {
     pub version_from: String,
     /// Each module of the language's own library the code imports, with the files that import it.
     pub modules: BTreeMap<String, BTreeSet<String>>,
+    /// Why the modules could not be named, when they could not: `modules` is then empty and says nothing about the app
+    /// (backlog 0445).
+    pub modules_not_read: Option<String>,
 }
 
 /// What the app in `listing` runs on: its name and image from `stackvet.toml`, the image's digest when the app was run,
@@ -59,7 +62,23 @@ pub fn runs_on(
 /// Python, when the app has Python files: its version from an official `python` image's tag, and the modules of its
 /// own library the code imports.
 fn python(listing: &sv_scan::files::Listing, image: Option<&str>) -> Option<Language> {
-    let stdlib = python_stdlib();
+    python_with(
+        listing,
+        image,
+        python_stdlib(&sv_frameworks::data::file("python-stdlib.json")),
+    )
+}
+
+/// `python`, with the list of Python's own modules already read, or why it could not be.
+pub(crate) fn python_with(
+    listing: &sv_scan::files::Listing,
+    image: Option<&str>,
+    stdlib: Result<BTreeSet<String>, String>,
+) -> Option<Language> {
+    let (stdlib, modules_not_read) = match stdlib {
+        Ok(stdlib) => (stdlib, None),
+        Err(why) => (BTreeSet::new(), Some(why)),
+    };
     let mut any = false;
     let mut modules: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for entry in listing.app_files() {
@@ -115,6 +134,7 @@ fn python(listing: &sv_scan::files::Listing, image: Option<&str>) -> Option<Lang
         version,
         version_from,
         modules,
+        modules_not_read,
     })
 }
 
@@ -177,18 +197,32 @@ pub fn python_image_version(image: &str) -> Option<String> {
         .then(|| version.to_owned())
 }
 
-/// The top-level modules of Python's own library (`data/python-stdlib.json`), the ones a later Python dropped included.
-fn python_stdlib() -> BTreeSet<String> {
-    let path = sv_frameworks::data::file("python-stdlib.json");
-    let Ok(text) = std::fs::read_to_string(&path) else {
-        return BTreeSet::new();
-    };
-    let Ok(doc) = serde_json::from_str::<serde_json::Value>(&text) else {
-        return BTreeSet::new();
-    };
-    ["modules", "removed_in_later_pythons"]
-        .iter()
-        .flat_map(|key| doc[*key].as_array().cloned().unwrap_or_default())
-        .filter_map(|m| m.as_str().map(str::to_owned))
-        .collect()
+/// The top-level modules of Python's own library (`data/python-stdlib.json`), the ones a later Python dropped included;
+/// or, when the file is missing or not understood, why no module can be named. An empty list would read as an app that
+/// imports nothing of Python's own (backlog 0445), so the file is kept in the run's record of data files not loaded, as
+/// the other data readers' are.
+pub(crate) fn python_stdlib(path: &std::path::Path) -> Result<BTreeSet<String>, String> {
+    let modules: Option<BTreeSet<String>> = std::fs::read_to_string(path)
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|doc| doc["modules"].as_array().cloned().map(|m| (doc, m)))
+        .map(|(doc, modules)| {
+            let removed = doc["removed_in_later_pythons"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default();
+            modules
+                .into_iter()
+                .chain(removed)
+                .filter_map(|m| m.as_str().map(str::to_owned))
+                .collect()
+        })
+        .filter(|modules: &BTreeSet<String>| !modules.is_empty());
+    modules.ok_or_else(|| {
+        // Its words say nothing about the app was checked, which is not so here: only the record is wanted.
+        let _ = sv_frameworks::data::not_understood(path);
+        "not read: python-stdlib.json, the list of Python's own modules that sv ships, could not be read, so which \
+         of them the app's code imports is not known; reinstall sv"
+            .to_owned()
+    })
 }
