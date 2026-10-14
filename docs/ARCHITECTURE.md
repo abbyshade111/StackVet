@@ -47,7 +47,8 @@ it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a 
    settle their findings the same way (`static_scan::settle`), so they exit alike on the same folder (ADR-023, Later,
    8 October 2026).
 4. **Which requirements apply**: the manifest's claims resolved against what the scan saw (`sv_manifest::resolve`),
-   then the frameworks' applicability rules (`sv_frameworks`). A claim the code contradicts is reported as such.
+   then the frameworks' applicability rules (`sv_frameworks`). A claim the code contradicts is reported as such. Drawn in
+   [How `sv` decides what applies](#how-sv-decides-what-applies).
 5. **What else was asked for**, each opt-in and each saying in the report when it did not run: a local advisory
    database (`--advisories`), the language's own security tools (on unless `--no-tools`, ADR-111; ADR-032: never a program inside the app),
    and the running app (`--run`): the fence, the helpers, the anonymous questions, the signed-in suites as two users
@@ -65,6 +66,44 @@ it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a 
    out, ADR-082; and `sbom.cdx.json`, the bill of materials), each under a new name and renamed into place, never through a link; the
    folder sealed with this computer's report key so the MCP server can tell `sv`'s report from one anything else wrote
    (ADR-034). The lock goes; the folder stays.
+
+## How `sv` decides what applies
+
+Every requirement of ASVS, AISVS, and the Secure by Design checklist lands in one of four bins for an app
+(`sv_frameworks::applicability::bucket`), from what `stackvet.toml` claims and what the code shows
+(`sv_manifest::resolve`). This is the part of `sv` a person most affects: every line of `stackvet.toml` they or their
+AI coding tool writes.
+
+```text
+ stackvet.toml says                        the code shows (signatures:
+ (true / false / left out)                 packages, frameworks, files)
+          │                                          │
+          └──────────────► resolve ◄─────────────────┘
+                              │   a yes from either side is a yes: the code can add, never remove
+                              │   left out stays unknown, even when the code found nothing
+                              │   a false the code contradicts is reported, and counts as yes
+                              ▼
+               each condition: yes / no / unknown
+
+ [app] audience ──┐
+ [data] categories┴──► the level: 2 if customers or the public use it, or it holds sensitive information,
+                        or the list of what it holds is missing; otherwise 1. Both answers are the AI
+                        coding tool's until you confirm them with sv review.
+
+ for each requirement, in this order:
+   above the level ......................................► ABOVE THE APP'S LEVEL
+   no rule ties it to a condition .......................► APPLIES
+   a condition that brings it in is yes .................► APPLIES
+   a condition that brings it in is unknown .............► NOT ASSESSED (the question that would settle it)
+   every condition that brings it in is no ..............► DOES NOT APPLY (with its reason)
+
+ A Secure by Design control takes the level of the ASVS requirement that asks the same thing
+ (data/sbd-asvs-crosswalk.json), or every level when nothing in ASVS does.
+```
+
+So a line left out of `stackvet.toml` costs nothing but a question in the report, while a wrong `false` switches
+whole sets of requirements off until the code shows otherwise: that is why the guide's prompt says to leave a line
+commented out rather than guess `false`.
 
 ## The nine statuses, strongest evidence first
 

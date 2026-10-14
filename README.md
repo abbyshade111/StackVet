@@ -9,6 +9,8 @@ StackVet checks an app against the OWASP standards and writes reports that say p
 what was not. You write the app in whatever AI coding tool you like, in any language; you have the back-and-forth
 with your own AI tool until the app is what you wanted, and then `sv` picks up the code and grades it.
 
+![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](docs/website/diagrams/how-it-works.svg)
+
 **If you are not a programmer, start with [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md).** It walks through
 installing Docker, connecting StackVet to your AI tool, the prompt to start with, and reading the report, one step
 at a time. The rest of this page is written for programmers, and its commands build StackVet from its source code.
@@ -242,7 +244,9 @@ A section marked as yours and recorded with `sv review` counts as *documented by
 file ever counts as checked. Its ids are written
 `SBD-AC-01` to keep them apart from AISVS Appendix C, which numbers its own requirements `AC.1.1`.
 The checklist has no levels; each control takes the level of the ASVS requirement that asks the same
-thing (`data/sbd-asvs-crosswalk.json`), or is shown at every level when nothing in ASVS does.
+thing (`data/sbd-asvs-crosswalk.json`), or is shown at every level when nothing in ASVS does. How `sv` decides which requirements
+apply, from `stackvet.toml` and the code, and the two answers that set the level, are drawn in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#how-sv-decides-what-applies).
 
 ## Setting a finding aside, confirming an answer, or giving your own: `sv review`
 
@@ -602,7 +606,7 @@ Each note here is for someone who set StackVet up before a change; a first-time 
   `sv review` there, it offers to sign them all again at one yes, without asking each question again.
 - **An installed copy from before 5 October 2026.** The guide had you use the program in the build folder then; if
   your `PATH` or your AI tool's settings name `…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`
-  ([`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md#if-you-set-stackvet-up-before-5-october-2026)).
+  ([`docs/INSTALL.md`](docs/INSTALL.md#if-you-set-stackvet-up-before-5-october-2026)).
 - **SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
   archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
   `v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this

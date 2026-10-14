@@ -1,6 +1,6 @@
 # Line number from a byte offset is written nine times, in two conventions
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
