@@ -33,8 +33,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 20. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
 21. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
-22. 0513 Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name — hold: the owner's three licence judgments; ADR-018 Later with the answers
-23. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
+22. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
 
 ## Log
 
@@ -403,3 +402,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 11:50 — queued 0513, on hold: the owner's three licence judgments; ADR-018 Later with the answers, marked
 - 2026-10-14 11:50 — queued 0514, on hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository, marked
 - 2026-10-14 11:50 — assigned 0512 to documentation (full) as next: left from 0473: the guide's first three steps lead with the AI tool doing them; its condition (0428) is done; same lane as 0510 for the guide
+- 2026-10-14 12:00 — dropped 0513 from the queue
