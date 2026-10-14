@@ -33,7 +33,16 @@ fn the_status_answers_each_question_and_credits_nothing() {
     assert_eq!(result["isError"], false, "{result}");
     let lines = result["structuredContent"]["lines"].as_array().unwrap();
     let topics: Vec<&str> = lines.iter().map(|l| l["topic"].as_str().unwrap()).collect();
-    assert_eq!(topics, TOPICS, "{result}");
+    // A copy built for Windows answers a sixth: the checks that start the app are untried there (backlog 0510, 0517).
+    let mut expected = TOPICS.to_vec();
+    if cfg!(windows) {
+        expected.push("on Windows");
+    }
+    assert_eq!(topics, expected, "{result}");
+    if cfg!(windows) {
+        let line = lines.iter().find(|l| l["topic"] == "on Windows").unwrap();
+        assert_eq!(line["state"], "cannot-tell", "{line}");
+    }
     // The example's stackvet.toml reads and names an image and a start command: the setup worked.
     for (topic, state) in [
         ("stackvet.toml", "ready"),
@@ -44,7 +53,7 @@ fn the_status_answers_each_question_and_credits_nothing() {
     }
     assert_eq!(result["structuredContent"]["creditsNothing"], true);
     let said = text(&result);
-    for topic in TOPICS {
+    for topic in expected {
         assert!(said.contains(&format!("{topic}: ")), "{said}");
     }
 }
