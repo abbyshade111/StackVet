@@ -1,6 +1,8 @@
 # The guide's first three steps lead with letting the AI tool do them, the typed steps kept as the fallback
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 Left from backlog 0473 (14 October 2026), whose fix said the guide's sections 1 to 3 should "lead with 'let your AI
 tool do steps 1 to 3' once F5 is honest, with the typed steps kept as the fallback they are". "F5" is a finding in
@@ -16,3 +18,5 @@ system; the connect line takes Docker's path from `which docker` rather than a s
   adds.
 - How verified: read.
 - Needs a decision record?: no.
+
+**Note from the orchestrating session, 14 October 2026:** "F5" is the usability reviewer's fifth finding, filed as backlog 0428 (the guide said the setup prompts were untried while the setup page said they were tried), done on 14 October 2026 (#1761) with a test holding the two pages together. So the condition is met and this can be built: the guide's steps 1 to 3 lead with the prompts, the typed steps kept as the fallback.
