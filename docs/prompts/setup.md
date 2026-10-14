@@ -248,7 +248,9 @@ word.
 >    it is your reading, not a check. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
 >    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
->    as done, or write `by = "owner"`: only I can, with `sv review`.
+>    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
+>    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
+>    `by = "ai-tool"` and my words in `how`.
 <!-- setup-step-5:end -->
 
 What happens next:

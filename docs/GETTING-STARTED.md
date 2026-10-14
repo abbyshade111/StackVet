@@ -230,7 +230,9 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    it is your reading, not a check. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
 >    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
->    as done, or write `by = "owner"`: only I can, with `sv review`.
+>    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
+>    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
+>    `by = "ai-tool"` and my words in `how`.
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
@@ -358,8 +360,8 @@ a browser. Each file in the folder has a reader of its own:
 | `sbom.cdx.json` | Tools that read a bill of materials |
 | `report.pdf` | You, or whoever you hand it to |
 
-`security.md` is what to fix; `compliance.md` is the whole picture against the standards. On a small app the two
-open alike, but they are not the same: [the reports page](website/reports-page.md) shows an example of each. To have your AI tool
+On a small app `security.md` and `compliance.md` open alike, but they are not the same:
+[the reports page](website/reports-page.md) shows an example of each. To have your AI tool
 read it with you, starting with what was not checked, give it [the report prompt](prompts/report.md) (not yet tried
 in an AI tool).
 
@@ -380,8 +382,8 @@ is met. Only StackVet's own checks can make a requirement *checked*; your word c
 `sv review`, and the tool's word counts least. [A picture of the nine](ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first)
 shows who can grant each.
 
-If you later run StackVet in an automatic check (CI) whenever the code changes, the number it ends with says what
-happened: [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes) says what each number means.
+If you later run StackVet in an automatic check (CI), [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes)
+says what the number it ends with means.
 
 ## Later
 
