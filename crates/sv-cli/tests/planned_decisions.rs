@@ -6,13 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// The status column of the requirement's row in compliance.md.
-fn status_of<'a>(compliance: &'a str, id: &str) -> &'a str {
-    let row = compliance
-        .lines()
-        .find(|line| line.starts_with(&format!("| {id} |")))
-        .unwrap_or_else(|| panic!("no row for {id} in the report:\n{compliance}"));
-    row.split('|').nth(2).unwrap_or("").trim()
-}
+use sv_check::test_support::status_of;
 
 /// Writes the tested-notes example's stackvet.toml with `design` as its [design] section, runs
 /// `sv report`, and gives back compliance.md and report.json.

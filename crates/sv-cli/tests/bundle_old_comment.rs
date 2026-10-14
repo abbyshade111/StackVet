@@ -13,16 +13,11 @@ fn empty_zip_with_comment(comment: &str) -> Vec<u8> {
     out
 }
 
-fn scratch() -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-bundle-comment-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 #[test]
 fn a_bundle_with_the_old_comment_is_still_svs_own_and_a_strangers_zip_is_not() {
-    let dir = scratch();
+    let dir = scratch("");
     let sv = env!("CARGO_BIN_EXE_sv");
     // `made_by_sv` is `sv bundle`'s own gate: a zip at the output path that is not `sv`'s is
     // refused rather than replaced, so the gate is tried through the binary.

@@ -3451,12 +3451,7 @@ mod rate_limited_gap_tests {
 mod writing_through_links_tests {
     use super::{write_report_files, write_without_following};
 
-    fn scratch(tag: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("sv-links-{tag}-{}", std::process::id()));
-        std::fs::remove_dir_all(&dir).ok();
-        std::fs::create_dir_all(&dir).unwrap();
-        dir
-    }
+    use sv_check::test_support::scratch;
 
     #[test]
     fn a_link_put_where_a_file_is_written_is_replaced_and_what_it_points_to_is_left_alone() {

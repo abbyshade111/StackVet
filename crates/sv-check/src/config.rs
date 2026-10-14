@@ -993,12 +993,7 @@ mod tests {
     use std::fs;
     use std::process::Command;
 
-    fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("sv-config-{name}-{}", std::process::id()));
-        fs::remove_dir_all(&dir).ok();
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
+    use crate::test_support::scratch;
 
     #[test]
     fn a_lockfile_nothing_could_be_read_from_is_not_a_pass() {
