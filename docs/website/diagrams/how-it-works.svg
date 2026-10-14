@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1116" height="496" viewBox="0 0 1116 496" role="img" aria-labelledby="title desc" font-family="Atkinson Hyperlegible, Verdana, Arial, sans-serif">
+<title id="title">How StackVet works</title>
+<desc id="desc">Three lanes, you, your AI coding tool, and sv, across five steps. 1, plan: you describe the app; your AI coding tool writes stackvet.toml with you; sv works out which requirements apply. 2, build: the tool writes the code, a feature at a time. 3, check: after each feature the tool calls stackvet_check; sv reads the code and says first what it did not examine; the tool fixes what it finds. 4, questions: the tool asks you the questions only you can answer and writes them down as its own word; you answer and record your answers with sv review. 5, report: you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder, and you read report.html.</desc>
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#C2410C"/></marker></defs>
+<rect width="1116" height="496" fill="#EEF0EA"/>
+<text x="263.0" y="38" text-anchor="middle" font-size="15" font-weight="700" fill="#3B4842">1. Plan</text>
+<text x="449.0" y="38" text-anchor="middle" font-size="15" font-weight="700" fill="#3B4842">2. Build</text>
+<text x="635.0" y="38" text-anchor="middle" font-size="15" font-weight="700" fill="#3B4842">3. Check</text>
+<text x="821.0" y="38" text-anchor="middle" font-size="15" font-weight="700" fill="#3B4842">4. Questions</text>
+<text x="1007.0" y="38" text-anchor="middle" font-size="15" font-weight="700" fill="#3B4842">5. Report</text>
+<rect x="8" y="60" width="1100" height="124" rx="10" fill="none" stroke="#E1E3DB" stroke-width="2"/>
+<text x="22" y="128.0" font-size="16" font-weight="700" fill="#14201C">You</text>
+<rect x="8" y="192" width="1100" height="124" rx="10" fill="none" stroke="#E1E3DB" stroke-width="2"/>
+<text x="22" y="260.0" font-size="16" font-weight="700" fill="#14201C">Your AI coding tool</text>
+<rect x="8" y="324" width="1100" height="124" rx="10" fill="none" stroke="#E1E3DB" stroke-width="2"/>
+<text x="22" y="392.0" font-size="16" font-weight="700" fill="#14201C">sv</text>
+<rect x="181.0" y="80.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="263.0" y="118.0" text-anchor="middle" font-size="13.5" fill="#14201C">Describe the app</text>
+<text x="263.0" y="136.0" text-anchor="middle" font-size="13.5" fill="#14201C">you want</text>
+<rect x="181.0" y="212.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="263.0" y="250.0" text-anchor="middle" font-size="13.5" fill="#14201C">Writes stackvet.toml</text>
+<text x="263.0" y="268.0" text-anchor="middle" font-size="13.5" fill="#14201C">with you</text>
+<rect x="181.0" y="344.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="263.0" y="382.0" text-anchor="middle" font-size="13.5" fill="#14201C">Works out which</text>
+<text x="263.0" y="400.0" text-anchor="middle" font-size="13.5" fill="#14201C">requirements apply</text>
+<rect x="367.0" y="212.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="449.0" y="250.0" text-anchor="middle" font-size="13.5" fill="#14201C">Writes the code,</text>
+<text x="449.0" y="268.0" text-anchor="middle" font-size="13.5" fill="#14201C">a feature at a time</text>
+<rect x="553.0" y="212.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="635.0" y="241.0" text-anchor="middle" font-size="13.5" fill="#14201C">Calls stackvet_check</text>
+<text x="635.0" y="259.0" text-anchor="middle" font-size="13.5" fill="#14201C">after each feature,</text>
+<text x="635.0" y="277.0" text-anchor="middle" font-size="13.5" fill="#14201C">and fixes what it finds</text>
+<rect x="553.0" y="344.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="635.0" y="373.0" text-anchor="middle" font-size="13.5" fill="#14201C">Reads the code; says</text>
+<text x="635.0" y="391.0" text-anchor="middle" font-size="13.5" fill="#14201C">first what it did</text>
+<text x="635.0" y="409.0" text-anchor="middle" font-size="13.5" fill="#14201C">not examine</text>
+<rect x="739.0" y="80.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="821.0" y="109.0" text-anchor="middle" font-size="13.5" fill="#14201C">Answer; then record</text>
+<text x="821.0" y="127.0" text-anchor="middle" font-size="13.5" fill="#14201C">your answers with</text>
+<text x="821.0" y="145.0" text-anchor="middle" font-size="13.5" fill="#14201C">sv review</text>
+<rect x="739.0" y="212.0" width="164" height="84" rx="8" fill="#FBEFE7" stroke="#C2410C" stroke-width="1.5"/>
+<text x="821.0" y="241.0" text-anchor="middle" font-size="13.5" fill="#9A3412">Asks the questions</text>
+<text x="821.0" y="259.0" text-anchor="middle" font-size="13.5" fill="#9A3412">only you can answer;</text>
+<text x="821.0" y="277.0" text-anchor="middle" font-size="13.5" fill="#9A3412">writes them as its word</text>
+<rect x="925.0" y="80.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="1007.0" y="109.0" text-anchor="middle" font-size="13.5" fill="#14201C">Run sv report --run</text>
+<text x="1007.0" y="127.0" text-anchor="middle" font-size="13.5" fill="#14201C">at a terminal; read</text>
+<text x="1007.0" y="145.0" text-anchor="middle" font-size="13.5" fill="#14201C">report.html</text>
+<rect x="925.0" y="344.0" width="164" height="84" rx="8" fill="#FFFFFF" stroke="#E1E3DB" stroke-width="1.5"/>
+<text x="1007.0" y="373.0" text-anchor="middle" font-size="13.5" fill="#14201C">Starts the app behind</text>
+<text x="1007.0" y="391.0" text-anchor="middle" font-size="13.5" fill="#14201C">the fence; writes the</text>
+<text x="1007.0" y="409.0" text-anchor="middle" font-size="13.5" fill="#14201C">report folder</text>
+<path d="M263.0,164.0 L263.0,212.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<path d="M263.0,296.0 L263.0,344.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<text x="270.0" y="320.0" text-anchor="start" font-size="12.5" font-style="italic" fill="#9A3412">spec</text>
+<path d="M345.0,254.0 L367.0,254.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<path d="M531.0,254.0 L553.0,254.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<path d="M635.0,296.0 L635.0,344.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<text x="642.0" y="320.0" text-anchor="start" font-size="12.5" font-style="italic" fill="#9A3412">check</text>
+<path d="M717.0,386.0 L821.0,386.0 L821.0,296.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<text x="828.0" y="341.0" text-anchor="start" font-size="12.5" font-style="italic" fill="#9A3412">questions</text>
+<path d="M821.0,212.0 L821.0,164.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<path d="M903.0,122.0 L925.0,122.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<path d="M1007.0,164.0 L1007.0,344.0" fill="none" stroke="#C2410C" stroke-width="2" marker-end="url(#head)"/>
+<text x="1014.0" y="254.0" text-anchor="start" font-size="12.5" font-style="italic" fill="#9A3412">report</text>
+<text x="170" y="480" font-size="12.5" fill="#5A6660">The orange-tinted box is your AI coding tool asking you a question.</text>
+</svg>
