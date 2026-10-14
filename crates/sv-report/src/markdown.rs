@@ -106,7 +106,7 @@ fn status_cell(line: &crate::RequirementLine) -> String {
             line.status.label(),
             line.checked_by
                 .iter()
-                .map(|c| format!("{}: {}", c.check_id, c.scope))
+                .map(|c| format!("{} ({})", c.scope, c.check_id))
                 .collect::<Vec<_>>()
                 .join("; ")
         ),
@@ -158,7 +158,7 @@ fn status_cell(line: &crate::RequirementLine) -> String {
             line.status.label(),
             line.supported_by
                 .iter()
-                .map(|c| format!("{}: {}", c.check_id, c.scope))
+                .map(|c| format!("{} ({})", c.scope, c.check_id))
                 .collect::<Vec<_>>()
                 .join("; ")
         ),
@@ -409,6 +409,11 @@ pub fn compliance(report: &Report) -> String {
     // By chapter, with what does not apply counted beside what does, and the requirements' own
     // words in an appendix at the end. See `crate::chapters` for why.
     out.push_str("## Requirements that apply\n\n");
+    if let Some(note) = crate::plain_note(report) {
+        out.push_str(&format!(
+            "{note} The standard's words are in the appendix at the end.\n\n"
+        ));
+    }
     requirements_by_chapter(&mut out, report);
 
     if !report.ai_process.lines.is_empty() {
@@ -818,7 +823,7 @@ fn requirements_by_chapter(out: &mut String, report: &Report) {
             heading.push_str(&format!(", {} do not", c.does_not_apply));
         }
         out.push_str(&format!("{heading}\n\n"));
-        out.push_str("| requirement | status | level |\n|---|---|---:|\n");
+        out.push_str("| requirement | status | level | in plain words |\n|---|---|---:|---|\n");
         for line in &c.lines {
             let level = if line.level == 0 {
                 "—".to_owned()
@@ -826,14 +831,16 @@ fn requirements_by_chapter(out: &mut String, report: &Report) {
                 line.level.to_string()
             };
             out.push_str(&format!(
-                "| {} | {} | {} |\n",
+                "| {} | {} | {} | {} |\n",
                 cell(&line.id),
                 cell(&format!(
                     "{}{}",
                     status_cell(line),
                     crate::could_settle_note(report, line)
                 )),
-                level
+                level,
+                // The plain line beside the row; the standard's words are in the appendix (backlog 0372).
+                cell(report.plain.get(&line.id).map_or("", String::as_str))
             ));
         }
         out.push('\n');
@@ -1304,6 +1311,7 @@ mod tests {
             partly_read: Vec::new(),
             not_run_this_time: None,
             could_settle: Default::default(),
+            plain: Default::default(),
         };
         let md = security(&report);
         // The setup: all three reached the page.

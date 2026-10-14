@@ -52,6 +52,7 @@ pub(crate) fn empty_report(gaps: Vec<crate::Gap>) -> Report {
         partly_read: Vec::new(),
         not_run_this_time: None,
         could_settle: Default::default(),
+        plain: Default::default(),
     }
 }
 
