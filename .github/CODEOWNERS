@@ -1,0 +1,9 @@
+# The files that judge the required checks, and the workflows that run them (backlog 0290; ADR-051, Later, 14 October
+# 2026). On a pull request GitHub runs the branch's own copy of each, so a change to one could judge itself green; the
+# ruleset on `main` makes any change to them wait for the owner's review. Every path here must exist
+# (crates/sv-cli/tests/codeowners.rs).
+/.github/workflows/      @abbyshade111
+/tools/ci_scope.py       @abbyshade111
+/tools/adr_check.py      @abbyshade111
+/tools/record_numbers.py @abbyshade111
+/action.yml              @abbyshade111
