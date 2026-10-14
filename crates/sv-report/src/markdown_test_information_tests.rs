@@ -54,6 +54,7 @@ fn empty_report(gaps: Vec<crate::Gap>) -> Report {
         not_run_this_time: None,
         could_settle: Default::default(),
         plain: Default::default(),
+        paper: Default::default(),
     }
 }
 

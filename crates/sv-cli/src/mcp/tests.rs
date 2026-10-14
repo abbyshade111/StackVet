@@ -246,6 +246,7 @@ const FOLDER_NAMES: &[&str] = &[
     "report.json",
     "seen.json",
     "sbom.cdx.json",
+    "report.pdf",
 ];
 
 #[test]

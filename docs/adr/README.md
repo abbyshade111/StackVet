@@ -162,6 +162,7 @@ source files, and in two tests:
 | [ADR-113](ADR-113.md) | A CodeQL results file from the owner's own CI is read when given, and credited only for the commit checked out (accepted, 14 October 2026) |
 | [ADR-114](ADR-114.md) | The copy `sv` runs keeps the app's limit on wrong passwords; only a limit on every sign-in is raised for it (accepted, 14 October 2026) |
 | [ADR-115](ADR-115.md) | CodeQL runs only when the owner turns it on, for the uses its license allows (accepted, 14 October 2026) |
+| [ADR-116](ADR-116.md) | The report is also written as a PDF, by `sv` itself (accepted, 14 October 2026) |
 
 ## Names in the records
 
