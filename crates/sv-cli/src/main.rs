@@ -343,8 +343,14 @@ const COMMANDS: &[Command] = &[
             "--keep-tool-output",
             "--quiet",
         ],
-        valued: &["--out", "--advisories", "--fail-on", "--baseline"],
-        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--no-tools | --keep-tool-output] [--advisories DIR] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n                     the outside tools (Semgrep, Bandit, CodeQL, and the rest) run unless\n                     --no-tools; Semgrep fetches its rules from semgrep.dev as it runs\n                     --keep-tool-output keeps each tool's own report,\n                     credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, an outside tool that\n                     could not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
+        valued: &[
+            "--out",
+            "--advisories",
+            "--fail-on",
+            "--baseline",
+            "--codeql-results",
+        ],
+        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--no-tools | --keep-tool-output] [--advisories DIR] [--codeql-results FILE] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n                     the outside tools (Semgrep, Bandit, CodeQL, and the rest) run unless\n                     --no-tools; Semgrep fetches its rules from semgrep.dev as it runs\n                     --keep-tool-output keeps each tool's own report,\n                     credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --codeql-results FILE, CodeQL's SARIF from your own CI: read only when it\n                     is of the commit checked out, with nothing changed since; any other\n                     file is named in the report and credits nothing\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, an outside tool that\n                     could not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
     },
     Command {
         name: "review",
@@ -2514,6 +2520,8 @@ struct ReportArgs {
     quiet: bool,
     /// A folder the owner downloaded on purpose. `sv` never fetches advisories itself.
     advisories_dir: Option<PathBuf>,
+    /// A CodeQL results file from the owner's own CI (`sv report` only; ADR-113).
+    codeql_results: Option<PathBuf>,
 }
 
 fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
@@ -2526,6 +2534,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
         keep_tool_output: false,
         quiet: false,
         advisories_dir: None,
+        codeql_results: None,
     };
     let mut no_tools = false;
     let mut rest = args.iter();
@@ -2547,6 +2556,12 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             "--advisories" => {
                 parsed.advisories_dir = Some(PathBuf::from(
                     rest.next().context("--advisories needs a folder")?,
+                ));
+            }
+            "--codeql-results" => {
+                parsed.codeql_results = Some(PathBuf::from(
+                    rest.next()
+                        .context("--codeql-results needs the CodeQL results file from your CI")?,
                 ));
             }
             other if other.starts_with('-') => bail!("unknown option: {other}"),
@@ -2703,6 +2718,7 @@ fn report_command(
         keep_tool_output,
         quiet,
         advisories_dir,
+        codeql_results,
     } = parse_report_args(args, "a directory")?;
     if keep_tool_output && !run_tools {
         bail!("--keep-tool-output keeps what the tools wrote, so it cannot go with --no-tools");
@@ -2749,6 +2765,7 @@ fn report_command(
                 &app_dir,
                 &ReportOptions {
                     keep_tool_output,
+                    codeql_results: codeql_results.clone(),
                     ..ReportOptions::asked_of(
                         "`sv report`",
                         run_the_app,

@@ -924,6 +924,54 @@ fn outside_tools(
             }),
         }
     }
+    // A CodeQL results file from the owner's own CI, read whether or not the tools ran: it is a file,
+    // not a program, and credited only for the commit checked out (ADR-113).
+    if let Some(path) = &options.codeql_results {
+        let named = path.display().to_string();
+        let gap = |reason: sv_report::GapReason, why: String| sv_report::Gap {
+            what: "what your CI's CodeQL results would have said".to_owned(),
+            why,
+            reason,
+            requirements: Vec::new(),
+        };
+        match (std::fs::read_to_string(path), adapters) {
+            (Err(e), _) => tool_gaps.push(gap(
+                sv_report::GapReason::CouldNotRead,
+                format!("{named} could not be read ({e})."),
+            )),
+            (Ok(_), Err(why)) => tool_gaps.push(gap(
+                sv_report::GapReason::CouldNotRead,
+                format!(
+                "{named} was not read: which CodeQL rules `sv` maps is not known, since {} could \
+                 not be read ({why}).",
+                    adapters_path().display()
+                ),
+            )),
+            (Ok(text), Ok(adapters)) => {
+                let languages: Vec<String> = scan_report.languages.iter().cloned().collect();
+                let read = sv_check::ci_codeql::read(
+                    adapters,
+                    &text,
+                    &named,
+                    &sv_check::ci_codeql::AppCommit::of(app_dir),
+                    app_dir,
+                    &languages,
+                );
+                findings.extend(read.findings);
+                tool_verified.extend(read.verified);
+                tool_gaps.extend(read.not_used.into_iter().map(|(kind, why)| {
+                    use sv_check::ci_codeql::Unused;
+                    let reason = match kind {
+                        Unused::Unreadable => sv_report::GapReason::CouldNotRead,
+                        Unused::NoMap => sv_report::GapReason::NoReader,
+                        Unused::OtherCode => sv_report::GapReason::Outdated,
+                        Unused::LookedAway => sv_report::GapReason::Partial,
+                    };
+                    gap(reason, why)
+                }));
+            }
+        }
+    }
     Ok(Tools {
         verified: tool_verified,
         gaps: tool_gaps,

@@ -498,7 +498,7 @@ impl Adapter {
     }
 
     /// What the tool reads, in the words a report uses.
-    fn subject(&self) -> String {
+    pub(crate) fn subject(&self) -> String {
         if self.language == "*" {
             "code".to_owned()
         } else {

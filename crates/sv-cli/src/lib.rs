@@ -402,6 +402,9 @@ pub struct ReportOptions {
     /// With `run_tools`: keep each tool's own report, redacted, in `seen.json` (ADR-082, backlog
     /// 0229, part 4). Opt-in: a tool's report quotes the app's code, and can be large.
     pub keep_tool_output: bool,
+    /// A CodeQL results file from the owner's own CI (`--codeql-results`), read and credited only
+    /// for the commit checked out (ADR-113). `sv` opens no connection for it.
+    pub codeql_results: Option<PathBuf>,
 }
 
 impl ReportOptions {
@@ -421,6 +424,7 @@ impl ReportOptions {
                 "{caller} does not compare packages with known vulnerabilities."
             ),
             keep_tool_output: false,
+            codeql_results: None,
         }
     }
 
@@ -447,6 +451,7 @@ impl ReportOptions {
                  DIR."
             ),
             keep_tool_output: false,
+            codeql_results: None,
         }
     }
 }

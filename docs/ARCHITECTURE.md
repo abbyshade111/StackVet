@@ -51,6 +51,7 @@ it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a 
    [How `sv` decides what applies](#how-sv-decides-what-applies).
 5. **What else was asked for**, each opt-in and each saying in the report when it did not run: a local advisory
    database (`--advisories`), the language's own security tools (on unless `--no-tools`, ADR-111; ADR-032: never a program inside the app),
+   a CodeQL results file from the owner's own CI (`--codeql-results`, read only for the commit checked out: ADR-113),
    and the running app (`--run`): the fence, the helpers, the anonymous questions, the signed-in suites as two users
    and an admin, sign-in through a test provider, the AI feature through a test model, the app's own tests inside its
    container (ADR-050), and whether the app was still up at the end (ADR-021).
