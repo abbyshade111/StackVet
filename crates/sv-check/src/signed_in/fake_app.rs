@@ -524,6 +524,9 @@ pub(super) struct Flaws {
     pub(super) locks_out_after: Option<u32>,
     /// `locks_out_after` counts wrong passwords by the client's address, not by account.
     pub(super) limits_by_address: bool,
+    /// `locks_out_after` counts wrong passwords only for accounts that exist, as an app that counts
+    /// them on the account does: a name with no account is never locked (backlog 0384).
+    pub(super) limits_only_real_accounts: bool,
     /// The client's address is read from `X-Forwarded-For` when a request carries one.
     pub(super) trusts_forwarded_for: bool,
     /// A lockout lasts for one refused attempt and then lifts by itself.
@@ -1522,10 +1525,12 @@ impl FakeApp {
                     {
                         return Some(Self::respond(status, vec![], "internal error"));
                     }
-                    if self.flaws.locks_out_after.is_some() {
+                    let known = self.users.contains_key(email);
+                    if self.flaws.locks_out_after.is_some()
+                        && (known || !self.flaws.limits_only_real_accounts)
+                    {
                         *self.failures.entry(key).or_insert(0) += 1;
                     }
-                    let known = self.users.contains_key(email);
                     if !known && self.flaws.signin_reveals_by_status {
                         return Some(Self::respond(404, vec![], "no"));
                     }
