@@ -6,6 +6,9 @@ Not a tool of its own: nothing runs it. A script imports it after putting its ow
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from _shared import write_text  # noqa: E402
 
+`pwned_passwords.py` keeps its own `write_text`: CodeQL's alerts on the public password it writes were dismissed
+where they stand, in that file (its comment says more).
+
 Each script's `git` helper stays its own: the three differ in what they return and how they fail, and their callers
 rely on each (coordination.py catches CalledProcessError; merge_main.py returns the whole result and can be asked not
 to fail; record_numbers.py exits with git's message).

@@ -25,7 +25,7 @@ From the deep review of 13 October 2026 (backlog 0417), area: code quality and d
 - Needs a decision record?: no.
 
 **What was built (14 October 2026, session documentation).** `tools/_shared.py` holds `write_text` (UTF-8, Unix line
-endings, and, when asked, the folder made first) and `slug`, with a self-test. The twelve scripts that each had
+endings, and, when asked, the folder made first) and `slug`, with a self-test. Eleven of the twelve scripts that each had
 `write_text`, and the two that had `slug`, import them instead; `coordination.py`, whose copy also made the folder,
 uses it with that set. The two `slug`s were written differently: `backlog.py`'s cut the whole name to 60 characters at its last step and
 fell back to "item", `design_entry.py`'s cut the first word and fell back to "entry"; both give the same names, so the
@@ -40,3 +40,9 @@ and callers rely on each (`coordination.py` catches `CalledProcessError`; `merge
 can be asked not to fail; `record_numbers.py` exits with git's message); `ROOT` stays one line in each script, since
 importing it would cost the `sys.path` line it saves. Not verified: whether anyone runs a script copied out of
 `tools/` (nothing in the repository does: `install.sh` and the workflows run them in place).
+
+`pwned_passwords.py` keeps its own `write_text`. It writes the public breached password `sv` tries at sign-up, and
+CodeQL's clear-text alerts on that write (79 and 80) were dismissed as false positives in that file on 27 September
+2026; through the shared helper CodeQL raised the same write again, as alert 121 at `tools/_shared.py`, on pull request
+#1836. Dismissing that one instead is the owner's call, not a session's, and a rewrite only to keep a scanner from
+seeing it is ruled out, so the script stays as it was and `tools_shared.rs` names it as the one exception, with why.
