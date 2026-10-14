@@ -20,3 +20,5 @@ rules), V14.2.4 (a comparison with the owner's own document), V16.2.3 beyond the
 V4.2.1 (the proxy in front), V7.6.1 (the provider's side). For these the honest item is a hand check whose text says why
 nothing in the folder can show it, which `data/human-checks.json` already does for most; the two without any question
 (V2.2.3, V13.2.5) should get one.
+
+**The owner's decision, 13 October 2026** (asked by session stackvet-deep-review): build this first, alone, and try it on one chapter's questions before any of the fourteen proposals that assume it (0488 to 0499) is taken; what the trial shows may change the rest. The proposals wait for it.

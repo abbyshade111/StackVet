@@ -507,6 +507,11 @@ jobs:
     # --owner abbyshade111`.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [test, image]
+    # The `publish` Environment, made by the owner in the repository's settings on 13 October 2026,
+    # lets only runs of the branch `main` in (backlog 0289, 0422; ADR-051). GitHub holds that rule
+    # outside this file, so no change to the `if:` above by a branch can get a pull request's run
+    # into it.
+    environment: publish
     # One publish at a time. A publish already going is never canceled; one waiting behind it is
     # replaced by a newer one, which only skips an image already out of date.
     concurrency:

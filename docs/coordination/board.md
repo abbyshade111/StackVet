@@ -10,16 +10,15 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Queue
 
-1. 0289 A branch's modified rust.yml could publish and sign a latest image that action.yml accepts as genuine (the owner's setting) — hold: the owner's decision first; see the item
-2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
-3. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
-4. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
-5. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
-6. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
-7. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
-8. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
-9. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
-10. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: the item says build only if a real report's timings show the cost, and none does; given back open at the trial's end, nothing built (builder-none and the owner, 13 Oct)
+1. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first; see the item
+2. 0322 CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit — ready
+3. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — ready
+4. 0325 Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass — ready
+5. 0341 Each signed-in request is its own docker exec process; only the anonymous probes are batched — ready
+6. 0369 Small run-speed tidiness: double UTF-8 validation, a lowercased copy of every file, and repeated stand-in readiness checks — ready
+7. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: after the loop test (0257) has finished, weighed against its findings
+8. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text); assigned in error, caught by builder-none
+9. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: the item says build only if a real report's timings show the cost, and none does; given back open at the trial's end, nothing built (builder-none and the owner, 13 Oct)
 
 ## Log
 
@@ -325,3 +324,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-13 17:12 — withdrew 0365 from builder-none (none), on hold: the item says build only if a real report's timings show the cost, and none does; given back open at the trial's end, nothing built (builder-none and the owner, 13 Oct)
 - 2026-10-13 17:32 — session builder-full removed
 - 2026-10-13 17:32 — session builder-none removed
+- 2026-10-13 19:57 — dropped 0289 from the queue
