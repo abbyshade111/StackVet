@@ -866,6 +866,8 @@ pub const SKIP_DIRS: &[&str] = &[
     ".pytest_cache",
     ".idea",
     ".vscode",
+    // `sv`'s own record of the build loop (`STATE_DIR`), never the app's code.
+    STATE_DIR,
 ];
 
 /// Folders with ordinary names that hold installed or built code only where an ecosystem puts it
@@ -950,6 +952,17 @@ pub const REPORT_FILES: [&str; 8] = [
 /// MCP server for the app, kept in its report folder beside the reports and read when one is written.
 /// Not a report file and not sealed: it grows between reports, and the report carries what it read.
 pub const BUILD_LOOP_RECORD: &str = "build-loop.jsonl";
+
+/// The hidden folder in the app where `sv` keeps the record of the build loop since 14 October 2026
+/// (backlog 0404, the owner's answer of that day): out of the report folder, so deleting or replacing
+/// `stackvet-report` leaves it, and still in the app's folder, so it travels with the app. Before then
+/// the record was kept in the report folder, under the same name, and is moved here when next written.
+pub const STATE_DIR: &str = ".stackvet";
+
+/// Where the record of the build loop is kept for the app at `app_dir`.
+pub fn build_loop_record_in(app_dir: &Path) -> std::path::PathBuf {
+    app_dir.join(STATE_DIR).join(BUILD_LOOP_RECORD)
+}
 
 /// The SARIF file's name until 14 October 2026, when it became `stackvet.sarif` (backlog 0409): read
 /// by a person as "problems with the app" even when it held none. A report folder from before then

@@ -72,7 +72,7 @@ fn a_call_that_could_not_be_written_is_counted() {
         "manifest-version = 1\n[app]\nname = \"t\"\n",
     )
     .unwrap();
-    let folder = sv_scan::ecosystems::default_report_dir_in(&dir);
+    let folder = dir.join(sv_scan::ecosystems::STATE_DIR);
     std::fs::create_dir_all(&folder).unwrap();
     // A link where the record goes: `sv` will not write through it.
     std::os::unix::fs::symlink(

@@ -23,8 +23,7 @@ fn lines_cut_from_the_end_leave_a_chain_that_holds() {
         };
         record(&dir, &line).unwrap();
     }
-    let file: PathBuf = sv_scan::ecosystems::default_report_dir_in(&dir)
-        .join(sv_scan::ecosystems::BUILD_LOOP_RECORD);
+    let file: PathBuf = sv_scan::ecosystems::build_loop_record_in(&dir);
     let whole = read(&dir);
     // The setup: three chained lines, and the chain holds.
     assert_eq!(
