@@ -547,10 +547,12 @@ pub fn fully_hash_pinned(text: &str) -> bool {
             return false;
         }
         // The requirement runs to its first option; pip allows spaces inside it (`Jinja2 ==3.1.4`), which
-        // the other readers accept and this one read as a name with no version until backlog 0291.
+        // the other readers accept and this one read as a name with no version until backlog 0291. The option
+        // starts after any whitespace, a tab as well as a space (backlog 0448).
         let (requirement, rest) = line
-            .find(" --")
-            .map_or((line, ""), |at| (&line[..at], &line[at..]));
+            .char_indices()
+            .find(|&(at, c)| c.is_whitespace() && line[at + c.len_utf8()..].starts_with("--"))
+            .map_or((line, ""), |(at, _)| (&line[..at], &line[at..]));
         let requirement: String = requirement
             .split(';')
             .next()
