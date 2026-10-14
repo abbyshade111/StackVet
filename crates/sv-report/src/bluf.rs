@@ -374,10 +374,10 @@ pub fn next_steps(report: &Report) -> Vec<NextStep> {
                     if person == 1 { "" } else { "s" }
                 )
             },
-            where_to_look:
-                "`sv notes` writes the questions out; the rest are the `[design]` section \
-                            of stackvet.toml"
-                    .to_owned(),
+            where_to_look: "ask your AI coding tool to ask you them one at a time (it calls \
+                            stackvet_check with section \"questions\" and records your answers); at \
+                            a terminal, `sv questions` prints them"
+                .to_owned(),
         });
     }
     if !report.tests_to_write.is_empty() {
@@ -388,7 +388,7 @@ pub fn next_steps(report: &Report) -> Vec<NextStep> {
             .count();
         steps.push(NextStep {
             what: format!(
-                "Write tests for the {} requirement{} a test could settle{}.",
+                "Ask your AI coding tool to write tests for the {} requirement{} a test could settle{}.",
                 report.tests_to_write.len(),
                 if report.tests_to_write.len() == 1 {
                     ""
@@ -402,6 +402,42 @@ pub fn next_steps(report: &Report) -> Vec<NextStep> {
                 }
             ),
             where_to_look: "\"Tests to write\", lowest level first".to_owned(),
+        });
+    }
+    // Answers that rest on the AI coding tool's word alone count for less than the person's own until the person
+    // records them, which only they can do (ADR-022): the report shows them, and until 14 October 2026 no step said
+    // how (backlog 0424).
+    if c.stated > 0 {
+        steps.push(NextStep {
+            what: format!(
+                "Record the answers that are yours: {} requirement{} rest{} on your AI coding tool's word \
+                 alone.",
+                c.stated,
+                if c.stated == 1 { "" } else { "s" },
+                if c.stated == 1 { "s" } else { "" }
+            ),
+            where_to_look: "`sv review` in a terminal in the app's folder; the AI coding tool cannot do \
+                            this for you (the getting-started guide's step 5 says how)"
+                .to_owned(),
+        });
+    }
+    // The requirements only a run that did not happen can reach, and the run that reaches them (backlog 0424).
+    if let Some(not_run) = &report.not_run_this_time
+        && not_run.only_they_reach > 0
+    {
+        let n = not_run.only_they_reach;
+        steps.push(NextStep {
+            what: format!(
+                "Run the full report, which starts the app behind sv's network fence and runs the outside \
+                 tools: {n} requirement{} can only be checked that way.",
+                if n == 1 { "" } else { "s" }
+            ),
+            where_to_look: match &report.run_status {
+                // The words the run was not asked with name the command, with the app's own folder in it when
+                // the MCP server wrote this report (`at_a_terminal`).
+                Some(crate::RunStatus::NotAsked { why }) => why.clone(),
+                _ => "`sv report --run` in a terminal in the app's folder".to_owned(),
+            },
         });
     }
     if c.not_assessed > 0 {
@@ -418,12 +454,16 @@ pub fn next_steps(report: &Report) -> Vec<NextStep> {
     steps
 }
 
+// The steps that send the person to their AI coding tool, to `sv review`, and to the full run (backlog 0424).
+#[cfg(test)]
+mod next_steps_tests;
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::Counts;
 
-    fn report(counts: Counts) -> Report {
+    pub(super) fn report(counts: Counts) -> Report {
         Report {
             level_why: None,
             baseline: None,
@@ -823,7 +863,7 @@ mod tests {
     }
 
     /// A requirement line nothing has looked at, which is what `only_a_person_can` counts.
-    fn unverified(id: &str) -> crate::RequirementLine {
+    pub(super) fn unverified(id: &str) -> crate::RequirementLine {
         crate::RequirementLine {
             id: id.into(),
             description: String::new(),
@@ -883,7 +923,7 @@ mod tests {
         let steps: Vec<String> = next_steps(&r).into_iter().map(|s| s.what).collect();
         assert!(steps[0].starts_with("Fix the 2"), "{steps:?}");
         assert!(steps[1].contains("no tool can settle"), "{steps:?}");
-        assert!(steps[2].contains("Write tests"), "{steps:?}");
+        assert!(steps[2].contains("write tests"), "{steps:?}");
         assert!(steps[3].contains("stackvet.toml"), "{steps:?}");
     }
 

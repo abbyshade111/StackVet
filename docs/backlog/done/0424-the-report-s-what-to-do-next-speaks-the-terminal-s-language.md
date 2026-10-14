@@ -1,6 +1,6 @@
 # The report's "What to do next" speaks the terminal's language and never names `sv review` or the full run
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -35,3 +35,9 @@ from the counts, with a test per step; the terminal command stays the one `at_a_
 says the app is secure once the steps are done.
 
 **Record.** None (no tier, default, or write changes). `ADR-110: unchanged, because` the order of the sections is kept.
+
+**Done, 14 October 2026:** step 2 sends the person to their AI coding tool (and `sv questions` at a terminal), step 3
+asks the tool to write the tests, and two steps come when they apply: "Record the answers that are yours" with
+`sv review`, when requirements rest on the tool's word (`counts.stated`), and "Run the full report", when requirements
+only a run that did not happen can reach are left, naming the command the report was given (`RunStatus::NotAsked`).
+`human::Route::what_to_do` speaks to the AI tool first. Held by `crates/sv-report/src/bluf/next_steps_tests.rs`.
