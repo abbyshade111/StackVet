@@ -20,7 +20,9 @@ could write that line too.
 - **An answer of the tool's that you looked at yourself and confirm.** The report then shows it as the tool's words a
   person confirmed, never as your own.
 - **Your own answers:** a `[design]` answer or a `[checked-by-hand]` result written with `by = "owner"`, and a section
-  of `security-notes.md` marked `Written by: owner`.
+  of `security-notes.md` marked `Written by: owner`. A section your AI coding tool wrote down from what you told it
+  is offered too: type `mine` and `sv review` marks it `Written by: owner` and records it as yours, so you need not
+  change the file yourself.
 - **The two answers that set the app's level,** who uses the app (`[app] audience`) and what it holds about people
   (`[data] categories`). Your AI coding tool usually writes both. Once you confirm them, the report says the level
   rests on answers you confirmed, and when; change either later and they are unconfirmed again until you run

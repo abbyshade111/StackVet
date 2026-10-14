@@ -108,10 +108,13 @@ health = "/"              # a path that returns 200 once the app is up
 # The app's folder is read-only while `sv` runs it, so keep its data somewhere like /tmp.
 # `sv` signs in up to 60 times in one run, all from one address, a few of them on purpose with a
 # wrong password, and last of all the wrong passwords of the guessing check (`failed-sign-ins`
-# under [policy], plus two). An app should limit sign-in attempts; let the copy `sv` runs allow
-# that many (for example, through a setting only the test copy is started with) and keep the real
-# limit everywhere else. A sign-in the limit refuses is named in the report, and the checks that
-# needed it are not assessed.
+# under [policy], plus two). An app should limit sign-in attempts. The copy `sv` runs must keep
+# stopping wrong passwords at the number `failed-sign-ins` declares, as the real app does: never
+# raise that limit for it, or the guessing check reports a limit the app has as missing. Only if
+# the app also has a limit that counts every sign-in, right passwords too (for example, by
+# address), let the copy `sv` runs allow 60 of those, through a setting only the test copy is
+# started with, and keep the real limit everywhere else. A sign-in a limit refuses is named in the
+# report, and the checks that needed it are not assessed.
 # seed = "python seed.py"   # creates them; gets SV_USER_A, SV_PASSWORD_A, SV_USER_B, SV_PASSWORD_B,
 #                           # and SV_ADMIN, SV_ADMIN_PASSWORD when `admin` is listed, and
 #                           # SV_USER_TOTP, SV_PASSWORD_TOTP, SV_TOTP_SECRET when `totp` is set,
