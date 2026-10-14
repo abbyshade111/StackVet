@@ -1,6 +1,6 @@
 # Each requirement in the report stated in plain language, with checks named in words
 
-**Status:** partly done: plain lines for the ASVS requirements above level 1, and for AISVS and the Secure by Design checklist
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
