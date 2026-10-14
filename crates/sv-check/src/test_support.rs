@@ -1,4 +1,5 @@
-//! What the tests of this crate share.
+//! What the tests of this crate, and of the crates built on it, share. Not part of `sv`: no code
+//! outside a test calls it (backlog 0501).
 
 use std::path::Path;
 #[cfg(unix)]

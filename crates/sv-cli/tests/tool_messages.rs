@@ -69,12 +69,7 @@ fn scratch(name: &str) -> PathBuf {
 }
 
 fn executable(path: &Path, text: &str) {
-    std::fs::write(path, text).unwrap();
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
-    }
+    sv_check::test_support::executable(path, text);
 }
 
 /// What the stand-ins for every tool but Bandit say when asked for their version, and then fail.

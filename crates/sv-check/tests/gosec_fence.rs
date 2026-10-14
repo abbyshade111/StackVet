@@ -122,13 +122,10 @@ fn gosec_runs_no_c_compiler_downloads_nothing_says_what_it_read_and_follows_no_l
     let bin = dir.join("bin");
     std::fs::create_dir_all(&bin).unwrap();
     let mark = dir.join("gcc-ran");
-    std::fs::write(
-        bin.join("gcc"),
-        format!("#!/bin/sh\necho ran >> '{}'\nexit 1\n", mark.display()),
-    )
-    .unwrap();
-    use std::os::unix::fs::PermissionsExt;
-    std::fs::set_permissions(bin.join("gcc"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    sv_check::test_support::executable(
+        &bin.join("gcc"),
+        &format!("#!/bin/sh\necho ran >> '{}'\nexit 1\n", mark.display()),
+    );
     let path = std::env::var("PATH").unwrap();
     let modcache = dir.join("modcache");
     let gocache = dir.join("gocache");

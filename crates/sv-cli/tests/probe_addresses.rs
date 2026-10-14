@@ -19,7 +19,6 @@ fn scratch(name: &str) -> PathBuf {
 
 /// A `curl` that writes its arguments, one per line and each call ended by `--`, to `asked`.
 fn fake_curl(dir: &Path) -> PathBuf {
-    use std::os::unix::fs::PermissionsExt;
     let asked = dir.join("asked");
     let script = format!(
         "#!/bin/sh\nfor a in \"$@\"; do printf '%s\\n' \"$a\" >> '{}'; done\necho -- >> '{}'\n\
@@ -31,8 +30,7 @@ fn fake_curl(dir: &Path) -> PathBuf {
     let bin = dir.join("bin");
     std::fs::create_dir_all(&bin).unwrap();
     let curl = bin.join("curl");
-    std::fs::write(&curl, script).unwrap();
-    std::fs::set_permissions(&curl, std::fs::Permissions::from_mode(0o755)).unwrap();
+    sv_check::test_support::executable(&curl, &script);
     bin
 }
 

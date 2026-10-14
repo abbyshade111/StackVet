@@ -141,7 +141,6 @@ fn a_run_that_failed_is_kept_as_failed_and_the_page_says_the_report_is_older() {
 #[cfg(unix)]
 #[test]
 fn a_run_stopped_with_ctrl_c_is_kept_as_stopped() {
-    use std::os::unix::fs::PermissionsExt;
     use std::process::Stdio;
     use std::time::{Duration, Instant};
 
@@ -153,16 +152,14 @@ fn a_run_stopped_with_ctrl_c_is_kept_as_stopped() {
     }
     let started = dir.join("started");
     // Bandit answers its version, then holds the run until it is stopped.
-    std::fs::write(
-        bin.join("bandit"),
-        format!(
+    sv_check::test_support::executable(
+        &bin.join("bandit"),
+        &format!(
             "#!/bin/sh\nPATH=/bin:/usr/bin\n[ \"$1\" = --version ] && {{ echo 'bandit 1.7.9'; exit 0; }}\n\
              : > '{}'\nsleep 300 &\nwait\n",
             started.display()
         ),
-    )
-    .unwrap();
-    std::fs::set_permissions(bin.join("bandit"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    );
     let kill = ["/bin/kill", "/usr/bin/kill"]
         .into_iter()
         .find(|k| Path::new(k).exists())

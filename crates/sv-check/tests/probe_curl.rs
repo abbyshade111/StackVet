@@ -7,22 +7,19 @@ use sv_check::production::{Curl, Fetch, MOST_REQUESTS_WITH_API, read_target};
 #[cfg(unix)]
 #[test]
 fn the_api_question_asks_as_a_program_and_the_cap_holds_at_five() {
-    use std::os::unix::fs::PermissionsExt;
     let dir = std::env::temp_dir().join(format!("sv-probe-curl-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let log = dir.join("args.log");
     let curl = dir.join("curl");
-    std::fs::write(
+    sv_check::test_support::executable(
         &curl,
-        format!(
+        &format!(
             "#!/bin/sh\nfor a in \"$@\"; do printf '%s\\n' \"$a\" >> '{}'; done\necho '--' >> '{}'\n\
              printf 'HTTP/1.1 301 Moved\\r\\nlocation: https://example.test/api/health\\r\\n\\r\\n'\n",
             log.display(),
             log.display()
         ),
-    )
-    .unwrap();
-    std::fs::set_permissions(&curl, std::fs::Permissions::from_mode(0o755)).unwrap();
+    );
     let path = format!(
         "{}:{}",
         dir.display(),

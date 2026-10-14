@@ -60,8 +60,10 @@ mod ssh_format;
 pub mod stand_in;
 pub mod suite;
 pub mod test_report;
-#[cfg(test)]
-pub(crate) mod test_support;
+// Built always, not only for this crate's tests, so the tests of `sv-run` and `sv-cli` write their
+// programs the same way (backlog 0501); nothing in `sv` calls it.
+#[doc(hidden)]
+pub mod test_support;
 pub mod totp;
 pub mod verified;
 pub mod workflows;

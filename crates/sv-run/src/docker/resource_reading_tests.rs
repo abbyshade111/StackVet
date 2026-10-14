@@ -5,13 +5,11 @@ use super::*;
 
 /// A backend whose `docker` is `script`, written to a scratch folder of this test's own.
 fn backend_answering(test: &str, script: &str) -> DockerBackend {
-    use std::os::unix::fs::PermissionsExt;
     let dir =
         std::env::temp_dir().join(format!("sv-resource-reading-{test}-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     let docker = dir.join("docker");
-    std::fs::write(&docker, script).unwrap();
-    std::fs::set_permissions(&docker, std::fs::Permissions::from_mode(0o755)).unwrap();
+    sv_check::test_support::executable(&docker, script);
     DockerBackend {
         binary: docker.to_string_lossy().into_owned(),
         owner: crate::cleanup::owner(),
