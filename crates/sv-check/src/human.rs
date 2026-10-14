@@ -24,7 +24,7 @@
 //! The instruction sits beside the requirement; it is not a substitute for having followed it. This
 //! is the one thing the section could get wrong, and `nothing_here_credits_a_requirement` holds it.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::BTreeSet;
 use std::path::Path;
@@ -44,10 +44,7 @@ pub struct HumanChecks {
 
 impl HumanChecks {
     pub fn load(path: &Path) -> Result<HumanChecks> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        let checks: HumanChecks = serde_json::from_str(&text)
-            .with_context(|| sv_frameworks::data::not_understood(path))?;
+        let checks: HumanChecks = sv_frameworks::data::read_json(path)?;
         for c in &checks.checks {
             if c.how.trim().is_empty() {
                 anyhow::bail!("{}: the check for {} says nothing", path.display(), c.id);

@@ -70,7 +70,7 @@
 
 use crate::verified::Tier;
 use crate::{Confidence, Finding, Location, Severity, Verified};
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -109,10 +109,7 @@ pub struct Questions {
 
 impl Questions {
     pub fn load(path: &Path) -> Result<Questions> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        let questions: Questions = serde_json::from_str(&text)
-            .with_context(|| sv_frameworks::data::not_understood(path))?;
+        let questions: Questions = sv_frameworks::data::read_json(path)?;
         for q in &questions.questions {
             if q.asks.trim().is_empty() {
                 anyhow::bail!("{}: the question for {} asks nothing", path.display(), q.id);

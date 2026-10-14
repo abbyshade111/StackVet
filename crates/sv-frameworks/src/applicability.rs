@@ -20,7 +20,7 @@
 
 use crate::condition::{Condition, Source};
 use crate::load::{Frameworks, RequirementInfo, chapter_id_of, section_id_of};
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::Path;
@@ -77,9 +77,7 @@ pub struct ApplicabilityConfig {
 impl ApplicabilityConfig {
     pub fn load(knowledge_dir: &Path) -> Result<Self> {
         let path = knowledge_dir.join("applicability.json");
-        let text = std::fs::read_to_string(&path)
-            .with_context(|| format!("reading {}", path.display()))?;
-        serde_json::from_str(&text).with_context(|| crate::data::not_understood(&path))
+        crate::data::read_json(&path)
     }
 
     /// Replaces the rules at every scope the overlay mentions.
@@ -88,10 +86,7 @@ impl ApplicabilityConfig {
     /// statement about v1's template, and a wrong reason that survives alongside a right one is
     /// still a wrong reason that can be printed.
     pub fn apply_overlay(&mut self, overlay_path: &Path) -> Result<usize> {
-        let text = std::fs::read_to_string(overlay_path)
-            .with_context(|| format!("reading {}", overlay_path.display()))?;
-        let overlay: OverlayFile = serde_json::from_str(&text)
-            .with_context(|| crate::data::not_understood(overlay_path))?;
+        let overlay: OverlayFile = crate::data::read_json(overlay_path)?;
         let replaced: Vec<String> = overlay.rules.iter().map(|r| r.scope.clone()).collect();
         self.rules.retain(|r| !replaced.contains(&r.scope));
         let n = overlay.rules.len();
