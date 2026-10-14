@@ -25,7 +25,7 @@ fn paragraph(text: &str, opening: &str) -> String {
 fn guide() -> String {
     paragraph(
         &read("docs/GETTING-STARTED.md"),
-        "**Or let your AI coding tool do steps 1 to 3.**",
+        "**Easiest: let your AI coding tool do steps 1 to 3.**",
     )
 }
 
