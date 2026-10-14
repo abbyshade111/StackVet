@@ -815,13 +815,13 @@ fn the_outside_tools_section_says_what_each_tool_did_and_each_finding_names_its_
     }
     // With no tool run at all, as in a plain `sv report`, the section is one sentence, not a table of "did not run".
     report.examined = vec![
-        sv_report::Examined::not_run("bandit.", "outside tools run only with --tools")
+        sv_report::Examined::not_run("bandit.", "outside tools not run: --no-tools")
             .as_outside_tool("Bandit"),
-        sv_report::Examined::not_run("semgrep.", "outside tools run only with --tools")
+        sv_report::Examined::not_run("semgrep.", "outside tools not run: --no-tools")
             .as_outside_tool("Semgrep"),
     ];
     let page = sv_report::markdown::compliance(&report);
-    assert!(page.contains("None ran this time. They run only with `sv report --tools`, at a terminal: Bandit, Semgrep."), "{page}");
+    assert!(page.contains("None ran this time: Bandit, Semgrep. They run with every `sv report` at a terminal unless `--no-tools` is given; the MCP server and the GitHub Action never run them."), "{page}");
     assert!(!page.contains("| Bandit |"), "{page}");
 }
 

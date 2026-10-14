@@ -356,7 +356,7 @@ const COMMANDS: &[Command] = &[
         word: Some("PATH"),
         flags: &["--run", "--slow", "--tools", "--no-tools"],
         valued: &["--out", "--advisories"],
-        help: "  sv bundle [PATH] [--out FILE.zip] [--run [--slow]] [--no-tools] [--advisories DIR]\n                     the app, its report and a SHA-256 for every file in one zip, beside\n                     the app unless --out says where, with anything that could hold a\n                     secret left out and listed\n",
+        help: "  sv bundle [PATH] [--out FILE.zip] [--run [--slow]] [--no-tools] [--advisories DIR]\n                     the app, its report and a SHA-256 for every file in one zip, beside\n                     the app unless --out says where, with anything that could hold a\n                     secret left out and listed\n                     the outside tools (Semgrep, Bandit, CodeQL, and the rest) run unless\n                     --no-tools; Semgrep fetches its rules from semgrep.dev as it runs\n",
     },
     Command {
         name: "dashboard",
