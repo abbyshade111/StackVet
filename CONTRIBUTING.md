@@ -42,31 +42,26 @@ These are exactly what CI runs, and all three must pass. A few more things to kn
 
 ## The rules every change keeps
 
-- **Evidence is honest.** Something nobody assessed is never a pass and never a failure, and a check that could
-  not run says so in the report. Never make a check look stronger than it is; automating a manual check means
-  producing real evidence for it, never lowering the bar for what counts. A requirement is cited only when the
-  check really speaks to it.
-- **Break your own rule and watch what catches it.** A new check is not known to work because its tests pass. It
-  is known to work when you disable the thing it guards, run the tests, and see them fail. Do that for every
-  guard you add, count how many tests catch each break, and say so in the pull request. If only one test
-  catches it where you expected several, add the test that makes it deliberate.
+The rules are written in full in one place, [`CLAUDE.md`](CLAUDE.md) ("Rules that hold everywhere" and "Working
+style"), which every AI coding session reads at its start and every person contributing follows too. Here they are
+in one sentence each, so this page cannot drift from that one; where the two seem to differ, `CLAUDE.md` holds.
+
+- **History is never rewritten** (no force-pushing to `main`, no squashing old commits), since papers and
+  documents cite commit hashes here.
+- **Evidence is honest.** Something nobody assessed is never a pass and never a failure, and a check is never made
+  to look stronger than it is.
+- **Break your own rule and watch what catches it.** Disable each guard you add, run the tests, and say in the pull
+  request which went red.
 - **`sv` opens no network connection of its own**, with three exceptions, drawn and listed in
-  [the fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on): two the person asks
-  for by name (`sv probe <address>` and `install = true`), and one on unless they pass `--no-tools` (the outside
-  tools, Semgrep's rule download among them). Anything else it needs from outside is something the user downloads
-  and points it at; a new exception is a decision, with its record.
-- **Never print, log, or commit a key or password**, including in a test. Test data that must look like a key
-  is built from pieces at run time.
-- **History is never rewritten.** No force-pushing to `main`, no squashing old commits: papers and documents
-  cite commit hashes here. SecureVibe v1 is archived on the `v1` branch; a change to it is made there.
+  [the fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on).
+- **Never print, log, echo, or commit a key**, including in a test, where one is built from pieces at run time.
+- **A citation is a claim:** cite a requirement only when the check really speaks to it, after reading its text.
+- **One app is anonymous in everything public:** `CLAUDE.md` says how to name it.
+- **Name the tool in every commit:** an `Assisted-by:` or `Co-Authored-By:` line when an AI tool helped.
 
-## Writing
-
-- **Plain language.** The people reading the reports are often not programmers. No jargon without an
-  explanation.
-- **American English with the Oxford comma** (color, behavior, organization; "a, b, and c") in everything a
-  person reads: reports, documents, comments, and error messages. Identifiers and JSON keys keep their names.
-- **Say what was verified and what was not**, in the code's messages and in your pull request alike.
+Everything a person reads is in plain language, without jargon left unexplained, and in American English with the
+Oxford comma ("a, b, and c"); identifiers keep their names. Say what was verified and what was not, in the code's
+messages and in your pull request alike.
 
 ## Pull requests
 

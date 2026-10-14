@@ -9,17 +9,26 @@ calculator's own JavaScript to score a fixed sample of vectors into crates/sv-ch
 With --all it scores every base vector, with and without each threat value, to a file of your choosing instead, for
 a check of every vector there is (`sv`'s test reads it when SV_CVSS4_ALL names it).
 
-Needs `node`, and the network only to clone the calculator. Not run by any test.
+Needs `node`, and the network only to clone the calculator. Not run by any test but its own --self-test.
+
+The checkout must be at the commit the committed tables name in their first lines, the one they were copied from:
+a clone at another commit would write different tables with that other commit in the header, and nothing would
+notice (backlog 0322). To copy from a newer commit on purpose, name it with --commit, which must also be the
+checkout's own; the new tables then name it, and the next run holds to that one.
 
 Usage:
     git clone https://github.com/FIRSTdotorg/cvss-v4-calculator /tmp/cvss4
+    git -C /tmp/cvss4 checkout <the commit in crates/sv-check/src/cvss4_tables.rs>
     python3 tools/cvss4_tables.py /tmp/cvss4
     python3 tools/cvss4_tables.py /tmp/cvss4 --all /tmp/cvss4-all.txt
+    python3 tools/cvss4_tables.py /tmp/cvss4 --commit <a newer commit, checked out>   # an update, on purpose
+    python3 tools/cvss4_tables.py --self-test
 """
 import itertools
 import json
 import pathlib
 import random
+import re
 import subprocess
 import sys
 
@@ -87,15 +96,61 @@ def node(script, checkout, stdin=""):
     return out.stdout
 
 
+def pinned_commit(tables_text):
+    """The commit the committed tables say they were copied from, or None when their header names none."""
+    found = re.search(r"cvss-v4-calculator at commit ([0-9a-f]{40})\b", tables_text)
+    return found.group(1) if found else None
+
+
+def refusal(head, pinned, asked):
+    """Why a checkout at `head` must not be copied from, or None when it may. `pinned` is the committed tables'
+    commit, `asked` the one --commit names (None when not given)."""
+    if not head:
+        return "the checkout's commit could not be read (`git rev-parse HEAD` gave nothing): is it a git clone?"
+    if asked is not None:
+        if head != asked:
+            return f"--commit names {asked}, but the checkout is at {head}; check out the commit you name."
+        return None
+    if pinned is None:
+        return ("the committed tables name no commit to hold the checkout to; name the checkout's own with "
+                f"--commit {head} if it is the one to copy from.")
+    if head != pinned:
+        return (f"the checkout is at {head}, and the committed tables were copied from {pinned}. Check out "
+                f"{pinned} to write them again, or pass --commit {head} to copy from this commit on purpose.")
+    return None
+
+
+def self_test():
+    a, b = "a" * 40, "b" * 40
+    header = f"//! github.com/FIRSTdotorg/cvss-v4-calculator at commit {a} (ADR-033). Do not edit by hand.\n"
+    assert pinned_commit(header) == a
+    assert pinned_commit("//! no commit here\n") is None
+    assert refusal(a, a, None) is None, "the pinned commit is copied from"
+    assert refusal(b, a, None) is not None, "another commit is refused"
+    assert refusal(b, a, b) is None, "another commit named with --commit is copied from"
+    assert refusal(a, a, b) is not None, "--commit must be the checkout's own"
+    assert refusal("", a, None) is not None, "an unreadable checkout is refused"
+    assert refusal(a, None, None) is not None, "tables naming no commit want --commit"
+    assert pinned_commit(TABLES.read_text(encoding="utf-8")) is not None, "the committed tables name their commit"
+    print("cvss4_tables.py: self-test passed")
+
+
 def every_base():
     for values in itertools.product(*(v for _, v in BASE)):
         yield "CVSS:4.0/" + "/".join(f"{k}:{x}" for (k, _), x in zip(BASE, values))
 
 
 def main():
+    if "--self-test" in sys.argv:
+        self_test()
+        return
     checkout = pathlib.Path(sys.argv[1])
     commit = subprocess.run(["git", "-C", str(checkout), "rev-parse", "HEAD"], capture_output=True,
-                            text=True, encoding="utf-8").stdout.strip() or "unknown"
+                            text=True, encoding="utf-8").stdout.strip()
+    asked = sys.argv[sys.argv.index("--commit") + 1] if "--commit" in sys.argv else None
+    why = refusal(commit, pinned_commit(TABLES.read_text(encoding="utf-8")), asked)
+    if why:
+        sys.exit(f"cvss4_tables.py: refused: {why}")
     if "--all" in sys.argv:
         out = pathlib.Path(sys.argv[sys.argv.index("--all") + 1])
         vectors = [v + t for v in every_base() for t in THREAT]
