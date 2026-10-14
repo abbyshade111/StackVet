@@ -4,7 +4,7 @@
 //! requirement asks something else. So, as `crates/sv-check/tests/notes.rs` holds the questions:
 //! 1. every id is a requirement that exists;
 //! 2. every line shares words with its requirement's own text, the weak overlap the citations use;
-//! 3. every ASVS level-1 requirement has a line, so the first set is not missing one by accident.
+//! 3. every ASVS level-1 and level-2 requirement has a line, so neither set is missing one by accident.
 //!
 //! None of this proves a line is faithful: each was written from the requirement's text and read against it.
 
@@ -47,13 +47,13 @@ fn every_line_names_a_requirement_that_exists_and_shares_words_with_it() {
 }
 
 #[test]
-fn every_asvs_level_one_requirement_has_a_line() {
+fn every_asvs_level_one_and_two_requirement_has_a_line() {
     let frameworks = frameworks();
     let plain = plain();
     let missing: Vec<&String> = frameworks
         .requirements
         .values()
-        .filter(|r| r.id.starts_with('V') && r.level == 1)
+        .filter(|r| r.id.starts_with('V') && r.level <= 2)
         .map(|r| &r.id)
         .filter(|id| !plain.plain.contains_key(*id))
         .collect();
