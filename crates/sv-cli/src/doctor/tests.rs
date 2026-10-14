@@ -33,6 +33,7 @@ fn ask(dir: &Path, in_container: bool, backend: &dyn Fn() -> Result<(), CannotRu
             data: Ok(PathBuf::from("/data")),
             in_container,
             backend,
+            windows: false,
         },
     )
 }
@@ -163,6 +164,7 @@ fn no_data_is_not_ready() {
             data: Err("no data folder beside the program".to_owned()),
             in_container: true,
             backend: &docker_ok,
+            windows: false,
         },
     );
     std::fs::remove_dir_all(&dir).ok();

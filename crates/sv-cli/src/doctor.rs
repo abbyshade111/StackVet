@@ -79,7 +79,15 @@ pub struct Asked<'a> {
     pub in_container: bool,
     /// Asks the container backend whether it can run anything (`docker info`).
     pub backend: &'a dyn Fn() -> Result<(), CannotRun>,
+    /// Whether this copy was built for Windows, where the checks that start the app are untried (backlog 0510).
+    pub windows: bool,
 }
+
+/// What `sv doctor` says on Windows beside its Docker line, and what the guide and the setup page say too
+/// (backlog 0510; ADR-108, Later, 14 October 2026): the checks that start the app have never been tried there.
+pub const WINDOWS_RUN_UNTRIED: &str = "The checks that start your app (`sv report --run`) have not been tried on a \
+     Windows computer, even with Docker Desktop running. Without them, the report says which requirements only they \
+     reach. A Mac or Linux computer, or a cloud runner, is the known way to run them.";
 
 /// The answers for the app in `app_dir`, in the order a person sets things up.
 pub fn answers(app_dir: &std::path::Path, asked: &Asked) -> Vec<Line> {
@@ -197,6 +205,9 @@ pub fn answers(app_dir: &std::path::Path, asked: &Asked) -> Vec<Line> {
             Err(why) => line("Docker", State::NotReady, why.explain()),
         }
     });
+    if asked.windows {
+        lines.push(line("on Windows", State::CannotTell, WINDOWS_RUN_UNTRIED));
+    }
     lines
 }
 
@@ -234,3 +245,7 @@ pub fn text_quoting(folder: &str, lines: &[Line], quote: &dyn Fn(&str) -> String
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+#[path = "doctor/windows_tests.rs"]
+mod windows_tests;

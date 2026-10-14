@@ -283,6 +283,7 @@ impl Server {
             in_container: std::env::var_os(super::IN_CONTAINER).is_some()
                 || crate::connect::in_a_container(),
             backend: &backend,
+            windows: cfg!(windows),
         };
         let lines = crate::doctor::answers(&app_dir, &asked);
         let shown = args.get("path").and_then(Value::as_str).unwrap_or(".");
