@@ -112,9 +112,14 @@ def ai_commits_note(report):
 
 
 def text_forms(report, m):
-    """Measure 6: the forms listed for the typed-text check, and its answer."""
-    browser = ((m or {}).get('stack', {}).get('run', {}).get('browser', {})) if isinstance(m, dict) else {}
-    return {'text_forms_listed': len(browser.get('text-forms', [])),
+    """Measure 6: the forms named for the typed-text check, and its answer.
+
+    `[stack.run.users.browser]` names one form with `text-form` or several with `text-forms`; `sv` refuses a file
+    that gives both, so the count is the list's length, or 1 for the one form."""
+    browser = users(m).get('browser', {}) if isinstance(m, dict) else {}
+    browser = browser if isinstance(browser, dict) else {}
+    listed = len(browser.get('text-forms', [])) or (1 if browser.get('text-form') else 0)
+    return {'text_forms_listed': listed,
             'answer': state(report, 'probe.text-rendered-as-markup') if report else None}
 
 
@@ -242,8 +247,8 @@ def self_test():
                                req('V3.2.2', 'verified', ['probe.text-rendered-as-markup'])],
               'gaps': [{'why': 'the page writes it differently', 'requirements': ['V7.5.1']}]}
     m = {'stack': {'run': {'users': {'change-email': {}, 'change-phone': {}, 'not-offered': ['recovery'],
-                                     'private': ['/account', '/admin']},
-                           'browser': {'text-forms': [{'path': '/notes'}]}}},
+                                     'private': ['/account', '/admin'],
+                                     'browser': {'text-forms': [{'form': '/notes/new'}, {'form': '/comments/new'}]}}}},
          'capabilities': {'ai': {'enabled': True}}}
     ac = account_changes(report, m, 'b2')
     assert ac['changes']['phone'] == {'declared': True, 'answer': 'found'}, ac
@@ -260,7 +265,13 @@ def self_test():
                           'by an AI coding tool and not merged in'}]}
     assert ai_commits_note(none) == 0 and ai_commits_note(some) == 3 and ai_commits_note(report) is None
     assert preflight(report)['probe.failed-sign-ins-unlimited'] == '-'
-    assert text_forms(report, m) == {'text_forms_listed': 1, 'answer': 'credited'}
+    assert text_forms(report, m) == {'text_forms_listed': 2, 'answer': 'credited'}
+    one = {'stack': {'run': {'users': {'browser': {'text-form': '/notes/new', 'shows': '/notes'}}}}}
+    assert text_forms(report, one) == {'text_forms_listed': 1, 'answer': 'credited'}, text_forms(report, one)
+    # `browser` beside `users`, where `sv` reads nothing, names no form.
+    beside = {'stack': {'run': {'users': {}, 'browser': {'text-form': '/notes/new'}}}}
+    assert text_forms(report, beside)['text_forms_listed'] == 0
+    assert text_forms(None, None) == {'text_forms_listed': 0, 'answer': None}
     assert private_pages(report, m)['private_listed'] == 2
     assert spec_sentences(m) == {'settings': 'read', 'ai_enabled': True, 'admin': False, 'seed': False}
     assert spec_sentences('unreadable') == {'settings': 'unreadable'} and spec_sentences(None) == {'settings': 'none'}
