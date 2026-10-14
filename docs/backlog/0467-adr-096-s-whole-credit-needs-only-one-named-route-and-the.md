@@ -22,3 +22,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: requirements and t
 - Overlap: 0232 part 1 and ADR-096 (done) built this; nothing filed on the one-route bar or the evidence ids.
 - Needs a decision record?: yes for the bar (ADR-096 Later); the evidence ids are ADR-082's and need an
   "unchanged, because" line or a Later entry.
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): two or more named routes for the whole credit, as groups B, E, and F have; with one route the credit is in part. ADR-096 gets a Later line. The second part (the route answers named in each credit's evidence) stands as built.
