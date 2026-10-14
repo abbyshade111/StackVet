@@ -362,7 +362,7 @@ pub(super) fn ejs_template(source: &str) -> Result<Template, String> {
     let mut program = String::with_capacity(source.len());
     let mut any = false;
     let mut comment_open_on = None;
-    let line_of = |at: usize| source[..at].matches('\n').count();
+    let line_of = |at: usize| sv_scan::text::line_of(source, at);
     let mut at = 0;
     while let Some(i) = source[at..].find("<%") {
         let open = at + i;
@@ -791,7 +791,8 @@ pub(super) fn joined(source: &str, pieces: &[TemplatePiece]) -> String {
     let mut code = String::new();
     let mut line = 0;
     for piece in pieces {
-        let target = source[..piece.at].matches('\n').count();
+        // The newlines before the piece: one fewer than the line it starts on.
+        let target = sv_scan::text::line_of(source, piece.at) - 1;
         while line < target {
             code.push('\n');
             line += 1;

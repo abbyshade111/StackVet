@@ -463,7 +463,7 @@ fn leaves_the_network(address: &str) -> bool {
 /// Every plain-HTTP MCP link to another computer in one file's text, with its line.
 fn plain_mcp_links_in(text: &str) -> Vec<(usize, String)> {
     let mut out: Vec<(usize, String)> = Vec::new();
-    let line_of = |at: usize| text[..at].matches('\n').count() + 1;
+    let line_of = |at: usize| sv_scan::text::line_of(text, at);
     for found in TRANSPORT_OPENED.captures_iter(text) {
         let address = found.get(1).expect("the address");
         out.push((line_of(address.start()), address.as_str().to_owned()));
@@ -722,7 +722,7 @@ fn launches_in(text: &str) -> Vec<(usize, Launch)> {
             );
         }
         if let Some(launch) = launch_of(launcher, &args) {
-            let line = text[..whole.start()].matches('\n').count() + 1;
+            let line = sv_scan::text::line_of(text, whole.start());
             out.push((line, launch));
         }
     }

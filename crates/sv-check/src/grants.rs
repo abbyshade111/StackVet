@@ -235,7 +235,7 @@ fn switched_on(listing: &Listing, sbom: &Sbom) -> (Vec<Place>, bool) {
                     continue;
                 }
                 let at = captures.get(0).map_or(0, |m| m.start());
-                let line = code[..at].matches('\n').count() + 1;
+                let line = sv_scan::text::line_of(&code, at);
                 found.push((entry.relative.clone(), line, library.name, grants));
             }
         }
