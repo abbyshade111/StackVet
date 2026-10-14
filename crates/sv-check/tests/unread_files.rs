@@ -115,7 +115,7 @@ fn run(name: &str, env: &[(&str, &str)]) -> adapters::AdapterRun {
         &["python".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     std::fs::remove_dir_all(&dir).ok();
     outcome
@@ -202,7 +202,7 @@ fn a_list_left_by_an_earlier_run_does_not_vouch_for_this_one() {
         &["python".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     std::fs::remove_dir_all(&dir).ok();
     assert!(outcome.verified.is_empty(), "{:?}", outcome.verified);
@@ -238,7 +238,7 @@ fn a_rule_for_templates_counts_only_when_a_template_was_handed_over() {
             &["python".to_owned(), "html".to_owned()],
             &Default::default(),
             &dir,
-            &secret_rules(),
+            secret_rules(),
         );
         std::fs::remove_dir_all(&dir).ok();
         // The run itself was clean and read everything it was given, either way.
@@ -320,7 +320,7 @@ fn run_over(name: &str, app: impl Fn(&Path) -> PathBuf) -> adapters::AdapterRun 
         &["python".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     std::fs::remove_dir_all(&dir).ok();
     outcome
@@ -366,11 +366,8 @@ fn too_many_files_to_name_is_said_rather_than_cut_short() {
 }
 
 /// `sv`'s own credential rules, which redact what a tool says.
-fn secret_rules() -> sv_check::secrets::SecretRules {
-    sv_check::secrets::SecretRules::load(
-        &std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("the secret rules load")
+fn secret_rules() -> &'static sv_check::secrets::SecretRules {
+    sv_check::secrets::SecretRules::shared().expect("the rules sv ships")
 }
 
 /// `run`, with more files in the app and another rule loaded.
@@ -396,7 +393,7 @@ fn run_with(
         &["python".to_owned()],
         &Default::default(),
         &dir,
-        &secret_rules(),
+        secret_rules(),
     );
     std::fs::remove_dir_all(&dir).ok();
     outcome

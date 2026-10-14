@@ -1333,9 +1333,9 @@ fn cmd_run(args: &[String]) -> Result<i32> {
                 Some(result) => {
                     // The end of the output, where runners say which tests failed, and with any
                     // credential a runner printed cut short, as in the report.
-                    let rules = SecretRules::load(&secret_rules_path())?;
+                    let rules = SecretRules::shared().map_err(anyhow::Error::msg)?;
                     if let Some(t) =
-                        sv_check::suite::failing_output(result.exit_code, &result.output, &rules)
+                        sv_check::suite::failing_output(result.exit_code, &result.output, rules)
                     {
                         println!("\n{}", sv_report::test_output_intro(&t));
                         if !t.text.is_empty() {

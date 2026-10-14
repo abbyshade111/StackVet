@@ -53,7 +53,7 @@ pub struct Loaded {
     pub config_rules: ApplicabilityConfig,
     pub signatures: Signatures,
     pub threat_rules: sv_report::threats::ThreatRules,
-    pub secret_rules: SecretRules,
+    pub secret_rules: &'static SecretRules,
     pub ast_rules: ast::AstRules,
     /// The outside tools `sv` can run, or why `adapters.json` could not be read. Read here once
     /// for a report rather than three times (the review of 8 October 2026, item 7), and kept as a
@@ -75,7 +75,7 @@ impl Loaded {
                 &data.join("knowledge").join("threats.json"),
             )?
             .with_atlas()?,
-            secret_rules: SecretRules::load(&secret_rules_path())?,
+            secret_rules: SecretRules::shared().map_err(anyhow::Error::msg)?,
             ast_rules: ast::AstRules::load(&ast_rules_path())?,
             adapters: sv_check::adapters::Adapters::load(&adapters_path())
                 .map_err(|e| format!("{e:#}")),
@@ -228,11 +228,7 @@ pub fn requirement_ids(list: &str) -> Vec<String> {
 /// address prints the password in it, and the reason goes into the report and to the terminal
 /// (backlog 0226, part 1, item 1). Every way a run can fail passes here, so none is missed.
 fn cannot_run_said(said: &str, kind: &str) -> String {
-    said_without_credentials(
-        said,
-        kind,
-        SecretRules::load(&secret_rules_path()).ok().as_ref(),
-    )
+    said_without_credentials(said, kind, SecretRules::shared().ok())
 }
 
 /// `cannot_run_said`, with the rules given: `said` is the failure as `sv-run` explains it, and `kind`
@@ -242,10 +238,10 @@ fn said_without_credentials(said: &str, kind: &str, rules: Option<&SecretRules>)
     match rules {
         Some(rules) => sv_check::secrets::redact_text(rules, said).0,
         None => format!(
-            "The app could not be run ({kind}). What it printed is left out here, because sv's own \
-             rules for finding credentials in it could not be read, so it could not be shown safely: \
-             start the app yourself to see what it printed, and reinstall sv. Everything that needs \
-             the app running is reported as not assessed."
+            "The app could not be run ({kind}). What it printed is {}: start the app yourself to see \
+             what it printed, and reinstall sv. Everything that needs the app running is reported as \
+             not assessed.",
+            sv_check::secrets::RULES_UNREAD
         ),
     }
 }
@@ -1338,8 +1334,8 @@ pub fn write_bundle(
         .unwrap_or_else(|| "app".to_owned());
     let folder = bundle::safe_name(&name);
     // What goes in, decided from what the credential scan found and could not read.
-    let rules = SecretRules::load(&secret_rules_path())?;
-    let scan = scan_dir(&rules, app_abs);
+    let rules = SecretRules::shared().map_err(anyhow::Error::msg)?;
+    let scan = scan_dir(rules, app_abs);
     let plan = bundle::plan(app_abs, &scan);
     let categories = Manifest::load_in(app_abs)
         .map(|(m, _)| m.data.listed().to_vec())
@@ -1372,7 +1368,7 @@ pub fn write_bundle(
     });
     drop(private);
     let report_files = report_files?;
-    refuse_a_credential_in_the_report(&rules, &report_files)?;
+    refuse_a_credential_in_the_report(rules, &report_files)?;
     entries.extend(report_files);
     // The bill of materials is a report file now (backlog 0382), so it is among those, and was checked with them.
 

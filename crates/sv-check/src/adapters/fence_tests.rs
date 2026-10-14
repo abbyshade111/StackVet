@@ -18,9 +18,8 @@ fn scratch(name: &str) -> PathBuf {
     dir
 }
 
-fn secret_rules() -> SecretRules {
-    SecretRules::load(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"))
-        .unwrap()
+fn secret_rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 /// A Python tool given the folder (no `{files}`), with one mapped rule so a clean run has
@@ -64,7 +63,7 @@ fn run(dir: &Path, adapter: Adapter, app: &Path) -> AdapterRun {
         &["python".to_owned()],
         &BTreeSet::new(),
         dir,
-        &secret_rules(),
+        secret_rules(),
     )
 }
 

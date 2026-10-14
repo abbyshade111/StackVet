@@ -539,12 +539,8 @@ mod tests {
     use super::*;
     use std::fs;
 
-    pub(super) fn rules() -> SecretRules {
-        SecretRules::load(
-            &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("../../data/secret-rules.json"),
-        )
-        .expect("rules load")
+    pub(super) fn rules() -> &'static SecretRules {
+        SecretRules::shared().expect("the rules sv ships")
     }
 
     fn scratch(name: &str) -> std::path::PathBuf {
@@ -589,7 +585,7 @@ mod tests {
               "enableAllProjectMcpServers": true
             }"#,
         );
-        let files = read(&Listing::of(&dir), &rules());
+        let files = read(&Listing::of(&dir), rules());
         assert_eq!(files.read, vec![".claude/settings.json"]);
         let all = whats(&files).join("\n");
         for expected in [
@@ -629,7 +625,7 @@ mod tests {
             ".vscode/mcp.json",
             r#"{"servers": {"fetch": {"type": "stdio", "command": "uvx", "args": ["mcp-server-fetch"]}}}"#,
         );
-        let files = read(&Listing::of(&dir), &rules());
+        let files = read(&Listing::of(&dir), rules());
         let all = whats(&files).join("\n");
         assert!(
             all.contains("`gh` with `npx -y @modelcontextprotocol/server-github`, which names no exact version"),
@@ -669,7 +665,7 @@ mod tests {
             r#"{"mcpServers": {"gh": {"command": "npx", "args": ["x"]}}}"#,
         );
         write(&dir, ".claude/settings.json", "{ not json");
-        let files = read(&Listing::of(&dir), &rules());
+        let files = read(&Listing::of(&dir), rules());
         assert!(files.notes.is_empty(), "{:?}", files.notes);
         assert!(files.read.is_empty());
         let all = files.not_read.join("\n");
@@ -696,7 +692,7 @@ mod tests {
             "mcp.json",
             r#"{"mcpServers": {"gh": {"command": "npx", "args": ["-y", "pkg"]}}}"#,
         );
-        let files = read(&Listing::of(&dir), &rules());
+        let files = read(&Listing::of(&dir), rules());
         assert!(files.notes.is_empty() && files.read.is_empty(), "{files:?}");
     }
 
