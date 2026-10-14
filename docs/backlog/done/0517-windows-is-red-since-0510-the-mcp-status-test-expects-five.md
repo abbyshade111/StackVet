@@ -1,6 +1,6 @@
 # Windows is red since 0510: the MCP status test expects five topics, and sv doctor on Windows now answers a sixth
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -19,3 +19,11 @@ app are untried there (`crates/sv-cli/src/doctor.rs:208`). The status test holds
 the platform; keep the five on Mac and Linux. `crates/sv-cli/src/doctor/windows_tests.rs` already tests the line
 itself. Then watch the next Windows run on `main` go green. Documentation's, as 0510's owner (CLAUDE.md: a red `main`
 after your merge is yours).
+
+**Done, 14 October 2026.** `status_tests.rs` now expects the five topics everywhere and a sixth, "on Windows", in
+the state `cannot-tell`, on a copy built for Windows. This cloud session has no Windows target, so the Windows branch
+was run by setting `windows: true` in the status tool and `true` for `cfg!(windows)` in the test, then put back:
+with the old test that reproduced the CI failure (`assert_eq!(topics, TOPICS)` at line 36), and with the new one it
+passed. The miss in 0510: its search for tests that pin the doctor's answers read `src/mcp/tests*.rs` and
+`tests/`, and not `src/mcp/status_tests.rs`. Not done: the next Windows run on `main` is the real proof, and is
+watched.
