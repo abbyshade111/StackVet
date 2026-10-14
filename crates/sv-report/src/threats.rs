@@ -297,8 +297,12 @@ pub struct ThreatLine {
     pub status: ThreatStatus,
     /// The answering requirements that need attention.
     pub found: Vec<String>,
-    /// The answering requirements that were checked.
+    /// The answering requirements that were checked, whole or in part.
     pub checked: Vec<String>,
+    /// Of `checked`, those checked only in part, so the threat table can count them apart (backlog 0447). Not in
+    /// `report.json`, whose `checked` list is as it was.
+    #[serde(skip)]
+    pub checked_in_part: Vec<String>,
     /// The answering requirements whose only evidence is the app's own tests (ADR-050). Shown, and
     /// counted toward nothing: the AI coding tool wrote the tests, and nothing here reads whether
     /// they ask what the requirement asks.
@@ -334,7 +338,7 @@ pub struct ThreatLine {
 impl ThreatLine {
     /// The status as the report's threat table shows it. "Checked in part" says how many of the threat's
     /// requirements at this level were checked, so one in five looked at does not read as all five checked in
-    /// part (backlog 0333).
+    /// part (backlog 0333), and those checked only in part are counted apart from those checked whole (backlog 0447).
     pub fn shown(&self) -> String {
         match self.status {
             ThreatStatus::CheckedInPart => {
@@ -346,11 +350,16 @@ impl ThreatLine {
                     + self.stated.len()
                     + self.by_hand.len()
                     + self.not_verified.len();
-                format!(
-                    "checked in part: {} of {of} requirement{} checked",
-                    self.checked.len(),
+                let in_part = self.checked_in_part.len();
+                let whole = self.checked.len() - in_part;
+                let mut shown = format!(
+                    "checked in part: {whole} of {of} requirement{} checked",
                     if of == 1 { "" } else { "s" }
-                )
+                );
+                if in_part > 0 {
+                    shown.push_str(&format!(", {in_part} checked in part"));
+                }
+                shown
             }
             status => status.label().to_owned(),
         }
@@ -413,6 +422,7 @@ pub fn evaluate(
             status: ThreatStatus::CannotPlace,
             found: Vec::new(),
             checked: Vec::new(),
+            checked_in_part: Vec::new(),
             app_tested: Vec::new(),
             documented: Vec::new(),
             attested: Vec::new(),
@@ -433,7 +443,11 @@ pub fn evaluate(
                 Some(Status::NeedsAttention) => line.found.push(id.clone()),
                 // Checked in part counts toward the threat as checked does: a threat is only ever
                 // *checked in part* by its requirements' checks, and says so.
-                Some(Status::Checked | Status::CheckedInPart) => line.checked.push(id.clone()),
+                Some(Status::Checked) => line.checked.push(id.clone()),
+                Some(Status::CheckedInPart) => {
+                    line.checked.push(id.clone());
+                    line.checked_in_part.push(id.clone());
+                }
                 Some(Status::AppTested) => line.app_tested.push(id.clone()),
                 Some(Status::Documented) => line.documented.push(id.clone()),
                 Some(Status::Attested) => line.attested.push(id.clone()),
