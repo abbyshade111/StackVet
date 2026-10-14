@@ -142,10 +142,11 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 The reports lead with what was **not** examined, say what each check covered when it found nothing wrong, and
 nothing in them says a requirement passed — `sv` is not able to establish that, so it does not claim it.
 
-Each requirement gets one of nine statuses, strongest evidence first: *needs attention* (a check found a problem),
-*checked*, *checked in part* (a check ran, but tried only part of what the requirement asks, ADR-053), *tested by
-the app's own tests*, *documented by the owner*, *checked by hand by the owner*, *attested by the owner*, *stated by
-the AI coding tool*, and *not verified*.
+Each requirement gets one of nine statuses, strongest evidence first, from *needs attention* and *checked* down to
+*stated by the AI coding tool* and *not verified*. Only a check of `sv`'s own can make one *checked*; the app's tests,
+your own word through `sv review`, and the tool's word each rank lower. [The ladder in
+`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first) draws all nine with who can
+grant each.
 
 They also list the tests worth writing: every requirement that applies and has no evidence yet, and no
 test in the app naming it, lowest level first. A passing test that names the requirement's id is the one way
