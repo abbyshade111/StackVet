@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0508 (since 2026-10-14) — next: 0232, 0516
+- honesty — arm: full — holds: 0232 (since 2026-10-14) — next: 0516, 0519
 - wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401
 - documentation — arm: full — holds: nothing
 
@@ -35,6 +35,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 21. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
 22. 0513 Three license questions for the owner from the credits reading: Brakeman, the Semgrep rules under Opengrep, and CodeQL's name — hold: the owner's three licence judgments; ADR-018 Later with the answers
 23. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
+24. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
 
 ## Log
 
@@ -416,3 +417,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 13:54 — queued 0517, marked
 - 2026-10-14 13:54 — assigned 0517 to documentation (full): Windows red on main since 0510 (#1904), documentation's own merge: the status test's fixed five topics; the one item in the queue, and the session is free
 - 2026-10-14 14:20 — finished 0517 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1915
+- 2026-10-14 15:44 — queued 0519, marked
+- 2026-10-14 15:44 — queued 0520, on hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it, marked
+- 2026-10-14 15:44 — finished 0508 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1898; now holds 0232
+- 2026-10-14 15:44 — assigned 0519 to honesty (full) as next: the Podman measurement's three small fixes, worth having for Docker too (image names in full); honesty measured them
