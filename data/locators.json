@@ -37,6 +37,7 @@
       ],
       "finds": "places that refuse a request with a 403 (Forbidden), whether the answer is sent, returned, or raised",
       "names": "^(403|forbidden|httpforbidden|permissiondenied|forbiddenerror|forbiddenexception)$",
+      "unless": "(csrf|xsrf|forged|forgery|antiforgery|token|password|passwd|passphrase|comparedigest|checkpw)",
       "queries": {
         "python": "[(argument_list (integer) @used)\n (argument_list (keyword_argument value: (integer) @used))\n (return_statement (expression_list (integer) @used))\n (raise_statement (identifier) @used)\n (raise_statement (call function: (identifier) @used))\n (raise_statement (call function: (attribute attribute: (identifier) @used)))]",
         "javascript": "[(arguments (number) @used)\n (throw_statement (new_expression constructor: (identifier) @used))\n ((assignment_expression left: (member_expression property: (property_identifier) @field) right: (number) @used)\n  (#match? @field \"^(status|statusCode)$\"))]",
