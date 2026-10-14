@@ -17,6 +17,7 @@ use crate::{Backend, CannotRun, Fence, RunFailed, RunOutcome, RunPlan, TestResul
 use std::process::Command;
 use std::sync::OnceLock;
 use std::time::Duration;
+use sv_check::text::first_line;
 
 /// How long to wait for the app to answer before calling it not assessed.
 const READY_TIMEOUT_SECONDS: u64 = 60;
@@ -1539,20 +1540,20 @@ fn app_args<'a>(
     ]
 }
 
-/// How the test provider is started: fenced and hardened like the mail server, with its script
-/// passed on the command line so nothing is written to the owner's disk.
-fn provider_args<'a>(network: &'a str, name: &'a str, env: [&'a str; 4]) -> Vec<&'a str> {
+/// How a helper that runs a script of `sv`'s own is started, the test provider (`PROVIDER_SCRIPT`) and the test
+/// model (`MODEL_SCRIPT`) alike: fenced and hardened like the mail server, with its settings in `env` and its script
+/// passed on the command line so nothing is written to the owner's disk (one function since backlog 0461).
+fn helper_args<'a>(
+    network: &'a str,
+    name: &'a str,
+    env: &[&'a str],
+    script: &'a str,
+) -> Vec<&'a str> {
     let mut args = vec!["run", "-d", "--rm", "--name", name, "--network", network];
     for pair in env {
         args.extend(["-e", pair]);
     }
-    args.extend([
-        PROVIDER_IMAGE,
-        "node",
-        "--input-type=module",
-        "-e",
-        PROVIDER_SCRIPT,
-    ]);
+    args.extend([PROVIDER_IMAGE, "node", "--input-type=module", "-e", script]);
     args
 }
 
@@ -1571,22 +1572,6 @@ fn switched_off_args(
     let at = args.iter().rposition(|a| a == image)?;
     args.splice(at..at, ["-e".to_owned(), setting.to_owned()]);
     Some(args)
-}
-
-/// How the test model is started: fenced and hardened like the test provider.
-fn model_args<'a>(network: &'a str, name: &'a str, env: [&'a str; 2]) -> Vec<&'a str> {
-    let mut args = vec!["run", "-d", "--rm", "--name", name, "--network", network];
-    for pair in env {
-        args.extend(["-e", pair]);
-    }
-    args.extend([
-        PROVIDER_IMAGE,
-        "node",
-        "--input-type=module",
-        "-e",
-        MODEL_SCRIPT,
-    ]);
-    args
 }
 
 /// What the app is told about the test model: the addresses the OpenAI, Anthropic, and Google Gemini
@@ -2110,7 +2095,7 @@ impl DockerBackend {
         let host = format!("HOST={name}");
         let port = format!("PORT={MODEL_PORT}");
         matches!(
-            self.docker(&model_args(network, name, [&host, &port])),
+            self.docker(&helper_args(network, name, &[&host, &port], MODEL_SCRIPT)),
             Ok((0, _))
         )
     }
@@ -2445,10 +2430,15 @@ fn provider_start(
     let issuer = format!("ISSUER=http://{name}:{PROVIDER_PORT}");
     let port = format!("PORT={PROVIDER_PORT}");
     let client = format!("CLIENT_ID={PROVIDER_CLIENT_ID}");
-    let args = provider_args(network, name, [&issuer, &port, &client, "CLIENT_SECRET"])
-        .into_iter()
-        .map(str::to_owned)
-        .collect();
+    let args = helper_args(
+        network,
+        name,
+        &[&issuer, &port, &client, "CLIENT_SECRET"],
+        PROVIDER_SCRIPT,
+    )
+    .into_iter()
+    .map(str::to_owned)
+    .collect();
     (args, vec![("CLIENT_SECRET", secret.to_owned())])
 }
 
@@ -2537,14 +2527,6 @@ fn seed_failed(code: i32, out: &str, accounts: &sv_check::signed_in::Accounts) -
         "The seed command in stackvet.toml failed (exit {code}): {line}. With no accounts there \
          is nobody to sign in as."
     )
-}
-
-fn first_line(text: &str) -> String {
-    text.lines()
-        .map(str::trim)
-        .find(|l| !l.is_empty())
-        .unwrap_or("no detail")
-        .to_owned()
 }
 
 /// The lines of `docker logs --timestamps`, each `2026-10-06T05:12:04.123456789Z text`, in the
@@ -2741,13 +2723,6 @@ mod tests {
         }
         assert!(said.contains("SV_ADMIN_TOTP_SECRET=[a test secret, left out]"));
         assert!(said.contains("failed (exit 1)"));
-    }
-
-    #[test]
-    fn first_line_survives_empty_and_blank_output() {
-        assert_eq!(first_line(""), "no detail");
-        assert_eq!(first_line("\n\n  \n"), "no detail");
-        assert_eq!(first_line("\n  real message  \nsecond"), "real message");
     }
 }
 
@@ -3269,29 +3244,20 @@ impl DockerBackend {
     }
 }
 
-/// Turns a raw HTTP response into the shape the probes read.
 /// Whether Docker's answer to an `exec` says the container is not there to run it in.
 fn sidecar_gone(out: &str) -> bool {
     out.contains("No such container") || out.contains("is not running")
 }
 
+/// Turns a raw HTTP response into the shape the probes read; `None` when it has no status line.
 fn parse_response(id: &str, raw: &str) -> Option<sv_check::probes::ProbeResponse> {
     // A header block ends at the first blank line; tolerate a server that uses bare newlines.
     let (head, body) = raw
         .split_once("\r\n\r\n")
         .or_else(|| raw.split_once("\n\n"))
         .unwrap_or((raw, ""));
-    let mut lines = head.lines();
-    let status = lines
-        .next()?
-        .split_whitespace()
-        .nth(1)?
-        .parse::<u16>()
-        .ok()?;
-    let headers = lines
-        .filter_map(|line| line.split_once(':'))
-        .map(|(k, v)| (k.trim().to_lowercase(), v.trim().to_owned()))
-        .collect();
+    let (status, headers) = sv_check::probes::read_head(head);
+    let status = status?;
     Some(sv_check::probes::ProbeResponse {
         id: id.to_owned(),
         status,
@@ -3811,8 +3777,8 @@ mod probe_tests {
             browser_args("net", "b"),
             mail_args("net", "m"),
             driver_args("net", "JOB=1"),
-            provider_args("net", "p", ["A=1", "B=2", "C=3", "D=4"]),
-            model_args("net", "m", ["A=1", "B=2"]),
+            helper_args("net", "p", &["A=1", "B=2", "C=3", "D=4"], PROVIDER_SCRIPT),
+            helper_args("net", "m", &["A=1", "B=2"], MODEL_SCRIPT),
             backend.fence_args(&Via::FreshContainer("net")),
             vec!["create", "busybox"],
         ];
@@ -3973,7 +3939,12 @@ mod probe_tests {
 
     #[test]
     fn the_test_provider_is_fenced_and_hardened_like_the_sidecar() {
-        let args = provider_args("sv-1-net", "sv-1-idp", ["A=1", "B=2", "C=3", "D=4"]);
+        let args = helper_args(
+            "sv-1-net",
+            "sv-1-idp",
+            &["A=1", "B=2", "C=3", "D=4"],
+            PROVIDER_SCRIPT,
+        );
         hardened_by_prepared(&args);
         let at = args.iter().position(|a| *a == "--network").unwrap();
         assert_eq!(args[at + 1], "sv-1-net");
@@ -4042,7 +4013,12 @@ mod probe_tests {
 
     #[test]
     fn the_test_model_is_fenced_and_hardened_like_the_sidecar() {
-        let args = model_args("sv-1-net", "sv-1-model", ["HOST=sv-1-model", "PORT=9100"]);
+        let args = helper_args(
+            "sv-1-net",
+            "sv-1-model",
+            &["HOST=sv-1-model", "PORT=9100"],
+            MODEL_SCRIPT,
+        );
         hardened_by_prepared(&args);
         let at = args.iter().position(|a| *a == "--network").unwrap();
         assert_eq!(args[at + 1], "sv-1-net");

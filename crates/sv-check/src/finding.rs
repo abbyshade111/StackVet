@@ -63,14 +63,8 @@ impl Secret {
     /// a web address were the whole of it (the review of 8 October 2026, item 6).
     pub fn redact(value: &str) -> Self {
         let total = value.chars().count();
-        let visible: String = value.chars().take(4.min(total / 3)).collect();
-        let hidden = total.saturating_sub(visible.chars().count());
         Secret {
-            redacted: if hidden == 0 {
-                visible
-            } else {
-                format!("{visible}… ({hidden} more characters)")
-            },
+            redacted: crate::text::cut_with_count(value, 4.min(total / 3)),
             length: total,
         }
     }

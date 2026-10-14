@@ -74,11 +74,15 @@ fn a_long_subject_is_cut_short() {
         .and_then(|(_, rest)| rest.split_once(" (Cursor)"))
         .map(|(subject, _)| subject)
         .unwrap_or_else(|| panic!("the note quotes the subject: {}", f.description));
-    assert!(quoted.ends_with('…'), "{quoted}");
+    // Cut as every other long text is, saying how much was left out (backlog 0461).
+    let (head, rest) = quoted
+        .split_once('…')
+        .unwrap_or_else(|| panic!("a mark where it was cut: {quoted}"));
     assert_eq!(
-        quoted.chars().count(),
-        161,
-        "a thousand-character subject is quoted at 160 characters and a mark: {quoted}"
+        head.chars().count(),
+        160,
+        "a thousand-character subject is quoted at 160 characters: {quoted}"
     );
+    assert_eq!(rest, " (839 more characters)", "{quoted}");
     assert!(f.description.contains("(Cursor)"), "{}", f.description);
 }

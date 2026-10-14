@@ -82,12 +82,7 @@ fn file_lines(app_dir: &Path, path: &Path) -> Option<Vec<String>> {
 
 /// A line, cut at `LINE_CHARS` characters with how many more there were said.
 fn bounded(text: &str) -> String {
-    let n = text.chars().count();
-    if n <= LINE_CHARS {
-        return text.to_owned();
-    }
-    let head: String = text.chars().take(LINE_CHARS).collect();
-    format!("{head}… ({} more characters)", n - LINE_CHARS)
+    sv_check::text::cut_with_count(text, LINE_CHARS)
 }
 
 #[cfg(test)]

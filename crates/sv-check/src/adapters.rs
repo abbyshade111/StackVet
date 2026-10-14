@@ -2001,11 +2001,11 @@ pub fn did_not_finish(rules: &SecretRules, sarif: &str, app_dir: &Path) -> Vec<S
                     (Some(file), false) => {
                         format!(
                             "`{file}` ({})",
-                            said(rules, first_line(message), LINE_CHARS)
+                            said(rules, &crate::text::first_line(message), LINE_CHARS)
                         )
                     }
                     (Some(file), true) => format!("`{file}`"),
-                    (None, false) => said(rules, first_line(message), LINE_CHARS),
+                    (None, false) => said(rules, &crate::text::first_line(message), LINE_CHARS),
                     (None, true) => "an error it did not describe".to_owned(),
                 });
             }
@@ -2030,10 +2030,6 @@ pub fn did_not_finish(rules: &SecretRules, sarif: &str, app_dir: &Path) -> Vec<S
         out.push("its report says its run did not succeed, without saying why".to_owned());
     }
     out
-}
-
-fn first_line(text: &str) -> &str {
-    text.lines().next().unwrap_or("").trim()
 }
 
 /// A SARIF location as a path from the app folder: `file://` taken off, and the folder too.
