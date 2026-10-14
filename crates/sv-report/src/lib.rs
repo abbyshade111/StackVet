@@ -1182,13 +1182,16 @@ pub struct NotRunThisTime {
 /// The kinds of run this report did not have, and how many requirements only they reach.
 ///
 /// `reach` is `data/reach.json`: for each requirement, the kinds of run with a check that can
-/// credit it (written by `tools/coverage.py`). `tools_run` is whether the outside tools ran. Whether
-/// the app ran, and signed in, is read from `run_status`; with none recorded, nothing is said about
-/// it. `None` when every kind of run happened.
+/// credit it (written by `tools/coverage.py`), and the languages the outside tools that can credit
+/// it read. `tools_run` is whether the outside tools ran, and `app_languages` the languages the app
+/// is written in: a tool's reach counts only for an app in a language it reads (backlog 0471).
+/// Whether the app ran, and signed in, is read from `run_status`; with none recorded, nothing is
+/// said about it. `None` when every kind of run happened.
 pub fn not_run_this_time(
     report: &Report,
-    reach: &BTreeMap<String, Vec<String>>,
+    reach: &Reach,
     tools_run: bool,
+    app_languages: &std::collections::BTreeSet<String>,
 ) -> Option<NotRunThisTime> {
     let mut not_run: Vec<&str> = Vec::new();
     let mut kinds = Vec::new();
@@ -1229,9 +1232,22 @@ pub fn not_run_this_time(
             )
         })
         .filter(|r| {
-            reach
-                .get(&r.id)
-                .is_some_and(|k| !k.is_empty() && k.iter().all(|k| not_run.contains(&k.as_str())))
+            // A tool reaches the requirement here only if it reads one of the app's languages; one
+            // recorded with no languages is taken to read any.
+            let tools_read_it = || {
+                reach
+                    .tools_languages
+                    .get(&r.id)
+                    .is_none_or(|langs| langs.iter().any(|l| l == "*" || app_languages.contains(l)))
+            };
+            reach.requirements.get(&r.id).is_some_and(|k| {
+                let here: Vec<&str> = k
+                    .iter()
+                    .map(String::as_str)
+                    .filter(|k| *k != "tools" || tools_read_it())
+                    .collect();
+                !here.is_empty() && here.iter().all(|k| not_run.contains(k))
+            })
         })
         .count();
     Some(NotRunThisTime {
@@ -1240,13 +1256,19 @@ pub fn not_run_this_time(
     })
 }
 
-/// `data/reach.json`, read: requirement id to the kinds of run that can credit it.
-pub fn read_reach(text: &str) -> anyhow::Result<BTreeMap<String, Vec<String>>> {
-    #[derive(serde::Deserialize)]
-    struct File {
-        requirements: BTreeMap<String, Vec<String>>,
-    }
-    Ok(serde_json::from_str::<File>(text)?.requirements)
+/// `data/reach.json`, read.
+#[derive(Debug, Clone, Default, serde::Deserialize)]
+pub struct Reach {
+    /// Requirement id to the kinds of run that can credit it.
+    pub requirements: BTreeMap<String, Vec<String>>,
+    /// Requirement id to the languages the outside tools that can credit it read, `*` for any.
+    #[serde(default)]
+    pub tools_languages: BTreeMap<String, Vec<String>>,
+}
+
+/// `data/reach.json`, read.
+pub fn read_reach(text: &str) -> anyhow::Result<Reach> {
+    Ok(serde_json::from_str::<Reach>(text)?)
 }
 
 #[derive(Debug, Clone, Serialize)]

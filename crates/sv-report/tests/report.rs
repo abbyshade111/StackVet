@@ -3835,7 +3835,7 @@ fn the_short_version_says_what_did_not_run_and_what_only_it_reaches() {
         ],
         ..Default::default()
     };
-    let reach: std::collections::BTreeMap<String, Vec<String>> = [
+    let requirements: std::collections::BTreeMap<String, Vec<String>> = [
         // Only the running app reaches it.
         ("V1.2.1", vec!["running"]),
         // Plain `sv check` reaches it too, so a run without the app is not what it waits on.
@@ -3848,6 +3848,12 @@ fn the_short_version_says_what_did_not_run_and_what_only_it_reaches() {
     .into_iter()
     .map(|(q, k)| (q.to_owned(), k.into_iter().map(str::to_owned).collect()))
     .collect();
+    // No languages recorded for the tools: each reaches any app, as before backlog 0471.
+    let reach = sv_report::Reach {
+        requirements,
+        tools_languages: Default::default(),
+    };
+    let langs = std::collections::BTreeSet::new();
     let report_with = |run_status: Option<RunStatus>, verified: &[Verified]| {
         let mut i = inputs(&f, &buckets, vec![], verified);
         i.run_status = run_status;
@@ -3861,7 +3867,7 @@ fn the_short_version_says_what_did_not_run_and_what_only_it_reaches() {
 
     // Nothing but the files read: the running app, signed in or not, and the tools did not run.
     let report = report_with(not_asked(), &[]);
-    let line = sv_report::not_run_this_time(&report, &reach, false).unwrap();
+    let line = sv_report::not_run_this_time(&report, &reach, false, &langs).unwrap();
     assert_eq!(line.kinds.len(), 2, "{line:?}");
     assert_eq!(
         line.only_they_reach, 3,
@@ -3869,7 +3875,7 @@ fn the_short_version_says_what_did_not_run_and_what_only_it_reaches() {
     );
 
     // The tools ran: only what needs the app is left.
-    let line = sv_report::not_run_this_time(&report, &reach, true).unwrap();
+    let line = sv_report::not_run_this_time(&report, &reach, true, &langs).unwrap();
     assert_eq!((line.kinds.len(), line.only_they_reach), (1, 2));
 
     // A requirement already checked is not counted as waiting on anything.
@@ -3879,7 +3885,7 @@ fn the_short_version_says_what_did_not_run_and_what_only_it_reaches() {
         "the running app".to_owned(),
     )];
     let report = report_with(not_asked(), &checked);
-    let line = sv_report::not_run_this_time(&report, &reach, true).unwrap();
+    let line = sv_report::not_run_this_time(&report, &reach, true, &langs).unwrap();
     assert_eq!(line.only_they_reach, 1, "only V8.2.1 now");
 
     // Started, not signed in, tools run: only the signed-in checks are missing.
@@ -3893,19 +3899,19 @@ fn the_short_version_says_what_did_not_run_and_what_only_it_reaches() {
         })
     };
     let report = report_with(started(false), &[]);
-    let line = sv_report::not_run_this_time(&report, &reach, true).unwrap();
+    let line = sv_report::not_run_this_time(&report, &reach, true, &langs).unwrap();
     assert_eq!((line.kinds.len(), line.only_they_reach), (1, 1), "{line:?}");
     assert!(line.kinds[0].contains("signed-in"), "{line:?}");
 
     // Everything ran, or nobody recorded whether the app ran: nothing to say.
     let report = report_with(started(true), &[]);
-    assert!(sv_report::not_run_this_time(&report, &reach, true).is_none());
+    assert!(sv_report::not_run_this_time(&report, &reach, true, &langs).is_none());
     let report = report_with(None, &[]);
-    assert!(sv_report::not_run_this_time(&report, &reach, true).is_none());
+    assert!(sv_report::not_run_this_time(&report, &reach, true, &langs).is_none());
 
     // Shown in both short versions, after the counted list rather than inside it.
     let mut report = report_with(not_asked(), &[]);
-    report.not_run_this_time = sv_report::not_run_this_time(&report, &reach, false);
+    report.not_run_this_time = sv_report::not_run_this_time(&report, &reach, false, &langs);
     let markdown = sv_report::markdown::compliance(&report);
     let html = sv_report::html::page(&report);
     for rendered in [&markdown, &html] {
