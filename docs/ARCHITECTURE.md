@@ -107,11 +107,26 @@ its rules cites, and nothing else.
 
 ## The exit codes
 
-`sv check`, `sv report`, `sv audit`, and `sv run` (`crates/sv-cli/src/exit.rs`): 0, finished; 1, something needs a person (a
-known vulnerability for `sv audit`; a finding at or above the bar with `--fail-on attention`); 2, not assessed (a
-check could not run, or no file of the app was read; more with `--fail-on not-assessed`); 3, `sv` itself failed. By
-default findings alone do not fail a run (ADR-029): an AI coding tool that reads a failure rewrites the code until
-it stops, so the bar is the person's to set.
+This is the one table of them; the README and the guide link here (`crates/sv-cli/src/exit.rs` decides them,
+`crates/sv-cli/src/probe_verdict.rs` for `sv probe`).
+
+| Command | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| `sv check`, `sv report` | Finished | Only with `--fail-on attention`: a finding of low severity or worse, leaving out those marked only for information (`attention:high` for high and critical only) | A check could not run (a file that could not be read or parsed, a language nothing here reads, a code rule that would not compile), no file of the app was read, or, for `sv report --run`, the app could not be started; with `--fail-on not-assessed`, also a symbolic link not followed, an outside tool that did not run, or an `--advisories` comparison that did not cover the app | `sv` itself failed: a folder that is not there, an option it does not know, a `stackvet.toml` that is there and cannot be read (for `sv report`, none at all), or a fault in `sv`; there is no result |
+| `sv audit` | Every package was compared, and none matched a known vulnerability | A package matched a known vulnerability | The comparison did not cover the whole app: no database, an ecosystem the database holds nothing about, or a list of packages `sv` could not complete | As above |
+| `sv run` | The app started and answered | Never | The app could not be started, or never answered, so nothing about it running was checked | As above |
+| `sv probe` | The address answered | Never | The address was not reached, so nothing about it was checked | As above |
+| Every other command | Finished | Never | Never | Its own failure |
+
+- `--fail-on any` is both `attention` and `not-assessed`. 1 outranks 2, and 3 is never combined with anything, since a
+  run that failed has no result to rank. Ctrl-C keeps 130, the usual code for it.
+- `--baseline <an older report folder>`: `--fail-on attention` then exits 1 only for a finding that report did not
+  hold. Every finding is still listed and counted, and those it held are marked; a baseline `sv` cannot read, or one
+  for an app of another name, stops the run (3).
+- What a static run cannot see by its nature, such as requirements nothing verified or a check that needs a Dockerfile
+  the app lacks, does not count toward 2, or every run would exit 2 and the status would say nothing.
+- By default findings alone do not fail a run (ADR-029): an AI coding tool that reads a failure rewrites the code until
+  it stops, so the bar is the person's to set.
 
 ## The MCP server (`crates/sv-cli/src/mcp/`)
 

@@ -52,26 +52,13 @@ rule that has not been taught a language in your app claims nothing, and the rep
 
 ### Exit codes
 
-`sv check`, `sv report`, `sv audit`, and `sv run` end with a status a CI job can act on. 3 always means `sv` itself
-failed and there is no result: a folder that is not there, an option it does not know, a `stackvet.toml` that is
-there and cannot be read, or, for `sv report`, none at all (`sv check` and `sv audit` run without one, and read it
-when it is there; every other command uses 3 for a failure of its own too). `sv run` exits 2 when the app could not
-be started or never answered. `sv audit` exits 0 when every package was compared
-and none matched a known vulnerability, 1 when one did, and 2 when the comparison did not cover the whole app (no
-database, an ecosystem the database holds nothing about, or a list of packages `sv` could not complete).
-`sv check` and `sv report` exit 0 when they finished, and 2 when a check could not run: a file that could not be
-read, a file the parser could not make sense of, a language nothing here reads, a code rule that would not
-compile, no file of the app read at all, or (`sv report --run`) an app that could not be started. What a static
-run cannot see by its nature, such as requirements nothing verified or a check that needs a Dockerfile the app
-lacks, does not count, or every run would exit 2. Add `--fail-on attention` to exit 1 for any finding of low
-severity or worse, leaving out those marked only for information (or `attention:high` for high and critical
-only), `--fail-on not-assessed` to exit 2 also for a symbolic link not
-followed, an outside tool that did not run, or an `--advisories` comparison that did not cover the app, or
-`--fail-on any` for both; 1 outranks 2. To start using `sv` on an app that already has findings you know
-about, add `--baseline <an older report folder>`: `--fail-on attention` then exits 1 only for a finding that
-report did not have. Every finding is still listed and counted, and the ones already there are marked, so
-nothing is hidden; a baseline `sv` cannot read, or one for an app of another name, stops the run. Packages
-in folders `stackvet.toml` says are not the app, such as example apps and test fixtures, are listed apart
+`sv check`, `sv report`, `sv audit`, `sv run`, and `sv probe` end with a status a CI job can act on: 0 finished, 1
+something needs a person (`sv audit`'s known vulnerability, or a finding when you ask with `--fail-on`), 2 not
+assessed (part of what was asked could not be checked), and 3 `sv` itself failed. Findings alone never fail a run
+unless you ask; [the table in `docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-exit-codes) says exactly what each
+number means for each command, with `--fail-on` and `--baseline`.
+
+Packages in folders `stackvet.toml` says are not the app, such as example apps and test fixtures, are listed apart
 and still count: that file is written by your AI coding tool, and naming a folder there must never hide a
 vulnerability. `sv` holds itself to this every week, auditing the Rust files it is built from
 (`.github/workflows/audit.yml`).
