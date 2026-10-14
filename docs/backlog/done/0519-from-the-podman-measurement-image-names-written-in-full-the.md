@@ -24,8 +24,8 @@ their digests stay what they are; say so in the pull request.
 through a `docker` on the PATH that runs `podman`, as in 0508.
 - **Image names in full.** `crates/sv-run/images/Dockerfile` names the four helpers with their registry first
   (`docker.io/library/busybox`, `docker.io/axllent/mailpit`, `docker.io/library/node`, and
-  `docker.io/chromedp/headless-shell`), each with the same tag and fingerprint, so CI fetches and `sv` runs the same images as before. The images an app's
-  own `stackvet.toml` names are the owner's and are left as written.
+  `docker.io/chromedp/headless-shell`), each with the same tag and fingerprint, so CI fetches and `sv` runs the same
+  images as before. The images an app's own `stackvet.toml` names are the owner's and are left as written.
 - **The backend check.** Podman's answer to `docker info --format {{.OSType}}` fails on its own type
   (`*define.Info`); `sv` now says "the `docker` command here is Podman, which `sv` does not run the app under yet;
   the running-app checks need Docker" instead of passing Podman's template error on. `sv doctor` says so with
