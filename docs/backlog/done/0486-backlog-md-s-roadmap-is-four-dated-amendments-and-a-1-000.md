@@ -1,6 +1,6 @@
 # BACKLOG.md's roadmap is four dated amendments and a 1,000-word status snapshot, where a table from the status lines would do
 
-**Status:** claimed by documentation, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -23,3 +23,15 @@ From the deep review of 13 October 2026 (backlog 0417), area: documentation. Sev
   governs the file.
 - Needs a decision record?: no new decision; ADR-061 gets an "unchanged, because" line (the layout rule stands;
   the roadmap's form changes).
+
+**What was built (14 October 2026, session documentation).** The roadmap in `docs/BACKLOG.md` is a table between
+`<!-- roadmap:start -->` and `<!-- roadmap:end -->`, one row per item in the old order (order, phase, item, status,
+asked for). `python3 tools/backlog.py roadmap` compares each row's status with the item's own status line, and
+`roadmap --write` rewrites a stale row; `claim` and `done` refresh it when they change an item named there, and
+`--check` fails while a row is stale. The four dated amendments became a short "Changes to the order" list with their
+dates. The rule that a claim and a done note go on the item, never here, stays in the section's opening. Held by
+`crates/sv-cli/tests/backlog_roadmap.rs` and by `backlog_board.rs` through `--check`; with one status cell set to
+`open` by hand, a test in each went red. The file went from 2,678 to about 2,340 words, short of the item's 1,500-word
+saving, because the table keeps one row per item. Not deleted: the 11 October status snapshot moved word for word to
+the design entry `docs/design/0385-the-roadmap-s-status-checked-against-the-code-11-october.md`, since deleting it
+was not mine to do; the phases' own longer wording is in this file's history.
