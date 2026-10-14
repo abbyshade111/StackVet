@@ -1,6 +1,6 @@
 # Five base64 implementations in two crates, with two decoders that disagree on the alphabet
 
-**Status:** open
+**Status:** claimed by documentation, 13 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

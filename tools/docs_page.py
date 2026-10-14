@@ -43,7 +43,8 @@ LEFT_OUT = ("docs/paper/", "examples/", "target/", "crates/", "v1/")
 
 # The sections the index lists, in order: (title, test on the document's path).
 SECTIONS = [
-    ("Start here", lambda p: p in ("README.md", "docs/GETTING-STARTED.md")),
+    ("Start here", lambda p: p in ("README.md", "docs/GETTING-STARTED.md", "docs/INSTALL.md", "docs/REVIEW.md",
+                                   "docs/ALL-YOUR-APPS.md", "docs/KNOWN-VULNERABILITIES.md")),
     ("Decision records", lambda p: p.startswith("docs/adr/")),
     ("Prompts", lambda p: p.startswith("docs/prompts/") or p == "docs/PROMPTS.md"),
     # The backlog, one item per file (docs/adr/ADR-061.md), and the design record, one entry per file (ADR-060),

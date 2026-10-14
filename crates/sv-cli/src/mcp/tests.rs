@@ -1607,7 +1607,8 @@ fn the_guide_the_container_points_at_says_how_to_install_sv() {
     // said the install "is not yet something this guide can make easy". The message stays true only
     // while the guide holds the steps.
     let text = terminal_command("/Users/me/code/app", "--run", true, None);
-    let guide_name = "docs/GETTING-STARTED.md";
+    // The install steps left the guide for a page of their own in backlog 0440; the message names that page.
+    let guide_name = "docs/INSTALL.md";
     assert!(text.contains(guide_name), "{text}");
     let guide = std::fs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -1616,7 +1617,8 @@ fn the_guide_the_container_points_at_says_how_to_install_sv() {
     )
     .expect("the guide the message names exists");
     assert!(
-        guide.contains("## 6.") && guide.len() > 1000,
+        guide.contains("## Installing StackVet on your computer, for `--run`")
+            && guide.len() > 1000,
         "the guide was read whole"
     );
     for step in [

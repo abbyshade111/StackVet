@@ -1,4 +1,4 @@
-//! The guide's "Keeping StackVet up to date" (`docs/GAP-ANALYSIS.md`, 5.3), held to the workflow that
+//! "Keeping StackVet up to date" (`docs/GAP-ANALYSIS.md`, 5.3; in `docs/INSTALL.md` since backlog 0440), held to the workflow that
 //! publishes the image and to what `sv --version` prints: a guide that names an image nobody publishes,
 //! or a tag that does not exist, sends the owner to an update that never comes.
 
@@ -42,8 +42,8 @@ fn the_guide_updates_the_image_the_workflow_publishes() {
     let workflow = read(".github/workflows/rust.yml");
     let image = published_image(&workflow);
     assert_eq!(image, "ghcr.io/abbyshade111/stackvet-sv", "the setup");
-    let guide = read("docs/GETTING-STARTED.md");
-    let section = update_section(&guide);
+    let install = read("docs/INSTALL.md");
+    let section = update_section(&install);
 
     assert!(
         section.contains(&format!("docker pull {image}\n")),
@@ -58,11 +58,12 @@ fn the_guide_updates_the_image_the_workflow_publishes() {
         section.contains("`git pull`, then `sh tools/install.sh`"),
         "{section}"
     );
-    assert!(guide.contains("then `git pull`, then `sh tools/install.sh` again"));
+    assert!(install.contains("then `git pull`, then `sh tools/install.sh` again"));
     // A new version is picked up only when the tool starts the server again.
     assert!(section.contains("restart your AI tool"), "{section}");
 
-    // Every image the guide names is the one published, so a rename cannot leave the guide behind.
+    // Every image the guide and the install page name is the one published, so a rename cannot leave either behind.
+    let guide = read("docs/GETTING-STARTED.md") + &install;
     let named = guide.matches("ghcr.io/").count();
     assert!(
         named >= 8,
@@ -110,9 +111,9 @@ fn a_version_can_be_held_to_by_its_commit() {
         publish.contains("docker push \"$IMAGE:latest\""),
         "the newest is not published as latest"
     );
-    let guide = read("docs/GETTING-STARTED.md");
+    let install = read("docs/INSTALL.md");
     assert!(
-        update_section(&guide).contains("followed by the whole commit that `--version` prints")
+        update_section(&install).contains("followed by the whole commit that `--version` prints")
     );
 
     // And `--version` prints the whole commit, as the guide says: 40 letters and digits.

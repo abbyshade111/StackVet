@@ -611,6 +611,7 @@ RUST_IN_PART |= {"config.versions-pinned", "sbom"}
 # suite: a check it saw credit only in part must be here, and one it saw credit whole once must not.
 RUST_IN_PART |= {
     "config.gitignore-covers-env",
+    "config.workflow-checkout-keeps-token",
     "config.secrets-file-committed",
     "probe.action-done-twice",
     "probe.ai-agent-unbounded",
@@ -919,11 +920,16 @@ def check_credits(log):
         path, number = logged_place(at)
         if shipping.get(path, 0) < int(number):
             continue
+        # A credit that names no requirement can make none *checked*, so it says nothing about whether
+        # the check is only ever in part (backlog 0469: the checkout check's credit for a workflow that
+        # checks nothing out).
         if len(parts) == 4:
-            (marked if parts[2] == "in part" else unmarked)[check] += 1
+            if ids:
+                (marked if parts[2] == "in part" else unmarked)[check] += 1
             continue
         lines += 1
-        made[check] += 1
+        if ids:
+            made[check] += 1
         credited[check].update(q for q in ids.split(",") if q)
     if not lines:
         return [f"{log} holds no credit from a check: was the suite run with SV_CREDIT_LOG set?"]
@@ -1184,6 +1190,14 @@ def main():
             c in CREDITED_BY_TOOL[q] if tier == "tools" else c not in sv_only
             for tier, checks in ev[q].items() for c in checks)
 
+    def credited_whole(q):
+        """A check can mark q *checked*, not only *checked in part*: a crediting check of `sv`'s that is not
+        only ever in part, or a tool with a rule a clean run credits to q (backlog 0470)."""
+        sv_only = {r for tool, r in FINDINGS_ONLY.get(q, ()) if tool == "sv"}
+        return settles(q) and any(
+            c in CREDITED_BY_TOOL[q] if tier == "tools" else (c not in sv_only and c not in IN_PART)
+            for tier, checks in ev[q].items() for c in checks)
+
     out = []
     w = out.append
 
@@ -1194,9 +1208,11 @@ def main():
     w("- **Can settle**: at least one check can mark the requirement *checked* or *needs attention*.")
     w("  A check is almost always about part of a requirement: a clean result is one automated check")
     w("  that was satisfied, not a pass.")
-    w("- **Can be credited**: of those, the ones a check can mark *checked*. The rest can only ever be")
-    w("  found failing: a check can show the control missing, and finding nothing does not show it")
-    w("  present, so a clean run credits nothing for them.")
+    w("- **Can be credited**: of those, the ones a check can mark *checked* or *checked in part*. The rest")
+    w("  can only ever be found failing: a check can show the control missing, and finding nothing does not")
+    w("  show it present, so a clean run credits nothing for them. Some can only ever be *checked in part*,")
+    w("  because every check that credits them tries part of what they ask; the sentence under the level")
+    w("  table counts them, and docs/REQUIREMENTS.md marks each \"(only ever in part)\".")
     w("- **Supporting only**: a check speaks to it, but the requirement asks something no check can")
     w("  answer, such as a documented policy or a design decision. The check is shown beside it and")
     w("  a person still has to answer it. No Secure by Design control is ever settled by a check: each")
@@ -1256,6 +1272,11 @@ def main():
       "it present, so a clean run credits none of them. They are counted under *Can settle* and not under "
       "*Can be credited*, and the kinds of check above count every requirement a check can settle either "
       "way.\n")
+    credited_asvs = [q for q in asvs if credited(q)]
+    part_only = [q for q in credited_asvs if not credited_whole(q)]
+    w(f"{len(part_only)} of the {len(credited_asvs)} ASVS requirements that can be credited can only ever be "
+      "*checked in part*: every check that credits them tries part of what they ask, so the most a clean run "
+      "gives them is *checked in part*, never *checked*.\n")
     plain = [q for q in asvs if settles(q) and tiers(q) == ["static"]]
     only_tools = [q for q in asvs if settles(q) and tiers(q) == ["tools"]]
     w(f"With nothing beyond plain `sv check`, {sum(settles(q) and 'static' in tiers(q) for q in asvs)} "
