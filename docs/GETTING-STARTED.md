@@ -105,7 +105,8 @@ test that talks to it the way the tool does, not yet in the app itself.
 ### VS Code (GitHub Copilot)
 
 **Tried on 27 September 2026, by the owner, start to finish:** Copilot's agent called StackVet's
-tools, asked every question from `stackvet_questions` one at a time, wrote a fix for the path
+tools, asked every question from `stackvet_questions` (since 9 October 2026, `stackvet_check`'s section
+`questions`) one at a time, wrote a fix for the path
 findings `stackvet_check` reported, and checked the fix by running the check again. The answers were
 saved in the app's folder, and a fresh report showed them and the fix. That was with `sv` installed
 directly; the container settings below have not been tried in VS Code yet.
@@ -637,6 +638,6 @@ does not touch the copy you are using.
 
 ## Known problems while this is new
 
-Found in the first real build. Each is in `docs/BACKLOG.md`. The two listed here before, a rate limiter
+Found in the first real build. Each is an item under `docs/backlog/`. The two listed here before, a rate limiter
 counted as a public API and security notes the AI tool wrote counted as yours, were fixed on
 27 September 2026. Nothing from that build is known to be open.

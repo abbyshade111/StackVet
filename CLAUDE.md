@@ -1,7 +1,7 @@
 # StackVet — notes for Claude Code sessions
 
 StackVet (`sv`) is a Rust command-line tool and MCP server that checks an app written in any language against OWASP
-ASVS 5.0, AISVS 1.0 and the Secure by Design checklist, and writes reports that say plainly what was verified and what
+ASVS 5.0, AISVS 1.0, and the Secure by Design checklist, and writes reports that say plainly what was verified and what
 was not. The person builds the app in their own AI coding tool; `sv` picks up the code and grades it. Read
 `docs/ARCHITECTURE.md` first: it is the ten-minute map of the crates, `data/`, `docs/`, and `tools/` (each script says
 its purpose at its top). The design is `docs/design/`, what is left to do is `docs/backlog/` (the roadmap is at the top

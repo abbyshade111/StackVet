@@ -107,7 +107,7 @@ its rules cites, and nothing else.
 
 ## The exit codes
 
-`sv check`, `sv report`, and `sv audit` (`crates/sv-cli/src/exit.rs`): 0, finished; 1, something needs a person (a
+`sv check`, `sv report`, `sv audit`, and `sv run` (`crates/sv-cli/src/exit.rs`): 0, finished; 1, something needs a person (a
 known vulnerability for `sv audit`; a finding at or above the bar with `--fail-on attention`); 2, not assessed (a
 check could not run, or no file of the app was read; more with `--fail-on not-assessed`); 3, `sv` itself failed. By
 default findings alone do not fail a run (ADR-029): an AI coding tool that reads a failure rewrites the code until

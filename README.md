@@ -54,7 +54,7 @@ way. Templates that cannot run code (Handlebars, Mustache, Jinja, Liquid, Twig, 
 `.pug`, `.erb`, `.jsp`, `.cshtml` or `.razor` file is present, no code rule claims anything, because nothing reads
 the code in those yet, and the report names the files (ADR-054).
 
-`sv check`, `sv report`, `sv audit` and `sv run` end with a status a CI job can act on. 3 always means `sv` itself
+`sv check`, `sv report`, `sv audit`, and `sv run` end with a status a CI job can act on. 3 always means `sv` itself
 failed and there is no result: a folder that is not there, an option it does not know, a `stackvet.toml` that is
 there and cannot be read, or, for `sv report`, none at all (`sv check` and `sv audit` run without one, and read it
 when it is there; every other command uses 3 for a failure of its own too). `sv run` exits 2 when the app could not
