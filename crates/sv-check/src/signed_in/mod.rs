@@ -407,12 +407,30 @@ fn tags(body: &str, name: &str) -> Vec<String> {
 
 /// An attribute's value from inside one tag, quoted with `"`, with `'`, or not at all — all three
 /// are valid HTML, and a page written with unquoted attributes was the first real app this met.
+///
+/// Each name's pattern is compiled once and kept, rather than on every call for every tag of every
+/// page (backlog 0463); the names are this crate's own, a handful in all.
 fn attribute(tag: &str, name: &str) -> Option<String> {
-    let pattern = regex::Regex::new(&format!(
-        r#"(?i)(?:^|\s){}\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))"#,
-        regex::escape(name)
-    ))
-    .ok()?;
+    static PATTERNS: std::sync::LazyLock<
+        std::sync::Mutex<std::collections::HashMap<String, regex::Regex>>,
+    > = std::sync::LazyLock::new(Default::default);
+    let pattern = {
+        let mut kept = PATTERNS
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        match kept.get(name) {
+            Some(pattern) => pattern.clone(),
+            None => {
+                let pattern = regex::Regex::new(&format!(
+                    r#"(?i)(?:^|\s){}\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))"#,
+                    regex::escape(name)
+                ))
+                .ok()?;
+                kept.insert(name.to_owned(), pattern.clone());
+                pattern
+            }
+        }
+    };
     let captures = pattern.captures(tag)?;
     (1..=3)
         .find_map(|i| captures.get(i))
@@ -2471,6 +2489,8 @@ mod account_changes_tests;
 mod admin_actions_two_tests;
 #[cfg(test)]
 mod asked_tests;
+#[cfg(test)]
+mod attribute_tests;
 #[cfg(test)]
 mod check_guard_tests;
 #[cfg(test)]
