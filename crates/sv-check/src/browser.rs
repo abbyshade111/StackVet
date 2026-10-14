@@ -774,9 +774,9 @@ fn sign_out_visible(users: &UsersSection, visits: &[(&str, Value)], out: &mut Ou
                     if seen == 1 { "" } else { "s" }
                 ),
             )
-            .in_part()
-            // Each private page listed is drawn; one drawn is one sample (ADR-053, Later).
-            .in_part_if(visits.len() == 1),
+            // In part however many pages are drawn: the pages stackvet.toml lists are the ones
+            // drawn, not every page a signed-in person can reach (ADR-090, group H).
+            .in_part(),
         );
     }
 }
