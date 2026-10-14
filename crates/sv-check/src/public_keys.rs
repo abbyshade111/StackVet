@@ -155,34 +155,9 @@ fn jwt_role(value: &str) -> Option<String> {
     if !head.starts_with("eyJ") {
         return None;
     }
-    let json: serde_json::Value = serde_json::from_slice(&base64url(payload)?).ok()?;
+    let json: serde_json::Value =
+        serde_json::from_slice(&crate::encoding::read_token_part(payload)?).ok()?;
     json.get("role")?.as_str().map(str::to_owned)
-}
-
-/// Base64url without padding, as a token's parts are written.
-fn base64url(text: &str) -> Option<Vec<u8>> {
-    let mut out = Vec::with_capacity(text.len() * 3 / 4);
-    let mut bits = 0u32;
-    let mut count = 0;
-    for b in text.bytes() {
-        let six = match b {
-            b'A'..=b'Z' => b - b'A',
-            b'a'..=b'z' => b - b'a' + 26,
-            b'0'..=b'9' => b - b'0' + 52,
-            b'-' | b'+' => 62,
-            b'_' | b'/' => 63,
-            b'=' => break,
-            _ => return None,
-        };
-        bits = (bits << 6) | u32::from(six);
-        count += 6;
-        if count >= 8 {
-            count -= 8;
-            out.push((bits >> count) as u8);
-            bits &= (1 << count) - 1;
-        }
-    }
-    Some(out)
 }
 
 #[track_caller]
@@ -395,3 +370,7 @@ mod tests {
         assert!(found(".env", "VITE_OPENAI_KEY=sk-your-key\n").is_empty());
     }
 }
+
+#[cfg(test)]
+#[path = "public_keys_alphabet_tests.rs"]
+mod alphabet_tests;
