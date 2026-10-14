@@ -227,15 +227,21 @@ tell us in a GitHub issue.
 
 *Outside tools, run with every report when they are installed (add `--no-tools` to leave them out):*
 - **Semgrep**, and **Opengrep** in its place when Semgrep isn't installed, running the Semgrep Registry rules. The
-  rules are under the Semgrep Rules License, which allows use but not resale; StackVet is not sold.
+  rules are under the Semgrep Rules License, which allows use but not resale; StackVet is not sold. Semgrep and
+  Opengrep themselves are under the GNU LGPL 2.1.
 - **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby, only when you turn it on (`[tools] codeql = true`
-  in `stackvet.toml`): its license allows it on an app released under an open-source license, for academic research,
-  or with a paid GitHub Advanced Security license.
-- **Bandit**, for Python. **Brakeman**, for Ruby on Rails. **gosec**, for Go.
+  in `stackvet.toml`). The CodeQL command-line tool is under the GitHub CodeQL Terms and Conditions, which allow it
+  on an app released under an open-source license, for academic research, or with a paid GitHub Advanced Security
+  license; its queries are under the MIT License.
+- **Bandit**, for Python, and **gosec**, for Go, both under the Apache License 2.0. **Brakeman**, for Ruby on
+  Rails, under the Brakeman Public Use License, which allows use to analyze your own software and not commercial
+  use.
 
 *Data:*
-- **OSV**, the open vulnerability database, which you download yourself.
-- **MITRE ATLAS**, for the threats to apps that use AI, in the report's threat list.
+- **OSV**, the open vulnerability database, which you download yourself. Each of its sources keeps its own
+  license, most of them CC BY 4.0, CC0 1.0, MIT, or Apache 2.0 (the list is on osv.dev).
+- **MITRE ATLAS**, for the threats to apps that use AI, in the report's threat list. Apache License 2.0;
+  StackVet keeps MITRE's copyright line with the technique names it holds.
 - **FIRST's CVSS 4.0 calculator**, whose tables StackVet uses to score vulnerabilities, with its copyright notice
   and license kept.
 
@@ -244,7 +250,14 @@ StackVet is not made by or endorsed by OWASP, GitHub, Semgrep, MITRE, FIRST, or 
 - garak is left out: the owner decided on 26 September 2026 not to take it up (backlog 0140).
 - CC BY-SA 4.0 asks for credit, a link to the license, and a note of changes; the credits page says StackVet holds
   the standards as data and words some of them plainly.
-- Each license is confirmed from its source before launch (item 5); CodeQL's and Brakeman's first.
+- Each license was read from its source on 14 October 2026 (backlog 0374): the three OWASP standards (CC BY-SA 4.0,
+  each repository's own `LICENSE.md`), Semgrep and Opengrep (LGPL 2.1), CodeQL (its command-line tool's
+  `LICENSE.md` in github/codeql-cli-binaries, and the MIT License of github/codeql), Bandit and gosec (Apache 2.0),
+  Brakeman (`LICENSE.md` in presidentbeef/brakeman), OSV (osv.dev's data page), MITRE ATLAS (Apache 2.0, with no
+  NOTICE file), and FIRST's calculator (BSD 2-Clause, as ADR-033 records). StackVet's image installs none of the
+  outside tools: the person installs each, and its license governs their own use. The Semgrep Rules License's own
+  page could not be read from the session that checked (its network refused semgrep.dev); the owner's reading of
+  26 September (ADR-018) stands. Three questions for the owner are backlog 0513.
 
 ## Not yet true, and filed
 
