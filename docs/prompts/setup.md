@@ -43,6 +43,7 @@ nothing, such as `docker info`, allowing that one command again in the same chat
 | 4. Check that it's connected | Asks StackVet itself whether everything is ready | No |
 | 5. Start building | The first prompt of your app's build, with your app described at the top | Your app's folder, as it builds |
 | 6. Make the full report | Installs or updates StackVet on your computer, then starts your app in a container and runs the security tools | Installs and runs only with your yes, each time |
+| 7. Record my answers as mine | Goes through what is still only your AI tool's word, then tells you the one command to type yourself | No: you type the command |
 
 ## 1. Look at my computer
 
@@ -294,11 +295,23 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    you delete the report's folder, or anything else.
 <!-- setup-step-6:end -->
 
+## 7. Record my answers as mine
+
 **Your answers count as yours only once you record them yourself.** The report shows the answers your AI tool wrote
 as the tool's word, even when it was writing down what you said, until you record them with `sv review` in your app's
 folder (`stackvet review` in PowerShell). It asks your name, shows each answer, and signs the ones you confirm with a
-key of your own, protected by a passphrase you choose, so your AI tool cannot run it for you. Then make the full report
-again, and those answers count as yours.
+key of your own, protected by a passphrase you choose, so your AI tool cannot run it for you. Your AI tool can still
+walk you to it. Not yet tried in any AI tool. Paste this into the same chat, in your app's folder:
+
+<!-- setup-step-7:start -->
+> Read stackvet.toml and security-notes.md and tell me, one at a time and in plain words, each answer or finding that
+> is still only your word or your proposal, and what I should look at before I say it is mine. Don't change either
+> file to say an answer is mine: only I can do that, with `sv review`. Then tell me the one command to type in my
+> terminal (`sv review .`, or `stackvet review .` in PowerShell), say that you cannot run it for me, and wait. When I
+> say I am done, run stackvet_check again and tell me what changed.
+<!-- setup-step-7:end -->
+
+Then make the full report again (prompt 6), and the answers you recorded count as yours.
 
 Everything else StackVet can do, from answering its questions to keeping it up to date, is in
 [the guide](../GETTING-STARTED.md), from step 5.
