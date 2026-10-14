@@ -94,6 +94,16 @@ what to do about it.
 Nothing was checked, so nothing is known. StackVet never counts "not assessed" as passing. A report with few findings
 is only good news when its list of what was not assessed is short too.
 
+## Needs attention
+
+The status of a requirement that a check found something wrong with. It is the strongest status in the report: fix
+what it names first.
+
+## Checked in part
+
+The status of a requirement that a check of StackVet's own looked at, and found nothing wrong in, but only for part of
+what the requirement asks. The rest is still unchecked.
+
 ## Verified
 
 A check produced evidence that a requirement is met. How strong that evidence is depends on how it was gathered:
@@ -106,6 +116,12 @@ Your app started for real, in a container with no internet connection, so StackV
 what it does: whether it refuses a wrong password, whether one user can read another's records. `sv report --run`
 does this.
 
+## The fence
+
+What keeps the running app, and StackVet, from reaching the internet. The app's container has no way out at all.
+StackVet itself opens no network connection of its own except in three cases, each written out, with what turns it
+on, in [the fence](ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on).
+
 ## Package
 
 Code someone else wrote that your app uses, such as a library for sign-in. A **lockfile** (such as
@@ -114,5 +130,15 @@ against lists of known security problems.
 
 ## Report
 
-What StackVet writes after a check, in a folder called `stackvet-report` in your app's folder: `compliance.md` to
-read, `report.html` to open in a browser, and `report.json` for programs.
+What StackVet writes after a check, in a folder called `stackvet-report` in your app's folder. Open `report.html` in a
+browser first: it is the whole report on one page. `compliance.md` and `security.md` say the same in plain text, for
+you or your AI coding tool, and the other files are for programs; [the README's table](../README.md#what-a-report-holds)
+says what each of the eight is for.
+
+## Seal
+
+A mark StackVet adds so it can tell later that something was written by it, or by you, and not changed since. An
+answer you record with `sv review` is sealed with a key of your own, kept outside the app; with a passphrase on it,
+which `sv review` offers the first time, nothing can record an answer as yours without you, your AI coding tool
+included. A report `sv` writes is sealed too, so one written some other way is not taken for one `sv` wrote.
+[Recording your own word](REVIEW.md) says how.

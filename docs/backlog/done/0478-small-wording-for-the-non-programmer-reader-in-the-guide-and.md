@@ -1,6 +1,6 @@
 # Small wording for the non-programmer reader in the guide and the glossary, and the glossary's "Report" entry that 0413 misses
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -22,3 +22,11 @@ From the deep review of 13 October 2026 (backlog 0417), area: usability. Severit
 - Overlap: 0325 (open: seven small corrections from 0277; these are not among them), 0413 (claimed: the file
   table). Could be added to 0325 rather than filed.
 - Needs a decision record?: no.
+
+**Done 14 October 2026 (session documentation).** The guide's exit-code paragraph is now one sentence pointing at the
+table in `docs/ARCHITECTURE.md` (0479 made that the one table). Its "Known problems while this is new" section, true
+of a build in September and listing nothing open, is gone. The glossary's Report entry names `report.html` first,
+`compliance.md` and `security.md` as the same in plain text, and points at the README's table of the eight files.
+The glossary gains "Needs attention", "Checked in part", "The fence", and "Seal". Already done before this: the VS
+Code note's `stackvet_questions` line (it gives the new name), and "the same in Markdown", which 0413 holds.
+`crates/sv-cli/tests/glossary_report_words.rs` holds each.

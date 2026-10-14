@@ -364,20 +364,8 @@ is met. Only StackVet's own checks can make a requirement *checked*; your word c
 `sv review`, and the tool's word counts least. [A picture of the nine](ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first)
 shows who can grant each.
 
-If you later run StackVet in an automatic check (CI) whenever the code changes, the number it ends with
-says what happened. 0: it finished. 2: some check could not run, such as a file it could not read or a
-language it does not read, so that run left part of the app unchecked. 3: StackVet itself failed (an
-option it does not know, a folder that is not there, a `stackvet.toml` it cannot read, or, for `sv report`,
-none at all, or a fault in StackVet itself), so there is no result at all. 1 comes only from `sv audit` (a
-known vulnerability) or when you ask for it: `sv check . --fail-on attention:high` stops the check when
-anything high or critical is found. Without `--fail-on`, findings alone never fail it. [A table in
-`docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes) says exactly what each number covers for each command.
-
-## Known problems while this is new
-
-Found in the first real build. Each is an item under `docs/backlog/`. The two listed here before, a rate limiter
-counted as a public API and security notes the AI tool wrote counted as yours, were fixed on
-27 September 2026. Nothing from that build is known to be open.
+If you later run StackVet in an automatic check (CI) whenever the code changes, the number it ends with says what
+happened: [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes) says what each number means.
 
 ## Later
 
