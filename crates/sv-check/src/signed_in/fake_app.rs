@@ -454,6 +454,9 @@ pub(super) struct Flaws {
     /// A comment sent from another site is taken: the second kind of record does not check where a request came
     /// from, though the first does (backlog 0232, part 3).
     pub(super) comments_take_foreign: bool,
+    /// A comment sent from another site crashes the app (500) rather than being refused: a crash is not a
+    /// refusal (backlog 0420).
+    pub(super) comments_crash_foreign: bool,
     /// A note's text is written into its page and the list of notes as it is, not HTML-escaped.
     pub(super) notes_unescaped: bool,
     /// The JSON API reads a JSON body whatever its Content-Type says.
@@ -2537,6 +2540,9 @@ impl FakeApp {
                 let Some(owner) = user else {
                     return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
                 };
+                if foreign && self.flaws.comments_crash_foreign {
+                    return Some(Self::respond(500, vec![], "internal error"));
+                }
                 if foreign && !self.flaws.comments_take_foreign {
                     return Some(Self::respond(403, vec![], "forged"));
                 }

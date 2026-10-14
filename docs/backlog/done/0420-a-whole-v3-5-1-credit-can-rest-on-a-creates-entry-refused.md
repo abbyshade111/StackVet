@@ -1,6 +1,6 @@
 # A whole V3.5.1 credit can rest on a `creates` entry refused for any reason: no control shows that request works with its token
 
-**Status:** claimed by honesty, 13 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
