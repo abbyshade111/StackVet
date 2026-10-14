@@ -28,6 +28,7 @@ The requirements themselves, as published. Read by `sv-frameworks` and counted b
 | `knowledge/applicability.json` | `sv-frameworks` | Which requirements apply to which apps, and the `manualOnly` list: requirements only a person can settle. |
 | `applicability-v2.json` | `sv-cli`, `sv-manifest` | `sv`'s rules laid over the file above, replacing rules whose reasons described v1's own template. |
 | `level-hints.json` | `sv-check` | What the report looks for in an app held to level 1 that would make it level 2: sign-up routes, and field names for health, financial, card, and identity information. A match is a question under the level line, never a finding. |
+| `plain-requirements.json` | `sv-cli`, for `sv-report` | A plain-language line for each requirement listed, shown in the report beside the standard's own words and never in place of them (backlog 0372). ASVS 5.0's level-1 requirements first; `crates/sv-report/tests/plain_requirements.rs` holds each line to its requirement. |
 | `sbd-asvs-crosswalk.json` | `sv-cli` | Which ASVS requirements each Secure by Design control corresponds to. |
 | `knowledge/threats.json` | `sv-cli`, `sv-report` | The threat model's rules. |
 | `atlas-references.json` | `sv-report`, **compiled in** | MITRE ATLAS references for the threat model. Written by `tools/atlas_references.py`; rebuild `sv` after changing it. |

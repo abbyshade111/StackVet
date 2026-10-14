@@ -13,6 +13,13 @@ and others. StackVet does not write code; it checks what the AI coding tool wrot
 A window where you type commands instead of clicking. On a Mac it is the app called Terminal; on Linux it is usually
 called Terminal too. Most AI coding tools can also run commands in a terminal of their own.
 
+To open one: on a Mac, press Command and the space bar, type `Terminal`, and press Enter. On Windows, open the Start
+menu, type `PowerShell`, and press Enter. On Linux, look for Terminal among your applications.
+
+To open one in your app's folder, which most of the guide's commands assume: type `cd` and a space, drag the folder
+from Finder or your file manager into the terminal window, and press Enter. On Windows, open the folder in File
+Explorer, click the address bar at the top, type `powershell`, and press Enter. `pwd` then prints where you are.
+
 ## Folder path
 
 Where a folder is on your computer, written out in full, such as `/Users/you/code/my-app`. In a terminal, `pwd`
