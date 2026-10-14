@@ -1,6 +1,6 @@
 # The coverage tables are the data for a chart that would show in one glance what forty rows say, and the website will need it
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -29,3 +29,17 @@ From the deep review of 13 October 2026 (backlog 0417), area: documentation. Sev
   the report and the dashboard (ADR-057), not in the documents. None for a generated chart in `docs/`.
 - Needs a decision record?: no for the SVG in `docs/` (a generated document, no change to what `sv` does). The
   "Decision records" check will ask about `tools/coverage.py` if a record governs it; say "unchanged, because" on it.
+
+**What was built (14 October 2026, session documentation).** `tools/coverage.py` also writes
+`docs/coverage-by-chapter.svg` and `docs/coverage-by-level.svg`: one stacked horizontal bar per ASVS chapter, and per
+level, each as long as its requirements, in four parts in a fixed order (*can be credited*, *can only be found failing*,
+*a check helps, a person decides*, *no check*), with a key and every bar's four counts written beside it, so no part is
+shown by color alone. "No check" is drawn in the page's own gray. The three colors were checked with a palette
+validator (lightness, chroma, color-blind separation, and contrast, on light and dark backgrounds); the brand's
+palette has not chosen status colors yet, so they are from its family and named in the script. Each SVG has a title
+and a description holding the same counts, and a dark version for a reader's dark theme. `--check` holds both current
+with the tables (`coverage_doc.rs`), and `crates/sv-check/tests/coverage_charts.rs` holds each bar to its table row as
+read from `docs/COVERAGE.md`: the chart set to draw "can settle" in place of "can be credited" passed the staleness
+check (both files agreed) and failed both new tests. Linked from `COVERAGE.md`'s head, the README's coverage
+sentence, and the website's section 5 notes. Not done: the two charts the item puts later (one app's tier counts, and
+the loop trial's findings), and the AISVS and Secure by Design tables, which have no chart yet.
