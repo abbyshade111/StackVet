@@ -240,16 +240,14 @@ ruleset; if the only way to push is to bypass one, stop and ask me first." Witho
 own rules say it must not push to `main` unless you ask for that push, but in the Cursor build a plain "please push"
 was taken as covering a push that bypassed the rule. Ask it for a pull request, and merge it yourself.
 
-More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md).
-The ones shown to work are already given to your AI tool, at the end of the instructions it reads first, so you
-need not paste them. The rest, not yet shown to work, are there too: `sv prompts` prints them, and your AI tool can
-fetch them with `stackvet_prompts`. Each says whether it has been shown to work.
+More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md). The ones
+shown to work are already given to your AI tool, so you need not paste them; the rest are there too (`sv prompts`
+prints them, and your AI tool fetches them with `stackvet_prompts`), each saying whether it has been shown to work.
 
-StackVet also helps before code is written, and its own instructions tell your AI tool when: a plan of
-what to decide before building (`stackvet_plan`, or `sv plan` at a terminal), a short brief before
-building one feature such as sign-in, uploads, or payments (`stackvet_before`, or `sv brief`), and a
-look at the settings `--run` will use, before it is run (`stackvet_preflight`, or `sv preflight`). None
-of these checks anything or counts toward the report; they say what to decide and what to write.
+StackVet also helps before code is written, and tells your AI tool when: what to decide before building
+(`stackvet_plan`, or `sv plan`), a brief before one feature such as sign-in, uploads, or payments
+(`stackvet_before`, or `sv brief`), and the settings `--run` will use (`stackvet_preflight`, or `sv preflight`).
+None of these checks anything or counts toward the report.
 
 ## 5. Answer the questions
 
