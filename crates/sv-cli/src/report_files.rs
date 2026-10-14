@@ -1,4 +1,4 @@
-//! The eight files a report is written as: each name, what kind of file it is, and how it is rendered.
+//! The nine files a report is written as: each name, what kind of file it is, and how it is rendered.
 //!
 //! The one table in this crate that every reader of a report folder's names derives from (BACKLOG,
 //! "From the architecture assessment of 8 October 2026", item 5): `write_report` writes these in this
@@ -19,8 +19,8 @@ pub struct ReportFile {
     pub render: fn(&sv_report::Report) -> String,
 }
 
-/// The eight files, in the order they are written and sealed.
-pub const REPORT_FILES: [ReportFile; 8] = [
+/// The nine files, in the order they are written and sealed.
+pub const REPORT_FILES: [ReportFile; 9] = [
     ReportFile {
         name: "report.html",
         mime: "text/html",
@@ -63,6 +63,12 @@ pub const REPORT_FILES: [ReportFile; 8] = [
         name: sv_report::SBOM_FILE,
         mime: "application/json",
         render: sv_report::sbom_document,
+    },
+    // The same report as one file to read or print, written by `sv` itself (ADR-115).
+    ReportFile {
+        name: sv_report::pdf::FILE,
+        mime: "application/pdf",
+        render: sv_report::pdf::render,
     },
 ];
 

@@ -161,6 +161,7 @@ source files, and in two tests:
 | [ADR-112](ADR-112.md) | A security contact that is a placeholder is a finding of its own, and cites no requirement (accepted, 14 October 2026) |
 | [ADR-113](ADR-113.md) | A CodeQL results file from the owner's own CI is read when given, and credited only for the commit checked out (accepted, 14 October 2026) |
 | [ADR-114](ADR-114.md) | The copy `sv` runs keeps the app's limit on wrong passwords; only a limit on every sign-in is raised for it (accepted, 14 October 2026) |
+| [ADR-115](ADR-115.md) | The report is also written as a PDF, by `sv` itself (accepted, 14 October 2026) |
 
 ## Names in the records
 

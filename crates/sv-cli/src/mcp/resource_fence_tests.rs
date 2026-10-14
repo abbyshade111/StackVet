@@ -19,9 +19,15 @@ fn the_apps_text_in_a_report_read_back_is_inside_the_fence() {
         let name = path.file_name().unwrap().to_str().unwrap();
         let on_disk = std::fs::read_to_string(&path).unwrap();
         // The setup: the planted name has to be in the report, or its absence below proves nothing. Every file
-        // names the app, the bill of materials too since it lists the app itself (backlog 0402).
+        // names the app, the bill of materials too since it lists the app itself (backlog 0402), and the PDF in
+        // the text it draws, which is written in hexadecimal and so is read back to be seen (ADR-115).
+        let quoted = if name == sv_report::pdf::FILE {
+            sv_report::pdf::back::read(&on_disk).unwrap().text()
+        } else {
+            on_disk.clone()
+        };
         assert!(
-            on_disk.contains(INJECTION),
+            quoted.contains(INJECTION),
             "{name} does not quote the app's name"
         );
         let reply = read(&server, uri);
@@ -32,7 +38,11 @@ fn the_apps_text_in_a_report_read_back_is_inside_the_fence() {
         if !resources::fenced_when_read(name) {
             // The control: the files a program parses come back as written, and still parse.
             assert_eq!(said, on_disk, "{name}");
-            serde_json::from_str::<Value>(&said).unwrap_or_else(|e| panic!("{name}: {e}"));
+            if name == sv_report::pdf::FILE {
+                sv_report::pdf::back::read(&said).unwrap_or_else(|e| panic!("{name}: {e}"));
+            } else {
+                serde_json::from_str::<Value>(&said).unwrap_or_else(|e| panic!("{name}: {e}"));
+            }
             continue;
         }
         fenced += 1;

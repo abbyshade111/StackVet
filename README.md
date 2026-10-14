@@ -130,7 +130,7 @@ which is a perfectly fair thing for a test to be — most tests are.
 `sv report` writes the whole thing out, into a folder named `stackvet-report` inside the app's folder unless you
 give `--out`. Add `--run` to start the app behind the fence and include what it answers. The outside security tools
 that are installed (Bandit, gosec, Brakeman, Semgrep, and CodeQL) run unless you add `--no-tools`, which is the quick
-run, since CodeQL can take minutes on a large app. It writes eight files:
+run, since CodeQL can take minutes on a large app. It writes nine files:
 
 | File | What it holds | Who opens it |
 |---|---|---|
@@ -141,6 +141,7 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 | `report.json` | The data as JSON | Programs, among them `sv review`, `sv compare`, and `sv dashboard` |
 | `seen.json` | What `sv` saw of the running app, with credentials cut out | You, to see what a finding rests on |
 | `sbom.cdx.json` | The app's bill of materials as CycloneDX JSON, as `sv sbom` prints it | Tools that read a bill of materials |
+| `report.pdf` | The report as one file to read, print, or send, on US Letter paper unless `report-paper = "a4"` under `[app]` in stackvet.toml asks for A4. Its fonts show Western European letters only, so `report.html` is the complete version | You, or whoever you hand it to |
 
 The reports lead with what was **not** examined, say what each check covered when it found nothing wrong, and
 nothing in them says a requirement passed — `sv` is not able to establish that, so it does not claim it.

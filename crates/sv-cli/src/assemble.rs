@@ -2775,6 +2775,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     let plain: sv_report::PlainRequirements =
         sv_frameworks::data::read_json(&sv_frameworks::data::file("plain-requirements.json"))?;
     report.plain = plain.plain;
+    // The paper report.pdf is laid out on (ADR-115).
+    report.paper = sv_report::pdf::Paper::named(manifest.app.report_paper.as_deref());
     // What could settle each row left not verified (backlog 0426).
     report.could_settle =
         sv_report::could_settle(&report, &reach, options.run_tools, &scan_report.languages);
