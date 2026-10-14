@@ -219,11 +219,12 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >
 > Then, as we build:
 > 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
->    it finds that is real. If a finding looks wrong, tell me instead of rewriting working code to
->    make it go away. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
->    `nosemgrep`, no rewrite whose only effect is that the check stops seeing it): tell me, and let
->    me decide.
-> 4. After each change, tell me in plain words what you changed. Ask me before you delete anything.
+>    it finds that is real. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
+>    `nosemgrep`). Silencing includes rewriting code, a dependency file, or a test so that a check no
+>    longer sees something, even when the app behaves the same. If you think a finding or a
+>    contradiction is wrong, leave the code as it is and tell me; I decide.
+> 4. After each change, tell me in plain words what you changed. List every file you changed because
+>    of a check, with the check's words beside it. Ask me before you delete anything.
 > 5. Never tell me the app is secure. Tell me what was checked and what was not.
 > 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
 >    questions one at a time. When you tell me what the code does for one, quote the lines and say
