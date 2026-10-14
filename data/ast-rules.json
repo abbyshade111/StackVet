@@ -60,7 +60,8 @@
       "looksFor": "code built from a value and handed to something that runs it, such as eval",
       "looksForIn": {
         "shell": "eval given something other than fixed text"
-      }
+      },
+      "inPart": true
     },
     {
       "id": "ast.shell-command",
@@ -123,7 +124,8 @@
       "looksFor": "a command line built from a value and handed to a shell to run",
       "looksForIn": {
         "shell": "sh, bash, or another shell asked to run (-c) a command built from a variable"
-      }
+      },
+      "inPart": true
     },
     {
       "id": "ast.sql-built-by-hand",
@@ -481,7 +483,8 @@
         "javascript": "a file opened, written, or deleted at a path built from a value, through Node's file calls (`readFile`, `writeFile`, `appendFile`, `createReadStream`, `createWriteStream`, `unlink`, `rm`, and their `Sync` forms) on `fs`, `fs.promises`, or `fsp`, the same calls imported on their own from `fs/promises`, and Express's `res.sendFile` and `res.download`",
         "typescript": "a file opened, written, or deleted at a path built from a value, through Node's file calls (`readFile`, `writeFile`, `appendFile`, `createReadStream`, `createWriteStream`, `unlink`, `rm`, and their `Sync` forms) on `fs`, `fs.promises`, or `fsp`, the same calls imported on their own from `fs/promises`, and Express's `res.sendFile` and `res.download`"
       },
-      "argumentNamesRead": true
+      "argumentNamesRead": true,
+      "inPart": true
     },
     {
       "id": "ast.weak-hash-function",
@@ -792,7 +795,8 @@
         "cpp": "only a Location header printed with printf or a similar call, or streamed to std::cout, from a value, the way a CGI program redirects",
         "javascript": "a redirect to a destination built from a value, through `res.redirect`, `res.location`, `reply.redirect`, and `ctx.redirect` (Express, Fastify, Koa), a bare `redirect()` or `permanentRedirect()` (Next.js, Remix, SvelteKit), `NextResponse.redirect` and `Response.redirect`, and the browser's `location`, `location.href`, `location.assign`, and `location.replace` on `window` or `document`",
         "typescript": "a redirect to a destination built from a value, through `res.redirect`, `res.location`, `reply.redirect`, and `ctx.redirect` (Express, Fastify, Koa), a bare `redirect()` or `permanentRedirect()` (Next.js, Remix, SvelteKit), `NextResponse.redirect` and `Response.redirect`, and the browser's `location`, `location.href`, `location.assign`, and `location.replace` on `window` or `document`"
-      }
+      },
+      "inPart": true
     },
     {
       "id": "ast.download-piped-to-shell",

@@ -2368,4 +2368,7 @@ mod orm_supabase_tests;
 mod token_none_tests;
 
 #[cfg(test)]
+mod call_list_in_part_tests;
+
+#[cfg(test)]
 mod one_walk_tests;
