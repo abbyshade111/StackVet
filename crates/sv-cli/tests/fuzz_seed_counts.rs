@@ -3,7 +3,6 @@
 //! the seeding was right. Here a `wc` that pads as macOS's does is put first on the `PATH`.
 #![cfg(unix)]
 
-use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -40,15 +39,13 @@ fn the_counts_are_bare_numbers_where_wc_pads_them() {
     std::fs::write(top.join("examples/app/package-lock.json"), "{}\n").unwrap();
     // A `wc` that pads its count to eight places, as macOS's does.
     let wc = top.join("bin/wc");
-    std::fs::write(
+    sv_check::test_support::executable(
         &wc,
-        format!(
+        &format!(
             "#!/bin/sh\nprintf '%8s\\n' \"$({} \"$@\" | tr -d ' ')\"\n",
             real_wc()
         ),
-    )
-    .unwrap();
-    std::fs::set_permissions(&wc, std::fs::Permissions::from_mode(0o755)).unwrap();
+    );
     let path = format!(
         "{}:{}",
         top.join("bin").display(),
