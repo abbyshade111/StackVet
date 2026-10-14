@@ -1,6 +1,8 @@
 # The second loop trial's score counts text-forms and not text-form
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 Found 14 October 2026 by session documentation, answering backlog 0389. `docs/prompts/loop-2/score_loop2.py`'s
 `text_forms` counts only `browser.text-forms` (the list), not `browser.text-form` (one form), so `scores.json` shows

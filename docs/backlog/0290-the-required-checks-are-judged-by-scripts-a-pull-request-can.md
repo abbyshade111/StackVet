@@ -1,6 +1,6 @@
 # The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them)
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: tools and CI. Severity: medium. Verified against the code by the reviewing session before filing.
 
@@ -17,3 +17,5 @@
 **Record.** ADR-103 and ADR-104 govern the two scripts; the ruleset is the owner's decision and wants a Later line on ADR-051 when made.
 
 **The ruleset is set, 14 October 2026:** "Main - ADR Check" on the default branch requires a review from a code owner (zero approvals otherwise), read back through the API; ADR-051, Later. What is left is the `CODEOWNERS` file (a build, queued): the owner for `.github/workflows/`, `tools/ci_scope.py`, `tools/adr_check.py`, `tools/record_numbers.py`, and `action.yml`, with a test that the file names only paths that exist.
+
+**The owner's decision, 14 October 2026:** yes. Two parts: a `CODEOWNERS` file naming the owner for `.github/workflows/`, `tools/ci_scope.py`, `tools/adr_check.py`, `tools/record_numbers.py`, and `action.yml` (a build, queued on the board), and a ruleset on `main` requiring a review from a code owner (the owner's setting, made in the repository's settings; its Later line goes on ADR-051 when made).

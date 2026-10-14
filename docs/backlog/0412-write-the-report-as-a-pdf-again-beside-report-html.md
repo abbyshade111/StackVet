@@ -1,6 +1,8 @@
 # Write the report as a PDF again, beside report.html
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** claimed by wording, 14 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 The owner's request of 13 October 2026, after the my-app report was sent as a zip: "at one point there was a pdf
 version of reports in the bundle, can we start doing that again so there's a format people can easily read?"
@@ -36,3 +38,5 @@ cost of a new dependency tree; the change to make if the character limit matters
 browser (rejected in v1, because no file exists until somebody makes one, and it differs between machines); a PDF
 only on request (rejected: the point is a file people can open without knowing to ask). The records on what `sv`
 writes into the folder (ADR-017) and on the report folder's files (ADR-082) get Later entries.
+
+**Claim released, 14 October 2026** (the owner's word): session securevibe-trial-prep was archived after the coordination trial with no branch pushed for this item, so the claim was stale. Open again, queued on the board.
