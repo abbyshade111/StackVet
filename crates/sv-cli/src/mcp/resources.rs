@@ -248,7 +248,7 @@ pub(super) fn report_file_description(name: &str) -> &'static str {
         "low-findings.md" => {
             "Every low-severity finding in full; the other reports group them by rule."
         }
-        "findings.sarif" => "The findings in SARIF, for code-scanning tools.",
+        "stackvet.sarif" => "The findings in SARIF, for code-scanning tools.",
         "seen.json" => {
             "What the running app answered when sv asked it, credentials cut out: the app's own text."
         }

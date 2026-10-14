@@ -1873,6 +1873,12 @@ pub fn write_report(report: &sv_report::Report, out_dir: &Path) -> Result<Writte
         write_without_following(out_dir, name, contents.as_bytes())
             .with_context(|| format!("writing {name}"))?;
     }
+    // The SARIF file under its old name (backlog 0409) is `sv`'s own, from an earlier report, and would sit beside
+    // this one holding that report's findings: removed, as the old marker is when the report is sealed.
+    let old = out_dir.join(sv_scan::ecosystems::OLD_SARIF_FILE);
+    if std::fs::symlink_metadata(&old).is_ok_and(|m| m.is_file()) {
+        std::fs::remove_file(&old).with_context(|| format!("removing {}", old.display()))?;
+    }
     Ok(Written { contents: written })
 }
 

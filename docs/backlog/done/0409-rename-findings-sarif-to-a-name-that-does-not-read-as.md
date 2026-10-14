@@ -1,6 +1,6 @@
 # Rename findings.sarif to a name that does not read as problems, when no other session is working
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -18,3 +18,7 @@ places other sessions may be changing:
 A rename while others build there conflicts with each of them. A decision record, since it changes a file StackVet
 writes into someone's folder and what the Action uploads. For the Action, keep reading the old name too until an image
 with the new one is published (as `--no-tools` is asked of the image first).
+
+**Done, 14 October 2026:** the file is `stackvet.sarif` (`sv_report::SARIF_FILE`, `sv_scan::ecosystems::REPORT_FILES`).
+`findings.sarif` stays one of `sv`'s own names in a report folder (`OLD_SARIF_FILE`), and writing a new report removes
+it. The Action uploads either name, the new one first. The record is ADR-081's "Later" entry of this date.

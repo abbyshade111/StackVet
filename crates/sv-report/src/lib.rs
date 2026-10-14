@@ -1682,7 +1682,7 @@ pub fn sbom_document(report: &Report) -> String {
 }
 
 /// The name of the findings as SARIF beside the report.
-pub const SARIF_FILE: &str = "findings.sarif";
+pub const SARIF_FILE: &str = "stackvet.sarif";
 
 /// The line near the top of the report saying what the SARIF file beside it is, and what it holds (backlog 0408): its
 /// name reads to a person as "problems with the app" even when it holds none, so the page says how many findings it

@@ -4117,7 +4117,7 @@ fn an_outside_tools_finding_links_the_tools_own_page_about_its_rule() {
         1,
         "{security}"
     );
-    // And findings.sarif passes it on, for a code-scanning page to link.
+    // And stackvet.sarif passes it on, for a code-scanning page to link.
     let sarif: serde_json::Value =
         serde_json::from_str(&sv_report::sarif::render(&report)).unwrap();
     let rules = sarif["runs"][0]["tool"]["driver"]["rules"]
@@ -4164,7 +4164,7 @@ fn the_sarif_files_notes_are_notes_and_the_page_says_what_it_holds() {
     let html = sv_report::html::page(&report);
     assert!(
         html.contains(
-            "<a href=\"findings.sarif\">findings.sarif</a> beside this report is for code editors"
+            "<a href=\"stackvet.sarif\">stackvet.sarif</a> beside this report is for code editors"
         ),
         "{html}"
     );

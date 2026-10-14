@@ -32,7 +32,7 @@ inputs:
     default: ''
   upload-sarif:
     description: >
-      Upload findings.sarif to code scanning: `auto` (the default) uploads for a public repository and not for a pull
+      Upload the report's SARIF file (stackvet.sarif) to code scanning: `auto` (the default) uploads for a public repository and not for a pull
       request from a fork, whose token cannot write; `true` always, for a private repository with GitHub's code
       security; `false` never. Uploading needs `security-events: write` in the workflow.
     default: auto
@@ -121,7 +121,11 @@ runs:
         code=$?
         set -e
         echo "exit-code=$code" >> "$GITHUB_OUTPUT"
-        if [ -f "$out/findings.sarif" ]; then echo "sarif=$out/findings.sarif" >> "$GITHUB_OUTPUT"; fi
+        # The SARIF file is stackvet.sarif since 14 October 2026 (backlog 0409); an image from before then writes it as
+        # findings.sarif, so that name is read too until the published image carries the new one.
+        for name in stackvet.sarif findings.sarif; do
+          if [ -f "$out/$name" ]; then echo "sarif=$out/$name" >> "$GITHUB_OUTPUT"; break; fi
+        done
 
     - name: Write the summary
       if: always() && steps.run.outputs.report-dir != ''

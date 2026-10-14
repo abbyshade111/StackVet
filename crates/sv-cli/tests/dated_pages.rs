@@ -52,7 +52,7 @@ fn every_page_and_the_sarif_name_the_run_and_its_start() {
         );
     }
     let sarif: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(one.join("findings.sarif")).unwrap())
+        serde_json::from_str(&std::fs::read_to_string(one.join("stackvet.sarif")).unwrap())
             .unwrap();
     let invocation = &sarif["runs"][0]["invocations"][0];
     assert_eq!(invocation["startTimeUtc"], started.as_str());

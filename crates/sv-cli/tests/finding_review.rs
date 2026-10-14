@@ -54,7 +54,7 @@ fn report_exiting(dir: &Path, codes: &[i32]) -> Run {
         compliance: read("compliance.md"),
         html: read("report.html"),
         json: serde_json::from_str(&read("report.json")).unwrap(),
-        sarif: serde_json::from_str(&read("findings.sarif")).unwrap(),
+        sarif: serde_json::from_str(&read("stackvet.sarif")).unwrap(),
     }
 }
 
@@ -752,7 +752,7 @@ fn no_fingerprint_given_for_a_credential_is_over_its_value_as_written() {
     );
     for (what, text) in [
         ("report.json", run.json.to_string()),
-        ("findings.sarif", run.sarif.to_string()),
+        ("stackvet.sarif", run.sarif.to_string()),
         ("security.md", run.security.clone()),
         ("report.html", run.html.clone()),
         ("the MCP reply", reply.clone()),

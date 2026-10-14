@@ -137,7 +137,7 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 | `report.html` | The whole report, in one page | You: open it by double-clicking it |
 | `compliance.md`, `security.md` | The same, in Markdown | You, or your AI coding tool |
 | `low-findings.md` | Every low-severity finding in full, where the reports group them by rule | You, when you want the detail |
-| `findings.sarif` | The findings as SARIF | Editors and CI |
+| `stackvet.sarif` | The findings as SARIF (named `findings.sarif` before 14 October 2026) | Editors and CI |
 | `report.json` | The data as JSON | Programs, among them `sv review`, `sv compare`, and `sv dashboard` |
 | `seen.json` | What `sv` saw of the running app, with credentials cut out | You, to see what a finding rests on |
 | `sbom.cdx.json` | The app's bill of materials as CycloneDX JSON, as `sv sbom` prints it | Tools that read a bill of materials |

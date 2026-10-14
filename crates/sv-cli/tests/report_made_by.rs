@@ -48,7 +48,7 @@ fn every_form_of_the_report_names_the_version_and_commit_sv_version_names() {
     );
     assert_eq!(json["sv"]["commit"], commit.as_str(), "{}", json["sv"]);
 
-    let sarif: Value = serde_json::from_str(&read("findings.sarif")).unwrap();
+    let sarif: Value = serde_json::from_str(&read("stackvet.sarif")).unwrap();
     let driver = &sarif["runs"][0]["tool"]["driver"];
     assert_eq!(driver["version"], env!("CARGO_PKG_VERSION"), "{driver}");
     assert_eq!(driver["properties"]["commit"], commit.as_str(), "{driver}");
