@@ -184,7 +184,7 @@ class Board:
     def note(self, text, when=None):
         self.log.append({"when": when or now(), "text": text})
 
-    def must_be_open(self):
+    def refuse_if_closed(self):
         if self.closed:
             raise SystemExit(f"the board closed on {self.closed[0]} ({self.closed[1]}); `open --by <session>` starts a new one")
 
@@ -280,7 +280,7 @@ def mark_item(item, text):
 
 def cmd_queue(board_path, folder, action, number, hold=None, when=None, mark=False):
     board = Board.read(board_path)
-    board.must_be_open()
+    board.refuse_if_closed()
     number = key_of(number)
     if action == "add":
         if board.queued(number):
@@ -316,7 +316,7 @@ def cmd_assign(board_path, folder, number, to, why, when=None, date=None, ahead=
     `after` puts it into the lane right after the item named (the held one puts it first), instead of at the end
     (backlog 0416: a lane could only be added to at its end, so one urgent item cost two withdrawals)."""
     board = Board.read(board_path)
-    board.must_be_open()
+    board.refuse_if_closed()
     number = key_of(number)
     if not why or len(why.strip()) < 10:
         raise SystemExit("--why says, in at least ten characters, why this item goes to this session now")
@@ -498,7 +498,7 @@ def cmd_close(board_path, folder, by, why, when=None, date=None):
     the next one beside it (backlog 0416: the trial's board was closed by hand, one command per session and a script
     for the markers)."""
     board = Board.read(board_path)
-    board.must_be_open()
+    board.refuse_if_closed()
     if not why or len(why.strip()) < 10:
         raise SystemExit("--why says, in at least ten characters, why the board closes")
     busy = [s for s in board.sessions if s["holds"] or s.get("next")]
