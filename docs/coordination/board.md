@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-14) — next: 0516, 0519
+- honesty — arm: full — holds: 0232 (since 2026-10-14) — next: 0518, 0519
 - wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401
 - documentation — arm: full — holds: nothing
 
@@ -421,3 +421,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 15:44 — queued 0520, on hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it, marked
 - 2026-10-14 15:44 — finished 0508 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1898; now holds 0232
 - 2026-10-14 15:44 — assigned 0519 to honesty (full) as next: the Podman measurement's three small fixes, worth having for Docker too (image names in full); honesty measured them
+- 2026-10-14 16:20 — finished 0516 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1919; from its lane, behind 0232
+- 2026-10-14 16:20 — queued 0518, marked
+- 2026-10-14 16:20 — assigned 0518 to honesty (full) into the lane after 0232: the pointer's second gap, found by honesty's own reading after 0516: the refusals locator shows a forged-form 403 ahead of the real refusal; before the proposals, and before the orchestrator's second reading
