@@ -26,7 +26,7 @@ and recording the answers as the owner's), with a Windows version of the setup p
 tools, `stackvet_check`'s `questions` section, `docs/INSTALL.md`'s section for `--run`, `brew upgrade --fetch-HEAD
 sv`, `scoop update sv`, and `sv review`. Three lines said more than the code does, and were corrected: the full report
 signs in as test users only when `stackvet.toml` names them (said twice); and `sv review`'s key takes a passphrase
-if the person wants one, and the review runs only in a terminal the person types in. The "Tried so far" paragraph now
+if the person wants one, and the review runs only in a terminal the person types in. A paragraph after "Tried so far" now
 names the next step, the owner's trial in Antigravity, Cursor, and VS Code (backlog 0502). The prompt tests
 (`setup_prompts.rs`, `setup_prompt_seven.rs`, `connect.rs`) pass.
 

@@ -16,7 +16,9 @@ prompts are tried there and do better, we don't recommend Antigravity with that 
 image name StackVet is published under, to the options `sv connect` takes, and to the Scoop commands that install it
 on Windows (`crates/sv-cli/tests/connect.rs`, `crates/sv-cli/tests/setup_prompts.rs`). If anything here goes wrong,
 the guide has the same steps as commands. The website names only the AI tools these prompts have really been tried in.
-Next, the owner tries them in Antigravity, Cursor, and VS Code (backlog 0502).
+
+**Next:** the owner tries these prompts in Antigravity, Cursor, and VS Code (backlog 0502). Until then, none of
+the three is named here as tried.
 
 ## Before the first prompt: an AI tool that can run commands
 
