@@ -1,6 +1,6 @@
 # The spec's advice to loosen the test copy's sign-in limit defeats the wrong-password check
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
