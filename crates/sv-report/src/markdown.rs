@@ -187,6 +187,7 @@ pub fn compliance(report: &Report) -> String {
             report.target_level
         ));
     }
+    out.push_str(&crate::folder::markdown_line("compliance.md"));
 
     // The short version, before any of the explaining. See `crate::bluf`.
     out.push_str("## The short version\n\n");
@@ -892,6 +893,7 @@ pub fn security(report: &Report) -> String {
         )),
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
+    out.push_str(&crate::folder::markdown_line("security.md"));
     if let Some(line) = crate::baseline_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
@@ -1065,6 +1067,7 @@ pub fn low_findings(report: &Report) -> String {
         )),
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
+    out.push_str(&crate::folder::markdown_line(crate::LOW_FINDINGS_FILE));
     let low: Vec<&sv_check::Finding> = report
         .findings
         .iter()

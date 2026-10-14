@@ -97,6 +97,8 @@ whole requirement is met.
   in plain language" is *not yet true* (item 3): today each requirement is shown in OWASP's formal wording, with
   checks named by internal ids.
 - The example lines are invented and say so; a real report from one of the example apps replaces them before launch.
+- The reports page (`reports-page.md`, backlog 0413) says what each report file is for and who reads it, with a real
+  report of one example app; it is linked from this section, and the example lines above can be taken from it.
 - The reading prompt (`sv prompts report`) has not yet been tried in an AI tool, hence "can".
 
 ## 5. What it checks
