@@ -79,6 +79,8 @@ mod resources;
 #[cfg(test)]
 mod since_all_gone_tests;
 #[cfg(test)]
+mod since_paged_tests;
+#[cfg(test)]
 mod since_tests;
 #[cfg(test)]
 mod smoke_list_tests;
