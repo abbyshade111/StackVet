@@ -1,3 +1,5 @@
+use super::limit::{PastTheLimit, past_the_limit};
+use super::signin::Slowing;
 use super::*;
 
 /// Signing in with a code the app emails, followed through the mail server (V6.5.1, V6.5.4,
@@ -340,87 +342,71 @@ pub(super) fn email_code_guessing(
         let elapsed = started.elapsed().as_millis();
         answers.push((response.map_or(0, |r| r.status), elapsed));
     }
-    let Some(&(first_status, first_ms)) = answers.first() else {
-        return;
+    let reading = match past_the_limit(&answers, allowed, &[]) {
+        PastTheLimit::AlreadyRefusing { first } => {
+            out.not_assessed.push((
+                "V6.6.3".to_owned(),
+                format!(
+                    "The app was already refusing ({first}) before this check made its first \
+                     wrong code, most likely because of a limit an earlier check tripped, so nothing \
+                     here can say whether it pushes back at {allowed}."
+                ),
+            ));
+            return;
+        }
+        // Nor can the right code refused after a crash or silence be read, by an app that may have
+        // fallen over (backlog 0280).
+        PastTheLimit::NotReal { first, last, next } => {
+            out.steps.push(format!(
+                "sent {attempts} wrong emailed codes in a row; the app answered {first} at \
+                 first, and {last} and {next} past the limit"
+            ));
+            out.not_assessed.push((
+                "V6.6.3".to_owned(),
+                format!(
+                    "Whether emailed sign-in codes can be guessed: past the limit of {allowed} the \
+                     app answered {last} and {next}, where 0 is no answer at all and 500 or above is \
+                     the app failing. A crash or silence is not a limit, so nothing here says whether \
+                     it pushes back."
+                ),
+            ));
+            return;
+        }
+        other => other,
     };
-    if matches!(first_status, 0 | 423 | 429) {
-        out.not_assessed.push((
-            "V6.6.3".to_owned(),
-            format!(
-                "The app was already refusing ({first_status}) before this check made its first \
-                 wrong code, most likely because of a limit an earlier check tripped, so nothing \
-                 here can say whether it pushes back at {allowed}."
-            ),
-        ));
-        return;
-    }
-    // The first wrong code past the limit, whose answer says whether the app pushed back.
-    let last = answers[allowed as usize];
-    // The second wrong code past the limit is read too, as in `brute_force_check` (the review of
-    // 6 October, item 13): answered differently only there, the app let one more through than stated.
-    let next = answers[allowed as usize + 1].0;
-    // Only from real answers: a crash (5xx) or no answer past the limit is not the app pushing
-    // back, and must not read as a status that changed, a refusal, or a delay; nor can the right
-    // code refused after it, by an app that may have fallen over (backlog 0280).
-    let real = |status: u16| status != 0 && status < 500;
-    if !real(last.0) || !real(next) {
-        out.steps.push(format!(
-            "sent {attempts} wrong emailed codes in a row; the app answered {first_status} at \
-             first, and {} and {next} past the limit",
-            last.0
-        ));
-        out.not_assessed.push((
-            "V6.6.3".to_owned(),
-            format!(
-                "Whether emailed sign-in codes can be guessed: past the limit of {allowed} the \
-                 app answered {} and {next}, where 0 is no answer at all and 500 or above is the \
-                 app failing. A crash or silence is not a limit, so nothing here says whether it \
-                 pushes back.",
-                last.0
-            ),
-        ));
-        return;
-    }
     let right_still_works = flow.signs_in(http, &code, &mut session, "after-guesses", out);
-    let status_changed = last.0 != first_status;
-    let refused = matches!(last.0, 423 | 429);
-    // One more let through is read only from real answers, every one up to the limit the same.
-    let alike = answers[..=allowed as usize]
-        .iter()
-        .all(|a| a.0 == first_status);
-    if !(status_changed || refused)
-        && alike
-        && real(first_status)
-        && real(next)
-        && next != first_status
-    {
-        out.steps.push(format!(
-            "sent {attempts} wrong emailed codes in a row; the app answered {first_status} to the \
-             first {}, and {next} only to the last",
-            allowed + 1
-        ));
-        out.findings.push(finding_on(
-            vec!["email-code-use-after-guesses".to_owned(), "email-code-private-after-guesses".to_owned()],
-            &EMAIL_CODE_GUESSING,
-            "One more wrong emailed code than stated is let through",
-            Severity::Medium,
-            format!(
-                "stackvet.toml says the app should allow {allowed} wrong codes in a row. Sent \
-                 {attempts} wrong codes in a row through {}, the app answered {first_status} to the \
-                 first {}, the one past the limit included, and pushed back ({next}) only at the \
-                 code after it.",
-                flow.entry.use_code.path,
+    let reading = match reading {
+        PastTheLimit::OneMoreLetThrough { first, next } => {
+            out.steps.push(format!(
+                "sent {attempts} wrong emailed codes in a row; the app answered {first} to the \
+                 first {}, and {next} only to the last",
                 allowed + 1
-            ),
-        ));
-        return;
-    }
-    let times: Vec<u128> = answers.iter().map(|a| a.1).collect();
-    let (within, past) = times.split_at(allowed as usize);
-    let slowing = super::signin::slowing(within, past, &[]);
+            ));
+            out.findings.push(finding_on(
+                vec!["email-code-use-after-guesses".to_owned(), "email-code-private-after-guesses".to_owned()],
+                &EMAIL_CODE_GUESSING,
+                "One more wrong emailed code than stated is let through",
+                Severity::Medium,
+                format!(
+                    "stackvet.toml says the app should allow {allowed} wrong codes in a row. Sent \
+                     {attempts} wrong codes in a row through {}, the app answered {first} to the \
+                     first {}, the one past the limit included, and pushed back ({next}) only at the \
+                     code after it.",
+                    flow.entry.use_code.path,
+                    allowed + 1
+                ),
+            ));
+            return;
+        }
+        PastTheLimit::Read(reading) => reading,
+        PastTheLimit::AlreadyRefusing { .. } | PastTheLimit::NotReal { .. } => {
+            unreachable!("returned above")
+        }
+    };
+    let first_status = reading.first;
     if right_still_works
-        && !(status_changed || refused)
-        && let super::signin::Slowing::Unclear(why) = &slowing
+        && !reading.answered_differently()
+        && let Slowing::Unclear(why) = &reading.slowing
     {
         out.steps.push(format!(
             "sent {attempts} wrong emailed codes in a row, then the right one; the app \
@@ -436,23 +422,20 @@ pub(super) fn email_code_guessing(
         ));
         return;
     }
-    let slowed = slowing == super::signin::Slowing::Slowed;
     let how = if !right_still_works {
         "then refused the right code".to_owned()
-    } else if refused {
-        format!("refused the last wrong code outright ({})", last.0)
-    } else if status_changed {
+    } else if reading.refused {
+        format!("refused the last wrong code outright ({})", reading.last)
+    } else if reading.status_changed {
         format!(
             "answered the last wrong code {} where the first got {first_status}",
-            last.0
+            reading.last
         )
-    } else if slowed {
+    } else if reading.slowing == Slowing::Slowed {
         format!(
             "took {}ms and {}ms over the two wrong codes past the limit, against {}ms at the \
              quickest before it",
-            past[0],
-            past[1],
-            within.iter().copied().min().unwrap_or(first_ms)
+            reading.past[0], reading.past[1], reading.quickest
         )
     } else {
         String::new()

@@ -35,6 +35,8 @@
 //! - `reset.rs`: a forgotten-password reset, followed through the email it sends.
 //! - `codes.rs`: signing in with an emailed code, and what the three email flows share for finding a
 //!   code in an email.
+//! - `limit.rs`: how the answers to wrong attempts past a stated limit are read, shared by the
+//!   wrong-password (`signin.rs`) and wrong-code (`codes.rs`) checks.
 //! - `activation.rs`: the activation code emailed at sign-up.
 //! - `totp.rs`: two-factor codes from an authenticator app.
 //! - `admin.rs`: the admin page and admin actions, a role given at sign-up, and records that belong
@@ -65,6 +67,7 @@ mod cross_site;
 mod email_role;
 mod flows;
 mod forgery;
+mod limit;
 mod once;
 mod owner_field;
 mod passwords;
@@ -2480,6 +2483,8 @@ mod fake_app;
 mod in_part_tests;
 #[cfg(test)]
 mod in_turn_tests;
+#[cfg(test)]
+mod limit_tests;
 #[cfg(test)]
 mod non_ascii_tests;
 #[cfg(test)]
