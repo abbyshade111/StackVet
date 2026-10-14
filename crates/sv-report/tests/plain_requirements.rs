@@ -53,7 +53,10 @@ fn every_requirement_but_asvs_level_three_has_a_line() {
     // The setup: each framework's requirements are loaded, so a missing line cannot hide behind a missing framework.
     for prefix in ["V", "C", "AC.", "SBD-"] {
         assert!(
-            frameworks.requirements.keys().any(|id| id.starts_with(prefix)),
+            frameworks
+                .requirements
+                .keys()
+                .any(|id| id.starts_with(prefix)),
             "the setup: no {prefix} requirements"
         );
     }
