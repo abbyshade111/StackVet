@@ -96,16 +96,24 @@ fn a_tool_of_another_language_is_not_counted_as_a_reach() {
 
 #[test]
 fn the_generated_file_records_the_languages_of_the_javascript_only_reach() {
-    // The setup the count rests on: coverage.py wrote what CodeQL for JavaScript reads.
+    // The setup the count rests on: coverage.py wrote the languages of a default tool's reach that reads
+    // JavaScript and TypeScript alone.
     let text = std::fs::read_to_string(sv_frameworks::data::file("reach.json")).unwrap();
     let reach = sv_report::read_reach(&text).unwrap();
-    let v15_3_5 = reach
+    let v3_5_5 = reach
         .tools_languages
-        .get("V15.3.5")
-        .expect("V15.3.5 has a tool reach");
+        .get("V3.5.5")
+        .expect("V3.5.5 has a tool reach");
     assert!(
-        !v15_3_5.iter().any(|l| l == "python" || l == "*"),
-        "{v15_3_5:?}"
+        !v3_5_5.iter().any(|l| l == "python" || l == "*"),
+        "{v3_5_5:?}"
     );
-    assert!(v15_3_5.iter().any(|l| l == "javascript"), "{v15_3_5:?}");
+    assert!(v3_5_5.iter().any(|l| l == "javascript"), "{v3_5_5:?}");
+    // V15.3.5 is reached by CodeQL alone, which runs only when the owner turns it on (ADR-115): it is counted
+    // apart, and is no default tool's reach.
+    assert_eq!(
+        reach.requirements.get("V15.3.5"),
+        Some(&vec!["opt-in".to_owned()])
+    );
+    assert!(!reach.tools_languages.contains_key("V15.3.5"));
 }

@@ -97,6 +97,8 @@ whole requirement is met.
   in plain language" is *not yet true* (item 3): today each requirement is shown in OWASP's formal wording, with
   checks named by internal ids.
 - The example lines are invented and say so; a real report from one of the example apps replaces them before launch.
+- The reports page (`reports-page.md`, backlog 0413) says what each report file is for and who reads it, with a real
+  report of one example app; it is linked from this section, and the example lines above can be taken from it.
 - The reading prompt (`sv prompts report`) has not yet been tried in an AI tool, hence "can".
 
 ## 5. What it checks
@@ -113,6 +115,10 @@ OWASP is a nonprofit that writes the security checklists many companies build to
 
 StackVet has a check for 40 more of the ASVS requirements and 18 more of the AISVS ones, but those checks can only
 show the protection missing: when they find nothing wrong, that doesn't show the protection is there.
+
+Five of the ASVS ones counted above only CodeQL can check, and it runs only when you turn it on, because its license
+allows it only for an open-source app, academic research, or a paid GitHub license. Without it, those five stay not
+verified.
 
 ASVS and AISVS sort their requirements into three levels. Level 1 is the baseline for any app, and level 2 is for
 most apps that hold people's information; StackVet holds each app to one of those two, from what you tell it the app
@@ -225,10 +231,10 @@ tell us in a GitHub issue.
 - **Semgrep**, and **Opengrep** in its place when Semgrep isn't installed, running the Semgrep Registry rules. The
   rules are under the Semgrep Rules License, which allows use but not resale; StackVet is not sold. Semgrep and
   Opengrep themselves are under the GNU LGPL 2.1.
-- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby, only when you turn it on (backlog 0415). The
-  CodeQL command-line tool is under the GitHub CodeQL Terms and Conditions, which allow it on an app released under
-  an open-source license, for academic research, or with a paid GitHub Advanced Security license; its queries are
-  under the MIT License.
+- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby, only when you turn it on (`[tools] codeql = true`
+  in `stackvet.toml`). The CodeQL command-line tool is under the GitHub CodeQL Terms and Conditions, which allow it
+  on an app released under an open-source license, for academic research, or with a paid GitHub Advanced Security
+  license; its queries are under the MIT License.
 - **Bandit**, for Python, and **gosec**, for Go, both under the Apache License 2.0. **Brakeman**, for Ruby on
   Rails, under the Brakeman Public Use License, which allows use to analyze your own software and not commercial
   use.

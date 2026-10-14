@@ -75,13 +75,17 @@ fn adapter_ids() -> Vec<String> {
         .unwrap(),
     )
     .unwrap();
-    let ids: Vec<String> = file["adapters"]
-        .as_array()
-        .unwrap()
+    let all = file["adapters"].as_array().unwrap();
+    // The setup: the file was read, and holds every outside tool.
+    assert!(all.len() >= 5, "adapters.json lists the outside tools");
+    let ids: Vec<String> = all
         .iter()
+        // A tool that runs only when the app turns it on (CodeQL; ADR-115) is not named for an app that
+        // has not, so it has no entry.
+        .filter(|a| a["opt_in"].is_null())
         .map(|a| a["id"].as_str().unwrap().to_owned())
         .collect();
-    assert!(ids.len() >= 5, "adapters.json lists the outside tools");
+    assert!(!ids.is_empty() && ids.len() < all.len(), "{ids:?}");
     ids
 }
 

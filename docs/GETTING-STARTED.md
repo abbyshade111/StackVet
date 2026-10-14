@@ -339,11 +339,27 @@ packages does not start, and everything that needs it running is *not assessed*.
 your computer, such as Bandit and Semgrep, and puts what they find in the same report as what running the app found.
 Your AI coding tool's StackVet connection never runs them, and never starts the app: each of those runs code, which
 stays your decision at a terminal. So a report your AI tool wrote, or a check it made while building, leaves both out,
-and says so. To leave the other tools out of a check of your own, add `--no-tools`.
+and says so. To leave the other tools out of a check of your own, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
+`[tools] codeql = true`, which its license allows only for an open-source app, research, or a paid GitHub license.
 
 **Where the report is.** When your AI tool writes the report (`stackvet_write_report`), or you run
 `sv report`, it goes in a folder named `stackvet-report` inside the app's folder. Open `report.html` in
-a browser; `compliance.md` and `security.md` say the same in plain text for your AI tool. To have your AI tool
+a browser. Each file in the folder has a reader of its own:
+
+| File | Who it is for |
+|---|---|
+| `report.html` | You, in a browser: double-click it |
+| `compliance.md` | Anyone who needs the whole picture against the standards, you or someone you show it to |
+| `security.md` | Whoever fixes the code, you or your AI coding tool |
+| `low-findings.md` | You or your AI coding tool, when you want the detail |
+| `stackvet.sarif` | Code editors and GitHub's code scanning, which show a finding beside its line |
+| `report.json` | Programs, among them sv review, sv compare, and sv dashboard |
+| `seen.json` | You, to see what a finding rests on |
+| `sbom.cdx.json` | Tools that read a bill of materials |
+| `report.pdf` | You, or whoever you hand it to |
+
+`security.md` is what to fix; `compliance.md` is the whole picture against the standards. On a small app the two
+open alike, but they are not the same: [the reports page](website/reports-page.md) shows an example of each. To have your AI tool
 read it with you, starting with what was not checked, give it [the report prompt](prompts/report.md) (not yet tried
 in an AI tool).
 

@@ -1,6 +1,6 @@
 # A reports page: what each report file is for, who reads it, and an example of each
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -46,3 +46,19 @@ To build, after 0412 (the PDF), so the page can show the PDF too:
   use the same words.
 
 **Claim released, 14 October 2026** (the owner's word): session securevibe-trial-prep was archived after the coordination trial with no branch pushed for this item, so the claim was stale. Open again, queued on the board.
+
+**Done, 14 October 2026, all but the diagrams and the PDF's row.** One table in `sv-report`, `folder::FILES`, says
+what each of the eight report files holds and who it is for. `report.html` ends with it ("The files in this
+folder"); `compliance.md`, `security.md`, and `low-findings.md` each open with their own line from it. The README's
+table and a new one in `docs/GETTING-STARTED.md` carry the same rows in place of "the same", and the website's
+`docs/website/reports-page.md` says what each file is for, how the two Markdown reports differ, and links a real
+report of `examples/notes-with-users` kept in `docs/website/reports/notes-with-users/`, with the command that made
+it. The home page's section 4 notes the page. The test is `crates/sv-cli/tests/report_files_described.rs`: broken on
+purpose by dropping a README row, changing a reader in the table alone, renaming report.html's section, dropping
+security.md's opening line, and putting the guide's old words back; each turned one test red, the one expected.
+
+Not built: the two lifecycle diagrams, which are on the owner's USB drive and out of a cloud session's reach (backlog
+0514); and `report.pdf`'s row, which waits on backlog 0412 (wording holds it). When 0412 adds the PDF to
+`report_files::REPORT_FILES`, the test above fails until `folder::FILES` and the three pages gain its row. The
+example report was made without `--run` (no Docker in the session that made it) and without the outside tools, and
+the page says so; a report made with `--run` would show more, and replacing it later is a matter of the one command.

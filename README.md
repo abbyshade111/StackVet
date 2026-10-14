@@ -129,19 +129,25 @@ which is a perfectly fair thing for a test to be — most tests are.
 
 `sv report` writes the whole thing out, into a folder named `stackvet-report` inside the app's folder unless you
 give `--out`. Add `--run` to start the app behind the fence and include what it answers. The outside security tools
-that are installed (Bandit, gosec, Brakeman, Semgrep, and CodeQL) run unless you add `--no-tools`, which is the quick
-run, since CodeQL can take minutes on a large app. It writes nine files:
+that are installed (Bandit, gosec, Brakeman, and Semgrep) run unless you add `--no-tools`, which is the quick run.
+CodeQL runs only when you turn it on with `[tools] codeql = true` in `stackvet.toml`: its license allows it only on an
+app released under an open-source license, for academic research, or with a paid GitHub Advanced Security license,
+and StackVet cannot tell which applies to yours. Off, the report does not name it. It writes nine files:
 
-| File | What it holds | Who opens it |
+| File | What it holds | Who it is for |
 |---|---|---|
-| `report.html` | The whole report, in one page | You: open it by double-clicking it |
-| `compliance.md`, `security.md` | The same, in Markdown | You, or your AI coding tool |
-| `low-findings.md` | Every low-severity finding in full, where the reports group them by rule | You, when you want the detail |
-| `stackvet.sarif` | The findings as SARIF (named `findings.sarif` before 14 October 2026) | Editors and CI |
-| `report.json` | The data as JSON | Programs, among them `sv review`, `sv compare`, and `sv dashboard` |
-| `seen.json` | What `sv` saw of the running app, with credentials cut out | You, to see what a finding rests on |
-| `sbom.cdx.json` | The app's bill of materials as CycloneDX JSON, as `sv sbom` prints it | Tools that read a bill of materials |
-| `report.pdf` | The report as one file to read, print, or send, on US Letter paper unless `report-paper = "a4"` under `[app]` in stackvet.toml asks for A4. Its fonts show Western European letters only, so `report.html` is the complete version | You, or whoever you hand it to |
+| `report.html` | The whole report on one page: what to fix first, what was not examined, and every requirement that applies | You, in a browser: double-click it |
+| `compliance.md` | Every requirement that applies, chapter by chapter, with what is known of each; the threats; what only you can check; and the tests worth writing | Anyone who needs the whole picture against the standards, you or someone you show it to |
+| `security.md` | What the checks found, each in full (where, the code, how sure, why it matters, what to do, and how to set it aside), then what was not examined | Whoever fixes the code, you or your AI coding tool |
+| `low-findings.md` | Every low-severity finding in full, where the other reports group them by rule | You or your AI coding tool, when you want the detail |
+| `stackvet.sarif` | The findings as SARIF, a standard format for findings (named findings.sarif before 14 October 2026) | Code editors and GitHub's code scanning, which show a finding beside its line |
+| `report.json` | The report's data as JSON | Programs, among them sv review, sv compare, and sv dashboard |
+| `seen.json` | What sv saw of the running app, with every key and sign-in in it cut short | You, to see what a finding rests on |
+| `sbom.cdx.json` | The app's bill of materials, every package it uses with its version, as CycloneDX JSON | Tools that read a bill of materials |
+| `report.pdf` | The whole report as one file to read, print, or send: compliance.md's order, with each finding in full. US Letter paper unless stackvet.toml's report-paper setting asks for A4; its fonts show Western European letters only, so report.html is the complete version | You, or whoever you hand it to |
+
+`compliance.md` and `security.md` open with the same lines on a small app, but they are written for different
+readers. [The reports page](docs/website/reports-page.md) says when to open each, with an example of each.
 
 The reports lead with what was **not** examined, say what each check covered when it found nothing wrong, and
 nothing in them says a requirement passed — `sv` is not able to establish that, so it does not claim it.

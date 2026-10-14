@@ -1003,6 +1003,19 @@ pub fn page(report: &Report) -> String {
         b.push_str("</details>\n");
     }
 
+    // What each file in the folder is for, so the two Markdown reports are not taken for the same (backlog 0413).
+    b.push_str("<h2>The files in this folder</h2>\n");
+    b.push_str("<table>\n<tr><th>file</th><th>what it holds</th><th>who it is for</th></tr>\n");
+    for file in &crate::folder::FILES {
+        b.push_str(&format!(
+            "<tr><td><code>{}</code></td><td>{}</td><td>{}</td></tr>\n",
+            escape(file.name),
+            escape(file.holds),
+            escape(file.for_whom)
+        ));
+    }
+    b.push_str("</table>\n");
+
     b.push_str("</body>\n</html>\n");
     b
 }

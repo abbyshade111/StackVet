@@ -71,10 +71,15 @@ fn every_ordinary_word_of_the_security_and_compliance_reports_is_in_the_pdf() {
     for (name, report) in reports() {
         // The line in security.md that names the PDF is about the PDF, so it is not in it; and where security.md
         // points to low-findings.md, the PDF points to its own last section.
+        // Each Markdown report opens with its own line saying what it holds and who it is for; the PDF opens with
+        // the PDF's.
         let security = sv_report::markdown::security(&report)
             .replace(&sv_report::pdf_line(&report), "")
-            .replace(&format!("in `{}`", sv_report::LOW_FINDINGS_FILE), "");
-        let wanted: BTreeSet<String> = words(&sv_report::markdown::compliance(&report))
+            .replace(&format!("in `{}`", sv_report::LOW_FINDINGS_FILE), "")
+            .replace(&sv_report::folder::markdown_line("security.md"), "");
+        let compliance = sv_report::markdown::compliance(&report)
+            .replace(&sv_report::folder::markdown_line("compliance.md"), "");
+        let wanted: BTreeSet<String> = words(&compliance)
             .union(&words(&security))
             .cloned()
             .collect();

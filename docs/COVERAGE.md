@@ -37,6 +37,7 @@ What each kind of check needs before it can run:
 | The running app | a container backend and a `run` section (`--run`); for the AI checks, an `ai` section too |
 | Signed in | the above, and a `users` section with test accounts, or an `oidc` section for a sign-in through another service |
 | Outside tools | the tool installed; runs with `sv report` unless `--no-tools` |
+| Outside tools you turn on | the tool installed and turned on in stackvet.toml (`[tools] codeql = true`), for a use its license allows: an open-source app, academic research, or a paid GitHub Advanced Security license |
 | Your own live site | the address your app is served from, typed at the terminal (`sv probe https://…`) |
 
 ## Summary
@@ -52,17 +53,17 @@ What each kind of check needs before it can run:
 
 A requirement reached by more than one kind of check is counted under each.
 
-| Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Your own live site |
-|---|---|---|---|---|---|---|---|---|---|
-| L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 21 | 3 |
-| L2 | 183 | 94 | 68 | 23 | 0 | 21 | 47 | 28 | 2 |
-| L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 |
+| Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
+|---|---|---|---|---|---|---|---|---|---|---|
+| L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
+| L2 | 183 | 94 | 68 | 23 | 0 | 21 | 47 | 24 | 21 | 2 |
+| L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
 52 of the 173 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 57 of the 121 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 44 ASVS requirements can be settled. 25 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for.
+With nothing beyond plain `sv check`, 44 ASVS requirements can be settled. 25 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -108,24 +109,24 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 | Requirement | Level | Checks |
 |---|---|---|
-| V1.2.1 | L1 | Reads the code: `ast.html-from-value`; The running app: `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`; Signed in: `probe.stored-unencoded`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` and 3 more (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; gosec only ever as a finding: `G203`; sv only ever as a finding: `ast.html-from-value`, `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`, `probe.stored-unencoded`) |
-| V1.2.4 | L1 | Reads the code: `ast.sql-built-by-hand`; Signed in: `probe.sql-injection`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` and 3 more (bandit only ever as a finding: `B610`, `B611`; sv only ever as a finding: `probe.sql-injection`) |
-| V1.2.5 | L1 | Reads the code: `ast.shell-command`, `ast.shell-command-backticks`, `ast.shell-command-shell-true`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` and 3 more (bandit only ever as a finding: `B601`; sv only ever as a finding: `ast.shell-command-shell-true`) |
+| V1.2.1 | L1 | Reads the code: `ast.html-from-value`; The running app: `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`; Signed in: `probe.stored-unencoded`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; gosec only ever as a finding: `G203`; sv only ever as a finding: `ast.html-from-value`, `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`, `probe.stored-unencoded`) |
+| V1.2.4 | L1 | Reads the code: `ast.sql-built-by-hand`; Signed in: `probe.sql-injection`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B610`, `B611`; sv only ever as a finding: `probe.sql-injection`) |
+| V1.2.5 | L1 | Reads the code: `ast.shell-command`, `ast.shell-command-backticks`, `ast.shell-command-shell-true`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B601`; sv only ever as a finding: `ast.shell-command-shell-true`) |
 | V1.3.1 | L1 | Reads the code: `config.rich-text-without-sanitizer` (sv only ever as a finding: `config.rich-text-without-sanitizer`) |
-| V1.3.2 | L1 | Reads the code: `ast.dynamic-code-execution`; Outside tools: `bandit`, `brakeman`, `semgrep`, `codeql-javascript` and 2 more |
-| V1.3.6 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere`; Outside tools: `gosec`, `semgrep`, `codeql-javascript`, `codeql-python` and 1 more (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
-| V1.3.7 | L2 | Reads the code: `ast.template-built-from-value`; Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` (sv only ever as a finding: `ast.template-built-from-value`) |
-| V1.5.2 | L2 | Reads the code: `ast.unsafe-deserialization`; Outside tools: `bandit`, `brakeman`, `semgrep`, `codeql-javascript` and 2 more |
-| V3.4.2 | L1 | Reads the code: `ast.cors-any-origin-with-credentials`; The running app: `probe.cors-any-origin`; Outside tools: `semgrep`, `codeql-javascript` (sv only ever as a finding: `ast.cors-any-origin-with-credentials`) |
-| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`; Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` and 1 more (sv only ever as a finding: `ast.csrf-protection-off`) |
+| V1.3.2 | L1 | Reads the code: `ast.dynamic-code-execution`; Outside tools: `bandit`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V1.3.6 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere`; Outside tools: `gosec`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
+| V1.3.7 | L2 | Reads the code: `ast.template-built-from-value`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` (sv only ever as a finding: `ast.template-built-from-value`) |
+| V1.5.2 | L2 | Reads the code: `ast.unsafe-deserialization`; Outside tools: `bandit`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V3.4.2 | L1 | Reads the code: `ast.cors-any-origin-with-credentials`; The running app: `probe.cors-any-origin`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.cors-any-origin-with-credentials`) |
+| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.csrf-protection-off`) |
 | V3.7.1 | L2 | Reads the code: `config.client-tech-unsupported` (sv only ever as a finding: `config.client-tech-unsupported`) |
-| V3.7.2 | L2 | Reads the code: `ast.open-redirect`; Signed in: `probe.open-redirect`; Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` and 1 more (sv only ever as a finding: `probe.open-redirect`) |
+| V3.7.2 | L2 | Reads the code: `ast.open-redirect`; Signed in: `probe.open-redirect`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `probe.open-redirect`) |
 | V4.4.1 | L1 | Reads the code: `ast.plaintext-websocket-url`; Outside tools: `semgrep` (semgrep only ever as a finding: `detect-insecure-websocket`; sv only ever as a finding: `ast.plaintext-websocket-url`) |
-| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`, `codeql-javascript` and 2 more |
+| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V6.5.3 | L2 | Reads the code: `ast.insecure-random-for-code` (sv only ever as a finding: `ast.insecure-random-for-code`) |
 | V8.2.1 | L1 | Reads the code: `config.firebase-rules-open`, `config.supabase-table-without-rls`, `config.supabase-policy-allows-all`; Signed in: `probe.private-page-anonymous`, `probe.admin-page-ordinary-user`, `probe.admin-action-ordinary-user` (sv only ever as a finding: `config.firebase-rules-open`, `config.supabase-policy-allows-all`, `config.supabase-table-without-rls`) |
 | V8.2.2 | L1 | Reads the code: `config.firebase-rules-open`, `config.supabase-table-without-rls`, `config.supabase-policy-allows-all`; Signed in: `probe.owner-field-trusted`, `probe.other-users-data` (sv only ever as a finding: `config.firebase-rules-open`, `config.supabase-policy-allows-all`, `config.supabase-table-without-rls`, `probe.owner-field-trusted`) |
-| V9.1.1 | L1 | Reads the code: `ast.token-signature-not-checked`; Signed in: `probe.app-token-signature-not-checked`, `probe.app-token-placeholder-key`; Outside tools: `semgrep`, `codeql-javascript` (sv only ever as a finding: `ast.token-signature-not-checked`, `probe.app-token-placeholder-key`) |
+| V9.1.1 | L1 | Reads the code: `ast.token-signature-not-checked`; Signed in: `probe.app-token-signature-not-checked`, `probe.app-token-placeholder-key`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.token-signature-not-checked`, `probe.app-token-placeholder-key`) |
 | V9.1.2 | L1 | Reads the code: `ast.token-none-algorithm`; Signed in: `probe.app-token-alg-none`; Outside tools: `semgrep` (sv only ever as a finding: `ast.token-none-algorithm`) |
 | V9.1.3 | L1 | Reads the code: `ast.token-key-source-from-token`; Signed in: `probe.app-token-key-source-followed` (sv only ever as a finding: `ast.token-key-source-from-token`, `probe.app-token-key-source-followed`) |
 | V9.2.3 | L2 | Reads the code: `ast.token-audience-not-checked` (sv only ever as a finding: `ast.token-audience-not-checked`) |
@@ -136,51 +137,51 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V11.3.1 | L1 | Reads the code: `ast.weak-cipher`; Outside tools: `brakeman`, `semgrep` (sv only ever as a finding: `ast.weak-cipher`) |
 | V11.3.2 | L1 | Reads the code: `ast.weak-cipher`; Outside tools: `gosec`, `semgrep` |
 | V11.3.3 | L2 | Reads the code: `ast.unauthenticated-encryption` (sv only ever as a finding: `ast.unauthenticated-encryption`) |
-| V11.4.1 | L1 | Reads the code: `ast.weak-hash-function`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` and 2 more |
-| V11.4.2 | L2 | Reads the code: `ast.weak-password-key-derivation`; Outside tools: `semgrep`, `codeql-javascript` (sv only ever as a finding: `ast.weak-password-key-derivation`) |
+| V11.4.1 | L1 | Reads the code: `ast.weak-hash-function`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-python`, `codeql-ruby` |
+| V11.4.2 | L2 | Reads the code: `ast.weak-password-key-derivation`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.weak-password-key-derivation`) |
 | V11.4.4 | L2 | Reads the code: `ast.weak-password-key-derivation` (sv only ever as a finding: `ast.weak-password-key-derivation`) |
-| V11.5.1 | L2 | Reads the code: `ast.insecure-random-for-code`; Outside tools: `gosec`, `semgrep`, `codeql-javascript` (sv only ever as a finding: `ast.insecure-random-for-code`) |
-| V12.3.2 | L2 | Reads the code: `config.certificate-checks-off`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` and 3 more (sv only ever as a finding: `config.certificate-checks-off`) |
+| V11.5.1 | L2 | Reads the code: `ast.insecure-random-for-code`; Outside tools: `gosec`, `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.insecure-random-for-code`) |
+| V12.3.2 | L2 | Reads the code: `config.certificate-checks-off`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `config.certificate-checks-off`) |
 | V12.3.4 | L2 | Reads the code: `config.certificate-checks-off` (sv only ever as a finding: `config.certificate-checks-off`) |
 | V13.2.4 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V13.3.2 | L2 | Reads the code: `config.workflow-hands-out-all-secrets` (sv only ever as a finding: `config.workflow-hands-out-all-secrets`) |
-| V13.4.2 | L2 | Reads the code: `ast.debug-mode-on`; The running app: `probe.error-detail-leak`, `probe.development-console-open`; Outside tools: `bandit`, `gosec`, `semgrep`, `codeql-python` (gosec only ever as a finding: `G108`; sv only ever as a finding: `ast.debug-mode-on`, `probe.development-console-open`) |
+| V13.4.2 | L2 | Reads the code: `ast.debug-mode-on`; The running app: `probe.error-detail-leak`, `probe.development-console-open`; Outside tools: `bandit`, `gosec`, `semgrep`; Outside tools you turn on: `codeql-python` (gosec only ever as a finding: `G108`; sv only ever as a finding: `ast.debug-mode-on`, `probe.development-console-open`) |
 | V13.4.7 | L3 | Reads the code: `ast.static-files-from-app-folder`; The running app: `probe.private-files-served` (sv only ever as a finding: `ast.static-files-from-app-folder`, `probe.private-files-served`) |
 | V14.3.3 | L2 | Reads the code: `ast.password-in-browser-storage`; Signed in: `probe.password-in-browser-storage` (sv only ever as a finding: `ast.password-in-browser-storage`, `probe.password-in-browser-storage`) |
 | V15.1.2 | L2 | Reads the code: `config.versions-pinned`, `sbom` |
 | V15.2.3 | L2 | Reads the code: `config.development-server-started`; The running app: `probe.development-console-open` (sv only ever as a finding: `config.development-server-started`, `probe.development-console-open`) |
 | V15.2.4 | L3 | Reads the code: `ast.download-piped-to-shell` (sv only ever as a finding: `ast.download-piped-to-shell`) |
-| V15.3.3 | L2 | Reads the code: `ast.request-body-passed-whole`; Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`; Outside tools: `brakeman`, `semgrep`, `codeql-ruby` (sv only ever as a finding: `ast.request-body-passed-whole`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.role-field-trusted`) |
+| V15.3.3 | L2 | Reads the code: `ast.request-body-passed-whole`; Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-ruby` (sv only ever as a finding: `ast.request-body-passed-whole`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.role-field-trusted`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error` (sv only ever as a finding: `ast.check-passes-on-error`) |
 
 ### Settled by asking the running app (116)
 
 | Requirement | Level | Checks |
 |---|---|---|
-| V1.2.1 | L1 | Reads the code: `ast.html-from-value`; The running app: `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`; Signed in: `probe.stored-unencoded`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` and 3 more (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; gosec only ever as a finding: `G203`; sv only ever as a finding: `ast.html-from-value`, `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`, `probe.stored-unencoded`) |
+| V1.2.1 | L1 | Reads the code: `ast.html-from-value`; The running app: `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`; Signed in: `probe.stored-unencoded`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; gosec only ever as a finding: `G203`; sv only ever as a finding: `ast.html-from-value`, `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`, `probe.stored-unencoded`) |
 | V1.2.3 | L1 | The running app: `probe.reflected-json-unescaped`; Outside tools: `brakeman` (sv only ever as a finding: `probe.reflected-json-unescaped`) |
-| V1.2.4 | L1 | Reads the code: `ast.sql-built-by-hand`; Signed in: `probe.sql-injection`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` and 3 more (bandit only ever as a finding: `B610`, `B611`; sv only ever as a finding: `probe.sql-injection`) |
+| V1.2.4 | L1 | Reads the code: `ast.sql-built-by-hand`; Signed in: `probe.sql-injection`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B610`, `B611`; sv only ever as a finding: `probe.sql-injection`) |
 | V1.3.4 | L2 | Signed in: `probe.uploaded-svg-keeps-script` |
-| V1.3.6 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere`; Outside tools: `gosec`, `semgrep`, `codeql-javascript`, `codeql-python` and 1 more (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
+| V1.3.6 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere`; Outside tools: `gosec`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V1.3.11 | L2 | Signed in: `probe.mail-header-injected` |
 | V2.2.2 | L1 | Signed in: `probe.validation-only-in-the-browser` (sv only ever as a finding: `probe.validation-only-in-the-browser`) |
 | V2.4.1 | L2 | Signed in: `probe.create-rate-unlimited` |
 | V3.2.1 | L1 | Signed in: `probe.uploaded-file-rendered` |
 | V3.2.2 | L1 | Signed in: `probe.text-rendered-as-markup`; Outside tools: `semgrep` (semgrep only ever as a finding: `avoid-v-html`, `react-dangerouslysetinnerhtml`) |
-| V3.3.2 | L2 | The running app: `probe.cookie-attributes`; Signed in: `probe.session-cookie-attributes`; Outside tools: `semgrep`, `codeql-javascript`, `codeql-python` |
-| V3.3.4 | L2 | The running app: `probe.cookie-attributes`; Signed in: `probe.session-cookie-attributes`; Outside tools: `semgrep`, `codeql-javascript`, `codeql-python` |
-| V3.4.2 | L1 | Reads the code: `ast.cors-any-origin-with-credentials`; The running app: `probe.cors-any-origin`; Outside tools: `semgrep`, `codeql-javascript` (sv only ever as a finding: `ast.cors-any-origin-with-credentials`) |
+| V3.3.2 | L2 | The running app: `probe.cookie-attributes`; Signed in: `probe.session-cookie-attributes`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
+| V3.3.4 | L2 | The running app: `probe.cookie-attributes`; Signed in: `probe.session-cookie-attributes`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
+| V3.4.2 | L1 | Reads the code: `ast.cors-any-origin-with-credentials`; The running app: `probe.cors-any-origin`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.cors-any-origin-with-credentials`) |
 | V3.4.3 | L2 | The running app: `probe.security-headers`; Signed in: `probe.private-page-headers` |
 | V3.4.4 | L2 | The running app: `probe.security-headers`; Signed in: `probe.private-page-headers` |
 | V3.4.5 | L2 | The running app: `probe.security-headers`; Signed in: `probe.private-page-headers` |
 | V3.4.6 | L2 | The running app: `probe.security-headers`; Signed in: `probe.private-page-headers` |
 | V3.4.7 | L3 | The running app: `probe.csp-no-report` |
 | V3.4.8 | L3 | The running app: `probe.opener-policy-missing` |
-| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`; Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` and 1 more (sv only ever as a finding: `ast.csrf-protection-off`) |
+| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.csrf-protection-off`) |
 | V3.5.2 | L1 | Signed in: `probe.preflight-skipped` |
 | V3.5.3 | L1 | Signed in: `probe.sign-out-on-get` (sv only ever as a finding: `probe.sign-out-on-get`) |
 | V3.5.6 | L3 | The running app: `probe.jsonp-enabled` (sv only ever as a finding: `probe.jsonp-enabled`) |
-| V3.7.2 | L2 | Reads the code: `ast.open-redirect`; Signed in: `probe.open-redirect`; Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` and 1 more (sv only ever as a finding: `probe.open-redirect`) |
+| V3.7.2 | L2 | Reads the code: `ast.open-redirect`; Signed in: `probe.open-redirect`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `probe.open-redirect`) |
 | V4.1.1 | L1 | The running app: `probe.content-type` |
 | V4.1.3 | L2 | Signed in: `probe.identity-header-trusted` (sv only ever as a finding: `probe.identity-header-trusted`) |
 | V4.1.4 | L3 | The running app: `probe.unused-method-accepted` (sv only ever as a finding: `probe.unused-method-accepted`) |
@@ -193,7 +194,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V5.2.2 | L1 | Signed in: `probe.file-contents-unchecked` |
 | V5.2.3 | L2 | Signed in: `probe.archive-unchecked`; Outside tools: `semgrep` (semgrep only ever as a finding: `potential-dos-via-decompression-bomb`) |
 | V5.3.1 | L1 | Signed in: `probe.uploaded-file-executed` |
-| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`, `codeql-javascript` and 2 more |
+| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V5.4.1 | L2 | Signed in: `probe.download-unnamed` |
 | V5.4.2 | L2 | Signed in: `probe.download-name-injected` |
 | V6.2.1 | L1 | Signed in: `probe.short-password-accepted` |
@@ -234,7 +235,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V8.2.2 | L1 | Reads the code: `config.firebase-rules-open`, `config.supabase-table-without-rls`, `config.supabase-policy-allows-all`; Signed in: `probe.owner-field-trusted`, `probe.other-users-data` (sv only ever as a finding: `config.firebase-rules-open`, `config.supabase-policy-allows-all`, `config.supabase-table-without-rls`, `probe.owner-field-trusted`) |
 | V8.2.3 | L2 | Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.record-returns-secret-fields` (sv only ever as a finding: `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.record-returns-secret-fields`, `probe.role-field-trusted`) |
 | V8.4.2 | L3 | The running app: `probe.admin-opened-by-address` (sv only ever as a finding: `probe.admin-opened-by-address`) |
-| V9.1.1 | L1 | Reads the code: `ast.token-signature-not-checked`; Signed in: `probe.app-token-signature-not-checked`, `probe.app-token-placeholder-key`; Outside tools: `semgrep`, `codeql-javascript` (sv only ever as a finding: `ast.token-signature-not-checked`, `probe.app-token-placeholder-key`) |
+| V9.1.1 | L1 | Reads the code: `ast.token-signature-not-checked`; Signed in: `probe.app-token-signature-not-checked`, `probe.app-token-placeholder-key`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.token-signature-not-checked`, `probe.app-token-placeholder-key`) |
 | V9.1.2 | L1 | Reads the code: `ast.token-none-algorithm`; Signed in: `probe.app-token-alg-none`; Outside tools: `semgrep` (sv only ever as a finding: `ast.token-none-algorithm`) |
 | V9.1.3 | L1 | Reads the code: `ast.token-key-source-from-token`; Signed in: `probe.app-token-key-source-followed` (sv only ever as a finding: `ast.token-key-source-from-token`, `probe.app-token-key-source-followed`) |
 | V9.2.1 | L1 | Signed in: `probe.app-token-expired-accepted`; Outside tools: `semgrep` (semgrep only ever as a finding: `jwt-tokenvalidationparameters-no-expiry-validation`) |
@@ -248,7 +249,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V10.5.4 | L2 | Signed in: `probe.oidc-audience-not-checked` |
 | V13.2.4 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V13.4.1 | L1 | The running app: `probe.source-control-exposed` |
-| V13.4.2 | L2 | Reads the code: `ast.debug-mode-on`; The running app: `probe.error-detail-leak`, `probe.development-console-open`; Outside tools: `bandit`, `gosec`, `semgrep`, `codeql-python` (gosec only ever as a finding: `G108`; sv only ever as a finding: `ast.debug-mode-on`, `probe.development-console-open`) |
+| V13.4.2 | L2 | Reads the code: `ast.debug-mode-on`; The running app: `probe.error-detail-leak`, `probe.development-console-open`; Outside tools: `bandit`, `gosec`, `semgrep`; Outside tools you turn on: `codeql-python` (gosec only ever as a finding: `G108`; sv only ever as a finding: `ast.debug-mode-on`, `probe.development-console-open`) |
 | V13.4.3 | L2 | The running app: `probe.directory-listing` (sv only ever as a finding: `probe.directory-listing`) |
 | V13.4.4 | L2 | The running app: `probe.trace-enabled` |
 | V13.4.5 | L2 | The running app: `probe.docs-or-monitoring-exposed` (sv only ever as a finding: `probe.docs-or-monitoring-exposed`) |
@@ -261,7 +262,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.2.3 | L2 | Reads the code: `config.development-server-started`; The running app: `probe.development-console-open` (sv only ever as a finding: `config.development-server-started`, `probe.development-console-open`) |
 | V15.3.1 | L1 | Signed in: `probe.record-returns-secret-fields` (sv only ever as a finding: `probe.record-returns-secret-fields`) |
 | V15.3.2 | L2 | The running app: `probe.fetch-follows-redirect` |
-| V15.3.3 | L2 | Reads the code: `ast.request-body-passed-whole`; Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`; Outside tools: `brakeman`, `semgrep`, `codeql-ruby` (sv only ever as a finding: `ast.request-body-passed-whole`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.role-field-trusted`) |
+| V15.3.3 | L2 | Reads the code: `ast.request-body-passed-whole`; Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-ruby` (sv only ever as a finding: `ast.request-body-passed-whole`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.role-field-trusted`) |
 | V15.3.4 | L2 | Signed in: `probe.forwarded-for-trusted` (sv only ever as a finding: `probe.forwarded-for-trusted`) |
 | V16.2.1 | L2 | Signed in: `probe.log-line-metadata` |
 | V16.2.2 | L2 | Signed in: `probe.log-timestamp-zoned` |
@@ -284,31 +285,31 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 | Requirement | Level | Checks |
 |---|---|---|
-| V1.2.2 | L1 | Outside tools: `codeql-javascript` (codeql-javascript only ever as a finding: `js/incomplete-url-scheme-check`) |
-| V1.2.6 | L2 | Outside tools: `semgrep`, `codeql-python` |
-| V1.2.7 | L2 | Outside tools: `semgrep`, `codeql-javascript`, `codeql-python` |
-| V1.2.9 | L2 | Outside tools: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
-| V1.3.10 | L2 | Outside tools: `semgrep`, `codeql-javascript`, `codeql-ruby` |
-| V1.3.12 | L3 | Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` and 1 more |
+| V1.2.2 | L1 | Outside tools you turn on: `codeql-javascript` (codeql-javascript only ever as a finding: `js/incomplete-url-scheme-check`) |
+| V1.2.6 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-python` |
+| V1.2.7 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
+| V1.2.9 | L2 | Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V1.3.10 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-ruby` |
+| V1.3.12 | L3 | Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V1.4.1 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `insecure-use-gets-fn`, `insecure-use-strcat-fn`, `insecure-use-string-copy-fn`) |
 | V1.4.3 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `double-free`, `use-after-free`) |
-| V1.5.1 | L1 | Outside tools: `semgrep`, `codeql-javascript`, `codeql-python`, `codeql-ruby` |
-| V3.3.1 | L1 | Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` |
-| V3.5.5 | L2 | Outside tools: `semgrep`, `codeql-javascript` |
+| V1.5.1 | L1 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V3.3.1 | L1 | Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
+| V3.5.5 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` |
 | V3.6.1 | L3 | Outside tools: `semgrep` (semgrep only ever as a finding: `missing-integrity`) |
-| V5.3.3 | L3 | Outside tools: `semgrep`, `codeql-javascript`, `codeql-python` |
-| V11.2.3 | L2 | Outside tools: `brakeman`, `semgrep`, `codeql-javascript`, `codeql-python` |
+| V5.3.3 | L3 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
+| V11.2.3 | L2 | Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
 | V11.3.4 | L3 | Outside tools: `gosec`, `semgrep` (gosec only ever as a finding: `G407`; semgrep only ever as a finding: `gcm-nonce-reuse`, `openssl-cbc-static-iv`) |
 | V11.4.3 | L2 | Outside tools: `semgrep` |
 | V12.1.2 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `no-set-ciphers`, `tls-with-insecure-cipher`) |
 | V12.3.1 | L2 | Outside tools: `semgrep` |
 | V12.3.3 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `grpc-client-insecure-connection`, `grpc-nodejs-insecure-connection`, `grpc-server-insecure-connection`) |
-| V15.3.5 | L2 | Outside tools: `codeql-javascript` |
-| V15.3.6 | L2 | Outside tools: `codeql-javascript` |
-| V15.4.2 | L3 | Outside tools: `bandit`, `codeql-javascript`, `codeql-python` (bandit only ever as a finding: `B306`; codeql-python only ever as a finding: `py/insecure-temporary-file`) |
+| V15.3.5 | L2 | Outside tools you turn on: `codeql-javascript` |
+| V15.3.6 | L2 | Outside tools you turn on: `codeql-javascript` |
+| V15.4.2 | L3 | Outside tools: `bandit`; Outside tools you turn on: `codeql-javascript`, `codeql-python` (bandit only ever as a finding: `B306`; codeql-python only ever as a finding: `py/insecure-temporary-file`) |
 | V15.4.3 | L3 | Outside tools: `semgrep` (semgrep only ever as a finding: `missing-unlock-before-return`) |
-| V16.2.5 | L2 | Outside tools: `semgrep`, `codeql-javascript`, `codeql-python`, `codeql-ruby` |
-| V16.4.1 | L2 | Outside tools: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V16.2.5 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V16.4.1 | L2 | Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 
 ### Supporting only (9)
 
@@ -356,7 +357,7 @@ does not reach.
 20 of these 49 can only ever be marked *needs attention*: a check can
 show the control missing, and finding nothing does not show it present, so a clean run credits
 none of them. Most are `sv`'s own checks: rules that read the code, and questions asked of the
-running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's, which run with `sv report` unless `--no-tools`.
+running app (`--run`, with an `ai` section). The rest are semgrep's, which runs with `sv report` unless `--no-tools`, and CodeQL's, which runs only when stackvet.toml turns it on.
 
 - C2.1.2: checked in part only, by `probe.ai-hidden-input`.
 - C2.1.3: checked in part only, by `probe.ai-injection-unscreened`; and found failing by sv's `probe.ai-stored-injection-unscreened`.

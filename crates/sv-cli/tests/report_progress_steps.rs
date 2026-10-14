@@ -8,10 +8,10 @@ use std::process::Command;
 
 #[test]
 fn each_outside_tool_is_said_under_its_stage_on_stderr() {
-    let app = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/flask-booking");
     let dir = std::env::temp_dir().join(format!("sv-report-steps-{}", std::process::id()));
     std::fs::remove_dir_all(&dir).ok();
     std::fs::create_dir_all(dir.join("bin")).unwrap();
+    let app = flask_with_codeql_on(&dir);
     // Nothing on the PATH, so no tool is found and the run is quick; each is still begun on, and
     // said, before `sv` finds it missing.
     let ran = Command::new(env!("CARGO_BIN_EXE_sv"))
@@ -58,4 +58,30 @@ fn each_outside_tool_is_said_under_its_stage_on_stderr() {
         !stdout.contains("  now: "),
         "progress went to stdout: {stdout}"
     );
+}
+
+/// A copy of the Flask example in `dir`, with CodeQL turned on (`[tools] codeql = true`), which it is not by
+/// default (ADR-115): this test is about CodeQL's place among the tools, so it asks for it.
+fn flask_with_codeql_on(dir: &Path) -> std::path::PathBuf {
+    fn copy(from: &Path, to: &Path) {
+        std::fs::create_dir_all(to).unwrap();
+        for entry in std::fs::read_dir(from).unwrap() {
+            let entry = entry.unwrap();
+            let target = to.join(entry.file_name());
+            if entry.file_type().unwrap().is_dir() {
+                copy(&entry.path(), &target);
+            } else {
+                std::fs::copy(entry.path(), &target).unwrap();
+            }
+        }
+    }
+    let app = dir.join("flask-booking");
+    copy(
+        &Path::new(env!("CARGO_MANIFEST_DIR")).join("../../examples/flask-booking"),
+        &app,
+    );
+    let manifest = app.join("stackvet.toml");
+    let text = std::fs::read_to_string(&manifest).unwrap();
+    std::fs::write(&manifest, format!("{text}\n[tools]\ncodeql = true\n")).unwrap();
+    app
 }

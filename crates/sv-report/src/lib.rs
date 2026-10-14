@@ -23,6 +23,7 @@ pub mod bluf;
 pub mod chapters;
 pub mod dashboard;
 pub mod fence;
+pub mod folder;
 pub mod groups;
 pub mod html;
 pub mod interview;
