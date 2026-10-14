@@ -48,11 +48,20 @@ fn the_file_lists_the_helper_images_and_nothing_else() {
     // The setup: the file was read, and each helper was found in it by its own stage.
     assert_eq!(listed.len(), 4, "{listed:?}");
     assert_eq!(PROBE_IMAGE, helper_image("probe"));
-    assert!(PROBE_IMAGE.starts_with("busybox:"), "{PROBE_IMAGE}");
-    assert!(MAIL_IMAGE.starts_with("axllent/mailpit:"), "{MAIL_IMAGE}");
-    assert!(PROVIDER_IMAGE.starts_with("node:"), "{PROVIDER_IMAGE}");
     assert!(
-        BROWSER_IMAGE.starts_with("chromedp/headless-shell:"),
+        PROBE_IMAGE.starts_with("docker.io/library/busybox:"),
+        "{PROBE_IMAGE}"
+    );
+    assert!(
+        MAIL_IMAGE.starts_with("docker.io/axllent/mailpit:"),
+        "{MAIL_IMAGE}"
+    );
+    assert!(
+        PROVIDER_IMAGE.starts_with("docker.io/library/node:"),
+        "{PROVIDER_IMAGE}"
+    );
+    assert!(
+        BROWSER_IMAGE.starts_with("docker.io/chromedp/headless-shell:"),
         "{BROWSER_IMAGE}"
     );
     listed.sort_unstable();
@@ -84,5 +93,22 @@ fn ci_fetches_the_helper_images_from_the_file_and_names_none_by_tag() {
             !WORKFLOW.contains(name),
             "rust.yml names {name} itself rather than reading it from images/Dockerfile"
         );
+    }
+}
+
+/// Backlog 0519: each helper image is written in full, its registry first. Docker reads a short name as Docker Hub's
+/// without saying so; Podman resolves one only through its own alias list or a search registry, and did not find the
+/// browser's in the measurement of 0508.
+#[test]
+fn every_helper_image_names_its_registry() {
+    assert_eq!(HELPER_IMAGES.len(), 4);
+    for image in HELPER_IMAGES {
+        let host = image.split('/').next().unwrap_or_default();
+        assert!(
+            image.contains('/') && host.contains('.'),
+            "{image} does not start with the registry it comes from"
+        );
+        // The fingerprint stays, so a moved tag still cannot change what runs (ADR-019).
+        assert!(image.contains("@sha256:"), "{image}");
     }
 }
