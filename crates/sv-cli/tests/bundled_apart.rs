@@ -40,7 +40,7 @@ fn a_finding_in_a_copied_library_is_listed_apart_named_for_it_and_still_counts()
             .unwrap_or_default();
     let compliance = std::fs::read_to_string(out.join("compliance.md")).unwrap_or_default();
     let sarif: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(out.join("findings.sarif")).unwrap_or_default(),
+        &std::fs::read_to_string(out.join("stackvet.sarif")).unwrap_or_default(),
     )
     .unwrap_or_default();
     std::fs::remove_dir_all(&app).ok();

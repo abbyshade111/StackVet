@@ -258,7 +258,7 @@ fn the_bundle_holds_the_app_the_report_the_bill_of_materials_and_the_listing() {
         "notes-app/report/report.html",
         "notes-app/report/compliance.md",
         "notes-app/report/security.md",
-        "notes-app/report/findings.sarif",
+        "notes-app/report/stackvet.sarif",
         "notes-app/report/report.json",
         "notes-app/report/sbom.cdx.json",
         "notes-app/BUNDLE.json",

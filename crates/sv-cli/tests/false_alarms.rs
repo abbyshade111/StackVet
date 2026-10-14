@@ -193,7 +193,7 @@ fn every_report_says_how_sure_it_is_and_whether_it_is_test_code_and_hides_nothin
     );
     let security = std::fs::read_to_string(out.join("security.md")).unwrap();
     let sarif: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(out.join("findings.sarif")).unwrap())
+        serde_json::from_str(&std::fs::read_to_string(out.join("stackvet.sarif")).unwrap())
             .unwrap();
     let compliance = std::fs::read_to_string(out.join("compliance.md")).unwrap();
     let html = std::fs::read_to_string(out.join("report.html")).unwrap();
