@@ -917,9 +917,12 @@ fn the_reports_name_the_bill_of_materials_beside_them_and_the_page_links_it() {
         "{html}"
     );
     assert!(!html.contains("0 packages"), "{html}");
-    // Without a bill, nothing is said of one.
+    // Without a bill, the file is still written beside the report, so the page says it holds none (backlog 0449).
     report.sbom = None;
-    assert!(!sv_report::html::page(&report).contains("sbom.cdx.json"));
+    assert!(
+        sv_report::html::page(&report).contains("holds no software bill of materials"),
+        "the page names the empty file for what it is"
+    );
 }
 
 #[test]

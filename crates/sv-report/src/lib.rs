@@ -1610,13 +1610,36 @@ pub struct SbomFile {
     pub complete: bool,
 }
 
-/// `sbom.cdx.json`: the bill of materials, as `sv sbom` prints it (backlog 0382). An empty CycloneDX document, saying
-/// so, for a report made without one.
+/// Why `sbom.cdx.json` holds no packages when the report was made without a bill of materials, in the file and on the
+/// page alike (backlog 0449).
+pub const SBOM_NOT_MADE: &str = "no bill of materials was made with this report, so this file lists no packages and \
+     says nothing about which ones the app ships";
+
+/// `sbom.cdx.json`: the bill of materials, as `sv sbom` prints it (backlog 0382). For a report made without one, an
+/// empty CycloneDX document that says so where `sv sbom` puts its caveats: not complete, and why (backlog 0449). An
+/// empty list alone would read as an app that ships nothing.
 pub fn sbom_document(report: &Report) -> String {
     match &report.sbom {
         Some(s) => s.json.clone(),
-        None => "{\"bomFormat\": \"CycloneDX\", \"specVersion\": \"1.5\", \"version\": 1, \"components\": []}\n"
-            .to_owned(),
+        None => {
+            let document = serde_json::json!({
+                "bomFormat": "CycloneDX",
+                "specVersion": "1.5",
+                "version": 1,
+                "metadata": {
+                    "tools": [{"vendor": "StackVet", "name": "sv"}],
+                    "properties": [
+                        {"name": "securevibe:complete", "value": "false"},
+                        {"name": "securevibe:not-made", "value": SBOM_NOT_MADE},
+                    ],
+                },
+                "components": [],
+            });
+            format!(
+                "{}\n",
+                serde_json::to_string_pretty(&document).unwrap_or_default()
+            )
+        }
     }
 }
 
@@ -1645,18 +1668,23 @@ pub fn sarif_line(report: &Report) -> String {
 }
 
 /// The line near the top of the report naming the bill of materials beside it (backlog 0382): how many packages it
-/// lists, and whether it is complete. `None` without one.
-pub fn sbom_line(report: &Report) -> Option<String> {
-    let s = report.sbom.as_ref()?;
+/// lists, and whether it is complete. Without one, the file is still written, so the line says it holds no bill
+/// (backlog 0449).
+pub fn sbom_line(report: &Report) -> String {
+    let Some(s) = report.sbom.as_ref() else {
+        return format!(
+            "{SBOM_FILE} beside this report holds no software bill of materials: {SBOM_NOT_MADE}."
+        );
+    };
     if s.components == 0 && s.complete {
         // An app on its language's own library alone: "0 packages, from every package list the app has" read as if it
         // had lists that were empty, when most often it has none.
-        return Some(format!(
+        return format!(
             "The app's software bill of materials is in {SBOM_FILE} beside this report. It lists no packages: the app \
              declares none, in a package list or a lockfile."
-        ));
+        );
     }
-    Some(format!(
+    format!(
         "The app's software bill of materials, every package it ships, is in {SBOM_FILE} beside this report: {} \
          package{}, {}.",
         s.components,
@@ -1666,7 +1694,7 @@ pub fn sbom_line(report: &Report) -> Option<String> {
         } else {
             "not complete: some of the app's package lists could not be read, and the report says which"
         }
-    ))
+    )
 }
 
 /// The lines of the app's code a finding is on, with the one before and after, as `sv` kept them redacted (backlog
@@ -2436,6 +2464,10 @@ mod build_loop_tail_tests;
 #[cfg(test)]
 #[path = "outranked_in_part_tests.rs"]
 mod outranked_in_part_tests;
+
+#[cfg(test)]
+#[path = "sbom_not_made_tests.rs"]
+mod sbom_not_made_tests;
 
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
 /// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already, and for a note worth
