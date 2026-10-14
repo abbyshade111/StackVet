@@ -1,6 +1,6 @@
 # The coordination board, for the next burst: a waiting line, insert at a position, and a close command
 
-**Status:** claimed by stackvet-deep-review, 13 October 2026
+**Status:** done, 13 October 2026
 
 From the coordination trial's write-up (backlog 0273, 13 October 2026). The owner chose the same day to keep the
 coordinating session for bursts of independent findings, such as a review's items, with these three things added to
@@ -17,3 +17,11 @@ coordinating session for bursts of independent findings, such as a review's item
 
 Each with a self-test that fails without it, broken on purpose and watched. ADR-061 governs the board: a Later line.
 
+**Built, 13 October 2026** (session stackvet-deep-review): the three commands in `tools/coordination.py`, each in its
+self-test and each broken on purpose and watched (the lane order, the branch scan, the markers at close, and the check
+on waiting files each turned the test red at their own assertion). The waiting line is a file beside the board,
+`docs/coordination/waiting/<number>.md`, written by `wait <number> --on "..."` and pushed on the builder's branch, so no
+pull request is needed for the board to show it; `board` reads this checkout and every branch pushed in the last seven
+days. `assign --after <number>` inserts into a lane. `close --by --why` removes the sessions, rewrites the markers
+(`queue add --mark` writes them), empties the queue, and keeps the board; `open` keeps a closed board beside the new
+one. The hand-out footer tells a builder to use `wait`. ADR-061, Later; `docs/COORDINATION.md` steps 1, 3, 7, and 8.

@@ -38,7 +38,9 @@ makes those collisions stop, and what it costs.
 
 1. The orchestrator opens the board once (`open --by <session>`), names the building sessions and their arms
    (`session add <name> --arm full|none`), and queues the items in the order they should go out (`queue add <number>`,
-   with `--hold "why"` for one that waits).
+   with `--hold "why"` for one that waits, and `--mark` to write the board's marker line into the item, so a session
+   off the board leaves it alone). Since 13 October 2026 (backlog 0416) the whole queue can be laid out before any
+   session starts, and `open` on a closed board keeps the old one beside the new as `board-closed-<date>.md`.
 2. For each free session: `assign <number> --to <session> --why "..."`. The reason is written down every time, in at
    least ten characters. The claim is made and the board updated in one go, and both go to `main` in one small pull
    request, so the hand-out is visible to every session within minutes.
@@ -52,7 +54,9 @@ makes those collisions stop, and what it costs.
    between the two sessions' lanes (the coverage files, a workflow file, or one document in one lane only), with each
    matched pair split across the lanes. A session whose pull request has merged takes the first unfinished item on its
    list, and otherwise the item it holds if it has not started it. The orchestrator plans the next lane when one runs
-   low, and checks in every half hour meanwhile only to record finishes. The item's own file and this page's footer are everything the session needs; the board
+   low, and checks in every half hour meanwhile only to record finishes. An item that has to go next, or right after
+   one already in the lane, goes in with `--after <number>` (the held item's number puts it first) instead of at the
+   end, which during the trial took two withdrawals (backlog 0416). The item's own file and this page's footer are everything the session needs; the board
    is what counts, a message only points at it.
 4. The builder builds, in a new branch from `main` and a pull request of its own for each item (a cloud session may
    push a branch other than the one it started on), and runs `python3 tools/backlog.py done <number>`; it keeps
@@ -67,7 +71,18 @@ makes those collisions stop, and what it costs.
    status line that still read open; the no-context builder read the whole item and asked. So the orchestrator reads
    each item whole before assigning it, not only its status line and Where line.
 6. A red `main` goes to exactly one session, through the same `assign`, so two never fix it together.
-7. At the end: `measure --since <day> --arms` counts what git shows, and the write-up goes in the item.
+7. A builder that has to ask the owner something before it can go on says so where the orchestrator can see it:
+   `wait <number> --on "the question"` writes `docs/coordination/waiting/<number>.md`, which the builder commits and
+   pushes on its own branch, with no pull request needed. `board` prints a "Waiting on the owner" section read from
+   this checkout and from every branch pushed to `origin` in the last seven days, so the orchestrator tells the owner
+   at once whose action is pending; during the trial such a wait looked like a stalled session and two of them cost
+   about twelve hours each. When the owner answers, `wait <number> --answered` removes the file (the builder, in the
+   same pull request as its work), and `finish` removes one left behind. `check` fails on a waiting file in the
+   checkout for an item that is done or that nobody holds. The hand-out footer below says all of this in one line.
+8. At the end: `measure --since <day> --arms` counts what git shows, the write-up goes in the item, and
+   `close --by <session> --why "..."` ends the burst in one step once every session is free (`finish` or `withdraw`
+   first): the sessions go, each queued item's marker is rewritten to say the board closed and the item is taken the
+   normal way, the queue empties, and the board stays as the record with a `**Closed**` line under its heading.
 
 The commands are listed at the top of `tools/coordination.py`, and `--self-test` exercises every one, their refusals,
 the measures on a history made for the test, and the no-context clone.
