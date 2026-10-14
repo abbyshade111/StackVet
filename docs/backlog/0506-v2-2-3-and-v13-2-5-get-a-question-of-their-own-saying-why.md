@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found while building backlog 0487 (14 October 2026). 0487's list of the questions that never get a pointer, because
 nothing in the app's folder can show them, names two requirements that have no question at all:
 

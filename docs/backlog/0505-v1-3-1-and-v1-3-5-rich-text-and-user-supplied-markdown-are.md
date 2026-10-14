@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 14 October 2026 by session wording, building backlog 0403. Severity: unknown until read against the requirements.
 
 - Where: `data/knowledge/applicability.json`, the rules for `V1.3.1` and `V1.3.5`, each `"condition": "ai"` alone, and

@@ -1,6 +1,8 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** claimed by securevibe-trial-prep, 12 October 2026
+**Status:** partly done: groups B to F (parts 2 to 6) each have a remainder; the archived session's claim on them is released
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -99,3 +101,5 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Done the same day** (`docs/design/0374-ask-for-more-than-one-private-page-12-october-2026.md`): `sv preflight`
    says when one private page is listed and why it caps the credits; the spec says to list every private and admin page.
    **Part status:** done, 12 October 2026
+
+**Claim released, 14 October 2026** (the owner's word): session securevibe-trial-prep was archived after the coordination trial with no branch pushed for this item, so the claim was stale. Open again, queued on the board.

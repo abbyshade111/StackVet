@@ -11,3 +11,5 @@ credit: CodeQL first (GitHub's terms limit some uses, which may need the same ca
 is not recorded here), then Bandit, gosec, Opengrep, OSV, and MITRE ATLAS. The OWASP standards are CC BY-SA 4.0,
 which asks for credit, a link to the license, and a note of changes; the credits page says StackVet holds them as
 data and words some of them plainly.
+
+**The owner's word, 14 October 2026:** a session does the reading (each tool's and data source's licence from its own source, CodeQL first) and brings the owner only the ones that need a judgment, with the text that raises it. Queued on the board.

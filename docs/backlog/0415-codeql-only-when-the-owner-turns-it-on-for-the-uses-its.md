@@ -1,6 +1,8 @@
 # CodeQL only when the owner turns it on, for the uses its license allows
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** open
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 The owner's decision of 13 October 2026, option B of three: "agree, let's go with B please".
 
@@ -40,3 +42,5 @@ on the records for the outside tools' default (ADR-111) and for CodeQL's languag
 
 The owner also said the same day that CodeQL is worth downloading for the paper's research, which its license
 allows: the download is asked for on its own, with the file, the source, and the size.
+
+**Claim released, 14 October 2026** (the owner's word): session securevibe-trial-prep was archived after the coordination trial with no branch pushed for this item, so the claim was stale. Open again, queued on the board.

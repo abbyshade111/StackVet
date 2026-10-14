@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Split from backlog 0407 on 14 October 2026 (session documentation), so 0407 could close: it changed the build prompt
 (the guide's step 4 and the setup page's step 5) and prompt 6 for what the owner's trial in Antigravity on 13 October
 2026 showed, and `crates/sv-cli/tests/build_prompt_rules.rs` holds each change. What is left is the trial again: the

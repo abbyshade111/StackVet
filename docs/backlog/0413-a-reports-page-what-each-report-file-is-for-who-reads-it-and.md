@@ -1,6 +1,8 @@
 # A reports page: what each report file is for, who reads it, and an example of each
 
-**Status:** claimed by securevibe-trial-prep, 13 October 2026
+**Status:** open
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 The owner's request of 13 October 2026. Looking at the my-app report, the owner found that `security.md` and
 `compliance.md` "often look very similar if not the same". They are not the same: `security.md` is the findings in
@@ -42,3 +44,5 @@ To build, after 0412 (the PDF), so the page can show the PDF too:
   They go in `docs/website/diagrams/`, with the script under `docs/website/diagrams/source/` as the logo's is kept
   (`docs/brand/source/`), and `docs/brand/README.md` gains the two tags and what each means, so later diagrams
   use the same words.
+
+**Claim released, 14 October 2026** (the owner's word): session securevibe-trial-prep was archived after the coordination trial with no branch pushed for this item, so the claim was stale. Open again, queued on the board.

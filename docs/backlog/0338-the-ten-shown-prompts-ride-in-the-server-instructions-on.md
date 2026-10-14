@@ -20,3 +20,5 @@
 from that as well. The loop test pins to a specific sv build, but still better safe than sorry and shouldn't change while
 that test is running." So: not assigned until the loop trial (0257) has finished and its findings are in; then the owner
 decides with both in hand.
+
+**The owner's decision, 14 October 2026:** yes, after the loop trial: the ten shown prompts leave the server instructions, which keep one line saying where they are, and are given in one place a tool reads once (the spec); the trial's findings did not rest on the prompts being in the system prompt. A Later entry on ADR-066 (the instructions) and ADR-035 (the library) in the pull request that builds it; the loop trial's pinned build is unaffected, since the trial is over.

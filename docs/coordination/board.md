@@ -13,13 +13,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Queue
 
 1. 0324 Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150 — hold: last and alone, after everything that touches the files it splits (the owner's order of 13 October)
-2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — hold: the owner's decision first: code-owner review for the workflow and check scripts; see the item
-3. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — hold: the owner's word: weighed against the loop trial's findings; see the item
+2. 0290 The required checks are judged by scripts a pull request can edit (the owner's setting: code-owner review for them) — ready
+3. 0338 The ten shown prompts ride in the server instructions on every turn, and again in the spec, guidance, and brief (the owner's decision) — ready
 4. 0263 Error-handler signals in the app's code, the static half of V16.5.4 — hold: set aside by the owner on 12 October 2026 until sv holds an app to level 3 (the item's own text)
 5. 0365 mail() waits a fixed 10 s per flow when the app sends no mail — hold: build only if a real report's timings show the cost, and none does (the item's own text)
 6. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
 7. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
-8. 0374 Confirm the license of every tool and data source the website credits — hold: the owner's: the licenses the website credits
+8. 0374 Confirm the license of every tool and data source the website credits — ready
 9. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
 10. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — hold: a proposal; waits on the pointer's trial (0487), the owner's word of 13 October
 11. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — hold: a proposal; waits on the pointer's trial (0487)
@@ -34,6 +34,16 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 20. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — hold: a proposal; waits on the pointer's trial (0487)
 21. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 22. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
+23. 0370 A setup prompt library for people new to building with AI — ready
+24. 0413 A reports page: what each report file is for, who reads it, and an example of each — ready
+25. 0412 Write the report as a PDF again, beside report.html — ready
+26. 0415 CodeQL only when the owner turns it on, for the uses its license allows — ready
+27. 0232 More samples for the checks that rest on one sample (groups A to H) — ready
+28. 0503 The report does not say the typed-text check did not run when no form is named — ready
+29. 0504 The second loop trial's score counts text-forms and not text-form — ready
+30. 0505 V1.3.1 and V1.3.5, rich text and user-supplied Markdown, are turned on only by an AI feature — ready
+31. 0506 V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them — ready
+32. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
 
 ## Log
 
@@ -344,3 +354,16 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 08:13 — assigned 0476 to documentation (full) as next: usability lane: sv --help and each command's help say where a non-programmer's path is (main.rs)
 - 2026-10-14 08:13 — assigned 0475 to documentation (full) as next: usability lane: error messages a person meets through the tool name both routes (sv-cli lib.rs, sv-manifest, report_lock.rs, doctor.rs)
 - 2026-10-14 08:13 — finished 0409 by wording (full): https://github.com/abbyshade111/StackVet/pull/1861; from its lane, behind 0404
+- 2026-10-14 08:46 — released 0290
+- 2026-10-14 08:46 — released 0338
+- 2026-10-14 08:46 — released 0374
+- 2026-10-14 08:46 — queued 0370, marked
+- 2026-10-14 08:46 — queued 0413, marked
+- 2026-10-14 08:46 — queued 0412, marked
+- 2026-10-14 08:46 — queued 0415, marked
+- 2026-10-14 08:47 — queued 0232, marked
+- 2026-10-14 08:47 — queued 0503, marked
+- 2026-10-14 08:47 — queued 0504, marked
+- 2026-10-14 08:47 — queued 0505, marked
+- 2026-10-14 08:47 — queued 0506, marked
+- 2026-10-14 08:47 — queued 0502, on hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code, marked

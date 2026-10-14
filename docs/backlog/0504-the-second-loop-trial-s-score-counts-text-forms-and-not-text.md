@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 14 October 2026 by session documentation, answering backlog 0389. `docs/prompts/loop-2/score_loop2.py`'s
 `text_forms` counts only `browser.text-forms` (the list), not `browser.text-form` (one form), so `scores.json` shows
 `text_forms_listed: 0` for every build, the 28 whose typed-text check was credited among them, and

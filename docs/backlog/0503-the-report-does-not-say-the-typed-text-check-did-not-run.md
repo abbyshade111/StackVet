@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 14 October 2026 by session documentation, answering backlog 0389. `probe.text-rendered-as-markup` (ADR-097) runs
 only when `stackvet.toml` names `[stack.run.users.browser]` with `text-form` or `text-forms`: `sv` finds no form of its
 own. With no `browser` table, `checks` in `crates/sv-check/src/browser.rs` returns at its first line and records
