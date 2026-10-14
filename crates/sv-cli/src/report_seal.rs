@@ -42,6 +42,9 @@ const MAX_BYTES: u64 = 16 * 1024 * 1024;
 /// The largest marker read: a sentence and a seal.
 const MAX_MARKER_BYTES: u64 = 4096;
 
+/// The SHA-256 of each sealed file, by name.
+type Digests = BTreeMap<&'static str, String>;
+
 /// What the marker says once the folder is sealed: the sentence it always said, the folder it was
 /// sealed in, then the seal.
 pub fn marker_text(sentence: &str, folder: &str, seal: &str) -> String {
@@ -77,8 +80,12 @@ fn digests_of(written: &[(&str, &[u8])]) -> Result<BTreeMap<&'static str, String
     Ok(found)
 }
 
-fn digests(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
+/// The SHA-256 of each sealed file in `dir`, with the bytes of `report.json` as they were read for its
+/// digest, so a caller can use the very bytes the seal was checked against rather than read the file
+/// again (backlog 0454).
+fn digests_keeping_report(dir: &Path) -> Result<(Digests, Vec<u8>), String> {
     let mut found = BTreeMap::new();
+    let mut report = Vec::new();
     for name in SEALED {
         let path = dir.join(name);
         let meta = std::fs::symlink_metadata(&path).map_err(|_| missing(name))?;
@@ -90,8 +97,11 @@ fn digests(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
         }
         let bytes = std::fs::read(&path).map_err(|_| format!("{name} cannot be read"))?;
         found.insert(name, crate::bundle::sha256(&bytes));
+        if name == "report.json" {
+            report = bytes;
+        }
     }
-    Ok(found)
+    Ok((found, report))
 }
 
 /// Why a sealed file is not there. `seen.json` joined the report files with ADR-082, so a report
@@ -169,6 +179,20 @@ pub fn proven(dir: &Path) -> Result<BTreeMap<&'static str, String>, String> {
     sealed_here(dir)
 }
 
+/// `proven`, giving back the bytes of the report's `report.json` that its seal was checked against:
+/// what the MCP server reads the report's date from, with no second read of a file that could have
+/// been replaced since (backlog 0454).
+pub fn proven_report(dir: &Path) -> Result<Vec<u8>, String> {
+    holds_only_svs(dir)?;
+    match check_keeping_report(dir)? {
+        (_, Place::Here, report) => Ok(report),
+        (_, Place::Elsewhere, _) => Err(
+            "it was sealed for another folder: it was copied or moved here from where sv wrote it"
+                .to_owned(),
+        ),
+    }
+}
+
 /// Where a report whose seal holds was sealed, as against where its folder is now.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Place {
@@ -224,6 +248,11 @@ pub fn sealed_here(dir: &Path) -> Result<BTreeMap<&'static str, String>, String>
 /// The SHA-256 of each sealed file in `dir` when its seal holds under this computer's report key,
 /// and whether it was sealed in this folder or another.
 fn check(dir: &Path) -> Result<(BTreeMap<&'static str, String>, Place), String> {
+    check_keeping_report(dir).map(|(digests, place, _)| (digests, place))
+}
+
+/// `check`, with the bytes of `report.json` its seal was checked against.
+fn check_keeping_report(dir: &Path) -> Result<(Digests, Place, Vec<u8>), String> {
     let marker = sv_scan::ecosystems::report_marker_in(dir)
         .ok_or_else(|| "the folder holds no marker of sv's".to_owned())?;
     let meta = std::fs::symlink_metadata(&marker)
@@ -264,7 +293,7 @@ fn check(dir: &Path) -> Result<(BTreeMap<&'static str, String>, Place), String> 
     // The seal is checked against the folder the marker names first, so a seal made with another
     // key, or files changed since, are said as such; then a seal that holds, for another folder.
     let sealed_in = sealed_in.trim();
-    let digests = digests(dir)?;
+    let (digests, report) = digests_keeping_report(dir)?;
     let fields = fields(sealed_in, &digests);
     key.report_seal_holds(seal, &fields.iter().map(String::as_str).collect::<Vec<_>>())?;
     let place = if sealed_in == folder_id(dir)? {
@@ -272,7 +301,7 @@ fn check(dir: &Path) -> Result<(BTreeMap<&'static str, String>, Place), String> 
     } else {
         Place::Elsewhere
     };
-    Ok((digests, place))
+    Ok((digests, place, report))
 }
 
 #[cfg(test)]
@@ -292,7 +321,7 @@ mod tests {
             std::fs::write(dir.join(name), "changed after").unwrap();
         }
         let from_bytes = digests_of(&written).unwrap();
-        let from_disk = digests(&dir).unwrap();
+        let from_disk = digests_keeping_report(&dir).unwrap().0;
         std::fs::remove_dir_all(&dir).ok();
         for name in SEALED {
             assert_eq!(from_bytes[name], crate::bundle::sha256(b"sv wrote this"));
@@ -335,7 +364,10 @@ mod tests {
                 &fields.iter().map(String::as_str).collect::<Vec<_>>(),
             )
         };
-        let (bytes, disk) = (digests_of(&written).unwrap(), digests(&dir).unwrap());
+        let (bytes, disk) = (
+            digests_of(&written).unwrap(),
+            digests_keeping_report(&dir).unwrap().0,
+        );
         std::fs::remove_dir_all(&base).ok();
         assert!(holds(&bytes).is_ok(), "the seal is of what sv wrote");
         assert!(
