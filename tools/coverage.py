@@ -611,6 +611,7 @@ RUST_IN_PART |= {"config.versions-pinned", "sbom"}
 # suite: a check it saw credit only in part must be here, and one it saw credit whole once must not.
 RUST_IN_PART |= {
     "config.gitignore-covers-env",
+    "config.workflow-checkout-keeps-token",
     "config.secrets-file-committed",
     "probe.action-done-twice",
     "probe.ai-agent-unbounded",
@@ -919,11 +920,16 @@ def check_credits(log):
         path, number = logged_place(at)
         if shipping.get(path, 0) < int(number):
             continue
+        # A credit that names no requirement can make none *checked*, so it says nothing about whether
+        # the check is only ever in part (backlog 0469: the checkout check's credit for a workflow that
+        # checks nothing out).
         if len(parts) == 4:
-            (marked if parts[2] == "in part" else unmarked)[check] += 1
+            if ids:
+                (marked if parts[2] == "in part" else unmarked)[check] += 1
             continue
         lines += 1
-        made[check] += 1
+        if ids:
+            made[check] += 1
         credited[check].update(q for q in ids.split(",") if q)
     if not lines:
         return [f"{log} holds no credit from a check: was the suite run with SV_CREDIT_LOG set?"]

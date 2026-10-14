@@ -386,7 +386,7 @@ running app (`--run`, with an `ai` section). The rest are semgrep's and CodeQL's
 - C12.1.1: checked in part only, by `probe.ai-call-log-session`.
 - C12.1.2: checked in part only, by `probe.ai-safety-decision-detailed`.
 - C12.1.3: checked in part only, by `probe.ai-call-log-incomplete`.
-- AC.12.2: settled by `config.workflow-checkout-keeps-token`.
+- AC.12.2: checked in part only, by `config.workflow-checkout-keeps-token`.
 - C12.2.1: checked in part only, by `probe.ai-injection-logged`.
 - C12.2.5: checked in part only, by `probe.ai-token-use-attributed`.
 - AC.12.3: found failing by sv's `config.workflow-secrets-with-fork-code`.
