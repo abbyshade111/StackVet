@@ -60,7 +60,7 @@ const QUOTE: usize = 160;
 /// A stretch of a file's own text as a note quotes it: any key in it cut first, as the secrets scan
 /// shows one (its first four characters and its length), and before the stretch is shortened, so a
 /// key across the cut is still known (backlog 0283); then on one line, at most `QUOTE` characters.
-fn quote(rules: &SecretRules, text: &str) -> String {
+pub(crate) fn quote(rules: &SecretRules, text: &str) -> String {
     let (text, _) = crate::secrets::redact_text(rules, text);
     let one_line: String = text
         .chars()
