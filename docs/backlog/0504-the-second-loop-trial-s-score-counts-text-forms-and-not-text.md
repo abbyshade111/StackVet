@@ -1,6 +1,6 @@
 # The second loop trial's score counts text-forms and not text-form
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** partly done: the builds scored again on the owner's computer, where they are, and finding 6 written from the new count
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -11,3 +11,14 @@ Found 14 October 2026 by session documentation, answering backlog 0389. `docs/pr
 build named a form. What to do: count both keys in the script (and its self-test), say in `results.md`'s finding 6 that
 the answered builds named one form with `text-form`, and re-score the builds when they are next on hand (they are under
 `~/sv-loop2` on the owner's computer, not in the repository).
+
+**Built 14 October 2026, by honesty.** The scorer had a second fault besides the one above: it read `browser` beside
+`[stack.run.users]`, where `sv` reads nothing, rather than inside it, so it would have shown 0 even for a build that
+listed `text-forms`; its self-test was written to the same wrong place and passed. `text_forms` in the script now reads
+`[stack.run.users.browser]` and counts the list's length, or 1 for `text-form`. The self-test now covers both keys, and
+one `browser` beside `users` that it must not count. Breaking either half of the fix turns the self-test red, and
+`crates/sv-check/tests/loop_measures.rs` runs it. `results.md`'s finding 6 now says the count was wrong and why, and
+that `scores.json`'s `text_forms_listed` is not a measurement until the builds are scored again.
+
+**What remains:** scoring the builds again, on the owner's computer, where they are (`~/sv-loop2`): `sh
+docs/prompts/loop-2/run_loop2.sh score`, then `scores.json` copied in and finding 6 written from the new count.

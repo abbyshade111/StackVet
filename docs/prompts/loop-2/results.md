@@ -86,8 +86,13 @@ and every report says so. Semgrep's rules are for non-commercial use, which this
 build that committed, the note counted its commits, each signed `Assisted-by: Claude Code` and made straight on the
 default branch; in every other, it said none. Its first test on real repositories.
 
-**6. The typed-text check on every form (ADR-097).** No build listed `text-forms`, and the check was answered in 8 of
-A's 20 builds, 4 of B1's, and 1 of B2's, against 14 of the drafts-trial controls'. Why is not yet read (0389).
+**6. The typed-text check on every form (ADR-097).** The check was answered in 8 of A's 20 builds, 4 of B1's, and 1 of
+B2's, against 14 of the drafts-trial controls'. 0389 reads the rest as builds that named no form, which is not yet
+checked build by build. `scores.json` shows no form named in any build, and that count is wrong (0504). The scorer
+looked for `browser` beside `[stack.run.users]` rather than inside it, and counted only `text-forms`, the list, not
+`text-form`, one form. The builds where the check was answered must have named a form, most likely one with
+`text-form`. The scorer now reads both, in the right place, but the builds are not in the repository, so `scores.json`
+has not been scored again and its `text_forms_listed` is not a measurement.
 
 **7. More than one private page.** The club builds listed 1.7 to 2.2 private pages on average, the accounts builds
 about 1; the private-page checks ran on each one listed.
