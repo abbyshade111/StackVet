@@ -23,7 +23,7 @@ computer, help you install what is missing, fetch StackVet (on Windows, install 
 file with the paths already filled in, asking you before it installs or changes anything outside the folder.
 **Tried so far:** in Antigravity, on a Mac, on 13 October 2026, with the Gemini 3.8 Flash model. The setup worked. The
 build that followed went badly: the AI tool made choices it should have asked you about and said "done" for checks
-nobody had made. The prompts are being changed for that, and until the changes are tried, the setup page does not
+nobody had made. The prompts were changed for that on 14 October 2026, and until the changes are tried, the setup page does not
 recommend Antigravity with that model. They have not yet been tried in Claude Code, Cursor, or VS Code. The steps
 below do the same setup by hand, as commands.
 
@@ -209,18 +209,27 @@ Open the app's folder in your AI tool and paste this, with your app described at
 > 1. Call `stackvet_spec` and write `stackvet.toml` for this app, from what it will really do.
 >    Its capability lines start commented out: answer each one you can with true or false, and
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
->    assessed; a wrong `false` switches whole sets of checks off.
+>    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
+>    app runs, whether anyone signs in, or how it is reached** (`auth`, `tls`, and the `[stack.run]`
+>    lines), and tell me whenever you change one. Name the app's pages and routes in it, under
+>    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
+>    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
 >
 > Then, as we build:
 > 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
 >    it finds that is real. If a finding looks wrong, tell me instead of rewriting working code to
->    make it go away.
-> 4. Never tell me the app is secure. Tell me what was checked and what was not.
-> 5. When the first version works, call `stackvet_check` with section `questions` and ask me the
->    questions one at a time. Record my answers with `stackvet_record_answer`, and only what I
->    actually answer as mine.
+>    make it go away. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
+>    `nosemgrep`, no rewrite whose only effect is that the check stops seeing it): tell me, and let
+>    me decide.
+> 4. After each change, tell me in plain words what you changed. Ask me before you delete anything.
+> 5. Never tell me the app is secure. Tell me what was checked and what was not.
+> 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
+>    questions one at a time. When you tell me what the code does for one, quote the lines and say
+>    it is your reading, not a check. Record my answers with `stackvet_record_answer`, and only what
+>    I actually answer as mine. Never mark a check by hand as done, or write `by = "owner"`: only I
+>    can, with `sv review`.
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
