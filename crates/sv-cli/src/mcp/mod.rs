@@ -42,6 +42,7 @@ use sv_frameworks::paths::Canonical;
 mod build_loop_fingerprint_tests;
 #[cfg(test)]
 mod build_loop_limit_tests;
+// `stackvet_explain` says what could settle a requirement (backlog 0426).
 #[cfg(test)]
 mod build_loop_names_tests;
 #[cfg(test)]
@@ -51,6 +52,8 @@ mod build_loop_tests;
 mod catalog;
 mod check_text;
 mod confine;
+#[cfg(test)]
+mod explain_settle_tests;
 #[cfg(test)]
 mod fifo_tests;
 #[cfg(test)]

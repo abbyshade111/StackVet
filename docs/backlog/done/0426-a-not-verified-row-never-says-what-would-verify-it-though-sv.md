@@ -1,6 +1,6 @@
 # A "not verified" row never says what would verify it, though sv knows and the website's example promises it
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -28,3 +28,10 @@ rather than inviting the same run again. Sibling of 0372 (what each requirement 
 both.
 
 **Record.** None; `ADR-110: unchanged, because` lines for `html.rs` and `markdown.rs`.
+
+**Done, 14 October 2026:** each row left not verified says what could settle it, after its status in report.html and
+compliance.md (`sv_report::could_settle`, from `data/reach.json` and how the report ran, carried as
+`Report::could_settle`). A kind of run that did not happen is named with how to run it; one that happened says it
+settled nothing; a test of the app's, or only the person, otherwise. `stackvet_explain` says the same from the kinds
+alone (`couldSettle`), and `sv explain --app` repeats the report's phrase. Held by
+`crates/sv-report/src/could_settle_tests.rs` and `crates/sv-cli/src/mcp/explain_settle_tests.rs`.

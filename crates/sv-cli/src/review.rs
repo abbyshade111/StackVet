@@ -700,18 +700,34 @@ fn review(
                         .collect::<Vec<_>>()
                         .join("\n")
                 );
-                let fields = sv_check::seal::notes_confirmed_fields(&id, &prose);
-                if let Some(seal) = record_notes_confirmation(&what, &fields, &key, input, out)? {
-                    let sealed = sv_check::notes::with_seal_in(catalog, &text, &id, &seal)
-                        .context("the section is not where it was")?;
-                    save_text(path, &sealed, &|| {
-                        notes_text(path).ok().flatten().is_some_and(|t| {
-                            sv_check::notes::read_answers(catalog, &t)
-                                .confirmed(&id, &checker)
-                                .is_ok()
-                        })
-                    })?;
-                    recorded += 1;
+                match record_notes_confirmation(&id, &prose, &what, &key, input, out)? {
+                    Some(NotesAnswer::Confirmed(seal)) => {
+                        let sealed = sv_check::notes::with_seal_in(catalog, &text, &id, &seal)
+                            .context("the section is not where it was")?;
+                        save_text(path, &sealed, &|| {
+                            notes_text(path).ok().flatten().is_some_and(|t| {
+                                sv_check::notes::read_answers(catalog, &t)
+                                    .confirmed(&id, &checker)
+                                    .is_ok()
+                            })
+                        })?;
+                        recorded += 1;
+                    }
+                    // Made the owner's and sealed as theirs, and saved only if it then counts as
+                    // the owner's recorded answer (backlog 0425).
+                    Some(NotesAnswer::Mine(seal)) => {
+                        let sealed = sv_check::notes::as_owners_in(catalog, &text, &id, &seal)
+                            .context("the section is not where it was")?;
+                        save_text(path, &sealed, &|| {
+                            notes_text(path).ok().flatten().is_some_and(|t| {
+                                sv_check::notes::read_answers(catalog, &t)
+                                    .recorded(&id, &checker)
+                                    .is_ok()
+                            })
+                        })?;
+                        recorded += 1;
+                    }
+                    None => {}
                 }
                 None
             }
@@ -1279,29 +1295,48 @@ fn record_own(
     }
 }
 
-/// Asks a person whether they confirm a security notes section the AI coding tool wrote (ADR-022,
-/// Later). The seal to write when they do: over the confirmed fields, so the section still says the
-/// tool wrote it and is shown as confirmed, never as the owner's own answer.
+/// What a person said about a security notes section the AI coding tool wrote.
+enum NotesAnswer {
+    /// Confirmed as the tool's word they agree with: the seal over the confirmed fields.
+    Confirmed(String),
+    /// The owner's own decision, which the tool only wrote down: the seal over the owner's fields,
+    /// to go under a `Written by: owner` line (backlog 0425).
+    Mine(String),
+}
+
+/// The word the owner types to say a section the AI coding tool wrote down is their own decision.
+/// Not `owner`, which here confirms the tool's word (backlog 0425; the owner's decision of 13 October
+/// 2026).
+const MINE: &str = "mine";
+
+/// Asks a person whether a security notes section the AI coding tool wrote is the owner's own
+/// decision, or the tool's word they confirm (ADR-022, Later; ADR-026, Later, 14 October 2026). A
+/// confirmation is sealed over the confirmed fields, so the section still says the tool wrote it and
+/// is shown as confirmed, never as the owner's own answer. `mine` is sealed over the owner's fields,
+/// for the section rewritten as the owner's: what changing its `Written by:` line by hand and
+/// recording it here did before.
 fn record_notes_confirmation(
+    id: &str,
+    prose: &str,
     what: &str,
-    fields: &[String],
     key: &Signer,
     input: &mut dyn BufRead,
     out: &mut dyn Write,
-) -> Result<Option<String>> {
+) -> Result<Option<NotesAnswer>> {
     writeln!(
         out,
-        "{what}\n  For now it counts as your AI coding tool's word. If you have read it against the \
-         app and agree, confirm it: it then counts as answered in the security notes and is shown \
-         as written by the tool and confirmed by a person, never as your own answer. If it is \
-         wrong, change it in the file first."
+        "{what}\n  For now it counts as your AI coding tool's word. If this is your own decision and \
+         the tool only wrote it down, say so: it then counts as your own answer. If it is the tool's \
+         reading and you have checked it against the app, confirm it instead: it is then shown as \
+         written by the tool and confirmed by a person, never as your own answer. If it is wrong, \
+         change it in the file first."
     )?;
     loop {
         let Some(answer) = ask(
             input,
             out,
-            "Type your name, or `owner` if this is your app, to confirm it; or press Enter to leave \
-             it as the tool's word.\n> ",
+            "Type `mine` if this is your own decision; your name, or `owner` if this is your app, to \
+             confirm it as the tool's word; or press Enter to leave it as the tool's word.\n> ",
         )?
         else {
             return Ok(None);
@@ -1309,6 +1344,17 @@ fn record_notes_confirmation(
         if answer.is_empty() {
             writeln!(out, "  Left as the tool's word.")?;
             return Ok(None);
+        }
+        if answer.eq_ignore_ascii_case(MINE) {
+            writeln!(
+                out,
+                "  Recorded as your own answer, marked `Written by: owner`."
+            )?;
+            let fields = sv_check::seal::notes_fields(id, prose);
+            return Ok(Some(NotesAnswer::Mine(
+                key.seal(&sv_check::seal::as_strs(&fields))
+                    .map_err(anyhow::Error::msg)?,
+            )));
         }
         if is_tool(&answer) {
             writeln!(
@@ -1318,10 +1364,11 @@ fn record_notes_confirmation(
             continue;
         }
         writeln!(out, "  Recorded as confirmed by {answer}.")?;
-        return Ok(Some(
-            key.seal(&sv_check::seal::as_strs(fields))
+        let fields = sv_check::seal::notes_confirmed_fields(id, prose);
+        return Ok(Some(NotesAnswer::Confirmed(
+            key.seal(&sv_check::seal::as_strs(&fields))
                 .map_err(anyhow::Error::msg)?,
-        ));
+        )));
     }
 }
 
@@ -1841,6 +1888,9 @@ mod passphrase_tests;
 
 #[cfg(test)]
 mod scope_tests;
+
+#[cfg(test)]
+mod mine_tests;
 
 #[cfg(test)]
 mod tests {

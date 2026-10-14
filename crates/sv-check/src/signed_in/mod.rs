@@ -857,9 +857,12 @@ fn sign_in_limit_says(refused: &[String]) -> String {
          waited as the app asked. That is the limit working, not the app failing these checks, and \
          not a mistake in stackvet.toml: the checks that needed that sign-in were not run, or \
          not credited. `sv` signs in up to {SIGN_INS_IN_A_RUN} times in one run, all from one \
-         address, before the password-guessing check's wrong passwords at the end. Let the copy \
-         of the app `sv` runs allow that many (for example, through a setting only the test copy \
-         is started with), keep the real limit everywhere else, and run again.",
+         address, before the password-guessing check's wrong passwords at the end. Keep the copy \
+         of the app `sv` runs stopping wrong passwords at the number `failed-sign-ins` declares, \
+         as the real app does. If the app also has a limit that counts every sign-in, right \
+         passwords too, let the copy `sv` runs allow that many of those (for example, through a \
+         setting only the test copy is started with), keep the real limit everywhere else, and \
+         run again.",
         refused.join(", ")
     )
 }
@@ -2531,6 +2534,8 @@ mod owner_field_tests;
 mod page_cookie_tests;
 #[cfg(test)]
 mod resignup_tests;
+#[cfg(test)]
+mod sign_in_limit_advice_tests;
 #[cfg(test)]
 mod storage_check_tests;
 #[cfg(test)]

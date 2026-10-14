@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0466 (since 2026-10-13) — next: 0467, 0468, 0425, 0427, 0477
-- wording — arm: full — holds: 0404 (since 2026-10-14) — next: 0424, 0426, 0372, 0397, 0401
-- documentation — arm: full — holds: 0400 (since 2026-10-14) — next: 0383, 0473, 0474, 0478, 0476, 0475
+- honesty — arm: full — holds: 0427 (since 2026-10-14) — next: 0477, 0508
+- wording — arm: full — holds: 0372 (since 2026-10-14) — next: 0401
+- documentation — arm: full — holds: 0473 (since 2026-10-14) — next: 0474, 0478, 0476, 0475
 
 ## Queue
 
@@ -35,18 +35,17 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 21. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — hold: a proposal; waits on the pointer's trial (0487)
 22. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — hold: a proposal the owner wants back as a yes/no question with the pointer's result
 23. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-24. 0508 Podman as a second container backend for the fence, so a Mac or Linux user without Docker can run the running-app checks — ready
-25. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
-26. 0370 A setup prompt library for people new to building with AI — ready
-27. 0413 A reports page: what each report file is for, who reads it, and an example of each — ready
-28. 0412 Write the report as a PDF again, beside report.html — ready
-29. 0415 CodeQL only when the owner turns it on, for the uses its license allows — ready
-30. 0232 More samples for the checks that rest on one sample (groups A to H) — ready
-31. 0503 The report does not say the typed-text check did not run when no form is named — ready
-32. 0504 The second loop trial's score counts text-forms and not text-form — ready
-33. 0505 V1.3.1 and V1.3.5, rich text and user-supplied Markdown, are turned on only by an AI feature — ready
-34. 0506 V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them — ready
-35. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
+24. 0510 On Windows the checks that start the app are untried: the guide, the setup page, and sv doctor say so, and what that leaves unchecked — ready
+25. 0370 A setup prompt library for people new to building with AI — ready
+26. 0413 A reports page: what each report file is for, who reads it, and an example of each — ready
+27. 0412 Write the report as a PDF again, beside report.html — ready
+28. 0415 CodeQL only when the owner turns it on, for the uses its license allows — ready
+29. 0232 More samples for the checks that rest on one sample (groups A to H) — ready
+30. 0503 The report does not say the typed-text check did not run when no form is named — ready
+31. 0504 The second loop trial's score counts text-forms and not text-form — ready
+32. 0505 V1.3.1 and V1.3.5, rich text and user-supplied Markdown, are turned on only by an AI feature — ready
+33. 0506 V2.2.3 and V13.2.5 get a question of their own, saying why nothing in the folder can show them — ready
+34. 0502 Try the changed build prompt and prompt 6 in Antigravity again — hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code
 
 ## Log
 
@@ -362,16 +361,27 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 09:03 — released 0508
 - 2026-10-14 09:03 — released 0508
 - 2026-10-14 09:03 — queued 0510, marked
-- 2026-10-14 09:22 — released 0290
-- 2026-10-14 09:22 — released 0338
-- 2026-10-14 09:22 — released 0374
-- 2026-10-14 09:22 — queued 0370, marked
-- 2026-10-14 09:22 — queued 0413, marked
-- 2026-10-14 09:22 — queued 0412, marked
-- 2026-10-14 09:22 — queued 0415, marked
-- 2026-10-14 09:22 — queued 0232, marked
-- 2026-10-14 09:22 — queued 0503, marked
-- 2026-10-14 09:22 — queued 0504, marked
-- 2026-10-14 09:22 — queued 0505, marked
-- 2026-10-14 09:22 — queued 0506, marked
-- 2026-10-14 09:22 — queued 0502, on hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code, marked
+- 2026-10-14 09:20 — finished 0466 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1865; now holds 0467
+- 2026-10-14 09:20 — finished 0467 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1793; now holds 0468
+- 2026-10-14 09:20 — finished 0468 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1869; now holds 0425
+- 2026-10-14 09:20 — finished 0404 by wording (full): https://github.com/abbyshade111/StackVet/pull/1867; now holds 0424
+- 2026-10-14 09:20 — finished 0424 by wording (full): https://github.com/abbyshade111/StackVet/pull/1872; now holds 0426
+- 2026-10-14 09:20 — finished 0400 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1871; now holds 0383
+- 2026-10-14 09:20 — assigned 0508 to honesty (full) as next: the owner's word of 14 October: the Podman look, measurement first (sv-run, the fence tests); no other lane touches sv-run
+- 2026-10-14 09:50 — released 0290
+- 2026-10-14 09:50 — released 0338
+- 2026-10-14 09:50 — released 0374
+- 2026-10-14 09:50 — queued 0370, marked
+- 2026-10-14 09:50 — queued 0413, marked
+- 2026-10-14 09:50 — queued 0412, marked
+- 2026-10-14 09:50 — queued 0415, marked
+- 2026-10-14 09:50 — queued 0232, marked
+- 2026-10-14 09:50 — queued 0503, marked
+- 2026-10-14 09:50 — queued 0504, marked
+- 2026-10-14 09:50 — queued 0505, marked
+- 2026-10-14 09:50 — queued 0506, marked
+- 2026-10-14 09:50 — queued 0502, on hold: the owner's own trial, after 0370 is finalized: Antigravity, Cursor, and VS Code, marked
+- 2026-10-14 09:50 — finished 0425 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1876; now holds 0427
+- 2026-10-14 09:50 — finished 0426 by wording (full): https://github.com/abbyshade111/StackVet/pull/1877; now holds 0372
+- 2026-10-14 09:50 — finished 0397 by wording (full): https://github.com/abbyshade111/StackVet/pull/1880; from its lane, behind 0372
+- 2026-10-14 09:50 — finished 0383 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1879; now holds 0473
