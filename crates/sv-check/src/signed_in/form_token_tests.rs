@@ -7,7 +7,6 @@
 use super::account_changes::rule_for;
 use super::fake_app::*;
 use super::tests::with_signup;
-use super::*;
 
 #[test]
 fn a_cookie_is_not_taken_for_the_form_token_while_a_page_has_one() {
