@@ -22,3 +22,8 @@ A likely reading, not checked: both give the shell 400 or 500 milliseconds, and 
 (Git for Windows' `sh`) had not yet started its first command when it was stopped, so there was no "begun" and no
 pid file. The fix would make each test wait for its command to have begun (or give it longer) before the clock that
 stops it, without weakening what is asserted after.
+
+Seen again on 14 October 2026: Windows, [run 38498544697](https://github.com/abbyshade111/StackVet/actions/runs/38498544697), commit `c07f038` (#1775),
+`tests::a_stopped_command_leaves_nothing_it_started_running` with `assertion failed: !pid.is_empty()` (line 1598); 3235
+passed, 1 failed. That run was at 01:58 UTC, before the fix (#1821) merged at 05:48 UTC; every Windows run on `main`
+after it passed, the nightly at 09:41 UTC among them, so this is not a sign the fix fell short.
