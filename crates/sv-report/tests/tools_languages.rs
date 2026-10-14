@@ -27,6 +27,7 @@ fn inputs<'a>(
         app_name: "Test",
         on_the_internet: false,
         ai_tool: Default::default(),
+        look_away: Default::default(),
         target_level: 3,
         generated: None,
         made_by: Default::default(),

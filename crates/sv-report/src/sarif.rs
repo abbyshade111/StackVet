@@ -363,6 +363,7 @@ mod tests {
             only_you_can_check: Vec::new(),
             before_going_live: Vec::new(),
             ai_tool: Default::default(),
+            look_away: Default::default(),
             questions_for_you: Vec::new(),
             no_instructions_yet: 0,
             named_not_credited: vec![],

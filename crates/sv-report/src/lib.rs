@@ -1143,6 +1143,10 @@ pub struct Report {
     /// What the AI coding tool's own files in the folder let it do (ADR-049). Not the app, so it
     /// credits nothing and finds nothing; the report says it apart from everything else.
     pub ai_tool: sv_check::ai_tool::AiToolFiles,
+    /// The comments in the app's code that tell a scanner to look away (backlog 0400): each on a line of its own in
+    /// a section of their own, counting against no requirement and crediting nothing (the owner's choice, 14
+    /// October 2026).
+    pub look_away: sv_check::look_away::LookAway,
     /// How many of those no catalog has an instruction for: the design-review controls, which are
     /// standards that are checklists already. Counted rather than listed.
     pub no_instructions_yet: usize,
@@ -1633,6 +1637,13 @@ pub fn no_outside_tool_ran(rows: &[ToolRow]) -> bool {
 pub const OUTSIDE_TOOLS_SECTION: &str = "The security tools each language already has, run beside StackVet's own \
      checks with every `sv report` at a terminal unless `--no-tools` is given. Their findings are among the things to fix above, each marked with the tool's \
      rule; one that found the same as StackVet on the same line is counted here as agreeing.";
+
+/// What the section of comments that tell a scanner to look away says first (backlog 0400).
+pub const LOOK_AWAY_SECTION: &str = "Each of these comments in the app's code, or entries in a scanner's own ignore \
+     file, tells a security scanner to skip a line or a warning. An AI coding tool asked to make a finding go away may \
+     add one rather than fix the problem. Where a scanner StackVet runs can be told to look anyway, it is, so a finding \
+     a comment tried to hide is still among the things to fix when the scanner found it. Nothing here counts toward \
+     any requirement or credits anything. If you did not mean something to be hidden, take the comment out.";
 
 /// The name of the bill of materials beside the report (backlog 0382).
 pub const SBOM_FILE: &str = "sbom.cdx.json";
@@ -2673,6 +2684,8 @@ pub struct Inputs<'a> {
     /// What the AI coding tool's own files in the folder let it do (ADR-049): its own section of
     /// the report, never counted toward the app's grade.
     pub ai_tool: sv_check::ai_tool::AiToolFiles,
+    /// See `Report::look_away`.
+    pub look_away: sv_check::look_away::LookAway,
     pub target_level: u8,
     pub generated: Option<String>,
     /// See `Report::sv`.
@@ -3362,6 +3375,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         tests_to_write,
         before_going_live,
         ai_tool: inputs.ai_tool,
+        look_away: inputs.look_away,
         only_you_can_check,
         no_instructions_yet,
         questions_for_you,
