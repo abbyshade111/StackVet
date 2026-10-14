@@ -17,3 +17,8 @@ What a fix has to settle: the 60 sign-ins `sv` needs are mostly right passwords,
 that still stops wrong passwords at the declared number while letting right ones through; or `sv` could spread its
 sign-ins across its accounts; or the check could say when the start command sets a limit-like setting (0386). Each
 changes what `sv` tells the AI tool, so it is a decision with a record of its own.
+
+**Waiting on the owner, 14 October 2026 (session documentation).** The advice is in `crates/sv-manifest/src/spec.rs`
+(the `[stack.run.users]` notes: "let the copy `sv` runs allow that many ... and keep the real limit everywhere else").
+The question, with three ways to settle it and a suggestion (A and C together), is in
+`docs/coordination/waiting/0383.md`. Nothing is built until the owner answers; the decision record is written then.
