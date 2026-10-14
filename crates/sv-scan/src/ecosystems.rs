@@ -937,7 +937,7 @@ pub const REPORT_HOLDER: &str = sv_frameworks::names::REPORT_HOLDER;
 /// the names of a report folder derive from: `REPORT_FOLDER_NAMES` here, and in `sv-cli` the table
 /// that says how each is rendered and what kind of file it is (`report_files`), which the compiler
 /// holds to this one, the seal (`report_seal::SEALED`), and the MCP server's resources.
-pub const REPORT_FILES: [&str; 8] = [
+pub const REPORT_FILES: [&str; 9] = [
     "report.html",
     "compliance.md",
     "security.md",
@@ -946,6 +946,7 @@ pub const REPORT_FILES: [&str; 8] = [
     "report.json",
     "seen.json",
     "sbom.cdx.json",
+    "report.pdf",
 ];
 
 /// The record of the build loop (ADR-076): one line for each call the AI coding tool made to `sv`'s

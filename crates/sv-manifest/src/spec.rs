@@ -15,6 +15,7 @@ description = ""          # plain language, one or two sentences
 audience = "customers"    # just-me | my-team | customers | public
 deployment = "internet"   # local-only | local-network | internet
 # build-loop-record = false  # the person's choice only: stops sv writing down each check made while building
+# report-paper = "a4"       # the paper report.pdf is laid out on; US Letter when left out
 
 [stack]
 languages = []            # e.g. ["python", "typescript"]
