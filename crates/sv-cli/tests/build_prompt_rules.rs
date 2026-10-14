@@ -34,6 +34,13 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "ask before deciding where the app runs or who signs in",
             "Ask me before you decide where the app runs, whether anyone signs in",
         ),
+        // Backlog 0548: in the trial of 14 October 2026 Antigravity wrote `audience = "customers"` on its own for a
+        // family app, which set level 2, and Cursor and VS Code chose `my-team` without asking.
+        (
+            "ask who uses the app and what it keeps, which set the level",
+            "**Ask me, too, who uses the app (`audience`) and what it keeps about people (`[data] categories`):** they \
+             decide whether it is held to ASVS level 1 or the stricter level 2.",
+        ),
         (
             "name the routes, so the running checks reach them",
             "Name the app's pages and routes",

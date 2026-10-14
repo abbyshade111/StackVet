@@ -228,7 +228,9 @@ word.
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
 >    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
 >    app runs, whether anyone signs in, or how it is reached** (`auth`, `tls`, and the `[stack.run]`
->    lines), and tell me whenever you change one. Name the app's pages and routes in it, under
+>    lines), and tell me whenever you change one. **Ask me, too, who uses the app (`audience`) and
+>    what it keeps about people (`[data] categories`):** they decide whether it is held to ASVS
+>    level 1 or the stricter level 2. Name the app's pages and routes in it, under
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.

@@ -42,7 +42,7 @@ it while it runs, an optional later step, needs StackVet installed on the comput
 - **On Linux:** Docker itself, or Docker Desktop. **On Windows,** skip Docker: see step 3.
 
 **Docker has to be running before you open your AI tool.** If it is not, the StackVet tools are
-simply missing from the tool, and nothing tells you why. After a restart, start Docker first.
+missing, and nothing tells you why. After a restart, start Docker first.
 
 Then fetch StackVet, in a [terminal](GLOSSARY.md#terminal):
 
@@ -210,7 +210,9 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
 >    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
 >    app runs, whether anyone signs in, or how it is reached** (`auth`, `tls`, and the `[stack.run]`
->    lines), and tell me whenever you change one. Name the app's pages and routes in it, under
+>    lines), and tell me whenever you change one. **Ask me, too, who uses the app (`audience`) and
+>    what it keeps about people (`[data] categories`):** they decide whether it is held to ASVS
+>    level 1 or the stricter level 2. Name the app's pages and routes in it, under
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
@@ -238,9 +240,8 @@ Why a line left out is better than a guess: [how StackVet decides what applies](
 
 **If you ask your AI tool to push, say so in these words:** "push it, and do not bypass any branch protection or
 ruleset; if the only way to push is to bypass one, stop and ask me first." Without that, a tool may push straight to
-`main`, which skips the pull-request rule you set, and the tools that check the code never see the change first. Its
-own rules say it must not push to `main` unless you ask for that push, but in the Cursor build a plain "please push"
-was taken as covering a push that bypassed the rule. Ask it for a pull request, and merge it yourself.
+`main`, which skips the pull-request rule you set, and the tools that check the code never see the change first. In
+the Cursor build, a plain "please push" was taken as covering a push that bypassed the rule. Ask it for a pull request, and merge it yourself.
 
 More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md). The ones
 shown to work are already given to your AI tool, so you need not paste them; the rest are there too (`sv prompts`
@@ -284,7 +285,7 @@ docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/
 
 On Linux, add `--user "$(id -u):$(id -g)"` after `docker run`, as in section 3.
 
-Once StackVet is installed on the computer itself (section 6), this is just `sv review .`.
+With StackVet installed on the computer itself (section 6), this is just `sv review .`.
 
 It shows each answer that does not yet count as yours, asks your name or `owner`, and signs it with a key of its own,
 kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose
@@ -339,9 +340,8 @@ packages does not start, and everything that needs it running is *not assessed*.
 
 **The full check is that one command.** `sv report --run` also runs the other security tools that are installed on
 your computer, such as Bandit and Semgrep, and puts what they find in the same report as what running the app found.
-Your AI coding tool's StackVet connection never runs them, and never starts the app: each of those runs code, which
-stays your decision at a terminal. So a report your AI tool wrote, or a check it made while building, leaves both out,
-and says so. To leave the other tools out of a check of your own, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
+Your AI coding tool's StackVet connection never runs them or starts the app, since each runs code, which stays your
+decision at a terminal; so its reports and checks leave both out, and say so. To leave the other tools out of a check of your own, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
 `[tools] codeql = true`, which its license allows only for an open-source app, research, or a paid GitHub license.
 
 **Where the report is.** When your AI tool writes the report (`stackvet_write_report`), or you run
