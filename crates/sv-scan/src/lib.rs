@@ -22,7 +22,7 @@ pub mod requirements;
 pub mod text;
 pub use not_the_app::not_the_app_in;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -100,9 +100,7 @@ impl Signatures {
     }
 
     pub fn load(path: &Path) -> Result<Self> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        serde_json::from_str(&text).with_context(|| sv_frameworks::data::not_understood(path))
+        sv_frameworks::data::read_json(path)
     }
 }
 
