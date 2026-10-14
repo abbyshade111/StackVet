@@ -1,6 +1,6 @@
 # The first thing a person who has never opened a terminal is told to do is open a terminal, and nothing says how
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

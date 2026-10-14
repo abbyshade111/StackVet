@@ -54,7 +54,7 @@ fn report_exiting(dir: &Path, codes: &[i32]) -> Run {
         compliance: read("compliance.md"),
         html: read("report.html"),
         json: serde_json::from_str(&read("report.json")).unwrap(),
-        sarif: serde_json::from_str(&read("findings.sarif")).unwrap(),
+        sarif: serde_json::from_str(&read("stackvet.sarif")).unwrap(),
     }
 }
 
@@ -332,7 +332,7 @@ fn a_persons_review_sets_findings_aside_and_the_tools_proposal_does_not() {
         "{tool}"
     );
     assert!(
-        tool.contains("NOT COUNTED in [[finding-review]]")
+        tool.contains("NOT COUNTED in `[[finding-review]]`")
             && tool.contains("never run `sv review` for them, and never write a `seal` or a person's name in `by`")
             && tool.contains("the AI coding tool's proposal"),
         "{tool}"
@@ -449,7 +449,7 @@ fn sv_check_counts_what_sv_report_counts_on_the_same_folder() {
         "{check_said}"
     );
     assert!(
-        check_said.contains("Not counted in [[finding-review]]")
+        check_said.contains("Not counted in `[[finding-review]]`")
             && check_said.contains("the AI coding tool's proposal"),
         "{check_said}"
     );
@@ -752,7 +752,7 @@ fn no_fingerprint_given_for_a_credential_is_over_its_value_as_written() {
     );
     for (what, text) in [
         ("report.json", run.json.to_string()),
-        ("findings.sarif", run.sarif.to_string()),
+        ("stackvet.sarif", run.sarif.to_string()),
         ("security.md", run.security.clone()),
         ("report.html", run.html.clone()),
         ("the MCP reply", reply.clone()),

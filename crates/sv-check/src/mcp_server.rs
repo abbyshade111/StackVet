@@ -253,7 +253,7 @@ fn token_checks(
     if section.token_env.is_none() {
         say(
             "Whether the MCP server checks an access token: if it takes one fixed token, name the \
-             variable it reads it from as `token-env` under [stack.run.mcp-server]; if it is meant \
+             variable it reads it from as `token-env` under `[stack.run.mcp-server]`; if it is meant \
              to answer anyone, say `public = true`."
                 .to_owned(),
             out,
@@ -411,7 +411,7 @@ fn tool_checks(
             "C10.4.3, C10.4.4, C10.4.5",
             "What the MCP server does with arguments it should refuse: name a tool that is safe to \
              call again and again, with arguments it accepts, as `probe-tool` under \
-             [stack.run.mcp-server]."
+             `[stack.run.mcp-server]`."
                 .to_owned(),
             out,
         );
@@ -727,7 +727,7 @@ pub fn run(http: &mut dyn Http, section: &McpServerSection, token: Option<&str>)
                 "The MCP endpoint at {path} did not start a session for an ordinary request ({}), \
                  so a refusal of the others would show nothing. If it takes one fixed access \
                  token, name the variable it reads it from as `token-env` under \
-                 [stack.run.mcp-server]; a token from a sign-in service cannot be given to it yet.",
+                 `[stack.run.mcp-server]`; a token from a sign-in service cannot be given to it yet.",
                 status(&first)
             ),
             &mut out,

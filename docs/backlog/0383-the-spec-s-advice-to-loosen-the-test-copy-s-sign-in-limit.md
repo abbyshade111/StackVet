@@ -1,6 +1,6 @@
 # The spec's advice to loosen the test copy's sign-in limit defeats the wrong-password check
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -17,3 +17,10 @@ What a fix has to settle: the 60 sign-ins `sv` needs are mostly right passwords,
 that still stops wrong passwords at the declared number while letting right ones through; or `sv` could spread its
 sign-ins across its accounts; or the check could say when the start command sets a limit-like setting (0386). Each
 changes what `sv` tells the AI tool, so it is a decision with a record of its own.
+
+**Waiting on the owner, 14 October 2026 (session documentation).** The advice is in `crates/sv-manifest/src/spec.rs`
+(the `[stack.run.users]` notes: "let the copy `sv` runs allow that many ... and keep the real limit everywhere else").
+The question, with three ways to settle it and a suggestion (A and C together), is in
+`docs/coordination/waiting/0383.md`. Nothing is built until the owner answers; the decision record is written then.
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): A and C together. A: the settings advice no longer asks the test copy to allow sixty sign-ins; it asks that the copy keep stopping wrong passwords at the number declared in `failed-sign-ins`, and raise only a limit that counts every sign-in, if the app has one. C: the wrong-password check says when the start command sets a limit-like value (backlog 0386), so the finding says it may be about a loosened copy. Both change what `sv` tells the AI tool: a decision record of its own, proposed in this item's build.

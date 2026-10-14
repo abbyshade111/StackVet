@@ -48,6 +48,11 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import backlog  # noqa: E402  (tools/backlog.py: the items, their status lines, and the claim)
+import functools  # noqa: E402
+import _shared  # noqa: E402  (tools/_shared.py)
+
+# The board and the waiting files go in folders that may not be there yet.
+write_text = functools.partial(_shared.write_text, make_folder=True)
 
 ROOT = Path(__file__).resolve().parent.parent
 BOARD = "docs/coordination/board.md"
@@ -89,13 +94,6 @@ SESSION = re.compile(r"^- (?P<name>[A-Za-z0-9_-]+) — arm: (?P<arm>full|none) �
 AHEAD = 6
 QUEUE = re.compile(r"^\d+\. (?P<number>\d{4}) (?P<title>.*?) — (?P<state>ready|hold: .+)$")
 LOG = re.compile(r"^- (?P<when>\d{4}-\d{2}-\d{2} \d{2}:\d{2}) — (?P<text>.+)$")
-
-
-def write_text(path, text):
-    """UTF-8 with Unix line endings on every system (crates/sv-cli/tests/tools_text.rs)."""
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="\n") as out:
-        out.write(text)
 
 
 def now():
@@ -450,11 +448,23 @@ def cmd_finish(board_path, number, pr=None, when=None, root=None):
     board = Board.read(board_path)
     number = key_of(number)
     s = board.holder(number)
-    if s is None:
-        raise SystemExit(f"nobody holds {number}")
     waited = root is not None and waiting_path(root, number).is_file()
     if waited:
         waiting_path(root, number).unlink()
+    if s is None:
+        # Finished from behind the item the session holds: a builder that waits on the owner (`wait`) goes on to
+        # the next item of its lane, so the lane's items finish in any order (found on the first morning of the
+        # burst after backlog 0417, 14 October 2026, when three waiting items headed one lane).
+        s = board.taker(number)
+        if s is None:
+            raise SystemExit(f"nobody holds {number}")
+        s["next"].remove(number)
+        # The pull request right after the arm, where `measure --arms` reads it.
+        board.note(f"finished {number} by {s['name']} ({s['arm']})" + (f": {pr}" if pr else "")
+                   + f"; from its lane, behind {s['holds']}" + ("; its waiting file removed" if waited else ""), when)
+        board.write()
+        print(board.log[-1]["text"])
+        return
     queued = s.get("next", [])
     following = queued[0] if queued else None
     s["holds"], s["since"], s["next"] = following, ((when or now())[:10] if following else None), queued[1:]
@@ -895,6 +905,17 @@ def self_test():
         assert "into the lane after 0006" in placed.log[-1]["text"], placed.log[-1]
         cmd_withdraw(board_path, folder, "8", "inserted for the test, taken back", when)
         assert Board.read(board_path).session("a")["next"] == ["0006", "0007"]
+        # An item finished from the lane, behind the one the session holds (a held item waiting on the owner).
+        backlog.write(folder, 10, "Item 10", "open", "Its text.\n")
+        cmd_queue(board_path, folder, "add", "10", None, when)
+        cmd_assign(board_path, folder, "10", "a", "a's lane, behind the two there", when=when, date="13 October 2026", ahead=3)
+        assert Board.read(board_path).session("a")["next"] == ["0006", "0007", "0010"]
+        backlog.mark_done(folder, "10", "13 October 2026", None)
+        cmd_finish(board_path, "10", "https://example.test/pull/10", when)
+        behind = Board.read(board_path)
+        assert behind.session("a")["holds"] == "0003" and behind.session("a")["next"] == ["0006", "0007"], behind.session("a")
+        assert "finished 0010 by a (full): https://example.test/pull/10; from its lane, behind 0003" in behind.log[-1]["text"], behind.log[-1]
+        assert problems(behind, folder) == [], problems(behind, folder)
         cmd_session(board_path, "add", "c", "full", when)
         try:
             cmd_assign(board_path, folder, "8", "c", "a lane for a session that holds nothing", when=when, date="13 October 2026", after="2")
@@ -939,7 +960,7 @@ def self_test():
         except SystemExit:
             pass
         per, _ = arms_measure(Board.read(board_path), gh=None)
-        assert per["full"] == {"assigned": 5, "finished": 2, "prs": ["https://example.test/pull/1"], "commits": 0, "unnamed_tool": 0, "main_merges": 0}, per["full"]
+        assert per["full"] == {"assigned": 6, "finished": 3, "prs": ["https://example.test/pull/1", "https://example.test/pull/10"], "commits": 0, "unnamed_tool": 0, "main_merges": 0}, per["full"]
         assert per["none"]["assigned"] == 1 and per["none"]["finished"] == 0
         # `close` (backlog 0416): refused while a session holds work; then the sessions go, each queued item's marker
         # says the board closed, the queue empties, the board stays as the record, and `open` starts the next one.

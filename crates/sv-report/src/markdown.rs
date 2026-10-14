@@ -495,11 +495,13 @@ pub fn compliance(report: &Report) -> String {
                 cell(&item.id),
                 cell(&item.title),
                 cell(item.route.what_to_do()),
-                cell(&match &item.where_to_look {
-                    Some(where_to_look) =>
-                        format!("{} **Where to look:** {where_to_look}", item.how),
-                    None => item.how.clone(),
-                })
+                cell(
+                    &(match &item.where_to_look {
+                        Some(where_to_look) =>
+                            format!("{} **Where to look:** {where_to_look}", item.how),
+                        None => item.how.clone(),
+                    } + &rests_on(item))
+                )
             ));
         }
         out.push('\n');
@@ -685,7 +687,7 @@ pub fn compliance(report: &Report) -> String {
                 "| {} | {} | {} ({}) |\n",
                 cell(&ex.id),
                 cell(&ex.reason),
-                cell(ex.rests_on),
+                cell(ex.rests_on_words()),
                 cell(&ex.condition)
             ));
         }
@@ -1072,6 +1074,28 @@ fn test_information_section(out: &mut String, report: &Report) {
         ));
     }
     out.push('\n');
+}
+
+/// Where in the app's code a question is about (backlog 0487), as file and line only: a table cell holds no lines of
+/// code. report.html shows them.
+fn rests_on(item: &sv_check::human::Item) -> String {
+    let Some(rests_on) = &item.rests_on else {
+        return String::new();
+    };
+    let mut places: Vec<String> = rests_on
+        .places
+        .iter()
+        .map(|p| format!("{}, line {}", p.file, p.line))
+        .collect();
+    if rests_on.more > 0 {
+        places.push(format!("and {} more", rests_on.more));
+    }
+    format!(
+        " **In the code**, {}: {}. {}",
+        rests_on.finds,
+        places.join("; "),
+        sv_check::human::POINTERS_SAY
+    )
 }
 
 #[cfg(test)]

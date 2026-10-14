@@ -1,6 +1,6 @@
 # The build record survives the report folder being deleted, and the report says when it may have been
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -15,3 +15,5 @@ where, as a decision record, since it is a file StackVet writes into the app's f
 no record but other signs that StackVet was used, the report says "no record of the build was found; it may have been
 deleted" rather than implying none was kept. Other signs could be answers in `stackvet.toml` that only StackVet's tools
 write, `security-notes.md` sections in its form, or an earlier report's seal.
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): (1): the record of the AI tool's calls lives in a hidden folder of its own in the app, `.stackvet/build-loop.jsonl`, so deleting or replacing `stackvet-report` leaves it, it still travels with the app folder, and the report's seal still covers it. One more name `sv` writes into somebody's folder: Later entries on ADR-017 and ADR-076, and the report says "no record of the build was found; it may have been deleted" when other signs show StackVet was used.

@@ -63,7 +63,7 @@ pub(super) fn burst_check(
             out.not_assessed.push((
                 IDS.to_owned(),
                 "Whether creating records is limited: say how many records a minute one user \
-                 should be able to create, as `requests-per-minute` under [policy] in \
+                 should be able to create, as `requests-per-minute` under `[policy]` in \
                  stackvet.toml, and this will send one more than that."
                     .to_owned(),
             ));

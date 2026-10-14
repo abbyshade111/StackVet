@@ -35,7 +35,7 @@ pub(super) fn session_timeout_checks(
         say(
             "V7.3.1, V7.3.2",
             "Whether sessions time out: say after how long, as `idle-timeout-minutes` and \
-             `session-lifetime-minutes` under [policy] in stackvet.toml, and run `sv run --slow`, \
+             `session-lifetime-minutes` under `[policy]` in stackvet.toml, and run `sv run --slow`, \
              which waits that long and then asks."
                 .to_owned(),
             out,
@@ -882,6 +882,8 @@ pub(super) fn private_page_checks(
     let mut with_link_ids: Vec<String> = Vec::new();
     let mut stored_ids: Vec<String> = Vec::new();
     let mut without_headers_ids: Vec<String> = Vec::new();
+    // The requirements the missing headers fail, so the finding names only those (backlog 0432).
+    let mut headers_failing: Vec<&str> = Vec::new();
     let mut shared_ids: Vec<String> = Vec::new();
 
     for (i, path) in users.private.iter().enumerate() {
@@ -921,7 +923,9 @@ pub(super) fn private_page_checks(
                 ));
             }
         }
-        let missing = crate::probes::missing_headers(&response);
+        let by_requirement = crate::probes::missing_headers_by_requirement(&response);
+        headers_failing.extend(by_requirement.iter().map(|(id, _)| *id));
+        let missing: Vec<&str> = by_requirement.into_iter().map(|(_, what)| what).collect();
         if !missing.is_empty() {
             without_headers_ids.push(page_id.clone());
             without_headers.push(format!(
@@ -1062,7 +1066,7 @@ pub(super) fn private_page_checks(
             .in_part_if(opened.len() == 1 || !skipped.is_empty()),
         );
     } else {
-        out.findings.push(finding_on(
+        let mut found = finding_on(
             without_headers_ids.clone(),
             &PRIVATE_PAGE_HEADERS,
             "A private page is missing headers a browser relies on",
@@ -1071,7 +1075,10 @@ pub(super) fn private_page_checks(
                 "Opened by a signed-in user, {}.",
                 without_headers.join("; ")
             ),
-        ));
+        );
+        found.requirement_ids =
+            crate::probes::only_failing(PRIVATE_PAGE_HEADERS.requirement_ids, &headers_failing);
+        out.findings.push(found);
     }
 
     // ---- V14.2.2: a private page shared caches are told they may keep. Only ever a finding.
@@ -1473,14 +1480,18 @@ pub(super) fn session_checks(
     }
 
     let mut problems = Vec::new();
+    // V3.3.4 is HttpOnly, V3.3.2 is SameSite: the finding names the ones a cookie lacked (backlog 0432).
+    let mut failing = Vec::new();
     for c in &a.set_at_login {
         if !c.http_only {
+            failing.push("V3.3.4");
             problems.push(format!(
                 "`{}` can be read by any script on the page (no HttpOnly)",
                 c.name
             ));
         }
         if c.same_site.is_none() {
+            failing.push("V3.3.2");
             problems.push(format!(
                 "`{}` does not say when it may travel to other sites (no SameSite)",
                 c.name
@@ -1498,13 +1509,16 @@ pub(super) fn session_checks(
             .in_part(),
         );
     } else {
-        out.findings.push(finding_on(
+        let mut found = finding_on(
             vec!["login-a".to_owned()],
             &SESSION_COOKIE,
             "The session cookie is set without the attributes that protect it",
             Severity::High,
             problems.join("; "),
-        ));
+        );
+        found.requirement_ids =
+            crate::probes::only_failing(SESSION_COOKIE.requirement_ids, &failing);
+        out.findings.push(found);
     }
 
     let kept: Vec<&str> = a

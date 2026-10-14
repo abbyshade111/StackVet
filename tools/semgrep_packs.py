@@ -26,14 +26,10 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _shared import write_text  # noqa: E402  (tools/_shared.py)
 
-
-def write_text(path, text):
-    """Writes `text` as UTF-8 with Unix line endings on every system. Path.write_text uses the
-    system's own encoding and, on Windows, CRLF, which would make a generated file differ from the
-    one committed (backlog 0120)."""
-    with open(path, "w", encoding="utf-8", newline="\n") as out:
-        out.write(text)
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent

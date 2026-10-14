@@ -30,13 +30,7 @@ fn section_ids(notes: &str) -> Vec<String> {
 }
 
 /// The status column of the requirement's row in compliance.md.
-fn status_of<'a>(compliance: &'a str, id: &str) -> &'a str {
-    let row = compliance
-        .lines()
-        .find(|line| line.starts_with(&format!("| {id} |")))
-        .unwrap_or_else(|| panic!("no row for {id} in the report"));
-    row.split('|').nth(2).unwrap_or("").trim()
-}
+use sv_check::test_support::status_of;
 
 #[test]
 fn the_report_credits_only_what_the_owner_wrote_to_the_owner() {

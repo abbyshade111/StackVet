@@ -24,12 +24,25 @@ pub(super) const OWNER_FIELDS: &[&str] = &[
 /// number, in a JSON answer or in JSON inside a page. Gives the field and its value as JSON, so a
 /// number is sent back as a number.
 pub(super) fn named_owner(body: &str) -> Option<(&'static str, serde_json::Value)> {
-    OWNER_FIELDS.iter().find_map(|field| {
-        let pattern = format!(
-            r#""{}"\s*:\s*("(?:[^"\\]|\\.)*"|-?\d+)"#,
-            regex::escape(field)
-        );
-        let found = regex::Regex::new(&pattern).ok()?.captures(body)?;
+    // Compiled once, not for every field of every record read (backlog 0463).
+    static PATTERNS: std::sync::LazyLock<Vec<(&'static str, regex::Regex)>> =
+        std::sync::LazyLock::new(|| {
+            OWNER_FIELDS
+                .iter()
+                .map(|field| {
+                    let pattern = format!(
+                        r#""{}"\s*:\s*("(?:[^"\\]|\\.)*"|-?\d+)"#,
+                        regex::escape(field)
+                    );
+                    (
+                        *field,
+                        regex::Regex::new(&pattern).expect("an owner field's pattern"),
+                    )
+                })
+                .collect()
+        });
+    PATTERNS.iter().find_map(|(field, pattern)| {
+        let found = pattern.captures(body)?;
         let value = serde_json::from_str::<serde_json::Value>(found.get(1)?.as_str()).ok()?;
         let empty = value.as_str().is_some_and(|s| s.trim().is_empty());
         (!empty).then_some((*field, value))

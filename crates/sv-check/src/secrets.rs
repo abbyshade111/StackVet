@@ -86,12 +86,36 @@ impl SecretRules {
     }
 }
 
+/// What the places that show something only after cutting the credentials out of it say in its place when `sv`'s
+/// own rules for finding credentials could not be read (backlog 0459): one wording, where there were three.
+pub const RULES_UNREAD: &str = "left out, because sv's own rules for finding credentials in it could not be read, \
+                                so it could not be shown safely";
+
 impl SecretRules {
+    /// The rules `sv` ships, read and compiled once for the whole run (backlog 0459), or why they could not be. Six
+    /// places read them for themselves before, one of them again, its thirty patterns compiled anew, for every seed
+    /// line that failed. Read through `sv_frameworks::data::file`, so `SV_DATA_DIR` holds, as nothing asks for them
+    /// before `main` has read the environment.
+    pub fn shared() -> std::result::Result<&'static SecretRules, &'static str> {
+        static SHARED: std::sync::OnceLock<std::result::Result<SecretRules, String>> =
+            std::sync::OnceLock::new();
+        SHARED
+            .get_or_init(|| {
+                SecretRules::load(&sv_frameworks::data::file("secret-rules.json"))
+                    .map_err(|e| format!("{e:#}"))
+            })
+            .as_ref()
+            .map_err(String::as_str)
+    }
+
+    /// No rules: what is left when the rules file cannot be read. `redact_text` still masks what needs no rule, a
+    /// value given a credential's name, a `Bearer` token, and a key in a web address's parameters.
+    pub fn none() -> Self {
+        Self { rules: Vec::new() }
+    }
+
     pub fn load(path: &Path) -> Result<Self> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        let file: RuleFile = serde_json::from_str(&text)
-            .with_context(|| sv_frameworks::data::not_understood(path))?;
+        let file: RuleFile = sv_frameworks::data::read_json(path)?;
         let mut rules = Vec::new();
         for rule in file.rules {
             let compiled = Regex::new(&rule.pattern)
@@ -1318,3 +1342,6 @@ mod assignment_citation_tests;
 
 #[cfg(test)]
 mod redact_form_tests;
+
+#[cfg(test)]
+mod shared_tests;

@@ -524,6 +524,9 @@ pub(super) struct Flaws {
     pub(super) locks_out_after: Option<u32>,
     /// `locks_out_after` counts wrong passwords by the client's address, not by account.
     pub(super) limits_by_address: bool,
+    /// `locks_out_after` counts wrong passwords only for accounts that exist, as an app that counts
+    /// them on the account does: a name with no account is never locked (backlog 0384).
+    pub(super) limits_only_real_accounts: bool,
     /// The client's address is read from `X-Forwarded-For` when a request carries one.
     pub(super) trusts_forwarded_for: bool,
     /// A lockout lasts for one refused attempt and then lifts by itself.
@@ -572,6 +575,9 @@ pub(super) struct Flaws {
     pub(super) reset_cuts_line_breaks: bool,
     /// Using a reset code answers as if it worked and changes nothing.
     pub(super) reset_does_nothing: bool,
+    /// The reset form, and its token, shows only at the emailed link: plain `/reset` says the link
+    /// is not valid and has no form (backlog 0385).
+    pub(super) reset_form_only_at_link: bool,
     /// A reset code can be used again after it has been used.
     pub(super) reset_reusable: bool,
     /// A reset adds the new password and leaves the old one working.
@@ -777,14 +783,14 @@ impl FakeApp {
 
     /// A token for this user, signed with `jwt_key()`.
     fn issue_jwt(&mut self, who: &str, lifetime: u64) -> String {
-        let header = crate::browser::base64(br#"{"alg":"HS256","typ":"JWT"}"#, true);
+        let header = crate::encoding::token_part(br#"{"alg":"HS256","typ":"JWT"}"#);
         // An id of its own, so two sign-ins in the same second do not get the same token.
         let jti = self.new_id();
         let mut claims = serde_json::json!({ "sub": who, "iat": self.clock, "jti": jti });
         if !self.jwt_without_expiry {
             claims["exp"] = (self.clock + lifetime).into();
         }
-        let payload = crate::browser::base64(claims.to_string().as_bytes(), true);
+        let payload = crate::encoding::token_part(claims.to_string().as_bytes());
         let signed = format!("{header}.{payload}");
         let signature = jwt_signature(&signed, self.flaws.jwt_placeholder_key);
         format!("{signed}.{signature}")
@@ -799,7 +805,10 @@ impl FakeApp {
         if parts.next().is_some() {
             return None;
         }
-        let read = |part: &str| serde_json::from_slice::<serde_json::Value>(&unbase64(part)?).ok();
+        let read = |part: &str| {
+            serde_json::from_slice::<serde_json::Value>(&crate::encoding::read_token_part(part)?)
+                .ok()
+        };
         let (head, claims) = (read(header)?, read(payload)?);
         let signed = self.flaws.jwt_signature_ignored
             || match head.get("alg").and_then(|a| a.as_str()) {
@@ -838,7 +847,7 @@ impl FakeApp {
         let Some(header) = token
             .split('.')
             .next()
-            .and_then(unbase64)
+            .and_then(crate::encoding::read_token_part)
             .and_then(|h| serde_json::from_slice::<serde_json::Value>(&h).ok())
         else {
             return;
@@ -1097,7 +1106,7 @@ fn jwt_signature(signed: &str, placeholder: bool) -> String {
     let mut mac =
         <Hmac<sha2::Sha256>>::new_from_slice(&jwt_key(placeholder)).expect("HMAC takes any key");
     mac.update(signed.as_bytes());
-    crate::browser::base64(&mac.finalize().into_bytes(), true)
+    crate::encoding::token_part(&mac.finalize().into_bytes())
 }
 
 pub(super) fn pairs(text: &str) -> BTreeMap<String, String> {
@@ -1519,10 +1528,12 @@ impl FakeApp {
                     {
                         return Some(Self::respond(status, vec![], "internal error"));
                     }
-                    if self.flaws.locks_out_after.is_some() {
+                    let known = self.users.contains_key(email);
+                    if self.flaws.locks_out_after.is_some()
+                        && (known || !self.flaws.limits_only_real_accounts)
+                    {
                         *self.failures.entry(key).or_insert(0) += 1;
                     }
-                    let known = self.users.contains_key(email);
                     if !known && self.flaws.signin_reveals_by_status {
                         return Some(Self::respond(404, vec![], "no"));
                     }
@@ -1862,6 +1873,11 @@ impl FakeApp {
                     self.sessions.insert(session, who);
                 }
                 Self::respond(303, vec![("Location", "/account".into())], "")
+            }
+            ("GET", "/reset")
+                if self.flaws.reset_form_only_at_link && !query.contains_key("token") =>
+            {
+                Self::respond(200, vec![], "<p>This link is not valid.</p>")
             }
             ("GET", "/forgot" | "/reset") => Self::respond(
                 200,

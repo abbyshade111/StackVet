@@ -95,6 +95,9 @@ pub fn stage_finished(ended: Option<(usize, std::time::Instant)>) {
 pub(crate) fn guarded<T>(name: &str, run: impl FnOnce() -> T) -> std::result::Result<T, String> {
     #[cfg(debug_assertions)]
     let inject = std::env::var("SV_PANIC_IN_STAGE").ok().as_deref() == Some(name);
+    // A release build has no injected panic, so it never reads the name (backlog 0393).
+    #[cfg(not(debug_assertions))]
+    let _ = name;
     std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         #[cfg(debug_assertions)]
         if inject {
@@ -921,6 +924,54 @@ fn outside_tools(
             }),
         }
     }
+    // A CodeQL results file from the owner's own CI, read whether or not the tools ran: it is a file,
+    // not a program, and credited only for the commit checked out (ADR-113).
+    if let Some(path) = &options.codeql_results {
+        let named = path.display().to_string();
+        let gap = |reason: sv_report::GapReason, why: String| sv_report::Gap {
+            what: "what your CI's CodeQL results would have said".to_owned(),
+            why,
+            reason,
+            requirements: Vec::new(),
+        };
+        match (std::fs::read_to_string(path), adapters) {
+            (Err(e), _) => tool_gaps.push(gap(
+                sv_report::GapReason::CouldNotRead,
+                format!("{named} could not be read ({e})."),
+            )),
+            (Ok(_), Err(why)) => tool_gaps.push(gap(
+                sv_report::GapReason::CouldNotRead,
+                format!(
+                "{named} was not read: which CodeQL rules `sv` maps is not known, since {} could \
+                 not be read ({why}).",
+                    adapters_path().display()
+                ),
+            )),
+            (Ok(text), Ok(adapters)) => {
+                let languages: Vec<String> = scan_report.languages.iter().cloned().collect();
+                let read = sv_check::ci_codeql::read(
+                    adapters,
+                    &text,
+                    &named,
+                    &sv_check::ci_codeql::AppCommit::of(app_dir),
+                    app_dir,
+                    &languages,
+                );
+                findings.extend(read.findings);
+                tool_verified.extend(read.verified);
+                tool_gaps.extend(read.not_used.into_iter().map(|(kind, why)| {
+                    use sv_check::ci_codeql::Unused;
+                    let reason = match kind {
+                        Unused::Unreadable => sv_report::GapReason::CouldNotRead,
+                        Unused::NoMap => sv_report::GapReason::NoReader,
+                        Unused::OtherCode => sv_report::GapReason::Outdated,
+                        Unused::LookedAway => sv_report::GapReason::Partial,
+                    };
+                    gap(reason, why)
+                }));
+            }
+        }
+    }
     Ok(Tools {
         verified: tool_verified,
         gaps: tool_gaps,
@@ -1020,8 +1071,9 @@ fn running_app(
                     }
                     .to_owned(),
                 };
-                let (running_findings, running_verified, signed_in_not_assessed) =
+                let (mut running_findings, running_verified, signed_in_not_assessed) =
                     running_app_evidence(&outcome, &plan, &private_files);
+                limits_set_for_the_run(&mut running_findings, &plan.start);
                 let mut record = crate::seen::record(
                     secret_rules,
                     &anonymous_requests(&plan, &private_files),
@@ -1133,6 +1185,13 @@ fn running_app(
                         " {}",
                         sv_run::resources::sentence(outcome.resources.as_ref())
                     ));
+                }
+                // The settings the start command gave the copy run, by name (backlog 0386), then any that look like they
+                // weaken it.
+                if let (Some(note), Some(settings)) =
+                    (run_note.as_mut(), sv_run::start_settings::note(&plan.start))
+                {
+                    note.push_str(&format!(" {settings}"));
                 }
                 if let (Some(note), Some(weaker)) =
                     (run_note.as_mut(), sv_run::weakening_note(&plan.start))
@@ -2131,7 +2190,7 @@ fn the_owners_word(
             ),
             why: format!(
                 "No tool can settle these — whether input is validated on the server, whether the \
-                 app's own services authenticate to each other. Answer them in the [design] \
+                 app's own services authenticate to each other. Answer them in the `[design]` \
                  section of stackvet.toml: {}. Your AI coding tool can ask you them: `sv \
                  questions` prints them for its chat.",
                 design.unanswered.join(", ")
@@ -2187,7 +2246,7 @@ fn the_owners_word(
                 if hand.unreadable.len() == 1 { "" } else { "s" }
             ),
             why: format!(
-                "stackvet.toml records {} in [checked-by-hand] in a way nothing could be made \
+                "stackvet.toml records {} in `[checked-by-hand]` in a way nothing could be made \
                  of, so it counts for nothing: {}.",
                 if hand.unreadable.len() == 1 {
                     "this"
@@ -2666,7 +2725,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     };
     let mut report = sv_report::build(sv_report::Inputs {
         on_the_internet: manifest.app.deployment == sv_manifest::Deployment::Internet,
-        ai_tool: sv_check::ai_tool::read(listing, &loaded.secret_rules),
+        ai_tool: sv_check::ai_tool::read(listing, loaded.secret_rules),
         app_name: if manifest.app.name.is_empty() {
             "This app"
         } else {
@@ -2709,7 +2768,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         .map_err(anyhow::Error::from)
         .and_then(|text| sv_report::read_reach(&text))
         .with_context(|| format!("reading {}", reach_path.display()))?;
-    report.not_run_this_time = sv_report::not_run_this_time(&report, &reach, options.run_tools);
+    report.not_run_this_time =
+        sv_report::not_run_this_time(&report, &reach, options.run_tools, &scan_report.languages);
     let file_gaps = static_scan.file_gaps();
     report.could_not_run = file_gaps.could_not_run;
     report.partly_read = file_gaps.partly;
@@ -2754,6 +2814,15 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     });
     // The lines each code finding is on, for "The code" under it (backlog 0378, part 2).
     report.code_lines = crate::code_lines::read(app_dir, &report.findings, secret_rules);
+    let locators = &loaded.locators;
+    // The lines each question to the owner is about, where a locator speaks to it (backlog 0487).
+    crate::code_lines::point_questions(
+        app_dir,
+        locators,
+        &locators.find(listing),
+        secret_rules,
+        &mut report,
+    );
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped
     // here, so nothing past this point holds the app's code twice.
     if options.keep_tool_output {
@@ -2788,6 +2857,21 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         }
     }
     Ok(report)
+}
+
+/// A wrong-password finding says when the start command sets something that looks like a sign-in limit (backlog 0386):
+/// in the second loop trial, seven of nine such findings were about a limit raised for the copy `sv` ran alone.
+pub(crate) fn limits_set_for_the_run(findings: &mut [sv_check::Finding], start: &str) {
+    let Some(said) = sv_run::start_settings::sign_in_limit_note(start) else {
+        return;
+    };
+    for finding in findings
+        .iter_mut()
+        .filter(|f| f.rule_id == "probe.failed-sign-ins-unlimited")
+    {
+        finding.description.push(' ');
+        finding.description.push_str(&said);
+    }
 }
 
 /// A finding the manifest's answers made, pointed at the manifest by the name it has in this app.
@@ -2869,7 +2953,7 @@ pub fn account_changes_whole(
         gaps.push(sv_report::Gap {
             what: "Account changes listed as not offered, not confirmed by the owner".to_owned(),
             why: format!(
-                "stackvet.toml lists {} under [stack.run.users] `not-offered`, and nobody has \
+                "stackvet.toml lists {} under `[stack.run.users]` `not-offered`, and nobody has \
                  confirmed it through `sv review`, so it is the AI coding tool's word or a file \
                  edited by hand, and counts for nothing. Until the owner confirms it, V7.5.1 is at \
                  most checked in part: run `sv review` and confirm the list if it is right.",
@@ -2962,3 +3046,7 @@ fn split_test_information(
 #[cfg(test)]
 #[path = "assemble_counts_tests.rs"]
 mod counts_tests;
+
+#[cfg(test)]
+#[path = "assemble_start_limits_tests.rs"]
+mod start_limits_tests;

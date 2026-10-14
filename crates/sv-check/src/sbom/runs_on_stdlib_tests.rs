@@ -2,14 +2,8 @@
 //! reads as an app that imports nothing of Python's own library.
 
 use super::*;
-use std::path::PathBuf;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-stdlib-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use crate::test_support::scratch;
 
 #[test]
 fn the_shipped_list_is_read() {

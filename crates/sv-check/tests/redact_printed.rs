@@ -5,11 +5,8 @@
 use sv_check::Secret;
 use sv_check::secrets::{SecretRules, redact_text};
 
-fn rules() -> SecretRules {
-    SecretRules::load(
-        &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 #[test]
@@ -43,7 +40,7 @@ fn a_credential_under_a_name_a_program_prints_is_masked_and_a_word_inside_anothe
         format!("otp_code = \"{token}\""),
         format!("pin: {token}"),
     ] {
-        let (out, n) = redact_text(&rules(), &text);
+        let (out, n) = redact_text(rules(), &text);
         assert!(n >= 1 && !out.contains(&token[4..]), "{text} -> {out}");
     }
     // The controls: words that hold `pin` and `session` inside them, and no credential.
@@ -52,7 +49,7 @@ fn a_credential_under_a_name_a_program_prints_is_masked_and_a_word_inside_anothe
         format!("mapping = {token}"),
         format!("sessions_total: {token}"),
     ] {
-        let (out, n) = redact_text(&rules(), &text);
+        let (out, n) = redact_text(rules(), &text);
         assert_eq!((n, out.as_str()), (0, text.as_str()), "{text}");
     }
 }

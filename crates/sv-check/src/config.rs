@@ -16,7 +16,7 @@
 
 use crate::finding::{Confidence, Finding, Location, Severity};
 use crate::verified::Verified;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use sv_scan::ecosystems::Pinning;
 
 /// What a configuration check concluded.
@@ -78,17 +78,25 @@ impl ConfigReport {
 }
 
 /// Runs every configuration check over the app folder.
+///
+/// The credential rules are read from `sv`'s data. When they cannot be read, a commit subject quoted in a note still
+/// has a named value, a `Bearer` token, and a key in a web address's parameters masked, which need no rules.
 pub fn check_dir(app_dir: &Path) -> ConfigReport {
     let listing = sv_scan::files::Listing::of(app_dir);
     let bill_of_materials = crate::sbom::build_in(&listing);
-    check_dir_in(&listing, &bill_of_materials)
+    static NONE: std::sync::LazyLock<crate::secrets::SecretRules> =
+        std::sync::LazyLock::new(crate::secrets::SecretRules::none);
+    let rules = crate::secrets::SecretRules::shared().unwrap_or(&NONE);
+    check_dir_in(&listing, &bill_of_materials, rules)
 }
 
 /// `check_dir`, with the app's files and its bill of materials already made, so `sv report` walks
-/// the folder once and builds the bill once.
+/// the folder once and builds the bill once. `rules` are the credential rules, which mask a key in the app's own text
+/// a note quotes.
 pub fn check_dir_in(
     listing: &sv_scan::files::Listing,
     bill_of_materials: &crate::sbom::Sbom,
+    rules: &crate::secrets::SecretRules,
 ) -> ConfigReport {
     let app_dir = listing.root.as_path();
     let mut report = ConfigReport::default();
@@ -97,8 +105,13 @@ pub fn check_dir_in(
         secrets_file_committed(app_dir),
     );
     report.record(GITIGNORE_COVERS_ENV, gitignore_covers_env(app_dir));
-    report.record("config.security-contact", security_contact(app_dir));
-    report.record(AI_COMMITS_OFF_MERGE, ai_commits_off_merge(app_dir));
+    let security_files = security_contact_files(app_dir);
+    report.record("config.security-contact", security_contact(&security_files));
+    report.record(
+        crate::security_contact::PLACEHOLDER,
+        crate::security_contact::placeholder(app_dir, &security_files),
+    );
+    report.record(AI_COMMITS_OFF_MERGE, ai_commits_off_merge(app_dir, rules));
     report.record(
         "config.versions-pinned",
         versions_pinned(listing, bill_of_materials),
@@ -303,7 +316,11 @@ const AI_COMMITS_OFF_MERGE: &str = "config.ai-commits-off-merge";
 /// worth knowing when there are some, never a finding that fails; none is a check that ran and found nothing
 /// (ADR-092, Later). Never a credit: a commit either names its tool or it does not, and the report says which of
 /// these it can and cannot see.
-fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
+///
+/// A commit's subject and the tool its trailer names are the app's own text: each is quoted as a tool's file is
+/// (`ai_tool::quote`), any key in it masked and at most 160 characters, since a key pasted into a commit subject
+/// cannot be taken out of the history, and the report would otherwise carry it (backlog 0443).
+fn ai_commits_off_merge(app_dir: &Path, rules: &crate::secrets::SecretRules) -> Outcome {
     let Some(commits) = crate::git::ai_commits_off_merge(app_dir) else {
         return Outcome::NotAssessed(
             "This folder is not a git repository, or git could not read its history, so `sv` cannot say which \
@@ -325,8 +342,8 @@ fn ai_commits_off_merge(app_dir: &Path) -> Outcome {
                 format!(
                     "`{}` {} ({})",
                     &c.hash[..c.hash.len().min(8)],
-                    c.subject,
-                    c.tool
+                    crate::ai_tool::quote(rules, &c.subject),
+                    crate::ai_tool::quote(rules, &c.tool)
                 )
             })
             .collect();
@@ -554,64 +571,15 @@ fn gitignore_ignores(text: &str, path: &str) -> bool {
         let anchored = pattern.contains('/');
         let pattern = pattern.strip_prefix('/').unwrap_or(pattern);
         let matches = if anchored {
-            glob_matches(pattern, path)
+            sv_scan::glob::matches(pattern, path)
         } else {
-            glob_matches(pattern, path.rsplit('/').next().unwrap_or(path))
+            sv_scan::glob::matches(pattern, path.rsplit('/').next().unwrap_or(path))
         };
         if matches {
             ignored = !negate;
         }
     }
     ignored
-}
-
-/// Git's wildcards: `*` and `?` within one part of a path, `**` across parts, `[...]` a set of
-/// characters (with `!` or `^` for its opposite), and `\` taking the next character as it is.
-fn glob_matches(pattern: &str, text: &str) -> bool {
-    fn go(p: &[char], t: &[char]) -> bool {
-        match p.split_first() {
-            None => t.is_empty(),
-            Some(('*', rest)) if rest.first() == Some(&'*') => {
-                let rest = &rest[1..];
-                let rest = rest.strip_prefix(&['/']).unwrap_or(rest);
-                (0..=t.len()).any(|i| go(rest, &t[i..]))
-            }
-            Some(('*', rest)) => (0..=t.len())
-                .take_while(|i| *i == 0 || t[i - 1] != '/')
-                .any(|i| go(rest, &t[i..])),
-            Some(('?', rest)) => t.first().is_some_and(|c| *c != '/') && go(rest, &t[1..]),
-            Some(('[', rest)) => {
-                let Some(close) = rest.iter().skip(1).position(|c| *c == ']').map(|i| i + 1) else {
-                    return t.first() == Some(&'[') && go(rest, &t[1..]);
-                };
-                let (set, after) = (&rest[..close], &rest[close + 1..]);
-                let (negated, set) = match set.first() {
-                    Some('!' | '^') => (true, &set[1..]),
-                    _ => (false, set),
-                };
-                let Some(c) = t.first() else { return false };
-                let mut inside = false;
-                let mut i = 0;
-                while i < set.len() {
-                    if i + 2 < set.len() && set[i + 1] == '-' {
-                        inside |= set[i] <= *c && *c <= set[i + 2];
-                        i += 3;
-                    } else {
-                        inside |= set[i] == *c;
-                        i += 1;
-                    }
-                }
-                inside != negated && *c != '/' && go(after, &t[1..])
-            }
-            Some(('\\', rest)) if !rest.is_empty() => {
-                t.first() == Some(&rest[0]) && go(&rest[1..], &t[1..])
-            }
-            Some((c, rest)) => t.first() == Some(c) && go(rest, &t[1..]),
-        }
-    }
-    let p: Vec<char> = pattern.chars().collect();
-    let t: Vec<char> = text.chars().collect();
-    go(&p, &t)
 }
 
 #[track_caller]
@@ -879,8 +847,9 @@ fn listed(versions: &[sv_scan::jvm::VersionAt]) -> String {
 /// Whether the app says how to report a security problem: a `SECURITY` file (`.md`, `.txt`, `.rst`,
 /// `.adoc`, or none) at its root, in `.github/`, or in `docs/`, or a `security.txt` where a site
 /// serves it from (RFC 9116: `.well-known/`, also under `public/` or `static/`, and at the root).
-/// Any capitalization. Until 5 October 2026 only four exact paths counted (H23 of the deep review).
-fn has_security_contact(app_dir: &Path) -> bool {
+/// Any capitalization. Until 5 October 2026 only four exact paths counted (H23 of the deep review). Every one
+/// found, in a fixed order, so `crate::security_contact` can read what each gives as the contact.
+fn security_contact_files(app_dir: &Path) -> Vec<PathBuf> {
     const FOLDERS: &[&str] = &[
         "",
         ".github",
@@ -898,20 +867,28 @@ fn has_security_contact(app_dir: &Path) -> bool {
         "security.adoc",
         "security",
     ];
-    FOLDERS.iter().any(|folder| {
+    let mut out = Vec::new();
+    for folder in FOLDERS {
         let Ok(entries) = std::fs::read_dir(app_dir.join(folder)) else {
-            return false;
+            continue;
         };
-        entries.flatten().any(|e| {
-            let name = e.file_name().to_string_lossy().to_lowercase();
-            NAMES.contains(&name.as_str()) && e.file_type().is_ok_and(|k| k.is_file())
-        })
-    })
+        let mut here: Vec<PathBuf> = entries
+            .flatten()
+            .filter(|e| {
+                let name = e.file_name().to_string_lossy().to_lowercase();
+                NAMES.contains(&name.as_str()) && e.file_type().is_ok_and(|k| k.is_file())
+            })
+            .map(|e| e.path())
+            .collect();
+        here.sort();
+        out.extend(here);
+    }
+    out
 }
 
 /// Whether there is a way to report a security problem. Not a vulnerability; an absence.
-fn security_contact(app_dir: &Path) -> Outcome {
-    if has_security_contact(app_dir) {
+fn security_contact(files: &[PathBuf]) -> Outcome {
+    if !files.is_empty() {
         // Deliberately empty. Nothing in ASVS, AISVS or Appendix C requires a way to report a
         // vulnerability; it is an organizational control rather than an application one. This check
         // is worth running and is evidence about no requirement in particular, which the reports
@@ -954,6 +931,10 @@ fn security_contact(app_dir: &Path) -> Outcome {
 mod ai_tests;
 
 #[cfg(test)]
+#[path = "config_ai_quote_tests.rs"]
+mod ai_quote_tests;
+
+#[cfg(test)]
 #[path = "config_history_tests.rs"]
 mod history_tests;
 
@@ -963,12 +944,7 @@ mod tests {
     use std::fs;
     use std::process::Command;
 
-    fn scratch(name: &str) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("sv-config-{name}-{}", std::process::id()));
-        fs::remove_dir_all(&dir).ok();
-        fs::create_dir_all(&dir).unwrap();
-        dir
-    }
+    use crate::test_support::scratch;
 
     #[test]
     fn a_lockfile_nothing_could_be_read_from_is_not_a_pass() {

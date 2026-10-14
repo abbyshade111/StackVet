@@ -4,7 +4,7 @@
 #[test]
 fn sv_init_s_own_template_raises_no_credential_finding() {
     let found = scan_text(
-        &rules(),
+        rules(),
         "stackvet.toml",
         sv_manifest::spec::STARTER_MANIFEST,
     );
@@ -124,7 +124,7 @@ fn redacting_a_private_key_cuts_its_body_and_not_only_its_header() {
     .join("\n");
     let block = format!("-----BEGIN {label}-----\n{body}\n-----END {label}-----");
     let text = format!("app starting with config:\n{block}\nlistening on :3000\n");
-    let (out, n) = redact_text(&rules(), &text);
+    let (out, n) = redact_text(rules(), &text);
     // No message prints `out` whole: were a cut missed, it would hold the key.
     for line in body.lines() {
         assert!(!out.contains(line), "a line of the key's body was kept");
@@ -138,7 +138,7 @@ fn redacting_a_private_key_cuts_its_body_and_not_only_its_header() {
 
     // A block cut off before its end, as a log tail can be, is cut to the end of the text.
     let cut_off = format!("-----BEGIN {label}-----\n{body}");
-    let (out, n) = redact_text(&rules(), &format!("tail:\n{cut_off}"));
+    let (out, n) = redact_text(rules(), &format!("tail:\n{cut_off}"));
     assert_eq!(n, 1);
     for line in body.lines() {
         assert!(
@@ -156,7 +156,7 @@ fn redacting_cuts_a_known_key_anywhere_and_a_value_by_its_name() {
              password: 'S3cr3t-Value-99'\n\
              SECRET_KEY=changeme\n"
     );
-    let (out, n) = redact_text(&rules(), &text);
+    let (out, n) = redact_text(rules(), &text);
     assert_eq!(n, 2);
     // No message prints `out`: were a cut missed, it would hold the credential.
     assert!(!out.contains(&key), "the key was not cut short");
@@ -170,11 +170,8 @@ fn redacting_cuts_a_known_key_anywhere_and_a_value_by_its_name() {
     assert!(out.contains("SECRET_KEY=changeme"));
 }
 
-fn rules() -> SecretRules {
-    SecretRules::load(
-        &std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"),
-    )
-    .expect("rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 #[test]
@@ -189,7 +186,7 @@ fn it_finds_a_key_and_does_not_repeat_it() {
     let key = credential_shaped(&["sk", "ant", "api03", "REALLOOKINGKEYVALUE123456"], "-");
     let text = format!("ANTHROPIC = '{key}'\n");
     let text = text.as_str();
-    let found = scan_text(&rules(), "src/app.py", text);
+    let found = scan_text(rules(), "src/app.py", text);
     let key = found
         .iter()
         .find(|f| f.rule_id == "secrets.anthropic-key")
@@ -277,7 +274,7 @@ fn the_ai_app_providers_keys_are_found_by_their_own_formats() {
     for (rule, key, short) in &cases {
         // Not under a name that says it is a credential, so only the format can find it.
         let text = format!("client = make_client(\"{key}\")\n");
-        let found = scan_text(&rules, "src/clients.py", &text);
+        let found = scan_text(rules, "src/clients.py", &text);
         let hits: Vec<_> = found.iter().filter(|f| f.rule_id == *rule).collect();
         assert_eq!(hits.len(), 1, "{rule}: {found:?}");
         assert!(hits[0].requirement_ids.contains(&"V13.3.1".to_string()));
@@ -288,7 +285,7 @@ fn the_ai_app_providers_keys_are_found_by_their_own_formats() {
         );
         let text = format!("client = make_client(\"{short}\")\n");
         assert!(
-            scan_text(&rules, "src/clients.py", &text)
+            scan_text(rules, "src/clients.py", &text)
                 .iter()
                 .all(|f| f.rule_id != *rule),
             "{rule}: one character short was reported"
@@ -309,7 +306,7 @@ fn a_password_in_a_web_address_is_found_and_never_shown() {
             "engine = create_engine(\"{}\")\n",
             address(scheme, "app_owner", &password)
         );
-        let found: Vec<_> = scan_text(&rules, "src/db.py", &text)
+        let found: Vec<_> = scan_text(rules, "src/db.py", &text)
             .into_iter()
             .filter(|f| f.rule_id == URL_PASSWORD_RULE)
             .collect();
@@ -320,7 +317,7 @@ fn a_password_in_a_web_address_is_found_and_never_shown() {
             !rendered.contains(&password[4..]),
             "{scheme}: the password reached the finding"
         );
-        let (out, n) = redact_text(&rules, &text);
+        let (out, n) = redact_text(rules, &text);
         assert_eq!(n, 1, "{scheme}");
         assert!(
             !out.contains(&password),
@@ -394,7 +391,7 @@ fn a_password_in_a_web_address_is_found_and_never_shown() {
         let text = format!("url = \"{pw_or_text}\"\n");
         // The case's name only: the text may hold the test's password, and a message is output.
         assert!(
-            scan_text(&rules, file, &text)
+            scan_text(rules, file, &text)
                 .iter()
                 .all(|f| f.rule_id != URL_PASSWORD_RULE),
             "reported: {case} in {file}"
@@ -465,7 +462,7 @@ fn openai_and_hugging_face_keys_are_found_where_nothing_found_them_before() {
                 format!("FROM python:3.12\nENV HF_TOKEN {key}\n"),
             ),
         ] {
-            let found = scan_text(&rules(), file, &text);
+            let found = scan_text(rules(), file, &text);
             let hits: Vec<&Finding> = found.iter().filter(|f| f.rule_id == *rule).collect();
             assert_eq!(
                 hits.len(),
@@ -495,7 +492,7 @@ fn redaction_cuts_openai_and_hugging_face_keys_from_output() {
     // What a failing test suite printed goes into the report; a key in it must not.
     for key in openai_keys().into_iter().chain(huggingface_tokens()) {
         let text = format!("request failed: Bearer {key} was refused\n");
-        let (out, n) = redact_text(&rules(), &text);
+        let (out, n) = redact_text(rules(), &text);
         assert_eq!(n, 1, "one credential in the line");
         assert!(!out.contains(key.as_str()), "the key was not cut short");
     }
@@ -516,7 +513,7 @@ fn each_ai_vendors_key_is_reported_by_its_own_rule_alone() {
         .collect();
     for (key, rule) in &cases {
         let text = format!("key: {key}\n");
-        let found = scan_text(&rules(), "notes.txt", &text);
+        let found = scan_text(rules(), "notes.txt", &text);
         let ids: Vec<&str> = found.iter().map(|f| f.rule_id.as_str()).collect();
         assert_eq!(ids, [*rule], "{}…: {ids:?}", &key[..8]);
     }
@@ -532,7 +529,7 @@ fn near_misses_are_not_openai_or_hugging_face_keys() {
         format!("x = 'hf_{}'\n", filler(35, LETTERS)),
         format!("x = 'sk-{}'\n", filler(48, MIXED)),
     ] {
-        let found = scan_text(&rules(), "src/app.py", &text);
+        let found = scan_text(rules(), "src/app.py", &text);
         assert!(
             !found
                 .iter()
@@ -568,7 +565,7 @@ fn a_key_in_utf16_or_latin1_text_is_found() {
     let mut latin1 = b"# Gr\xfc\xdfe\n".to_vec();
     latin1.extend(format!("aws = {key}\n").as_bytes());
     std::fs::write(dir.join("notes.txt"), latin1).unwrap();
-    let scan = scan_dir(&rules(), &dir);
+    let scan = scan_dir(rules(), &dir);
     std::fs::remove_dir_all(&dir).ok();
     assert!(
         scan.coverage.skipped.is_empty(),
@@ -596,14 +593,14 @@ fn an_image_or_ds_store_is_named_and_leaves_the_scan_whole() {
     )
     .unwrap();
     std::fs::write(dir.join("logo.png"), b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR").unwrap();
-    let clean = scan_dir(&rules(), &dir);
+    let clean = scan_dir(rules(), &dir);
     // The control: an unknown binary file is still a gap, and there is no clean claim.
     std::fs::write(
         dir.join("data.bin"),
         b"\x7fELF\x02\x01\x01\x00\x00\xff\x80\x9c",
     )
     .unwrap();
-    let gap = scan_dir(&rules(), &dir);
+    let gap = scan_dir(rules(), &dir);
     std::fs::remove_dir_all(&dir).ok();
 
     assert!(
@@ -661,7 +658,7 @@ fn keys_in_a_large_one_line_file_are_found_once_each_wherever_the_pieces_fall() 
     std::fs::write(dir.join("catalog.json"), &line).unwrap();
     let listing = sv_scan::files::Listing::of(&dir);
     assert!(listing.files[0].too_large(), "the setup: over 2 MB");
-    let scan = scan_listing(&rules(), &listing);
+    let scan = scan_listing(rules(), &listing);
     std::fs::remove_dir_all(&dir).ok();
     assert!(
         scan.coverage.skipped.is_empty(),
@@ -709,7 +706,7 @@ fn a_piece_reports_only_what_starts_in_its_own_part() {
     let ahead = format!("aws = {key}\npassword = \"{value}\"\n");
     let text = format!("{behind}{own}{ahead}");
     let keep = behind.len()..behind.len() + own.len();
-    let found = scan_piece(&rules(), "dump.txt", &text, 100, keep, true);
+    let found = scan_piece(rules(), "dump.txt", &text, 100, keep, true);
     let mut got: Vec<(&str, usize)> = found
         .iter()
         .map(|f| (f.rule_id.as_str(), f.location.line))
@@ -744,7 +741,7 @@ fn a_piece_sees_the_character_before_its_own_part() {
     );
     let dir = big_scratch("glued");
     std::fs::write(dir.join("catalog.txt"), &line).unwrap();
-    let scan = scan_dir(&rules(), &dir);
+    let scan = scan_dir(rules(), &dir);
     std::fs::remove_dir_all(&dir).ok();
     assert_eq!(
         scan.coverage.read_in_pieces,
@@ -780,7 +777,7 @@ fn a_large_file_gives_the_line_an_editor_shows_and_a_weaker_assignment() {
     std::fs::write(dir.join("dump.txt"), &text).unwrap();
     let listing = sv_scan::files::Listing::of(&dir);
     assert!(listing.files[0].too_large(), "the setup: over 2 MB");
-    let scan = scan_listing(&rules(), &listing);
+    let scan = scan_listing(rules(), &listing);
     std::fs::remove_dir_all(&dir).ok();
     let aws = scan
         .findings
@@ -796,7 +793,7 @@ fn a_large_file_gives_the_line_an_editor_shows_and_a_weaker_assignment() {
     assert_eq!(assigned.location.line, 50_000);
     assert_eq!(assigned.confidence, Confidence::Low);
     // The same line in an ordinary file keeps the rule's usual confidence.
-    let small = scan_text(&rules(), "src/app.py", &format!("password = \"{value}\"\n"));
+    let small = scan_text(rules(), "src/app.py", &format!("password = \"{value}\"\n"));
     assert_eq!(small[0].confidence, Confidence::Medium);
 }
 
@@ -814,7 +811,7 @@ fn an_assignment_in_the_overlap_is_reported_once_and_weaker() {
     line.push_str("\"}\n");
     let dir = big_scratch("overlap-assignment");
     std::fs::write(dir.join("catalog.json"), &line).unwrap();
-    let scan = scan_dir(&rules(), &dir);
+    let scan = scan_dir(rules(), &dir);
     std::fs::remove_dir_all(&dir).ok();
     assert_eq!(
         scan.coverage.read_in_pieces,
@@ -844,7 +841,7 @@ fn a_large_file_of_accented_text_is_read_and_not_called_binary() {
     text.push_str(&format!("aws = {key}\n"));
     let dir = big_scratch("accented");
     std::fs::write(dir.join("catalogue.txt"), &text).unwrap();
-    let scan = scan_dir(&rules(), &dir);
+    let scan = scan_dir(rules(), &dir);
     std::fs::remove_dir_all(&dir).ok();
     assert!(
         text.len() as u64 > sv_scan::files::MAX_FILE_BYTES,
@@ -872,7 +869,7 @@ fn a_large_file_with_nothing_in_it_leaves_the_scan_clean_and_says_how_it_was_rea
         format!("{{\"text\": \"{}\"}}\n", "y".repeat(3 * 1024 * 1024)),
     )
     .unwrap();
-    let scan = scan_dir(&rules(), &dir);
+    let scan = scan_dir(rules(), &dir);
     std::fs::remove_dir_all(&dir).ok();
     assert_eq!(scan.coverage.files_read, 2);
     assert!(scan.coverage.skipped.is_empty());
@@ -973,7 +970,7 @@ fn a_placeholder_is_not_reported() {
         "",
     ] {
         let text = format!("api_key = \"{value}\"\n");
-        let found = scan_text(&rules(), "src/app.py", &text);
+        let found = scan_text(rules(), "src/app.py", &text);
         assert!(
             found.is_empty(),
             "reported a placeholder {value:?}: {found:?}"
@@ -984,7 +981,7 @@ fn a_placeholder_is_not_reported() {
 #[test]
 fn a_credential_assignment_is_found_by_name_and_entropy_together() {
     let text = "db_password = \"Xk7#mQ92vLpR4sTz\"\n";
-    let found = scan_text(&rules(), "src/config.py", text);
+    let found = scan_text(rules(), "src/config.py", text);
     assert_eq!(found.len(), 1, "{found:?}");
     assert_eq!(found[0].rule_id, "secrets.credential-assignment");
 }
@@ -1146,7 +1143,7 @@ fn a_credential_is_found_in_every_shape_it_is_commonly_written_in() {
     let mut missed = Vec::new();
     for (case, file, template) in SHAPES_CAUGHT {
         let text = template.replace("{v}", &value);
-        let found = scan_text(&rules(), file, &format!("{text}\n"));
+        let found = scan_text(rules(), file, &format!("{text}\n"));
         let assigned: Vec<&Finding> = found
             .iter()
             .filter(|f| f.rule_id == "secrets.credential-assignment")
@@ -1169,7 +1166,7 @@ fn the_new_shapes_pass_over_what_is_not_a_credential_in_the_clear() {
     let value = made_up_value();
     // The setup: the made-up value is one the rule reports, so each line below is passed over for
     // what it is and not for the value.
-    assert!(!scan_text(&rules(), "app.py", &format!("password = \"{value}\"\n")).is_empty());
+    assert!(!scan_text(rules(), "app.py", &format!("password = \"{value}\"\n")).is_empty());
     for (case, file, text) in [
         (
             "a getenv with no default",
@@ -1272,7 +1269,7 @@ fn the_new_shapes_pass_over_what_is_not_a_credential_in_the_clear() {
             format!("export API_KEY={value}\n"),
         ),
     ] {
-        let found = scan_text(&rules(), file, &format!("{text}\n"));
+        let found = scan_text(rules(), file, &format!("{text}\n"));
         assert!(
             found.is_empty(),
             "reported {case}: {} findings",
@@ -1312,7 +1309,7 @@ fn what_only_the_new_shapes_find_is_passed_over_when_it_is_text_or_a_name() {
             r#"'auth_token_issued': 'Sign-in tokens issued today',"#,
         ),
     ] {
-        let found = scan_text(&rules(), file, &format!("{line}\n"));
+        let found = scan_text(rules(), file, &format!("{line}\n"));
         assert!(
             found.is_empty(),
             "reported {case}: {} findings",
@@ -1323,17 +1320,12 @@ fn what_only_the_new_shapes_find_is_passed_over_when_it_is_text_or_a_name() {
     // found is still found; written as a JSON value, it is the stated cost, and not found.
     let passphrase = ["Tr0ub4dor", "and 3 horses"].join(" ");
     assert!(
-        !scan_text(
-            &rules(),
-            "app.py",
-            &format!("password = \"{passphrase}\"\n")
-        )
-        .is_empty(),
+        !scan_text(rules(), "app.py", &format!("password = \"{passphrase}\"\n")).is_empty(),
         "the shape read before lost a passphrase"
     );
     assert!(
         scan_text(
-            &rules(),
+            rules(),
             "config.json",
             &format!("{{\"password\": \"{passphrase}\"}}\n")
         )
@@ -1347,7 +1339,7 @@ fn what_only_the_new_shapes_find_is_passed_over_when_it_is_text_or_a_name() {
         made_up_value()
     );
     assert_eq!(
-        scan_text(&rules(), "report.json", &format!("{in_a_string}\n")).len(),
+        scan_text(rules(), "report.json", &format!("{in_a_string}\n")).len(),
         1,
         "an assignment inside a JSON string"
     );
@@ -1356,7 +1348,7 @@ fn what_only_the_new_shapes_find_is_passed_over_when_it_is_text_or_a_name() {
     let fallback = ["dev", "session", "secret", "for", "local"].join("-");
     assert_eq!(
         scan_text(
-            &rules(),
+            rules(),
             "app.js",
             &format!("const s = process.env.SESSION_SECRET || '{fallback}';\n"),
         )
@@ -1366,7 +1358,7 @@ fn what_only_the_new_shapes_find_is_passed_over_when_it_is_text_or_a_name() {
     );
     assert_eq!(
         scan_text(
-            &rules(),
+            rules(),
             "app.py",
             &format!("os.getenv('SESSION_SECRET', '{fallback}')\n")
         )
@@ -1378,7 +1370,7 @@ fn what_only_the_new_shapes_find_is_passed_over_when_it_is_text_or_a_name() {
     let value = made_up_value();
     assert!(
         !scan_text(
-            &rules(),
+            rules(),
             "config.json",
             &format!("{{\"password\": \"{value}\"}}\n")
         )
@@ -1395,7 +1387,7 @@ fn redacting_cuts_a_value_in_the_new_shapes_too() {
         r#"os.getenv("DB_PASSWORD", "{v}")"#,
         r#"const apiKey: string = "{v}";"#,
     ] {
-        let (out, n) = redact_text(&rules(), &template.replace("{v}", &value));
+        let (out, n) = redact_text(rules(), &template.replace("{v}", &value));
         // No message prints `out`: were a cut missed, it would hold the value.
         assert!(!out.contains(&value), "not cut: {template}");
         assert!(n >= 1, "{template}: nothing cut");
@@ -1560,7 +1552,7 @@ fn a_value_runs_to_the_quote_that_opened_it() {
     );
     // A sentence redacted when `sv` passes text on, whatever its severity as a finding.
     let message = "Your current password isn't right.";
-    let (out, n) = redact_text(&rules(), &format!(r#"WRONG_PASSWORD = "{message}""#));
+    let (out, n) = redact_text(rules(), &format!(r#"WRONG_PASSWORD = "{message}""#));
     assert_eq!(n, 1);
     assert!(!out.contains(message));
 }
@@ -1575,7 +1567,7 @@ fn a_tool_s_quoted_value_with_an_apostrophe_in_it_is_redacted_whole() {
         "signed out everywhere else.",
     ]
     .concat();
-    let (out, n) = redact_text(&rules(), &format!("Possible hardcoded password: '{value}'"));
+    let (out, n) = redact_text(rules(), &format!("Possible hardcoded password: '{value}'"));
     assert_eq!(n, 1, "{out}");
     assert_eq!(
         out,
@@ -1585,7 +1577,7 @@ fn a_tool_s_quoted_value_with_an_apostrophe_in_it_is_redacted_whole() {
         )
     );
     // Two values side by side are still two: a quote with no letter after it ends the first.
-    let (out, n) = redact_text(&rules(), "{'password': 'Qv7rLm2x', 'token': 'Tz9kWp4n'}");
+    let (out, n) = redact_text(rules(), "{'password': 'Qv7rLm2x', 'token': 'Tz9kWp4n'}");
     assert_eq!(n, 2, "{out}");
     // Eight characters show two: never more than a third of a value (the review of 8 October, item 6).
     assert!(out.contains("'token': '[redacted: Tz… (6 more"), "{out}");
@@ -1597,7 +1589,7 @@ fn sv_s_own_redaction_read_back_is_not_a_credential() {
     // report: the marker is not a value, so finding it would refuse every such bundle.
     let password = ["Qv7r", "Lm2x", "Tz9k"].concat();
     let (redacted, n) = redact_text(
-        &rules(),
+        rules(),
         &format!("Possible hardcoded password: '{password}'"),
     );
     assert_eq!(n, 1);
@@ -1606,7 +1598,7 @@ fn sv_s_own_redaction_read_back_is_not_a_credential() {
         format!("password = \"{}\"", redacted.split('\'').nth(1).unwrap()),
         "PASSWORD: \"[redacted: abc]\"".to_owned(),
     ] {
-        let found = scan_text(&rules(), "report/security.md", &format!("{text}\n"));
+        let found = scan_text(rules(), "report/security.md", &format!("{text}\n"));
         assert!(found.is_empty(), "{text}: {found:?}");
     }
     // The control: the value itself is found there, and a marker with text of its own is a value.
@@ -1615,7 +1607,7 @@ fn sv_s_own_redaction_read_back_is_not_a_credential() {
         format!("password = \"[redacted: Qv7r… (8 more characters)]{password}\""),
     ] {
         assert!(
-            !scan_text(&rules(), "report/security.md", &format!("{text}\n")).is_empty(),
+            !scan_text(rules(), "report/security.md", &format!("{text}\n")).is_empty(),
             "not found: the scan does not read this shape, so the test proves nothing"
         );
     }
@@ -1629,7 +1621,7 @@ fn an_ordinary_string_with_a_harmless_name_is_left_alone() {
         "endpoint = \"https://api.example.com/v1\"",
         "title = \"Client's habit tracker\"",
     ] {
-        let found = scan_text(&rules(), "src/app.py", &format!("{line}\n"));
+        let found = scan_text(rules(), "src/app.py", &format!("{line}\n"));
         assert!(found.is_empty(), "reported {line:?}: {found:?}");
     }
 }
@@ -1638,16 +1630,16 @@ fn an_ordinary_string_with_a_harmless_name_is_left_alone() {
 fn a_secret_name_with_a_low_entropy_value_is_not_reported() {
     // "password = 'password'" is a bad password, not a leaked credential, and calling it one would
     // bury the findings that are.
-    let found = scan_text(&rules(), "src/app.py", "password = \"aaaaaaaaaaaa\"\n");
+    let found = scan_text(rules(), "src/app.py", "password = \"aaaaaaaaaaaa\"\n");
     assert!(found.is_empty(), "{found:?}");
 }
 
 #[test]
 fn dot_env_is_not_scanned_for_assignments_because_that_is_what_it_is_for() {
     let text = "SESSION_SECRET=\"Xk7#mQ92vLpR4sTzAAbb\"\n";
-    assert!(scan_text(&rules(), ".env", text).is_empty());
+    assert!(scan_text(rules(), ".env", text).is_empty());
     // The same line anywhere else is a finding.
-    assert!(!scan_text(&rules(), "src/config.ts", text).is_empty());
+    assert!(!scan_text(rules(), "src/config.ts", text).is_empty());
 }
 
 #[test]
@@ -1657,7 +1649,7 @@ fn a_known_format_is_still_reported_inside_dot_env() {
     let key = credential_shaped(&["sk", "ant", "api03", "REALLOOKINGKEYVALUE123456"], "-");
     let text = format!("ANTHROPIC_API_KEY={key}\n");
     let text = text.as_str();
-    let found = scan_text(&rules(), ".env", text);
+    let found = scan_text(rules(), ".env", text);
     assert!(
         found.iter().any(|f| f.rule_id == "secrets.anthropic-key"),
         "{found:?}"
@@ -1667,7 +1659,7 @@ fn a_known_format_is_still_reported_inside_dot_env() {
 #[test]
 fn the_rule_data_finds_what_it_promises_and_grades_a_test_key_below_a_live_one() {
     // A5 of the deep review. Every value is put together here, so the file holds no key.
-    let found = |text: &str| scan_text(&rules(), "src/config.txt", text);
+    let found = |text: &str| scan_text(rules(), "src/config.txt", text);
     let rule_of = |text: &str| {
         let f = found(text);
         assert_eq!(f.len(), 1, "{f:?}");
@@ -1724,7 +1716,7 @@ fn one_secret_produces_one_finding() {
     let key = credential_shaped(&["sk", "live", "51HxaMpLeKeyV4lu3Abcdefghijk"], "_");
     let text = format!("STRIPE_SECRET_KEY = \"{key}\"\n");
     let text = text.as_str();
-    let found = scan_text(&rules(), "src/config.py", text);
+    let found = scan_text(rules(), "src/config.py", text);
     assert_eq!(found.len(), 1, "{found:?}");
     assert_eq!(found[0].rule_id, "secrets.stripe-key");
 }
@@ -1736,7 +1728,7 @@ fn two_different_secrets_on_two_lines_are_two_findings() {
     let text =
         format!("STRIPE_SECRET_KEY = \"{key}\"\nsession_secret = \"Xk7#mQ92vLpR4sTzWwYy\"\n");
     let text = text.as_str();
-    let found = scan_text(&rules(), "src/config.py", text);
+    let found = scan_text(rules(), "src/config.py", text);
     assert_eq!(found.len(), 2, "{found:?}");
 }
 
@@ -1755,7 +1747,7 @@ SESSION_SECRET=${SESSION_SECRET}
 GITHUB_TOKEN=<your token>
 SIGNING_KEY=generate_with_openssl_rand
 ";
-    let found = scan_text(&rules(), "README.env.example", example);
+    let found = scan_text(rules(), "README.env.example", example);
     assert!(
         found.is_empty(),
         "an example file produced findings: {found:?}"
@@ -1772,7 +1764,7 @@ fn repetitive_values_under_credential_names_are_not_credentials() {
         "signing_key = \"aaaaaaaaaaaaaaaaaaaa\"",
         "encryption_key = \"abababababababababab\"",
     ] {
-        let found = scan_text(&rules(), "src/settings.rb", &format!("{line}\n"));
+        let found = scan_text(rules(), "src/settings.rb", &format!("{line}\n"));
         assert!(found.is_empty(), "reported {line:?}: {found:?}");
     }
 }
@@ -1787,7 +1779,7 @@ fn entropy_tells_a_random_string_from_a_word() {
 #[test]
 fn line_numbers_are_what_an_editor_shows() {
     let text = "one\ntwo\napi_key = \"Xk7#mQ92vLpR4sTz\"\n";
-    let found = scan_text(&rules(), "src/app.py", text);
+    let found = scan_text(rules(), "src/app.py", text);
     assert_eq!(found[0].location.line, 3);
 }
 
@@ -1829,7 +1821,7 @@ fn bcrypt() -> String {
 }
 
 fn reported(relative: &str, line: &str) -> Vec<Finding> {
-    scan_text(&rules(), relative, &format!("{line}\n"))
+    scan_text(rules(), relative, &format!("{line}\n"))
 }
 
 #[test]
@@ -1919,7 +1911,7 @@ fn a_line_with_a_stored_hash_and_nothing_else_is_all_another_tool_s_secret_rule_
     ];
     for (file, line) in &spared {
         assert!(
-            holds_only_stored_hashes(&rules, file, line),
+            holds_only_stored_hashes(rules, file, line),
             "{line:?} was not spared"
         );
     }
@@ -1952,7 +1944,7 @@ fn a_line_with_a_stored_hash_and_nothing_else_is_all_another_tool_s_secret_rule_
     ];
     for (file, line) in &kept {
         assert!(
-            !holds_only_stored_hashes(&rules, file, line),
+            !holds_only_stored_hashes(rules, file, line),
             "{line:?} was spared"
         );
     }
@@ -2063,7 +2055,7 @@ fn the_measured_corpus_s_secret_rule_lines_keep_every_true_finding() {
     let rules = rules();
     let mut spared_false = 0;
     for (true_finding, file, line) in &rows {
-        let spared = holds_only_stored_hashes(&rules, file, line);
+        let spared = holds_only_stored_hashes(rules, file, line);
         assert!(
             !(spared && *true_finding),
             "a true finding was spared: {line:?}"
@@ -2106,10 +2098,10 @@ fn a_value_is_masked_as_far_as_it_is_found_in_its_file() {
         // The setup: the scan really finds it in that file. No message here names the value or
         // the line holding it, so a failure prints nothing that looks like a credential.
         assert!(
-            !scan_text(&rules(), file, &line).is_empty(),
+            !scan_text(rules(), file, &line).is_empty(),
             "the setup: the value in {file} is found"
         );
-        let (out, n) = redact_text_in(&rules(), file, &line);
+        let (out, n) = redact_text_in(rules(), file, &line);
         assert!(n >= 1, "{file}: nothing was masked");
         // Not one part of the value is left, before or after the `&` or `,`.
         for (which, part) in [("first", &secret[..8]), ("last", &secret[9..])] {

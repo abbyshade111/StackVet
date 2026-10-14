@@ -15,12 +15,14 @@
 pub mod deps;
 pub mod ecosystems;
 pub mod files;
+pub mod glob;
 pub mod jvm;
 mod not_the_app;
 pub mod requirements;
+pub mod text;
 pub use not_the_app::not_the_app_in;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -98,9 +100,7 @@ impl Signatures {
     }
 
     pub fn load(path: &Path) -> Result<Self> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        serde_json::from_str(&text).with_context(|| sv_frameworks::data::not_understood(path))
+        sv_frameworks::data::read_json(path)
     }
 }
 
@@ -290,6 +290,12 @@ pub fn scan_listing_app(
         }
         report.files_read += 1;
         report.languages.insert(language.to_owned());
+        // Lowercased only while a signature not yet found has patterns for this language (backlog 0369): once each
+        // is found, or for a language none speaks to, no copy of the file is made.
+        let wanted = |i: usize| source_hits[i].is_none() && lowered[i].contains_key(language);
+        if !(0..signatures.signatures.len()).any(wanted) {
+            continue;
+        }
         let haystack = contents.to_lowercase();
         for (i, sig) in signatures.signatures.iter().enumerate() {
             if source_hits[i].is_some() {

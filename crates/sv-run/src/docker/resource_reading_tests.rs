@@ -12,13 +12,7 @@ fn backend_answering(test: &str, script: &str) -> DockerBackend {
     sv_check::test_support::executable(&docker, script);
     DockerBackend {
         binary: docker.to_string_lossy().into_owned(),
-        owner: crate::cleanup::owner(),
-        cpus: OnceLock::new(),
-        run: std::sync::Mutex::new(None),
-        clock_offset: OnceLock::new(),
-        sidecar_lost: std::sync::Mutex::new(None),
-        left_behind: std::sync::Mutex::new(Vec::new()),
-        request_times: std::sync::Mutex::new(Vec::new()),
+        ..DockerBackend::new()
     }
 }
 

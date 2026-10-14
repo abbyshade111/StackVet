@@ -61,12 +61,7 @@ fn zip_entries(zip: &[u8]) -> Vec<(String, Vec<u8>)> {
     out
 }
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-tool-messages-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 fn executable(path: &Path, text: &str) {
     sv_check::test_support::executable(path, text);

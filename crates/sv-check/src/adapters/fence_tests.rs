@@ -11,16 +11,10 @@ if [ -n "$SV_FENCE_NOISE" ]; then head -c "$SV_FENCE_NOISE" /dev/zero | tr '\0' 
 printf '{"version":"2.1.0","runs":[{"tool":{"driver":{"name":"Fence","rules":[{"id":"F1"}]}},"results":[]}]}' > "$1"
 "#;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-fence-unit-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use crate::test_support::scratch;
 
-fn secret_rules() -> SecretRules {
-    SecretRules::load(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/secret-rules.json"))
-        .unwrap()
+fn secret_rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 /// A Python tool given the folder (no `{files}`), with one mapped rule so a clean run has
@@ -64,7 +58,7 @@ fn run(dir: &Path, adapter: Adapter, app: &Path) -> AdapterRun {
         &["python".to_owned()],
         &BTreeSet::new(),
         dir,
-        &secret_rules(),
+        secret_rules(),
     )
 }
 

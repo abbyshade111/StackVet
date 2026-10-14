@@ -4,8 +4,8 @@
 use super::*;
 use sv_run::name_server::Lookup;
 
-fn rules() -> SecretRules {
-    SecretRules::load(&crate::secret_rules_path()).expect("sv's secret rules load")
+fn rules() -> &'static SecretRules {
+    SecretRules::shared().expect("the rules sv ships")
 }
 
 fn asked(name: &str, kind: u16, at: &str) -> Lookup {
@@ -23,7 +23,7 @@ fn a_key_in_a_looked_up_name_does_not_reach_the_record() {
     let key = ["sk", "ant", "api03", "Zp8Kd3Wq1Ls6Vn0Rt4Yb9Xm2Qc"].join("-");
     let name = format!("{key}.leak.example.test");
     // The setup: the scan really finds the key in a name, so the check below means something.
-    let (after, found) = redact_around_markers(&rules, &name);
+    let (after, found) = redact_around_markers(rules, &name);
     assert!(
         found >= 1 && !after.contains(&key),
         "the scan misses the key in a name"
@@ -36,7 +36,7 @@ fn a_key_in_a_looked_up_name_does_not_reach_the_record() {
         ..Default::default()
     };
     let mut seen = Seen::default();
-    stand_ins(&rules, &received, &mut seen);
+    stand_ins(rules, &received, &mut seen);
     let kept = serde_json::to_string(&seen).unwrap();
     assert!(!kept.contains(&key), "a key reached the record: {kept}");
     assert!(
@@ -59,7 +59,7 @@ fn a_name_asked_twice_for_one_kind_is_kept_once_with_a_count() {
         ..Default::default()
     };
     let mut seen = Seen::default();
-    stand_ins(&rules, &received, &mut seen);
+    stand_ins(rules, &received, &mut seen);
     let names = seen.stand_ins.names.expect("the name server ran");
     // The same name for two kinds of address is two entries; the repeat is counted, not repeated.
     assert_eq!(
@@ -96,7 +96,7 @@ fn the_names_say_whether_the_name_server_ran_and_asked_nothing() {
         ..Default::default()
     };
     let mut seen = Seen::default();
-    stand_ins(&rules, &ran, &mut seen);
+    stand_ins(rules, &ran, &mut seen);
     assert_eq!(seen.stand_ins.names, Some(Vec::new()));
     assert!(!seen.stand_ins.is_empty());
     let kept = serde_json::to_string(&seen.stand_ins).unwrap();
@@ -105,7 +105,7 @@ fn the_names_say_whether_the_name_server_ran_and_asked_nothing() {
     // Did not run: no `names` key at all, so a reader cannot take it for "asked nothing".
     let absent = sv_run::stand_ins::StandIns::default();
     let mut seen = Seen::default();
-    stand_ins(&rules, &absent, &mut seen);
+    stand_ins(rules, &absent, &mut seen);
     assert_eq!(seen.stand_ins.names, None);
     let kept = serde_json::to_string(&seen.stand_ins).unwrap();
     assert!(!kept.contains("names"), "{kept}");

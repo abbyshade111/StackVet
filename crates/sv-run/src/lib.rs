@@ -44,11 +44,13 @@ use sv_manifest::Manifest;
 
 pub mod cleanup;
 pub mod docker;
+mod exec_session;
 pub mod image_reference;
 pub mod install;
 pub mod name_server;
 pub mod resources;
 pub mod stand_ins;
+pub mod start_settings;
 
 /// Why the app could not be run. Every one of these produces `not assessed`.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -121,18 +123,18 @@ impl CannotRun {
                  `colima start` on a Mac), then run this again; `sv doctor` shows what it finds."
             ),
             CannotRun::NoRunCommand { missing } => format!(
-                "stackvet.toml does not say how to run this app ({} not set under [stack.run]), \
+                "stackvet.toml does not say how to run this app ({} not set under `[stack.run]`), \
                  so everything that needs it running is reported as not assessed.",
                 missing.join(", ")
             ),
             CannotRun::BadImage { image, why } => format!(
-                "stackvet.toml names an image under [stack.run] that is not a name Docker \
+                "stackvet.toml names an image under `[stack.run]` that is not a name Docker \
                  reads as one ({image:?}: {why}), so the app was not started and everything that \
                  needs it running is reported as not assessed. Name the image as Docker does, \
                  `python:3.12-slim` or `registry.example.com/team/app:1.0`."
             ),
             CannotRun::BadHealth { path, why } => format!(
-                "stackvet.toml names a health path under [stack.run] that is not a plain path \
+                "stackvet.toml names a health path under `[stack.run]` that is not a plain path \
                  ({path:?}: {why}), so the app was not started and everything that needs it \
                  running is reported as not assessed. Name a path such as `/health` or \
                  `/healthz?full=1`: `/`, then letters, digits, and `-._~/`, and after a `?` the \
@@ -1494,15 +1496,17 @@ mod tests {
         c
     }
 
+    /// How long the commands below that are to be stopped are given: long enough for the shell to have run its first
+    /// command, and far short of the `sleep 30` after it, so only the stopping ends them. On a busy Windows runner,
+    /// Git for Windows' `sh` had not always run its first command within the 400 or 500 milliseconds these were once
+    /// given, and the tests failed with nothing printed and no pid written (backlog 0392).
+    const TO_BE_STOPPED: Duration = Duration::from_secs(3);
+
     #[test]
     fn a_command_that_takes_too_long_is_stopped_and_says_so() {
         let started = Instant::now();
-        let done = run_bounded(
-            &mut sh("echo begun; sleep 30"),
-            Duration::from_millis(400),
-            false,
-        )
-        .expect("it starts");
+        let done =
+            run_bounded(&mut sh("echo begun; sleep 30"), TO_BE_STOPPED, false).expect("it starts");
         assert!(done.stopped, "{done:?}");
         assert!(
             started.elapsed() < Duration::from_secs(10),
@@ -1587,7 +1591,7 @@ mod tests {
             "sleep 30 >/dev/null 2>&1 & {which} > '{}'; wait",
             pid_file.display()
         );
-        let done = run_bounded(&mut sh(&script), Duration::from_millis(500), false).unwrap();
+        let done = run_bounded(&mut sh(&script), TO_BE_STOPPED, false).unwrap();
         assert!(done.stopped);
         let pid = std::fs::read_to_string(&pid_file)
             .unwrap()

@@ -365,7 +365,7 @@ impl AstRules {
 }
 
 /// The languages a grammar is compiled in for.
-fn grammar(language: &str) -> Option<Language> {
+pub(crate) fn grammar(language: &str) -> Option<Language> {
     Some(match language {
         "python" => tree_sitter_python::LANGUAGE.into(),
         "javascript" => tree_sitter_javascript::LANGUAGE.into(),
@@ -397,10 +397,7 @@ pub fn is_supported(language: &str) -> bool {
 
 impl AstRules {
     pub fn load(path: &std::path::Path) -> Result<Self> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        let file: RuleFile = serde_json::from_str(&text)
-            .with_context(|| sv_frameworks::data::not_understood(path))?;
+        let file: RuleFile = sv_frameworks::data::read_json(path)?;
 
         let mut compiled = Vec::new();
         for rule in file.rules {
@@ -996,6 +993,17 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                     continue;
                 }
             }
+            // A Python call to the app's own function of a redirect's name, such as a helper
+            // `def redirect(req, location)`, takes its destination where that function says, not
+            // first: `redirect(req, "/login")` is a fixed address (backlog 0388).
+            if compiled.rule.says_when_checked
+                && language == "python"
+                && let Some(name) = text_of(m, fn_index)
+                && let Some(arg) = arg_node
+                && let Some(chosen) = own_destination(arg, &name, source.as_bytes())
+            {
+                arg_node = Some(chosen);
+            }
             let arg_text = arg_node.and_then(|n| n.utf8_text(source.as_bytes()).ok());
             if let Some(pairs) = compiled.common_names.get(language)
                 && let Some(name) = text_of(m, fn_index)
@@ -1577,6 +1585,96 @@ fn enclosing_parameter(
 
 /// Whether anything in `body` gives `name` a value: an assignment, `+=`, `:=`, a `for` or `with`
 /// target, an `except ... as`, or a `del`. Nested functions and classes are their own scope.
+/// For a call whose first argument is `first`, to a function `name` the same Python file defines,
+/// the argument given for that function's destination parameter: the first one named as a
+/// destination is (`location`, `url`, `to`, ...), passed by name or by position. `None` leaves the
+/// first argument as it is: the file defines no such function, it names no such parameter, or the
+/// call does not pass it.
+fn own_destination<'a>(
+    first: tree_sitter::Node<'a>,
+    name: &str,
+    source: &[u8],
+) -> Option<tree_sitter::Node<'a>> {
+    const DESTINATIONS: &[&str] = &[
+        "location",
+        "url",
+        "to",
+        "target",
+        "dest",
+        "destination",
+        "next",
+        "next_url",
+        "redirect_to",
+        "uri",
+        "href",
+        "path",
+    ];
+    let list = first.parent().filter(|p| p.kind() == "argument_list")?;
+    let mut root = list;
+    while let Some(parent) = root.parent() {
+        root = parent;
+    }
+    let definition = find_definition(root, name, source)?;
+    let parameters = definition.child_by_field_name("parameters")?;
+    let mut cursor = parameters.walk();
+    let (position, parameter) = parameters
+        .named_children(&mut cursor)
+        .filter(|p| p.kind() != "comment")
+        .enumerate()
+        .find_map(|(i, p)| {
+            let id = if p.kind() == "identifier" {
+                p
+            } else {
+                p.child_by_field_name("name")
+                    .or_else(|| p.named_child(0))
+                    .filter(|n| n.kind() == "identifier")?
+            };
+            let text = id.utf8_text(source).ok()?;
+            DESTINATIONS.contains(&text).then(|| (i, text.to_owned()))
+        })?;
+    let mut cursor = list.walk();
+    let arguments: Vec<_> = list
+        .named_children(&mut cursor)
+        .filter(|c| c.kind() != "comment")
+        .collect();
+    if let Some(value) = arguments.iter().find_map(|a| {
+        (a.kind() == "keyword_argument"
+            && a.child_by_field_name("name")
+                .and_then(|n| n.utf8_text(source).ok())
+                == Some(parameter.as_str()))
+        .then(|| a.child_by_field_name("value"))
+        .flatten()
+    }) {
+        return Some(value);
+    }
+    arguments
+        .iter()
+        .filter(|a| a.kind() != "keyword_argument")
+        .nth(position)
+        .copied()
+}
+
+/// The function definition named `name` anywhere under `node`.
+fn find_definition<'a>(
+    node: tree_sitter::Node<'a>,
+    name: &str,
+    source: &[u8],
+) -> Option<tree_sitter::Node<'a>> {
+    if node.kind() == "function_definition"
+        && node
+            .child_by_field_name("name")
+            .and_then(|n| n.utf8_text(source).ok())
+            == Some(name)
+    {
+        return Some(node);
+    }
+    let mut cursor = node.walk();
+    let children: Vec<_> = node.named_children(&mut cursor).collect();
+    children
+        .into_iter()
+        .find_map(|c| find_definition(c, name, source))
+}
+
 fn binds_name(body: tree_sitter::Node, name: &str, source: &[u8]) -> bool {
     fn targets(node: tree_sitter::Node<'_>) -> Option<tree_sitter::Node<'_>> {
         match node.kind() {
@@ -2372,3 +2470,5 @@ mod call_list_in_part_tests;
 
 #[cfg(test)]
 mod one_walk_tests;
+#[cfg(test)]
+mod own_helper_tests;

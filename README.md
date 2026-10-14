@@ -9,22 +9,19 @@ StackVet checks an app against the OWASP standards and writes reports that say p
 what was not. You write the app in whatever AI coding tool you like, in any language; you have the back-and-forth
 with your own AI tool until the app is what you wanted, and then `sv` picks up the code and grades it.
 
+![Three lanes, you, your AI coding tool, and sv, across five steps: plan, build, check, questions, and report. You describe the app, and the tool writes stackvet.toml with you; sv works out which requirements apply. The tool writes the code a feature at a time and calls stackvet_check after each one; sv says first what it did not examine, and the tool fixes what it finds. The tool asks you the questions only you can answer, and you record your answers with sv review. Then you run sv report --run at a terminal; sv starts the app behind its fence and writes the report folder.](docs/website/diagrams/how-it-works.svg)
+
 **If you are not a programmer, start with [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md).** It walks through
 installing Docker, connecting StackVet to your AI tool, the prompt to start with, and reading the report, one step
 at a time. The rest of this page is written for programmers, and its commands build StackVet from its source code.
-
-**SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
-archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
-`v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this
-repository held v1 at its top and `sv` under `agnostic/`; no history was rewritten, so every commit hash cited
-elsewhere still resolves.
 
 ## What `sv` checks, and what it writes
 
 The compliance engine, the scanners, the container runner, the checks and the reports all run. What is not
 built is listed in `docs/backlog/` (one file per item; `docs/BACKLOG.md` is its guide and roadmap), and the reports say plainly which parts of an app nothing has examined. Which
 requirements of ASVS, AISVS, and the Secure by Design checklist any check can speak to at all, and what
-each check needs to run, is counted in `docs/COVERAGE.md`. `docs/REQUIREMENTS.md` lists every ASVS and AISVS requirement by level and
+each check needs to run, is counted in `docs/COVERAGE.md`, and drawn as one bar per ASVS chapter in
+[`docs/coverage-by-chapter.svg`](docs/coverage-by-chapter.svg) (by level: [`docs/coverage-by-level.svg`](docs/coverage-by-level.svg)). `docs/REQUIREMENTS.md` lists every ASVS and AISVS requirement by level and
 family, with the checks that speak to each.
 
 ### The commands
@@ -58,26 +55,13 @@ rule that has not been taught a language in your app claims nothing, and the rep
 
 ### Exit codes
 
-`sv check`, `sv report`, `sv audit`, and `sv run` end with a status a CI job can act on. 3 always means `sv` itself
-failed and there is no result: a folder that is not there, an option it does not know, a `stackvet.toml` that is
-there and cannot be read, or, for `sv report`, none at all (`sv check` and `sv audit` run without one, and read it
-when it is there; every other command uses 3 for a failure of its own too). `sv run` exits 2 when the app could not
-be started or never answered. `sv audit` exits 0 when every package was compared
-and none matched a known vulnerability, 1 when one did, and 2 when the comparison did not cover the whole app (no
-database, an ecosystem the database holds nothing about, or a list of packages `sv` could not complete).
-`sv check` and `sv report` exit 0 when they finished, and 2 when a check could not run: a file that could not be
-read, a file the parser could not make sense of, a language nothing here reads, a code rule that would not
-compile, no file of the app read at all, or (`sv report --run`) an app that could not be started. What a static
-run cannot see by its nature, such as requirements nothing verified or a check that needs a Dockerfile the app
-lacks, does not count, or every run would exit 2. Add `--fail-on attention` to exit 1 for any finding of low
-severity or worse, leaving out those marked only for information (or `attention:high` for high and critical
-only), `--fail-on not-assessed` to exit 2 also for a symbolic link not
-followed, an outside tool that did not run, or an `--advisories` comparison that did not cover the app, or
-`--fail-on any` for both; 1 outranks 2. To start using `sv` on an app that already has findings you know
-about, add `--baseline <an older report folder>`: `--fail-on attention` then exits 1 only for a finding that
-report did not have. Every finding is still listed and counted, and the ones already there are marked, so
-nothing is hidden; a baseline `sv` cannot read, or one for an app of another name, stops the run. Packages
-in folders `stackvet.toml` says are not the app, such as example apps and test fixtures, are listed apart
+`sv check`, `sv report`, `sv audit`, `sv run`, and `sv probe` end with a status a CI job can act on: 0 finished, 1
+something needs a person (`sv audit`'s known vulnerability, or a finding when you ask with `--fail-on`), 2 not
+assessed (part of what was asked could not be checked), and 3 `sv` itself failed. Findings alone never fail a run
+unless you ask; [the table in `docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-exit-codes) says exactly what each
+number means for each command, with `--fail-on` and `--baseline`.
+
+Packages in folders `stackvet.toml` says are not the app, such as example apps and test fixtures, are listed apart
 and still count: that file is written by your AI coding tool, and naming a folder there must never hide a
 vulnerability. `sv` holds itself to this every week, auditing the Rust files it is built from
 (`.github/workflows/audit.yml`).
@@ -153,7 +137,7 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 | `report.html` | The whole report, in one page | You: open it by double-clicking it |
 | `compliance.md`, `security.md` | The same, in Markdown | You, or your AI coding tool |
 | `low-findings.md` | Every low-severity finding in full, where the reports group them by rule | You, when you want the detail |
-| `findings.sarif` | The findings as SARIF | Editors and CI |
+| `stackvet.sarif` | The findings as SARIF (named `findings.sarif` before 14 October 2026) | Editors and CI |
 | `report.json` | The data as JSON | Programs, among them `sv review`, `sv compare`, and `sv dashboard` |
 | `seen.json` | What `sv` saw of the running app, with credentials cut out | You, to see what a finding rests on |
 | `sbom.cdx.json` | The app's bill of materials as CycloneDX JSON, as `sv sbom` prints it | Tools that read a bill of materials |
@@ -161,10 +145,11 @@ run, since CodeQL can take minutes on a large app. It writes eight files:
 The reports lead with what was **not** examined, say what each check covered when it found nothing wrong, and
 nothing in them says a requirement passed — `sv` is not able to establish that, so it does not claim it.
 
-Each requirement gets one of nine statuses, strongest evidence first: *needs attention* (a check found a problem),
-*checked*, *checked in part* (a check ran, but tried only part of what the requirement asks, ADR-053), *tested by
-the app's own tests*, *documented by the owner*, *checked by hand by the owner*, *attested by the owner*, *stated by
-the AI coding tool*, and *not verified*.
+Each requirement gets one of nine statuses, strongest evidence first, from *needs attention* and *checked* down to
+*stated by the AI coding tool* and *not verified*. Only a check of `sv`'s own can make one *checked*; the app's tests,
+your own word through `sv review`, and the tool's word each rank lower. [The ladder in
+`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first) draws all nine with who can
+grant each.
 
 They also list the tests worth writing: every requirement that applies and has no evidence yet, and no
 test in the app naming it, lowest level first. A passing test that names the requirement's id is the one way
@@ -176,8 +161,8 @@ each threat concerns (sign-in, stored data, the AI model, uploads, payments, and
 checks showed about each: found, checked in part, not verified, or not known to apply until a question
 in stackvet.toml is answered. (For a threat, *checked in part* means some of its requirements were checked; the
 app's own tests and the owner's word never move one.) It is made from rules, not by asking an AI, and it never calls a threat
-handled, because a threat is only as settled as the requirements that answer it. See
-`docs/THREAT-MODELING.md`.
+handled, because a threat is only as settled as the requirements that answer it. How it came to be made this way is a
+dated reading, `docs/research/THREAT-MODELING.md`, kept as history.
 
 ### Your AI coding tool's own files
 
@@ -260,75 +245,33 @@ A section marked as yours and recorded with `sv review` counts as *documented by
 file ever counts as checked. Its ids are written
 `SBD-AC-01` to keep them apart from AISVS Appendix C, which numbers its own requirements `AC.1.1`.
 The checklist has no levels; each control takes the level of the ASVS requirement that asks the same
-thing (`data/sbd-asvs-crosswalk.json`), or is shown at every level when nothing in ASVS does.
+thing (`data/sbd-asvs-crosswalk.json`), or is shown at every level when nothing in ASVS does. How `sv` decides which requirements
+apply, from `stackvet.toml` and the code, and the two answers that set the level, are drawn in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#how-sv-decides-what-applies).
 
 ## Setting a finding aside, confirming an answer, or giving your own: `sv review`
 
-When a finding is a false alarm, or a risk you choose to live with for now, it can be set aside under
-`[[finding-review]]` in `stackvet.toml`, with a reason. When your AI coding tool answered a question
-and you have looked for yourself, you can confirm its answer. Either counts only once **you** record it,
-by running this in your own terminal:
+A finding set aside as a false alarm or a risk you accept, an answer of your AI coding tool's that you have checked and
+confirm, and your own answers (`by = "owner"` in `stackvet.toml`, `Written by: owner` in `security-notes.md`) count as
+yours only once **you** record them, in your own terminal:
 
 ```bash
 sv review ./my-app
 ```
 
-The same goes for your own answers: a `[design]` answer or a `[checked-by-hand]` result written with
-`by = "owner"`, and a section of `security-notes.md` marked `Written by: owner`, count as yours only once
-recorded this way. Until then they count as your AI coding tool's word, a step lower, and the report says
-so.
+Until then they count as the tool's word, a step lower, and the report says so: the tool rewrites code until a warning
+stops, and writing `owner` into a file is the easiest way to stop one. `sv review` needs a terminal someone is typing
+in, which an AI coding tool does not have. It shows each entry, asks your name or `owner`, and *signs* it with a key of
+its own in `~/.config/stackvet/`, outside the app, protected by a passphrase if you choose one; reports made anywhere
+else count the entry only if they are given the key's public half, one line `sv review` shows you. It also asks you to
+confirm the two answers that set the app's level.
 
-It goes through every entry that is not yet yours, shows the finding's line of code (never a line that
-may hold a key), and asks for your name, or `owner`. What you record is written back into
-`stackvet.toml` with the date and a *seal*. Your AI coding tool may write entries too, as proposals
-(`by = "ai-tool"`), and the report lists them, but a proposal counts for nothing.
-
-Last, it shows the two answers that set the app's level, who uses the app (`[app] audience`) and what it
-holds about people (`[data] categories`), and asks you to confirm them. Your AI coding tool usually writes
-both. Once you have, the report says the level rests on answers you confirmed, and when; change either
-answer later and it says they are unconfirmed again until you run `sv review` once more. Confirming them
-never changes the level: it says whose word the level rests on.
-
-Why the extra step: the tool rewrites code until a warning stops, and writing `by = "owner"` into the
-file is the easiest way to stop one. `sv review` runs only in a terminal someone is typing in, which an
-AI coding tool does not have, and *signs* each entry with a key of its own, kept in your own settings
-folder (`~/.config/stackvet/review-signing-key`), outside the app. The first time, it makes the key and
-asks for a passphrase to protect it with: press Enter to choose one, or type `none` to go without. With one,
-nothing can sign as you without it, your AI coding tool included, since the passphrase is only in your head;
-you type it each time you run `sv review`. Without one, every entry the key signed says so in the report, on
-the computer that holds the key.
-
-A signature is checked with the key's *public half*, which can check a signature but never make one. `sv
-review` puts that public half, with the app it may sign for, on a list of trusted keys beside the key
-(`~/.config/stackvet/allowed_signers`), and shows you one line to give any other computer that should
-count what you record: CI, the container, or a second computer of yours. Give it as the variable
-`SV_TRUSTED_SEALS` (on GitHub: the repository's Settings, then Secrets and variables, then Actions, then
-Variables, and pass `SV_TRUSTED_SEALS: ${{ vars.SV_TRUSTED_SEALS }}` to the step that runs `sv`). The
-line is not a secret: anyone can read it, and nobody can sign with it.
-
-Wherever the report is made, it checks each signature against the list: an entry that was changed
-afterwards, never signed, or signed with a key the list does not name, is a proposal again, and the
-report names the key it trusted and where the list came from, so you can tell it is yours. A signature
-also names the app, so an entry copied into another app is a proposal there. On your own computer that
-means the app's folder: an app moved to another folder is a proposal until you run `sv review` in it. On
-a computer with no list at all the signature cannot be checked, so the entry does not count, and the
-report says how to make it count.
-
-What it cannot show: who was at the keyboard, unless your key has a passphrase; and that a trusted key is
-yours, since whoever can change the list, or the repository variable, can add one. A tool set on faking
-it, running as you, could do either; it stops the easy way, not every way. Keep the key file private.
-
-Entries recorded before 6 October 2026 were sealed another way, with `~/.config/securevibe/review-key`,
-and count only on the computer that holds that key. The next time you run `sv review` there, it offers to
-sign them all again at one yes, without asking each question again.
-
-With the container, give it a terminal and somewhere to keep the key, made first so that it is yours
-(`mkdir -p ~/.config/stackvet && chmod 700 ~/.config/stackvet`; on Linux, add `--user` as below):
+With only Docker, the same from the container (make `~/.config/stackvet` first; the full steps are linked below):
 `docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/stackvet":/sv-config/stackvet -e XDG_CONFIG_HOME=/sv-config ghcr.io/abbyshade111/stackvet-sv review .`
-The container that writes your reports needs only the list, and never the key beside it: pass
-`-e SV_TRUSTED_SEALS="$(cat ~/.config/stackvet/allowed_signers)"`, or mount the list alone, read-only,
-with `-v "$HOME/.config/stackvet/allowed_signers":/sv-config/stackvet/allowed_signers:ro -e XDG_CONFIG_HOME=/sv-config`.
-For the container your AI coding tool starts, the guide (`docs/GETTING-STARTED.md`, step 5) gives the whole `.mcp.json`.
+
+[`docs/REVIEW.md`](docs/REVIEW.md) is the whole of it, with a picture: what each kind of entry is, the key and its
+passphrase, the list of trusted keys and how a signature is checked, what a seal cannot show, and the setup for the
+container and for CI (`SV_TRUSTED_SEALS`, and where GitHub keeps it).
 
 ## Signing in
 
@@ -503,10 +446,6 @@ The loop the server is built for, and the two things it never does:
 | An answer is about 40,000 characters | A longer plan or check comes in parts, since Claude Code saves anything longer to a file instead of reading it. The first part starts with what to act on (for a plan, what to decide and what `sv run` needs; for a check, what was not examined and then the findings) and ends with every section and how to ask for it (`section`, and `page` for a long one). Nothing is left out, and `"section": "all"` still gives the whole answer at once. |
 | A request is 1 MiB | A longer request line gets an error in reply; a tool call is a few hundred bytes. |
 
-Until 9 October 2026 there were thirteen: `stackvet_questions` is now `stackvet_check`'s section `questions`, and
-`stackvet_notes_file` is `stackvet_record_answer` called with no question and no answer. An AI coding tool that
-still calls either old name gets the same answer, with a line naming the tool to call instead; neither is listed.
-
 It also offers [the design-time prompts](docs/prompts/design-time.md) as MCP prompts, for you to choose from
 your tool (where it shows them, for example as slash commands): what to decide with the tool before any code is
 written, each saying whether it has been shown to work. Its instructions ask the tool, for an app with no code yet, to
@@ -553,13 +492,7 @@ this repository, its workflow, and that commit. To check the one you pulled came
 gh attestation verify oci://ghcr.io/abbyshade111/stackvet-sv:latest --owner abbyshade111
 ```
 
-Images published before 9 October 2026 carry no signature (`docs/adr/ADR-080.md`). To build it yourself instead, from the
-repository root: `docker build -t ghcr.io/abbyshade111/stackvet-sv .`
-
-Until 9 October 2026 the product was called SecureVibe and the image was `ghcr.io/abbyshade111/securevibe-sv`.
-That name is left as it is and gets no further pushes; the files `sv` wrote under the old names (`securevibe.toml`,
-`securevibe-report`, `~/.config/securevibe`) are still read, and the report says once what to rename
-(`docs/adr/ADR-062.md`).
+To build it yourself instead, from the repository root: `docker build -t ghcr.io/abbyshade111/stackvet-sv .`
 
 Then the tool starts it in its `.mcp.json`. Use your own folder in all three places, and the full path
 to `docker`, since an app started from the Dock often cannot see `/opt/homebrew/bin`:
@@ -654,4 +587,29 @@ Where to start depends on who you are. Nobody reads the design record end to end
 | Not a programmer, building an app with an AI tool | [`docs/GETTING-STARTED.md`](docs/GETTING-STARTED.md), the guide, step by step; its section 6 says what the report covers and what it leaves *not assessed*. [`docs/GLOSSARY.md`](docs/GLOSSARY.md) explains the words StackVet uses. |
 | A programmer using `sv` | This page: [What `sv` checks, and what it writes](#what-sv-checks-and-what-it-writes) (the commands, the languages, the exit codes, and the report files), [From inside your AI coding tool](#from-inside-your-ai-coding-tool) (the MCP server), and [the GitHub Action](#on-each-pull-request-the-github-action). |
 | Contributing to StackVet | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), the ten-minute map, first; then [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/adr/README.md`](docs/adr/README.md) (why things are as they are), and [`docs/BACKLOG.md`](docs/BACKLOG.md) (what is left to do). |
-| Researching how it was built | [`docs/paper/`](docs/paper/), starting with [`HOW-SV-WORKS.md`](docs/paper/HOW-SV-WORKS.md) and [`METHODOLOGY.md`](docs/paper/METHODOLOGY.md); then the design record, one dated entry per file in [`docs/design/`](docs/design/) ([`docs/DESIGN.md`](docs/DESIGN.md) says how it is kept), which explains the two changes from v1, why deleting the wizard was the hard part, and what the first run against real data turned up. |
+| Researching how it was built | [`docs/paper/`](docs/paper/), starting with [`HOW-SV-WORKS.md`](docs/paper/HOW-SV-WORKS.md) and [`METHODOLOGY.md`](docs/paper/METHODOLOGY.md); then the design record, one dated entry per file in [`docs/design/`](docs/design/) ([`docs/DESIGN.md`](docs/DESIGN.md) says how it is kept), which explains the two changes from v1, why deleting the wizard was the hard part, and what the first run against real data turned up. v1 itself is archived: see [the last section](#if-you-used-stackvet-before-9-october-2026). |
+
+## If you used StackVet before 9 October 2026
+
+Each note here is for someone who set StackVet up before a change; a first-time reader can skip all of them.
+
+- **The name.** Until 9 October 2026 the product was called SecureVibe and the image was
+  `ghcr.io/abbyshade111/securevibe-sv`. That name is left as it is and gets no further pushes; the files `sv` wrote
+  under the old names (`securevibe.toml`, `securevibe-report`, `~/.config/securevibe`) are still read, and the report
+  says once what to rename (`docs/adr/ADR-062.md`).
+- **Unsigned images.** Images published before 9 October 2026 carry no signature (`docs/adr/ADR-080.md`).
+- **Two MCP tools folded into others.** Until 9 October 2026 there were thirteen tools: `stackvet_questions` is now
+  `stackvet_check`'s section `questions`, and `stackvet_notes_file` is `stackvet_record_answer` called with no question
+  and no answer. An AI coding tool that still calls either old name gets the same answer, with a line naming the tool
+  to call instead; neither is listed.
+- **Answers recorded with `sv review` before 6 October 2026** were sealed another way, with
+  `~/.config/securevibe/review-key`, and count only on the computer that holds that key. The next time you run
+  `sv review` there, it offers to sign them all again at one yes, without asking each question again.
+- **An installed copy from before 5 October 2026.** The guide had you use the program in the build folder then; if
+  your `PATH` or your AI tool's settings name `…/stackvet/target/release/sv`, change them to `~/.local/bin/sv`
+  ([`docs/INSTALL.md`](docs/INSTALL.md#if-you-set-stackvet-up-before-5-october-2026)).
+- **SecureVibe v1**, the earlier version that asked you to fill in a form and then wrote a Node app for you, is
+  archived, not deleted: it lives on the `v1` branch (see `ARCHIVED.md` there) and at the tags `v1-paper` and
+  `v1-final`. Its Zenodo version DOI, the one to cite, is 10.5281/zenodo.22984709. Until 26 September 2026 this
+  repository held v1 at its top and `sv` under `agnostic/`; no history was rewritten, so every commit hash cited
+  elsewhere still resolves.

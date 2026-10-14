@@ -30,137 +30,89 @@ conflicts here once it merges `main`; the steps to mend it are at the top of the
 
 ## Roadmap
 
-Written 8 October 2026 by session securevibe-review, at the owner's asking, after the day's review and architecture
-assessment; the reasons are in the end-of-day write-up, which is with the owner. This section is the order of work,
-not its record: a claim and a done note go on the item itself, as always, and this section is rewritten only when
-the order changes, by whoever changes it, with the date. **A session with no word from the owner takes the first
-unclaimed sub-item below, in this order, claims it, and lands it before taking the next.** `python3 tools/backlog.py
-list --open` prints every item with anything open, read from the items' own markers, so nobody reads 8,000 lines to
-find it; `python3 tools/backlog.py summary` prints the counts. Items are named by their titles here; find one by
-searching `docs/backlog/` for it, or `python3 tools/backlog.py show <number>` prints one. Check an item against `main` before claiming: some were overtaken by later work and want
-a done note rather than a build.
+The order of work, written 8 October 2026 by session securevibe-review at the owner's asking, and changed since only by
+the owner's word, each change dated below. This section is the order, not its record: **a claim and a done note go on
+the item itself, never here**. A session with no word from the owner takes the first row below that is not done,
+claims it, and lands it before taking the next; when the coordination board is open, the board decides instead
+(`docs/COORDINATION.md`). Check an item against `main` before claiming it: some were overtaken by later work and want a
+done note rather than a build.
 
-**Phase 0: the record of direct pushes.** Added 11 October 2026 at the owner's asking, ahead of everything else. Item 0258 (`python3 tools/backlog.py show 0258`): a check that finds pushes to `main` that skipped the pull-request rule, from the repository's own history. It is claimable on its own and does not wait for the phases below.
+The status column is read from each item's own status line by `python3 tools/backlog.py roadmap --write`, and by
+`claim` and `done` when they change an item named here; `python3 tools/backlog.py --check` fails while a row is stale,
+so this table cannot say an item is open when its file says done. The order, the phase, and the dates are written by
+hand. `python3 tools/backlog.py show <number>` prints an item; `list --open` prints every item with anything open.
 
-**Phase 1: close what is known to be broken.** Safety and honesty first; each numbered sub-item is claimable on
-its own. The two reviews of the code merged 1 to 6 October and the MCP hardening list, which the first version of
-this section put here as 41 findings with none claimed, are done by their own notes: each names several parts at
-once ("Items 1 to 3 done the same day"), which the board at the split read as open. A reviewer caught it on 8
-October, and their files say `done` now.
+<!-- roadmap:start -->
+| Order | Phase | Item | Status | Asked for |
+|---|---|---|---|---|
+| 0 | Phase 0: the record of direct pushes | 0258 Find pushes to main that skipped the pull-request rule | done, 11 October 2026 | 11 October 2026, ahead of everything else |
+| 1.1 | Phase 1: close what is known to be broken | 0188 From the review of 8 October 2026: the medium and low findings | done, 8 October 2026 | 8 October 2026 |
+| 1.2 | Phase 1 | 0050 Found by the documentation review (6 October 2026), in `sv` itself | done, 8 October 2026 | 8 October 2026 |
+| 1.3 | Phase 1 | 0065 A review of `sv` on 27 September 2026 | done, 28 September 2026 | 8 October 2026 |
+| 1.3 | Phase 1 | 0029 The running-app checks, reviewed on 3 October 2026 | done, 12 October 2026 | 8 October 2026 |
+| 1.3 | Phase 1 | 0021 Two blind spots found testing the prompt library | done, 10 October 2026 | 8 October 2026 |
+| 1.3 | Phase 1 | 0027 Three false alarms on code that does the safe thing | done, 10 October 2026 | 8 October 2026 |
+| 1.3 | Phase 1 | 0061 Two limits cato-pipeline hit | done, 8 October 2026 | 8 October 2026 |
+| 1.3 | Phase 1 | 0058 Improving the MCP server | done, 8 October 2026 | 8 October 2026 |
+| 2 | Phase 2: the shape | 0187 From the architecture assessment of 8 October 2026: the four costs | done, 9 October 2026 | 8 October 2026 |
+| 3 | Phase 3: the records | 0092 Records owed, from the first weekly review | done, 4 October 2026 | 8 October 2026 |
+| 3 | Phase 3 | 0093 Records owed, from the second weekly review | done, 6 October 2026 | 8 October 2026 |
+| 3 | Phase 3 | 0089 Records that disagree with what was built, or are missing | done, 30 September 2026 | 8 October 2026 |
+| 3 | Phase 3 | 0091 A weekly review of the decision records | done, 10 October 2026 | 8 October 2026 |
+| 4.1 | Phase 4: the product | 0038 The loop trials cannot compare security with the arms that have no `sv` | done, 8 October 2026 | 8 October 2026 |
+| 4.1 | Phase 4 | 0036 The loop: `sv` as the MCP server an AI tool uses while it builds | done, 6 October 2026 | 8 October 2026 |
+| 4.2 | Phase 4 | 0032 Test the prompt library where the prompts have something to fix | done, 9 October 2026 | 8 October 2026 |
+| 4.2 | Phase 4 | 0031 A prompt library | done, 9 October 2026 | 8 October 2026 |
+| 4.3 | Phase 4 | 0033 Design-time prompts from the Secure by Design checklist | done, 4 October 2026 | 8 October 2026 |
+| 4.3 | Phase 4 | 0034 Design-time help before any code | done, 11 October 2026 | 8 October 2026 |
+| 4.4 | Phase 4 | 0006 From the gap analysis of 7 October 2026 | done, 13 October 2026 | 8 October 2026 |
+| 4.5 | Phase 4 | 0005 A dashboard view for `sv` | done, 10 October 2026 | 8 October 2026 |
+| 4.5 | Phase 4 | 0002 A private page for the owner | done, 9 October 2026 | 8 October 2026 |
+| 4.6 | Phase 4 | 0191 From the end-of-day write-up of 8 October 2026: ideas for `sv` itself | done, 9 October 2026 | 8 October 2026 |
+| 4.7 | Phase 4 | 0012 Research OWASP's Agentic Skills Top 10 | done, 10 October 2026 | 8 October 2026 |
+| 5 | Phase 5: when nothing above is open | 0157 Corroborators for the remaining claims | done, as its markers read on 8 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0147 What a new tool, service, or process would reach | done, 12 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0174 More adapters | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0133 A checklist for what only a person can check | done, as its markers read on 8 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0115 Let the owner confirm what the AI coding tool said | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0102 False alarms, part 2 | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0103 False alarms, part 3 | done, as its markers read on 8 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0120 Packaging `sv` for somebody who is not technical | partly done (what remains is on the item) | 8 October 2026 |
+| 5 | Phase 5 | 0117 Promote `sv` to the top of the repository | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0143 What the remaining Level 1 and 2 requirements need | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0145 More questions for the running app | done, 6 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0063 Eight places where the paper's earlier files disagree with the record | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0062 Two more analyses for the paper | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0064 Two analyses for the paper, and a stale count | done, 9 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0083 Evaluate Opengrep against semgrep | done, 3 October 2026 | 8 October 2026 |
+| 5 | Phase 5 | 0184 Research: could the Kaspa blockchain | done, 9 October 2026 | 8 October 2026; closed at the owner's word on 9 October |
+| 6 | After the roadmap | 0222 Test a build with Cursor | done, 11 October 2026 | the owner, 9 October 2026 |
+| 6 | After the roadmap | 0223 Test the weekly decision-record review from end to end | done, 12 October 2026 | the owner, 9 October 2026 |
+| 6 | After the roadmap | 0224 Mock-ups of the website | done, 12 October 2026 | the owner, 9 October 2026 |
+| 7 | The owner's order of 9 October, which comes first | 0006 The record of the build loop (finding 22(d), ADR-076) | done, 13 October 2026 | the owner, 9 October 2026 |
+| 7 | The owner's order of 9 October | 0226 A deep review of sv for observability, and its findings | done, 11 October 2026 | the owner, 9 October 2026 |
+| 7 | The owner's order of 9 October | 0227 An observability dashboard | done, 11 October 2026 | the owner, 9 October 2026 |
+| 8 | Added 12 October, and moved up the same day | 0273 Try a coordinating session for the parallel builds | done, 13 October 2026 | the owner, 12 October 2026 |
+| 8 | Added 12 October | 0257 The build-loop trial the coordinating session follows | partly done (what remains is on the item) | the owner, 12 October 2026 |
+| 9 | Process, any time | 0192 Process: shorter CI, a merge queue decision, and a nightly routine | done, 12 October 2026 | 8 October 2026 |
+| 9 | Process, any time | 0193 One file per backlog item, with a status line | done, 8 October 2026 | the owner's decision, 8 October 2026 |
+<!-- roadmap:end -->
 
-1. "From the review of 8 October 2026: the medium and low findings, for any session to pick up", in the order 4
-   (the planted report marker), 2 (the npm download addresses and the linked dependency file), 1 (Ctrl-C under
-   `--tools`), 3 (gosec, CodeQL, and the links the tools follow), 5 (the honesty gaps), 6 (the low ones), 7 (the
-   spellings and the home path). The first three are the last known ways `sv` writes or fetches where it was not asked.
-2. "Found by the documentation review (6 October 2026), in `sv` itself": items 1 and 3 to 7.
-3. The smaller open parts of the older reviews: "A review of `sv` on 27 September 2026" (the one open part),
-   "The running-app checks, reviewed on 3 October 2026" (its open part and the ten partly done), "Two blind spots
-   found testing the prompt library", "Three false alarms on code that does the safe thing" (item 3), "Two limits
-   cato-pipeline hit" (its open part), and "Improving the MCP server" (its open part).
+Rows that name the same order number are one sub-item of the old roadmap, taken in the order listed. The phases' own
+words, with which part of each item they meant, are in the history of this file before 14 October 2026.
 
-**Phase 2: the shape, from the architecture assessment.** "From the architecture assessment of 8 October 2026: the
-four costs worth paying down": item 8 in its fuller form (the guard per check, so a silent check is impossible rather
-than tested for), then 9 (the stand-in protocol defined once), 10 (the MCP server's record and the check injected
-into `Server`; the tool fold only if the owner says), 12 (the small typing fixes, then the library move), and the
-second half of 11 (`ast.rs` and `sbom.rs` along their seams). The library move last, as two or three short pull
-requests, since it is the one that most changes how `main.rs` reads.
+**Changes to the order**, each in the owner's words as the roadmap carried them:
 
-**Phase 3: the records.** "Records owed, from the first weekly review of the decision records (30 September 2026)",
-"Records owed, from the second weekly review (5 October 2026)", "Records that disagree with what was built, or are
-missing", and the open parts of "A weekly review of the decision records". Each owed record is debt every later pull
-request pays again in "unchanged, because" lines; the weekly review wants a fixed day.
+- 8 October 2026: phases 1 to 5, written after the day's review and architecture assessment.
+- 9 October 2026: after the roadmap, in this order: the Cursor test (0222), the weekly review's end-to-end test
+  (0223), and the website mock-ups (0224), none taken while a phase above has an open item. And "the owner's order of
+  9 October 2026, which comes first": the record of the build loop (0006, finding 22(d), ADR-076), then the
+  observability review (0226) and its findings A, C, and D (ADR-082, ADR-083, ADR-084), then its dashboard (0227), then
+  the website mock-ups (0224); the Cursor test waits for the owner.
+- 11 October 2026: phase 0, the record of direct pushes (0258), ahead of everything else.
+- 12 October 2026: a coordinating session for the parallel builds (0273), set up once the other sessions are on the
+  build-loop trial (0257) and the website work (0224), and moved up the same day; the deep review's findings that
+  follow it wait on the coordination board until the loop trials are done.
 
-**Phase 4: the product.** In this order, because the first is the paper's central claim and the rest build on it:
-
-1. "The loop trials cannot compare security with the arms that have no `sv`", then "The loop: `sv` as the MCP server
-   an AI tool uses while it builds" (items 3, 4, and 6).
-2. "Test the prompt library where the prompts have something to fix" and the open parts of "A prompt library".
-3. "Design-time prompts from the Secure by Design checklist" (15 prompts, none claimed) and the open parts of
-   "Design-time help before any code".
-4. The open findings of "From the gap analysis of 7 October 2026" (items 1, 9, 10, 11, 13, 16, 17, 21, 22; item 33
-   is this section and the "Backlog management" item).
-5. "A dashboard view for `sv`" (items 1 to 4) and "A private page for the owner" (items 2 to 4).
-6. "From the end-of-day write-up of 8 October 2026: ideas for `sv` itself" (at the end of this section's items).
-7. The open parts of "Research OWASP's Agentic Skills Top 10".
-
-**Phase 5: when nothing above is open.** "Corroborators for the remaining claims", "What a new tool, service, or
-process would reach" (item 7), "More adapters", "A checklist for what only a person can check", "Let the owner
-confirm what the AI coding tool said", "False alarms, part 2" and "part 3", the leftovers of "Packaging `sv`" and
-"Promote `sv` to the top of the repository", "What the remaining Level 1 and 2 requirements need", "More questions
-for the running app", the paper's three items ("Eight places where the paper's earlier files disagree with the
-record", "Two more analyses for the paper", "Two analyses for the paper, and a stale count"), and "Evaluate Opengrep
-against semgrep", whose title says it was done on 29 September while its parts read as open: read it and either
-write its done notes or close it. "Research: could the Kaspa blockchain" was the owner's own question, answered by a
-session on 8 October 2026 and closed at the owner's word the next day.
-
-**After the roadmap, in this order, asked for by the owner on 9 October 2026:** "Test a build with Cursor, once the
-backlog is worked off" (0222), "Test the weekly decision-record review from end to end" (0223), and "Mock-ups of the
-website: what stackvet.dev could look like and say" (0224). None of the three is taken while a phase above has an
-open item.
-**The owner's order of 9 October 2026, which comes first:** the record of the build loop (0006, finding 22(d),
-ADR-076), then "A deep review of sv for observability" (0226), done the same day, and then its findings: part 1,
-part 2, and the three the owner said yes to (A, C, and D: ADR-082, ADR-083, ADR-084), in that order; then "An
-observability dashboard, once the observability review's findings are built" (0227), which the owner asked for that
-evening to follow them; then the website mock-ups (0224), which the owner asked to wait until the decisions made that
-day are built. The Cursor test (0222) waits for the owner, who is
-looking into what Cursor needs on their side.
-**Added 12 October 2026, at the owner's word, and moved up the same day:** "Try a coordinating session for the
-parallel builds" (0273) is set up once the other sessions are *on* the build-loop trial (0257) and the website work
-(0224), not after them, on the owner's "go"; claimed by session stackvet-orchestrator. The findings of the deep review
-that follows it wait on the coordination board until the loop trials are done.
-
-**Process, any time, each cheap:** "Process: shorter CI, a merge queue decision, and a nightly routine on `main`".
-The owner's decision on "One file per backlog item, with a status line" is done: made and built on 8 October 2026
-(ADR-061), so each item's status is a line in its own file, as the top of this file says.
-
-
-### Status checked against the code, 11 October 2026
-
-Every item that was open, partly done, or claimed on 11 October was read against the code on `main` by a read-only
-review, one batch at a time. Those reviews were a check of the notes, not a test run: where the code could not settle a
-part, it is said to be unclear. Where a status line in an item file is stale, the review says so and the item needs its
-line fixed, which is separate work. Phase 2 and phase 3 were not part of this pass.
-
-**Phase 1, item 1 (the medium and low findings of 8 October): closed.** Every part has its done note, checked on 9 October.
-
-**Phase 1, item 2 (the documentation review of 6 October): closed.** Items 1 and 3 to 7 are done; items 2, 4 and 8 were
-closed earlier by their own notes.
-
-**Phase 1, item 3 (the smaller open parts of older reviews):** the review of 27 September (0065) is done, and so are the
-prompt-library blind spots (0021), the cato limits (0061), and the MCP server (0058). The deep review's parts 2 and 3
-(0023 and 0024) are done in the code except two points: a test is needed to show that range events are read in version
-order (0023, H18), and the per-run marker and the stdin seeding for one improvement (0024, improvement 5) are not
-confirmed. The running-app checks (0029) are partly done: the tar archive read is now built (0241), and what remains is
-7z and rar (0242), the container's CPU, memory, disk, and network readings (0243), and a real email change in the example
-app (0244).
-
-**Phase 4 (the product), in its order:**
-- *The loop trials and the MCP server* (item 1): not part of this pass.
-- *The prompt library* (item 2): the blind spots are closed (0021). The open parts of the library were not checked here.
-- *Design-time help and prompts* (item 3): 0034 is partly done. Parts 1 to 4, 7 to 9 are in the code. Part 5 is open: the
-  design prompts never ask for a planned feature. Part 6 is closed by the owner's decision not to build it (ADR-028).
-- *The gap analysis of 7 October* (item 4): 0006 is partly done. Open: the audit of how much each credit rests on one
-  sample (part 4), the outside-tool run for loop dodging (part 21). Unclear, and needs a look before the next pass: part 13(a),
-  which one review says is built (`burst.rs`) and another says is open; parts 18 and 22(d) and (e). The partial checks (0085)
-  are done except the error-handler signals (V16.5.4), and its status line still says two parts are open when the code shows
-  them done. The gap analysis's open parts 1 to 33 otherwise were not checked here.
-- *The dashboard* (item 5): 0227 is claimed by another session and partly built (ADR-086). Still open: the durations and tool
-  versions for each run, the per-requirement drill-down, the running-app section, the build loop's calls and outcomes, and
-  the data files that did not load.
-- *Missing reviews of the new tools* (0147): open. The owner's CI results (reading an owner's own SARIF file) were agreed on
-  9 October and are not claimed. V4.2.1 (request smuggling) is not built and not decided. The mock OIDC lacks V6.8.1,
-  V10.5.3 and V6.8.4. The flow entry has not been run in a container.
-- *Semgrep's pack* (0169): steps 1 to 3 are done. The template fixes on the `v1` branch and the coverage figure are
-  unclear and need confirming.
-- *The walk-through and the packaging* (0119, 0120): 0120's Homebrew route is done in this repository, but its formula
-  lives in another repository, which was not checked. Open in 0119: a native download, the `--root` folder step in the
-  guide, a plainer Docker line, and Cursor, which is still untried. The Windows install route waits for signed releases
-  (0191 part 4).
-- *Shorter CI and the merge queue* (0192): part 1, a shorter CI run, is open. Part 2, the merge queue, is the owner's
-  hold of 9 October. Part 3, the nightly routine, is done.
-- *Helping a person who is not technical* (0217): parts 1, 3, 5 and 7 are built and untried. Part 2 was replaced by the
-  print-only `sv connect`. Part 4 is open until a trial measures it. Part 6 is 0120's. Part 8 is the owner's to arrange.
-- *The logo* (0219): parts 1 and 4 are done; part 5 is approved and not built; parts 2 and 3 are the owner's.
-- *Not started:* 0222 (a Cursor trial), 0224 (website mock-ups, which live outside the repository, so they cannot be
-  checked from here), 0232 (more samples, groups A to H, none built yet), 0242 to 0244 (above). The claim on 0223 is not
-  visible in the repository, and its routine runs first on 12 October, so it is unclear until then.
+The status of each item as a read-only review found it on 11 October 2026 is a design entry of its own,
+"The roadmap's status checked against the code (11 October 2026)", under `docs/design/`.

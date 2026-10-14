@@ -6,9 +6,10 @@
 //!    from this computer. That last part is the reason there is no published port anywhere below.
 //! 2. Start the app on it, with its folder mounted read-only and no credentials in its environment.
 //! 3. Wait for it to answer its health path — from a **sidecar container on the same network**,
-//!    because the host cannot reach it. The sidecar is started once and every request after is an
-//!    `exec` into it: a container started per request cost about half a second each, and a
-//!    signed-in run makes twenty-odd requests.
+//!    because the host cannot reach it. The sidecar is started once, and the requests after go
+//!    through it: a container started per request cost about half a second each. Single requests
+//!    go through one `exec` kept open for the run (`exec_session`, backlog 0341), since a signed-in
+//!    run sends a few hundred and an `exec` each was estimated at 100 to 300 milliseconds.
 //! 4. Ask the probes, anonymous and signed in, through the same sidecar; then remove it.
 //! 5. Run the declared test command inside the app container.
 //! 6. Tear everything down, whatever happened.
@@ -17,6 +18,7 @@ use crate::{Backend, CannotRun, Fence, RunFailed, RunOutcome, RunPlan, TestResul
 use std::process::Command;
 use std::sync::OnceLock;
 use std::time::Duration;
+use sv_check::text::first_line;
 
 /// How long to wait for the app to answer before calling it not assessed.
 const READY_TIMEOUT_SECONDS: u64 = 60;
@@ -183,6 +185,10 @@ mod images_file_tests;
 #[cfg(test)]
 #[path = "docker_images_tests.rs"]
 mod images_tests;
+
+#[cfg(test)]
+#[path = "docker_ipv6_advice_tests.rs"]
+mod ipv6_advice_tests;
 /// What drives it: a script of `sv`'s own, run in the same stock Node image as the test provider.
 const DRIVER_SCRIPT: &str = include_str!("../assets/browser-driver.mjs");
 /// Where the app sends its mail on the mail server, and where the probes read it.
@@ -204,6 +210,8 @@ const MOST_CPUS: u64 = 2;
 mod container_record_tests;
 #[cfg(all(test, unix))]
 mod resource_reading_tests;
+#[cfg(all(test, unix))]
+mod stand_in_ready_tests;
 
 /// How the wait for the app to answer ended: whether it answered, after how many seconds, and how
 /// it ended when it stopped of its own accord first.
@@ -260,6 +268,15 @@ pub struct DockerBackend {
     /// How long each request to the app took, in milliseconds, in the order sent: one entry for a
     /// request sent alone, one for several sent in one call (backlog 226, part 2, item 13).
     request_times: std::sync::Mutex<Vec<(String, u64)>>,
+    /// The one `docker exec` into the sidecar that single requests go through, with the sidecar's name, while it
+    /// works (backlog 0341).
+    session: std::sync::Mutex<Option<(String, crate::exec_session::Session)>>,
+    /// The sidecar a session would not start in or broke down in: its requests go one exec each, as before.
+    no_session: std::sync::Mutex<Option<String>>,
+    /// How many sessions were started, and how many requests were answered through one, for the tests that hold
+    /// the count of execs down.
+    sessions_started: std::sync::atomic::AtomicUsize,
+    answered_in_session: std::sync::atomic::AtomicUsize,
 }
 
 /// The label naming the one run a container or network belongs to. The owner label says which
@@ -284,6 +301,10 @@ impl DockerBackend {
             sidecar_lost: std::sync::Mutex::new(None),
             left_behind: std::sync::Mutex::new(Vec::new()),
             request_times: std::sync::Mutex::new(Vec::new()),
+            session: std::sync::Mutex::new(None),
+            no_session: std::sync::Mutex::new(None),
+            sessions_started: std::sync::atomic::AtomicUsize::new(0),
+            answered_in_session: std::sync::atomic::AtomicUsize::new(0),
         }
     }
 
@@ -872,6 +893,8 @@ impl DockerBackend {
             provider,
             browser,
             model,
+            model_up: std::sync::OnceLock::new(),
+            provider_up: std::sync::OnceLock::new(),
         };
         let sv_check::script::Outcome {
             probe_responses,
@@ -923,6 +946,7 @@ impl DockerBackend {
         // Nothing after this point sends a request, so the sidecar goes now rather than waiting on
         // the tests, which can take as long as they like. The mail server with it: nothing reads it
         // after the probes.
+        self.end_session();
         let mut helpers = vec![&sidecar];
         helpers.extend(mail.is_some().then_some(&mail_name));
         helpers.extend(provider.is_some().then_some(&provider_name));
@@ -1062,6 +1086,30 @@ struct DockerRun<'a> {
     provider: Option<&'a str>,
     browser: Option<&'a str>,
     model: Option<&'a str>,
+    /// Whether the test model answered, asked once for the run (backlog 0369): asked on each of the script's calls, a
+    /// model that never came up cost ten seconds of waiting every time. The AI suite asks the model itself before it
+    /// relies on it, so one that stops answering later is still said.
+    model_up: std::sync::OnceLock<bool>,
+    /// The same, for the test sign-in provider.
+    provider_up: std::sync::OnceLock<bool>,
+}
+
+impl DockerRun<'_> {
+    fn model_answering(&self) -> Option<&str> {
+        self.model.filter(|host| {
+            *self
+                .model_up
+                .get_or_init(|| self.backend.model_ready(self.via, host))
+        })
+    }
+
+    fn provider_answering(&self) -> Option<&str> {
+        self.provider.filter(|host| {
+            *self
+                .provider_up
+                .get_or_init(|| self.backend.provider_ready(self.via, host))
+        })
+    }
 }
 
 impl sv_check::script::Services for DockerRun<'_> {
@@ -1080,16 +1128,15 @@ impl sv_check::script::Services for DockerRun<'_> {
             },
             port: self.plan.port,
             mail: self.mail.filter(|_| with.mail),
-            provider: self
-                .provider
-                .filter(|_| with.provider)
-                .filter(|host| self.backend.provider_ready(self.via, host)),
+            provider: if with.provider {
+                self.provider_answering()
+            } else {
+                None
+            },
             browser: self.browser.filter(|_| with.browser),
             model: match with.model {
                 Model::None => None,
-                Model::IfAnswering => self
-                    .model
-                    .filter(|host| self.backend.model_ready(self.via, host)),
+                Model::IfAnswering => self.model_answering(),
                 Model::AsStarted => self.model,
             },
             on_step: self.plan.on_step,
@@ -1097,8 +1144,7 @@ impl sv_check::script::Services for DockerRun<'_> {
     }
 
     fn model_canary(&self) -> Option<String> {
-        self.model
-            .filter(|host| self.backend.model_ready(self.via, host))
+        self.model_answering()
             .map(|host| format!("http://{host}:{MODEL_PORT}"))
     }
 
@@ -1260,7 +1306,15 @@ impl sv_check::signed_in::Http for DockerHttp<'_> {
             "app": format!("http://localhost:{}", self.port),
             "actions": job.actions.iter().map(|a| a.to_json()).collect::<Vec<_>>(),
         });
-        let env = format!("SV_JOB={}", base64(job.to_string().as_bytes()));
+        // Handed over in base64, so that nothing in the job can end the shell command it travels in.
+        let env = format!(
+            "SV_JOB={}",
+            sv_check::encoding::base64(
+                job.to_string().as_bytes(),
+                sv_check::encoding::Alphabet::Standard,
+                true,
+            )
+        );
         let network = format!("container:{container}");
         let (code, out) = self.backend.docker(&driver_args(&network, &env)).ok()?;
         if code != 0 {
@@ -1319,7 +1373,7 @@ fn never_ready_detail(logs: &str, build: Option<&str>) -> (String, bool) {
         Some(step) => format!(
             "{last} Its build step (`{step}`) ran inside the fence, where nothing can be \
              downloaded and the file system is read-only apart from /tmp, so a step that installs \
-             packages cannot work there: set `install = true` under [stack.run] to have `sv` \
+             packages cannot work there: set `install = true` under `[stack.run]` to have `sv` \
              install them before the run, or install them into the image."
         ),
         None => last,
@@ -1501,20 +1555,20 @@ fn app_args<'a>(
     ]
 }
 
-/// How the test provider is started: fenced and hardened like the mail server, with its script
-/// passed on the command line so nothing is written to the owner's disk.
-fn provider_args<'a>(network: &'a str, name: &'a str, env: [&'a str; 4]) -> Vec<&'a str> {
+/// How a helper that runs a script of `sv`'s own is started, the test provider (`PROVIDER_SCRIPT`) and the test
+/// model (`MODEL_SCRIPT`) alike: fenced and hardened like the mail server, with its settings in `env` and its script
+/// passed on the command line so nothing is written to the owner's disk (one function since backlog 0461).
+fn helper_args<'a>(
+    network: &'a str,
+    name: &'a str,
+    env: &[&'a str],
+    script: &'a str,
+) -> Vec<&'a str> {
     let mut args = vec!["run", "-d", "--rm", "--name", name, "--network", network];
     for pair in env {
         args.extend(["-e", pair]);
     }
-    args.extend([
-        PROVIDER_IMAGE,
-        "node",
-        "--input-type=module",
-        "-e",
-        PROVIDER_SCRIPT,
-    ]);
+    args.extend([PROVIDER_IMAGE, "node", "--input-type=module", "-e", script]);
     args
 }
 
@@ -1533,22 +1587,6 @@ fn switched_off_args(
     let at = args.iter().rposition(|a| a == image)?;
     args.splice(at..at, ["-e".to_owned(), setting.to_owned()]);
     Some(args)
-}
-
-/// How the test model is started: fenced and hardened like the test provider.
-fn model_args<'a>(network: &'a str, name: &'a str, env: [&'a str; 2]) -> Vec<&'a str> {
-    let mut args = vec!["run", "-d", "--rm", "--name", name, "--network", network];
-    for pair in env {
-        args.extend(["-e", pair]);
-    }
-    args.extend([
-        PROVIDER_IMAGE,
-        "node",
-        "--input-type=module",
-        "-e",
-        MODEL_SCRIPT,
-    ]);
-    args
 }
 
 /// What the app is told about the test model: the addresses the OpenAI, Anthropic, and Google Gemini
@@ -1951,7 +1989,13 @@ impl DockerBackend {
             Ok((_, out)) => out,
             Err(e) => return fail(format!("could not check the fence's gateway: {e}")),
         };
-        match gateway_verdict(&out, plain.as_deref(), targets.len()) {
+        // Asked only when the network shows link-local IPv6 alone, which an older Docker gives every
+        // container (backlog 0450).
+        let version = || match self.docker(&["version", "--format", "{{.Server.Version}}"]) {
+            Ok((0, out)) => Some(out.trim().to_owned()),
+            _ => None,
+        };
+        match gateway_verdict(&out, plain.as_deref(), targets.len(), &version) {
             GatewayVerdict::Closed => Ok(()),
             GatewayVerdict::Reachable => fail(format!(
                 "a container on the fenced network reached its gateway, {gateway}, which is this \
@@ -2066,7 +2110,7 @@ impl DockerBackend {
         let host = format!("HOST={name}");
         let port = format!("PORT={MODEL_PORT}");
         matches!(
-            self.docker(&model_args(network, name, [&host, &port])),
+            self.docker(&helper_args(network, name, &[&host, &port], MODEL_SCRIPT)),
             Ok((0, _))
         )
     }
@@ -2401,10 +2445,15 @@ fn provider_start(
     let issuer = format!("ISSUER=http://{name}:{PROVIDER_PORT}");
     let port = format!("PORT={PROVIDER_PORT}");
     let client = format!("CLIENT_ID={PROVIDER_CLIENT_ID}");
-    let args = provider_args(network, name, [&issuer, &port, &client, "CLIENT_SECRET"])
-        .into_iter()
-        .map(str::to_owned)
-        .collect();
+    let args = helper_args(
+        network,
+        name,
+        &[&issuer, &port, &client, "CLIENT_SECRET"],
+        PROVIDER_SCRIPT,
+    )
+    .into_iter()
+    .map(str::to_owned)
+    .collect();
     (args, vec![("CLIENT_SECRET", secret.to_owned())])
 }
 
@@ -2484,29 +2533,15 @@ fn seed_failed(code: i32, out: &str, accounts: &sv_check::signed_in::Accounts) -
     for secret in secrets.iter().filter(|s| !s.is_empty()) {
         line = line.replace(secret.as_str(), BLANK);
     }
-    line =
-        match sv_check::secrets::SecretRules::load(&sv_frameworks::data::file("secret-rules.json"))
-        {
-            Ok(rules) => sv_check::secrets::redact_text(&rules, &line).0,
-            Err(_) => {
-                "what it printed is left out, because sv's own rules for finding credentials in \
-                   it could not be read"
-                    .to_owned()
-            }
-        };
+    line = match sv_check::secrets::SecretRules::shared() {
+        Ok(rules) => sv_check::secrets::redact_text(rules, &line).0,
+        Err(_) => format!("what it printed is {}", sv_check::secrets::RULES_UNREAD),
+    };
     let line = line.replace(BLANK, "[a test secret, left out]");
     format!(
         "The seed command in stackvet.toml failed (exit {code}): {line}. With no accounts there \
          is nobody to sign in as."
     )
-}
-
-fn first_line(text: &str) -> String {
-    text.lines()
-        .map(str::trim)
-        .find(|l| !l.is_empty())
-        .unwrap_or("no detail")
-        .to_owned()
 }
 
 /// The lines of `docker logs --timestamps`, each `2026-10-06T05:12:04.123456789Z text`, in the
@@ -2551,6 +2586,10 @@ fn is_docker_time(word: &str) -> bool {
 }
 
 #[cfg(test)]
+#[path = "docker_session_tests.rs"]
+mod session_tests;
+
+#[cfg(test)]
 #[path = "seed_failure_tests.rs"]
 mod seed_failure_tests;
 
@@ -2590,13 +2629,7 @@ mod tests {
         // as failing rather than as unrun.
         let backend = DockerBackend {
             binary: "definitely-not-a-real-binary-xyz".to_owned(),
-            owner: crate::cleanup::owner(),
-            cpus: OnceLock::new(),
-            run: std::sync::Mutex::new(None),
-            clock_offset: OnceLock::new(),
-            sidecar_lost: std::sync::Mutex::new(None),
-            left_behind: std::sync::Mutex::new(Vec::new()),
-            request_times: std::sync::Mutex::new(Vec::new()),
+            ..DockerBackend::new()
         };
         let err = backend.available().unwrap_err();
         match err {
@@ -2704,13 +2737,6 @@ mod tests {
         assert!(said.contains("SV_ADMIN_TOTP_SECRET=[a test secret, left out]"));
         assert!(said.contains("failed (exit 1)"));
     }
-
-    #[test]
-    fn first_line_survives_empty_and_blank_output() {
-        assert_eq!(first_line(""), "no detail");
-        assert_eq!(first_line("\n\n  \n"), "no detail");
-        assert_eq!(first_line("\n  real message  \nsecond"), "real message");
-    }
 }
 
 /// A number that is different for every run in this process.
@@ -2727,33 +2753,6 @@ fn next_run_number() -> u64 {
 
 // ---------------------------------------------------------------------------------------------
 // Probing the running app
-
-/// Base64, written out rather than taken as a dependency.
-///
-/// The request is handed to the sidecar encoded so that nothing in a header value can end the shell
-/// command it travels in. A probe that sends `Origin: https://x.invalid` is harmless; one that can be
-/// made to send a quote and a semicolon is a command injection in the security scanner, which would be
-/// a poor advertisement.
-fn base64(input: &[u8]) -> String {
-    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::new();
-    for chunk in input.chunks(3) {
-        let b = [
-            chunk[0],
-            *chunk.get(1).unwrap_or(&0),
-            *chunk.get(2).unwrap_or(&0),
-        ];
-        let n = ((b[0] as u32) << 16) | ((b[1] as u32) << 8) | b[2] as u32;
-        for i in 0..4 {
-            if i <= chunk.len() {
-                out.push(ALPHABET[((n >> (18 - i * 6)) & 0x3f) as usize] as char);
-            } else {
-                out.push('=');
-            }
-        }
-    }
-    out
-}
 
 /// Writes out the request to send, or refuses to send one at all.
 ///
@@ -3016,7 +3015,12 @@ fn gateway_targets(config: &str) -> Vec<String> {
 /// gateway address. On a `plain` one, whose bridge keeps its address on the host, the same silence
 /// may be a firewall dropping one port and not others, so it is not taken for a fence (backlog
 /// 0301). Anything else is not taken for either.
-fn gateway_verdict(out: &str, plain: Option<&str>, targets: usize) -> GatewayVerdict {
+fn gateway_verdict(
+    out: &str,
+    plain: Option<&str>,
+    targets: usize,
+    docker_version: &dyn Fn() -> Option<String>,
+) -> GatewayVerdict {
     // Each knock's output, and its exit status, in order.
     let mut sections: Vec<(String, String, Option<i32>)> = Vec::new();
     let mut text = String::new();
@@ -3093,12 +3097,29 @@ fn gateway_verdict(out: &str, plain: Option<&str>, targets: usize) -> GatewayVer
         .map(str::trim)
         .collect();
     if !inet6.is_empty() {
-        return GatewayVerdict::Unknown(format!(
-            "the fenced network has IPv6 ({}), though sv asked Docker for none: the daemon gives new \
-             networks IPv6 by default. Turn that off (remove `com.docker.network.enable_ipv6` from \
-             `default-network-opts` in Docker's daemon.json, and restart Docker), then run again",
-            inet6.join(", ")
-        ));
+        let addresses = inet6.join(", ");
+        // Link-local alone, on a Docker before 26.0.2: that Docker leaves IPv6 on in containers of
+        // networks made without it (CVE-2024-32473), so the daemon.json advice cannot apply (0450).
+        let old = inet6
+            .iter()
+            .all(|a| link_local(a))
+            .then(docker_version)
+            .flatten()
+            .filter(|v| version_below(v, (26, 0, 2)));
+        return GatewayVerdict::Unknown(match old {
+            Some(version) => format!(
+                "the fenced network has IPv6 ({addresses}), though sv asked Docker for none. They are \
+                 link-local addresses only, and this Docker is {version}: Docker 26.0.2 and later \
+                 switch IPv6 off in containers of networks made without it, as the fix for \
+                 CVE-2024-32473. Update Docker to 26.0.2 or later, then run again"
+            ),
+            None => format!(
+                "the fenced network has IPv6 ({addresses}), though sv asked Docker for none: the \
+                 daemon gives new networks IPv6 by default. Turn that off (remove \
+                 `com.docker.network.enable_ipv6` from `default-network-opts` in Docker's \
+                 daemon.json, and restart Docker), then run again"
+            ),
+        });
     }
     // A plain network never passes on silence: its bridge has an address on this computer, and a knock
     // there that goes unanswered may be a firewall dropping one port while others stay open (0301).
@@ -3135,6 +3156,33 @@ fn gateway_verdict(out: &str, plain: Option<&str>, targets: usize) -> GatewayVer
             Some(reason) => plain_refusal(reason),
             None => GatewayVerdict::Closed,
         },
+    }
+}
+
+/// Whether an address as `ip` lists it (`fe80::1/64`) is IPv6 link-local, `fe80::/10`.
+fn link_local(address: &str) -> bool {
+    let address = address.split('/').next().unwrap_or(address);
+    address
+        .split(':')
+        .next()
+        .and_then(|first| u16::from_str_radix(first, 16).ok())
+        .is_some_and(|first| first & 0xffc0 == 0xfe80)
+}
+
+/// Whether a Docker server version (`26.0.1`, `24.0.7-ce`) is below `than`; `false` for one that does
+/// not read as a version, so an unreadable one never changes the advice.
+fn version_below(version: &str, than: (u64, u64, u64)) -> bool {
+    let mut parts = version
+        .trim()
+        .split(['.', '-', '+'])
+        .map(|p| p.parse::<u64>().ok());
+    match (
+        parts.next().flatten(),
+        parts.next().flatten(),
+        parts.next().flatten(),
+    ) {
+        (Some(major), Some(minor), patch) => (major, minor, patch.unwrap_or(0)) < than,
+        _ => false,
     }
 }
 
@@ -3209,29 +3257,20 @@ impl DockerBackend {
     }
 }
 
-/// Turns a raw HTTP response into the shape the probes read.
 /// Whether Docker's answer to an `exec` says the container is not there to run it in.
 fn sidecar_gone(out: &str) -> bool {
     out.contains("No such container") || out.contains("is not running")
 }
 
+/// Turns a raw HTTP response into the shape the probes read; `None` when it has no status line.
 fn parse_response(id: &str, raw: &str) -> Option<sv_check::probes::ProbeResponse> {
     // A header block ends at the first blank line; tolerate a server that uses bare newlines.
     let (head, body) = raw
         .split_once("\r\n\r\n")
         .or_else(|| raw.split_once("\n\n"))
         .unwrap_or((raw, ""));
-    let mut lines = head.lines();
-    let status = lines
-        .next()?
-        .split_whitespace()
-        .nth(1)?
-        .parse::<u16>()
-        .ok()?;
-    let headers = lines
-        .filter_map(|line| line.split_once(':'))
-        .map(|(k, v)| (k.trim().to_lowercase(), v.trim().to_owned()))
-        .collect();
+    let (status, headers) = sv_check::probes::read_head(head);
+    let status = status?;
     Some(sv_check::probes::ProbeResponse {
         id: id.to_owned(),
         status,
@@ -3261,28 +3300,19 @@ fn kept_body(body: &str) -> String {
     let mark = sv_check::probes::REFLECTION_MARK;
     // Searched from a little before the cut, so a value that starts inside the kept part and runs
     // past it is kept whole.
-    let mut search = from.saturating_sub(mark.len() + AROUND_ECHO);
-    while !body.is_char_boundary(search) {
-        search += 1;
-    }
+    let search = body.ceil_char_boundary(from.saturating_sub(mark.len() + AROUND_ECHO));
     let mut after = from;
     for (at, _) in body[search..].match_indices(mark).take(MOST_ECHOES) {
         let at = search + at;
         if at + mark.len() + AROUND_ECHO <= from {
             continue;
         }
-        let mut start = if at < after {
+        let start = body.ceil_char_boundary(if at < after {
             at
         } else {
             at.saturating_sub(AROUND_ECHO).max(after)
-        };
-        while !body.is_char_boundary(start) {
-            start += 1;
-        }
-        let mut end = (at + mark.len() + AROUND_ECHO).min(body.len());
-        while !body.is_char_boundary(end) {
-            end -= 1;
-        }
+        });
+        let end = body.floor_char_boundary(at + mark.len() + AROUND_ECHO);
         kept.push_str("\n[…]\n");
         kept.push_str(&body[start..end]);
         after = end;
@@ -3294,14 +3324,8 @@ fn kept_body(body: &str) -> String {
         if at + marker.len() <= from {
             continue;
         }
-        let mut start = at.saturating_sub(AROUND_ECHO);
-        while !body.is_char_boundary(start) {
-            start += 1;
-        }
-        let mut end = (at + marker.len() + AROUND_ECHO).min(body.len());
-        while !body.is_char_boundary(end) {
-            end -= 1;
-        }
+        let start = body.ceil_char_boundary(at.saturating_sub(AROUND_ECHO));
+        let end = body.floor_char_boundary(at + marker.len() + AROUND_ECHO);
         kept.push_str("\n[…]\n");
         kept.push_str(&body[start..end]);
     }
@@ -3322,11 +3346,25 @@ impl DockerBackend {
         request: &sv_check::probes::ProbeRequest,
     ) -> Option<sv_check::probes::ProbeResponse> {
         let raw = request_bytes(request, app)?;
-        let script = exchange_script(app, port);
         let started = std::time::Instant::now();
-        let sent = self.inside_fence_with_input(via, &["sh", "-c", &script], &raw);
+        let sent = match self.in_session(via, app, port, &raw) {
+            Some(Ok(answered)) => Ok(answered),
+            Some(Err(said)) => Err(said),
+            None => {
+                let script = exchange_script(app, port);
+                self.inside_fence_with_input(via, &["sh", "-c", &script], &raw)
+                    .map_err(Lost::from)
+            }
+        };
         self.note_request_time(request.id.clone(), started);
-        let (code, out) = sent.ok()?;
+        let (code, out) = match sent {
+            Ok(answered) => answered,
+            Err(Lost::Said(code, said)) => {
+                self.note_if_sidecar_lost(&request.id, code, &said);
+                return None;
+            }
+            Err(Lost::Unsaid) => return None,
+        };
         if self.note_if_sidecar_lost(&request.id, code, &out) {
             return None;
         }
@@ -3334,6 +3372,85 @@ impl DockerBackend {
             return None;
         }
         parse_response(&request.id, &out)
+    }
+
+    /// Sends one request through the session kept open in the sidecar (`exec_session`), starting it when there is
+    /// none. `None` when there is no sidecar, or no session would start, or nothing was sent: the request then goes
+    /// the old way, an exec of its own. A session that breaks down is dropped, and the sidecar's requests after it go
+    /// that way too, so a sidecar that has gone is told from a silent app as before (`note_if_sidecar_lost`).
+    fn in_session(
+        &self,
+        via: &Via,
+        host: &str,
+        port: u16,
+        raw: &[u8],
+    ) -> Option<Result<(i32, String), Lost>> {
+        let Via::Sidecar(sidecar) = via else {
+            return None;
+        };
+        // After Ctrl-C nothing new is sent this way; the exec path refuses to start, and says so.
+        if crate::interrupted() {
+            return None;
+        }
+        let mut session = self.session.lock().ok()?;
+        if session.as_ref().is_some_and(|(name, _)| name != sidecar) {
+            *session = None;
+        }
+        let refused = |no_session: &std::sync::Mutex<Option<String>>| {
+            if let Ok(mut no) = no_session.lock() {
+                *no = Some((*sidecar).to_owned());
+            }
+        };
+        if session.is_none() {
+            if self
+                .no_session
+                .lock()
+                .ok()
+                .is_some_and(|no| no.as_deref() == Some(*sidecar))
+            {
+                return None;
+            }
+            let mark = format!("@@sv-session-{}-", crate::random_hex(8));
+            let script = crate::exec_session::loop_script(&mark);
+            let mut command = Command::new(&self.binary);
+            command.args(self.prepared(&["exec", "-i", sidecar, "sh", "-c", &script]));
+            match crate::exec_session::Session::start(command, &mark) {
+                Some(started) => {
+                    self.sessions_started
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    *session = Some(((*sidecar).to_owned(), started));
+                }
+                None => {
+                    refused(&self.no_session);
+                    return None;
+                }
+            }
+        }
+        let (_, open) = session.as_mut()?;
+        match open.send(host, port, raw) {
+            Ok(answered) => {
+                self.answered_in_session
+                    .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                Some(Ok(answered))
+            }
+            Err(crate::exec_session::Failed::NotSent) => {
+                *session = None;
+                refused(&self.no_session);
+                None
+            }
+            Err(crate::exec_session::Failed::Lost { said, code }) => {
+                *session = None;
+                refused(&self.no_session);
+                Some(Err(Lost::Said(if code == 0 { -1 } else { code }, said)))
+            }
+        }
+    }
+
+    /// Ends the session kept open in the sidecar, before the sidecar goes.
+    fn end_session(&self) {
+        if let Ok(mut session) = self.session.lock() {
+            *session = None;
+        }
     }
 
     /// `probe`, for requests sent one after another in one call (`in_turn_script`). `None` when
@@ -3382,6 +3499,19 @@ impl DockerBackend {
         }
         let ids: Vec<&str> = requests.iter().map(|r| r.id.as_str()).collect();
         Some(parse_at_once(&ids, &out, &mark))
+    }
+}
+
+/// Why a request sent alone has no answer to read: the session it went through broke down, with what it said and
+/// its exit code, or the exec it went through could not be run.
+enum Lost {
+    Said(i32, String),
+    Unsaid,
+}
+
+impl From<String> for Lost {
+    fn from(_: String) -> Self {
+        Lost::Unsaid
     }
 }
 
@@ -3699,7 +3829,7 @@ mod probe_tests {
         );
         assert!(with.contains("`pip install -r requirements.txt`"), "{with}");
         assert!(
-            with.contains("set `install = true` under [stack.run]")
+            with.contains("set `install = true` under `[stack.run]`")
                 && with.contains("install them into the image"),
             "{with}"
         );
@@ -3766,8 +3896,8 @@ mod probe_tests {
             browser_args("net", "b"),
             mail_args("net", "m"),
             driver_args("net", "JOB=1"),
-            provider_args("net", "p", ["A=1", "B=2", "C=3", "D=4"]),
-            model_args("net", "m", ["A=1", "B=2"]),
+            helper_args("net", "p", &["A=1", "B=2", "C=3", "D=4"], PROVIDER_SCRIPT),
+            helper_args("net", "m", &["A=1", "B=2"], MODEL_SCRIPT),
             backend.fence_args(&Via::FreshContainer("net")),
             vec!["create", "busybox"],
         ];
@@ -3928,7 +4058,12 @@ mod probe_tests {
 
     #[test]
     fn the_test_provider_is_fenced_and_hardened_like_the_sidecar() {
-        let args = provider_args("sv-1-net", "sv-1-idp", ["A=1", "B=2", "C=3", "D=4"]);
+        let args = helper_args(
+            "sv-1-net",
+            "sv-1-idp",
+            &["A=1", "B=2", "C=3", "D=4"],
+            PROVIDER_SCRIPT,
+        );
         hardened_by_prepared(&args);
         let at = args.iter().position(|a| *a == "--network").unwrap();
         assert_eq!(args[at + 1], "sv-1-net");
@@ -3997,7 +4132,12 @@ mod probe_tests {
 
     #[test]
     fn the_test_model_is_fenced_and_hardened_like_the_sidecar() {
-        let args = model_args("sv-1-net", "sv-1-model", ["HOST=sv-1-model", "PORT=9100"]);
+        let args = helper_args(
+            "sv-1-net",
+            "sv-1-model",
+            &["HOST=sv-1-model", "PORT=9100"],
+            MODEL_SCRIPT,
+        );
         hardened_by_prepared(&args);
         let at = args.iter().position(|a| *a == "--network").unwrap();
         assert_eq!(args[at + 1], "sv-1-net");
@@ -5092,22 +5232,6 @@ http.createServer((q, s) => {
     }
 
     #[test]
-    fn base64_matches_the_known_encodings() {
-        // Checked against values anybody can verify, rather than against this function's own output.
-        assert_eq!(base64(b""), "");
-        assert_eq!(base64(b"f"), "Zg==");
-        assert_eq!(base64(b"fo"), "Zm8=");
-        assert_eq!(base64(b"foo"), "Zm9v");
-        assert_eq!(base64(b"foob"), "Zm9vYg==");
-        assert_eq!(base64(b"fooba"), "Zm9vYmE=");
-        assert_eq!(base64(b"foobar"), "Zm9vYmFy");
-        assert_eq!(
-            base64(b"GET / HTTP/1.0\r\n\r\n"),
-            "R0VUIC8gSFRUUC8xLjANCg0K"
-        );
-    }
-
-    #[test]
     fn a_raw_response_is_split_into_status_headers_and_body() {
         let raw = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nSet-Cookie: a=b; HttpOnly\r\n\r\n<h1>nope</h1>";
         let parsed = parse_response("missing", raw).expect("parses");
@@ -5154,7 +5278,7 @@ mod gateway_tests {
             .filter(|l| l.starts_with("sv-gateway=") || l.starts_with("sv-own="))
             .count();
         let reason = plain_reason(None, "");
-        gateway_verdict(out, reason.as_deref().filter(|_| plain), targets)
+        gateway_verdict(out, reason.as_deref().filter(|_| plain), targets, &|| None)
     }
 
     #[test]
@@ -5317,8 +5441,11 @@ mod gateway_tests {
     fn a_knock_that_never_reported_is_not_the_fence_holding() {
         // Output cut short after the first of two knocks (backlog 0410).
         let out = format!("{REFUSED_SELF}nc: timed out\nsv-gateway=1\n");
-        assert_eq!(gateway_verdict(&out, None, 1), GatewayVerdict::Closed);
-        let cut = gateway_verdict(&out, None, 2);
+        assert_eq!(
+            gateway_verdict(&out, None, 1, &|| None),
+            GatewayVerdict::Closed
+        );
+        let cut = gateway_verdict(&out, None, 2, &|| None);
         assert!(
             matches!(&cut, GatewayVerdict::Unknown(why) if why.contains("1 of the 2")),
             "{cut:?}"

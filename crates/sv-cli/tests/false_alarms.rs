@@ -7,12 +7,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-fn scratch(name: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-false-alarms-{name}-{}", std::process::id()));
-    std::fs::remove_dir_all(&dir).ok();
-    std::fs::create_dir_all(&dir).unwrap();
-    dir
-}
+use sv_check::test_support::scratch;
 
 const APP: &str = "import sqlite3\n\ndef find(db, user_id):\n    cur = db.cursor()\n    cur.execute(\"SELECT * FROM notes WHERE owner = \" + user_id)\n    return cur.fetchall()\n";
 
@@ -198,7 +193,7 @@ fn every_report_says_how_sure_it_is_and_whether_it_is_test_code_and_hides_nothin
     );
     let security = std::fs::read_to_string(out.join("security.md")).unwrap();
     let sarif: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(out.join("findings.sarif")).unwrap())
+        serde_json::from_str(&std::fs::read_to_string(out.join("stackvet.sarif")).unwrap())
             .unwrap();
     let compliance = std::fs::read_to_string(out.join("compliance.md")).unwrap();
     let html = std::fs::read_to_string(out.join("report.html")).unwrap();

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 934 574" width="934" height="574" role="img" aria-labelledby="t d" font-family="Atkinson Hyperlegible, -apple-system, Segoe UI, sans-serif">
+<title id="t">ASVS 5.0 by chapter: what a check can reach</title>
+<desc id="d">V1 Encoding and Sanitization: 30 requirements, 16 can be credited, 4 can only be found failing, 0 a check helps, a person decides, 10 no check; V2 Validation and Business Logic: 13 requirements, 1 can be credited, 1 can only be found failing, 2 a check helps, a person decides, 9 no check; V3 Web Frontend Security: 31 requirements, 19 can be credited, 4 can only be found failing, 0 a check helps, a person decides, 8 no check; V4 API and Web Service: 16 requirements, 5 can be credited, 5 can only be found failing, 0 a check helps, a person decides, 6 no check; V5 File Handling: 13 requirements, 8 can be credited, 0 can only be found failing, 1 a check helps, a person decides, 4 no check; V6 Authentication: 47 requirements, 16 can be credited, 8 can only be found failing, 1 a check helps, a person decides, 22 no check; V7 Session Management: 19 requirements, 10 can be credited, 1 can only be found failing, 0 a check helps, a person decides, 8 no check; V8 Authorization: 13 requirements, 2 can be credited, 2 can only be found failing, 1 a check helps, a person decides, 8 no check; V9 Self-contained Tokens: 7 requirements, 3 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 2 no check; V10 OAuth and OIDC: 36 requirements, 6 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 28 no check; V11 Cryptography: 24 requirements, 7 can be credited, 4 can only be found failing, 0 a check helps, a person decides, 13 no check; V12 Secure Communication: 12 requirements, 6 can be credited, 3 can only be found failing, 1 a check helps, a person decides, 2 no check; V13 Configuration: 21 requirements, 3 can be credited, 6 can only be found failing, 1 a check helps, a person decides, 11 no check; V14 Data Protection: 13 requirements, 2 can be credited, 2 can only be found failing, 2 a check helps, a person decides, 7 no check; V15 Secure Coding and Architecture: 21 requirements, 7 can be credited, 5 can only be found failing, 0 a check helps, a person decides, 9 no check; V16 Security Logging and Error Handling: 17 requirements, 10 can be credited, 3 can only be found failing, 0 a check helps, a person decides, 4 no check; V17 WebRTC: 12 requirements, 0 can be credited, 0 can only be found failing, 0 a check helps, a person decides, 12 no check. The same counts are the table in docs/COVERAGE.md.</desc>
+<style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}.none{fill:#182A23;stroke:#3B4842}}</style>
+<rect class="bg" width="934" height="574"/>
+<text class="ink" x="12" y="28" font-size="18" font-weight="700">ASVS 5.0 by chapter: what a check can reach</text>
+<rect fill="#3A9470" x="12" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="32" y="58" font-size="13">can be credited</text>
+<rect fill="#D9692B" x="149" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="169" y="58" font-size="13">can only be found failing</text>
+<rect fill="#5470C0" x="356" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="376" y="58" font-size="13">a check helps, a person decides</text>
+<rect class="none" x="605" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="625" y="58" font-size="13">no check</text>
+<text class="soft" x="692" y="82" font-size="12">counts, in the key's order</text>
+<text class="ink" x="12" y="109" font-size="13">V1 Encoding and Sanitization</text>
+<rect fill="#3A9470" x="300.0" y="96" width="127.4" height="18" rx="2"><title>V1 Encoding and Sanitization: 16 can be credited</title></rect>
+<rect fill="#D9692B" x="429.4" y="96" width="30.3" height="18" rx="2"><title>V1 Encoding and Sanitization: 4 can only be found failing</title></rect>
+<rect class="none" x="461.7" y="96" width="78.9" height="18" rx="2"><title>V1 Encoding and Sanitization: 10 no check</title></rect>
+<text class="soft" x="692" y="109" font-size="13">16 · 4 · 0 · 10  of 30</text>
+<text class="ink" x="12" y="135" font-size="13">V2 Validation and Business Logic</text>
+<rect fill="#3A9470" x="300.0" y="122" width="6.1" height="18" rx="2"><title>V2 Validation and Business Logic: 1 can be credited</title></rect>
+<rect fill="#D9692B" x="308.1" y="122" width="6.1" height="18" rx="2"><title>V2 Validation and Business Logic: 1 can only be found failing</title></rect>
+<rect fill="#5470C0" x="316.2" y="122" width="14.2" height="18" rx="2"><title>V2 Validation and Business Logic: 2 a check helps, a person decides</title></rect>
+<rect class="none" x="332.3" y="122" width="70.8" height="18" rx="2"><title>V2 Validation and Business Logic: 9 no check</title></rect>
+<text class="soft" x="692" y="135" font-size="13">1 · 1 · 2 · 9  of 13</text>
+<text class="ink" x="12" y="161" font-size="13">V3 Web Frontend Security</text>
+<rect fill="#3A9470" x="300.0" y="148" width="151.6" height="18" rx="2"><title>V3 Web Frontend Security: 19 can be credited</title></rect>
+<rect fill="#D9692B" x="453.6" y="148" width="30.3" height="18" rx="2"><title>V3 Web Frontend Security: 4 can only be found failing</title></rect>
+<rect class="none" x="486.0" y="148" width="62.7" height="18" rx="2"><title>V3 Web Frontend Security: 8 no check</title></rect>
+<text class="soft" x="692" y="161" font-size="13">19 · 4 · 0 · 8  of 31</text>
+<text class="ink" x="12" y="187" font-size="13">V4 API and Web Service</text>
+<rect fill="#3A9470" x="300.0" y="174" width="38.4" height="18" rx="2"><title>V4 API and Web Service: 5 can be credited</title></rect>
+<rect fill="#D9692B" x="340.4" y="174" width="38.4" height="18" rx="2"><title>V4 API and Web Service: 5 can only be found failing</title></rect>
+<rect class="none" x="380.9" y="174" width="46.5" height="18" rx="2"><title>V4 API and Web Service: 6 no check</title></rect>
+<text class="soft" x="692" y="187" font-size="13">5 · 5 · 0 · 6  of 16</text>
+<text class="ink" x="12" y="213" font-size="13">V5 File Handling</text>
+<rect fill="#3A9470" x="300.0" y="200" width="62.7" height="18" rx="2"><title>V5 File Handling: 8 can be credited</title></rect>
+<rect fill="#5470C0" x="364.7" y="200" width="6.1" height="18" rx="2"><title>V5 File Handling: 1 a check helps, a person decides</title></rect>
+<rect class="none" x="372.8" y="200" width="30.3" height="18" rx="2"><title>V5 File Handling: 4 no check</title></rect>
+<text class="soft" x="692" y="213" font-size="13">8 · 0 · 1 · 4  of 13</text>
+<text class="ink" x="12" y="239" font-size="13">V6 Authentication</text>
+<rect fill="#3A9470" x="300.0" y="226" width="127.4" height="18" rx="2"><title>V6 Authentication: 16 can be credited</title></rect>
+<rect fill="#D9692B" x="429.4" y="226" width="62.7" height="18" rx="2"><title>V6 Authentication: 8 can only be found failing</title></rect>
+<rect fill="#5470C0" x="494.0" y="226" width="6.1" height="18" rx="2"><title>V6 Authentication: 1 a check helps, a person decides</title></rect>
+<rect class="none" x="502.1" y="226" width="175.9" height="18" rx="2"><title>V6 Authentication: 22 no check</title></rect>
+<text class="soft" x="692" y="239" font-size="13">16 · 8 · 1 · 22  of 47</text>
+<text class="ink" x="12" y="265" font-size="13">V7 Session Management</text>
+<rect fill="#3A9470" x="300.0" y="252" width="78.9" height="18" rx="2"><title>V7 Session Management: 10 can be credited</title></rect>
+<rect fill="#D9692B" x="380.9" y="252" width="6.1" height="18" rx="2"><title>V7 Session Management: 1 can only be found failing</title></rect>
+<rect class="none" x="388.9" y="252" width="62.7" height="18" rx="2"><title>V7 Session Management: 8 no check</title></rect>
+<text class="soft" x="692" y="265" font-size="13">10 · 1 · 0 · 8  of 19</text>
+<text class="ink" x="12" y="291" font-size="13">V8 Authorization</text>
+<rect fill="#3A9470" x="300.0" y="278" width="14.2" height="18" rx="2"><title>V8 Authorization: 2 can be credited</title></rect>
+<rect fill="#D9692B" x="316.2" y="278" width="14.2" height="18" rx="2"><title>V8 Authorization: 2 can only be found failing</title></rect>
+<rect fill="#5470C0" x="332.3" y="278" width="6.1" height="18" rx="2"><title>V8 Authorization: 1 a check helps, a person decides</title></rect>
+<rect class="none" x="340.4" y="278" width="62.7" height="18" rx="2"><title>V8 Authorization: 8 no check</title></rect>
+<text class="soft" x="692" y="291" font-size="13">2 · 2 · 1 · 8  of 13</text>
+<text class="ink" x="12" y="317" font-size="13">V9 Self-contained Tokens</text>
+<rect fill="#3A9470" x="300.0" y="304" width="22.3" height="18" rx="2"><title>V9 Self-contained Tokens: 3 can be credited</title></rect>
+<rect fill="#D9692B" x="324.3" y="304" width="14.2" height="18" rx="2"><title>V9 Self-contained Tokens: 2 can only be found failing</title></rect>
+<rect class="none" x="340.4" y="304" width="14.2" height="18" rx="2"><title>V9 Self-contained Tokens: 2 no check</title></rect>
+<text class="soft" x="692" y="317" font-size="13">3 · 2 · 0 · 2  of 7</text>
+<text class="ink" x="12" y="343" font-size="13">V10 OAuth and OIDC</text>
+<rect fill="#3A9470" x="300.0" y="330" width="46.5" height="18" rx="2"><title>V10 OAuth and OIDC: 6 can be credited</title></rect>
+<rect fill="#D9692B" x="348.5" y="330" width="14.2" height="18" rx="2"><title>V10 OAuth and OIDC: 2 can only be found failing</title></rect>
+<rect class="none" x="364.7" y="330" width="224.4" height="18" rx="2"><title>V10 OAuth and OIDC: 28 no check</title></rect>
+<text class="soft" x="692" y="343" font-size="13">6 · 2 · 0 · 28  of 36</text>
+<text class="ink" x="12" y="369" font-size="13">V11 Cryptography</text>
+<rect fill="#3A9470" x="300.0" y="356" width="54.6" height="18" rx="2"><title>V11 Cryptography: 7 can be credited</title></rect>
+<rect fill="#D9692B" x="356.6" y="356" width="30.3" height="18" rx="2"><title>V11 Cryptography: 4 can only be found failing</title></rect>
+<rect class="none" x="388.9" y="356" width="103.1" height="18" rx="2"><title>V11 Cryptography: 13 no check</title></rect>
+<text class="soft" x="692" y="369" font-size="13">7 · 4 · 0 · 13  of 24</text>
+<text class="ink" x="12" y="395" font-size="13">V12 Secure Communication</text>
+<rect fill="#3A9470" x="300.0" y="382" width="46.5" height="18" rx="2"><title>V12 Secure Communication: 6 can be credited</title></rect>
+<rect fill="#D9692B" x="348.5" y="382" width="22.3" height="18" rx="2"><title>V12 Secure Communication: 3 can only be found failing</title></rect>
+<rect fill="#5470C0" x="372.8" y="382" width="6.1" height="18" rx="2"><title>V12 Secure Communication: 1 a check helps, a person decides</title></rect>
+<rect class="none" x="380.9" y="382" width="14.2" height="18" rx="2"><title>V12 Secure Communication: 2 no check</title></rect>
+<text class="soft" x="692" y="395" font-size="13">6 · 3 · 1 · 2  of 12</text>
+<text class="ink" x="12" y="421" font-size="13">V13 Configuration</text>
+<rect fill="#3A9470" x="300.0" y="408" width="22.3" height="18" rx="2"><title>V13 Configuration: 3 can be credited</title></rect>
+<rect fill="#D9692B" x="324.3" y="408" width="46.5" height="18" rx="2"><title>V13 Configuration: 6 can only be found failing</title></rect>
+<rect fill="#5470C0" x="372.8" y="408" width="6.1" height="18" rx="2"><title>V13 Configuration: 1 a check helps, a person decides</title></rect>
+<rect class="none" x="380.9" y="408" width="86.9" height="18" rx="2"><title>V13 Configuration: 11 no check</title></rect>
+<text class="soft" x="692" y="421" font-size="13">3 · 6 · 1 · 11  of 21</text>
+<text class="ink" x="12" y="447" font-size="13">V14 Data Protection</text>
+<rect fill="#3A9470" x="300.0" y="434" width="14.2" height="18" rx="2"><title>V14 Data Protection: 2 can be credited</title></rect>
+<rect fill="#D9692B" x="316.2" y="434" width="14.2" height="18" rx="2"><title>V14 Data Protection: 2 can only be found failing</title></rect>
+<rect fill="#5470C0" x="332.3" y="434" width="14.2" height="18" rx="2"><title>V14 Data Protection: 2 a check helps, a person decides</title></rect>
+<rect class="none" x="348.5" y="434" width="54.6" height="18" rx="2"><title>V14 Data Protection: 7 no check</title></rect>
+<text class="soft" x="692" y="447" font-size="13">2 · 2 · 2 · 7  of 13</text>
+<text class="ink" x="12" y="473" font-size="13">V15 Secure Coding and Architecture</text>
+<rect fill="#3A9470" x="300.0" y="460" width="54.6" height="18" rx="2"><title>V15 Secure Coding and Architecture: 7 can be credited</title></rect>
+<rect fill="#D9692B" x="356.6" y="460" width="38.4" height="18" rx="2"><title>V15 Secure Coding and Architecture: 5 can only be found failing</title></rect>
+<rect class="none" x="397.0" y="460" width="70.8" height="18" rx="2"><title>V15 Secure Coding and Architecture: 9 no check</title></rect>
+<text class="soft" x="692" y="473" font-size="13">7 · 5 · 0 · 9  of 21</text>
+<text class="ink" x="12" y="499" font-size="13">V16 Security Logging and Error Handling</text>
+<rect fill="#3A9470" x="300.0" y="486" width="78.9" height="18" rx="2"><title>V16 Security Logging and Error Handling: 10 can be credited</title></rect>
+<rect fill="#D9692B" x="380.9" y="486" width="22.3" height="18" rx="2"><title>V16 Security Logging and Error Handling: 3 can only be found failing</title></rect>
+<rect class="none" x="405.1" y="486" width="30.3" height="18" rx="2"><title>V16 Security Logging and Error Handling: 4 no check</title></rect>
+<text class="soft" x="692" y="499" font-size="13">10 · 3 · 0 · 4  of 17</text>
+<text class="ink" x="12" y="525" font-size="13">V17 WebRTC</text>
+<rect class="none" x="300.0" y="512" width="95.0" height="18" rx="2"><title>V17 WebRTC: 12 no check</title></rect>
+<text class="soft" x="692" y="525" font-size="13">0 · 0 · 0 · 12  of 12</text>
+<text class="soft" x="12" y="560" font-size="12">Drawn by tools/coverage.py from the checks' own citations, with docs/COVERAGE.md; a bar is as long as its requirements.</text>
+</svg>

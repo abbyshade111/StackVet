@@ -35,6 +35,8 @@
 //! - `reset.rs`: a forgotten-password reset, followed through the email it sends.
 //! - `codes.rs`: signing in with an emailed code, and what the three email flows share for finding a
 //!   code in an email.
+//! - `limit.rs`: how the answers to wrong attempts past a stated limit are read, shared by the
+//!   wrong-password (`signin.rs`) and wrong-code (`codes.rs`) checks.
 //! - `activation.rs`: the activation code emailed at sign-up.
 //! - `totp.rs`: two-factor codes from an authenticator app.
 //! - `admin.rs`: the admin page and admin actions, a role given at sign-up, and records that belong
@@ -65,6 +67,7 @@ mod cross_site;
 mod email_role;
 mod flows;
 mod forgery;
+mod limit;
 mod once;
 mod owner_field;
 mod passwords;
@@ -360,6 +363,11 @@ const CSRF_COOKIES: &[&str] = &["csrftoken", "xsrf-token", "_csrf", "csrf_token"
 
 /// The token a page offers, from a hidden field, a `<meta>` tag, or a cookie.
 fn csrf_token(page: &ProbeResponse, session: &Session) -> Option<String> {
+    page_token(page).or_else(|| cookie_token(session))
+}
+
+/// The token a page's own markup offers: a hidden field or a `<meta>` tag.
+fn page_token(page: &ProbeResponse) -> Option<String> {
     for tag in tags(&page.body, "input") {
         let is_token = attribute(&tag, "name")
             .is_some_and(|n| CSRF_FIELDS.contains(&n.to_lowercase().as_str()));
@@ -373,6 +381,11 @@ fn csrf_token(page: &ProbeResponse, session: &Session) -> Option<String> {
             return Some(value);
         }
     }
+    None
+}
+
+/// The token a cookie the session holds carries, for an app that checks one sent back.
+fn cookie_token(session: &Session) -> Option<String> {
     session
         .cookies
         .iter()
@@ -404,12 +417,30 @@ fn tags(body: &str, name: &str) -> Vec<String> {
 
 /// An attribute's value from inside one tag, quoted with `"`, with `'`, or not at all — all three
 /// are valid HTML, and a page written with unquoted attributes was the first real app this met.
+///
+/// Each name's pattern is compiled once and kept, rather than on every call for every tag of every
+/// page (backlog 0463); the names are this crate's own, a handful in all.
 fn attribute(tag: &str, name: &str) -> Option<String> {
-    let pattern = regex::Regex::new(&format!(
-        r#"(?i)(?:^|\s){}\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))"#,
-        regex::escape(name)
-    ))
-    .ok()?;
+    static PATTERNS: std::sync::LazyLock<
+        std::sync::Mutex<std::collections::HashMap<String, regex::Regex>>,
+    > = std::sync::LazyLock::new(Default::default);
+    let pattern = {
+        let mut kept = PATTERNS
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        match kept.get(name) {
+            Some(pattern) => pattern.clone(),
+            None => {
+                let pattern = regex::Regex::new(&format!(
+                    r#"(?i)(?:^|\s){}\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))"#,
+                    regex::escape(name)
+                ))
+                .ok()?;
+                kept.insert(name.to_owned(), pattern.clone());
+                pattern
+            }
+        }
+    };
     let captures = pattern.captures(tag)?;
     (1..=3)
         .find_map(|i| captures.get(i))
@@ -582,7 +613,10 @@ fn prepared(
 }
 
 /// `values`, with the anti-forgery token the request needs, when it needs one: fetched from the
-/// request's own page or, failing that, the first of `pages` that has one.
+/// request's own page or, failing that, the first of `pages` that has one in its markup, and only
+/// when none does, from a cookie. A page that answers without the form (a 405 at the change's own
+/// address, its forms being on another page) must not end the search with a cookie's value, which
+/// is not the form's token in an app that keeps them apart (backlog 0385).
 fn with_token<'a>(
     http: &mut dyn Http,
     id: &str,
@@ -598,11 +632,14 @@ fn with_token<'a>(
             let page = http.send(&get(&format!("{id}-page"), path, session));
             if let Some(page) = &page {
                 session.absorb(page);
-                v.csrf = csrf_token(page, session);
+                v.csrf = page_token(page);
             }
             if v.csrf.is_some() {
                 break;
             }
+        }
+        if v.csrf.is_none() {
+            v.csrf = cookie_token(session);
         }
     }
     v
@@ -2469,15 +2506,23 @@ mod admin_actions_two_tests;
 #[cfg(test)]
 mod asked_tests;
 #[cfg(test)]
+mod attribute_tests;
+#[cfg(test)]
 mod check_guard_tests;
 #[cfg(test)]
 mod email_role_tests;
 #[cfg(test)]
+mod failing_requirements_tests;
+#[cfg(test)]
 mod fake_app;
+#[cfg(test)]
+mod form_token_tests;
 #[cfg(test)]
 mod in_part_tests;
 #[cfg(test)]
 mod in_turn_tests;
+#[cfg(test)]
+mod limit_tests;
 #[cfg(test)]
 mod non_ascii_tests;
 #[cfg(test)]

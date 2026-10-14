@@ -17,3 +17,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: requirements and t
 - Overlap: none found (`grep -rli "plain-http-served\|refused the connection" docs/backlog/` is empty).
 - Needs a decision record?: ADR-053's Later of 10 October listed TLS among the excluded checks, so a Later line
   there saying this one is in part; or an "unchanged, because" line if the owner keeps the exclusion.
+
+**The owner's answer, 14 October 2026** (asked through the board's waiting line while the owner was away; answered as the session recommended): in part. The refused-connection credit for V12.2.1 is the same single sample of one host's port 80 as the redirect, which is already in part; ADR-090's "kept whole" of 11 October is superseded for this branch, and ADR-053 (or ADR-090) gets a Later line saying so.

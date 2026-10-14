@@ -24,7 +24,7 @@
 //! The instruction sits beside the requirement; it is not a substitute for having followed it. This
 //! is the one thing the section could get wrong, and `nothing_here_credits_a_requirement` holds it.
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde::Deserialize;
 use std::collections::BTreeSet;
 use std::path::Path;
@@ -44,10 +44,7 @@ pub struct HumanChecks {
 
 impl HumanChecks {
     pub fn load(path: &Path) -> Result<HumanChecks> {
-        let text =
-            std::fs::read_to_string(path).with_context(|| format!("reading {}", path.display()))?;
-        let checks: HumanChecks = serde_json::from_str(&text)
-            .with_context(|| sv_frameworks::data::not_understood(path))?;
+        let checks: HumanChecks = sv_frameworks::data::read_json(path)?;
         for c in &checks.checks {
             if c.how.trim().is_empty() {
                 anyhow::bail!("{}: the check for {} says nothing", path.display(), c.id);
@@ -70,6 +67,38 @@ pub struct Item {
     pub route: Route,
     /// For a design question, what its `where` should name. Absent for the other two routes.
     pub where_means: Option<String>,
+    /// Lines of the app's code the question is about, found by a locator (backlog 0487). Where to
+    /// look, never evidence: it changes nothing about the requirement's state. Absent when no locator
+    /// speaks to the question, or one does and found nothing.
+    pub rests_on: Option<RestsOn>,
+}
+
+/// What a question shows of the app's code, and the sentence that says what it is.
+pub const POINTERS_SAY: &str = "These are where to look, not evidence: StackVet found them by their names and did not read what they do.";
+
+/// The most places one question shows; the rest are counted.
+pub const MOST_POINTERS: usize = 3;
+
+/// The places in the app's code a question is about.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct RestsOn {
+    /// What the lines are, in plain words: the locator's own `finds`.
+    pub finds: String,
+    pub places: Vec<Pointer>,
+    /// Places found and not shown.
+    pub more: usize,
+}
+
+/// One place in the app's code.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct Pointer {
+    pub file: String,
+    pub line: usize,
+    /// The line, with the one before and the one after, redacted (`Secret::redact` through
+    /// `secrets::redact_text_in`) and cut to a length a person reads. Never in `report.json`, which
+    /// holds no code of the app's (`Report::code_lines` says the same of a finding's lines).
+    #[serde(skip)]
+    pub lines: Vec<(usize, String)>,
 }
 
 /// What kind of thing would settle this requirement.
@@ -88,7 +117,7 @@ impl Route {
     pub fn what_to_do(self) -> &'static str {
         match self {
             Route::WriteItDown => "write your answer in security-notes.md (`sv notes` makes it)",
-            Route::AnswerInTheManifest => "answer it in the [design] section of stackvet.toml",
+            Route::AnswerInTheManifest => "answer it in the `[design]` section of stackvet.toml",
             Route::GoAndLook => "check it by hand; nothing here can",
         }
     }
@@ -116,6 +145,7 @@ pub fn checklist(
                 where_to_look: section.how_to_find_out.clone(),
                 route: Route::WriteItDown,
                 where_means: None,
+                rests_on: None,
             });
         }
     }
@@ -128,6 +158,7 @@ pub fn checklist(
                 where_to_look: question.how_to_find_out.clone(),
                 route: Route::AnswerInTheManifest,
                 where_means: Some(question.where_means.clone()),
+                rests_on: None,
             });
         }
     }
@@ -140,6 +171,7 @@ pub fn checklist(
                 where_to_look: None,
                 route: Route::GoAndLook,
                 where_means: None,
+                rests_on: None,
             });
         }
     }
