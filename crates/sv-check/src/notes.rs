@@ -204,8 +204,13 @@ const LEAST_ANSWER_CHARS: usize = 40;
 pub struct Section {
     pub id: String,
     pub title: String,
-    /// The question, in the words a person who is not a programmer would use.
+    /// The question, in the standard's own words where it has them: the citation, which a test holds
+    /// to sharing words with the requirement.
     pub asks: String,
+    /// The same question in one sentence a person who is not a programmer can answer without the AI
+    /// coding tool's paraphrase (backlog 0427). Never softer than `asks`: it asks the same thing.
+    #[serde(default)]
+    pub plain: Option<String>,
     /// Which of the facts `sv` gathered belong under this question.
     #[serde(default)]
     pub facts: Vec<String>,
@@ -1426,6 +1431,7 @@ mod tests {
                     id: "V6.1.1".into(),
                     title: "How sign-in is protected against guessing".into(),
                     asks: "How the app defends against someone trying many passwords.".into(),
+                    plain: None,
                     facts: vec!["sign-in".into()],
                     how_to_find_out: None,
                     heading: None,
@@ -1435,6 +1441,7 @@ mod tests {
                     id: "V8.1.1".into(),
                     title: "Who may do what".into(),
                     asks: "Which kinds of users may use which functions.".into(),
+                    plain: None,
                     facts: vec!["data".into()],
                     how_to_find_out: None,
                     heading: None,
@@ -1453,6 +1460,7 @@ mod tests {
                 id: "SBD-MT-06".into(),
                 title: "What we do if something goes wrong".into(),
                 asks: "What is the plan when something goes wrong?".into(),
+                plain: None,
                 facts: Vec::new(),
                 how_to_find_out: None,
                 heading: Some("What we do if something goes wrong".into()),

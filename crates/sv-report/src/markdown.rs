@@ -524,8 +524,8 @@ pub fn compliance(report: &Report) -> String {
                 cell(
                     &(match &item.where_to_look {
                         Some(where_to_look) =>
-                            format!("{} **Where to look:** {where_to_look}", item.how),
-                        None => item.how.clone(),
+                            format!("{} **Where to look:** {where_to_look}", item.asked()),
+                        None => item.asked(),
                     } + &rests_on(item))
                 )
             ));

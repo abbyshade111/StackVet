@@ -24,7 +24,8 @@ use sv_check::human::{Item, Route};
 /// How the tool is told to ask. Kept apart from the questions so a test can hold each rule to it.
 pub const HOW_TO_ASK: &str = "\
 How to ask them. These are for the person you are building this app with, not for you to answer:
-- Ask one question at a time, in plain words, and wait for the answer. Never paste the whole list.
+- Ask one question at a time, in the words of its \"Ask\" line, and wait for the answer. Never paste
+  the whole list.
 - Before each question, look at the code you wrote and offer what you found as a tip, saying where
   you looked: \"In config.py a session ends after 30 minutes without use. Is that what you want?\"
   The \"where to look\" line under each question says where the answer is usually found.
@@ -170,11 +171,13 @@ fn status_of(report: &Report, id: &str) -> Option<Status> {
 }
 
 fn question(item: &Item, fence: &crate::fence::Fence) -> String {
+    // The plain question is what to ask (backlog 0427). The standard's words stay in the structured
+    // result's `how` and in the report, rather than doubling every question in a text that is paged.
     let mut out = format!(
         "\n - {}: {}\n   Ask: {}\n",
         item.id,
         item.title,
-        one_line(&item.how)
+        one_line(item.plain.as_deref().unwrap_or(&item.how))
     );
     if let Some(look) = &item.where_to_look {
         out.push_str(&format!("   Where to look: {}\n", one_line(look)));

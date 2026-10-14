@@ -766,13 +766,24 @@ pub fn page(report: &Report) -> String {
                 escape(&item.id),
                 escape(&item.title),
                 escape(item.route.what_to_do()),
-                match &item.where_to_look {
-                    Some(w) => format!(
-                        "{}<br><span class=\"note\"><strong>Where to look:</strong> {}</span>",
-                        escape(&item.how),
-                        escape(w)
-                    ),
-                    None => escape(&item.how),
+                {
+                    // The plain question first, then the standard's words beside it (backlog 0427).
+                    let asked = match &item.plain {
+                        Some(plain) => format!(
+                            "{}<br><span class=\"note\">{} {}</span>",
+                            escape(plain),
+                            escape(sv_check::human::STANDARDS_WORDS),
+                            escape(&item.how)
+                        ),
+                        None => escape(&item.how),
+                    };
+                    match &item.where_to_look {
+                        Some(w) => format!(
+                            "{asked}<br><span class=\"note\"><strong>Where to look:</strong> {}</span>",
+                            escape(w)
+                        ),
+                        None => asked,
+                    }
                 } + &rests_on(item)
             ));
         }
