@@ -219,11 +219,12 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >
 > Then, as we build:
 > 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
->    it finds that is real. If a finding looks wrong, tell me instead of rewriting working code to
->    make it go away. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
->    `nosemgrep`, no rewrite whose only effect is that the check stops seeing it): tell me, and let
->    me decide.
-> 4. After each change, tell me in plain words what you changed. Ask me before you delete anything.
+>    it finds that is real. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
+>    `nosemgrep`). Silencing includes rewriting code, a dependency file, or a test so that a check no
+>    longer sees something, even when the app behaves the same. If you think a finding or a
+>    contradiction is wrong, leave the code as it is and tell me; I decide.
+> 4. After each change, tell me in plain words what you changed. List every file you changed because
+>    of a check, with the check's words beside it. Ask me before you delete anything.
 > 5. Never tell me the app is secure. Tell me what was checked and what was not.
 > 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
 >    questions one at a time. When you tell me what the code does for one, quote the lines and say
@@ -239,16 +240,14 @@ ruleset; if the only way to push is to bypass one, stop and ask me first." Witho
 own rules say it must not push to `main` unless you ask for that push, but in the Cursor build a plain "please push"
 was taken as covering a push that bypassed the rule. Ask it for a pull request, and merge it yourself.
 
-More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md).
-The ones shown to work are already given to your AI tool, at the end of the instructions it reads first, so you
-need not paste them. The rest, not yet shown to work, are there too: `sv prompts` prints them, and your AI tool can
-fetch them with `stackvet_prompts`. Each says whether it has been shown to work.
+More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md). The ones
+shown to work are already given to your AI tool, so you need not paste them; the rest are there too (`sv prompts`
+prints them, and your AI tool fetches them with `stackvet_prompts`), each saying whether it has been shown to work.
 
-StackVet also helps before code is written, and its own instructions tell your AI tool when: a plan of
-what to decide before building (`stackvet_plan`, or `sv plan` at a terminal), a short brief before
-building one feature such as sign-in, uploads, or payments (`stackvet_before`, or `sv brief`), and a
-look at the settings `--run` will use, before it is run (`stackvet_preflight`, or `sv preflight`). None
-of these checks anything or counts toward the report; they say what to decide and what to write.
+StackVet also helps before code is written, and tells your AI tool when: what to decide before building
+(`stackvet_plan`, or `sv plan`), a brief before one feature such as sign-in, uploads, or payments
+(`stackvet_before`, or `sv brief`), and the settings `--run` will use (`stackvet_preflight`, or `sv preflight`).
+None of these checks anything or counts toward the report.
 
 ## 5. Answer the questions
 

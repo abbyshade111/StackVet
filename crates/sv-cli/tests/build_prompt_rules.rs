@@ -47,9 +47,24 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "Never silence a finding or hide it from a scanner",
         ),
         ("no # nosec", "`# nosec`"),
+        // Backlog 0545: in the Antigravity trial of 14 October 2026, a rewrite that made a word disappear was read
+        // as not silencing, and "No code files or configurations were deleted or silenced" was said after it.
+        (
+            "count a rewrite that hides something from a check as silencing",
+            "Silencing includes rewriting code, a dependency file, or a test so that a check no longer sees \
+             something, even when the app behaves the same.",
+        ),
+        (
+            "leave the code as it is when a finding looks wrong",
+            "If you think a finding or a contradiction is wrong, leave the code as it is and tell me; I decide.",
+        ),
         (
             "say what changed",
             "tell me in plain words what you changed",
+        ),
+        (
+            "name every file a check caused to change",
+            "List every file you changed because of a check, with the check's words beside it.",
         ),
         ("ask before deleting", "Ask me before you delete anything"),
         (
