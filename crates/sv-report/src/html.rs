@@ -537,6 +537,32 @@ pub fn page(report: &Report) -> String {
         }
     }
 
+    // The comments that tell a scanner to look away (backlog 0400), after the tools they speak to.
+    let look_away = &report.look_away;
+    if !look_away.comments.is_empty() {
+        b.push_str("<h2>Comments that tell a scanner to look away</h2>\n");
+        b.push_str(&format!(
+            "<p>{}</p>\n<table>\n<tr><th>file</th><th class=\"n\">line</th><th>scanner</th><th>what it says</th></tr>\n",
+            escape(crate::LOOK_AWAY_SECTION)
+        ));
+        for c in &look_away.comments {
+            b.push_str(&format!(
+                "<tr><td><code>{}</code></td><td class=\"n\">{}</td><td>{}</td><td><code>{}</code></td></tr>\n",
+                escape(&c.file),
+                c.line,
+                escape(c.scanner),
+                escape(&c.says)
+            ));
+        }
+        b.push_str("</table>\n");
+        if !look_away.not_read.is_empty() {
+            b.push_str(&format!(
+                "<p>Not read for them: {}.</p>\n",
+                escape(&look_away.not_read.join("; "))
+            ));
+        }
+    }
+
     b.push_str("<h2>Requirements that apply</h2>\n");
     for group in crate::groups::by_level(&report.requirements) {
         b.push_str(&format!(
@@ -1333,6 +1359,7 @@ mod tests {
             only_you_can_check: Vec::new(),
             before_going_live: Vec::new(),
             ai_tool: Default::default(),
+            look_away: Default::default(),
             questions_for_you: Vec::new(),
             no_instructions_yet: 0,
             named_not_credited: vec![],
