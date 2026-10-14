@@ -1,6 +1,6 @@
 # The pointer's trial on the example apps: the authorization locator finds nothing where the check is inline and points at an OpenID URL where a name starts with authori
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -39,3 +39,24 @@ sentence ("where to look, not evidence: StackVet found them by their names") is 
    so a change that loses one goes red.
 4. Then try the chapter again and write the result here; the proposals wait on that second reading.
 **Record:** ADR-022's Later entry of 14 October (the pointer credits nothing) stands; say so with an unchanged line.
+
+**Built 14 October 2026, by honesty** (`docs/design/` entry below; ADR-022 unchanged: a pointer still credits nothing).
+1. The authorization locator no longer reads a property passed as an argument (`new URL(config.authorization_endpoint)`)
+   in JavaScript or TypeScript, so it names only functions defined, called, or passed by name. The OpenID words were
+   not dropped by a longer pattern: they are properties, strings, and object keys, none of which it reads now.
+2. Two locators by shape, serving the same questions (V8.1.1, V8.3.1): `locate.owner-checks` (a comparison, SQL text,
+   an object key, or a `filter_by` argument that names an owner or user id) and `locate.refusals` (a 403 passed,
+   returned, or set on `status`, and `Forbidden` or `PermissionDenied` raised or thrown). A question now shows the
+   first place of each locator before the second of any, and says what each finds; the sentence under them says
+   StackVet found them by their names or their shape.
+3. `crates/sv-check/src/locate/examples_tests.rs` holds the five example apps to the places each must find, written
+   beside each app, and each shape alone. Breaking each change turned a test red.
+
+**The second reading, 14 October 2026** (`sv questions` on the five example apps, at this branch):
+- `flask-booking`, `tested-notes`, `partly-passing`: no pointer. Right: none has authorization code.
+- `oidc-notes`: no pointer. Right now: `server.js:69` is gone, and the app keeps notes by account
+  (`notes.get(s.user)`), with no 403 and no owner compared.
+- `notes-with-users`: V8.1.1 and V8.3.1 each show `app.py:241` (the note read with `owner = ?`), `:133`, and `:316`,
+  and say 11 more were found (14 in all). `:209` and `:210` are found but not shown, and `:133` is the 403 for a
+  forged form, not a check of what a person may do. Better than nothing, and still a wrong line among three: filed
+  as **0518**, to be built before the proposals (0488 to 0500) rest on pointers.
