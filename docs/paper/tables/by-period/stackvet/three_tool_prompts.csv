@@ -1,0 +1,16 @@
+prompt,tool,level,value,source,period
+"1 to 3 (plain words, folder, set up)",Antigravity,,No record,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+"1 to 3 (plain words, folder, set up)",Cursor,,No local record (cloud agent),"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+"1 to 3 (plain words, folder, set up)",VS Code,,"Done, asking before each step","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+4 (which tools),Antigravity,,Done,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+4 (which tools),Cursor,,No local record,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+4 (which tools),VS Code,,Done,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+"5 (build, seven rules)",Antigravity,,"Partly: asked three questions, then set the audience itself; silenced two findings by rewriting; invented `confirmed` blocks; committed the report folder","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+"5 (build, seven rules)",Cursor,,"Done, one gap: notes written by hand, not through the tool","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+"5 (build, seven rules)",VS Code,,"Done, one forbidden act: a check by hand marked done as the tool","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+6 (full report),Antigravity,,"Mostly: needed its sandbox bypassed for Docker, brew, `sv report`, and `open`; the walkthrough overstated the run","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+6 (full report),Cursor,,"Done, by its own route; an honest walkthrough that diagnosed `sv`'s wrong finding correctly","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+6 (full report),VS Code,,Done; opened the report in its own browser pane,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+7 (`sv review`),Antigravity,,Skipped by the owner,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+7 (`sv review`),Cursor,,Skipped by the owner,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
+7 (`sv review`),VS Code,,Skipped by the owner,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Did each tool do the prompts as written?""",stackvet
