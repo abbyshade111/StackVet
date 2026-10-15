@@ -8,7 +8,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 - honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0605, 0576, 0599, 0582
 - wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0590, 0603, 0597
-- documentation — arm: full — holds: 0586 (since 2026-10-15) — next: 0600, 0583
+- documentation — arm: full — holds: 0583 (since 2026-10-15)
 
 ## Queue
 
@@ -695,3 +695,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 14:50 — assigned 0583 to documentation (full) as next: the Semgrep logger rule on id-only lines, with its row in docs/research/SEMGREP-FALSE-ALARMS.md; no file shared with honesty's next five (pointer, settings file, SVG upload, sign-up names, path rule)
 - 2026-10-15 14:50 — assigned 0597 to wording (full) as next: prompt 6's commit check and prompt 5's unrecommended questions; the prompt page, wording's
 - 2026-10-15 15:01 — dropped 0509 from the queue
+- 2026-10-15 15:20 — finished 0586 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2065; now holds 0600
+- 2026-10-15 15:20 — finished 0600 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2068; now holds 0583
