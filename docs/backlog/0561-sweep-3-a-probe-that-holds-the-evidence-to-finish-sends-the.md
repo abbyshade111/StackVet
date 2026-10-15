@@ -81,3 +81,7 @@ assessed, and the credit is in part.
 **Seventh batch, built (inventory item 5):** the WebSocket's made-up session keeps the browser's cookies and gives
 those set at sign-in made-up values, so a cookie set before sign-in no longer stands for the session. The same one
 request as before; what it carries changed.
+
+**Eighth batch, built (inventory item 6):** the first create request, refused from another site's Origin, is sent
+once more with `Origin: null` and no token; taken, it is the forgery finding. `simple_request_check` (V3.5.2) is left
+as it is: its question is the preflight, which `Origin: null` does not change.
