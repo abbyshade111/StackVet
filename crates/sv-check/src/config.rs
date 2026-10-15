@@ -322,6 +322,19 @@ const AI_COMMITS_OFF_MERGE: &str = "config.ai-commits-off-merge";
 /// cannot be taken out of the history, and the report would otherwise carry it (backlog 0443).
 fn ai_commits_off_merge(app_dir: &Path, rules: &crate::secrets::SecretRules) -> Outcome {
     let Some(commits) = crate::git::ai_commits_off_merge(app_dir) else {
+        // A repository with no commits yet has no history for git to read, and is not "not a git repository"
+        // (backlog 0596).
+        if repository_root(app_dir).is_some()
+            && crate::git::head_commit(app_dir).is_none()
+            && crate::git::ls_files(app_dir).is_some()
+        {
+            return Outcome::NotAssessed(
+                "This folder is a git repository with no commits yet, so there is no history to read: which \
+                 commits an AI coding tool made outside a merge can be said once there are some. Until the first \
+                 commit, nothing has been saved to the history, so nothing in it can be checked."
+                    .to_owned(),
+            );
+        }
         return Outcome::NotAssessed(
             "This folder is not a git repository, or git could not read its history, so `sv` cannot say which \
              commits an AI coding tool made outside a merge."
@@ -2330,3 +2343,7 @@ mod passed_evidence_tests {
         assert_eq!(credit.requirement_ids, vec!["V13.3.1".to_owned()]);
     }
 }
+
+#[cfg(test)]
+#[path = "config_no_commits_tests.rs"]
+mod no_commits_tests;
