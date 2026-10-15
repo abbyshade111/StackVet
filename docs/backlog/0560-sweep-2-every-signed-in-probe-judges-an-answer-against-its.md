@@ -107,3 +107,8 @@ to somebody not signed in is read beside the same page served to the first test 
 with 200) is neither a finding nor a refusal, says so, and is not credited. Where the user's own page is not in hand
 (signing in got no answer, or the page did not open for the user), a 2xx is a finding as before.
 
+**Eighth batch, built (another user's delete, list item 6):** the first user reads the record just before the second
+user's delete is sent, and a 404 or 410 afterwards is the delete only when the record was there then; already gone (a
+change above sent it away), the delete is not judged, and says so. A crash of that read withholds the credit, as the
+table of answers a credit rests on says (`RESTS_ON_A_REFUSAL`, ADR-021).
+
