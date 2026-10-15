@@ -95,6 +95,12 @@ and keeps the credit from resting on the pages that were judged. Without the adm
 before. Still open from item 5: the role written into sign-up and into the email change, which have no admin page of
 their own to read beside, since they do not sign the admin in.
 
+**Sixth batch, built (sign-out, part of list item 7):** a sign-out answered with a page (200), or with a redirect
+straight back to a private page, after which the browser's own session still opens that page, is not judged: it may
+be a sign-out refused on a page of its own. A sign-out that sends the browser elsewhere, or takes its cookie away, is
+done, and the old session is asked again as before. Still open from item 7: the WebSocket after sign-out
+(`sessions.rs`), which reads its own sign-out the same old way.
+
 **Seventh batch, built (a private page asked without signing in, list item 8):** each private page served with a 2xx
 to somebody not signed in is read beside the same page served to the first test user once signed in
 (`control::shows_page`): the page shown is a finding as before; a page showing little of it (a sign-in form served

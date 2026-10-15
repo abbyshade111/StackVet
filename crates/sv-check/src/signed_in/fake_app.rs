@@ -269,6 +269,14 @@ pub(super) struct Flaws {
     /// Refuses an upload with the same 201 "stored" a stored file gets, keeping nothing. Not a flaw: only
     /// fetching the file back tells the two apart (backlog 0560).
     pub(super) upload_refused_alike: bool,
+    /// Refuses the sign-out the way Flask-WTF apps often do: the page shown again with 200 and "The CSRF
+    /// token is missing.", the session kept and its cookie left alone. Not a flaw (backlog 0560).
+    pub(super) logout_refused_on_200: bool,
+    /// Refuses the sign-out with a redirect back to the private page, a flash message, and the session kept.
+    /// Not a flaw (backlog 0560).
+    pub(super) logout_refused_back: bool,
+    /// Signs out by sending the browser to `/` and nothing else: the session kept, its cookie left alone.
+    pub(super) logout_does_nothing: bool,
     /// Answers every note created with the redirect to its page, and keeps none. Not how a limit works:
     /// here so the burst's first record is shown made before its answers are read (backlog 0560).
     pub(super) notes_never_kept: bool,
@@ -2172,6 +2180,23 @@ impl FakeApp {
                 // `/logout` has no page of its own to find one on.
                 if !token_ok {
                     return Some(Self::respond(403, vec![], "refused"));
+                }
+                if self.flaws.logout_does_nothing {
+                    return Some(Self::respond(303, vec![("Location", "/".into())], ""));
+                }
+                if self.flaws.logout_refused_back {
+                    return Some(Self::respond(
+                        303,
+                        vec![("Location", "/account?flash=try-again".into())],
+                        "",
+                    ));
+                }
+                if self.flaws.logout_refused_on_200 {
+                    return Some(Self::respond(
+                        200,
+                        vec![],
+                        "<form method=post><button>Sign out</button> The CSRF token is missing.</form>",
+                    ));
                 }
                 if !self.flaws.logout_keeps_session
                     && let Some(s) = sid
