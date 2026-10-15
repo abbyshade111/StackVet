@@ -176,19 +176,11 @@ fn the_report_shows_each_confirmation_for_what_it_is() {
         )),
         "the reason must be named: {compliance}"
     );
-    // The tool confirming its own answer is named in a line of its own, and only there (backlog 0543).
+    // The tool's own confirmation is a proposal until a person confirms it in `sv review` (backlog 0580, the owner's
+    // choice of 15 October 2026, which dropped 0543's line of its own): named among the others that do not count.
     assert!(
-        compliance.contains("V4.1.3, confirmed by the AI coding tool")
-            && compliance.contains("A confirmation by the AI coding tool counts for nothing"),
-        "the tool's own confirmation must be named: {compliance}"
-    );
-    assert!(
-        !compliance.contains("V4.1.3 (the AI coding tool cannot confirm its own answer)"),
-        "named once, not again among the other reasons: {compliance}"
-    );
-    assert!(
-        !compliance.contains("V12.2.2, checked by hand"),
-        "a check by hand a person confirmed is not the tool's word: {compliance}"
+        compliance.contains("V4.1.3 (the AI coding tool cannot confirm its own answer)"),
+        "the reason must be named: {compliance}"
     );
     assert!(
         compliance.contains("V4.2.1 (it has no `how`"),

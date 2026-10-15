@@ -259,13 +259,24 @@ fn the_setup_prompts_command_prints_stackvets_server_in_no_apps_format() {
         .trim()
         .trim_end_matches('`');
     let words: Vec<&str> = after_image.split_whitespace().collect();
-    assert_eq!(words, ["connect", "--docker", "DOCKER_PATH"]);
+    // Backlog 0581: the container is given the list of trusted keys, so it can count what `sv review` recorded.
+    assert_eq!(
+        words,
+        [
+            "connect",
+            "--docker",
+            "DOCKER_PATH",
+            "--keys",
+            "\"$HOME/.config/stackvet\""
+        ]
+    );
     let dir = folder("prompt");
-    // The prompt's own words, with a path put in, as the AI tool would.
+    // The prompt's own words, with the paths put in, as the AI tool and its shell would.
     let args: Vec<&str> = words
         .iter()
         .map(|w| match *w {
             "DOCKER_PATH" => "/usr/local/bin/docker",
+            "\"$HOME/.config/stackvet\"" => "/home/someone/.config/stackvet",
             other => other,
         })
         .collect();

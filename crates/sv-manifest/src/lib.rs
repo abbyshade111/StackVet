@@ -595,6 +595,11 @@ pub struct OnceAction {
     /// Text the answer carries only when the action went through: in the page, or in the address
     /// it sends the browser on to. "Booked", say, or `/bookings/`.
     pub completed: String,
+    /// Puts the one thing back, sent as the user who holds it: cancelling the booking, say (backlog 0574).
+    /// With it, each user takes the thing alone before the race and gives it back, so a user refused in the
+    /// race is shown able to take it; without it, the credit says neither was shown so.
+    #[serde(default)]
+    pub reset: Option<RequestTemplate>,
 }
 
 impl OnceAction {
@@ -1220,6 +1225,7 @@ impl UsersSection {
         .into_iter()
         .flatten()
         .chain(self.owned.as_ref().map(|o| &o.create))
+        .chain(self.once.iter().filter_map(|o| o.reset.as_ref()))
         .chain(self.reset.iter().flat_map(|r| [&r.request, &r.use_code]))
         .chain(
             self.email_code

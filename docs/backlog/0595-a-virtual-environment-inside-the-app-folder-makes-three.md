@@ -1,6 +1,6 @@
 # A virtual environment inside the app folder makes three check families "partly" without saying that the cause is a venv
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

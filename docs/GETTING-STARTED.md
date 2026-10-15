@@ -69,10 +69,13 @@ one small file to the app's folder. In each example, replace `/Users/you/code/my
 folder's full path, in all three places; `pwd` in a terminal there prints it.
 
 StackVet can print the file with the paths filled in. In a terminal in the app's folder, `which docker` prints
-Docker's full path; run this with yours after `--docker`, and `claude`, `vscode`, or `cursor` for your tool:
+Docker's full path; run this with yours after `--docker`, and `claude`, `vscode`, or `cursor` for your tool. The first
+line makes the list of keys StackVet will trust, empty for now, in your own settings folder; `--keys` lets the
+container read that one file, read-only, so it can count the answers you record as yours (section 5):
 
 ```bash
-docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect claude --docker /usr/local/bin/docker
+mkdir -p ~/.config/stackvet && chmod 700 ~/.config/stackvet && touch ~/.config/stackvet/allowed_signers
+docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect claude --docker /usr/local/bin/docker --keys "$HOME/.config/stackvet"
 ```
 
 It prints the settings and the name of the file they go in, and writes nothing. On Linux, add
@@ -243,9 +246,14 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
 >    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
->    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
+>    as done yourself, and never write `by = "owner"`: only I can, with `sv review`. When you suggest
+>    how I could check an answer of yours or a check by hand, write it beside it as a proposal,
+>    `confirmed = { by = "ai-tool", how = "what to look at, and what it should show" }`: it counts
+>    only once I confirm it in `sv review`.
 >    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
 >    `by = "ai-tool"` and my words in `how`.
+>
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint 03286748)*
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
@@ -299,8 +307,8 @@ On Linux, add `--user "$(id -u):$(id -g)"` after `docker run`, as in section 3.
 With StackVet installed on the computer itself (section 6), this is just `sv review .`.
 
 It shows each answer that does not yet count as yours, asks your name or `owner`, and signs it with a key of its own,
-kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose
-one, or type `none`). Only then does the report count the answer as yours: a line saying `owner` that was never recorded
+kept in your own settings folder; the first time, it asks whether to protect that key with a passphrase (yes or no; Enter
+means yes). Only then does the report count the answer as yours: a line saying `owner` that was never recorded
 this way still counts as the tool's word, since a tool could write it too. A real
 finding is fixed in the code and checked again; recording it does not make it go away. When you record something,
 `sv review` then writes the report again with the options of the last one, `--run` included, so your answers count
@@ -308,22 +316,10 @@ without a second run; where it cannot, it says so and gives you the command. `sv
 someone is typing in, so your AI tool cannot run it for you. [`docs/REVIEW.md`](REVIEW.md) is the whole of it, with a
 picture of how a signature is made and checked.
 
-**If your AI tool uses the container** (section 3), give it your list of trusted keys, `allowed_signers`, one file,
-read-only, and not the folder, which also holds the key that signs as you. The `.mcp.json` from section 3 becomes,
-with your own paths (this has not been tried in an AI tool yet):
-
-```json
-{ "mcpServers": { "stackvet": {
-  "command": "/opt/homebrew/bin/docker",
-  "args": ["run", "-i", "--rm", "--network", "none",
-           "-v", "/Users/you/code/my-app:/Users/you/code/my-app",
-           "-v", "/Users/you/.config/stackvet/allowed_signers:/sv-config/stackvet/allowed_signers:ro",
-           "-e", "XDG_CONFIG_HOME=/sv-config",
-           "ghcr.io/abbyshade111/stackvet-sv", "mcp", "--root", "/Users/you/code/my-app"] } } }
-```
-
-Make the file first, with the `mkdir` line above, or Docker makes a folder in its place. Without this line, recorded
-answers count as the tool's word in those reports. For CI, see [`docs/REVIEW.md`](REVIEW.md#setting-it-up-where-the-report-is-made).
+**If your AI tool uses the container** (section 3), its settings need your list of trusted keys, `allowed_signers`,
+one file, read-only, and not the folder, which also holds the key that signs as you: `sv connect` with `--keys
+"$HOME/.config/stackvet"` adds it. Make the file first, with the `mkdir` line above, or Docker makes a folder in its
+place. Without it, recorded answers count as the tool's word in those reports. For CI, see [`docs/REVIEW.md`](REVIEW.md#setting-it-up-where-the-report-is-made).
 
 Some questions are checks to make by hand, such as opening the live site and looking at the padlock.
 The tool walks you through them and records what you saw; that record, too, counts as yours once you

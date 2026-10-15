@@ -255,6 +255,23 @@ mod quiet {
     pub fn hide_typing() {}
 }
 
+/// `yes`, `y`, `no`, `n`, or `none`, in any case, as a yes or a no; an empty answer is `empty`. `None` for anything else.
+fn yes_or_no(answer: &str, empty: bool) -> Option<bool> {
+    match answer.trim().to_ascii_lowercase().as_str() {
+        "" => Some(empty),
+        "yes" | "y" => Some(true),
+        "no" | "n" | "none" => Some(false),
+        _ => None,
+    }
+}
+
+/// What a passphrase can never be (backlog 0591): nothing, or a word that means none.
+fn refusal_word(typed: &str) -> bool {
+    ["", "none", "no", "n"]
+        .iter()
+        .any(|word| typed.trim().eq_ignore_ascii_case(word))
+}
+
 /// How `review` reads a passphrase: hidden in a terminal, as typed in a test.
 type Secret<'a> =
     &'a mut dyn FnMut(&mut dyn BufRead, &mut dyn Write, &str) -> Result<Option<String>>;
@@ -270,7 +287,22 @@ fn signing_key(
     match SigningKey::load_from(folder).map_err(anyhow::Error::msg)? {
         Some(Stored::Ready(key)) => Ok(Some(key)),
         Some(Stored::Locked(locked)) => {
-            for _ in 0..3 {
+            for attempt in 0..3 {
+                // After one refusal, what to try, and what to do when it is lost (backlog 0591): the owner's key was
+                // made with the word `none`, typed where the passphrase was asked, and nothing said so.
+                if attempt == 1 {
+                    let path = folder.join(sv_check::signed::SIGNING_KEY_FILE);
+                    writeln!(
+                        out,
+                        "  If you typed `none` or `no` when the key was made, that word is the passphrase. If the \
+                         passphrase is lost, move the key aside (`mv {} {}.lost`) and run `sv review` again: a new key \
+                         is made, and what you recorded with the old one keeps counting as long as its line stays in \
+                         {}.",
+                        path.display(),
+                        path.display(),
+                        folder.join(sv_check::signed::TRUSTED_FILE).display()
+                    )?;
+                }
                 // Zeroed when it goes out of scope, however this returns, so the passphrase does
                 // not stay in freed memory (the review of 8 October 2026, item 6).
                 let Some(typed) = secret(
@@ -301,29 +333,49 @@ fn signing_key(
                  report.",
                 folder.display()
             )?;
-            let Some(wanted) = ask(
-                input,
-                out,
-                "Protect the key with a passphrase? Press Enter to choose one, or type `none` for \
-                 none.\n> ",
-            )?
-            else {
-                return Ok(None);
+            // A plain yes or no, Enter for yes (ADR-043, Later, 9 October 2026, and backlog 0591): the question
+            // once offered a word to type for no, `none`, which a person then typed as the passphrase.
+            let wanted = loop {
+                let Some(answer) = ask(
+                    input,
+                    out,
+                    "Protect the key with a passphrase? (yes/no, Enter for yes)\n> ",
+                )?
+                else {
+                    return Ok(None);
+                };
+                match yes_or_no(&answer, true) {
+                    Some(wanted) => break wanted,
+                    None => writeln!(out, "  Answer yes or no.")?,
+                }
             };
-            // A passphrase unless the person says otherwise (ADR-043, Later, 9 October 2026).
-            let none = ["none", "no", "n"]
-                .iter()
-                .any(|word| wanted.trim().eq_ignore_ascii_case(word));
             // Each typed passphrase is zeroed when it goes out of scope, the one kept included.
-            let passphrase: Option<Zeroizing<String>> = if !none {
+            let passphrase: Option<Zeroizing<String>> = if wanted {
                 loop {
-                    let Some(first) = secret(input, out, "Passphrase: ")?.map(Zeroizing::new)
+                    let Some(first) =
+                        secret(input, out, "Passphrase (anything but `none` or `no`): ")?
+                            .map(Zeroizing::new)
                     else {
                         return Ok(None);
                     };
-                    if first.is_empty() {
-                        writeln!(out, "  A passphrase cannot be empty.")?;
-                        continue;
+                    // A refusal word or nothing at all, typed where the passphrase goes, is asked about, never kept
+                    // as the passphrase (backlog 0591).
+                    if refusal_word(&first) {
+                        let Some(answer) =
+                            ask(input, out, "Did you mean no passphrase? (yes/no)\n> ")?
+                        else {
+                            return Ok(None);
+                        };
+                        match yes_or_no(&answer, false) {
+                            Some(true) => break None,
+                            _ => {
+                                writeln!(
+                                    out,
+                                    "  Then choose a passphrase: anything but `none`, `no`, or nothing."
+                                )?;
+                                continue;
+                            }
+                        }
                     }
                     let Some(again) =
                         secret(input, out, "The same passphrase again: ")?.map(Zeroizing::new)
@@ -1949,6 +2001,9 @@ mod mine_tests;
 
 #[cfg(test)]
 mod report_again_tests;
+
+#[cfg(test)]
+mod passphrase_prompts_tests;
 
 #[cfg(test)]
 mod tests {

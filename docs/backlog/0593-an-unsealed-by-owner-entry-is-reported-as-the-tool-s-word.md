@@ -1,6 +1,6 @@
 # An unsealed `by = "owner"` entry is reported as the tool's word, but nothing tells the tool or the person that it was written by the tool
 
-**Status:** open
+**Status:** claimed by wording, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

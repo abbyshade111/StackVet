@@ -172,6 +172,9 @@ pub(super) struct FakeApp {
     leak_next: bool,
     /// Seats booked. There is one seat.
     pub(super) bookings: u32,
+    /// The one user who may book at all, when set: the others are refused for want of permission
+    /// (backlog 0574).
+    pub(super) booking_only_for: Option<String>,
     /// Who holds the seat, once somebody does.
     booked_by: Option<String>,
     /// While copies are being sent at the same instant: the bookings there were when they
@@ -295,6 +298,10 @@ pub(super) struct Flaws {
     /// The sign-in page carries the one fixed token for every visitor, as the Antigravity app of the trial of 14
     /// October 2026 does (one value per process), rather than one for each visit's session (backlog 0537).
     pub(super) csrf_token_shared: bool,
+    /// A sign-in page's token is taken from any session it was handed to, not only its own: a token checked
+    /// to be one the app made, but not that it is the session's, and nothing else checked, the Origin included
+    /// (backlog 0575).
+    pub(super) csrf_token_any_session: bool,
     /// Keeps no upload at all, answering every one, the ordinary file too, with the upload form shown again
     /// with 200 and "Uploads are switched off." Not a flaw: nothing can be judged (backlog 0560).
     pub(super) uploads_off_on_200: bool,
@@ -1535,10 +1542,11 @@ impl FakeApp {
         let user = user.filter(|_| {
             !self.needs_pre_login_cookie || cookie_value(r, PRE_LOGIN_COOKIE).is_some()
         });
-        let foreign = r
-            .headers
-            .iter()
-            .any(|(k, v)| k == "Origin" && v == STRANGER);
+        // Under `csrf_token_any_session` the app relies on its token alone and reads no Origin.
+        let foreign = !self.flaws.csrf_token_any_session
+            && r.headers
+                .iter()
+                .any(|(k, v)| k == "Origin" && v == STRANGER);
         let given = form(r).get("csrf_token").cloned().or_else(|| {
             let body = r.body_text();
             body.split("name=\"csrf_token\"\r\n\r\n")
@@ -1546,10 +1554,16 @@ impl FakeApp {
                 .and_then(|rest| rest.split("\r\n").next())
                 .map(str::to_owned)
         });
+        // A sign-in page's token is taken only from the session it was handed to, unless
+        // `csrf_token_any_session` (backlog 0575).
         let token_ok = given.as_deref() == Some(CSRF)
-            || given
-                .as_ref()
-                .is_some_and(|t| self.session_tokens.contains(t))
+            || given.as_ref().is_some_and(|t| {
+                self.session_tokens.contains(t)
+                    && (self.flaws.csrf_token_any_session
+                        || sid
+                            .as_deref()
+                            .is_some_and(|s| t.strip_prefix(&format!("{CSRF}.")) == Some(s)))
+            })
             || given.is_some_and(|t| self.issued_tokens.remove(&t));
         let is_admin = user
             .as_ref()
@@ -1954,12 +1968,33 @@ impl FakeApp {
                 }
                 Self::respond(303, vec![("Location", "/account".into())], "")
             }
+            ("POST", "/unbook") => {
+                if user.is_none() {
+                    return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
+                }
+                if !token_ok {
+                    return Some(Self::respond(403, vec![], "refused"));
+                }
+                if self.bookings == 0 || self.booked_by != user {
+                    return Some(Self::respond(409, vec![], "nothing of yours to cancel"));
+                }
+                self.bookings -= 1;
+                self.booked_by = None;
+                Self::respond(303, vec![("Location", "/account".into())], "")
+            }
             ("POST", "/book") => {
                 if user.is_none() {
                     return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
                 }
                 if !token_ok {
                     return Some(Self::respond(403, vec![], "refused"));
+                }
+                if self
+                    .booking_only_for
+                    .as_ref()
+                    .is_some_and(|only| user.as_ref() != Some(only))
+                {
+                    return Some(Self::respond(403, vec![], "you may not book"));
                 }
                 if let Some((_, arrived)) = self.together.as_mut() {
                     *arrived += 1;
@@ -3420,6 +3455,7 @@ pub(super) fn users() -> UsersSection {
                 .collect(),
             json: BTreeMap::new(),
             completed: "Booked".into(),
+            reset: None,
         }),
         delete_account: Some(t(
             "/account/delete",

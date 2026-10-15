@@ -117,7 +117,8 @@ pub enum Action {
     /// Opens a page: answers `{"status", "path"}`, `path` being where the browser ended up.
     Goto(String),
     /// Opens a page, types `text` into the first box in its first form that has one, and submits
-    /// it as its button would: answers `{"status", "path", "found", "after": {"status", "path"}}`.
+    /// it as its button would: answers `{"status", "path", "found", "after": {"status", "path"}}`, and
+    /// in `after`, when the answer was 400 or more, `said`: the words the page showed (backlog 0585).
     Fill { page: String, text: String },
     /// Runs an expression in the page: answers `{"value"}`.
     Eval(String),
@@ -796,6 +797,26 @@ fn sign_out_visible(users: &UsersSection, visits: &[(&str, Value)], out: &mut Ou
     }
 }
 
+/// How many characters of a refusal page's words are quoted, as for a refused sign-in (backlog 0527).
+const SAID_CHARS: usize = 300;
+
+/// The words a page showed, one space between them, cut to [`SAID_CHARS`], with no character that would move or
+/// hide text on a terminal. `None` when it showed none.
+fn page_said(text: &str) -> Option<String> {
+    let words: String = text
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .chars()
+        .filter(|c| {
+            !c.is_control()
+                && !matches!(c, '\u{200e}' | '\u{200f}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}')
+        })
+        .collect();
+    let words = words.trim();
+    (!words.is_empty()).then(|| crate::text::cut_with_count(words, SAID_CHARS))
+}
+
 fn text_shown_as_text(
     form: &str,
     shows: Option<&str>,
@@ -823,10 +844,16 @@ fn text_shown_as_text(
     }
     let after = field(filled, "after");
     if field(after, "status").as_u64().is_none_or(|s| s >= 400) {
+        // In the page's own words, so a person can tell a refused token from a fault (backlog 0585).
+        let said = field(after, "said")
+            .as_str()
+            .and_then(page_said)
+            .map(|words| format!(", and the page said: \u{201c}{words}\u{201d}"))
+            .unwrap_or_default();
         not_assessed(
             out,
             format!(
-                "the text typed into {form} was refused ({}), so there was nothing to look for.",
+                "the text typed into {form} was refused ({}){said}, so there was nothing to look for.",
                 field(after, "status")
             ),
         );
@@ -1102,6 +1129,7 @@ mod tests {
 
     mod in_part_tests;
     mod no_text_form_tests;
+    mod refused_said_tests;
     mod text_forms_tests;
 
     /// How the fake browser's app behaves.
@@ -1276,7 +1304,7 @@ mod tests {
                     Action::Fill { page, .. } => {
                         let (found, status) = match a.text {
                             "no-box" => (false, 0),
-                            "refused" => (true, 403),
+                            "refused" | "refused-silent" => (true, 403),
                             _ => (true, 200),
                         };
                         let page = if a.text == "form-signed-out" {
@@ -1284,8 +1312,13 @@ mod tests {
                         } else {
                             page
                         };
-                        json!({ "status": 200, "path": page, "found": found,
-                                "after": { "status": status, "path": "/notes/1" } })
+                        let mut after = json!({ "status": status, "path": "/notes/1" });
+                        if a.text == "refused" {
+                            after["said"] = json!(
+                                "Bad Request\n\n  The form was out of date.\u{202e} Reload the page and try again."
+                            );
+                        }
+                        json!({ "status": 200, "path": page, "found": found, "after": after })
                     }
                     Action::Eval(e) if e.contains("controls") => {
                         json!({ "value": match a.sign_out {

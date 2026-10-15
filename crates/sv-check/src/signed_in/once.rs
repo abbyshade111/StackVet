@@ -88,6 +88,26 @@ pub(super) fn once_check(
         copies.push(request(id, &template, &values, &session));
         sessions.push(session);
     }
+    // Each user takes it alone first and gives it back through `reset` (backlog 0574, the owner's answer): a user
+    // refused in the race is then one who could have taken it, not one who may not take it at all.
+    let shown_alone = match &once.reset {
+        None => false,
+        Some(reset) => match each_alone(
+            http,
+            users,
+            accounts,
+            (once, reset),
+            &copies,
+            &mut sessions,
+            out,
+        ) {
+            Ok(()) => true,
+            Err(why) => {
+                out.not_assessed.push((IDS.to_owned(), why));
+                return;
+            }
+        },
+    };
     // A's and B's copies take turns, so neither user's all leave first.
     let requests: Vec<ProbeRequest> = (0..AT_ONCE).map(|i| copies[i % 2].clone()).collect();
     let Some(answers) = http.send_together(&requests) else {
@@ -219,13 +239,86 @@ pub(super) fn once_check(
             format!(
                 "{} {} sent {AT_ONCE} times at the same instant, {each} copies as each of two test \
                  users: it went through once, for the {holder} user, and every other copy was \
-                 refused. One race, tried once",
-                once.method, once.path
+                 refused. {}. One race, tried once",
+                once.method,
+                once.path,
+                if shown_alone {
+                    "Each user had first taken it alone and given it back, so either could have taken it"
+                } else {
+                    "Neither user was shown able to take it alone: stackvet.toml names no `reset` under \
+                     `once` to give it back afterwards"
+                }
             ),
         )
         // One race on one action stands for none of the others (ADR-053, Later).
         .in_part());
     }
+}
+
+/// Each user, in turn, sends the action alone and then `reset` to give the thing back (backlog 0574). `Err` says why
+/// the race would show nothing: a user refused alone may not take it at all (or, for the second, the first's reset
+/// did not put it back), and a reset not accepted may leave nothing to race for.
+fn each_alone(
+    http: &mut dyn Http,
+    users: &UsersSection,
+    accounts: &Accounts,
+    (once, reset): (&sv_manifest::OnceAction, &RequestTemplate),
+    copies: &[ProbeRequest],
+    sessions: &mut [Session],
+    out: &mut Outcome,
+) -> Result<(), String> {
+    for (i, (who, which, account)) in [("a", "first", &accounts.a), ("b", "second", &accounts.b)]
+        .into_iter()
+        .enumerate()
+    {
+        let alone = ProbeRequest {
+            id: format!("once-{who}-alone"),
+            ..copies[i].clone()
+        };
+        let answer = http.send(&alone);
+        if !super::flows::finished(&answer, &once.completed) {
+            return Err(format!(
+                "Whether {} can go through twice: sent alone by the {which} user before the race, it did \
+                 not go through ({}; no \"{}\" in the answer), so that user's refusals in the race would \
+                 show nothing: they may not do it at all{}.",
+                once.path,
+                status(&answer),
+                once.completed,
+                if i == 1 {
+                    ", or the first user's reset did not put it back"
+                } else {
+                    ""
+                }
+            ));
+        }
+        let values = Values {
+            user: &account.user,
+            password: &account.password,
+            ..Default::default()
+        };
+        let id = format!("once-reset-{who}");
+        let values = with_token(http, &id, reset, &values, &mut sessions[i], &users.private);
+        let given_back = http.send(&request(&id, reset, &values, &sessions[i]));
+        if !accepted(&given_back) {
+            return Err(format!(
+                "Whether {} can go through twice: the {which} user took it alone, but {} {}, sent to \
+                 give it back, was not accepted ({}), so there may be nothing left to race for.",
+                once.path,
+                reset.method,
+                reset.path,
+                status(&given_back)
+            ));
+        }
+        out.steps.push(format!(
+            "sent {} {} alone as the {which} user: it went through, and {} {} gave it back ({})",
+            once.method,
+            once.path,
+            reset.method,
+            reset.path,
+            status(&given_back)
+        ));
+    }
+    Ok(())
 }
 
 /// Why a session cannot be shown signed in: `None` when it opens the first private page, the reason
@@ -583,3 +676,6 @@ mod tests {
         assert!(why_not(&o).contains("names no `once`"), "{}", why_not(&o));
     }
 }
+
+#[cfg(test)]
+mod alone_tests;

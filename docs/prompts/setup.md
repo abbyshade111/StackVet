@@ -36,6 +36,9 @@ program, such as `colima`, `cat`, or `echo`. Say no to that: it would let the to
 without asking again, which for some programs includes deleting things. For a command that only looks and changes
 nothing, such as `docker info`, allowing that one command again in the same chat is fine.
 
+Each prompt ends with a line in italics naming it, the day its words last changed, and a short fingerprint of
+them. Copy it with the rest: it tells anyone reading your chat later which version of the prompt your AI tool read.
+
 | Prompt | What it does | Changes anything? |
 |---|---|---|
 | 1. Look at my computer | Says what is ready and what is missing | No |
@@ -72,6 +75,8 @@ nothing, such as `docker info`, allowing that one command again in the same chat
 >
 > Then tell me, as a short list, what is ready and what is missing, and which of the next prompts I'll need. Don't
 > fix anything yet.
+>
+> *(StackVet setup prompt 1, text of 15 October 2026, fingerprint 6f32dbf4)*
 <!-- setup-step-1:end -->
 
 ## 2. Help me install what's missing
@@ -109,6 +114,8 @@ Skip this one if prompt 1 said nothing was missing.
 > `colima start`. StackVet needs Docker to run Linux containers: if I'm asked to choose, help me keep
 > that. If anything fails, stop and tell me plainly what happened. Don't go on to the
 > next thing until this one works.
+>
+> *(StackVet setup prompt 2, text of 15 October 2026, fingerprint 6f5a1441)*
 <!-- setup-step-2:end -->
 
 ## 3. Set up StackVet here
@@ -136,8 +143,11 @@ Use the version for your computer.
 >
 > Step 5. Find docker's full path with `command -v docker`.
 >
-> Step 6. Print StackVet's MCP server for this folder, putting docker's full path from step 5 after `--docker`:
->    `docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect --docker DOCKER_PATH`
+> Step 6. Make the list of keys StackVet will trust, empty for now, so it can later count the answers I record as mine.
+>    It goes in my own settings folder, outside this one, so ask me first, then run
+>    `mkdir -p "$HOME/.config/stackvet" && chmod 700 "$HOME/.config/stackvet" && touch "$HOME/.config/stackvet/allowed_signers"`.
+>    Then print StackVet's MCP server for this folder, putting docker's full path from step 5 after `--docker`:
+>    `docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect --docker DOCKER_PATH --keys "$HOME/.config/stackvet"`
 >    On Linux, also add `--user "$(id -u):$(id -g)"` at the end, so the files StackVet writes are mine. It prints the
 >    server's name, `stackvet`, that it talks over standard input and output, and its command and arguments.
 >
@@ -158,6 +168,8 @@ Use the version for your computer.
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
 >    which settings file you wrote, since a new chat may not remember it.
+>
+> *(StackVet setup prompt 3 for a Mac or Linux, text of 15 October 2026, fingerprint 4ab48b82)*
 <!-- setup-prompt:end -->
 
 ### On Windows
@@ -214,6 +226,8 @@ requirements only they reach, and a Mac or Linux computer, or a cloud runner, is
 > Step 11. Tell me that on Windows, StackVet's checks that start the app (`stackvet report --run`) have not been tried
 >    yet: the checks that read the code work here, and the report will say what the others would have reached. Don't
 >    promise me the full report on this computer.
+>
+> *(StackVet setup prompt 3 for Windows, text of 15 October 2026, fingerprint 5d12b1f4)*
 <!-- setup-windows:end -->
 
 ## 4. Check that it's connected
@@ -225,7 +239,8 @@ After your AI tool has loaded the new settings, in the same folder. If it is a n
 > Which `stackvet_` tools can you call? List their names. If you can call `stackvet_status`, call it with this
 > folder's full path (`pwd` prints it) and tell me in plain words what it says is ready and what is not, and which
 > folder it says it serves. If that is not this folder, or it says this folder is not inside the folder the server was
-> started for, a StackVet server started for an earlier app is still running: on a Mac or Linux, show me what
+> started for, a StackVet server started for an earlier app is still running. Then stop and tell me, and do not read
+> or use the folder it names: it holds an earlier app, not this one. On a Mac or Linux, show me what
 > `docker ps` lists, stop the old StackVet container only after I say yes, and tell me to restart you. If you can't
 > call any `stackvet_` tools, StackVet is not
 > connected: say so, and check two things. First, the settings file prompt 3 wrote, which is
@@ -233,6 +248,8 @@ After your AI tool has loaded the new settings, in the same folder. If it is a n
 > on a Mac or Linux, whether Docker is running, with `docker info`. Your own commands may be kept away from Docker
 > even when it is running, so if `docker info` fails, tell me what it said and ask me, rather than telling me to
 > start Docker.
+>
+> *(StackVet setup prompt 4, text of 15 October 2026, fingerprint 274d6ffe)*
 <!-- setup-step-4:end -->
 
 **Already have StackVet installed** (for example with Homebrew)? Then its server can start your installed copy instead
@@ -292,9 +309,14 @@ word.
 >    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
 >    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
->    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
+>    as done yourself, and never write `by = "owner"`: only I can, with `sv review`. When you suggest
+>    how I could check an answer of yours or a check by hand, write it beside it as a proposal,
+>    `confirmed = { by = "ai-tool", how = "what to look at, and what it should show" }`: it counts
+>    only once I confirm it in `sv review`.
 >    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
 >    `by = "ai-tool"` and my words in `how`.
+>
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint 03286748)*
 <!-- setup-step-5:end -->
 
 What happens next:
@@ -366,6 +388,8 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >
 > Step 7. Last, tell me that until I run `sv review` myself (prompt 7 on the setup page), every answer recorded so far
 >    counts as yours, not mine, and the report says so.
+>
+> *(StackVet setup prompt 6, text of 15 October 2026, fingerprint e05d380d)*
 <!-- setup-step-6:end -->
 
 **If you stop here,** every answer your AI tool recorded still counts as its word, not yours, and the report says so,
@@ -386,6 +410,8 @@ walk you to it. Not yet tried in any AI tool. Paste this into the same chat, in 
 > file to say an answer is mine: only I can do that, with `sv review`. Then tell me the one command to type in my
 > terminal (`sv review .`, or `stackvet review .` in PowerShell), say that you cannot run it for me, and wait. When I
 > say I am done, run stackvet_check again and tell me what changed.
+>
+> *(StackVet setup prompt 7, text of 15 October 2026, fingerprint 22377766)*
 <!-- setup-step-7:end -->
 
 When you record something, `sv review` then writes the report again itself, with the options of the last one,

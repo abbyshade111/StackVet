@@ -128,7 +128,15 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
         ),
         (
             "never by = owner",
-            "Never mark a check by hand as done yourself, and never write `confirmed` or `by = \"owner\"`",
+            "Never mark a check by hand as done yourself, and never write `by = \"owner\"`: only I can, with `sv review`.",
+        ),
+        // Backlog 0580, the owner's choice of 15 October 2026 (A): the tool proposes how to check, as sv's own question
+        // text asks, and nothing counts until the person confirms it in `sv review`. It replaced 0547's "never write
+        // `confirmed`", which told the tool the opposite of `stackvet_check`.
+        (
+            "propose a check as `confirmed` by the tool, counted only once confirmed in sv review",
+            "write it beside it as a proposal, `confirmed = { by = \"ai-tool\", how = \"what to look at, and what it \
+             should show\" }`: it counts only once I confirm it in `sv review`.",
         ),
         // Backlog 0547, the owner's choice of 14 October 2026 (B): in the trial Antigravity wrote twelve
         // `confirmed` blocks of its own and VS Code marked a check done with `by = "ai-tool"`. The tool still writes a
