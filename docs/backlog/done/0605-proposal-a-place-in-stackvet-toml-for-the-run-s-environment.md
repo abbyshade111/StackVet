@@ -1,6 +1,6 @@
 # Proposal: a place in stackvet.toml for the run's environment file and settings files, so loosened settings there are judged like the start command's
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -27,3 +27,5 @@ in a file the start command does not name.
 (`--env-file`, a sourced `.env`) are read from the app's folder, for their format first, and each setting there that
 loosens the copy takes out the credits it bears on, as 0564 does for the start command. The run note says which
 settings files were read and that no other is. ADR-114, Later entry of 15 October 2026.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2078); left open for the board to close.
