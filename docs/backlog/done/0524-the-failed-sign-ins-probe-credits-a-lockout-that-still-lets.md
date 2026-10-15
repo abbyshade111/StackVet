@@ -1,6 +1,6 @@
 # The failed-sign-ins probe credits a lockout that still lets the right password in
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
