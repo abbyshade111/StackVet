@@ -5027,6 +5027,13 @@ mod crash_tests {
             crashed
                 .findings
                 .iter()
+                // The one finding a crash is meant to raise (backlog 0528, ADR-021, Later): the crash itself, on an
+                // ordinary sign-up, resting on that sign-up alone.
+                .filter(|f| {
+                    !(f.rule_id == CRASHED_ON_ORDINARY.rule_id
+                        && is_ordinary_signup(id)
+                        && f.evidence == [id.clone()])
+                })
                 .map(|f| format!("{}: {} raised when {id} crashed", scenario.name, f.rule_id))
                 .collect()
         });
