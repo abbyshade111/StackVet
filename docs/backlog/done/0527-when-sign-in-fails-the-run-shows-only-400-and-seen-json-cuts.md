@@ -23,7 +23,8 @@ AI coding tool reading the report, can fix the manifest or the app.
   1,000 characters of the words a person would read on the page, styles and scripts left out
   (`kept_answer` in `crates/sv-run/src/docker.rs`; `sv_check::text::visible_words`, moved there from sv-report so
   both use one). So `seen.json` has a refused sign-in's error text, as it has a stack trace past the cut.
-- **The run says why.** A sign-in answered 400 or above is a step of its own: "signing in as A was refused (400, with
+- **The run says why.** A sign-in answered 400 or above is a step of its own ("failed" from 500 up, since a crash is
+  not a refusal, ADR-021): "signing in as A was refused (400, with
   the page's anti-forgery token): it sent the fields `csrf_token`, `password`, `username`, and the page said: “…”"
   (`crates/sv-check/src/signed_in/refused.rs`). When the first private page then does not open, which is also how a
   sign-in answered 200 with the form shown again is caught, the "not assessed" reason ends "To tell which: the sign-in
@@ -33,5 +34,5 @@ AI coding tool reading the report, can fix the manifest or the app.
 
 Not done: the visible-text pick is the page's words in order, not `.error` or `.alert` blocks by name; a page whose
 error sits below 300 characters of navigation is quoted from its navigation. Tests:
-`sv-run` `docker/error_words_tests.rs` (3) and `sv-check` `signed_in/refused_tests.rs` (4), one of them a run against
+`sv-run` `docker/error_words_tests.rs` (3) and `sv-check` `signed_in/refused_tests.rs` (5), one of them a run against
 the fake app with a broken sign-in; each half broken on purpose turned its test red.

@@ -122,3 +122,29 @@ fn a_run_whose_sign_in_is_refused_says_why_in_its_step_and_its_reason() {
         "{reason}"
     );
 }
+
+#[test]
+fn a_crash_at_sign_in_failed_and_was_not_refused() {
+    // ADR-021: a crash's answer is never read as the app refusing.
+    use crate::signed_in::fake_app::{Flaws, run_against, users};
+    let o = run_against(
+        Flaws {
+            broken_login: true,
+            falls_over_after: Some((0, 500)),
+            ..Default::default()
+        },
+        &users(),
+    );
+    assert!(
+        o.steps
+            .iter()
+            .any(|s| s.starts_with("signing in as A failed (500")),
+        "{:?}",
+        o.steps
+    );
+    assert!(
+        !o.steps.iter().any(|s| s.contains("was refused (500")),
+        "{:?}",
+        o.steps
+    );
+}

@@ -770,9 +770,15 @@ pub(crate) fn sign_in(
     let answer = refused::answer(login, &response, &account.password);
     if response.status >= 400 {
         // Refused: why, in the page's words, is the one thing that lets the person fix it (backlog 0527).
+        // A crash is not a refusal (ADR-021): 500 and up "failed".
         steps.push(format!(
-            "signing in as {} was refused ({}{token}): {}",
+            "signing in as {} {} ({}{token}): {}",
             who.to_uppercase(),
+            if response.status >= 500 {
+                "failed"
+            } else {
+                "was refused"
+            },
             response.status,
             refused::sent_and_said(login, &response, &account.password)
         ));
