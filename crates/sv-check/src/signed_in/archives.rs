@@ -619,7 +619,7 @@ pub(super) fn archive_checks(
         let name = file_name(f, "ordinary");
         let id = format!("upload-archive-{f}-ordinary");
         let ordinary = send_bytes(http, upload, (&id, &name, &ordinary(f)), session, &token);
-        if refused(&ordinary) {
+        let Some(ordinary_answer) = ordinary.clone().filter(|_| !refused(&ordinary)) else {
             out.not_assessed.push((
                 "V5.2.3".to_owned(),
                 format!(
@@ -630,7 +630,7 @@ pub(super) fn archive_checks(
                 ),
             ));
             continue;
-        }
+        };
         out.steps
             .push(format!("uploaded an ordinary small {f} to {}", upload.path));
         for archive in over {
@@ -659,11 +659,40 @@ pub(super) fn archive_checks(
                 session,
                 &token,
             );
-            let was_refused = refused(&answer);
-            out.steps.push(format!(
-                "sent {} ({} bytes as sent): {}",
+            // Accepted means answered as the ordinary archive was (backlog 0560): a refusal flashed on a 200 page
+            // is under 400 too. Not fetched back: an app may unpack an archive rather than keep it as sent.
+            let judged = super::uploads::took(
+                http,
+                upload,
+                &ordinary_answer,
+                None,
+                &answer,
+                (&archive.id, &name, None),
+                session,
+            );
+            let sent = format!(
+                "sent {} ({} bytes as sent)",
                 lower_first(&archive.what),
-                archive.bytes.len(),
+                archive.bytes.len()
+            );
+            let was_refused = match judged {
+                super::uploads::Took::Unclear(why) => {
+                    out.steps.push(format!("{sent}: could not tell, {why}"));
+                    out.not_assessed.push((
+                        "V5.2.3".to_owned(),
+                        format!(
+                            "{} was answered unlike the ordinary {f} at {} ({why}), so whether it \
+                             was taken could not be told.",
+                            archive.what, upload.path
+                        ),
+                    ));
+                    continue;
+                }
+                super::uploads::Took::No => true,
+                super::uploads::Took::Yes(_) => false,
+            };
+            out.steps.push(format!(
+                "{sent}: {}",
                 if was_refused { "refused" } else { "accepted" }
             ));
             if !was_refused {
@@ -693,6 +722,7 @@ pub(super) fn archive_checks(
             } else if refusal_stands(
                 http,
                 upload,
+                &ordinary_answer,
                 session,
                 &token,
                 archive.id.trim_start_matches("upload-"),
@@ -781,7 +811,7 @@ mod tests {
     }
 
     /// The fake app's own limits, stated as the owner would.
-    fn stated() -> UsersSection {
+    pub(super) fn stated() -> UsersSection {
         with_archives(
             Some(vec![Zip, Gzip]),
             Some(ARCHIVE_UNPACK_LIMIT),
@@ -1407,3 +1437,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod beside_ordinary_tests;

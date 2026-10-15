@@ -15,3 +15,5 @@
 **Fix.** Split `docker.rs` and `signed_in/mod.rs` first, along the seams named, in two or three short pull requests each, behavior unchanged; the ten `#[allow(clippy::too_many_arguments)]` (`sv-cli/src/review.rs` ×6, `signed_in/{account_changes,owner_field,uploads}.rs`, `sv-cli/src/{seen,static_scan}.rs`) mark where a parameter struct is owed.
 
 **Record.** ADR-019 and ADR-052 govern `docker.rs`: a Later line naming the new files' names, since their Governs lists change.
+
+**The owner's go, 14 October 2026 (evening):** once the assigned and ready work on the board is done, build this on its own, with nothing else in flight; the data-and-figures item 0568 follows it.

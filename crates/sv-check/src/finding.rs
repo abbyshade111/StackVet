@@ -207,6 +207,9 @@ pub enum Outranked {
     /// An outside tool's finding about requirements `sv`'s own check of the running app verified in
     /// the same run, named here. It no longer keeps them from being credited.
     CheckedWhileRunning { check: String },
+    /// An outside tool's finding from a rule written for a web framework, named here, that the app's
+    /// package lists say it does not use (backlog 0521; ADR-111, Later). It decides nothing.
+    OtherFramework { framework: String },
 }
 
 /// Semgrep rules whose findings are listed apart as "worth a look" (Semgrep follow-up 5, the owner's
@@ -298,7 +301,10 @@ impl Finding {
     /// including a tool's at `info`: a tool's lowest level is still the tool saying something is
     /// wrong, and nothing in its text says otherwise. (BACKLOG, family-hub item 6, 4 October 2026.)
     pub fn withholds_credit(&self) -> bool {
-        if matches!(self.outranked, Some(Outranked::CheckedWhileRunning { .. })) {
+        if matches!(
+            self.outranked,
+            Some(Outranked::CheckedWhileRunning { .. } | Outranked::OtherFramework { .. })
+        ) {
             return false;
         }
         !(self.severity == Severity::Info

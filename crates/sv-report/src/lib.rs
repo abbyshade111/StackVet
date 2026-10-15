@@ -1669,8 +1669,14 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
     let not_held_to = apart
         .iter()
         .any(|f| f.outranked == Some(sv_check::finding::Outranked::NotHeldTo));
+    let other_framework = apart.iter().any(|f| {
+        matches!(
+            f.outranked,
+            Some(sv_check::finding::Outranked::OtherFramework { .. })
+        )
+    });
     let mut kinds: Vec<&str> = Vec::new();
-    if tests || !(libraries || look || not_held_to) {
+    if tests || !(libraries || look || not_held_to || other_framework) {
         kinds.push("in test or sample code");
     }
     if libraries {
@@ -1686,12 +1692,13 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
     if not_held_to {
         kinds.push("about requirements this app is not held to");
     }
+    if other_framework {
+        kinds.push("from rules written for a framework this app does not use");
+    }
     match kinds.as_slice() {
         [one] => (*one).to_owned(),
-        [first, second] => format!("{first}, or {second}"),
-        [first, second, third] => format!("{first}, {second}, or {third}"),
-        [first, second, third, fourth] => format!("{first}, {second}, {third}, or {fourth}"),
-        _ => unreachable!("one to four kinds"),
+        [first @ .., last] => format!("{}, or {last}", first.join(", ")),
+        [] => unreachable!("one kind at least"),
     }
 }
 
@@ -2010,7 +2017,7 @@ fn exchange_line(e: &seen::Exchange) -> String {
     } else {
         String::new()
     };
-    let words = visible_words(&e.body);
+    let words = sv_check::text::visible_words(&e.body);
     let said = if words.is_empty() {
         String::new()
     } else if words.chars().count() > SAW_CHARS {
@@ -2047,46 +2054,6 @@ fn reading_line(r: &seen::Reading) -> String {
             "did not answer"
         }
     )
-}
-
-/// The words a person would read on a page, one space between them: the head, scripts, and styles left out, every
-/// tag taken away with its attributes, and the common entities read.
-fn visible_words(body: &str) -> String {
-    let lower = body.to_ascii_lowercase();
-    let mut text = String::with_capacity(body.len());
-    let mut i = 0;
-    while i < body.len() {
-        let rest = &lower[i..];
-        let skip_to = ["head", "script", "style"].iter().find_map(|tag| {
-            rest.starts_with(&format!("<{tag}"))
-                .then(|| {
-                    rest.find(&format!("</{tag}>"))
-                        .map(|end| end + tag.len() + 3)
-                })
-                .flatten()
-        });
-        if let Some(n) = skip_to {
-            i += n;
-            continue;
-        }
-        if rest.starts_with('<') {
-            i += rest.find('>').map_or(rest.len(), |end| end + 1);
-            text.push(' ');
-            continue;
-        }
-        let c = body[i..].chars().next().expect("a character");
-        text.push(c);
-        i += c.len_utf8();
-    }
-    let text = text
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#x27;", "'")
-        .replace("&#39;", "'")
-        .replace("&nbsp;", " ");
-    text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 #[cfg(test)]
@@ -2193,6 +2160,11 @@ pub fn finding_notes(f: &sv_check::Finding) -> Vec<String> {
              if you mean to meet that requirement too."
                 .to_owned(),
         ),
+        Some(sv_check::finding::Outranked::OtherFramework { framework }) => notes.push(format!(
+            "From a rule written for {framework}, and this app's package lists do not name \
+             {framework}, so it is listed apart and decides nothing in the tables. If the app does use \
+             {framework}, add it to its package list and run `sv` again."
+        )),
         None => {}
     }
     if f.worth_a_look() {
@@ -2523,7 +2495,7 @@ pub fn slowest_line(report: &Report) -> Option<String> {
 fn slowest_of(timings: &[Timing]) -> Option<String> {
     let mut slowest: Vec<&Timing> = timings
         .iter()
-        .filter(|t| !t.what.starts_with(REQUEST_TIMING))
+        .filter(|t| !t.what.starts_with(REQUEST_TIMING) && !t.what.starts_with(CHECK_TIMING))
         .collect();
     slowest.sort_by_key(|a| std::cmp::Reverse(a.took_ms));
     let named: Vec<String> = slowest
@@ -2540,14 +2512,37 @@ fn slowest_of(timings: &[Timing]) -> Option<String> {
             !t.what.starts_with(TOOL_TIMING)
                 && !t.what.starts_with(SUITE_TIMING)
                 && !t.what.starts_with(REQUEST_TIMING)
+                && !t.what.starts_with(CHECK_TIMING)
         })
         .map(|t| t.took_ms)
         .sum();
-    Some(format!(
+    let mut line = format!(
         "This run took {:.1} s. The slowest parts: {}.",
         total as f64 / 1000.0,
         named.join(", ")
-    ))
+    );
+    // Inside the suites (backlog 0526): the checks and the waiting for a limiter that took a second or more, the
+    // longest three, so a slow suite says where its time went.
+    let mut inside: Vec<&Timing> = timings
+        .iter()
+        .filter(|t| t.what.starts_with(CHECK_TIMING) && t.took_ms >= 1000)
+        .collect();
+    inside.sort_by_key(|a| std::cmp::Reverse(a.took_ms));
+    if !inside.is_empty() {
+        let named: Vec<String> = inside
+            .iter()
+            .take(3)
+            .map(|t| {
+                format!(
+                    "{} ({:.1} s)",
+                    &t.what[CHECK_TIMING.len()..],
+                    t.took_ms as f64 / 1000.0
+                )
+            })
+            .collect();
+        line.push_str(&format!(" Inside them, the longest: {}.", named.join(", ")));
+    }
+    Some(line)
 }
 
 /// How an outside tool's timing is named, so the total counts each moment once: a tool runs
@@ -2562,6 +2557,11 @@ pub const SUITE_TIMING: &str = "the running app, ";
 /// runs inside its suite, so it is counted in no total, and it is left out of the slowest parts,
 /// which would otherwise name a request beside the suite that holds it.
 pub const REQUEST_TIMING: &str = "the request ";
+
+/// How a check inside a suite, or the suite's waiting for the app's limit on requests, is named in the timings
+/// (backlog 0526). Inside its suite, so counted in no total and not among the slowest parts; named after them, so a
+/// slow check, or a limiter waited out, is told from a slow app.
+pub const CHECK_TIMING: &str = "inside the suites, ";
 
 /// The findings that went between the first check of the build loop and the last while their lines still read as
 /// they did, named one by one, for the top of the report (backlog 0401): a fix changes the line, so each went some
@@ -3039,6 +3039,10 @@ pub fn mark_outranked(
 ) {
     use sv_check::finding::{Outranked, is_svs_own};
     for f in findings.iter_mut() {
+        // Set when the outside tools ran, from the app's package lists, which are not here to read again.
+        if matches!(f.outranked, Some(Outranked::OtherFramework { .. })) {
+            continue;
+        }
         f.outranked = None;
         let applies: Vec<&String> = f
             .requirement_ids
@@ -3781,6 +3785,9 @@ fn stake(level: u8) -> u8 {
 
 #[cfg(test)]
 mod timing_tests;
+
+#[cfg(test)]
+mod timing_inside_tests;
 #[cfg(test)]
 mod whose_word_tests;
 

@@ -3321,8 +3321,27 @@ fn parse_response(id: &str, raw: &str) -> Option<sv_check::probes::ProbeResponse
         id: id.to_owned(),
         status,
         headers,
-        body: kept_body(body),
+        body: kept_answer(status, body),
     })
+}
+
+/// How many characters of an error answer's visible words are kept past the cut (backlog 0527).
+const ERROR_WORDS: usize = 1000;
+
+/// What is kept of an answer: [`kept_body`], and, for an error answer (400 and up) longer than the cut, the words a
+/// person would read on it, after the cut and up to [`ERROR_WORDS`]. In the three-tool trial of 14 October 2026 a
+/// sign-in answered 400, and the page's inline styles ran past the cut, so the one sentence that said why (a refused
+/// anti-forgery token) was in neither the run's steps nor seen.json.
+fn kept_answer(status: u16, body: &str) -> String {
+    let mut kept = kept_body(body);
+    if status >= 400 && body.chars().count() > KEPT_CHARS {
+        let words = sv_check::text::visible_words(body);
+        if !words.is_empty() {
+            kept.push_str("\n[…]\n");
+            kept.extend(words.chars().take(ERROR_WORDS));
+        }
+    }
+    kept
 }
 
 /// How much of a body is kept (`sv_check::probes::KEPT_CHARS`).
@@ -5738,6 +5757,9 @@ mod podman_words_tests;
 
 #[cfg(test)]
 mod unreachable_tests;
+
+#[cfg(test)]
+mod error_words_tests;
 
 #[cfg(test)]
 mod gateway_said_tests;

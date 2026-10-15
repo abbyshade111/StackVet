@@ -74,6 +74,7 @@ mod owner_field;
 mod passwords;
 pub mod recording;
 mod redirects;
+mod refused;
 mod reset;
 mod rules;
 mod sessions;
@@ -229,6 +230,10 @@ pub struct Outcome {
     pub log_lines: Vec<crate::logs::KeptLine>,
     /// The last lines of the app's output when the log was read, at most `crate::logs::TAIL`.
     pub log_tail: Vec<String>,
+    /// How long each named check took, and all the waiting for the app's limit on requests, in milliseconds, in the
+    /// order run (backlog 0526): inside the suite, so counted in no total, and named so a slow check, or a limiter
+    /// waited out, is told from a slow app.
+    pub timings: Vec<(String, u64)>,
 }
 
 /// An origin the app has certainly never heard of, for the forgery check.
@@ -721,6 +726,9 @@ pub(crate) struct SignedIn {
     /// Where the sign-in answer left the browser, for a reason when the session turns out not to
     /// be signed in: "answered 200", or "sent the browser to /login/2fa".
     pub(crate) landed: String,
+    /// The sign-in's answer in a sentence: its status, the fields sent (names only), and the words the page showed,
+    /// for the reason when the session turns out not to be signed in (backlog 0527).
+    pub(crate) answer: String,
     /// Whether the sign-in was answered by the app's rate limiter, after the wait [`Patient`] gives
     /// it: the limit on sign-in attempts refused `sv`, so nothing about the session says anything
     /// about the app's checks or stackvet.toml.
@@ -759,16 +767,35 @@ pub(crate) fn sign_in(
         &[],
     );
     let response = response?;
-    steps.push(format!(
-        "signed in as {} ({}{})",
-        who.to_uppercase(),
-        response.status,
-        if values.csrf.is_some() {
-            ", with the page's anti-forgery token"
-        } else {
-            ""
-        }
-    ));
+    let token = if values.csrf.is_some() {
+        ", with the page's anti-forgery token"
+    } else {
+        ""
+    };
+    // Only a yes or no is taken from the password (backlog 0527): a page that repeats it is not quoted.
+    let repeats_password = refused::repeats_password(&response, account);
+    let answer = refused::answer(login, &response, repeats_password);
+    if response.status >= 400 {
+        // Refused: why, in the page's words, is the one thing that lets the person fix it (backlog 0527).
+        // A crash is not a refusal (ADR-021): 500 and up "failed".
+        steps.push(format!(
+            "signing in as {} {} ({}{token}): {}",
+            who.to_uppercase(),
+            if response.status >= 500 {
+                "failed"
+            } else {
+                "was refused"
+            },
+            response.status,
+            refused::sent_and_said(login, &response, repeats_password)
+        ));
+    } else {
+        steps.push(format!(
+            "signed in as {} ({}{token})",
+            who.to_uppercase(),
+            response.status,
+        ));
+    }
     if let Some(field) = &users.token_field {
         session.bearer = serde_json::from_str::<serde_json::Value>(&response.body)
             .ok()
@@ -790,6 +817,7 @@ pub(crate) fn sign_in(
         set_at_login,
         before_login,
         landed,
+        answer,
         limited: rate_limited(&response).is_some(),
     })
 }
@@ -1054,7 +1082,13 @@ impl Said {
 macro_rules! asked {
     ($out:ident, $http:ident, $check:literal, $speaks_to:expr, $call:expr) => {{
         let said = Said::mark(&$out, $http.asked);
+        // Timed, so the report can say which check a slow suite spent its time in (backlog 0526).
+        let started = std::time::Instant::now();
         let answer = $call;
+        $out.timings.push((
+            format!("the check `{}`", $check),
+            u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX),
+        ));
         said.held(&mut $out, $check, $speaks_to, $http.asked);
         answer
     }};
@@ -1093,6 +1127,30 @@ pub fn run_within(
 /// What a limiter that kept answering after the wait means for `out` (ADR-021): said once; the
 /// sign-ins it refused named; every credit not assessed, since a refusal may have been the
 /// limiter's; the findings kept, with a note.
+/// The waits for the app's limit on requests, said once in the steps and kept as one timing (backlog 0526): in the
+/// three-tool trial of 14 October 2026 a suite took 129 s, its requests 7 s, and nothing said where the rest went.
+fn settle_waits(waits: &[(String, u64)], out: &mut Outcome) {
+    if waits.is_empty() {
+        return;
+    }
+    let seconds: u64 = waits.iter().map(|(_, s)| s).sum();
+    out.steps.push(format!(
+        "waited {seconds} s in all for the app's limit on requests, {} time{}, as its answers asked, before asking \
+         again: {}",
+        waits.len(),
+        if waits.len() == 1 { "" } else { "s" },
+        waits
+            .iter()
+            .map(|(id, s)| format!("{id} ({s} s)"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    ));
+    out.timings.push((
+        "waiting for the app's limit on requests".to_owned(),
+        seconds.saturating_mul(1000),
+    ));
+}
+
 fn settle_limited(patient: &mut Patient<'_>, out: &mut Outcome) {
     if patient.still_limited.is_empty() {
         return;
@@ -1645,6 +1703,9 @@ pub struct Patient<'a> {
     /// Requests answered with a server error (5xx) or not answered at all: (request id, status or
     /// "no answer").
     crashed: Vec<(String, String)>,
+    /// Each wait for the limiter, as (request id, seconds), whether or not the limiter let the request through after
+    /// it: until backlog 0526 only the ones it still refused were said, so minutes of waiting went unexplained.
+    waits: Vec<(String, u64)>,
 }
 
 /// All the waiting one run does for a rate limiter. Each wait is at most a minute, but a limiter
@@ -1683,6 +1744,7 @@ impl<'a> Patient<'a> {
             limited_sign_ins: Vec::new(),
             waited: WaitedSoFar::Own(0),
             crashed: Vec::new(),
+            waits: Vec::new(),
         }
     }
 
@@ -1699,6 +1761,7 @@ impl<'a> Patient<'a> {
     /// done asking.
     pub fn settle(&mut self, out: &mut Outcome) {
         withhold_what_rests_on_a_crash(&self.crashed, out);
+        settle_waits(&self.waits, out);
         settle_limited(self, out);
     }
 }
@@ -1724,6 +1787,7 @@ impl Patient<'_> {
             return first;
         }
         self.waited.add(wait);
+        self.waits.push((request.id.clone(), wait));
         self.inner.wait(wait);
         let second = self.inner.send(request);
         if let Some(r) = second.as_ref().filter(|r| rate_limited(r).is_some()) {
@@ -1950,8 +2014,9 @@ fn run_checks(
             format!(
                 "Signing in as the first test user did not open {} — the sign-in request, the \
                  accounts, or the page is not what stackvet.toml says — so nothing here can say \
-                 what a signed-in user can do.",
-                confirm_path.as_deref().unwrap_or("")
+                 what a signed-in user can do. To tell which: {}.",
+                confirm_path.as_deref().unwrap_or(""),
+                a.answer
             ),
         ));
         return out;
@@ -2560,6 +2625,8 @@ mod sign_in_limit_advice_tests;
 mod storage_check_tests;
 #[cfg(test)]
 mod stored_markup_tests;
+#[cfg(test)]
+mod timings_tests;
 #[cfg(test)]
 mod unset_keys_tests;
 

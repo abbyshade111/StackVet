@@ -170,7 +170,10 @@ is, so V5.3.1 and V3.2.1 come back *not assessed* rather than failed.
 looking for a refusal, and an app whose upload path is not what the manifest says refuses
 everything. Without the ordinary file, the least working app imaginable would score four passes —
 the most flattering possible result for the app that deserves it least. So a real GIF is uploaded
-first, and if that fails all four are not assessed, naming why.
+first, and if that fails all four are not assessed, naming why. "Read against it" means beside its
+answer, not under 400: a file refused on the upload form shown again with 200 is under 400 too. When
+`serves-at` found the ordinary GIF by its name, a later file is fetched back by its own name to settle
+whether it was kept (backlog 0560, ADR-119).
 
 **The files are GIFs because the body has to be text.** A probe request carries a `String`, so a
 real PNG header cannot be written into one: `\x89PNG` is not valid UTF-8. `GIF87a` is ASCII, which
