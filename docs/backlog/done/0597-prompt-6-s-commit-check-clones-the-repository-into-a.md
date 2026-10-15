@@ -4,7 +4,7 @@
 it, with no answer marked as recommended; if asked what it would choose, say so then, with the lines it rests on.
 Prompt 6's step 2: read the latest commit on the page itself, and clone, download, or fetch nothing to compare; after
 installing or updating, compare `sv --version` with the commit the install printed. Restamped. To keep the guide under
-its 4,500 words, two of its own sentences were tightened. Held by `crates/sv-cli/tests/setup_prompt_no_steering.rs`.
+its 4,500 words, four of its own sentences were tightened. Held by `crates/sv-cli/tests/setup_prompt_no_steering.rs`.
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

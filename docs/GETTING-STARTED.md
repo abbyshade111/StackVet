@@ -344,9 +344,9 @@ download, installed with Scoop, though these checks are untried on Windows: a Ma
 On a Mac or Linux it means building StackVet, which Homebrew does for you. The steps, and updates,
 are on [Installing StackVet on your computer](INSTALL.md).
 
-If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in
-`stackvet.toml`. The app runs with no internet, so it cannot fetch its own packages; this line lets StackVet
-download them first, in a separate box that sees only the list of packages, never your code. That download is the
+If your app uses packages, as most do, starting it also needs the line `install = true` under `[stack.run]` in
+`stackvet.toml`. The app runs with no internet; this line lets StackVet download its packages
+first, in a separate box that sees only the list of packages, never your code. That download is the
 one time StackVet uses the internet for your app, and the report says when it did. Without it, such an app does not
 start, and what needs it running is *not assessed*.
 
