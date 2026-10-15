@@ -165,7 +165,11 @@ health = "/"              # a path that returns 200 once the app is up
 #   copy going through is credited; a repeat that says `completed` again is neither, so choose words
 #   only a first taking shows. The app has to start the run with exactly
 #   one of the thing to take, which either user could take (set it up in `seed`), and nothing else in
-#   the run may take it. A `private` page is needed, to show both users were signed in.
+#   the run may take it. A `private` page is needed, to show both users were signed in. Add
+#   `reset = { path = "/cancel", form = { slot = "1", csrf_token = "{csrf}" } }`, a request that puts
+#   the thing back when sent by the user who holds it, and each user first takes it alone and gives it
+#   back, which shows a user refused in the race could have taken it; without `reset` that is not
+#   shown, and the credit says so.
 # owned = { create = { path = "/notes", form = { text = "{marker}", csrf_token = "{csrf}" } }, read = "/notes/{id}" }
 #   `owned`: a record one user creates that nobody else may see. The second test user is refused
 #   reading it, and also looks for it on every `private` page and at `list`, the page that lists a
