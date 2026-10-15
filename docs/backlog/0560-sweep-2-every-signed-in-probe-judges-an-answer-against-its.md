@@ -107,3 +107,11 @@ to somebody not signed in is read beside the same page served to the first test 
 with 200) is neither a finding nor a refusal, says so, and is not credited. Where the user's own page is not in hand
 (signing in got no answer, or the page did not open for the user), a 2xx is a finding as before.
 
+**Ninth batch, built (the made-up session, list item 9):** a private page that opened to somebody not signed in is
+not asked with a made-up session (it would open, and be blamed on the session), and says so in a step; a made-up
+session answered with a page that shows little of the real session's (a sign-in form served with 200) is neither the
+page opening nor a refusal, says so, and leaves the credit in part. `control::shows_page` now compares only the words
+between tags, so two pages built from the same `<form>` and `<button>` are not taken for one, and counts the same
+body, even an empty one, as the same page; the admin-page and private-page checks that use it are unchanged in their
+tests.
+
