@@ -96,7 +96,7 @@ fn the_first_prompt_names_the_public_repository_and_its_guide() {
 
 /// A folder for the app before anything is put in it (the owner's trial in Antigravity, 13 October 2026, which worked
 /// in that tool's own scratch folder): the looking prompt notices one that is not made for an app, and the next
-/// offers to make `my-app`, asks first, and says how to open it.
+/// offers to make one, `my-app` or a name the person chooses, asks first, and says how to open it.
 #[test]
 fn the_prompts_make_sure_the_app_gets_a_folder_of_its_own() {
     let looking = flat(&block("setup-step-1"));
@@ -106,7 +106,8 @@ fn the_prompts_make_sure_the_app_gets_a_folder_of_its_own() {
     );
     let ready = flat(&block("setup-step-2"));
     for said in [
-        "offer to make one called `my-app` in my home folder",
+        // Backlog 0558: the name is the person's to choose.
+        "offer to make one in my home folder, called `my-app` or any name I choose: ask me which",
         "Ask before you make it",
         "how to open that folder in the app I'm using now",
         // In the trial, opening the folder in Antigravity started a new chat that knew nothing of the first.
