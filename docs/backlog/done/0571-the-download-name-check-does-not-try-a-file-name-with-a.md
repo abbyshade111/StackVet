@@ -1,6 +1,6 @@
 # The download-name check does not try a file name with a quote in it
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -18,3 +18,5 @@ own.
 by the quote, it is the finding; kept whole, the credit says both. The fake app now escapes a quoted name as a quoted
 string must, and a new flaw quotes it without escaping. Left open for the coordination board to close, since 0571 is
 on honesty's line there.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2015); honesty left the item open for the board to close, as its line's items are.

@@ -1,6 +1,6 @@
 # Proposal: judge the tested copy: a setting loosened only for sv's run earns no credit for the requirement it serves
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -37,3 +37,5 @@ file today: `[stack.run]` holds `start`, `build`, `test`, and the like, and only
 there is nothing more to read until the manifest has a place for them; reading a settings file the start command
 itself names (an `--env-file`, or a `.env` it sources) is the one case left, and it needs that file's format read
 first.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2007, the start command's loosened settings; the part left, settings files and an environment the manifest could name, is backlog 0604); honesty left the item open for the board to close, as its line's items are.

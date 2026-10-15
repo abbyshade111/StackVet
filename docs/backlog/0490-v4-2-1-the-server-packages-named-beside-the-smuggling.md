@@ -1,6 +1,6 @@
 # V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

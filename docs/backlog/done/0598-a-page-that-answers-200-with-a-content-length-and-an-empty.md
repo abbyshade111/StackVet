@@ -1,6 +1,6 @@
 # A page that answers 200 with a Content-Length and an empty body, with the server's own error in the app log, is counted as answered
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -30,3 +30,5 @@ Tests: `crates/sv-run/src/docker/short_body_tests.rs` (the trial's 200 with 5,41
 fake app's flaw `account_page_blank` gives the private page as the transport now gives a short one. Read instead as a
 200 with an empty body, as before, that page drew "no sign-out link", caching, and header findings. Left open for the
 board to close.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2044); honesty left the item open for the board to close, as its line's items are.

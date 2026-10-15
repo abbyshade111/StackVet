@@ -1,6 +1,6 @@
 # The Django-rule gate from 0521 did not apply on a Flask app: ten django-no-csrf-token findings in the Opus run's report and in today's rerun
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -50,3 +50,5 @@ Two things were corrected on the way, in the pull request that records this:
 - The orchestrator's second fault: the line on the bill of materials said "some of the app's package lists could not
   be read" whenever the bill was not complete, and this app's was not complete only because it has no lockfile. It now
   says which: lists unread, packages at the version asked for, or both.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2034); honesty left the item open for the board to close, as its line's items are.

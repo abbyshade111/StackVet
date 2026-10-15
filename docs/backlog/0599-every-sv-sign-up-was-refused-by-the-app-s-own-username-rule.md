@@ -1,6 +1,6 @@
 # Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
