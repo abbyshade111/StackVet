@@ -44,3 +44,21 @@ keep the figures at 4 October and add the work since beside them. Built meanwhil
   13 October, and the board's log (every line, and one row per item finished).
 - `figure-three-arms.html`, the one figure that gave no date, now names its data and date.
 Still to do, after the owner's answer: the figures' refresh, or a "since the cut-off" figure beside them.
+
+**The paper's outline, from the owner on 15 October 2026, and how the tables serve it.** The research section has three
+parts, and each table and figure should say which part it serves:
+- *Making sv* (the prompt, V1, V2, StackVet): the three milestone periods above, with the faults, corrections, tests,
+  and ADR tables per period and combined.
+- *Fine-tuning* (the loop trials; context against orchestration): the second loop trial's table (builds, arms, scores,
+  findings per build, what dodged a check), the first loop trial's where its records allow, and the orchestration
+  trial's measurement (backlog 0273: the coordination log, minutes per item, arms) as the context-against-orchestration
+  table.
+- *Building across three AI tools with the same prompts* (security, compliance, what the tool said against what it
+  did): the three-tool trial's tables from `docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`, split into those three
+  headings, with the like-for-like report counts as the compliance table and the said-versus-did table as its own.
+The paper's central question has four dimensions, security, quality, compliance, and usability: wherever a trial's data
+can be read on one of them, the table says which (the three-tool trial's quality rubric and the loop trials' scoring
+are quality; the setup times and prompt adherence are usability). Two things the outline names have no data table yet
+and should be listed in DATA.md as "not in the tables": the OWASP Top 10 for LLMs and Agents (sv checks AISVS and the
+Agentic Skills Top 10, not that list), and the first loop trial if its records are not complete enough for a table.
+The health-tracking app built for a friend stays anonymous in every cell.
