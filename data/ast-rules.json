@@ -1416,6 +1416,54 @@
       }
     },
     {
+      "id": "ast.client-certificate-untrusted",
+      "title": "A client certificate is accepted without checking who issued it",
+      "severity": "high",
+      "confidence": "medium",
+      "requirementIds": [
+        "V12.1.3"
+      ],
+      "cwe": [
+        "CWE-295"
+      ],
+      "description": "The server asks clients for a certificate (mutual TLS) and takes one without checking that it was issued by an authority it trusts: in Go, `ClientAuth: tls.RequestClientCert` or `tls.RequireAnyClientCert`, neither of which checks the certificate's chain; in Node.js, `requestCert: true` beside `rejectUnauthorized: false`, which lets a connection with an untrusted certificate through.",
+      "impact": "Anybody can make a certificate of their own with whatever name they like in it. If the app uses the name in a client certificate to decide who is calling, an untrusted certificate is a way in as anybody.",
+      "fix": "Check the certificate against the authority you trust: in Go, `ClientAuth: tls.RequireAndVerifyClientCert` with `ClientCAs` set to that authority's pool; in Node.js, `rejectUnauthorized: true` with `ca` set to it. If the code checks the certificate itself (Go's `VerifyPeerCertificate`, or `req.socket.authorized` before trusting the identity in Node.js), say so to whoever reads this finding.",
+      "findingsOnly": true,
+      "queries": {
+        "go": "[(keyed_element key: (literal_element (identifier) @fn) value: (literal_element (selector_expression) @arg)) (assignment_statement left: (expression_list (selector_expression field: (field_identifier) @fn)) right: (expression_list (selector_expression) @arg))] @hit",
+        "javascript": "[(object (pair key: (property_identifier) @kw value: (true)) (pair key: (property_identifier) @fn value: (false))) (object (pair key: (property_identifier) @fn value: (false)) (pair key: (property_identifier) @kw value: (true)))] @hit",
+        "typescript": "[(object (pair key: (property_identifier) @kw value: (true)) (pair key: (property_identifier) @fn value: (false))) (object (pair key: (property_identifier) @fn value: (false)) (pair key: (property_identifier) @kw value: (true)))] @hit"
+      },
+      "functionPatterns": {
+        "go": "^ClientAuth$",
+        "javascript": "^rejectUnauthorized$",
+        "typescript": "^rejectUnauthorized$"
+      },
+      "argumentPatterns": {
+        "go": "^tls\\.(RequestClientCert|RequireAnyClientCert)$"
+      },
+      "keywordPatterns": {
+        "javascript": "^requestCert$",
+        "typescript": "^requestCert$"
+      },
+      "looksFor": "the settings that take a client certificate without checking who issued it: `ClientAuth` set to `tls.RequestClientCert` or `tls.RequireAnyClientCert` (Go), and `requestCert: true` beside `rejectUnauthorized: false` in one set of options (Node.js); a certificate checked some other way, or never asked for, is not looked for, so finding none credits nothing",
+      "nothingToFind": {
+        "python": "No setting that accepts a client certificate without checking who issued it is looked for in Python yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "java": "No setting that accepts a client certificate without checking who issued it is looked for in Java yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "kotlin": "No setting that accepts a client certificate without checking who issued it is looked for in Kotlin yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "csharp": "No setting that accepts a client certificate without checking who issued it is looked for in C# yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "ruby": "No setting that accepts a client certificate without checking who issued it is looked for in Ruby yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "php": "No setting that accepts a client certificate without checking who issued it is looked for in PHP yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "rust": "No setting that accepts a client certificate without checking who issued it is looked for in Rust yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "dart": "No setting that accepts a client certificate without checking who issued it is looked for in Dart yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "swift": "No setting that accepts a client certificate without checking who issued it is looked for in Swift yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "c": "No setting that accepts a client certificate without checking who issued it is looked for in C yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "cpp": "No setting that accepts a client certificate without checking who issued it is looked for in C++ yet; a certificate checked by the code itself, or by a server in front, is not something one file shows.",
+        "shell": "Client certificates are not asked for in shell scripts in any way this rule can speak to."
+      }
+    },
+    {
       "id": "ast.token-signature-not-checked",
       "title": "A token is accepted without checking its signature",
       "severity": "high",

@@ -2851,6 +2851,14 @@
     "finding_only": true
    }
   ],
+  "V12.1.3": [
+   {
+    "id": "ast.client-certificate-untrusted",
+    "run": "Reads the code",
+    "looks_for": "A client certificate is accepted without checking who issued it",
+    "finding_only": true
+   }
+  ],
   "V12.1.4": [
    {
     "id": "probe.ocsp-not-stapled",

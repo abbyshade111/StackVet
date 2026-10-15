@@ -722,22 +722,34 @@ fn versions_pinned(
                 "Install once and commit the lockfile that produces, then install from it from then on.",
             ),
         };
+        // The title this finding had before 15 October 2026 (backlog 0530), which named every ecosystem and said each
+        // did not pin: a finding of this rule is named by its title, so a review, an accepted risk, or a baseline
+        // recorded before then holds the fingerprint of that title, and is kept matching through it (the owner's
+        // choice A of 15 October 2026).
+        let old_title = if names.len() == 1 {
+            format!("{} does not pin the versions it installs", names[0])
+        } else {
+            format!(
+                "{} do not pin the versions they install",
+                names.join(" and ")
+            )
+        };
         return Outcome::Failed(Box::new(crate::finding::found(Finding {
             evidence: Vec::new(),
             also_reported_by: Vec::new(),
             fingerprint: String::new(),
-            earlier_fingerprints: Vec::new(),
+            earlier_fingerprints: vec![crate::review::named(
+                "config.versions-pinned",
+                &location.file,
+                &old_title,
+            )],
             marked_test_code: false,
             bundled_library: None,
             outranked: None,
             also_on_this_line: Vec::new(),
             help_uri: None,
             rule_id: "config.versions-pinned".into(),
-            title: if names.len() == 1 {
-                format!("{} does not pin the versions it installs", names[0])
-            } else {
-                format!("{} do not pin the versions they install", names.join(" and "))
-            },
+            title: title_for_unpinned(how, &first.manifest, &names, &unpinned),
             severity: Severity::Medium,
             confidence: Confidence::High,
             location,
@@ -818,6 +830,53 @@ fn versions_pinned(
 
 /// Whether `path` is a requirements file under another name than `requirements.txt`, which the
 /// pinning check judges on its own contents (`ecosystems::declared_elsewhere_in`).
+/// The pinning finding's title, saying what its text says (backlog 0530): versions that move are not pinned, but a
+/// manifest with exact versions and no lockfile beside it is pinned, and was titled as if it were not. In the trial of
+/// 14 October 2026, every app's `requirements.txt` pinned each line with `==` and the title read "Python does not pin
+/// the versions it installs".
+fn title_for_unpinned(
+    how: &Pinning,
+    manifest: &str,
+    names: &[String],
+    unpinned: &[&(sv_scan::ecosystems::DetectedEcosystem, Pinning)],
+) -> String {
+    match how {
+        Pinning::Floating(_) if names.len() == 1 => {
+            format!("{} does not pin the versions it installs", names[0])
+        }
+        Pinning::Floating(_) => {
+            format!(
+                "{} do not pin the versions they install",
+                names.join(" and ")
+            )
+        }
+        _ if is_other_requirements(manifest) => {
+            format!("`{manifest}` does not pin and hash every package it lists")
+        }
+        // Each ecosystem named once, with the manifests it has no lockfile beside, in the order found.
+        _ => {
+            let mut by_label: Vec<(String, Vec<String>)> = Vec::new();
+            for (e, p) in unpinned {
+                if !matches!(p, Pinning::NoLockfile) || is_other_requirements(&e.manifest) {
+                    continue;
+                }
+                let file = format!("`{}`", e.manifest);
+                // The name, not the label: the file's path already says which folder it is in.
+                match by_label.iter_mut().find(|(name, _)| *name == e.name) {
+                    Some((_, files)) if !files.contains(&file) => files.push(file),
+                    Some(_) => {}
+                    None => by_label.push((e.name.clone(), vec![file])),
+                }
+            }
+            let parts: Vec<String> = by_label
+                .iter()
+                .map(|(label, files)| format!("{label} lockfile beside {}", files.join(" or ")))
+                .collect();
+            format!("No {}", parts.join(", and no "))
+        }
+    }
+}
+
 fn is_other_requirements(path: &str) -> bool {
     let name = sv_scan::ecosystems::file_name(path);
     name.ends_with(".txt") && name != "requirements.txt"
@@ -937,6 +996,10 @@ mod ai_quote_tests;
 #[cfg(test)]
 #[path = "config_history_tests.rs"]
 mod history_tests;
+
+#[cfg(test)]
+#[path = "config_pin_title_tests.rs"]
+mod pin_title_tests;
 
 #[cfg(test)]
 mod tests {
@@ -1757,7 +1820,9 @@ mod tests {
         let finding = finding.unwrap_or_else(|| panic!("{passed} {open:?}"));
         assert_eq!(finding.location.file, "setup.py");
         assert!(
-            finding.title.starts_with("Python does not pin"),
+            finding
+                .title
+                .starts_with("No Python lockfile beside `setup.py`"),
             "{}",
             finding.title
         );
@@ -1775,7 +1840,9 @@ mod tests {
         let finding = finding.unwrap_or_else(|| panic!("credited: {passed}"));
         assert_eq!(finding.location.file, "worker/setup.cfg");
         assert!(
-            finding.title.contains("Python in worker/"),
+            finding
+                .title
+                .contains("Python lockfile beside `worker/setup.cfg`"),
             "{}",
             finding.title
         );
@@ -1790,7 +1857,7 @@ mod tests {
         let finding = finding.unwrap_or_else(|| panic!("credited"));
         assert_eq!(
             finding.title,
-            "Python does not pin the versions it installs"
+            "No Python lockfile beside `requirements.txt` or `setup.py`"
         );
         fs::remove_dir_all(&both).ok();
 

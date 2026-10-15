@@ -23,3 +23,9 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
 **First part built, 15 October 2026 (honesty):** the derived condition `mtls`, gating V12.1.3 alone, with the reason
 "the app asks for no client certificate" (ADR-015, Later). Still to build: the finding for a client certificate
 accepted without a trust check (the ast rule for Go and Node, and nginx's `optional_no_ca`).
+
+**Second part built, 15 October 2026 (honesty):** `ast.client-certificate-untrusted` (V12.1.3, only ever a finding),
+for Go's `ClientAuth` set to `tls.RequestClientCert` or `tls.RequireAnyClientCert` and Node.js's `requestCert: true`
+beside `rejectUnauthorized: false` (ADR-018, Later). Left: nginx's `ssl_verify_client optional_no_ca`, which needs a
+check in Rust since no grammar reads nginx settings, and Python's `CERT_OPTIONAL` with `getpeercert()`, which one
+file cannot tie together.
