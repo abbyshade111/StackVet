@@ -511,3 +511,40 @@ date,time_eastern,verb,item,session,pr,line,source
 2026-10-14,22:50,finished,0555,wording,1961,finished 0555 by wording (full): https://github.com/abbyshade111/StackVet/pull/1961; now holds 0556,docs/coordination/board.md
 2026-10-14,22:50,finished,0556,wording,1964,finished 0556 by wording (full): https://github.com/abbyshade111/StackVet/pull/1964; now holds 0557,docs/coordination/board.md
 2026-10-14,22:50,finished,0527,documentation,1960,finished 0527 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1960; now holds 0526,docs/coordination/board.md
+2026-10-14,23:20,finished,0526,documentation,1967,finished 0526 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1967; now holds 0563,docs/coordination/board.md
+2026-10-14,23:20,finished,0563,documentation,1969,finished 0563 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1969; now holds 0568,docs/coordination/board.md
+2026-10-14,23:20,assigned,0562,documentation,,"assigned 0562 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner",docs/coordination/board.md
+2026-10-14,23:20,assigned,0529,documentation,,"assigned 0529 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner",docs/coordination/board.md
+2026-10-14,23:20,assigned,0531,documentation,,"assigned 0531 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner",docs/coordination/board.md
+2026-10-14,23:20,assigned,0538,documentation,,"assigned 0538 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner",docs/coordination/board.md
+2026-10-14,23:50,finished,0521,honesty,1972,finished 0521 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1972; now holds 0560,docs/coordination/board.md
+2026-10-15,00:20,finished,0557,wording,1978,finished 0557 by wording (full): https://github.com/abbyshade111/StackVet/pull/1978; now holds 0533,docs/coordination/board.md
+2026-10-15,00:20,finished,0533,wording,1970,finished 0533 by wording (full): https://github.com/abbyshade111/StackVet/pull/1970; now holds 0530,docs/coordination/board.md
+2026-10-15,00:20,finished,0562,documentation,1975,"finished 0562 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1975; from its lane, behind 0568",docs/coordination/board.md
+2026-10-15,00:20,finished,0531,documentation,1977,"finished 0531 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1977; from its lane, behind 0568",docs/coordination/board.md
+2026-10-15,00:20,finished,0538,documentation,1979,"finished 0538 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1979; from its lane, behind 0568",docs/coordination/board.md
+2026-10-15,00:20,assigned,0525,wording,,"assigned 0525 to wording (full) as next: wording's lane while 0530 and 0534 wait on the owner: the AST rule's constant case, then the two observability proposals with the owner's go (the tool's session record read with consent; the hook log), none in the probe folder the sweeps rewrite",docs/coordination/board.md
+2026-10-15,00:20,assigned,0565,wording,,"assigned 0565 to wording (full) as next: wording's lane while 0530 and 0534 wait on the owner: the AST rule's constant case, then the two observability proposals with the owner's go (the tool's session record read with consent; the hook log), none in the probe folder the sweeps rewrite",docs/coordination/board.md
+2026-10-15,00:21,assigned,0566,wording,,"assigned 0566 to wording (full) as next: wording's lane while 0530 and 0534 wait on the owner: the AST rule's constant case, then the two observability proposals with the owner's go (the tool's session record read with consent; the hook log), none in the probe folder the sweeps rewrite",docs/coordination/board.md
+2026-10-15,00:21,queued,0509,,,"queued 0509, marked",docs/coordination/board.md
+2026-10-15,00:21,assigned,0509,documentation,,"assigned 0509 to documentation (full) as next: documentation's lane while 0568 and 0529 wait on the owner: the CodeQL run over a fixture; if CodeQL is not installed in the session, say so on the item and move on",docs/coordination/board.md
+2026-10-15,01:20,finished,0525,wording,1984,"finished 0525 by wording (full): https://github.com/abbyshade111/StackVet/pull/1984; from its lane, behind 0530",docs/coordination/board.md
+2026-10-15,01:20,assigned,0495,honesty,,"assigned 0495 to honesty (full) into the lane after 0564: the first of the pointer proposals in the owner's order of 14 October (0495, then 0490, then 0500 after the sweeps): a derived mTLS condition and one finding; sv-check and the applicability data",docs/coordination/board.md
+2026-10-15,05:20,finished,0560,honesty,1996,finished 0560 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1996; now holds 0561,docs/coordination/board.md
+2026-10-15,05:20,dropped,0522,,,dropped 0522 from the queue,docs/coordination/board.md
+2026-10-15,05:20,dropped,0523,,,dropped 0523 from the queue,docs/coordination/board.md
+2026-10-15,05:20,dropped,0524,,,dropped 0524 from the queue,docs/coordination/board.md
+2026-10-15,07:20,finished,0561,honesty,2006,finished 0561 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2006; now holds 0564,docs/coordination/board.md
+2026-10-15,07:20,dropped,0537,,,dropped 0537 from the queue,docs/coordination/board.md
+2026-10-15,07:20,queued,0569,,,"queued 0569, marked",docs/coordination/board.md
+2026-10-15,07:20,queued,0571,,,"queued 0571, marked",docs/coordination/board.md
+2026-10-15,07:20,queued,0572,,,"queued 0572, marked",docs/coordination/board.md
+2026-10-15,07:20,queued,0573,,,"queued 0573, marked",docs/coordination/board.md
+2026-10-15,07:20,queued,0574,,,"queued 0574, marked",docs/coordination/board.md
+2026-10-15,07:20,queued,0575,,,"queued 0575, marked",docs/coordination/board.md
+2026-10-15,07:20,queued,0576,,,"queued 0576, marked",docs/coordination/board.md
+2026-10-15,07:20,queued,0570,,,"queued 0570, on hold: the owner's choice: a query given by a function sv did not follow is a finding or not verified, marked",docs/coordination/board.md
+2026-10-15,07:20,assigned,0571,honesty,,"assigned 0571 to honesty (full) into the lane after 0495: from the third sweep: the download-name check's missing case, one request more; honesty's probe files",docs/coordination/board.md
+2026-10-15,07:20,assigned,0572,honesty,,assigned 0572 to honesty (full) into the lane after 0571: from the third sweep: the wrong-password check with no sign-up tries the right password too (ADR-119),docs/coordination/board.md
+2026-10-15,07:33,released,0570,,,released 0570,docs/coordination/board.md
+2026-10-15,07:34,dropped,0570,,,dropped 0570 from the queue,docs/coordination/board.md

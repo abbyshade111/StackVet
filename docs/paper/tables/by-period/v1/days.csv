@@ -1,0 +1,9 @@
+date,period,commits,commits_on_main,pull_requests_merged,tests_rust,tests_typescript,tests_python,decision_records_in_tree,backlog_items_done,last_commit_on_main,source
+2026-09-18,v1,40,15,3,0,1049,0,10,0,d8e3b7bd0,git log of main to 5f05b6ea4; the tree at d8e3b7bd0
+2026-09-19,v1,50,45,1,0,1117,0,10,0,5f94d1c34,git log of main to 5f05b6ea4; the tree at 5f94d1c34
+2026-09-20,v1,48,48,0,0,1190,0,12,0,7fa07d642,git log of main to 5f05b6ea4; the tree at 7fa07d642
+2026-09-22,v1,21,10,0,54,1190,0,12,0,517279a9d,git log of main to 5f05b6ea4; the tree at 517279a9d
+2026-09-23,v1,33,12,3,54,1198,0,12,0,5d8ba92c0,git log of main to 5f05b6ea4; the tree at 5d8ba92c0
+2026-09-24,v1,146,37,37,320,1249,4,12,0,181b79837,git log of main to 5f05b6ea4; the tree at 181b79837
+2026-09-25,v1,184,57,57,687,1297,4,13,0,ea5cc3bd8,git log of main to 5f05b6ea4; the tree at ea5cc3bd8
+2026-09-26,v1,288,103,91,1076,1301,4,13,0,412092da2,git log of main to 5f05b6ea4; the tree at 412092da2

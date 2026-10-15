@@ -41,8 +41,10 @@ fn multipart(
         ));
     }
     body.push_str(&format!("--{boundary}\r\n"));
+    // A quoted string, as a client that is not a browser sends one: `\` and `"` escaped with `\` (backlog 0571).
+    let quoted = name.replace('\\', "\\\\").replace('"', "\\\"");
     body.push_str(&format!(
-        "Content-Disposition: form-data; name=\"{field}\"; filename=\"{name}\"\r\n"
+        "Content-Disposition: form-data; name=\"{field}\"; filename=\"{quoted}\"\r\n"
     ));
     body.push_str("Content-Type: application/octet-stream\r\n\r\n");
     let mut body = body.into_bytes();
@@ -1196,13 +1198,26 @@ fn download_name_checks(
             ),
         ));
     } else if named {
+        // A name kept whole may only have been quoted, and a quote in the name then ends the quoted string: the same
+        // file named with a `"` before the `;`, sent as a client that is not a browser sends it (backlog 0571).
+        let quoted = quoted_name_check(http, upload, serves_at, session, token, out);
+        if quoted == Some(true) {
+            return;
+        }
         out.verified.push(crate::Verified::new(
             DOWNLOAD_NAME_INJECTED.rule_id,
             DOWNLOAD_NAME_INJECTED.requirement_ids,
             format!(
                 "a file named `{HOSTILE}` fetched back from {path} with `Content-Disposition: {}`, \
-                 its name kept inside the file name rather than starting a parameter",
-                header.trim()
+                 its name kept inside the file name rather than starting a parameter{}",
+                header.trim(),
+                match quoted {
+                    Some(_) => format!("; and one named `{QUOTED_HOSTILE}`, the same"),
+                    None => format!(
+                        "; one named `{QUOTED_HOSTILE}` could not be sent and fetched back, so a quote in a name \
+                         was not seen"
+                    ),
+                }
             ),
         )
         // One file on the one upload route stackvet.toml names (ADR-053, Later).
@@ -1216,6 +1231,70 @@ fn download_name_checks(
             ),
         ));
     }
+}
+
+/// The second hostile name: a `"` before the `;`, which ends a quoted file name that was not escaped (backlog 0571).
+const QUOTED_HOSTILE: &str = "sv-probe\";svinjected=1.gif";
+
+/// The file named `QUOTED_HOSTILE`, uploaded and fetched back: `Some(true)` when its name broke the header, which is
+/// the finding, said here; `Some(false)` when it came back named whole; `None` when it was refused or not fetched back
+/// as the file, said as a step.
+fn quoted_name_check(
+    http: &mut dyn Http,
+    upload: &UploadSection,
+    serves_at: &str,
+    session: &Session,
+    token: &Token,
+    out: &mut Outcome,
+) -> Option<bool> {
+    let hostile = Upload {
+        id: "upload-quoted-name",
+        name: QUOTED_HOSTILE,
+        contents: format!("{GIF_MAGIC}sv-probe-quoted-name"),
+    };
+    let stored = send_upload(http, upload, &hostile, session, token);
+    let path = serves_at.replace("{name}", &QUOTED_HOSTILE.replace('"', "%22"));
+    let fetched = stored
+        .filter(|r| r.status < 400)
+        .and_then(|_| http.send(&get("download-quoted", &path, session)))
+        .filter(|r| (200..300).contains(&r.status) && r.body.contains("sv-probe-quoted-name"));
+    let Some(fetched) = fetched else {
+        out.steps.push(format!(
+            "a file named `{QUOTED_HOSTILE}` was refused or not fetched back as the file, so a quote in a name was \
+             not seen"
+        ));
+        return None;
+    };
+    let header = fetched
+        .header("content-disposition")
+        .unwrap_or_default()
+        .to_owned();
+    let injected = disposition_params(&header)
+        .iter()
+        .any(|(k, _)| k == "svinjected");
+    out.steps.push(format!(
+        "fetched a file named `{QUOTED_HOSTILE}` back: {}",
+        if injected {
+            "its quote ended the file name and broke the header"
+        } else {
+            "its name was served intact"
+        }
+    ));
+    if injected {
+        out.findings.push(finding_on(
+            vec!["upload-quoted-name".to_owned(), "download-quoted".to_owned()],
+            &DOWNLOAD_NAME_INJECTED,
+            "A file name is written into a response header unescaped",
+            Severity::Medium,
+            format!(
+                "A file named `{QUOTED_HOSTILE}` came back from {path} with `Content-Disposition: {}`. The name was put \
+                 in quotes without escaping the `\"` in it, which ended the file name; the `;` after it began a \
+                 parameter of its own.",
+                header.trim()
+            ),
+        ));
+    }
+    Some(injected)
 }
 
 /// A served-file check, the three files it uploads (each its request id and name), and what they hold.
@@ -2872,6 +2951,8 @@ mod against_control_tests;
 mod beside_ordinary_tests;
 #[cfg(test)]
 mod first_upload_tests;
+#[cfg(test)]
+mod quoted_name_tests;
 
 #[cfg(test)]
 mod download_is_the_file_tests;
