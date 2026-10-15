@@ -83,6 +83,15 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0373-the-authorization-failure-log-check-on-every-listed-page-12-october.md`): a marker on every listed
    private page, whole only when two or more were refused and each refusal was found with its status.
+   **Scope of the next claim (15 October 2026, by honesty):** the sign-in log check (`probe.authentication-logged`,
+   V16.3.1, which asks that *all* authentication operations be logged, successful and unsuccessful). Each way of
+   signing in stackvet.toml names (the password; `email-code`; `totp`) is made to succeed once and fail once, each
+   between two marked requests, and looked for in the app's output. The password's failure is tried for a real
+   account (a wrong password for the account the check made) as well as for a name no account has. The credit is
+   whole only when every one of these was found and the manifest names no other authentication operation the check
+   did not try (a password change, a reset, or a change to the account's sign-in details), which mirrors part C;
+   otherwise it is in part and names what was not tried. The line's metadata, format, and timestamp are not in this
+   claim. **Record, `Status: proposed`:** a Later entry on ADR-053, accepted in the pull request that builds it.
    **Part status:** partly done: the sign-ins, and the line's metadata, format, and timestamp
 6. **F. Each browser page and form.** The browser-driven checks run on each page and form the owner lists.
    **Scope of this claim (12 October 2026):** the typed-text check (`probe.text-rendered-as-markup`, V3.2.2) on every

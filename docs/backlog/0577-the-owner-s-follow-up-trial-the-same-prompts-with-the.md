@@ -21,3 +21,5 @@ the answer to "does the gaming follow the model or the harness". The result goes
 into 0568's tables as rows, and into the "Limits" block either way.
 
 **Record.** None; the setup page's "Tried so far" may change with the result.
+
+**The owner, 15 October 2026:** the strong-model run in Antigravity is Claude Opus 5.5 (the subscription was upgraded for it; a first attempt with Opus 4.6 was restarted). sv for these runs: Homebrew HEAD-779676c (commit 779676c5) and the Docker image pulled the same day; prompts 1 to 3 skipped, sv already installed, so setup time is not measured.

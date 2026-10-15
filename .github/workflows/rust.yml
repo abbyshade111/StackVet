@@ -492,13 +492,89 @@ jobs:
         if: always()
         run: docker logout
 
+  image-arm64:
+    # The same image for arm64, built and driven on GitHub's own arm64 runner (backlog 0539, ADR-080):
+    # an Apple Silicon Mac pulls this one, where the amd64 image warned that its platform did not
+    # match on every start and ran under emulation. Built natively, not emulated: a Rust release
+    # build under QEMU takes hours. The runner costs nothing for a public repository. Driven by
+    # tools/image_smoke.py as `image` drives the amd64 one, against a native `sv` built on the same
+    # runner, so what `publish` pushes for arm64 was tested too. The GitHub Action's trials stay with
+    # `image`: they drive the same Dockerfile, and the Action runs on GitHub's amd64 runners.
+    #
+    # No Docker Hub sign-in here: the base images come through Google's mirror, as in `image`, and a
+    # pull that the mirror misses goes to Docker Hub unsigned, as a fork's pull request does.
+    needs: scope
+    if: needs.scope.outputs.full != 'false'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Fetch Docker Hub's images through Google's mirror
+        run: |
+          (sudo cat /etc/docker/daemon.json 2>/dev/null || echo '{}') \
+            | jq '. + {"registry-mirrors": ["https://mirror.gcr.io"]}' > "$RUNNER_TEMP/daemon.json"
+          sudo cp "$RUNNER_TEMP/daemon.json" /etc/docker/daemon.json
+          sudo systemctl restart docker
+          docker info --format 'Registry mirrors: {{.RegistryConfig.Mirrors}}'
+
+      - name: Fetch the Dockerfile's base images before the build
+        # Their pinned fingerprints name multi-platform indexes, so on this runner they are the arm64 images.
+        run: |
+          for image in $(awk '/^FROM/ {print $2}' Dockerfile); do
+            docker pull "$image" || echo "::warning::Could not fetch $image ahead of the build; the build will try."
+          done
+
+      - name: Build the image
+        # With the labels `image` gives the amd64 one, so the two are published alike.
+        run: >
+          docker build
+          --label org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          --label org.opencontainers.image.revision=${{ github.sha }}
+          --build-arg SV_GIT_COMMIT=${{ github.sha }}
+          -t stackvet/sv .
+
+      - name: The image is arm64
+        run: |
+          arch=$(docker image inspect --format '{{.Architecture}}' stackvet/sv)
+          test "$arch" = arm64 || { echo "the image built here is $arch, not arm64"; exit 1; }
+
+      - name: Build sv natively, to compare with
+        # rustup is installed first where the runner's image has none.
+        run: |
+          if ! command -v rustup > /dev/null; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+            export PATH="$HOME/.cargo/bin:$PATH"
+          fi
+          rustup toolchain install stable --profile minimal && rustup default stable && cargo build --release --locked -p sv-cli
+
+      - name: Drive the image as an AI coding tool would
+        run: python3 tools/image_smoke.py stackvet/sv --native target/release/sv --commit ${{ github.sha }}
+
+      - name: Keep the image the steps above drove, for publish
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker save stackvet/sv | gzip -1 > "$RUNNER_TEMP/sv-image-arm64.tar.gz"
+
+      - name: Hand it to publish
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sv-image-arm64
+          path: ${{ runner.temp }}/sv-image-arm64.tar.gz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
   publish:
     # Publishes the image to GitHub's container registry, at the owner's decision (26 September
     # 2026), as ghcr.io/abbyshade111/stackvet-sv: `latest`, and the commit it was built from. Only
-    # for a push to main, and only once `test` and `image` have passed on that same commit. What it
-    # pushes is the image `image` built and drove, handed over as an artifact and loaded here, not a
-    # second build of the same commit (backlog 0343): the digest signed below is the tested image's,
-    # and no time goes on building it again. It is the one job that may write packages; every
+    # for a push to main, and only once `test`, `image`, and `image-arm64` have passed on that same
+    # commit. What it pushes is the images `image` and `image-arm64` built and drove, handed over as
+    # artifacts and loaded here, not a second build of the same commit (backlog 0343): the digests
+    # signed below are the tested images', and no time goes on building them again. The two are
+    # published as one image for both platforms (backlog 0539). It is the one job that may write packages; every
     # other job keeps the read-only permission above. No third-party action: `docker login` with the
     # workflow's own token, which lasts for this run only.
     #
@@ -508,7 +584,7 @@ jobs:
     # Anybody can check it: `gh attestation verify oci://ghcr.io/abbyshade111/stackvet-sv:latest
     # --owner abbyshade111`.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [test, image]
+    needs: [test, image, image-arm64]
     # The `publish` Environment, made by the owner in the repository's settings on 13 October 2026,
     # lets only runs of the branch `main` in (backlog 0289, 0422; ADR-051). GitHub holds that rule
     # outside this file, so no change to the `if:` above by a branch can get a pull request's run
@@ -535,39 +611,63 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Fetch the image that was tested
+      - name: Fetch the images that were tested
+        # `image`'s for amd64 and `image-arm64`'s for arm64, into one folder: their files have different names.
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: sv-image
+          pattern: sv-image*
+          merge-multiple: true
           path: ${{ runner.temp }}
 
-      - name: Load it under the names it is published as
+      - name: Load them under the names they are pushed as
+        # Each under the commit and its platform; the commit's own tag and `latest` name the two together, below.
+        # Both load as stackvet/sv, so each is tagged before the next is loaded.
         run: |
-          gunzip -c "$RUNNER_TEMP/sv-image.tar.gz" | docker load
-          docker tag stackvet/sv "$IMAGE:latest"
-          docker tag stackvet/sv "$IMAGE:${{ github.sha }}"
+          for arch in amd64 arm64; do
+            file="$RUNNER_TEMP/sv-image.tar.gz"
+            [ "$arch" = arm64 ] && file="$RUNNER_TEMP/sv-image-arm64.tar.gz"
+            gunzip -c "$file" | docker load
+            got=$(docker image inspect --format '{{.Architecture}}' stackvet/sv)
+            test "$got" = "$arch" || { echo "the $arch image is $got"; exit 1; }
+            docker tag stackvet/sv "$IMAGE:${{ github.sha }}-$arch"
+          done
 
-      - name: Publish it
+      - name: Publish them, as one image for both platforms
         id: publish
-        # Runs on main can finish out of order now that each commit has its own, so `latest` moves
-        # only when this commit is still the newest on main; the commit's own tag is always pushed.
-        # Both tags name the same image, so its one digest is what gets signed. The token reaches the
-        # script through the environment, never as its text (backlog 0318), as the Docker Hub steps' does.
+        # Each platform's image is pushed under its own tag, then one manifest naming both is pushed as the
+        # commit's tag (backlog 0539): `docker pull` picks the one for the machine it runs on. Runs on main can
+        # finish out of order now that each commit has its own, so `latest` moves only when this commit is still
+        # the newest on main. The token reaches the script through the environment, never as its text (backlog
+        # 0318), as the Docker Hub steps' does.
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
         run: |
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
-          docker push "$IMAGE:${{ github.sha }}"
+          sha="${{ github.sha }}"
+          docker push "$IMAGE:$sha-amd64"
+          docker push "$IMAGE:$sha-arm64"
+          tags=(-t "$IMAGE:${{ github.sha }}")
           git fetch --depth=1 origin main
-          if [ "$(git rev-parse FETCH_HEAD)" = "${{ github.sha }}" ]; then
-            docker push "$IMAGE:latest"
+          if [ "$(git rev-parse FETCH_HEAD)" = "$sha" ]; then
+            tags+=(-t "$IMAGE:latest")
           else
-            echo "main has moved past ${{ github.sha }}; latest is left to the newer commit's run"
+            echo "main has moved past $sha; latest is left to the newer commit's run"
           fi
-          digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE:${{ github.sha }}")
-          echo "digest=${digest#*@}" >> "$GITHUB_OUTPUT"
+          docker buildx imagetools create "${tags[@]}" "$IMAGE:$sha-amd64" "$IMAGE:$sha-arm64"
+          digest_of() {
+            docker buildx imagetools inspect "$1" --format '{{json .Manifest}}' | jq -r .digest
+          }
+          echo "digest=$(digest_of "$IMAGE:$sha")" >> "$GITHUB_OUTPUT"
+          echo "amd64=$(digest_of "$IMAGE:$sha-amd64")" >> "$GITHUB_OUTPUT"
+          echo "arm64=$(digest_of "$IMAGE:$sha-arm64")" >> "$GITHUB_OUTPUT"
+          # The one image names both platforms, and nothing else.
+          platforms=$(docker buildx imagetools inspect "$IMAGE:$sha" --format '{{json .Manifest}}' \
+            | jq -r '[.manifests[] | select(.platform.os == "linux") | .platform.architecture] | sort | join(",")')
+          test "$platforms" = "amd64,arm64" || { echo "the published image names $platforms"; exit 1; }
 
+      # Each signed (backlog 0539): the image both platforms share, which `gh attestation verify` checks for a tag,
+      # and each platform's own, which is what `docker pull` fetches on that machine.
       - name: Sign what it was built from, and push that beside it
         # Still logged in: the signed statement is pushed to the registry with the same login.
         # No storage record: GitHub keeps those only for a repository an organization owns.
@@ -575,6 +675,22 @@ jobs:
         with:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ steps.publish.outputs.digest }}
+          push-to-registry: true
+          create-storage-record: false
+
+      - name: Sign the amd64 image
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.publish.outputs.amd64 }}
+          push-to-registry: true
+          create-storage-record: false
+
+      - name: Sign the arm64 image
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.publish.outputs.arm64 }}
           push-to-registry: true
           create-storage-record: false
 
