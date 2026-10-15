@@ -19,11 +19,11 @@ It takes about fifteen minutes to set up, once. A word here you do not know is p
 an AI chat but never built an app with one. Copied into your AI coding tool one at a time, they have it look at your
 computer, help you install what is missing, fetch StackVet (on Windows, install it with Scoop), and write the settings
 file with the paths already filled in, asking you before it installs or changes anything outside the folder.
-**Tried so far:** in Antigravity, on a Mac, on 13 October 2026, with the Gemini 3.8 Flash model. The setup worked. The
-build that followed went badly: the AI tool made choices it should have asked you about and said "done" for checks
-nobody had made. The prompts were changed for that on 14 October 2026, and until the changes are tried, the setup page does not
-recommend Antigravity with that model. They have not yet been tried in Claude Code, Cursor, or VS Code. Steps 1
-to 3 below do it by hand, if you prefer or a prompt stops.
+**Tried so far:** in Cursor and in VS Code with GitHub Copilot, on a Mac, on 14 October 2026. The setup worked. Both
+did the prompts as written, each with one gap now fixed. In Antigravity with the Gemini 3.8 Flash model, the build that
+followed went badly: it rewrote code to make a check pass, then said it had not, so the setup page does not recommend
+it. They have not yet been tried in Claude Code, or the Claude desktop app. Steps 1 to 3 below do it by hand, if you
+prefer or a prompt stops.
 
 ## What StackVet will and will not tell you
 
