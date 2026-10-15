@@ -16,3 +16,5 @@ file is information with the words "in a test file; a test password reused elsew
 against V13.3.1 or SBD-AC-05. A value that looks like a real key (a provider's prefix) stays a finding wherever it is.
 
 **Record.** The secrets check's record: a Later entry, since what counts as a finding changes.
+
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** (b): only values that read as words or passphrases (like violet-canoe-marble-ledger) become test information; a random-looking value in a test file still counts as a finding, as the ADR-091 ruling of 11 October says. A Later entry on ADR-091 with this line.

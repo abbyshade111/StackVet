@@ -15,3 +15,5 @@ note), and `sv connect cursor` prints it. Cursor documents it on its MCP page.
 for the other `.cursor/` files.
 
 **Record.** ADR-0NN: unchanged, because the file's reading is the same as `.mcp.json`'s; check `ai_tool.rs`'s record.
+
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** A: the owner adds cursor.com and docs.cursor.com under Allowed domains in the cloud environment's Network access; wording then reads Cursor's MCP page and builds from it, as ADR-049 requires. Until the owner has made the change, the item waits; B (the page saved into docs/research/) is the fallback if the setting cannot be made.

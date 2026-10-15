@@ -13,3 +13,5 @@ missing lockfile with hashes. The title contradicts the text, and a person readi
 the text.
 
 **Record.** None.
+
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** A: rename the finding, and also match what was recorded under the old title (accepted risks, reviews, and --baseline), held by a test.
