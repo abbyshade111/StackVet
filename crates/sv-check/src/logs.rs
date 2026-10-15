@@ -507,10 +507,53 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
         ));
     }
 
-    // ---- V16.2.1, V16.2.2 and V16.2.4: what the refused sign-in's line carries.
+    // ---- V16.2.1, V16.2.2 and V16.2.4: what the refused sign-in's line carries, and every other security event's
+    // line found (backlog 0232, part 5): the wrong password, the accepted sign-in, each code taken and refused, and,
+    // for the zone and the format, each refused request.
+    let mut others: Vec<Other> = Vec::new();
+    for (line, what) in [
+        (wrong_line, "the wrong password for an account that exists"),
+        (succeeded_line, "the accepted sign-in"),
+    ] {
+        if let Some((line, named)) = line {
+            others.push(Other {
+                what: what.to_owned(),
+                line,
+                named,
+                sign_in: true,
+            });
+        }
+    }
+    for f in &markers.factors {
+        for (window, failed, which) in
+            [(&f.accepted, false, "taken"), (&f.refused, true, "refused")]
+        {
+            if let Some(line) = window.as_ref().and_then(|w| factor_event(log, w, failed)) {
+                others.push(Other {
+                    what: format!("{}, the code {which}", f.what),
+                    line,
+                    named: false,
+                    sign_in: true,
+                });
+            }
+        }
+    }
+    for (marker, status, _) in &markers.refused_requests {
+        if let Some(line) = log
+            .lines()
+            .find(|l| l.contains(marker.as_str()) && records_status(l, *status))
+        {
+            others.push(Other {
+                what: "a refused request".to_owned(),
+                line,
+                named: false,
+                sign_in: false,
+            });
+        }
+    }
     if let Some((line, named)) = failed_line {
-        metadata_checks(line, named, &mut out);
-        format_check(line, &mut out);
+        metadata_checks(line, named, &others, &mut out);
+        format_check(line, &others, &mut out);
     } else {
         for id in ["V16.2.1", "V16.2.2", "V16.2.4"] {
             out.not_assessed.push((
@@ -655,26 +698,50 @@ pub(crate) fn common_format(line: &str) -> Option<&'static str> {
     (pairs >= 3 && pairs * 2 >= tokens.len()).then_some("logfmt")
 }
 
+/// A security event's line other than the refused sign-in's, read for the same metadata, zone, and format (backlog
+/// 0232, part 5): what it records, the line, whether it was found by the account's name, and whether it records a
+/// sign-in (a refused request by a stranger has no *who* to show).
+struct Other<'a> {
+    what: String,
+    line: &'a str,
+    named: bool,
+    sign_in: bool,
+}
+
 /// V16.2.4, read from the same line: is it in a format a log processor reads without being taught?
 ///
 /// Credit on presence only. Free text can still be read by a processor given a pattern for it, and
 /// a log shipper often turns lines into structured records on the way; neither is visible here, so
 /// a line that is none of the three is not assessed rather than faulted.
-fn format_check(line: &str, out: &mut LogOutcome) {
+fn format_check(line: &str, others: &[Other], out: &mut LogOutcome) {
     match common_format(line) {
         Some(format) => {
             out.steps
                 .push(format!("the refused sign-in's line is written as {format}"));
-            out.verified.push(crate::Verified::new(
-                "probe.log-common-format",
-                &["V16.2.4"],
-                format!(
-                    "the line recording a refused sign-in this run made is written as {format}, \
-                     which log processors read without being taught"
-                ),
-            )
-            // One log line, a refused sign-in's (ADR-053, Later).
-            .in_part());
+            // Whole when every other event's line found is in a common format too, and there is at least one
+            // (backlog 0232, part 5).
+            let all = !others.is_empty() && others.iter().all(|o| common_format(o.line).is_some());
+            out.verified.push(
+                crate::Verified::new(
+                    "probe.log-common-format",
+                    &["V16.2.4"],
+                    if all {
+                        format!(
+                            "the line recording a refused sign-in this run made is written as {format}, and so is \
+                             each of the {} other security events' lines found, which log processors read \
+                             without being taught",
+                            others.len()
+                        )
+                    } else {
+                        format!(
+                            "the line recording a refused sign-in this run made is written as {format}, \
+                             which log processors read without being taught"
+                        )
+                    },
+                )
+                // One log line, a refused sign-in's, unless every event's line was (ADR-053, Later).
+                .in_part_if(!all),
+            );
         }
         None => {
             out.steps
@@ -759,7 +826,7 @@ fn has_place(line: &str) -> bool {
 /// but not to say who made it: an app that keeps email addresses out of its log may record who
 /// some other way, such as a user id, which an account that does not exist has none of. So V16.2.1
 /// is not assessed from such a line, and the zone and format, which do not depend on who, still are.
-fn metadata_checks(line: &str, named: bool, out: &mut LogOutcome) {
+fn metadata_checks(line: &str, named: bool, others: &[Other], out: &mut LogOutcome) {
     let when = timestamp(line);
     let place = has_place(line);
     out.steps.push(format!(
@@ -782,17 +849,38 @@ fn metadata_checks(line: &str, named: bool, out: &mut LogOutcome) {
              not exist does not have."
                 .to_owned(),
         )),
-        (Some(t), true) => out.verified.push(crate::Verified::new(
-            "probe.log-line-metadata",
-            &["V16.2.1"],
-            format!(
-                "the line recording a refused sign-in this run made carried the account (who), the \
-                 event (what), a timestamp `{}` (when), and a source address or path (where)",
-                t.text
-            ),
-        )
-        // One log line, a refused sign-in's, not each entry (ADR-053, Later).
-        .in_part()),
+        (Some(t), true) => {
+            // Whole when every other sign-in's line found shows the same four, the account by its name, and there is at
+            // least one (backlog 0232, part 5).
+            let signs: Vec<&Other> = others.iter().filter(|o| o.sign_in).collect();
+            let all = !signs.is_empty()
+                && signs
+                    .iter()
+                    .all(|o| o.named && timestamp(o.line).is_some() && has_place(o.line));
+            out.verified.push(
+                crate::Verified::new(
+                    "probe.log-line-metadata",
+                    &["V16.2.1"],
+                    if all {
+                        format!(
+                            "the line recording a refused sign-in this run made, and each of the {} other sign-ins' \
+                             lines found, carried the account (who), the event (what), a timestamp (when, `{}` on \
+                             the first), and a source address or path (where)",
+                            signs.len(),
+                            t.text
+                        )
+                    } else {
+                        format!(
+                            "the line recording a refused sign-in this run made carried the account (who), the \
+                             event (what), a timestamp `{}` (when), and a source address or path (where)",
+                            t.text
+                        )
+                    },
+                )
+                // One log line, a refused sign-in's, unless every sign-in's line showed all four (ADR-053, Later).
+                .in_part_if(!all),
+            )
+        }
         _ => out.not_assessed.push((
             "V16.2.1".to_owned(),
             format!(
@@ -809,19 +897,53 @@ fn metadata_checks(line: &str, named: bool, out: &mut LogOutcome) {
     }
     crate::verified::unless_credited("probe.log-line-metadata", &out.verified);
 
-    match &when {
-        Some(t) if t.zoned => out.verified.push(
-            crate::Verified::new(
-                "probe.log-timestamp-zoned",
-                &["V16.2.2"],
-                format!(
-                    "the timestamp on a security event's line, `{}`, states its time zone",
-                    t.text
-                ),
+    // Another event's line with a time and no zone is the same finding, about that line (backlog 0232, part 5).
+    let other_stamps: Vec<(&Other, Timestamp)> = others
+        .iter()
+        .filter_map(|o| timestamp(o.line).map(|t| (o, t)))
+        .collect();
+    let unzoned_other = other_stamps.iter().find(|(_, t)| !t.zoned);
+    let (when, about) = match (&when, unzoned_other) {
+        (Some(t), Some((o, other))) if t.zoned => {
+            out.steps.push(format!(
+                "the line recording {} carried the time `{}` with no zone",
+                o.what, other.text
+            ));
+            (
+                Some(Timestamp {
+                    text: other.text.clone(),
+                    zoned: false,
+                }),
+                o.what.clone(),
             )
-            // One log line's timestamp (ADR-053, Later).
-            .in_part(),
-        ),
+        }
+        _ => (when, "a refused sign-in".to_owned()),
+    };
+    match &when {
+        Some(t) if t.zoned => {
+            let all = !other_stamps.is_empty() && other_stamps.len() == others.len();
+            out.verified.push(
+                crate::Verified::new(
+                    "probe.log-timestamp-zoned",
+                    &["V16.2.2"],
+                    if all {
+                        format!(
+                            "the timestamp on a security event's line, `{}`, states its time zone, and so does \
+                             each of the {} other security events' lines found",
+                            t.text,
+                            others.len()
+                        )
+                    } else {
+                        format!(
+                            "the timestamp on a security event's line, `{}`, states its time zone",
+                            t.text
+                        )
+                    },
+                )
+                // One log line's timestamp, unless every event's line carried a zoned one (ADR-053, Later).
+                .in_part_if(!all),
+            )
+        }
         Some(t) => out.findings.push(crate::finding::found(Finding {
             evidence: Vec::new(),
             also_reported_by: Vec::new(),
@@ -841,8 +963,8 @@ fn metadata_checks(line: &str, named: bool, out: &mut LogOutcome) {
             requirement_ids: vec!["V16.2.2".to_owned()],
             cwe: vec!["CWE-778".to_owned()],
             description: format!(
-                "The line recording a refused sign-in carried the time `{}`, with no `Z` and no \
-                 offset, so nothing in the line says which time zone it is in.",
+                "The line recording {about} carried the time `{}`, with no `Z` and no offset, so \
+                 nothing in the line says which time zone it is in.",
                 t.text
             ),
             impact:
@@ -862,6 +984,10 @@ fn metadata_checks(line: &str, named: bool, out: &mut LogOutcome) {
         )),
     }
 }
+
+#[cfg(test)]
+#[path = "logs/every_line_tests.rs"]
+mod every_line_tests;
 
 #[cfg(test)]
 mod tests {
@@ -898,9 +1024,18 @@ time=2026-09-26T10:00:01Z level=warn event=sign-in-failed account=sv-log-nobody-
         assert!(ids(&o).contains(&"probe.log-common-format"), "{o:?}");
         assert!(o.not_assessed.is_empty(), "{:?}", o.not_assessed);
         assert!(o.findings.is_empty(), "{:?}", o.findings);
-        // A few lines, for two sign-ins and one refusal: each credit in part (ADR-053, Later).
+        // A few lines, for two sign-ins and one refusal: each credit in part (ADR-053, Later), but the zone, which all
+        // three event lines found state, so it is read whole (backlog 0232, part 5).
         assert_eq!(o.verified.len(), 5, "{:?}", o.verified);
-        assert!(o.verified.iter().all(|v| v.in_part), "{:?}", o.verified);
+        for v in &o.verified {
+            assert_eq!(
+                v.in_part,
+                v.check_id != "probe.log-timestamp-zoned",
+                "{}: {}",
+                v.check_id,
+                v.scope
+            );
+        }
     }
 
     #[test]
