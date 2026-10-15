@@ -83,6 +83,7 @@ mod sql;
 mod stored_markup;
 mod tokens;
 mod totp;
+pub mod unset_keys;
 mod uploads;
 use activation::*;
 use admin::*;
@@ -2626,6 +2627,8 @@ mod storage_check_tests;
 mod stored_markup_tests;
 #[cfg(test)]
 mod timings_tests;
+#[cfg(test)]
+mod unset_keys_tests;
 
 #[cfg(test)]
 mod tests {

@@ -82,6 +82,12 @@ the GIF sent after a refusal as taken only when it was answered as the first ord
 200 page no longer lets a refusal stand. Still open from item 2's note: the first ordinary GIF itself is taken on
 "under 400" (a 200 re-render of the form there would pass the gate), which a `serves-at` fetch could settle.
 
+**Fourth batch, built (the burst, list item 3):** a burst's answers are read beside its first, and only one answered
+as the first was counts as going through; a 429, or 503 with `Retry-After`, is still read as the limit. Where its
+answer says where the first record went, that record is read back first, and a burst whose first record is not
+there shows nothing either way. A limit shown on a 200 page or as a redirect elsewhere is not assessed, and says what
+was compared.
+
 **Fifth batch, built (admin pages, part of list item 5):** an ordinary user's 200 for an admin page is read beside
 the admin's own page there (`control::shows_page`: half of its pieces of text or more): the page shown is a finding as
 before; a 200 page showing little of it (a 403 template served with 200) is neither a finding nor a refusal, says so,

@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0560, 0561, 0564, 0539, 0232
+- honesty — arm: full — holds: 0560 (since 2026-10-14) — next: 0561, 0564, 0539, 0232
 - wording — arm: full — holds: 0557 (since 2026-10-14) — next: 0533, 0530, 0534
 - documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0562, 0529, 0531, 0538
 
@@ -565,3 +565,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 23:20 — assigned 0529 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
 - 2026-10-14 23:20 — assigned 0531 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
 - 2026-10-14 23:20 — assigned 0538 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
+- 2026-10-14 23:50 — finished 0521 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1972; now holds 0560
