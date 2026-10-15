@@ -1,6 +1,6 @@
 # Prompt 5's preview step installs packages and writes into the app's real database without a yes, and never opens the sign-in page
 
-**Status:** open
+**Status:** claimed by wording, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
