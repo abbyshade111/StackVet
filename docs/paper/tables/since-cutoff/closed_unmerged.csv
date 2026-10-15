@@ -1,0 +1,28 @@
+number,created_at,closed_at,title
+640,2026-10-05T00:13:12Z,2026-10-05T00:32:54Z,Claim: H5
+642,2026-10-05T00:33:24Z,2026-10-05T01:01:40Z,Read Next.js and modern Node redirects and file calls (H5)
+675,2026-10-05T03:52:14Z,2026-10-05T04:02:56Z,Give each test run its own temporary folders
+682,2026-10-05T04:30:17Z,2026-10-05T11:36:09Z,"A not-the-app list over all of the app's code is said, not answered (R12)"
+711,2026-10-05T12:10:32Z,2026-10-05T12:43:53Z,Claim improvement 5's container clock part
+744,2026-10-05T18:34:05Z,2026-10-05T18:50:43Z,Open redirect: name the app's own function the destination passes through
+751,2026-10-05T20:08:39Z,2026-10-05T20:09:26Z,"Claim V5.2.3, compressed bombs"
+755,2026-10-05T20:44:12Z,2026-10-05T21:21:17Z,Test lists: sv preflight and securevibe_preflight (main fails two tests)
+898,2026-10-07T12:42:39Z,2026-10-07T13:04:40Z,Claim the research into OWASP's Agentic Skills Top 10
+1001,2026-10-08T09:32:13Z,2026-10-08T10:22:15Z,"Claim gap item 10, part 3: a secret key under a public name"
+1061,2026-10-08T16:23:59Z,2026-10-08T17:09:46Z,Claim one file per design entry (ADR-060 proposed)
+1087,2026-10-08T19:39:51Z,2026-10-08T19:52:49Z,"Claim: Ctrl-C under --tools (8 October review, item 1)"
+1105,2026-10-08T21:35:52Z,2026-10-08T22:00:16Z,"Claim: the run image held to Docker's grammar, and a done note (8 October review, item 6)"
+1107,2026-10-08T21:40:25Z,2026-10-08T22:12:08Z,"Claim three low findings of backlog 188, item 6: the install volume's hash, the image reference, the report's CSP"
+1129,2026-10-09T01:19:30Z,2026-10-09T01:36:34Z,"Backlog: claim the session cookie a signed-in page sets again, and 0188 done"
+1167,2026-10-09T05:02:40Z,2026-10-09T05:18:22Z,"Claim: knex's raw calls read by the SQL rule (gap analysis item 1, first half, knex)"
+1245,2026-10-09T13:28:10Z,2026-10-09T13:50:36Z,"Backlog: claim item 0191 part 5, sv explain"
+1294,2026-10-09T21:09:29Z,2026-10-09T21:36:02Z,"CI signs in to Docker Hub for its pulls, and signs out before other code runs"
+1297,2026-10-09T22:08:40Z,2026-10-09T22:30:57Z,"The fence check that could not run says what Docker printed (main is red, cause hidden)"
+1417,2026-10-11T03:15:34Z,2026-10-11T03:47:34Z,Change weekly review status to 'done' and add note
+1421,2026-10-11T04:04:39Z,2026-10-11T04:51:20Z,"Report the names the app looked up (0240), and close 0238 after its digest check"
+1424,2026-10-11T04:51:27Z,2026-10-11T04:55:40Z,"Report the names the app looked up (0240), record the with and without runs, and close 0238 and 0240"
+1543,2026-10-12T17:33:12Z,2026-10-12T18:12:37Z,"Test for 0275, do not merge: CodeQL skipped"
+1634,2026-10-13T02:47:41Z,2026-10-13T16:14:09Z,Bump node from 22-alpine to 25-alpine in /crates/sv-run/images
+1862,2026-10-14T11:50:45Z,2026-10-14T12:12:56Z,"Board: 0409 finished, the last item in progress"
+1901,2026-10-14T15:53:41Z,2026-10-14T23:20:46Z,"0513: the Semgrep Rules License read by the owner (ADR-018, Later); the CodeQL reading noted"
+1905,2026-10-14T16:21:12Z,2026-10-14T16:52:28Z,Board: four finishes; 0515 held for the owner
