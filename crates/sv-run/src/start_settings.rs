@@ -93,6 +93,104 @@ pub fn sign_in_limit_note(start: &str) -> Option<String> {
     })
 }
 
+/// The rules of `sv`'s run whose credit a setting loosened for the run bears on, by the words of its name (backlog
+/// 0564): a credit earned by a copy that differs from the shipped app on the very thing the rule asks about is about
+/// that copy. Each table is the rules that ask about the thing the words name; a name that names none of them bears on
+/// nothing here, and is only warned about, as before.
+const BEARS_ON: &[(&[&str], &[&str])] = &[
+    (
+        &["cookie", "cookies"],
+        &[
+            "probe.cookie-attributes",
+            "probe.session-cookie-attributes",
+            "probe.cookie-without-host-prefix",
+        ],
+    ),
+    (
+        &["csrf", "xsrf"],
+        &[
+            "probe.cross-site-request-accepted",
+            "probe.preflight-skipped",
+            "probe.csrf-token-shared",
+        ],
+    ),
+    (
+        &["hsts", "https"],
+        &["probe.no-hsts", "probe.api-redirected-to-https"],
+    ),
+    (&["csp"], &["probe.security-headers", "probe.csp-no-report"]),
+    (
+        &["mfa", "2fa", "totp"],
+        &["probe.totp-old-code-accepted", "probe.totp-reused"],
+    ),
+    (
+        &["ratelimit"],
+        &[
+            "probe.create-rate-unlimited",
+            "probe.failed-sign-ins-unlimited",
+            "probe.email-code-guessing-unlimited",
+            "probe.ai-rate-unlimited",
+        ],
+    ),
+    (
+        &["auth"],
+        &[
+            "probe.private-page-anonymous",
+            "probe.admin-page-ordinary-user",
+            "probe.admin-action-ordinary-user",
+            "probe.other-users-data",
+            "probe.session-token-unverified",
+            "probe.websocket-without-session",
+        ],
+    ),
+];
+
+/// Every rule id the table above names, for a test that each is one of `sv`'s.
+pub fn rules_borne_on() -> Vec<&'static str> {
+    let mut all: Vec<&'static str> = BEARS_ON
+        .iter()
+        .flat_map(|(_, rules)| rules.iter().copied())
+        .collect();
+    all.sort_unstable();
+    all.dedup();
+    all
+}
+
+/// The settings the start command loosens the run's copy with, as `crate::weakening_named_in` shows them (a value only
+/// when it is a short word, never one that could be a key), each with the rules it bears on. Only settings that bear on
+/// some rule. A setting that only looks like a sign-in limit (`sign_in_limits_in`) is not one: raising a limit on
+/// every sign-in for the run while wrong passwords are still stopped at the stated number is what ADR-114 asks of the
+/// copy, and a credit for V6.3.1 then shows the copy stopping them; its findings keep `sign_in_limit_note`.
+pub fn loosened(start: &str) -> Vec<(String, Vec<&'static str>)> {
+    let mut out: Vec<(String, Vec<&'static str>)> = Vec::new();
+    for shown in crate::weakening_named_in(start) {
+        let name = shown
+            .split('=')
+            .next()
+            .unwrap_or_default()
+            .trim_start_matches('-');
+        let lower = name.to_ascii_lowercase();
+        let mut words: Vec<String> = lower
+            .split(['_', '-', '.'])
+            .filter(|w| !w.is_empty())
+            .map(str::to_owned)
+            .collect();
+        if lower.replace(['_', '-', '.'], "").contains("ratelimit") {
+            words.push("ratelimit".to_owned());
+        }
+        let mut rules: Vec<&'static str> = BEARS_ON
+            .iter()
+            .filter(|(names, _)| words.iter().any(|w| names.contains(&w.as_str())))
+            .flat_map(|(_, rules)| rules.iter().copied())
+            .collect();
+        rules.dedup();
+        if !rules.is_empty() {
+            out.push((shown, rules));
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 #[path = "start_settings_tests.rs"]
 mod tests;
