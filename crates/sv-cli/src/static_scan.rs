@@ -182,9 +182,17 @@ impl StaticScan {
         let mut links: Vec<String> = if listing.links.is_empty() {
             Vec::new()
         } else {
+            // Named, so a person can tell links an environment made from links of the app's own (backlog 0595).
+            let shown: Vec<String> = listing
+                .links
+                .iter()
+                .take(3)
+                .map(|l| format!("`{l}`"))
+                .collect();
             vec![format!(
-                "{} symbolic link(s) in the app were not followed",
-                listing.links.len()
+                "{} symbolic link(s) in the app were not followed, such as {}",
+                listing.links.len(),
+                shown.join(", ")
             )]
         };
         if !listing.special.is_empty() {

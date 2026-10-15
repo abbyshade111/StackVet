@@ -363,7 +363,8 @@ pub struct Listing {
     /// write into it, which hung `sv` (deep review S12).
     pub special: Vec<String>,
     /// Folders with an ordinary name left out as an ecosystem's output (`dist/` beside a
-    /// `package.json`), each with the manifest that explains it. Every check leaves them out, and the
+    /// `package.json`), each with the manifest that explains it, and a Python virtual environment
+    /// under a name of its own, by the `pyvenv.cfg` in it (backlog 0595). Every check leaves them out, and the
     /// report names them, so a skip is never silent (deep review H6). The folders every app has
     /// (`.git`, `node_modules`) and `sv`'s own reports are not listed.
     pub skipped: Vec<(String, String)>,
@@ -493,6 +494,13 @@ fn walk(root: &Path, dir: &Path, in_editor: bool, out: &mut Listing) {
                     Some(Skip::Output { beside }) => {
                         out.skipped
                             .push((relative(root, &path), format!("output beside its {beside}")));
+                        continue;
+                    }
+                    Some(Skip::Environment) => {
+                        out.skipped.push((
+                            relative(root, &path),
+                            "a Python virtual environment: it holds pyvenv.cfg".to_owned(),
+                        ));
                         continue;
                     }
                     Some(_) => continue,

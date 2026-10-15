@@ -999,6 +999,10 @@ pub enum Skip {
     Output { beside: &'static str },
     /// A report `sv` wrote.
     Report,
+    /// A Python virtual environment under a name of its own, `env/` say: a folder holding `pyvenv.cfg`, which
+    /// `python -m venv` writes. Its installed packages and the links in its `bin/` are not the app's code (backlog
+    /// 0595).
+    Environment,
 }
 
 /// A folder carrying `sv`'s marker, or named as `sv`'s default report folder, that holds something
@@ -1064,6 +1068,10 @@ pub fn skip_reason(dir: &Path) -> Option<Skip> {
     }
     if is_sv_output(dir) {
         return Some(Skip::Report);
+    }
+    // The file itself, never a link to one: a link could make any folder look like an environment.
+    if std::fs::symlink_metadata(dir.join("pyvenv.cfg")).is_ok_and(|m| m.is_file()) {
+        return Some(Skip::Environment);
     }
     let (_, manifests) = OUTPUT_DIRS.iter().find(|(n, _)| *n == name)?;
     let parent = dir.parent()?;
