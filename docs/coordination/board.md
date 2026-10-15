@@ -8,7 +8,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0495, 0571, 0572, 0539, 0232
 - wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0578, 0565, 0566
-- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0569, 0573, 0574, 0575
+- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575
 
 ## Queue
 
@@ -599,3 +599,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 08:20 — assigned 0575 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
 - 2026-10-15 09:18 — queued 0578, marked
 - 2026-10-15 09:18 — assigned 0578 to wording (full) into the lane after 0534: the owner's find of 15 October from prompt 7: sv review's second report wipes the --run evidence; sv-cli, wording's; first on its line
+- 2026-10-15 09:20 — finished 0569 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2019; from its lane, behind 0568
