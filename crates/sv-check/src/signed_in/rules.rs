@@ -501,6 +501,22 @@ pub(super) const FORGERY: Rule = Rule {
           Origin header against the app's own address, and set SameSite on the session cookie.",
 };
 
+pub(super) const TOKEN_SHARED: Rule = Rule {
+    rule_id: "probe.csrf-token-shared",
+    // V3.5.1 asks that requests be shown to come from the application itself, for example by an
+    // anti-forgery token it validates. A token every visitor is handed alike shows nothing about where a
+    // request came from: another site fetches it once and puts it in a form of its own. Only ever a finding:
+    // two visitors handed different tokens do not show the app checks them.
+    requirement_ids: &["V3.5.1"],
+    cwe: &["CWE-352"],
+    impact: "The sign-in form's anti-forgery token is the same for everybody, so another website can \
+             fetch it once and put it in a form of its own: the token stops nothing it was meant to \
+             stop, such as signing a visitor in to an account the other site chose.",
+    fix: "Make the token for each visitor: tie it to the visitor's own session (most frameworks' \
+          anti-forgery support does this when it is switched on), and check it against that session \
+          when the form comes back.",
+};
+
 pub(super) const OWN_FORMS_REFUSED: Rule = Rule {
     rule_id: "probe.own-forms-refused",
     // Nothing in ASVS asks an app to accept its own forms; this is a finding about the app not

@@ -188,6 +188,7 @@ RUST_CHECKS = {
     "probe.session-not-renewed": ("signed-in", ["V7.2.4"]),
     "probe.logout-keeps-session": ("signed-in", ["V7.4.1"]),
     "probe.cross-site-request-accepted": ("signed-in", ["V3.5.1"]),
+    "probe.csrf-token-shared": ("signed-in", ["V3.5.1"]),
     "probe.short-password-accepted": ("signed-in", ["V6.2.1"]),
     "probe.common-password-accepted": ("signed-in", ["V6.2.4"]),
     "probe.breached-password-accepted": ("signed-in", ["V6.2.12"]),
@@ -358,6 +359,8 @@ RUST_FINDINGS_ONLY = {
     "probe.old-tls-accepted",
     # One value on three pages is not every place the app writes out what it was sent.
     "probe.reflected-unencoded",
+    # Two strangers handed different tokens do not show the app checks them (backlog 0537).
+    "probe.csrf-token-shared",
     "probe.reflected-json-unescaped",
     # A few values in a few addresses, told apart or not, is not every query the app builds.
     "probe.sql-injection",

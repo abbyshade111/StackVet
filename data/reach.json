@@ -1595,6 +1595,12 @@
     "finding_only": false
    },
    {
+    "id": "probe.csrf-token-shared",
+    "run": "Signed in",
+    "looks_for": "The sign-in form's anti-forgery token is the same for everybody, so another website can fetch it once and put it in a form of its own: the token stops nothing it was meant to stop, such as signing a visitor in to an account the other sit...",
+    "finding_only": true
+   },
+   {
     "id": "brakeman",
     "run": "Outside tools",
     "looks_for": "cross-site request forgery protection does not raise an exception, so forged requests are not refused; cross-site request forgery protection is disabled, so requests are not validated to originate from the application; cross-site request...",

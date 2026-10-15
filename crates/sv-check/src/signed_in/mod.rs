@@ -1985,6 +1985,10 @@ fn run_checks(
         ));
     }
 
+    // 1a. The sign-in page asked for twice, as two strangers: one anti-forgery token for everybody is no
+    //     token at all. This needs no account either.
+    quiet!(shared_token_check(http, users, &mut out));
+
     // 2. Signing in, and showing it worked. Without this every check below would be comparing
     //    refusals to refusals.
     let Some(a) = sign_in(http, users, "a", &accounts.a, &mut out.steps) else {

@@ -118,7 +118,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V1.3.7 | L2 | Reads the code: `ast.template-built-from-value`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` (sv only ever as a finding: `ast.template-built-from-value`) |
 | V1.5.2 | L2 | Reads the code: `ast.unsafe-deserialization`; Outside tools: `bandit`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V3.4.2 | L1 | Reads the code: `ast.cors-any-origin-with-credentials`; The running app: `probe.cors-any-origin`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.cors-any-origin-with-credentials`) |
-| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.csrf-protection-off`) |
+| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`, `probe.csrf-token-shared`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.csrf-protection-off`, `probe.csrf-token-shared`) |
 | V3.7.1 | L2 | Reads the code: `config.client-tech-unsupported` (sv only ever as a finding: `config.client-tech-unsupported`) |
 | V3.7.2 | L2 | Reads the code: `ast.open-redirect`; Signed in: `probe.open-redirect`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `probe.open-redirect`) |
 | V4.4.1 | L1 | Reads the code: `ast.plaintext-websocket-url`; Outside tools: `semgrep` (semgrep only ever as a finding: `detect-insecure-websocket`; sv only ever as a finding: `ast.plaintext-websocket-url`) |
@@ -177,7 +177,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V3.4.6 | L2 | The running app: `probe.security-headers`; Signed in: `probe.private-page-headers` |
 | V3.4.7 | L3 | The running app: `probe.csp-no-report` |
 | V3.4.8 | L3 | The running app: `probe.opener-policy-missing` |
-| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.csrf-protection-off`) |
+| V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`, `probe.csrf-token-shared`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.csrf-protection-off`, `probe.csrf-token-shared`) |
 | V3.5.2 | L1 | Signed in: `probe.preflight-skipped` |
 | V3.5.3 | L1 | Signed in: `probe.sign-out-on-get` (sv only ever as a finding: `probe.sign-out-on-get`) |
 | V3.5.6 | L3 | The running app: `probe.jsonp-enabled` (sv only ever as a finding: `probe.jsonp-enabled`) |
