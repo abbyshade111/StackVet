@@ -1,0 +1,37 @@
+n,decision,when_as_written,date,proposed_by,chosen_by,after_cutoff,confidence
+1,Build SecureVibe: a wizard that turns answers into a checked app,16 Sep 14:14,2026-09-16 14:14,owner,owner,no,high
+2,"v1's foundations: a hardened template, TypeScript, the Node permission model (ADR-001 to 005, 007 to 010)","16 Sep, by 15:05",2026-09-16 15:05,ai,ai,no,high
+3,Evidence tiers: AI review never counts as verified (ADR-006),"16 Sep, by 15:05",2026-09-16 15:05,ai,ai,no,high
+4,"A spending cap, with writing the app limited to 55% of it",17 Sep 12:07–12:17,2026-09-17 12:17,both,ai,no,high
+5,"Any AI provider, with keys kept in `.env`",17 Sep 18:58–18:59,2026-09-17 18:59,owner,owner,no,high
+6,"The optimization program: `CLAUDE.md`, plan then build, builds as durable jobs",17 Sep 19:48–19:58,2026-09-17 19:58,both,owner,no,high
+7,The evaluation harness and golden apps,17 Sep 19:48–19:58,2026-09-17 19:58,both,owner,no,high
+8,The recipe library,17 Sep 16:14 to 18 Sep 17:52,2026-09-18 17:52,both,owner,no,high
+9,A network fence for generated code,17 Sep 19:49 to 18 Sep 09:42,2026-09-18 09:42,ai,split,no,high
+10,"Git work is pre-approved, except for a list of things that always need asking first",18 Sep 23:40–23:47,2026-09-18 23:47,owner,owner,no,high
+11,"Backlog items are claimed in `docs/BACKLOG.md`, not in messages",20 Sep 12:14–12:18,2026-09-20 12:18,ai,owner,no,high
+12,"""Break your own rule"" goes into `CLAUDE.md`",20 Sep 14:17–14:18,2026-09-20 14:18,both,owner,no,high
+13,An upload that cannot be checked for malware is refused (ADR-014),20 Sep 12:00–12:02,2026-09-20 12:02,both,owner,no,high
+14,Other languages are checked by outside tools only (ADR-012),20 Sep 15:40–16:01,2026-09-20 16:01,both,owner,no,high
+15,"Start `sv`: a second version, language-agnostic, in Rust",22 Sep 21:46–21:50,2026-09-22 21:50,owner,owner,no,high
+16,"`sv` writes its own rules after all (ADR-018, reversing ADR-012)",23 Sep 23:38 to 27 Sep 13:42,2026-09-27 13:42,ai,owner,no,medium
+17,Move `sv` to the top of the repository and archive v1,26 Sep 19:37–19:59,2026-09-26 19:59,owner,owner,no,high
+18,Use Semgrep's rules despite their license,"26 Sep, answered 16:49",2026-09-26 16:49,ai,owner,no,high
+19,PDF reports that SecureVibe writes itself (ADR-013),17 Sep 10:59 to 25 Sep 16:03,2026-09-25 16:03,both,owner,no,high
+20,"The paper, and its thesis",20 Sep 18:01–18:04,2026-09-20 18:04,owner,owner,no,high
+21,A self-assessment of `sv`,27 Sep 15:08,2026-09-27 15:08,owner,owner,no,high
+22,"The three-arm study: native, uploaded, and a Python app",20 Sep 17:11,2026-09-20 17:11,both,owner,no,high
+23,"Make the repository public, under the MIT license",20 Sep 19:38–19:46,2026-09-20 19:46,both,owner,no,high
+24,"Use `sv` in the owner's other project, cato-pipeline, and move that project to `sv` rather than v1",28 Sep 16:30–16:54,2026-09-28 16:54,both,owner,no,high
+25,"`report.json` says what was examined, in a form a program can read",28 Sep 16:54 to 17:17,2026-09-28 17:17,ai,owner,no,high
+26,"A claim made twice: the finished work stands, and the earlier claim stands down",28 Sep 20:47–20:50,2026-09-28 20:50,ai,owner,no,high
+27,"The comparison study: several of the owner's own apps, run through a pipeline",29 Sep 17:11–17:56,2026-09-29 17:56,both,owner,no,high
+28,"Raise `sv probe`'s limit from four requests to five, for OCSP stapling",29 Sep 21:45,2026-09-29 21:45,ai,owner,no,high
+29,"Stay with Semgrep, quiet its usage reporting, and use Opengrep when Semgrep is absent",29 Sep 22:42 to 3 Oct 10:13,2026-10-03 10:13,ai,owner,no,high
+30,Run the app under test in a read-only container,29 Sep 21:55 to 3 Oct 11:58,2026-10-03 11:58,ai,owner,no,high
+31,"Check compressed-archive bombs (V5.2.3), with the limits stated by the owner, never by `sv`",3 Oct 14:04–14:07,2026-10-03 14:07,ai,owner,no,high
+32,"A library of prompts for the AI coding tool, in SecureVibe's own words, each tested before it is called working",3 Oct 10:58 to 4 Oct 09:28,2026-10-04 09:28,both,owner,no,high
+33,"Running-app checks that attack the app: SQL injection, and sign-in tokens altered or unsigned",3 Oct 10:18 to 20:37,2026-10-03 20:37,ai,owner,no,high
+34,"A tool that records the person's answers, every one marked as the AI tool's own","3 Oct, recorded 20:37",2026-10-03 20:37,ai,owner,no,high
+35,A deep review of `sv` by a session outside the project,4 Oct 09:15–09:52,2026-10-04 09:52,owner,owner,no,high
+36,"Prompts for decisions made before any code, from the Secure by Design checklist","4 Oct, by 09:24",2026-10-04 09:24,both,owner,no,high

@@ -104,6 +104,11 @@ def period_panels(render):
         for k in KEYS)
 
 
+PERIOD_NOT_VERSION = ("A period is a span of time, not a version: <code>sv</code>'s rows from before its "
+                      "promotion on 26 September, when it was built in <code>agnostic/</code> beside v1, are in "
+                      "version 1's period.")
+
+
 def none_here(text):
     return f'<p class="muted"><i>{text}</i></p>'
 
@@ -221,13 +226,15 @@ def snapshots():
 
 def timeline(days):
     ds = every_day([d["date"] for d in days])
-    by = {d["date"]: d for d in days}
-    commits = {d: [(int(by[d]["commits_on_main"]), COLORS[by[d]["period"]], f"{d}: {by[d]['commits_on_main']} on main"),
-                   (int(by[d]["commits"]) - int(by[d]["commits_on_main"]), "var(--grey)",
-                    f"{d}: {int(by[d]['commits']) - int(by[d]['commits_on_main'])} on branches")]
-               for d in ds if d in by}
-    prs = {d: [(int(by[d]["pull_requests_merged"]), COLORS[by[d]["period"]], f"{d}: {by[d]['pull_requests_merged']}")]
-           for d in ds if d in by}
+    # A boundary day has a row for each period it touches: each is its own segment of that day's bar.
+    commits, prs = defaultdict(list), defaultdict(list)
+    for d in days:
+        day, k, main = d["date"], d["period"], int(d["commits_on_main"])
+        commits[day].append((main, COLORS[k], f"{day}, {NAMES[k]}: {main} on main"))
+        prs[day].append((int(d["pull_requests_merged"]), COLORS[k], f"{day}, {NAMES[k]}: {d['pull_requests_merged']}"))
+    for d in days:
+        off = int(d["commits"]) - int(d["commits_on_main"])
+        commits[d["date"]].append((off, "var(--grey)", f"{d['date']}, {NAMES[d['period']]}: {off} on branches"))
 
     def panel(k):
         p = PERIODS[k]
@@ -258,8 +265,8 @@ def timeline(days):
         + day_bars(ds, commits, "Commits each day")
         + "<h2>Pull requests merged each day</h2>" + day_bars(ds, prs, "Pull requests merged each day"),
         "Sources: <code>tables/periods.csv</code> and <code>tables/days.csv</code>, made from git by "
-        "<code>tables/periods.py</code>. Before 23 September the work did not go through pull requests; the cut-off "
-        "figure's two lost days (17 and 18 September) are lost from git too.")
+        "<code>tables/periods.py</code>. The history in git begins on 18 September; the days with no commit in main's "
+        f"history ({', '.join(d[5:] for d in ds if d not in commits)}) have their place on the axis, empty.")
 
 
 def step_chart(points, label, height=240):
@@ -280,8 +287,8 @@ def step_chart(points, label, height=240):
             out.append(f'<line x1="{x2:.1f}" y1="{y(v):.1f}" x2="{x2:.1f}" y2="{y(nxt[1]):.1f}" '
                        f'stroke="{COLORS[nxt[2]]}" stroke-width="1"/>')
     for d in every_day([p[0] for p in points]):
-        if d[8:10] in ("25", "01", "05", "10", "15", "20", "26", "30") or d == points[0][0][:10]:
-            xd = x(d + " 00:00") if d > points[0][0][:10] else left
+        if d[8:10] in ("01", "05", "10", "15", "20", "26", "30") and d > points[0][0][:10]:
+            xd = x(d + " 00:00")
             out.append(f'<text x="{xd:.1f}" y="{height - bottom + 14}" text-anchor="middle">{esc(d[5:])}</text>')
     for v in range(0, int(top), 50):
         out.append(f'<text x="{left - 6}" y="{y(v) + 4:.1f}" text-anchor="end">{v}</text>')
@@ -370,8 +377,11 @@ def undated_note(undated, what):
             + ", ".join(f"{esc(c)} {n}" for c, n in sorted(undated.items())) + f" ({sum(undated.values())} {what}).</p>")
 
 
+SINCE = "since the cut-off"
+
+
 def faults_since(faults, kinds):
-    since = [f for f in faults if f.get("in_the_ledger") == "since" and f.get("kind") in kinds]
+    since = [f for f in faults if f.get("in_the_ledger") == SINCE and f.get("kind") in kinds]
     return Counter(f["period"] for f in since)
 
 
@@ -391,7 +401,7 @@ def top10(rows_, faults):
         "each placed in the period its record dates it to. Nothing found since the cut-off has been placed through a "
         "CWE: the faults ledger since has a kind for each fault, not a CWE, so the StackVet period, and version 2 "
         "after 4 October, are counts of the ledger's <code>security</code> and <code>fail-open</code> faults, without "
-        "a category. Placing them is a reading of each fault, not done here.",
+        "a category. Placing them is a reading of each fault, not done here. " + PERIOD_NOT_VERSION,
         "<h2>1. Weaknesses in the project's own code, to the cut-off</h2>" + period_legend()
         + grouped_table(cats, counts, "Own-code weaknesses by category and period") + undated_note(undated, "weaknesses")
         + "<h2>2. Verdicts that failed open (A10), to the cut-off</h2>"
@@ -410,8 +420,8 @@ def top10(rows_, faults):
 
 def agentic(rows_, faults):
     kinds = sorted({r["kind"] for r in rows_})
-    risks = sorted({r["risk"] for r in rows_})
     incidents = [r for r in rows_ if r["kind"] == "incident"]
+    risks = sorted({r["risk"] for r in incidents})
     counts, undated = records_by_period(incidents, lambda r: [r["risk"]])
     allk, allu = records_by_period(rows_, lambda r: [r["kind"]])
     lenses = defaultdict(Counter)
@@ -425,7 +435,7 @@ def agentic(rows_, faults):
         "often than events; one whose record names a pull request or commit is dated by it, and the rest are counted "
         "as not dated. No incident since the cut-off has been placed against the agentic list: the faults ledger "
         "since says what kind each fault is, not which agentic risk, so the StackVet period has no panel of its own "
-        "here.",
+        "here. " + PERIOD_NOT_VERSION,
         "<h2>1. Incidents, by risk and period</h2>" + period_legend()
         + grouped_table(risks, counts, "Agentic incidents by risk and period") + undated_note(undated, "incidents")
         + "<h2>2. Every row, by kind and period</h2>"
@@ -474,7 +484,7 @@ FOUND_BY_USE = {"owner_use": "the owner, or real use", "real_input": "running it
 def found_by_use(faults):
     counts = defaultdict(Counter)
     for f in faults:
-        if f.get("in_the_ledger") != "since":
+        if f.get("in_the_ledger") != SINCE:
             continue
         by = f.get("found_by", "")
         group = (FOUND_BY_USE[by] if by in FOUND_BY_USE else "a failing test" if by == "failing_test"
@@ -551,8 +561,16 @@ def load_trials():
     return module.TRIALS
 
 
-TRIAL_DATES = {"5 Oct": "2026-10-05", "5–6 Oct": "2026-10-06", "6 Oct": "2026-10-06", "7 Oct": "2026-10-07",
-               "8 Oct": "2026-10-08"}
+def written_at(path):
+    """When a trial's write-up first reached the repository, on main's history to the build: the time that places the
+    trial in a period, since a trial's dates in its list are days and two periods meet on 8 October."""
+    found = [p for p in [path] if (ROOT / p).exists()] or [str(q.relative_to(ROOT)) for q in ROOT.glob(path)]
+    if not found:
+        return ""
+    times = git("log", until(), "--diff-filter=A", "--format=%cI", "--", *found).split()
+    if not times:
+        return ""
+    return min(datetime.fromisoformat(x).astimezone(ET) for x in times).strftime("%Y-%m-%d %H:%M")
 
 
 def later_trials(loop2, pointer, route):
@@ -562,19 +580,19 @@ def later_trials(loop2, pointer, route):
     cost = lambda rs: round(sum(float(r["cost_usd"] or 0) for r in rs), 2)
     tools = sorted({r["tool"] for r in route})
     return [
-        ("Drafts trial", "2026-10-12", len(drafts), cost(drafts), "docs/prompts/drafts-trial/results.md",
+        ("Drafts trial", written_at("docs/prompts/drafts-trial/results.md"), len(drafts), cost(drafts), "docs/prompts/drafts-trial/results.md",
          "Do the seven draft prompts remove their problems? (controls only: no draft reached a reading)"),
-        ("Second loop trial", "2026-10-13", len(built), cost(built), "docs/prompts/loop-2/",
+        ("Second loop trial", written_at("docs/prompts/loop-2"), len(built), cost(built), "docs/prompts/loop-2/",
          "The loop with StackVet's plan and brief, phases A, B1, B2, and C"),
-        ("Three-tool prompt trial", "2026-10-14", len(tools), None, "docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md",
+        ("Three-tool prompt trial", written_at("docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md"), len(tools), None, "docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md",
          f"Do the setup prompts work in {', '.join(tools)}? (run by the owner in each tool; no dollars recorded)"),
-        ("Pointer trial", "2026-10-14", 0, None, "backlog 0516",
+        ("Pointer trial", written_at("docs/backlog/**/0516-*.md"), 0, None, "backlog 0516",
          f"Does sv questions point at the right code? ({len(pointer)} readings of example apps, no builds)"),
     ]
 
 
 def trial_rows(loop2, pointer, route):
-    out = [(n, TRIAL_DATES.get(d, ""), b, c, src, q) for n, d, b, c, src, q in load_trials()]
+    out = [(n, written_at(src), b, c, src, q) for n, _, b, c, src, q in load_trials()]
     return out + later_trials(loop2, pointer, route)
 
 
@@ -587,7 +605,7 @@ def trials(all_trials):
         spent = sum(t[3] for t in mine if t[3] is not None)
         return (tiles([(str(len(mine)), "trials"), (f'{sum(t[2] for t in mine):,}', "builds (or apps)"),
                        (f"${spent:,.2f}", "of the owner's API credit, where recorded")])
-                + simple_table(["trial", "date", "builds", "cost", "question"],
+                + simple_table(["trial", "write-up first committed", "builds", "cost", "question"],
                                [[esc(n), d, b, f"${c:,.2f}" if c is not None else "not recorded", esc(q)]
                                 for n, d, b, c, _, q in mine], f"Trials in {NAMES[k]}"))
 

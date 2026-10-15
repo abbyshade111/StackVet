@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How sv Works, by Period</title>
+<style>
+:root { --ink: #1d1d1f; --muted: #5f6368; --rule: #d9d9de; --page: #fbfbfa; --tile: #f2f1ee;
+  --v1: #2a6fcf; --v2: #e8692f; --sv: #2f9e6e; --red: #d64545; --violet: #7a5bc4; --grey: #a3a19c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink: #ececf1; --muted: #a8adb4;
+  --rule: #3a3b40; --page: #17181b; --tile: #222327; --grey: #6e6c68; } }
+:root[data-theme="dark"] { --ink: #ececf1; --muted: #a8adb4; --rule: #3a3b40; --page: #17181b; --tile: #222327;
+  --grey: #6e6c68; }
+body { background: var(--page); color: var(--ink); font: 15px/1.55 system-ui, sans-serif; margin: 0 auto;
+  max-width: 980px; padding: 16px; }
+h1 { font-size: 22px; margin: 8px 0; } h2 { font-size: 17px; margin: 28px 0 6px; }
+p { margin: 6px 0 12px; } .muted, .note { color: var(--muted); } .note { font-size: 13px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 14px 0; }
+.tile { background: var(--tile); border-radius: 10px; padding: 12px 14px; }
+.tile b { display: block; font-size: 26px; line-height: 1.2; } .tile span { font-size: 13px; color: var(--muted); }
+.legend span { margin-right: 14px; font-size: 13px; } .legend i { display: inline-block; width: 10px; height: 10px;
+  margin-right: 5px; border-radius: 2px; vertical-align: -1px; }
+svg { width: 100%; height: auto; display: block; } svg text { fill: var(--muted); font-size: 11px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 8px 0; }
+td, th { border-bottom: 1px solid var(--rule); padding: 4px 6px; text-align: left; } td.n { text-align: right; }
+.scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>What sv was made of at the end of each period</h1>
+<p>The figure of the cut-off (<code>figure-how-sv-works.html</code>) is a drawing of how <code>sv</code> works, from the code at 4 October: a picture of stages, not a count, and it stays the drawing. A drawing per period would be drawing it again by hand, the owner's to ask for. What can be counted from the code at each period's end is counted here; <code>HOW-SV-WORKS.md</code> and <code>SINCE-THE-CUTOFF.md</code> say what the stages added since are.</p>
+<h2 style="border-left:6px solid var(--v1);padding-left:8px">version 1 <span class="muted" style="font-weight:normal;font-size:13px">2026-09-18 09:32 to 2026-09-26 20:46</span></h2><p>At <code>412092da2</code>, the period's last commit: <code>sv</code> in <code>agnostic/</code>, beside v1's own program.</p><div class="tiles"><div class="tile"><b>7</b><span>crates</span></div><div class="tile"><b>61,790</b><span>lines of Rust in 73 files</span></div><div class="tile"><b>14</b><span>data files it reads</span></div><div class="tile"><b>6</b><span>outside tools it can run</span></div><div class="tile"><b>12</b><span>rules read from the code's syntax tree</span></div><div class="tile"><b>132</b><span>ASVS requirements some check can settle</span></div></div><p>v1's own program at the same commit: 629 TypeScript files, 98,679 lines (<code>server/</code>, <code>web/</code>, <code>shared/</code>, <code>templates/</code>).</p><h2 style="border-left:6px solid var(--v2);padding-left:8px">version 2 <span class="muted" style="font-weight:normal;font-size:13px">2026-09-26 21:22 to 2026-10-08 20:30</span></h2><p>At <code>d2433cd54</code>, the period's last commit: <code>sv</code> at the top.</p><div class="tiles"><div class="tile"><b>7</b><span>crates</span></div><div class="tile"><b>186,048</b><span>lines of Rust in 298 files</span></div><div class="tile"><b>27</b><span>data files it reads</span></div><div class="tile"><b>6</b><span>outside tools it can run</span></div><div class="tile"><b>32</b><span>rules read from the code's syntax tree</span></div><div class="tile"><b>169</b><span>ASVS requirements some check can settle</span></div></div><h2 style="border-left:6px solid var(--sv);padding-left:8px">StackVet <span class="muted" style="font-weight:normal;font-size:13px">2026-10-08 20:59 to 2026-10-15 08:58</span></h2><p>At <code>e2cf8c3a9</code>, the period's last commit: <code>sv</code> at the top.</p><div class="tiles"><div class="tile"><b>7</b><span>crates</span></div><div class="tile"><b>261,824</b><span>lines of Rust in 786 files</span></div><div class="tile"><b>31</b><span>data files it reads</span></div><div class="tile"><b>7</b><span>outside tools it can run</span></div><div class="tile"><b>36</b><span>rules read from the code's syntax tree</span></div><div class="tile"><b>174</b><span>ASVS requirements some check can settle</span></div></div>
+<p class="note">Sources: <code>tables/snapshots.csv</code> and <code>tables/reach_history.csv</code>, written by this script from git at each period's last commit (<code>tables/periods.csv</code>).</p>
+</body>
+</html>

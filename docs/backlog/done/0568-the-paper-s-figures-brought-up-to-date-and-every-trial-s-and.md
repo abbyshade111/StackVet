@@ -1,6 +1,6 @@
 # The paper's figures brought up to date, and every trial's and measurement's data compiled into tables the owner can analyze
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -118,3 +118,19 @@ part 3 redrew six. The other 13 (the cost, the decisions, the timeline, the secu
 the top ten, the usability notes, the trials, the study, the self-assessment, the three arms, how v1's faults were
 found, and how `sv` works) are drawn from their tables at the cut-off, already split per period by part 2, and are
 redrawn from those in part 4, so the item stays claimed.
+
+**Part 4 built, 15 October 2026** (documentation): the other 13 figures redrawn per period by
+`docs/paper/tables/period_records.py`, each `figure-<name>-by-period.html` beside the figure of the cut-off, so all 19
+now have a version per period. The timeline and the reach of `sv`'s checks are read from git to the build, every
+period in full. The figures drawn from the cut-off documents (the top ten, the agentic list, the decisions, the
+usability record) are redrawn from their rows, each dated, in `tables/cutoff-records/` (compiled by reading the
+documents; every total reproduced). The one-time records (the study, the three arms, the self-checks, the trials, the
+cost) sit in the period they happened in. For a period a record does not reach, the figure says so, beside the nearest
+measure compiled since, named as a different measure where it is one. DATA.md says, figure by figure, what the periods
+after each record hold.
+
+Not built, and the owner's to ask for if wanted: placing the faults since the cut-off through a CWE (for the top ten)
+and against the agentic list; reading who proposed and who chose in the 57 decision records since; compiling the
+usability friction since (the three-tool trial's above all) as its own record; choosing the timeline's milestones
+since; drawing the picture of how `sv` works again for each period; and running `sv` on itself again. Each is a new
+reading, not a count.
