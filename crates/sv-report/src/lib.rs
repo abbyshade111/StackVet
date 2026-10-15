@@ -1750,8 +1750,14 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
             Some(sv_check::finding::Outranked::OtherFramework { .. })
         )
     });
+    let ids_only = apart.iter().any(|f| {
+        matches!(
+            f.outranked,
+            Some(sv_check::finding::Outranked::LogsOnlyIds { .. })
+        )
+    });
     let mut kinds: Vec<&str> = Vec::new();
-    if tests || !(libraries || look || not_held_to || other_framework) {
+    if tests || !(libraries || look || not_held_to || other_framework || ids_only) {
         kinds.push("in test or sample code");
     }
     if libraries {
@@ -1769,6 +1775,9 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
     }
     if other_framework {
         kinds.push("from rules written for a framework this app does not use");
+    }
+    if ids_only {
+        kinds.push("log lines that log only ids");
     }
     match kinds.as_slice() {
         [one] => (*one).to_owned(),
@@ -2268,6 +2277,14 @@ pub fn finding_notes(f: &sv_check::Finding) -> Vec<String> {
             "From a rule written for {framework}, and this app's package lists do not name \
              {framework}, so it is listed apart and decides nothing in the tables. If the app does use \
              {framework}, add it to its package list and run `sv` again."
+        )),
+        Some(sv_check::finding::Outranked::LogsOnlyIds { names }) => notes.push(format!(
+            "The rule fires when a log message mentions a password, token, secret, or key, whatever is logged. \
+             `sv` read the line: it logs only {}, which {} an id, and nothing named for a secret, so it is listed \
+             apart and decides nothing in the tables. If one of those does hold a secret, it is a real finding: \
+             take it out of the log.",
+            list_and(&names.iter().map(|n| format!("`{n}`")).collect::<Vec<_>>()),
+            if names.len() == 1 { "is" } else { "are each" }
         )),
         None => {}
     }
@@ -3163,7 +3180,10 @@ pub fn mark_outranked(
     use sv_check::finding::{Outranked, is_svs_own};
     for f in findings.iter_mut() {
         // Set when the outside tools ran, from the app's package lists, which are not here to read again.
-        if matches!(f.outranked, Some(Outranked::OtherFramework { .. })) {
+        if matches!(
+            f.outranked,
+            Some(Outranked::OtherFramework { .. } | Outranked::LogsOnlyIds { .. })
+        ) {
             continue;
         }
         f.outranked = None;
