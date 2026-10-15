@@ -53,6 +53,7 @@ fn docker_ok() -> Result<(), CannotRun> {
 fn no_docker() -> Result<(), CannotRun> {
     Err(CannotRun::NoBackend {
         checked: "`docker` could not be started: not found".to_owned(),
+        unreachable: None,
     })
 }
 

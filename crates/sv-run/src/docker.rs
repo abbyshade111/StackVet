@@ -531,10 +531,12 @@ pub(crate) fn linux_containers(code: i32, answer: &str) -> Result<(), CannotRun>
                 checked: "the `docker` command here is Podman, which `sv` does not run the app under yet; \
                           the running-app checks need Docker"
                     .to_owned(),
+                unreachable: None,
             });
         }
         return Err(CannotRun::NoBackend {
             checked: format!("`docker info` failed: {}", first_line(answer)),
+            unreachable: unreachable_socket(answer),
         });
     }
     match answer.trim() {
@@ -543,14 +545,45 @@ pub(crate) fn linux_containers(code: i32, answer: &str) -> Result<(), CannotRun>
             checked: "Docker here runs Windows containers, and every container `sv` starts is a \
                       Linux one; in Docker Desktop, choose \"Switch to Linux containers\""
                 .to_owned(),
+            unreachable: None,
         }),
         other => Err(CannotRun::NoBackend {
             checked: format!(
                 "`docker info` did not say it runs Linux containers (it said `{}`)",
                 first_line(other)
             ),
+            unreachable: None,
         }),
     }
+}
+
+/// Docker's socket, when `docker info` was refused it (backlog 0544): the socket is there and this shell may not open
+/// it, as inside an AI coding tool's sandbox, so Docker is installed and only out of reach. Docker says "permission
+/// denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock" (or "to the docker API
+/// at"); a macOS sandbox makes the connection fail with "operation not permitted". `None` for anything else, among it
+/// "Cannot connect to the Docker daemon", where nothing is listening.
+pub(crate) fn unreachable_socket(answer: &str) -> Option<String> {
+    let lower = answer.to_ascii_lowercase();
+    if !(lower.contains("permission denied") || lower.contains("operation not permitted")) {
+        return None;
+    }
+    let at = ["unix://", "npipe://"]
+        .iter()
+        .find_map(|scheme| answer.find(scheme).map(|i| (i, scheme.len())));
+    Some(match at {
+        Some((i, scheme)) => {
+            let rest = &answer[i + scheme..];
+            let end = rest
+                .find(|c: char| c == ':' || c == '"' || c.is_whitespace())
+                .unwrap_or(rest.len());
+            // A sentence may end on it: "at unix:///var/run/docker.sock. Is the docker daemon running?"
+            match rest[..end].trim_end_matches('.') {
+                "" => "Docker's socket".to_owned(),
+                path => path.to_owned(),
+            }
+        }
+        None => "Docker's socket".to_owned(),
+    })
 }
 
 impl Backend for DockerBackend {
@@ -565,6 +598,7 @@ impl Backend for DockerBackend {
             Ok((code, answer)) => linux_containers(code, &answer),
             Err(e) => Err(CannotRun::NoBackend {
                 checked: format!("`docker` could not be started: {e}"),
+                unreachable: None,
             }),
         }
     }
@@ -2643,7 +2677,7 @@ mod tests {
         };
         let err = backend.available().unwrap_err();
         match err {
-            CannotRun::NoBackend { checked } => {
+            CannotRun::NoBackend { checked, .. } => {
                 assert!(checked.contains("could not be started"), "{checked}")
             }
             other => panic!("expected NoBackend, got {other:?}"),
@@ -5701,6 +5735,9 @@ mod backend_tests;
 
 #[cfg(test)]
 mod podman_words_tests;
+
+#[cfg(test)]
+mod unreachable_tests;
 
 #[cfg(test)]
 mod gateway_said_tests;
