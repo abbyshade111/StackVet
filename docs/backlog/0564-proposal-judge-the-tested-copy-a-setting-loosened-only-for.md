@@ -24,3 +24,10 @@ the line. Keep the listing as it is for settings sv does not credit.
 counts as evidence changes.
 
 **The owner's go, 14 October 2026:** build it whenever the board has room; in the order 0564, 0565, 0566, after the probe sweeps.
+
+**Built, 15 October 2026 (honesty), from the start command:** a setting that loosens the copy, as the run's warning
+already finds it, takes out the credits for the rules it bears on (by the words of its name: cookies, CSRF, HSTS and
+HTTPS, CSP, two-factor codes, rate limits, authentication) and says each as a gap naming the setting; findings under
+those rules say they are about that copy. A setting that only looks like a sign-in limit withholds nothing, since
+ADR-114 asks the copy to raise exactly that. The record is ADR-114, Later. Not built: reading the environment the
+manifest sets and the settings files it names, which the start command does not show; that is the part left.
