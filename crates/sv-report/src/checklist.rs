@@ -400,7 +400,18 @@ fn opening(report: &Report) -> String {
 /// The checklist as `before-going-live.md`.
 pub fn render(report: &Report) -> String {
     use crate::markdown::{code, inert};
-    let mut out = format!("# Before going live: {}\n\n", inert(&report.app_name));
+    let mut out = format!(
+        "# Before going live: {}\n\n",
+        inert(&report.app_name).replace(['\n', '\r'], " ")
+    );
+    // Every form of the report names the `sv` that wrote it, and when: the checklist is that report's.
+    match &report.generated {
+        Some(when) => out.push_str(&format!(
+            "Produced by `sv` {} on {when}.\n\n",
+            report.sv.describe()
+        )),
+        None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
+    }
     out.push_str(&crate::folder::markdown_line(FILE));
     out.push_str(&inert(&opening(report)));
     out.push_str("\n\n");
