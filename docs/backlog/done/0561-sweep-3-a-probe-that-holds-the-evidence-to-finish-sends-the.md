@@ -1,6 +1,6 @@
 # Sweep 3: a probe that holds the evidence to finish sends the one more request, starting with the lockout and the anonymous token
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -85,3 +85,8 @@ request as before; what it carries changed.
 **Eighth batch, built (inventory item 6):** the first create request, refused from another site's Origin, is sent
 once more with `Origin: null` and no token; taken, it is the forgery finding. `simple_request_check` (V3.5.2) is left
 as it is: its question is the preflight, which `Origin: null` does not change.
+
+**Done, 15 October 2026.** Every one-request item of the inventory is built (batches three to eight). Item 8 and the
+five larger ones are filed as items of their own: 0571 (a file name with a quote), 0572 (the wrong-password check with
+no sign-up), 0573 (the burst limit per session), 0574 (the once check's solo try), 0575 (a token from another
+session), and 0576 (an SVG named `.gif`). 0537 is built (the second batch) and left for the board to close.
