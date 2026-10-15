@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 174 (50%) | 121 (35%) | 9 | 162 |
+| OWASP ASVS 5.0 | 345 | 174 (50%) | 121 (35%) | 10 | 161 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -90,7 +90,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V3 Web Frontend Security | 31 | 23 | 19 | 0 | 8 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 6 |
 | V5 File Handling | 13 | 8 | 8 | 1 | 4 |
-| V6 Authentication | 47 | 24 | 16 | 1 | 22 |
+| V6 Authentication | 47 | 24 | 16 | 2 | 21 |
 | V7 Session Management | 19 | 11 | 10 | 0 | 8 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 8 |
 | V9 Self-contained Tokens | 7 | 5 | 3 | 0 | 2 |
@@ -312,7 +312,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V16.2.5 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V16.4.1 | L2 | Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 
-### Supporting only (9)
+### Supporting only (10)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -320,6 +320,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V2.3.4 | L2 | Signed in: `probe.action-done-twice` |
 | V5.4.3 | L2 | Signed in: `probe.upload-not-scanned` |
 | V6.2.12 | L2 | Signed in: `probe.breached-password-accepted` |
+| V6.3.4 | L2 | Reads the code: `config.sign-in-pathway-not-listed` (sv only ever as a finding: `config.sign-in-pathway-not-listed`) |
 | V8.3.1 | L1 | Signed in: `probe.admin-page-ordinary-user`, `probe.admin-action-ordinary-user`, `probe.role-field-trusted`, `probe.email-change-role-trusted` (sv only ever as a finding: `probe.email-change-role-trusted`, `probe.role-field-trusted`) |
 | V12.2.2 | L1 | Your own live site: `probe.certificate-not-trusted` |
 | V13.3.1 | L2 | Reads the code: `secrets.anthropic-key`, `secrets.openai-key`, `secrets.huggingface-token`, `secrets.aws-access-key` and 22 more; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` (sv only ever as a finding: `config.secret-under-public-name`, `secrets.credential-assignment`, `secrets.password-in-url`) |

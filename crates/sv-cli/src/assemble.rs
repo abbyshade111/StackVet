@@ -359,6 +359,19 @@ pub fn assemble_report_saying(
     // lockfile check, which saw a lockfile and passed it.
     findings.extend(sbom::incompleteness_finding(&static_scan.bill_of_materials));
     findings.extend(static_scan.code.findings.iter().cloned());
+    // A way into the app the code shows that the owner's list of sign-in pathways does not name (backlog 0491; ADR-123).
+    // With no list, nothing is compared.
+    if let Some(listed) = manifest
+        .stack
+        .auth
+        .as_ref()
+        .and_then(|a| a.pathways.as_ref())
+    {
+        findings.extend(sv_check::sign_in_paths::not_listed_findings(
+            &static_scan.listing,
+            listed,
+        ));
+    }
 
     stage(7);
     // A check that crashes costs itself, not the report (backlog 0234): its gap says where, and the rest is written.

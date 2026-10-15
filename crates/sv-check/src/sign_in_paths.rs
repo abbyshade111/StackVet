@@ -11,6 +11,7 @@
 //! nothing. A path named `/auth` may not sign anybody in, and a way in may be named something none of these words
 //! say, so the list is where to look, never evidence.
 
+use crate::finding::{Confidence, Finding, Location, Severity};
 use crate::route_guards::RouteLine;
 use regex::Regex;
 use std::sync::LazyLock;
@@ -57,6 +58,8 @@ pub struct Pathway {
     /// What it is, in plain words, with what the code calls it: "a route, POST /login", "a Passport strategy,
     /// GoogleStrategy", "an API key read from the `x-api-key` header".
     pub what: String,
+    /// What a list in `stackvet.toml` names it by: its path, the strategy's name, or the header's name.
+    pub key: String,
     pub file: String,
     pub line: usize,
 }
@@ -69,8 +72,17 @@ pub struct Pathways {
     pub more: usize,
 }
 
-/// The ways in, from the app's routes (`route_guards::read_all`) and its own files, not counting test code.
+/// The ways in, from the app's routes (`route_guards::read_all`) and its own files, not counting test code, the first
+/// `MOST_PATHWAYS` kept.
 pub fn read(listing: &sv_scan::files::Listing) -> Pathways {
+    let mut ways = read_all(listing);
+    let more = ways.len().saturating_sub(MOST_PATHWAYS);
+    ways.truncate(MOST_PATHWAYS);
+    Pathways { ways, more }
+}
+
+/// Every way in, in file and line order.
+pub fn read_all(listing: &sv_scan::files::Listing) -> Vec<Pathway> {
     let mut ways: Vec<Pathway> = crate::route_guards::read_all(listing)
         .into_iter()
         .filter_map(|r| from_route(&r))
@@ -88,15 +100,14 @@ pub fn read(listing: &sv_scan::files::Listing) -> Pathways {
     }
     ways.sort_by(|a, b| a.file.cmp(&b.file).then(a.line.cmp(&b.line)));
     ways.dedup();
-    let more = ways.len().saturating_sub(MOST_PATHWAYS);
-    ways.truncate(MOST_PATHWAYS);
-    Pathways { ways, more }
+    ways
 }
 
 /// A route whose path says sign-in, as a way in.
 pub fn from_route(route: &RouteLine) -> Option<Pathway> {
     SIGN_IN_PATH.is_match(&route.path).then(|| Pathway {
         what: format!("a route, {} {}", route.method, route.path),
+        key: route.path.clone(),
         file: route.file.clone(),
         line: route.line,
     })
@@ -113,6 +124,7 @@ pub fn in_text(file: &str, source: &str) -> Vec<Pathway> {
         for m in PASSPORT.captures_iter(line) {
             out.push(Pathway {
                 what: format!("a Passport strategy, {}", &m[1]),
+                key: m[1].to_owned(),
                 file: file.to_owned(),
                 line: n + 1,
             });
@@ -121,6 +133,7 @@ pub fn in_text(file: &str, source: &str) -> Vec<Pathway> {
             if SIGN_IN_PATH.is_match(&m[1]) {
                 out.push(Pathway {
                     what: format!("a path the code compares a request with, {}", &m[1]),
+                    key: m[1].to_owned(),
                     file: file.to_owned(),
                     line: n + 1,
                 });
@@ -129,6 +142,7 @@ pub fn in_text(file: &str, source: &str) -> Vec<Pathway> {
         if let Some(m) = API_KEY_HEADER.captures(line) {
             out.push(Pathway {
                 what: format!("an API key read by the name `{}`", &m[1]),
+                key: m[1].to_owned(),
                 file: file.to_owned(),
                 line: n + 1,
             });
@@ -137,5 +151,86 @@ pub fn in_text(file: &str, source: &str) -> Vec<Pathway> {
     out
 }
 
+/// The rule for a way in the code shows that `[stack.auth] pathways` does not name (backlog 0491; ADR-123).
+pub const NOT_LISTED: &str = "config.sign-in-pathway-not-listed";
+
+/// Whether an entry of `[stack.auth] pathways` names this way in. Case and spaces aside, an entry names a way in whose
+/// key it is, or, for a path, one below it (`/auth/google` names `/auth/google/callback`), or, for a Passport
+/// strategy, its name without `Strategy` (`google` names `GoogleStrategy`).
+pub fn named_by(way: &Pathway, entry: &str) -> bool {
+    let entry = entry.trim().to_lowercase();
+    let entry = entry.trim_end_matches('/');
+    let key = way.key.to_lowercase();
+    if entry.is_empty() {
+        return false;
+    }
+    key == entry
+        || key.starts_with('/') && key.starts_with(&format!("{entry}/"))
+        || key
+            .strip_suffix("strategy")
+            .is_some_and(|name| name == entry)
+}
+
+/// The ways in that no entry of `listed` names.
+pub fn not_listed<'a>(ways: &'a [Pathway], listed: &[String]) -> Vec<&'a Pathway> {
+    ways.iter()
+        .filter(|way| !listed.iter().any(|entry| named_by(way, entry)))
+        .collect()
+}
+
+/// A finding for each way in the app's code shows that `listed`, the owner's `[stack.auth] pathways`, does not name
+/// (backlog 0491; ADR-123). It can only ever show V6.3.4 failing: a list that names every way found credits nothing,
+/// since a way in may be one this does not find.
+pub fn not_listed_findings(listing: &sv_scan::files::Listing, listed: &[String]) -> Vec<Finding> {
+    let ways = read_all(listing);
+    not_listed(&ways, listed)
+        .into_iter()
+        .map(|way| {
+            crate::finding::found(Finding {
+                evidence: Vec::new(),
+                also_reported_by: Vec::new(),
+                fingerprint: String::new(),
+                earlier_fingerprints: Vec::new(),
+                marked_test_code: false,
+                bundled_library: None,
+                outranked: None,
+                also_on_this_line: Vec::new(),
+                help_uri: None,
+                rule_id: NOT_LISTED.into(),
+                title: "A way into the app is not in stackvet.toml's list of sign-in pathways".into(),
+                severity: Severity::Medium,
+                confidence: Confidence::Low,
+                location: Location {
+                    file: way.file.clone(),
+                    line: way.line,
+                },
+                secret: None,
+                requirement_ids: vec!["V6.3.4".into()],
+                cwe: vec!["CWE-288".into()],
+                description: format!(
+                    "The code has {}, which looks like a way to sign in, and `[stack.auth] pathways` in \
+                     stackvet.toml does not name `{}`. A way in nobody wrote down is one nobody checks \
+                     is held to the same rules as the rest.",
+                    way.what, way.key
+                ),
+                impact: "A forgotten way in, such as an old sign-in route, a test login, or an API key \
+                         check, can skip what the main sign-in requires: a second factor, a limit on \
+                         wrong passwords, or a check that the account is still active."
+                    .into(),
+                fix: format!(
+                    "If `{}` is a way to sign in, add it to `pathways` under `[stack.auth]` in \
+                     stackvet.toml, and write in your security notes how it is held to the same rules as \
+                     the others. If it should not exist, remove it from the code. If it is not a way in \
+                     at all, this is a false alarm and can be set aside in `sv review`.",
+                    way.key
+                ),
+            })
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod not_listed_tests;
