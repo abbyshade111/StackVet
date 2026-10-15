@@ -52,6 +52,8 @@ fn a_report_with_a_bill_writes_it_as_it_is() {
         json: "{\"made\": true}".into(),
         components: 3,
         complete: true,
+        unread_lists: 0,
+        at_asked_versions: 0,
     });
     assert_eq!(crate::sbom_document(&report), "{\"made\": true}");
     assert!(crate::sbom_line(&report).contains("3 packages"));
