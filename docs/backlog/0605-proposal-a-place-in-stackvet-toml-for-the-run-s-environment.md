@@ -22,3 +22,8 @@ in a file the start command does not name.
 **Record.** ADR-114 Later for (b); a Later entry on the manifest's record as well for (a).
 
 **The owner's answer, 15 October 2026:** (b): read only what the start command itself names (an --env-file, a sourced .env), with that file's format read first, and say in the report that other settings files are not read; no new manifest key. (a) later only if a real app's loosening hides in a file the start command does not name. ADR-114 Later.
+
+**Built, 15 October 2026 (honesty):** option (b). The environment files the start command itself reads
+(`--env-file`, a sourced `.env`) are read from the app's folder, for their format first, and each setting there that
+loosens the copy takes out the credits it bears on, as 0564 does for the start command. The run note says which
+settings files were read and that no other is. ADR-114, Later entry of 15 October 2026.

@@ -1106,11 +1106,13 @@ fn running_app(
                 let (mut running_findings, mut running_verified, signed_in_not_assessed) =
                     running_app_evidence(&outcome, &plan, &private_files);
                 limits_set_for_the_run(&mut running_findings, &plan.start);
-                gaps.extend(loosened_for_the_run(
+                let (loosened, settings_files) = loosened_for_the_copy(
                     &mut running_findings,
                     &mut running_verified,
+                    &plan.app_dir,
                     &plan.start,
-                ));
+                );
+                gaps.extend(loosened);
                 gaps.extend(short_answers_gap(
                     secret_rules,
                     &outcome.short_answers,
@@ -1239,6 +1241,10 @@ fn running_app(
                     (run_note.as_mut(), sv_run::weakening_note(&plan.start))
                 {
                     note.push_str(&format!(" {weaker}"));
+                }
+                // Which settings files were read for that, and that no other is (backlog 0605).
+                if let Some(note) = run_note.as_mut() {
+                    note.push_str(&format!(" {settings_files}"));
                 }
                 for (requirements, why) in signed_in_not_assessed {
                     // AISVS ids are the AI feature's, asked through the test model, which may not
@@ -2960,8 +2966,30 @@ pub(crate) fn loosened_for_the_run(
     verified: &mut Vec<sv_check::Verified>,
     start: &str,
 ) -> Vec<sv_report::Gap> {
+    loosened_in(findings, verified, start, None)
+}
+
+/// `loosened_for_the_run` for the settings an environment file sets (backlog 0605, ADR-114, Later): `file` is the one
+/// the start command reads them from, as it names it, and `settings` what `env_file_settings` read from it.
+pub(crate) fn loosened_in_env_file(
+    findings: &mut [sv_check::Finding],
+    verified: &mut Vec<sv_check::Verified>,
+    settings: &str,
+    file: &str,
+) -> Vec<sv_report::Gap> {
+    loosened_in(findings, verified, settings, Some(file))
+}
+
+/// The settings in `settings` that loosen the copy, judged as 0564 does: from the start command when `file` is `None`,
+/// otherwise from the environment file `file` the start command reads.
+fn loosened_in(
+    findings: &mut [sv_check::Finding],
+    verified: &mut Vec<sv_check::Verified>,
+    settings: &str,
+    file: Option<&str>,
+) -> Vec<sv_report::Gap> {
     let mut gaps = Vec::new();
-    for (setting, rules) in sv_run::start_settings::loosened(start) {
+    for (setting, rules) in sv_run::start_settings::loosened(settings) {
         let (withheld, kept): (Vec<_>, Vec<_>) = std::mem::take(verified)
             .into_iter()
             .partition(|v| rules.contains(&v.check_id.as_str()));
@@ -2973,11 +3001,21 @@ pub(crate) fn loosened_for_the_run(
                     credit.requirement_ids.join(", "),
                     credit.check_id
                 ),
-                why: format!(
-                    "The copy `sv` ran had `{setting}` set in its start command in stackvet.toml, so what the run \
-                     saw here is not what the app does as it is shipped, and it is not credited. Take the setting out \
-                     of the start command, or set it as the shipped app has it, and run again."
-                ),
+                why: match file {
+                    None => format!(
+                        "The copy `sv` ran had `{setting}` set in its start command in stackvet.toml, so what the run \
+                         saw here is not what the app does as it is shipped, and it is not credited. Take the setting \
+                         out of the start command, or set it as the shipped app has it, and run again."
+                    ),
+                    // The file may be the one the app ships with, or one for running it here: either way the copy had
+                    // the setting, and the credit is not the shipped app's to claim unless the setting is taken out.
+                    Some(file) => format!(
+                        "The copy `sv` ran had `{setting}` set in `{file}`, the environment file its start command \
+                         reads, so what the run saw here is of a copy with that setting, and it is not credited. If \
+                         the app ships with that file, the setting is loosened there too; if not, take it out of the \
+                         file the run reads, or set it as the shipped app has it, and run again."
+                    ),
+                },
                 reason: sv_report::GapReason::LeftOut,
                 requirements: credit.requirement_ids.clone(),
             });
@@ -2986,13 +3024,118 @@ pub(crate) fn loosened_for_the_run(
             .iter_mut()
             .filter(|f| rules.contains(&f.rule_id.as_str()))
         {
-            finding.description.push_str(&format!(
-                " The copy `sv` ran had `{setting}` set in its start command, so this is about that copy, and the \
-                 app as it is shipped may not have it."
-            ));
+            finding.description.push_str(&match file {
+                None => format!(
+                    " The copy `sv` ran had `{setting}` set in its start command, so this is about that copy, and \
+                     the app as it is shipped may not have it."
+                ),
+                Some(file) => format!(
+                    " The copy `sv` ran had `{setting}` set in `{file}`, the environment file its start command reads, \
+                     so this is about a copy with that setting; the app as it is shipped has it too only if it ships \
+                     with that file."
+                ),
+            });
         }
     }
     gaps
+}
+
+/// Every setting that loosens the copy `sv` ran, from its start command and from the environment files the start
+/// command reads (backlog 0564, 0605; ADR-114, Later), each judged as `loosened_for_the_run` judges: the gaps, and the
+/// run note's sentence saying which settings files were read and that no other is.
+pub(crate) fn loosened_for_the_copy(
+    findings: &mut [sv_check::Finding],
+    verified: &mut Vec<sv_check::Verified>,
+    app_dir: &std::path::Path,
+    start: &str,
+) -> (Vec<sv_report::Gap>, String) {
+    let mut gaps = loosened_for_the_run(findings, verified, start);
+    let (read, not_read) = env_files_for_the_run(app_dir, start);
+    for (file, settings) in &read {
+        gaps.extend(loosened_in_env_file(findings, verified, settings, file));
+    }
+    (gaps, settings_files_sentence(&read, &not_read))
+}
+
+/// The most bytes of an environment file read: a settings file is short.
+const ENV_FILE_BYTES: u64 = 1_000_000;
+
+/// The environment files the start command itself reads, each read from the app's folder (mounted at `/app`, where the
+/// start command runs) and for its format first (backlog 0605, ADR-114, Later): the ones read, as named with their
+/// settings, and for each one not read the sentence why. A file outside the app's folder, missing, too large, or not
+/// in the `NAME=value` form is not judged.
+pub(crate) fn env_files_for_the_run(
+    app_dir: &std::path::Path,
+    start: &str,
+) -> (Vec<(String, String)>, Vec<String>) {
+    use std::path::Component;
+    use sv_frameworks::paths::Canonical;
+    let mut read = Vec::new();
+    let mut not_read = Vec::new();
+    for named in sv_run::start_settings::env_files_named_in(start) {
+        let relative = named
+            .strip_prefix("/app/")
+            .unwrap_or(&named)
+            .trim_start_matches("./");
+        let path = std::path::Path::new(relative);
+        let inside = !relative.is_empty()
+            && path
+                .components()
+                .all(|c| matches!(c, Component::Normal(_) | Component::CurDir));
+        let full = app_dir.join(path);
+        let real_inside = inside
+            && match (full.canonical(), app_dir.canonical()) {
+                (Ok(file), Ok(root)) => file.starts_with(root),
+                _ => false,
+            };
+        let why = if !inside || (full.exists() && !real_inside) {
+            Err("it is outside the app's folder".to_owned())
+        } else {
+            match std::fs::metadata(&full) {
+                Err(_) => Err("it is not in the app's folder".to_owned()),
+                Ok(meta) if !meta.is_file() || meta.len() > ENV_FILE_BYTES => {
+                    Err("it is not a settings file of a size `sv` reads".to_owned())
+                }
+                Ok(_) => match std::fs::read_to_string(&full) {
+                    Err(_) => Err("it is not text".to_owned()),
+                    Ok(text) => sv_run::start_settings::env_file_settings(&text)
+                        .map_err(|line| format!("{line}, so its form is not one `sv` reads")),
+                },
+            }
+        };
+        match why {
+            Ok(settings) => read.push((named, settings)),
+            Err(why) => not_read.push(format!(
+                "The start command reads `{named}`, which was not read for settings that loosen the copy: {why}."
+            )),
+        }
+    }
+    (read, not_read)
+}
+
+/// What the report says of the settings files `sv` reads for the run (backlog 0605, the owner's choice (b) of 15
+/// October 2026): the environment files the start command names, and no other.
+pub(crate) fn settings_files_sentence(read: &[(String, String)], not_read: &[String]) -> String {
+    let mut out = match read {
+        [] => "Settings the start command sets were read for any that loosen the copy; a settings file the app reads \
+               on its own is not read, so a setting loosened in one is not seen."
+            .to_owned(),
+        files => format!(
+            "Settings the start command sets, and the environment file{} it reads ({}), were read for any that loosen \
+             the copy; any other settings file the app reads is not read, so a setting loosened in one is not seen.",
+            if files.len() == 1 { "" } else { "s" },
+            files
+                .iter()
+                .map(|(f, _)| format!("`{f}`"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+    };
+    for why in not_read {
+        out.push(' ');
+        out.push_str(why);
+    }
+    out
 }
 
 /// The answers that came with less body than their `Content-Length` said, said once (backlog 0598, ADR-021): each was
@@ -3219,6 +3362,10 @@ mod start_limits_tests;
 #[cfg(test)]
 #[path = "assemble_loosened_tests.rs"]
 mod loosened_tests;
+
+#[cfg(test)]
+#[path = "assemble_env_file_tests.rs"]
+mod env_file_tests;
 
 #[cfg(test)]
 #[path = "short_answers_gap_tests.rs"]
