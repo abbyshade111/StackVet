@@ -320,8 +320,9 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    are installed; Semgrep downloads its rules from semgrep.dev as it runs. It takes several minutes. It needs Docker:
 >    if your own commands are kept from Docker, say so and ask me to allow it, or tell me the command to type myself.
 >    Never give StackVet's container access to Docker, and never run commands inside a container.
-> 6. Tell me where the report is, and open `report.html` in my web browser for me (`open` on a Mac, `start` in
->    PowerShell, `xdg-open` on Linux), not in this chat, where it shows as code. Walk me through it from the top: the
+> 6. Tell me where the report is, and open `report.html` in this computer's own web browser for me (`open` on a Mac,
+>    `start` in PowerShell, `xdg-open` on Linux): not in a browser pane inside this tool, which closes with it, and
+>    not in this chat, where it shows as code. Walk me through it from the top: the
 >    most important things to fix first, then what was not examined. Never tell me the app is secure. Ask me before
 >    you delete the report's folder, or anything else.
 <!-- setup-step-6:end -->

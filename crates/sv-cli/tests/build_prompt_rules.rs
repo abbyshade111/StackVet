@@ -136,8 +136,14 @@ fn prompt_6_opens_the_report_in_a_browser_and_asks_before_deleting() {
         "<!-- setup-step-6:start -->",
         "<!-- setup-step-6:end -->",
     );
+    // Backlog 0554: in the trial of 14 October 2026 VS Code opened the report in its own browser pane, where the
+    // person could not keep it; Antigravity and Cursor used `open`.
     assert!(
-        prompt.contains("open `report.html` in my web browser for me"),
+        prompt.contains("open `report.html` in this computer's own web browser for me"),
+        "{prompt}"
+    );
+    assert!(
+        prompt.contains("not in a browser pane inside this tool, which closes with it"),
         "{prompt}"
     );
     assert!(prompt.contains("not in this chat"), "{prompt}");
