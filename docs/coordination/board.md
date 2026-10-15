@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0559, 0560, 0561, 0539, 0232
-- wording — arm: full — holds: 0551 (since 2026-10-14) — next: 0552, 0553, 0554, 0555
-- documentation — arm: full — holds: 0541 (since 2026-10-14) — next: 0542, 0543, 0544
+- wording — arm: full — holds: 0552 (since 2026-10-14) — next: 0553, 0554, 0555
+- documentation — arm: full — holds: 0542 (since 2026-10-14) — next: 0543, 0544
 
 ## Queue
 
@@ -542,3 +542,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 20:20 — assigned 0555 to wording (full) as next: the prompt library after the three-tool trial: the setup page and its tests, wording's file; in number order
 - 2026-10-14 20:50 — finished 0558 by wording (full): https://github.com/abbyshade111/StackVet/pull/1943; now holds 0551
 - 2026-10-14 20:50 — finished 0532 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1942; now holds 0541
+- 2026-10-14 21:20 — finished 0551 by wording (full): https://github.com/abbyshade111/StackVet/pull/1945; now holds 0552
+- 2026-10-14 21:20 — finished 0541 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1946; now holds 0542

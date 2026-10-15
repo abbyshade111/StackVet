@@ -16,7 +16,7 @@ pub(super) fn email_code_checks(
     out: &mut Outcome,
 ) {
     const IDS: &str = "V6.5.1, V6.5.4, V6.6.2, V6.6.3";
-    let Some(flow) = EmailCode::start(http, users, accounts, confirm, IDS, out) else {
+    let Some(flow) = EmailCode::start(http, users, accounts, confirm, IDS, out, true) else {
         return;
     };
 
@@ -173,7 +173,14 @@ pub(super) fn email_code_lifetime(
     }
     // Quietly: the checks above already said why, if the flow cannot be started.
     let mut quiet = Outcome::default();
-    let Some(flow) = EmailCode::start(http, users, accounts, confirm, ID, &mut quiet) else {
+    let not_made = out
+        .not_assessed
+        .iter()
+        .any(|(_, why)| why.contains(NOT_MADE));
+    let started = (!not_made)
+        .then(|| EmailCode::start(http, users, accounts, confirm, ID, &mut quiet, false))
+        .flatten();
+    let Some(flow) = started else {
         out.not_assessed.push((
             ID.to_owned(),
             "How long an emailed sign-in code keeps working: the sign-in by emailed code could not \
@@ -298,7 +305,14 @@ pub(super) fn email_code_guessing(
     };
     // Quietly: the checks above already said why, if the flow cannot be started.
     let mut quiet = Outcome::default();
-    let Some(flow) = EmailCode::start(http, users, accounts, confirm, "V6.6.3", &mut quiet) else {
+    let not_made = out
+        .not_assessed
+        .iter()
+        .any(|(_, why)| why.contains(NOT_MADE));
+    let started = (!not_made)
+        .then(|| EmailCode::start(http, users, accounts, confirm, "V6.6.3", &mut quiet, false))
+        .flatten();
+    let Some(flow) = started else {
         out.not_assessed.push((
             "V6.6.3".to_owned(),
             "Whether emailed sign-in codes can be guessed: the sign-in by emailed code could not \
@@ -520,6 +534,10 @@ fn email_code_short_check(codes: &[String], out: &mut Outcome) {
     }
 }
 
+/// What the first emailed-code check says when the account it made for the flow could not sign in
+/// (ADR-119); the later checks read it rather than signing in again.
+const NOT_MADE: &str = "could not sign in with its password to begin with";
+
 /// The pieces every emailed-code check needs, found once.
 struct EmailCode<'a> {
     entry: &'a sv_manifest::ResetSection,
@@ -537,6 +555,7 @@ impl<'a> EmailCode<'a> {
         confirm: Option<&'a str>,
         ids: &str,
         out: &mut Outcome,
+        first: bool,
     ) -> Option<Self> {
         let Some(entry) = &users.email_code else {
             out.not_assessed.push((
@@ -582,6 +601,30 @@ impl<'a> EmailCode<'a> {
                     ),
                 };
                 sign_up(http, users, signup, "code", &account);
+                // The setup, asserted (ADR-119): an account that was never made gets no email, and
+                // that would read as the app not sending one. Once, by the first check: the later
+                // ones read what it said (`NOT_MADE`), so the run signs in no more often.
+                if first
+                    && !super::passwords::account_works(
+                        http,
+                        users,
+                        "code-made",
+                        &account,
+                        confirm,
+                        &mut out.steps,
+                    )
+                {
+                    out.not_assessed.push((
+                        ids.to_owned(),
+                        format!(
+                            "Signing in with an emailed code: the account made for it, {}, {NOT_MADE}, \
+                             so it was most likely not made. The sign-up form may need a value \
+                             stackvet.toml does not carry, such as an invite code.",
+                            account.user
+                        ),
+                    ));
+                    return None;
+                }
                 account
             }
             None => accounts.a.clone(),
