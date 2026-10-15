@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0605, 0576, 0599, 0582
-- wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0590, 0603, 0597
+- wording — arm: full — holds: 0590 (since 2026-10-15) — next: 0603, 0597
 - documentation — arm: full — holds: 0583 (since 2026-10-15) — next: 0490, 0493, 0491, 0497, 0494
 
 ## Queue
@@ -703,3 +703,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 15:36 — withdrew 0489 from documentation (full), on hold: its second half tries a stated limit on the running app, in honesty's probe files; it stays in the queue for honesty
 - 2026-10-15 15:36 — released 0489
 - 2026-10-15 15:36 — assigned 0494 to documentation (full) into the lane after 0497: the cryptographic inventory read from the code, a static pointer proposal; locate and the questions
+- 2026-10-15 15:50 — finished 0565 by wording (full): https://github.com/abbyshade111/StackVet/pull/2073; now holds 0566
+- 2026-10-15 15:50 — finished 0566 by wording (full): https://github.com/abbyshade111/StackVet/pull/2070; now holds 0590
