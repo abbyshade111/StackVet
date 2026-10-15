@@ -507,8 +507,12 @@ pub(super) struct Flaws {
     pub(super) secret_question: bool,
     /// Takes a file larger than the stated limit.
     pub(super) oversized_upload_ok: bool,
-    /// Takes a .gif whose contents are not a GIF.
+    /// Takes a .gif whose contents are not a GIF, and, under `only_html_pages`, a .html that is not a page.
     pub(super) unchecked_contents_ok: bool,
+    /// Takes single-file HTML pages only, refusing any other name with 400 and a `.html` that does not open as a page,
+    /// as the game site in the Opus run did (backlog 0584). Not a fault: a GIF is never taken, so nothing can be
+    /// judged unless `accepts` says what is.
+    pub(super) only_html_pages: bool,
     /// Runs an uploaded .php when it is fetched back, serving its output instead of its source.
     pub(super) runs_uploaded_code: bool,
     /// Serves an uploaded .html as text/html with nothing telling the browser not to render it.
@@ -2717,6 +2721,16 @@ impl FakeApp {
                 self.largest_upload = self.largest_upload.max(contents.len());
                 if contents.len() > UPLOAD_LIMIT && !self.flaws.oversized_upload_ok {
                     return Some(self.upload_refused(413, "too large"));
+                }
+                if self.flaws.only_html_pages {
+                    let page = contents.trim_start().to_ascii_lowercase();
+                    let is_page = page.starts_with("<!doctype html") || page.starts_with("<html");
+                    if !name.ends_with(".html") {
+                        return Some(Self::respond(400, vec![], "only single-file HTML games"));
+                    }
+                    if !is_page && !self.flaws.unchecked_contents_ok {
+                        return Some(self.upload_refused(400, "that is not an HTML page"));
+                    }
                 }
                 let claims_gif = name.ends_with(".gif");
                 let is_gif = contents.starts_with("GIF87a") || contents.starts_with("GIF89a");

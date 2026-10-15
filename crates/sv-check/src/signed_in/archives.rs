@@ -820,6 +820,7 @@ mod tests {
             unpacks_archives: formats,
             max_unpacked_bytes: unpacked,
             max_files: files,
+            accepts: None,
         });
         u
     }

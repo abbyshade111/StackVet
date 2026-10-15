@@ -8,20 +8,21 @@ use super::*;
 /// not to become a denial-of-service attempt against somebody's own app.
 pub(super) const MOST_UPLOAD_BYTES: u64 = 8 * 1024 * 1024;
 
-/// A GIF's magic bytes, which are ASCII and so survive a body that must be valid text.
-///
-/// The probe requests carry a `String` body, so a real PNG or JPEG header cannot be written into
-/// one: `\x89PNG` is not valid UTF-8. GIF87a is, which is why the correct file here is a GIF. That
-/// is a convenience of the harness rather than a claim about what apps accept, and it is why the
-/// mismatched file below claims `.gif` too: both halves of the comparison are the same extension,
-/// so a refusal can only be about the contents.
-const GIF_MAGIC: &str = "GIF87a";
+/// The kind of file sent, from `accepts` (backlog 0584).
+mod kind;
+pub(super) use kind::{Kind, chosen};
+
+/// The kind the upload checks send for `upload`: a GIF when `accepts` says nothing, or when it names nothing `sv`
+/// makes (and then `upload_checks` has said so and stopped before anything else is sent).
+pub(super) fn kind_of(upload: &UploadSection) -> &'static Kind {
+    chosen(upload.accepts.as_deref()).unwrap_or(&kind::GIF)
+}
 
 /// One file the probes send: its name, its contents, and what it is for.
 struct Upload<'a> {
     id: &'a str,
     name: &'a str,
-    contents: String,
+    contents: Vec<u8>,
 }
 
 /// Builds a multipart body by hand, because there is no HTTP client here to do it. The file is
@@ -84,7 +85,7 @@ fn send_upload(
     send_bytes(
         http,
         upload,
-        (file.id, file.name, file.contents.as_bytes()),
+        (file.id, file.name, &file.contents),
         session,
         token,
     )
@@ -128,7 +129,7 @@ pub(super) fn send_bytes(
     http.send(&request)
 }
 
-/// Whether a refusal can be credited to the file: an ordinary GIF, with its own token and marker,
+/// Whether a refusal can be credited to the file: an ordinary file of the kind sent (a GIF unless `accepts` says), with its own token and marker,
 /// sent straight after and accepted. A quota reached, a token spent, or a value the app keeps
 /// unique would refuse that too, and then the refusal is not assessed, and `false` comes back.
 /// After rather than before, because a quota the refused file would have reached is only shown by
@@ -146,25 +147,27 @@ pub(super) fn refusal_stands(
     out: &mut Outcome,
 ) -> bool {
     let id = format!("upload-after-{after}");
-    let name = format!("sv-probe-after-{after}.gif");
+    let kind = kind_of(upload);
+    let name = format!("sv-probe-after-{after}.{}", kind.ext);
     let ordinary = Upload {
         id: &id,
         name: &name,
-        contents: format!("{GIF_MAGIC}sv-probe-ordinary-file"),
+        contents: kind.file("sv-probe-ordinary-file"),
     };
+    let short = kind.short;
     let answer = send_upload(http, upload, &ordinary, session, token);
     // The file after stands for the first ordinary one only when it was answered the same way (backlog
     // 0560): a quota shown on a 200 page is under 400 too.
     let after_like = beside(ordinary_answer, &answer);
     if let Beside::Unclear(why) = &after_like {
         out.steps.push(format!(
-            "sent {} and then an ordinary GIF: the GIF could not be told taken ({why})",
+            "sent {} and then an ordinary {short}: the {short} could not be told taken ({why})",
             what.to_lowercase()
         ));
         out.not_assessed.push((
             requirement.to_owned(),
             format!(
-                "{what} was refused at {}, but an ordinary GIF sent straight after it was answered \
+                "{what} was refused at {}, but an ordinary {short} sent straight after it was answered \
                  unlike the first ordinary one ({why}), so the refusal may have been a quota, a \
                  limit, or a spent token rather than anything about the file.",
                 upload.path
@@ -174,13 +177,13 @@ pub(super) fn refusal_stands(
     }
     if refused(&answer) || after_like == Beside::Refused {
         out.steps.push(format!(
-            "sent {} and then an ordinary GIF: both refused",
+            "sent {} and then an ordinary {short}: both refused",
             what.to_lowercase()
         ));
         out.not_assessed.push((
             requirement.to_owned(),
             format!(
-                "{what} was refused at {}, but so was an ordinary GIF sent straight after it ({}), \
+                "{what} was refused at {}, but so was an ordinary {short} sent straight after it ({}), \
                  so the refusal may have been a quota, a limit, or a spent token rather than \
                  anything about the file.",
                 upload.path,
@@ -211,7 +214,7 @@ pub(super) fn shows_upload_form(answer: &ProbeResponse) -> bool {
             .any(|field| body.contains(field))
 }
 
-/// Where the ordinary GIF was found when fetched back by its name, which makes fetching a later file back by
+/// Where the ordinary file was found when fetched back by its name, which makes fetching a later file back by
 /// its name a way to tell whether it was kept: `None` without `serves-at`, or when the ordinary file was not
 /// found that way.
 pub(super) fn served_back_works(
@@ -220,7 +223,7 @@ pub(super) fn served_back_works(
     session: &Session,
 ) -> Option<String> {
     let serves_at = upload.serves_at.as_deref()?;
-    let path = serves_at.replace("{name}", "sv-probe.gif");
+    let path = serves_at.replace("{name}", &format!("sv-probe.{}", kind_of(upload).ext));
     let fetched = http.send(&get("upload-ordinary-served", &path, session))?;
     ((200..300).contains(&fetched.status) && fetched.body.contains("sv-probe-ordinary-file"))
         .then_some(path)
@@ -270,7 +273,7 @@ pub(super) fn took(
 /// The three files an app ought to refuse, and what it serves back afterwards.
 ///
 /// Every part of this establishes its own setup first. A refusal proves nothing unless an ordinary
-/// file of the same shape was accepted, so an ordinary GIF goes first and each later answer is read
+/// file of the same shape was accepted, so an ordinary file goes first (a GIF, or the kind `accepts` names) and each later answer is read
 /// against it: if the app refuses everything, or the upload path is not what stackvet.toml says,
 /// the questions are reported *not assessed* rather than passed.
 pub(super) fn upload_checks(
@@ -289,29 +292,48 @@ pub(super) fn upload_checks(
         wanted: upload.form.values().any(|v| v.contains("{csrf}")),
     };
 
+    // 0. The kind of file every upload below is (backlog 0584): the first `accepts` names that `sv` makes.
+    let kind = match chosen(upload.accepts.as_deref()) {
+        Ok(kind) => kind,
+        Err(why) => {
+            out.not_assessed
+                .push(("V5.2.1, V5.2.2, V5.3.1, V3.2.1".to_owned(), why));
+            return;
+        }
+    };
+
     // 1. An ordinary file, to show the upload works at all. Without this every refusal below is
     //    a refusal of everything.
+    let name = format!("sv-probe.{}", kind.ext);
     let ordinary = Upload {
         id: "upload-ordinary",
-        name: "sv-probe.gif",
-        contents: format!("{GIF_MAGIC}sv-probe-ordinary-file"),
+        name: &name,
+        contents: kind.file("sv-probe-ordinary-file"),
     };
     let accepted = send_upload(http, upload, &ordinary, session, &token);
     let Some(ordinary_answer) = accepted.clone().filter(|r| r.status < 400) else {
         out.not_assessed.push((
             "V5.2.1, V5.2.2, V5.3.1, V3.2.1".to_owned(),
             format!(
-                "An ordinary file was not accepted at {} ({}), so nothing here can tell a file \
+                "An ordinary file (`{name}`) was not accepted at {} ({}), so nothing here can tell a file \
                  refused for being wrong from one refused because the upload does not work as \
-                 stackvet.toml describes.",
+                 stackvet.toml describes.{}",
                 upload.path,
-                status(&accepted)
+                status(&accepted),
+                if upload.accepts.is_none() {
+                    " If the app takes only some kinds of file, say which as `accepts` under the `upload` entry \
+                     (`accepts = [\"html\"]`, say), and the checks will send that kind."
+                } else {
+                    ""
+                }
             ),
         ));
         return;
     };
-    out.steps
-        .push(format!("uploaded an ordinary GIF to {}", upload.path));
+    out.steps.push(format!(
+        "uploaded an ordinary {} to {}",
+        kind.short, upload.path
+    ));
     let served = served_back_works(http, upload, session);
     // An answer under 400 is not yet a file kept: an app may refuse it by showing the upload form again with
     // 200. Unless fetching the file back found it, that answer shows nothing was kept, and every refusal below
@@ -356,13 +378,14 @@ pub(super) fn upload_checks(
             ),
         )),
         Some(most) => {
+            let name = format!("sv-probe-big.{}", kind.ext);
+            let (contents, holds) = kind.padded((most + 1024) as usize);
             let big = Upload {
                 id: "upload-oversized",
-                name: "sv-probe-big.gif",
-                contents: format!("{GIF_MAGIC}{}", "A".repeat((most + 1024) as usize)),
+                name: &name,
+                contents,
             };
             let answer = send_upload(http, upload, &big, session, &token);
-            let holds = format!("{GIF_MAGIC}AAAAAAAA");
             let judged = took(
                 http,
                 upload,
@@ -372,7 +395,7 @@ pub(super) fn upload_checks(
                 ("upload-oversized", big.name, Some(&holds)),
                 session,
             );
-            let sent = most + 1024 + GIF_MAGIC.len() as u64;
+            let sent = most + 1024 + kind.wrapping();
             let step = format!("sent a file of {sent} bytes where {most} is the stated limit");
             match judged {
                 Took::Unclear(why) => {
@@ -407,7 +430,7 @@ pub(super) fn upload_checks(
                                 format!(
                                     "a file about {} bytes larger than the {most} you stated, \
                                      refused where an ordinary one was accepted",
-                                    1024 + GIF_MAGIC.len() as u64
+                                    1024 + kind.wrapping()
                                 ),
                             )
                             // One file on the one upload route stackvet.toml names (ADR-053, Later).
@@ -435,10 +458,11 @@ pub(super) fn upload_checks(
 
     // 3. V5.2.2: contents that are not what the extension promises. Same extension as the ordinary
     //    file above, so a refusal can only be about what is inside it.
+    let name = format!("sv-probe-not-really.{}", kind.ext);
     let mismatched = Upload {
         id: "upload-mismatched",
-        name: "sv-probe-not-really.gif",
-        contents: "<?php echo 'sv-probe'; ?>\nthis is not a GIF at all\n".to_owned(),
+        name: &name,
+        contents: kind.not_it(),
     };
     let answer = send_upload(http, upload, &mismatched, session, &token);
     let judged = took(
@@ -450,18 +474,19 @@ pub(super) fn upload_checks(
         (
             "upload-mismatched",
             mismatched.name,
-            Some("this is not a GIF at all"),
+            Some(kind.not_it_holds),
         ),
         session,
     );
-    let step = "sent a .gif whose contents are not a GIF";
+    let (ext, a) = (kind.ext, kind.a);
+    let step = format!("sent a .{ext} whose contents are not {a}");
     match judged {
         Took::Unclear(why) => {
             out.steps.push(format!("{step}: could not tell, {why}"));
             out.not_assessed.push((
                 "V5.2.2".to_owned(),
                 format!(
-                    "A .gif whose contents are not a GIF was answered unlike the ordinary file at \
+                    "A .{ext} whose contents are not {a} was answered unlike the ordinary file at \
                      {} ({why}), and nothing fetched back could show whether it was kept.",
                     upload.path
                 ),
@@ -477,16 +502,18 @@ pub(super) fn upload_checks(
                 &token,
                 "mismatched",
                 "V5.2.2",
-                "A .gif whose contents are not a GIF",
+                &format!("A .{ext} whose contents are not {a}"),
                 out,
             ) {
                 out.verified.push(
                     crate::Verified::new(
                         CONTENT_MISMATCH.rule_id,
                         CONTENT_MISMATCH.requirement_ids,
-                        "a file named .gif whose contents are not a GIF, refused where a real GIF \
-                         of the same name and shape was accepted"
-                            .to_owned(),
+                        format!(
+                            "a file named .{ext} whose contents are not {a}, refused where a real {} \
+                             of the same name and shape was accepted",
+                            kind.short
+                        ),
                     )
                     // One file on the one upload route stackvet.toml names (ADR-053, Later).
                     .in_part(),
@@ -501,9 +528,9 @@ pub(super) fn upload_checks(
                 "A file is accepted on the strength of its name",
                 Severity::Medium,
                 format!(
-                    "A file called `.gif` holding no GIF at all was accepted at {}: it {how}. A \
-                     real GIF was accepted too: nothing looked at the contents.",
-                    upload.path
+                    "A file called `.{ext}` holding no {} at all was accepted at {}: it {how}. A \
+                     real {} was accepted too: nothing looked at the contents.",
+                    kind.short, upload.path, kind.short
                 ),
             ));
         }
@@ -567,12 +594,13 @@ fn traversal_check(
             .duration_since(std::time::UNIX_EPOCH)
             .map_or(0, |d| d.as_nanos())
     );
-    let base = format!("sv-probe-escaped-{nonce}.gif");
+    let kind = kind_of(upload);
+    let base = format!("sv-probe-escaped-{nonce}.{}", kind.ext);
     let marker = format!("sv-probe-traversal-{nonce}");
     let file = Upload {
         id: "upload-traversal",
         name: &format!("../{base}"),
-        contents: format!("{GIF_MAGIC}{marker}"),
+        contents: kind.file(&marker),
     };
     let stored = send_upload(http, upload, &file, session, token);
     if refused(&stored) {
@@ -597,8 +625,8 @@ fn traversal_check(
                 UPLOAD_PATH_TRAVERSAL.rule_id,
                 UPLOAD_PATH_TRAVERSAL.requirement_ids,
                 format!(
-                    "a file named `../{base}`, refused at {} where an ordinary GIF was accepted",
-                    upload.path
+                    "a file named `../{base}`, refused at {} where an ordinary {} was accepted",
+                    upload.path, kind.short
                 ),
             )
             // One file on the one upload route stackvet.toml names (ADR-053, Later).
@@ -723,7 +751,8 @@ fn svg_check(
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><script>/*{MARKER}*/</script>\
              <foreignObject><div>{MARKER}</div></foreignObject><circle id=\"{SHAPE}\" \
              r=\"1\"/></svg>"
-        ),
+        )
+        .into_bytes(),
     };
     let stored = send_upload(http, upload, &svg, session, token);
     if refused(&stored) {
@@ -751,8 +780,9 @@ fn svg_check(
             UPLOAD_SVG_SCRIPT.rule_id,
             UPLOAD_SVG_SCRIPT.requirement_ids,
             format!(
-                "an SVG image carrying a script, refused at {} where an ordinary GIF was accepted; {as_gif}",
-                upload.path
+                "an SVG image carrying a script, refused at {} where an ordinary {} was accepted; {as_gif}",
+                upload.path,
+                kind_of(upload).short
             ),
         )
         // One SVG on one route (ADR-053, Later).
@@ -871,7 +901,7 @@ fn svg_check(
 fn svg_named_gif(
     http: &mut dyn Http,
     upload: &UploadSection,
-    contents: &str,
+    contents: &[u8],
     session: &Session,
     token: &Token,
     out: &mut Outcome,
@@ -881,7 +911,7 @@ fn svg_named_gif(
     let as_gif = Upload {
         id: "upload-svg-as-gif",
         name: "sv-probe-svg.gif",
-        contents: contents.to_owned(),
+        contents: contents.to_vec(),
     };
     let stored = send_upload(http, upload, &as_gif, session, token);
     if refused(&stored) {
@@ -1006,8 +1036,8 @@ fn scan_check(
     let plain = Upload {
         id: "upload-plain-text",
         name: "sv-probe-plain.txt",
-        contents: "sv-probe: an ordinary text file, sent to show that text files are accepted.\n"
-            .to_owned(),
+        contents: b"sv-probe: an ordinary text file, sent to show that text files are accepted.\n"
+            .to_vec(),
     };
     let control = send_upload(http, upload, &plain, session, token);
     if refused(&control) {
@@ -1025,7 +1055,7 @@ fn scan_check(
     let test_file = Upload {
         id: "upload-eicar",
         name: "sv-probe-eicar.txt",
-        contents: eicar(),
+        contents: eicar().into_bytes(),
     };
     let stored = send_upload(http, upload, &test_file, session, token);
     if refused(&stored) {
@@ -1072,7 +1102,7 @@ fn scan_check(
     let unchanged = |answer: &Option<ProbeResponse>| {
         answer
             .as_ref()
-            .is_some_and(|r| r.status < 400 && r.body == test_file.contents)
+            .is_some_and(|r| r.status < 400 && r.body.as_bytes() == test_file.contents)
     };
     let first = http.send(&get("upload-eicar-fetch", &path, session));
     if !unchanged(&first) {
@@ -1165,7 +1195,7 @@ fn disposition_params(header: &str) -> Vec<(String, String)> {
 /// The name a file comes back under (V5.4.1), and whether a hostile name can break the header it
 /// comes back in (V5.4.2).
 ///
-/// V5.4.1 is read off the ordinary GIF the upload check already put in: an upload fetched back is
+/// V5.4.1 is read off the ordinary file the upload check already put in: an upload fetched back is
 /// a download, and the requirement asks that it be served under a name.
 ///
 /// V5.4.2 needs a name built to break things. `sv-probe;svinjected=1.gif` is a legal file name
@@ -1181,10 +1211,12 @@ fn download_name_checks(
     token: &Token,
     out: &mut Outcome,
 ) {
-    const HOSTILE: &str = "sv-probe;svinjected=1.gif";
+    let hostile_name = format!("sv-probe;svinjected=1.{}", kind_of(upload).ext);
+    let hostile_name = hostile_name.as_str();
+    let quoted_name = quoted_hostile(upload);
 
     // ---- V5.4.1: the ordinary file, uploaded before any of this ran.
-    let ordinary_path = serves_at.replace("{name}", "sv-probe.gif");
+    let ordinary_path = serves_at.replace("{name}", &format!("sv-probe.{}", kind_of(upload).ext));
     // The file itself, not "under 400" (backlog 0560, ADR-119): a redirect to where it is kept, or a page of the
     // app's own, has no file name of the file's to judge.
     match http.send(&get("download-ordinary", &ordinary_path, session)) {
@@ -1262,22 +1294,22 @@ fn download_name_checks(
     // ---- V5.4.2: a name built to break the header.
     let hostile = Upload {
         id: "upload-hostile-name",
-        name: HOSTILE,
-        contents: format!("{GIF_MAGIC}sv-probe-hostile-name"),
+        name: hostile_name,
+        contents: kind_of(upload).file("sv-probe-hostile-name"),
     };
     let stored = send_upload(http, upload, &hostile, session, token);
     if stored.as_ref().is_none_or(|r| r.status >= 400) {
         out.not_assessed.push((
             "V5.4.2".to_owned(),
             format!(
-                "The app refused a file named `{HOSTILE}` ({}), which is a sound thing to do with \
+                "The app refused a file named `{hostile_name}` ({}), which is a sound thing to do with \
                  a name like that, but it means nothing here saw such a name served back.",
                 status(&stored)
             ),
         ));
         return;
     }
-    let path = serves_at.replace("{name}", HOSTILE);
+    let path = serves_at.replace("{name}", hostile_name);
     let fetched = http.send(&get("download-hostile", &path, session));
     let Some(fetched) = fetched
         .filter(|r| (200..300).contains(&r.status) && r.body.contains("sv-probe-hostile-name"))
@@ -1285,7 +1317,7 @@ fn download_name_checks(
         out.not_assessed.push((
             "V5.4.2".to_owned(),
             format!(
-                "A file named `{HOSTILE}` was accepted but could not be fetched back from {path} as \
+                "A file named `{hostile_name}` was accepted but could not be fetched back from {path} as \
                  the file itself. The app may have stored it under a safer name, which would be \
                  right; either way nothing here saw the name served."
             ),
@@ -1302,7 +1334,7 @@ fn download_name_checks(
         .iter()
         .any(|(k, v)| (k == "filename" || k == "filename*") && !v.is_empty());
     out.steps.push(format!(
-        "fetched a file named `{HOSTILE}` back: {}",
+        "fetched a file named `{hostile_name}` back: {}",
         if injected {
             "its name broke the header"
         } else if named {
@@ -1318,7 +1350,7 @@ fn download_name_checks(
             "A file name is written into a response header unescaped",
             Severity::Medium,
             format!(
-                "A file named `{HOSTILE}` came back from {path} with `Content-Disposition: {}`. The \
+                "A file named `{hostile_name}` came back from {path} with `Content-Disposition: {}`. The \
                  `;` in the name ended the file name and began a parameter of its own.",
                 header.trim()
             ),
@@ -1334,13 +1366,13 @@ fn download_name_checks(
             DOWNLOAD_NAME_INJECTED.rule_id,
             DOWNLOAD_NAME_INJECTED.requirement_ids,
             format!(
-                "a file named `{HOSTILE}` fetched back from {path} with `Content-Disposition: {}`, \
+                "a file named `{hostile_name}` fetched back from {path} with `Content-Disposition: {}`, \
                  its name kept inside the file name rather than starting a parameter{}",
                 header.trim(),
                 match quoted {
-                    Some(_) => format!("; and one named `{QUOTED_HOSTILE}`, the same"),
+                    Some(_) => format!("; and one named `{quoted_name}`, the same"),
                     None => format!(
-                        "; one named `{QUOTED_HOSTILE}` could not be sent and fetched back, so a quote in a name \
+                        "; one named `{quoted_name}` could not be sent and fetched back, so a quote in a name \
                          was not seen"
                     ),
                 }
@@ -1352,7 +1384,7 @@ fn download_name_checks(
         out.not_assessed.push((
             "V5.4.2".to_owned(),
             format!(
-                "A file named `{HOSTILE}` came back from {path} with no file name in its \
+                "A file named `{hostile_name}` came back from {path} with no file name in its \
                  headers, so there was no served name to judge."
             ),
         ));
@@ -1360,9 +1392,12 @@ fn download_name_checks(
 }
 
 /// The second hostile name: a `"` before the `;`, which ends a quoted file name that was not escaped (backlog 0571).
-const QUOTED_HOSTILE: &str = "sv-probe\";svinjected=1.gif";
+/// The name built to end a quoted file name early, `sv-probe";svinjected=1.gif` for a GIF.
+fn quoted_hostile(upload: &UploadSection) -> String {
+    format!("sv-probe\";svinjected=1.{}", kind_of(upload).ext)
+}
 
-/// The file named `QUOTED_HOSTILE`, uploaded and fetched back: `Some(true)` when its name broke the header, which is
+/// The file named by `quoted_hostile`, uploaded and fetched back: `Some(true)` when its name broke the header, which is
 /// the finding, said here; `Some(false)` when it came back named whole; `None` when it was refused or not fetched back
 /// as the file, said as a step.
 fn quoted_name_check(
@@ -1373,20 +1408,21 @@ fn quoted_name_check(
     token: &Token,
     out: &mut Outcome,
 ) -> Option<bool> {
+    let quoted_name = quoted_hostile(upload);
     let hostile = Upload {
         id: "upload-quoted-name",
-        name: QUOTED_HOSTILE,
-        contents: format!("{GIF_MAGIC}sv-probe-quoted-name"),
+        name: &quoted_name,
+        contents: kind_of(upload).file("sv-probe-quoted-name"),
     };
     let stored = send_upload(http, upload, &hostile, session, token);
-    let path = serves_at.replace("{name}", &QUOTED_HOSTILE.replace('"', "%22"));
+    let path = serves_at.replace("{name}", &quoted_name.replace('"', "%22"));
     let fetched = stored
         .filter(|r| r.status < 400)
         .and_then(|_| http.send(&get("download-quoted", &path, session)))
         .filter(|r| (200..300).contains(&r.status) && r.body.contains("sv-probe-quoted-name"));
     let Some(fetched) = fetched else {
         out.steps.push(format!(
-            "a file named `{QUOTED_HOSTILE}` was refused or not fetched back as the file, so a quote in a name was \
+            "a file named `{quoted_name}` was refused or not fetched back as the file, so a quote in a name was \
              not seen"
         ));
         return None;
@@ -1399,7 +1435,7 @@ fn quoted_name_check(
         .iter()
         .any(|(k, _)| k == "svinjected");
     out.steps.push(format!(
-        "fetched a file named `{QUOTED_HOSTILE}` back: {}",
+        "fetched a file named `{quoted_name}` back: {}",
         if injected {
             "its quote ended the file name and broke the header"
         } else {
@@ -1413,7 +1449,7 @@ fn quoted_name_check(
             "A file name is written into a response header unescaped",
             Severity::Medium,
             format!(
-                "A file named `{QUOTED_HOSTILE}` came back from {path} with `Content-Disposition: {}`. The name was put \
+                "A file named `{quoted_name}` came back from {path} with `Content-Disposition: {}`. The name was put \
                  in quotes without escaping the `\"` in it, which ended the file name; the `;` after it began a \
                  parameter of its own.",
                 header.trim()
@@ -1471,7 +1507,7 @@ fn served_upload_checks(
             let file = Upload {
                 id,
                 name,
-                contents: contents.clone(),
+                contents: contents.clone().into_bytes(),
             };
             let extension = name.rsplit('.').next().unwrap_or_default();
             let stored = send_upload(http, upload, &file, session, token);
@@ -3085,3 +3121,6 @@ mod download_is_the_file_tests;
 
 #[cfg(test)]
 mod svg_named_gif_tests;
+
+#[cfg(test)]
+mod accepts_tests;
