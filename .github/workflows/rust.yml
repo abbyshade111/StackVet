@@ -647,7 +647,7 @@ jobs:
           sha="${{ github.sha }}"
           docker push "$IMAGE:$sha-amd64"
           docker push "$IMAGE:$sha-arm64"
-          tags=(-t "$IMAGE:$sha")
+          tags=(-t "$IMAGE:${{ github.sha }}")
           git fetch --depth=1 origin main
           if [ "$(git rev-parse FETCH_HEAD)" = "$sha" ]; then
             tags+=(-t "$IMAGE:latest")
