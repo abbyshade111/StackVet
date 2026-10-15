@@ -85,6 +85,8 @@ mod resources;
 #[cfg(test)]
 mod resources_seal_bytes_tests;
 #[cfg(test)]
+mod self_confirmed_tests;
+#[cfg(test)]
 mod since_all_gone_tests;
 #[cfg(test)]
 mod since_paged_tests;

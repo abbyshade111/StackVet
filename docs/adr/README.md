@@ -165,7 +165,7 @@ source files, and in two tests:
 | [ADR-116](ADR-116.md) | The report is also written as a PDF, by `sv` itself (accepted, 14 October 2026) |
 | [ADR-117](ADR-117.md) | Rich text and user-supplied markup are asked about, and an AI feature is one way in (accepted, 14 October 2026) |
 | [ADR-118](ADR-118.md) | Several flows and WebSocket paths in stackvet.toml, so the checks that try one can try each (accepted, 15 October 2026) |
-| [ADR-119](ADR-119.md) | A probe reads its answer against its own setup and its own control (proposed, 14 October 2026) |
+| [ADR-119](ADR-119.md) | A probe reads its answer against its own setup and its own control (accepted, 15 October 2026) |
 | [ADR-120](ADR-120.md) | The guide's word budget is 4,500 (accepted, 15 October 2026) |
 
 ## Names in the records

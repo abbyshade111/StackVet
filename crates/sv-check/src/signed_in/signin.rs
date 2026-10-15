@@ -324,7 +324,36 @@ pub(super) fn brute_force_check(
                     accounts.b.password.chars().take(12).collect::<String>()
                 ),
             };
-            sign_up(http, users, signup, "guessed", &account);
+            let answer = sign_up(http, users, signup, "guessed", &account);
+            // The setup, asserted before a guess is made (backlog 0522, ADR-119): an account that
+            // was never made answers every wrong password alike, and that is no limit missing.
+            // Signing in with the right password is the one answer that says the account exists.
+            // Signing in and opening the first private page, as A did, is the one answer that says
+            // the account exists; with no private page listed, it cannot be shown.
+            let made = users.private.first().is_some_and(|confirm| {
+                super::passwords::account_works(
+                    http,
+                    users,
+                    "guessed-made",
+                    &account,
+                    confirm,
+                    &mut out.steps,
+                )
+            });
+            if !made {
+                out.not_assessed.push((
+                    "V6.3.1".to_owned(),
+                    format!(
+                        "Whether the app resists password guessing: the sign-up this check needs, \
+                         for an account of its own to guess at, answered {}, and signing in as \
+                         that account did not open the first private page stackvet.toml lists, so \
+                         the account was not made. The sign-up form may need a value stackvet.toml \
+                         does not carry, such as an invite code. No wrong password was sent.",
+                        status(&answer)
+                    ),
+                ));
+                return;
+            }
             account
         }
         None => Account {
@@ -2033,3 +2062,6 @@ mod largest_number_tests;
 mod log_pages_tests;
 #[cfg(test)]
 mod made_up_name_tests;
+
+#[cfg(test)]
+mod own_account_tests;

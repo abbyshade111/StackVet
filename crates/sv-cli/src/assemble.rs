@@ -50,6 +50,8 @@ pub(crate) fn say_step(what: &str) {
     }
 }
 
+mod self_confirmed;
+
 #[cfg(test)]
 #[path = "assemble_progress_tests.rs"]
 mod progress_tests;
@@ -2028,6 +2030,27 @@ fn the_owners_word(
             requirements: Vec::new(),
         });
     }
+    // A file written by hand under headings of its own, before any question: the Cursor trial's, which held the
+    // owner's real decisions and counted for nothing, said only in the counts (backlog 0542).
+    if let Some(first) = notes.outside.first() {
+        let n = notes.outside.len();
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "what is under {n} heading{} of your own in {}, before any of its questions",
+                if n == 1 { "" } else { "s" },
+                notes_catalog.file
+            ),
+            why: format!(
+                "An answer counts only under its question's own heading (`## V…`, as `sv notes` writes them), so \
+                 nothing under {} counts, the first being \"{first}\". If these are your decisions, have your AI \
+                 coding tool record each one with `stackvet_record_answer`, or run `sv notes` to add the questions \
+                 and move each answer under its own; then `sv review` makes them yours.",
+                if n == 1 { "it" } else { "these" }
+            ),
+            reason: sv_report::GapReason::Partial,
+            requirements: Vec::new(),
+        });
+    }
     // The decisions the design-time prompts write down (`sv_check::decisions`). Two sections count
     // toward Secure by Design controls, read as the notes are; the file's other sections are not
     // questions, so a heading `sv` does not read for credit is not reported as one left unread.
@@ -2386,11 +2409,20 @@ fn the_owners_word(
             requirements: Vec::new(),
         });
     }
+    // The tool vouching for its own work is named in a gap of its own (backlog 0543), so not again here.
+    let self_confirmed = self_confirmed::of(manifest);
     let not_counted: Vec<&(String, String)> = confirmed_design
         .not_counted
         .iter()
-        .chain(confirmed_hand.not_counted.iter())
+        .filter(|(id, _)| !self_confirmed.design.contains(id))
+        .chain(
+            confirmed_hand
+                .not_counted
+                .iter()
+                .filter(|(id, _)| !self_confirmed.hand.contains(id)),
+        )
         .collect();
+    gaps.extend(self_confirmed.gap());
     if !not_counted.is_empty() {
         gaps.push(sv_report::Gap {
             what: format!(
