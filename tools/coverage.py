@@ -94,6 +94,7 @@ RUST_CHECKS = {
     "config.mcp-transport-unencrypted": ("static", ["C10.3.1"]),
     "config.rich-text-without-sanitizer": ("static", ["V1.3.1"]),
     "config.sign-in-pathway-not-listed": ("static", ["V6.3.4"]),
+    "ast.weak-key-generation": ("static", ["V11.6.1"]),
     "config.client-tech-unsupported": ("static", ["V3.7.1"]),
     "config.retired-grant-enabled": ("static", ["V10.4.4"]),
     "config.model-file-can-run-code": ("static", ["C4.1.2"]),
@@ -360,6 +361,8 @@ RUST_FINDINGS_ONLY = {
     "config.rich-text-without-sanitizer",
     # A list that names every way in found credits nothing: a way in may be one the reader does not find (ADR-123).
     "config.sign-in-pathway-not-listed",
+    # No weak key made in the code says nothing of keys made elsewhere, or of signing and seeding (backlog 0494).
+    "ast.weak-key-generation",
     # A refusal of TLS 1.0 and 1.1 is half of V12.1.1; the other half, the newest version preferred,
     # is not something curl reports reliably, so a refusal is said and not credited.
     "probe.old-tls-accepted",
@@ -449,9 +452,10 @@ RUST_IN_PART = {"probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-he
 # report's "Before going live" list (`crates/sv-report/src/live.rs`) as one to check with a scanner, which
 # credits nothing. V8.1.1 and V8.1.2 are the questions the app's routes are shown beside (`crates/sv-cli/src/code_lines.rs`,
 # backlog 0493), V6.1.3 and V6.3.4 the ones the ways into the app are shown beside (backlog 0491), and V14.1.1 and
-# V14.1.2 the ones the fields that look personal are shown beside (backlog 0497); none credits anything.
+# V14.1.2 the ones the fields that look personal are shown beside (backlog 0497), and V11.1.1 and V11.1.2 the ones the
+# draft cryptographic inventory is shown beside (backlog 0494); none credits anything.
 MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.2.1", "V12.1.2", "V8.1.1", "V8.1.2",
-            "V6.1.3", "V6.3.4", "V14.1.1", "V14.1.2"}
+            "V6.1.3", "V6.3.4", "V14.1.1", "V14.1.2", "V11.1.1", "V11.1.2"}
 
 ID = r"(?:V|C)\d+\.\d+\.\d+|AC\.\d+\.\d+|SBD-[A-Z]+-\d+"
 
@@ -546,6 +550,7 @@ def framework(path):
 # read it from: checks that only ever credit a requirement, and the configuration checks built
 # differently. Every other check's words are read from the code or data where the check is defined.
 DESCRIBED = {
+    "ast.weak-key-generation": "A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3",
     "config.sign-in-pathway-not-listed": "A way into the app the code shows (a sign-in route, a Passport strategy, an API key read by header) that the list of sign-in pathways in stackvet.toml does not name",
     "config.certificate-checks-off": "A setting that switches off certificate checking for every connection the app makes",
     "config.firebase-rules-open": "A Firebase rules file that lets anybody in: an `allow` with no condition, `if true`, or test mode's date alone, or a Realtime Database `.read` or `.write` set to true",

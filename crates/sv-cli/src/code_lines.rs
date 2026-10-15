@@ -276,6 +276,27 @@ pub fn classification_questions(
     }
 }
 
+/// The questions the draft cryptographic inventory is shown beside (backlog 0494): a key-management policy, and the
+/// inventory itself.
+pub const KEY_QUESTIONS: &[&str] = &["V11.1.1", "V11.1.2"];
+
+/// Gives each key-management question the draft inventory, when anything was found (backlog 0494). Where to look, never
+/// evidence: nothing else reads it.
+pub fn key_questions(listing: &sv_scan::files::Listing, report: &mut sv_report::Report) {
+    let inventory = sv_check::crypto_inventory::read(listing);
+    if inventory.is_empty() {
+        return;
+    }
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+        .filter(|item| KEY_QUESTIONS.contains(&item.id.as_str()))
+    {
+        item.crypto = Some(inventory.clone());
+    }
+}
+
 /// Whether `file` names a place inside the app's folder: relative, and never climbing out of it.
 fn inside(file: &str) -> bool {
     let path = Path::new(file);

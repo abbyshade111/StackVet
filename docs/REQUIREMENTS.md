@@ -37,7 +37,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 121 can be checked, 53 can only be found failing, 10 where a check helps but a person decides, and 161 with no check.
+345 requirements: 121 can be checked, 54 can only be found failing, 10 where a check helps but a person decides, and 160 with no check.
 
 ### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
 
@@ -186,7 +186,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 68 can be checked, 27 can only be found failing)
+### Level 2 (183 requirements, 68 can be checked, 28 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -366,7 +366,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V11.4.3** Verify that hash functions used in digital signatures, as part of data authentication or data integrity are collision resistant and have appropriate bit-lengths. If collision resistance is required, the output length must be at least 256 bits. If only resistance to second pre-image attacks is required, the output length must be at least 128 bits. | Can be checked | Outside tools: semgrep, 4 rules, its rules look for: a hash function whose output length is too short to be collision resistant |
 | **V11.4.4** Verify that the application uses approved key derivation functions with key stretching parameters when deriving secret keys from passwords. The parameters in use must balance security and performance to prevent brute-force attacks from compromising the resulting cryptographic key. | Can only be found failing | Reads the code: `ast.weak-password-key-derivation`, looks for: A password is stored, or a key made from it, with too few rounds of work (found failing only) |
 | **V11.5.1** Verify that all random numbers and strings which are intended to be non-guessable must be generated using a cryptographically secure pseudo-random number generator (CSPRNG) and have at least 128 bits of entropy. Note that UUIDs do not respect this condition. | Can be checked | Reads the code: `ast.insecure-random-for-code`, looks for: A sign-in or reset code is made with a random number generator that can be predicted (found failing only)<br>Outside tools: gosec, 1 rule, its rules look for: a random number generator that is not cryptographically secure<br>Outside tools: semgrep, 5 rules, its rules look for: random numbers that must not be guessable taken from a generator that is not cryptographically secure<br>Outside tools you turn on: codeql-javascript, 1 rule, its rules look for: random numbers that must not be guessable taken from a generator that is not cryptographically secure |
-| **V11.6.1** Verify that only approved cryptographic algorithms and modes of operation are used for key generation and seeding, and digital signature generation and verification. Key generation algorithms must not generate insecure keys vulnerable to known attacks, for example, RSA keys which are vulnerable to Fermat factorization. | No check | – |
+| **V11.6.1** Verify that only approved cryptographic algorithms and modes of operation are used for key generation and seeding, and digital signature generation and verification. Key generation algorithms must not generate insecure keys vulnerable to known attacks, for example, RSA keys which are vulnerable to Fermat factorization. | Can only be found failing | Reads the code: `ast.weak-key-generation`, looks for: A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3 (found failing only) |
 
 #### V12 Secure Communication
 
