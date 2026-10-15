@@ -1,6 +1,6 @@
 # A contact address on a domain no mail reaches (`.local`, `.invalid`, `example.com`) clears the placeholder-contact check
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -14,3 +14,10 @@ the address could receive mail.
 reason in the finding; never try to send anything (the fence).
 
 **Record.** None.
+
+**Done, 15 October 2026** (documentation). `security_contact.rs` (`reserved`) now also counts a name on `.local`
+("found only on the network it is on (RFC 6762), so no mail from outside reaches it") and a name beginning `example.`
+under any ending ("one made for examples, almost certainly a stand-in"). `.test`, `.invalid`, `.example`,
+`example.com`/`.org`/`.net`, and `localhost` were already counted. Nothing is sent: the check reads the file only.
+Tests: `security_contact_unreachable_tests.rs` (2), with names that only look like one (`localgames.dev`,
+`counterexample.org`) left alone; with the two new names switched off, the first fails.
