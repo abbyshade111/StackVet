@@ -1,6 +1,6 @@
 # `config.versions-pinned` is titled "Python does not pin the versions it installs" when every version is pinned
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
