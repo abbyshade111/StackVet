@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0559, 0560, 0561, 0539, 0232
-- wording — arm: full — holds: 0552 (since 2026-10-14) — next: 0553, 0554, 0555
-- documentation — arm: full — holds: 0542 (since 2026-10-14) — next: 0543, 0544
+- honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0560, 0561, 0564, 0539, 0232
+- wording — arm: full — holds: 0553 (since 2026-10-14) — next: 0554, 0555
+- documentation — arm: full — holds: 0544 (since 2026-10-14) — next: 0540, 0527, 0526, 0563
 
 ## Queue
 
@@ -37,24 +37,22 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 23. 0523 The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding — ready
 24. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
 25. 0525 `ast.sql-built-by-hand` flags `executescript(f())` where `f` returns a constant schema, a high finding under V1.2.4 — ready
-26. 0526 The test-user step took 129 s on one trial app with 7 s of it itemized; the timings cannot say where the time went — ready
-27. 0527 When sign-in fails, the run shows only "(400)" and seen.json cuts the page before its error text — ready
-28. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-29. 0529 Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information — ready
-30. 0530 `config.versions-pinned` is titled "Python does not pin the versions it installs" when every version is pinned — ready
-31. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
-32. 0533 Without an `owned` record the forged-form and other-user checks do not run, and preflight does not say which checks a missing key costs — ready
-33. 0534 `.cursor/mcp.json` is listed as "not read" though `sv connect cursor` writes it and it has the shape `.mcp.json` has — ready
-34. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-35. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-36. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
-37. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
-38. 0540 `tools/install.sh` copies `target/release/sv` after a build that `CARGO_TARGET_DIR` sent elsewhere, and reports the stale one installed — ready
-39. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
-40. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
-41. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
-42. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
-43. 0563 `sv --version` piped into `head` reports "sv itself failed: a fault in sv" on the closed pipe — ready
+26. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+27. 0529 Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information — ready
+28. 0530 `config.versions-pinned` is titled "Python does not pin the versions it installs" when every version is pinned — ready
+29. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
+30. 0533 Without an `owned` record the forged-form and other-user checks do not run, and preflight does not say which checks a missing key costs — ready
+31. 0534 `.cursor/mcp.json` is listed as "not read" though `sv connect cursor` writes it and it has the shape `.mcp.json` has — ready
+32. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+33. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+34. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
+35. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
+36. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
+37. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
+38. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
+39. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
+40. 0565 Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show — ready
+41. 0566 Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report — ready
 
 ## Log
 
@@ -544,3 +542,15 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 20:50 — finished 0532 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1942; now holds 0541
 - 2026-10-14 21:20 — finished 0551 by wording (full): https://github.com/abbyshade111/StackVet/pull/1945; now holds 0552
 - 2026-10-14 21:20 — finished 0541 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1946; now holds 0542
+- 2026-10-14 21:50 — finished 0559 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1948; from its lane, behind 0521
+- 2026-10-14 21:50 — finished 0552 by wording (full): https://github.com/abbyshade111/StackVet/pull/1947; now holds 0553
+- 2026-10-14 21:50 — finished 0542 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1949; now holds 0543
+- 2026-10-14 21:50 — finished 0543 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1953; now holds 0544
+- 2026-10-14 21:50 — queued 0564, marked
+- 2026-10-14 21:50 — queued 0565, marked
+- 2026-10-14 21:50 — queued 0566, marked
+- 2026-10-14 21:50 — assigned 0564 to honesty (full) into the lane after 0561: the owner's go of 14 October: judge the tested copy, after the sweeps it shares a shape with
+- 2026-10-14 21:50 — assigned 0540 to documentation (full) as next: sv-run, tools, and sv-cli items from the three-tool trial that share no file with the probes or the prompts
+- 2026-10-14 21:50 — assigned 0527 to documentation (full) as next: sv-run, tools, and sv-cli items from the three-tool trial that share no file with the probes or the prompts
+- 2026-10-14 21:50 — assigned 0526 to documentation (full) as next: sv-run, tools, and sv-cli items from the three-tool trial that share no file with the probes or the prompts
+- 2026-10-14 21:50 — assigned 0563 to documentation (full) as next: sv-run, tools, and sv-cli items from the three-tool trial that share no file with the probes or the prompts
