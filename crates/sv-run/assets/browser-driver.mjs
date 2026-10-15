@@ -8,7 +8,9 @@
 // SV_JOB = base64 of {"app": "http://localhost:8080", "actions": [...]}
 // Actions:
 //   {"goto": "/path"}                     -> {"status": 200, "path": "/where/it/ended"}
-//   {"fill": "/path", "text": "..."}      -> {"status", "found": bool, "after": {"status", "path"}}
+//   {"fill": "/path", "text": "..."}      -> {"status", "found": bool, "after": {"status", "path", "said"?}}
+//       `said`, only when the form's answer was 400 or more: the words the page showed, cut short, so a
+//       refusal is quoted in the app's own words (backlog 0585).
 //   {"eval": "expression"}                -> {"value": ...}
 //   {"act": "expression"}                 -> {"found": bool, "after": {"status", "path"}}
 //       runs an expression that does something in the page, such as clicking, and answers
@@ -268,7 +270,12 @@ for (const action of job.actions || []) {
       const r = await evaluate({ expression: FILL(action.text), returnByValue: true });
       const found = r.result?.result?.value === true;
       if (found) await settle();
-      results.push({ ...opened, found, after: { status, path: await where() } });
+      const after = { status, path: await where() };
+      if (status >= 400) {
+        const s = await evaluate({ expression: '(document.body && document.body.innerText) || ""', returnByValue: true });
+        after.said = String(s.result?.result?.value ?? '').slice(0, 2000);
+      }
+      results.push({ ...opened, found, after });
     } else if ('act' in action) {
       loaded = false;
       status = 0;
