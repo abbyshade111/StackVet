@@ -796,6 +796,7 @@ mod tests {
             set_at_login: Vec::new(),
             before_login: Vec::new(),
             landed: String::new(),
+            answer: String::new(),
             limited: false,
         };
         let mut out = Outcome::default();
