@@ -350,6 +350,28 @@ pub fn page(report: &Report) -> String {
     }
     b.push_str("</section>\n");
 
+    // The report in short pages (backlog 0590): this page leads to each, and says in a line what each is for.
+    b.push_str("<nav class=\"pages\" aria-label=\"The pages of this report\">\n<p><strong>The report in short pages</strong>, each in this folder:</p>\n<ul>\n");
+    for page in crate::pages::PAGES
+        .iter()
+        .map(|p| (p.file, p.purpose))
+        .chain(std::iter::once((
+            crate::checklist::FILE,
+            "What to do or confirm before the app is on the internet, in order",
+        )))
+        .chain(std::iter::once((
+            "compliance.md",
+            "The long reference: every requirement and what is known of each",
+        )))
+    {
+        b.push_str(&format!(
+            "<li><a href=\"{0}\">{0}</a>: {1}.</li>\n",
+            escape(page.0),
+            escape(page.1)
+        ));
+    }
+    b.push_str("</ul>\n</nav>\n");
+
     // The order of the sections below the short version (ADR-110): the things to fix first, worst first, then
     // what was set aside, then how this report was made, then what was not examined, directly after.
     let (app, tests) = crate::app_then_tests(report);

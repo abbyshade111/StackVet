@@ -366,6 +366,10 @@ a browser. Each file in the folder has a reader of its own:
 | `security.md` | Whoever fixes the code, you or your AI coding tool |
 | `low-findings.md` | You or your AI coding tool, when you want the detail |
 | `before-going-live.md` | You, or whoever puts the app on the internet |
+| `fix-now.md` | You or your AI coding tool, first |
+| `your-decisions.md` | You |
+| `not-examined.md` | You, before you read anything as safe |
+| `information.md` | You, when you want the rest |
 | `stackvet.sarif` | Code editors and GitHub's code scanning, which show a finding beside its line |
 | `report.json` | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | You, to see what a finding rests on |

@@ -59,11 +59,12 @@ fn more_help(name: &str) -> &'static str {
              terminal. The whole flow: docs/GETTING-STARTED.md, section 5, \"Answer the questions\".\n"
         }
         "report" => {
-            "\nIt writes ten files into stackvet-report in the app's folder, unless --out names another.\n\
-             Open report.html in a browser first: it is the whole report on one page. compliance.md and\n\
-             security.md say the same in plain text, for you or your AI coding tool; before-going-live.md\n\
-             is what to do before the app is on the internet (`sv before-live` prints it again); most of\n\
-             the rest are for programs. What each file is for: README.md, \"What a report holds\". What --run needs\n\
+            "\nIt writes fourteen files into stackvet-report in the app's folder, unless --out names another.\n\
+             Open report.html in a browser first: it is the whole report on one page, and leads to the\n\
+             short pages, fix-now.md first, then your-decisions.md, not-examined.md, and information.md.\n\
+             compliance.md and security.md say it all in plain text, for you or your AI coding tool;\n\
+             before-going-live.md is what to do before the app is on the internet (`sv before-live`\n\
+             prints it again); most of the rest are for programs. What each file is for: README.md, \"What a report holds\". What --run needs\n\
              first: docs/INSTALL.md, \"Installing StackVet on your computer, for `--run`\".\n"
         }
         "doctor" => {
@@ -2893,6 +2894,15 @@ fn report_command(
     println!("Wrote {} files to {}:", written.len(), out_dir.display());
     for name in &written {
         println!("  {name}");
+    }
+    // Where to start (backlog 0590, the owner's answer): the front page, then what to fix when there is any.
+    println!("Open first: {}", out_dir.join("report.html").display());
+    let (app, _) = sv_report::app_then_tests(&report);
+    if !sv_report::fix_then_notes(app).0.is_empty() {
+        println!(
+            "Then: {}",
+            out_dir.join(sv_report::pages::FIX_NOW.file).display()
+        );
     }
     let kept = report.seen.as_ref().map_or(0, |s| s.tool_output.len());
     if keep_tool_output {

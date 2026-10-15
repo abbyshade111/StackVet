@@ -1,4 +1,4 @@
-//! The ten files a report is written as: each name, what kind of file it is, and how it is rendered.
+//! The fourteen files a report is written as: each name, what kind of file it is, and how it is rendered.
 //!
 //! The one table in this crate that every reader of a report folder's names derives from (BACKLOG,
 //! "From the architecture assessment of 8 October 2026", item 5): `write_report` writes these in this
@@ -19,8 +19,8 @@ pub struct ReportFile {
     pub render: fn(&sv_report::Report) -> String,
 }
 
-/// The ten files, in the order they are written and sealed.
-pub const REPORT_FILES: [ReportFile; 10] = [
+/// The fourteen files, in the order they are written and sealed.
+pub const REPORT_FILES: [ReportFile; 14] = [
     ReportFile {
         name: "report.html",
         mime: "text/html",
@@ -47,6 +47,27 @@ pub const REPORT_FILES: [ReportFile; 10] = [
         name: sv_report::checklist::FILE,
         mime: "text/markdown",
         render: sv_report::checklist::render,
+    },
+    // The report in short pages, one per purpose, cut whole from the others (backlog 0590).
+    ReportFile {
+        name: sv_report::pages::FIX_NOW.file,
+        mime: "text/markdown",
+        render: sv_report::pages::fix_now,
+    },
+    ReportFile {
+        name: sv_report::pages::DECISIONS.file,
+        mime: "text/markdown",
+        render: sv_report::pages::decisions,
+    },
+    ReportFile {
+        name: sv_report::pages::NOT_EXAMINED.file,
+        mime: "text/markdown",
+        render: sv_report::pages::not_examined,
+    },
+    ReportFile {
+        name: sv_report::pages::INFORMATION.file,
+        mime: "text/markdown",
+        render: sv_report::pages::information,
     },
     ReportFile {
         name: sv_report::SARIF_FILE,
