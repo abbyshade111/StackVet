@@ -814,6 +814,7 @@ pub fn page(report: &Report) -> String {
                         None => asked,
                     }
                 } + &rests_on(item)
+                    + &in_the_packages(item)
             ));
         }
         b.push_str("</table>\n");
@@ -1184,6 +1185,32 @@ fn rests_on(item: &sv_check::human::Item) -> String {
             } else {
                 "places"
             }
+        ));
+    }
+    b
+}
+
+/// The packages of the app's a question is about (backlog 0490), and why nothing can check it where that is said.
+fn in_the_packages(item: &sv_check::human::Item) -> String {
+    let mut b = String::new();
+    if let Some(found) = &item.in_the_packages {
+        b.push_str(&format!(
+            "<br><span class=\"note\"><strong>In the packages</strong>, {}: <code>{}</code>. {} {}</span>",
+            escape(&found.finds),
+            found
+                .packages
+                .iter()
+                .map(|p| escape(p))
+                .collect::<Vec<_>>()
+                .join("</code>, <code>"),
+            escape(&found.says),
+            escape(sv_check::human::PACKAGES_SAY)
+        ));
+    }
+    if let Some(why) = &item.why_not_checked {
+        b.push_str(&format!(
+            "<br><span class=\"note\"><strong>Why StackVet cannot check it:</strong> {}</span>",
+            escape(why)
         ));
     }
     b

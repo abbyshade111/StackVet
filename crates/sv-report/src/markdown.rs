@@ -565,7 +565,8 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
                         Some(where_to_look) =>
                             format!("{} **Where to look:** {where_to_look}", item.asked()),
                         None => item.asked(),
-                    } + &rests_on(item))
+                    } + &rests_on(item)
+                        + &in_the_packages(item))
                 )
             ));
         }
@@ -1214,6 +1215,24 @@ fn rests_on(item: &sv_check::human::Item) -> String {
         places.join("; "),
         sv_check::human::POINTERS_SAY
     )
+}
+
+/// The packages of the app's a question is about (backlog 0490), and why nothing can check it where that is said.
+fn in_the_packages(item: &sv_check::human::Item) -> String {
+    let mut out = String::new();
+    if let Some(found) = &item.in_the_packages {
+        out.push_str(&format!(
+            " **In the packages**, {}: {}. {} {}",
+            found.finds,
+            found.packages.join(", "),
+            found.says,
+            sv_check::human::PACKAGES_SAY
+        ));
+    }
+    if let Some(why) = &item.why_not_checked {
+        out.push_str(&format!(" **Why StackVet cannot check it:** {why}"));
+    }
+    out
 }
 
 #[cfg(test)]

@@ -175,6 +175,40 @@ pub fn point_questions(
     }
 }
 
+/// Gives each question a package locator speaks to the packages of the app's it names (backlog 0490), and each question
+/// the reason nothing can check it where its catalog gives one, on both of the report's lists of questions.
+pub fn point_to_packages(
+    locators: &sv_check::locate::Locators,
+    components: &[sv_check::sbom::Component],
+    report: &mut sv_report::Report,
+) {
+    use sv_check::human::InThePackages;
+    let mut by_question: BTreeMap<String, InThePackages> = BTreeMap::new();
+    for locator in locators.packages() {
+        let packages = locator.find(components);
+        if packages.is_empty() {
+            continue;
+        }
+        for id in &locator.questions {
+            // The first package locator to speak to a question wins; two speaking to one would say two things.
+            by_question
+                .entry(id.clone())
+                .or_insert_with(|| InThePackages {
+                    finds: locator.finds.clone(),
+                    packages: packages.clone(),
+                    says: locator.says.clone(),
+                });
+        }
+    }
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+    {
+        item.in_the_packages = by_question.get(&item.id).cloned();
+    }
+}
+
 /// Whether `file` names a place inside the app's folder: relative, and never climbing out of it.
 fn inside(file: &str) -> bool {
     let path = Path::new(file);

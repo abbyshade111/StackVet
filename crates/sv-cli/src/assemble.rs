@@ -2900,6 +2900,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         secret_rules,
         &mut report,
     );
+    // The packages each question is about, where a package locator speaks to it (backlog 0490).
+    crate::code_lines::point_to_packages(locators, &bill_of_materials.components, &mut report);
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped
     // here, so nothing past this point holds the app's code twice.
     if options.keep_tool_output {

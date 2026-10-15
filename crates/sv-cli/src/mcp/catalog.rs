@@ -145,6 +145,15 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                 "required": ["finds", "places", "more"],
                 "additionalProperties": false
             },
+            // The app's packages the question is about, by name and version (backlog 0490): where to look, not evidence.
+            "in_the_packages": {
+                "type": ["object", "null"],
+                "properties": { "finds": string, "packages": strings, "says": string },
+                "required": ["finds", "packages", "says"],
+                "additionalProperties": false
+            },
+            // Why nothing StackVet does can check the requirement, where the catalog says (backlog 0490).
+            "why_not_checked": { "type": ["string", "null"] },
         }),
         &[
             "id",
@@ -155,6 +164,8 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
             "route",
             "where_means",
             "rests_on",
+            "in_the_packages",
+            "why_not_checked",
         ],
     );
     let schema = match tool {

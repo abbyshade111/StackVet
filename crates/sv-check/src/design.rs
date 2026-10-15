@@ -103,6 +103,10 @@ pub struct Question {
     /// Where to go and look to answer it, for the checklist of what only a person can check.
     #[serde(rename = "howToFindOut", default)]
     pub how_to_find_out: Option<String>,
+    /// Why nothing `sv` does can check it, when the reason is not plain from the question: what it would take is out of
+    /// reach of the folder and the fence (backlog 0490).
+    #[serde(rename = "whyNotChecked", default)]
+    pub why_not_checked: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -465,6 +469,7 @@ mod tests {
                     plain: None,
                     where_means: "the file where authorization is enforced".into(),
                     how_to_find_out: None,
+                    why_not_checked: None,
                 },
                 Question {
                     id: "V2.2.2".into(),
@@ -474,6 +479,7 @@ mod tests {
                     plain: None,
                     where_means: "the file where input validation happens".into(),
                     how_to_find_out: None,
+                    why_not_checked: None,
                 },
             ],
         }

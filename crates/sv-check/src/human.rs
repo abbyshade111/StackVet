@@ -75,6 +75,13 @@ pub struct Item {
     /// look, never evidence: it changes nothing about the requirement's state. Absent when no locator
     /// speaks to the question, or one does and found nothing.
     pub rests_on: Option<RestsOn>,
+    /// The packages of the app's the question is about, found by name in the bill of materials (backlog 0490). Where
+    /// to look, never evidence, as `rests_on` is. Absent when no package locator speaks to the question, or one does
+    /// and none of its packages is in the list.
+    pub in_the_packages: Option<InThePackages>,
+    /// Why nothing `sv` does can check the requirement, in plain words, for a question whose catalog says (backlog
+    /// 0490). Absent for the rest.
+    pub why_not_checked: Option<String>,
 }
 
 /// What the standard's own words are called where a question shows them under its plain words.
@@ -105,6 +112,20 @@ pub struct RestsOn {
     pub places: Vec<Pointer>,
     /// Places found and not shown.
     pub more: usize,
+}
+
+/// The sentence beside the packages a question shows (backlog 0490).
+pub const PACKAGES_SAY: &str = "This is where to look, not evidence: StackVet found it by its name in the list of the app's packages and did not read how it is set up.";
+
+/// What the bill of materials shows of a question: the packages a package locator names that the app has.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct InThePackages {
+    /// What the packages are, in plain words: the package locator's own `finds`.
+    pub finds: String,
+    /// Each package as a person reads it: `gunicorn 22.0.0`, saying when the version is only the one asked for.
+    pub packages: Vec<String>,
+    /// What else the report already says about these packages: the package locator's own `says`.
+    pub says: String,
 }
 
 /// One place in the app's code.
@@ -171,6 +192,8 @@ pub fn checklist(
                 route: Route::WriteItDown,
                 where_means: None,
                 rests_on: None,
+                in_the_packages: None,
+                why_not_checked: None,
             });
         }
     }
@@ -185,6 +208,8 @@ pub fn checklist(
                 route: Route::AnswerInTheManifest,
                 where_means: Some(question.where_means.clone()),
                 rests_on: None,
+                in_the_packages: None,
+                why_not_checked: question.why_not_checked.clone(),
             });
         }
     }
@@ -199,6 +224,8 @@ pub fn checklist(
                 route: Route::GoAndLook,
                 where_means: None,
                 rests_on: None,
+                in_the_packages: None,
+                why_not_checked: None,
             });
         }
     }
@@ -260,6 +287,7 @@ mod tests {
                 plain: None,
                 where_means: "the file where it happens".into(),
                 how_to_find_out: None,
+                why_not_checked: None,
             }],
         }
     }

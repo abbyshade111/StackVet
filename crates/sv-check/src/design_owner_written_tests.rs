@@ -13,6 +13,7 @@ fn an_unrecorded_owners_answer_says_the_tool_can_write_it_too() {
             plain: None,
             where_means: "the file where authorization is enforced".into(),
             how_to_find_out: None,
+            why_not_checked: None,
         }],
     };
     let answers = BTreeMap::from([(
