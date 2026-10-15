@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0559, 0560, 0561, 0539, 0232
-- wording — arm: full — holds: 0548 (since 2026-10-14) — next: 0549, 0550, 0558
+- wording — arm: full — holds: 0558 (since 2026-10-14) — next: 0551, 0552, 0553, 0554, 0555
 - documentation — arm: full — holds: 0532 (since 2026-10-14) — next: 0541, 0542, 0543, 0544
 
 ## Queue
@@ -50,16 +50,11 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 36. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
 37. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
 38. 0540 `tools/install.sh` copies `target/release/sv` after a build that `CARGO_TARGET_DIR` sent elsewhere, and reports the stale one installed — ready
-39. 0551 Prompts 1 and 3: run in a chat on this computer, print the system and folder, and paste the settings written into the chat — ready
-40. 0552 Prompt 4: ask which folder the server serves, and stop an older container before going on — ready
-41. 0553 Prompt 6: a sandboxed shell, a kept copy of sv, and a commit that must match the pulled source — ready
-42. 0554 Prompt 6: "open report.html in my web browser" means the computer's browser, or says both are fine — ready
-43. 0555 The numbered steps inside a prompt arrive renumbered when copied from the page — ready
-44. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
-45. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
-46. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
-47. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
-48. 0563 `sv --version` piped into `head` reports "sv itself failed: a fault in sv" on the closed pipe — ready
+39. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
+40. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
+41. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
+42. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
+43. 0563 `sv --version` piped into `head` reports "sv itself failed: a fault in sv" on the closed pipe — ready
 
 ## Log
 
@@ -537,3 +532,11 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 19:50 — released 0498
 - 2026-10-14 19:50 — released 0499
 - 2026-10-14 19:50 — released 0500
+- 2026-10-14 20:20 — finished 0548 by wording (full): https://github.com/abbyshade111/StackVet/pull/1937; now holds 0549
+- 2026-10-14 20:20 — finished 0549 by wording (full): https://github.com/abbyshade111/StackVet/pull/1938; now holds 0550
+- 2026-10-14 20:20 — finished 0550 by wording (full): https://github.com/abbyshade111/StackVet/pull/1939; now holds 0558
+- 2026-10-14 20:20 — assigned 0551 to wording (full) as next: the prompt library after the three-tool trial: the setup page and its tests, wording's file; in number order
+- 2026-10-14 20:20 — assigned 0552 to wording (full) as next: the prompt library after the three-tool trial: the setup page and its tests, wording's file; in number order
+- 2026-10-14 20:20 — assigned 0553 to wording (full) as next: the prompt library after the three-tool trial: the setup page and its tests, wording's file; in number order
+- 2026-10-14 20:20 — assigned 0554 to wording (full) as next: the prompt library after the three-tool trial: the setup page and its tests, wording's file; in number order
+- 2026-10-14 20:20 — assigned 0555 to wording (full) as next: the prompt library after the three-tool trial: the setup page and its tests, wording's file; in number order

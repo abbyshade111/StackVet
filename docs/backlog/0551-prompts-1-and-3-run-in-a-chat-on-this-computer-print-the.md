@@ -1,6 +1,6 @@
 # Prompts 1 and 3: run in a chat on this computer, print the system and folder, and paste the settings written into the chat
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
