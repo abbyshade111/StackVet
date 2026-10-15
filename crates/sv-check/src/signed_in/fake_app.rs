@@ -633,6 +633,8 @@ pub(super) struct Flaws {
     /// The log records a sign-in refused for a name with no account, but not a wrong password for
     /// an account that exists (backlog 0232, part 5).
     pub(super) logs_no_wrong_password: bool,
+    /// The log records no code given to sign in, emailed or two-factor (backlog 0232, part 5).
+    pub(super) logs_no_codes: bool,
     /// The limit's window rolls over once, just as the first attempt claiming another address
     /// arrives: that attempt gets through whatever the header says, and nothing after it does.
     /// Timing a real limiter can produce by chance.
@@ -1388,6 +1390,29 @@ impl FakeApp {
                     }
                 });
             }
+        }
+        // A code given to sign in, in words of its own, and none of them a sign-in word, so the
+        // log reader is seen to know them: the two-factor code and the emailed one.
+        if r.method == "POST"
+            && (path == "/login/2fa" || path == "/login/verify")
+            && !self.flaws.logs_no_codes
+        {
+            let worked = (300..400).contains(&status);
+            let kind = if path == "/login/2fa" {
+                "2fa"
+            } else {
+                "magic link"
+            };
+            self.log.push(match (style, worked) {
+                (LogStyle::Full, true) => format!("{ts} {kind} code accepted"),
+                (LogStyle::Full, false) => format!("{ts} {kind} code rejected"),
+                (LogStyle::Private, true) => {
+                    format!(r#"{{"ts":"{ts}","event":"otp_verified","path":"{path}"}}"#)
+                }
+                (LogStyle::Private, false) => {
+                    format!(r#"{{"ts":"{ts}","event":"otp_failed","path":"{path}"}}"#)
+                }
+            });
         }
         self.log.push(match style {
             LogStyle::Full => format!("{ts} {} {} {status}", r.method, r.path),

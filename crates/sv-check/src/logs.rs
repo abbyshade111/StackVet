@@ -83,10 +83,38 @@ pub struct Markers {
     pub wrong_password: Option<String>,
     /// The two marked requests sent just before and just after that first wrong password.
     pub wrong_password_window: Option<Window>,
+    /// The ways of signing in with a code beside the password, each with a code it accepted and one
+    /// it refused, bracketed like the sign-ins (backlog 0232, part 5).
+    pub factors: Vec<FactorMarkers>,
     /// The authentication operations stackvet.toml names that no marker was planted for, each as
     /// the report says it ("a password change"). Any of them keeps V16.3.1's credit in part: the
     /// requirement asks for *all* authentication operations (backlog 0232, part 5).
     pub untried: Vec<String>,
+}
+
+/// A way of signing in with a code, and the windows around a code it took and one it refused. A
+/// window is set only when the code really was taken, or really refused.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct FactorMarkers {
+    /// As the report says it, and as `Markers::untried` lists it until marked: "a sign-in with a
+    /// two-factor code".
+    pub what: String,
+    pub accepted: Option<Window>,
+    pub refused: Option<Window>,
+}
+
+/// What `Markers::untried` and `FactorMarkers::what` call a sign-in with an emailed code.
+pub const EMAILED_CODE: &str = "a sign-in with an emailed code";
+/// What `Markers::untried` and `FactorMarkers::what` call a sign-in with a two-factor code.
+pub const TWO_FACTOR_CODE: &str = "a sign-in with a two-factor code";
+
+impl Markers {
+    /// Records a way of signing in with a code as marked: it leaves `untried`, and is read instead.
+    pub fn mark_factor(&mut self, factor: FactorMarkers) {
+        self.untried.retain(|u| *u != factor.what);
+        self.factors.retain(|f| f.what != factor.what);
+        self.factors.push(factor);
+    }
 }
 
 /// Two requests `sv` made, each with a marker in its path, around exactly one sign-in.
@@ -128,6 +156,19 @@ fn names_sign_in(line: &str) -> bool {
     WORDS.is_match(line) || CAMEL.is_match(line)
 }
 
+/// Whether a line names a code given to sign in: a one-time or two-factor code, a sign-in link, or
+/// its verification. Never the bare word `code`, which `status_code` and `error_code` carry on
+/// lines that record no such thing.
+fn names_factor(line: &str) -> bool {
+    static WORDS: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(
+            r"(?i)(?:^|[^a-z])(?:t?otp|2fa|mfa|two[ _.-]?factor|one[ _.-]?time|magic[ _.-]?link|verif(?:y|ied|ication)|(?:sign[ _.-]?in|log[ _.-]?in|invalid|wrong|expired|bad)[ _.-]?code)",
+        )
+        .expect("valid pattern")
+    });
+    WORDS.is_match(line)
+}
+
 /// Whether a line says something failed or was refused.
 fn says_failed(line: &str) -> bool {
     static FAILED: LazyLock<Regex> = LazyLock::new(|| {
@@ -163,6 +204,20 @@ fn sign_in_event<'a>(log: &'a str, w: &Window, failed: bool) -> Option<&'a str> 
         // request, not a record of it.
         let words = without_paths(&words);
         names_sign_in(&words) && says_failed(&words) == failed
+    })
+}
+
+/// The line recording the one code given inside a window: one that names a sign-in or a code given
+/// to sign in, saying it failed when `failed` and not saying so otherwise.
+fn factor_event<'a>(log: &'a str, w: &Window, failed: bool) -> Option<&'a str> {
+    between(log, w)?.into_iter().find(|line| {
+        let words = if w.login_path.is_empty() {
+            (*line).to_owned()
+        } else {
+            line.replace(w.login_path.as_str(), " ")
+        };
+        let words = without_paths(&words);
+        (names_sign_in(&words) || names_factor(&words)) && says_failed(&words) == failed
     })
 }
 
@@ -351,6 +406,34 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
                             .to_owned(),
                     ),
                 }
+                let mut factors_found = Vec::new();
+                for f in &markers.factors {
+                    let mut gaps = Vec::new();
+                    for (window, failed, which) in [
+                        (&f.accepted, false, "one it took"),
+                        (&f.refused, true, "one it refused"),
+                    ] {
+                        match window {
+                            None => gaps.push(format!("{which} could not be tried")),
+                            Some(w) => match factor_event(log, w, failed) {
+                                Some(line) => out.lines.push(KeptLine::new(
+                                    &format!("{}, {which} (V16.3.1)", f.what),
+                                    line,
+                                )),
+                                None => gaps.push(format!("{which} was tried and not found")),
+                            },
+                        }
+                    }
+                    if gaps.is_empty() {
+                        out.steps.push(format!(
+                            "the app's output recorded {}: a code it took and one it refused",
+                            f.what
+                        ));
+                        factors_found.push(f.what.clone());
+                    } else {
+                        not_shown.push(format!("{}: {}", f.what, gaps.join(", and ")));
+                    }
+                }
                 not_shown.extend(markers.untried.iter().map(|u| format!("{u}, not tried")));
                 let credit = crate::Verified::new(
                     "probe.authentication-logged",
@@ -360,7 +443,15 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
                             "three sign-ins this run made — one refused, for an account that does \
                              not exist; one accepted, by an account used for nothing else; and one \
                              refused, a wrong password for that account — {found}, and the third \
-                             too; stackvet.toml names no other way to authenticate"
+                             too;{} stackvet.toml names no other way to authenticate",
+                            if factors_found.is_empty() {
+                                String::new()
+                            } else {
+                                format!(
+                                    " for {}, a code taken and a code refused, each found too;",
+                                    factors_found.join(" and ")
+                                )
+                            }
                         )
                     } else {
                         format!(

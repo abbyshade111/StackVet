@@ -685,7 +685,7 @@ pub(super) fn brute_force_check(
 /// the marker as the last part of its path. `logs.rs` says why each keeps its meaning.
 /// A unique run-scoped tag for the log markers, taken from the account names the run already made
 /// unique.
-fn log_tag(accounts: &Accounts) -> String {
+pub(super) fn log_tag(accounts: &Accounts) -> String {
     accounts
         .a
         .user
@@ -697,7 +697,7 @@ fn log_tag(accounts: &Accounts) -> String {
 
 /// A request for a page nobody has, carrying a marker and nothing else: nobody's session, no form,
 /// no personal data. Whatever the app answers, it is only ever read as a place in the log.
-fn log_mark(http: &mut dyn Http, marker: &str) {
+pub(super) fn log_mark(http: &mut dyn Http, marker: &str) {
     http.send(&get(
         &format!("log-marker-{marker}"),
         &format!("/{marker}"),
@@ -706,7 +706,7 @@ fn log_mark(http: &mut dyn Http, marker: &str) {
 }
 
 /// The two marked requests around one sign-in.
-fn log_window(login: &RequestTemplate, which: &str, tag: &str) -> crate::logs::Window {
+pub(super) fn log_window(login: &RequestTemplate, which: &str, tag: &str) -> crate::logs::Window {
     crate::logs::Window {
         open: format!("sv-log-before-{which}-{tag}"),
         close: format!("sv-log-after-{which}-{tag}"),
