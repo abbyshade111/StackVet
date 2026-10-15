@@ -45,7 +45,10 @@ fn run_by_username(users: &UsersSection) -> (Outcome, FakeApp) {
     acc.a.user = "sv-probe-a-0123456789abcdef@example.test".into();
     acc.b.user = "sv-probe-b-0123456789abcdef@example.test".into();
     // The setup: the stand-in address is longer than the app's rule allows a user name.
-    assert!(acc.a.user.chars().count() > 30, "{}", acc.a.user);
+    assert!(
+        acc.a.user.chars().count() > 30,
+        "the setup: the address fits the rule"
+    );
     let o = run(
         &mut app,
         users,
@@ -63,13 +66,11 @@ fn a_user_name_kept_apart_from_the_address_is_sent_short_and_the_run_signs_in() 
         o.steps
             .iter()
             .any(|s| s.starts_with("signed in as A and opened /account (2")),
-        "{:?}",
-        o.steps
+        "A did not sign in and open /account"
     );
     assert!(
         !o.not_assessed.iter().any(|(ids, _)| ids == NEEDS_A_SESSION),
-        "{:?}",
-        o.not_assessed
+        "the signed-in checks stopped"
     );
 }
 
@@ -82,12 +83,15 @@ fn a_user_name_that_is_the_only_name_keeps_the_address_and_the_gap_quotes_the_si
         .not_assessed
         .iter()
         .find(|(ids, _)| ids == NEEDS_A_SESSION)
-        .unwrap_or_else(|| panic!("the run signed in: {:?}", o.steps));
+        .expect("the run signed in, so there is no gap to read");
     assert!(
         why.contains("the sign-up of the first test user answered 422"),
-        "{why}"
+        "the gap does not say what the sign-up answered"
     );
-    assert!(why.contains(RULE_WORDS), "{why}");
+    assert!(
+        why.contains(RULE_WORDS),
+        "the gap does not quote the sign-up page"
+    );
 }
 
 #[test]
