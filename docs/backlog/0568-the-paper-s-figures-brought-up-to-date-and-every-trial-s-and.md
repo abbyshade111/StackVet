@@ -98,3 +98,7 @@ as they were.
 Still to do: the hand-drawn figures per period. Each is drawn by hand from a table at the 4 October cut-off; their
 tables are split, and redrawing each figure from them is what remains, so the item stays claimed. The paper's prose is
 the owner's to write against these.
+
+**The owner's answer, 15 October 2026 (asked through the board's waiting line, after part 2):** (b), "extend to today
+and then redraw": the hand-made tables the figures are drawn from (faults, corrections, coordination, tests by day)
+are extended past the 4 October cut-off to today, and the figures are then redrawn per period from them. Part 3.
