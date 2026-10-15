@@ -1253,6 +1253,9 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
             "owned-b-update",
             "owned-b-delete",
             "owned-a-after-",
+            // Backlog 0560: the first user's read just before the delete; a crashed one leaves a delete not
+            // judged rather than refused.
+            "owned-a-before-delete",
             // ADR-053, Later: the first user's own request at a second record, which shows the
             // request reaches a route; a crashed control is not a control that worked.
             "owned-control-",

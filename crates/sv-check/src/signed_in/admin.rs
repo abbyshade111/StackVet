@@ -845,6 +845,13 @@ pub(super) fn owned_checks(
             });
         }
         if let Some(delete) = &owned.delete {
+            // The record read by its owner just before the delete is sent (backlog 0560, ADR-119): a change
+            // above that moved it, or sent it for review, leaves it not found whatever the delete does.
+            let before = http.send(&get("owned-a-before-delete", &read_path, &session));
+            let there = ok(&before)
+                && before
+                    .as_ref()
+                    .is_some_and(|r| r.body.contains(marker) || r.body.contains(changed_marker));
             let values = Values {
                 id,
                 ..Default::default()
@@ -859,7 +866,19 @@ pub(super) fn owned_checks(
             );
             let after = http.send(&get("owned-a-after-delete", &read_path, &session));
             deleted = match after.as_ref().map(|r| r.status) {
-                Some(404 | 410) => Some(true),
+                Some(404 | 410) if there => Some(true),
+                Some(404 | 410) => {
+                    out.not_assessed.push((
+                        "V8.2.2".to_owned(),
+                        format!(
+                            "Whether one user can delete another user's records: the first user's \
+                             record at {read_path} was already not found just before the second \
+                             user's delete was sent ({}), so its absence afterwards shows nothing.",
+                            status(&before)
+                        ),
+                    ));
+                    None
+                }
                 _ if holds_marker(&after) => Some(false),
                 _ => None,
             };
@@ -2038,3 +2057,6 @@ mod tests {
 
 #[cfg(test)]
 mod beside_admin_tests;
+
+#[cfg(test)]
+mod delete_before_tests;
