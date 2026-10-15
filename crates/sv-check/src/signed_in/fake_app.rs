@@ -701,6 +701,9 @@ pub(super) struct Flaws {
     pub(super) code_short: bool,
     /// Wrong sign-in codes are never counted.
     pub(super) code_guessing_unlimited: bool,
+    /// The limit on wrong emailed codes is applied only to a wrong code: the code is checked first, and the right one
+    /// signs in past the limit, as the password lockout of backlog 0524 does (backlog 0561).
+    pub(super) code_limit_checks_code_first: bool,
     /// A session is locked after its first wrong code, rather than its third.
     pub(super) code_locks_after_one: bool,
     /// Using a sign-in code answers as if it worked and signs nobody in.
@@ -1982,7 +1985,14 @@ impl FakeApp {
                 {
                     return Some(Self::respond(status, vec![], "internal error"));
                 }
-                if failures >= limit && !self.flaws.code_guessing_unlimited {
+                let right_code = self
+                    .sign_in_codes
+                    .get(&code)
+                    .is_some_and(|(_, asked, used)| *asked == session && !used);
+                if failures >= limit
+                    && !self.flaws.code_guessing_unlimited
+                    && !(self.flaws.code_limit_checks_code_first && right_code)
+                {
                     if self.flaws.code_cancels_quietly {
                         self.sign_in_codes
                             .retain(|_, (_, asked, _)| *asked != session);

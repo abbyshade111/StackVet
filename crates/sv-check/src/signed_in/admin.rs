@@ -856,7 +856,20 @@ pub(super) fn owned_checks(
         record_fields_check(body, &read_path, "owned-a", out);
     }
 
-    let b = sign_in(http, users, "b", &accounts.b, &mut out.steps);
+    // The second user shown signed in before anything is read as refused to them (backlog 0561, ADR-119): a
+    // sign-in that quietly failed leaves a session of nobody, and everything is refused to nobody.
+    let b = sign_in(http, users, "b", &accounts.b, &mut out.steps).filter(|b| {
+        users.private.first().is_none_or(|confirm| {
+            let opened = ok(&http.send(&get("owned-b-signed-in", confirm, &b.session)));
+            if !opened {
+                out.steps.push(format!(
+                    "the second test user's session did not open {confirm}, so it is not taken \
+                     as signed in"
+                ));
+            }
+            opened
+        })
+    });
     let as_b = b
         .as_ref()
         .map(|b| http.send(&get("owned-b", &read_path, &b.session)));
@@ -1161,7 +1174,8 @@ pub(super) fn owned_checks(
     } else if b.is_none() {
         out.not_assessed.push((
             "V8.2.2".to_owned(),
-            "The second test user could not sign in, so whether they can read the first user's \
+            "The second test user could not be shown signed in (their session did not open the \
+             first private page stackvet.toml lists), so whether they can read the first user's \
              record is unknown."
                 .to_owned(),
         ));
@@ -2167,6 +2181,8 @@ mod tests {
 mod beside_admin_tests;
 #[cfg(test)]
 mod role_beside_tests;
+#[cfg(test)]
+mod second_user_tests;
 
 #[cfg(test)]
 mod delete_before_tests;
