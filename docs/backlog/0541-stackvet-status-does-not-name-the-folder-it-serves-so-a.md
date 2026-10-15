@@ -1,6 +1,6 @@
 # `stackvet_status` does not name the folder it serves, so a container for an older app passes as connected
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

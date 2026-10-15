@@ -17,3 +17,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   already appear from `--advisories`. Tier: *attested by the owner*. The partial-checks entry proposes the advisory
   match, which needs no new check. Honest answer for the rest: a manual check at the hosting platform, with the reason
   "the proxy in front of the app is not in the folder".
+
+**The owner's choice, 14 October 2026:** build it, after 0495; the package and version beside the question, the plain reason the fence cannot settle it, and the requirement stays the owner's word.
