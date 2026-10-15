@@ -196,6 +196,28 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
         ));
     }
     out.push_str(&routes(item, fence));
+    out.push_str(&pathways(item, fence));
+    out
+}
+
+/// The ways into the app the code shows (backlog 0491), each piece of the app's text through `fence`, with the sentence
+/// that says they are where to look and not evidence.
+fn pathways(item: &Item, fence: &crate::fence::Fence) -> String {
+    let Some(found) = &item.pathways else {
+        return String::new();
+    };
+    let mut out = format!("   {}\n", sv_check::sign_in_paths::PATHWAYS_SAY);
+    for way in &found.ways {
+        out.push_str(&format!(
+            "     {} ({}, line {})\n",
+            fence.wrap(&way.what),
+            fence.wrap(&way.file),
+            way.line
+        ));
+    }
+    if found.more > 0 {
+        out.push_str(&format!("     And {} more, not shown.\n", found.more));
+    }
     out
 }
 

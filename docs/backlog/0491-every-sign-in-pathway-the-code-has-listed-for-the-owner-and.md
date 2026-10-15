@@ -55,3 +55,13 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   first part); the owner records the answer. Finding-only when the column is plain text and the saving line writes the
   generated value unchanged: `ast.backup-codes-stored-plain`, reachable with tree-sitter when generation and save are
   in one function. Tier: `sv`'s own (finding-only) and *attested by the owner*.
+
+**The first half built, 15 October 2026.** V6.1.3 and V6.3.4 now carry a list of the ways into the app the code shows
+(`crates/sv-check/src/sign_in_paths.rs`): routes whose path says sign-in, a token, or a session; a sign-in path compared
+with the request's path, as an app with no router matches its pages; Passport strategies; and API keys read by their
+header name. It is where to look, never evidence, and credits nothing (ADR-022, Later). On the example apps it lists
+oidc-notes' `/login/google` and `/callback` and notes-with-users' `/login`; flask-booking has none. **Waiting on the
+owner:** the second half, a list of pathways in `stackvet.toml` and a finding citing V6.3.4 for a way in it does not
+name (`docs/coordination/waiting/0491.md`). **Not taken up here:** the other pointers in the section above (V6.1.1's
+rate-limit setting, V6.1.2's password validator, V6.2.10's expiry rule and hand check, V6.3.3's second-factor
+library, V6.5.2's backup codes), which the title does not name.
