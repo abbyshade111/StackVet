@@ -47,8 +47,61 @@ are left as they are.
 **The figure:** `figure-periods.html`, made by the same script: commits per day colored by period, the tests in the
 tree as a line, and `periods.csv` beneath it.
 
-**Not split by period:** the hand-drawn figures. Each is drawn by hand from a table at the 4 October cut-off, which
-holds versions 1 and 2 only; their tables are split above, and redrawing each figure per period is left to do.
+## The ledgers extended to today, and the figures redrawn per period
+
+The owner's answer of 15 October 2026 (backlog 0568): extend the hand-made ledgers to today, then redraw the figures
+from them per period. Made by `python3 docs/paper/tables/ledgers.py` and `python3 docs/paper/tables/period_figures.py`
+(each with `--check`), in that order, after `periods.py`.
+
+**The ledgers to today** (`docs/paper/tables/to-today/`). Each is the ledger at the cut-off, row for row and
+unchanged, followed by the rows since; every row says its `period` and whether it was `in_the_ledger` at the cut-off
+or added since.
+
+| Ledger | At the cut-off | Since | Where the rows since come from |
+|---|---|---|---|
+| `faults.csv` | 254 rows (255 faults; a row can hold several, `count`) | 366 | read from each backlog item and merge (below) |
+| `corrections.csv` | 76 | 158 | read the same way |
+| `coordination.csv` | 359 | 899 | claims and merges resolved by hand counted from git; pull requests closed unmerged from GitHub; the other kinds read |
+| `tests_by_day.csv` | 23 days | 12 days | git |
+
+- **Read, not counted.** The faults and corrections since were compiled on 15 October 2026 by Claude Code sessions,
+  each reading a share of the 576 backlog items, the history of `docs/BACKLOG.md` from the cut-off to 8 October (when
+  items became files), and the merges of that window, to the definitions in `TESTS-AND-FAULTS.md` and
+  `CORRECTIONS.md`. Each row names its source (`source`, `backlog_item`) and how sure the reading was
+  (`confidence`: sure, or unsure with the reason; 155 of the 524 rows are unsure). The fix's pull request and date are
+  from git. One defect read twice, under two items, is counted once. They are in `tables/since-cutoff/`, as compiled.
+- **The faults open at the cut-off** (61 rows, most of them the 4 October review's) keep their columns as they were
+  and gain four, `fixed_since_*`: all 61 were fixed by 5 October, each with its pull request
+  (`since-cutoff/open_at_cutoff.csv`).
+- **The periods are by date, not by version.** `sv` was built beside v1 from 22 September, so its faults before the
+  cut-over of 26 September are in version 1's period; the `version` column keeps the ledger's own label (v1 or `sv`).
+- **Tests by day.** `sv`'s are the `#[test]` lines on main at the day's last commit, as the ledger counted them (this
+  reproduces the published 1,645 and 1,655 exactly); 4 October has two rows, to 11:37 and after. Lines changed are
+  counted between the last commits of consecutive days, from `crates/`, `tools/`, `examples/`, the `Dockerfile`, and
+  `Cargo.toml`, with lines git sees moved rather than changed counted apart (`lines_moved`): on 8 October 60,543 lines
+  of tests were taken out of their files into files of their own. The published rows left large moves out by hand;
+  counted this way, 3 October's 15,115 reads 15,069, so the two are near, not the same.
+- **Coordination since.** A claim is a merge to main, named for a claim, that touched only the backlog or the board; a
+  merge resolved by hand is a merge of main into a branch whose combined diff has lines that match neither parent, as
+  `COORDINATION.md` counted them (467 since, against 103 to the cut-off, over 1,431 pull requests merged since).
+
+**The figures redrawn per period** (`docs/paper/`), each beside the figure of the cut-off, which stays as drawn:
+
+| Figure | Redrawn from |
+|---|---|
+| `figure-tests-faults-by-period.html` | `to-today/faults.csv`, `to-today/tests_by_day.csv` |
+| `figure-how-caught-by-period.html` | `to-today/faults.csv` |
+| `figure-corrections-by-period.html` | `to-today/corrections.csv` |
+| `figure-coordination-by-period.html` | `to-today/coordination.csv` |
+| `figure-adrs-by-period.html` | `decision_records.csv`, `days.csv` |
+| `figure-review-by-period.html` | `review.csv`, `since-cutoff/open_at_cutoff.csv`, `deep_review.csv` |
+
+**Not redrawn, and why.** Each of these is one dated record, not a ledger that grows: `figure-study.html` (one
+study, run 11), `figure-self-assessment.html` (two runs of `sv` on itself), `figure-three-arms.html` and
+`figure-how-found.html` (v1's fixed record), `figure-trials.html` (made by its own script), and `figure-how-sv-works.html`
+(the code at the cut-off). The rest are drawn from documents written at the cut-off (`AGENTIC.md`, `OPTIMIZATION.md`,
+`DECISIONS.md`, `TIMELINE.md`, `TOP10.md`, the usability notes); extending them is writing those documents again,
+which is the owner's.
 
 ## The paper's tables, at the 4 October cut-off
 

@@ -37,12 +37,11 @@ item,title,status,done_date,period_done,source
 0565,"Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show",claimed,,,docs/backlog/0565-proposal-read-the-ai-tool-s-own-session-record-with-the.md
 0566,"Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report",claimed,,,docs/backlog/0566-proposal-an-independent-action-log-from-a-hook-the-person.md
 0568,"The paper's figures brought up to date, and every trial's and measurement's data compiled into tables the owner can analyze",claimed,,,docs/backlog/0568-the-paper-s-figures-brought-up-to-date-and-every-trial-s-and.md
-0569,"Without an owned record, V8.2.3, V15.3.1, and V1.2.1 are never listed as not assessed",open,,,docs/backlog/0569-without-an-owned-record-v8-2-3-v15-3-1-and-v1-2-1-are-never.md
 0571,The download-name check does not try a file name with a quote in it,claimed,,,docs/backlog/0571-the-download-name-check-does-not-try-a-file-name-with-a.md
 0572,The wrong-password check with no sign-up credits a push-back without trying the right password,claimed,,,docs/backlog/0572-the-wrong-password-check-with-no-sign-up-credits-a-push-back.md
-0573,"The burst limit may be per session, not per user, and is never tried in a fresh session",open,,,docs/backlog/0573-the-burst-limit-may-be-per-session-not-per-user-and-is-never.md
-0574,"The once check's other user may be refused for want of permission, not for losing the race",open,,,docs/backlog/0574-the-once-check-s-other-user-may-be-refused-for-want-of.md
-0575,The forgery check never sends a token from another session with the signed-in user's cookies,open,,,docs/backlog/0575-the-forgery-check-never-sends-a-token-from-another-session.md
+0573,"The burst limit may be per session, not per user, and is never tried in a fresh session",claimed,,,docs/backlog/0573-the-burst-limit-may-be-per-session-not-per-user-and-is-never.md
+0574,"The once check's other user may be refused for want of permission, not for losing the race",claimed,,,docs/backlog/0574-the-once-check-s-other-user-may-be-refused-for-want-of.md
+0575,The forgery check never sends a token from another session with the signed-in user's cookies,claimed,,,docs/backlog/0575-the-forgery-check-never-sends-a-token-from-another-session.md
 0576,An SVG refused by its extension is not tried again named as a GIF,open,,,docs/backlog/0576-an-svg-refused-by-its-extension-is-not-tried-again-named-as.md
 0577,"The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check",open,,,docs/backlog/0577-the-owner-s-follow-up-trial-the-same-prompts-with-the.md
 0001,"One file per design entry, so two pull requests stop colliding in `docs/DESIGN.md`",done,,,docs/backlog/done/0001-one-file-per-design-entry-so-two-pull-requests-stop.md
@@ -574,4 +573,5 @@ item,title,status,done_date,period_done,source
 0562,"The pointer's ""and N more places"" counts a refusal's log line and its response line as two places",done,2026-10-15,stackvet,docs/backlog/done/0562-the-pointer-s-and-n-more-places-counts-a-refusal-s-log-line.md
 0563,"`sv --version` piped into `head` reports ""sv itself failed: a fault in sv"" on the closed pipe",done,2026-10-15,stackvet,docs/backlog/done/0563-sv-version-piped-into-head-reports-sv-itself-failed-a-fault.md
 0567,Not built: sealing the build-loop record with a key the AI tool cannot reach,done,2026-10-14,stackvet,docs/backlog/done/0567-not-built-sealing-the-build-loop-record-with-a-key-the-ai.md
+0569,"Without an owned record, V8.2.3, V15.3.1, and V1.2.1 are never listed as not assessed",done,2026-10-15,stackvet,docs/backlog/done/0569-without-an-owned-record-v8-2-3-v15-3-1-and-v1-2-1-are-never.md
 0570,"A query given by a function sv did not follow: a finding, or not verified (the owner's choice)",done,2026-10-15,stackvet,docs/backlog/done/0570-a-query-given-by-a-function-sv-did-not-follow-a-finding-or.md

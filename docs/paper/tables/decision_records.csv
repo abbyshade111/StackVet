@@ -64,7 +64,7 @@ adr,title,status,added_et,period_added,later_entries,source
 077,"ADR-077: The readers of untrusted input fuzzed weekly, apart from the workspace and the tests",accepted,2026-10-09 11:03,stackvet,0,docs/adr/ADR-077.md
 078,"ADR-078: CodeQL for Ruby, and for Java only where it reads the code without building it or reaching the network",accepted for Ruby,2026-10-09 11:03,stackvet,1,docs/adr/ADR-078.md
 079,"ADR-079: An input flagged as an attack, and whether the flag stopped it (C11.4.2)",accepted,2026-10-09 11:54,stackvet,0,docs/adr/ADR-079.md
-080,"ADR-080: The published image signed with GitHub's own keyless signing, and what it was built from published with it",accepted,2026-10-09 13:30,stackvet,1,docs/adr/ADR-080.md
+080,"ADR-080: The published image signed with GitHub's own keyless signing, and what it was built from published with it",accepted,2026-10-09 13:30,stackvet,2,docs/adr/ADR-080.md
 081,ADR-081: A GitHub Action that runs the published image on an app's pull requests,accepted,2026-10-09 13:30,stackvet,2,docs/adr/ADR-081.md
 082,"ADR-082: What `sv` saw of the running app kept beside the report, with credentials removed",accepted,2026-10-09 16:38,stackvet,30,docs/adr/ADR-082.md
 083,"ADR-083: History that can show a trend: each requirement's status in each run, and why two runs differ",accepted,2026-10-09 16:38,stackvet,6,docs/adr/ADR-083.md
