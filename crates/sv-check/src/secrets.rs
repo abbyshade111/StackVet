@@ -51,12 +51,16 @@ pub struct SecretRules {
 
 /// The rule that reports a value that looks like a credential assigned to a name that says so. It
 /// is written here rather than in `data/secret-rules.json`.
+/// The fewest characters a code people are given must have to be reported (backlog 0531): `1234` is more likely a
+/// count than a code, and a real code is rarely shorter than six.
+const MIN_CODE_CHARS: usize = 6;
+
 pub const ASSIGNMENT_RULE: &str = "secrets.credential-assignment";
 
 /// What the credential-assignment rule cites. A constant rather than a literal in the finding, so the
 /// citation guard can read it alongside the data file's rules. Not V13.2.3 (no default credentials): the
-/// rule passes over a value that reads as a word or has little entropy, which is every stock default, so
-/// what it finds is never one (backlog 0431).
+/// rule passes over a value that reads as a word or has little entropy (or, for an invite or access code, is shorter
+/// than `MIN_CODE_CHARS`), which is every stock default, so what it finds is never one (backlog 0431).
 pub const ASSIGNMENT_REQUIREMENTS: &[&str] = &["V13.3.1", "SBD-AC-05"];
 
 /// The assignment rule's own words, for the same guard.
@@ -373,6 +377,19 @@ fn is_secret_name(name: &str) -> bool {
         "hmac",
     ];
     NAMES.iter().any(|k| n.ends_with(k) || n.contains(k)) || name_words(name).any(|w| w == "pass")
+}
+
+/// Whether a name says it holds a code people are given to get in: an invite, access, or join code (backlog 0531). In
+/// the three-tool trial of 14 October 2026 a family app kept `INVITE_FOR_STACKVET = "stackvet-test-invite"` in its own
+/// code, and nothing named it. Whole words only, so `ERROR_CODE` and `COUNTRY_CODE` are not codes of this kind.
+fn is_code_name(name: &str) -> bool {
+    let words: Vec<String> = name_words(name).collect();
+    let has = |w: &str| words.iter().any(|x| x == w);
+    has("invite")
+        || has("invitecode")
+        || has("accesscode")
+        || has("joincode")
+        || ((has("access") || has("join")) && has("code"))
 }
 
 /// The words of a name, lowered: split at anything not a letter or digit and where a lower-case
@@ -900,7 +917,9 @@ fn assignment_findings(
         }
         let name = name_match.as_str();
         let value = value_match.as_str();
-        if !is_secret_name(name) || looks_like_placeholder(value) {
+        // A code people are given is a credential of its own kind, judged on its own terms below.
+        let code = !is_secret_name(name) && is_code_name(name);
+        if !(is_secret_name(name) || code) || looks_like_placeholder(value) {
             continue;
         }
         if !any_text_is_a_value && reads_as_text_or_a_name(value) {
@@ -920,7 +939,13 @@ fn assignment_findings(
         if is_stored_hash(name, value) {
             continue;
         }
-        if shannon_entropy(value) < 3.5 {
+        // A code people are given is made to be remembered and typed, never random-looking, so it is judged by its
+        // length, not by how random it reads: `stackvet-test-invite` reads 3.1 (backlog 0531).
+        if if code {
+            value.chars().count() < MIN_CODE_CHARS
+        } else {
+            shannon_entropy(value) < 3.5
+        } {
             continue;
         }
         reported.insert(value_match.start());
@@ -932,6 +957,10 @@ fn assignment_findings(
         let sentence = reads_like_sentence(value);
         let (severity, confidence) = if sentence {
             (Severity::Low, Confidence::Low)
+        } else if code {
+            // Below a key a program uses: a code people are given opens the door to one app's sign-up, and is often
+            // a fixture a seed script inserts (backlog 0531).
+            (Severity::Medium, Confidence::Medium)
         } else {
             (Severity::High, Confidence::Medium)
         };
@@ -952,6 +981,19 @@ fn assignment_findings(
                  people, nothing needs changing: record it as a false alarm. If it is a passphrase, \
                  move it into the app's environment or secret store and change it: anything committed \
                  should be treated as known."
+                    .to_owned(),
+            )
+        } else if code {
+            (
+                format!("An invite or access code is written into the code (`{name}`)"),
+                format!(
+                    "`{name}` is set to a fixed value in the code itself. The name says it is a code people are \
+                     given to sign up or get in, and the value is not a placeholder: anyone who can read the code \
+                     can use it."
+                ),
+                "Make the code when the app needs one (at random, and once per invitation) or read it from the \
+                 app's environment. If only a seed script uses it for testing, move it into the test setup, \
+                 where a fixed value is expected."
                     .to_owned(),
             )
         } else {
@@ -988,7 +1030,9 @@ fn assignment_findings(
             requirement_ids: ASSIGNMENT_REQUIREMENTS.iter().map(|r| (*r).to_owned()).collect(),
             cwe: vec!["CWE-798".into(), "CWE-259".into()],
             description,
-            impact: if sentence {
+            impact: if code && !sentence {
+                "Anyone who can read the code — or the history it is kept in — can use the code to sign up or get in."
+            } else if sentence {
                 "If it is a passphrase, anyone who can read the code — or the history it is kept in — \
                  has it. If it is a message, there is no harm."
             } else {
@@ -1345,3 +1389,6 @@ mod redact_form_tests;
 
 #[cfg(test)]
 mod shared_tests;
+
+#[cfg(test)]
+mod code_names_tests;
