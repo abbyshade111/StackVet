@@ -101,3 +101,8 @@ be a sign-out refused on a page of its own. A sign-out that sends the browser el
 done, and the old session is asked again as before. Still open from item 7: the WebSocket after sign-out
 (`sessions.rs`), which reads its own sign-out the same old way.
 
+**Eighth batch, built (another user's delete, list item 6):** the first user reads the record just before the second
+user's delete is sent, and a 404 or 410 afterwards is the delete only when the record was there then; already gone (a
+change above sent it away), the delete is not judged, and says so. A crash of that read withholds the credit, as the
+table of answers a credit rests on says (`RESTS_ON_A_REFUSAL`, ADR-021).
+

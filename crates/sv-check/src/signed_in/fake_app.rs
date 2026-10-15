@@ -250,6 +250,10 @@ pub(super) struct Flaws {
     pub(super) idor_update: bool,
     /// Any signed-in user can delete any note (`/notes/{n}/delete`) (ADR-053).
     pub(super) idor_delete: bool,
+    /// An edit sends the note away for review: afterwards it is not found at its address, whoever asks.
+    /// Not a flaw; with `idor_update` it hides the change, and a later refused delete answers 404 too
+    /// (backlog 0560).
+    pub(super) edit_archives: bool,
     /// Not a flaw of the app's: its change and delete routes take another method, so a form POSTed
     /// to them answers 405 for everybody, the note's owner too (ADR-053, Later).
     pub(super) writes_need_another_method: bool,
@@ -2781,6 +2785,9 @@ impl FakeApp {
                 if action == "edit" {
                     let text = form(r).get("text").cloned().unwrap_or_default();
                     self.notes[n - 1].1 = text;
+                    if self.flaws.edit_archives {
+                        self.deleted_notes.insert(n);
+                    }
                 } else {
                     self.deleted_notes.insert(n);
                 }
