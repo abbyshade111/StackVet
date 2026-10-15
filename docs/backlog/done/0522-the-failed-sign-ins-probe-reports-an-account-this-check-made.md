@@ -1,6 +1,6 @@
 # The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -28,3 +28,6 @@ have" path and its honest wording. Add the fake-app case: a sign-up that answers
 evidence for V6.3.1 changes.
 
 **Built by the sweep:** this is the first case of backlog 0559 (ADR-119); it closes with it.
+
+**Built 15 October 2026, by honesty, in the setup sweep (0559, ADR-119):** the guessing check signs in as its own
+account before guessing, and says the question is not assessed, and why, when the account was not made.

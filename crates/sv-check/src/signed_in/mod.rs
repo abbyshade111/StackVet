@@ -840,9 +840,10 @@ fn sign_in_again(
 
 /// How many times one run signs in, at most, before the password-guessing check's wrong passwords
 /// at the very end: the number the spec gives a builder, so an app's own limit on sign-in attempts
-/// can be set to allow it in the copy `sv` runs. The busiest of the scripted runs signs in 50 times
-/// (`a_run_signs_in_no_more_often_than_the_spec_says`), which this leaves room above.
-pub const SIGN_INS_IN_A_RUN: usize = 60;
+/// can be set to allow it in the copy `sv` runs. The busiest of the scripted runs signs in 61 times
+/// (`a_run_signs_in_no_more_often_than_the_spec_says`). It was 60 until the setup sweep (backlog 0559,
+/// ADR-119): a check that makes an account of its own signs in as it once to show it was made.
+pub const SIGN_INS_IN_A_RUN: usize = 62;
 
 /// The requirements whose checks need the first test user signed in.
 const NEEDS_A_SESSION: &str =
@@ -4865,3 +4866,6 @@ mod page_shell_tests {
         assert!(!is_page_shell(&answer(200, &cut), &answer(200, &cut)));
     }
 }
+
+#[cfg(test)]
+mod setup_sweep_tests;
