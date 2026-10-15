@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0605, 0576, 0599, 0582
-- wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0589, 0590, 0603
-- documentation — arm: full — holds: 0595 (since 2026-10-15) — next: 0586, 0600
+- wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0590, 0603, 0597
+- documentation — arm: full — holds: 0586 (since 2026-10-15) — next: 0600, 0583
 
 ## Queue
 
@@ -35,10 +35,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 21. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
 22. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
 23. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-24. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
-25. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
-26. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
-27. 0509 Whether CodeQL hides a result its lgtm or codeql comment marks, checked with a real run — hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
+24. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
+25. 0509 Whether CodeQL hides a result its lgtm or codeql comment marks, checked with a real run — hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
 
 ## Log
 
@@ -693,3 +691,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 14:45 — dropped 0539 from the queue
 - 2026-10-15 14:45 — withdrew 0509 from documentation (full), on hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
 - 2026-10-15 14:45 — finished 0572 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2018; from its lane, behind 0232
+- 2026-10-15 14:50 — finished 0589 by wording (full): https://github.com/abbyshade111/StackVet/pull/2063; from its lane, behind 0565
+- 2026-10-15 14:50 — finished 0595 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2061; now holds 0586
+- 2026-10-15 14:50 — assigned 0583 to documentation (full) as next: the Semgrep logger rule on id-only lines, with its row in docs/research/SEMGREP-FALSE-ALARMS.md; no file shared with honesty's next five (pointer, settings file, SVG upload, sign-up names, path rule)
+- 2026-10-15 14:50 — assigned 0597 to wording (full) as next: prompt 6's commit check and prompt 5's unrecommended questions; the prompt page, wording's
