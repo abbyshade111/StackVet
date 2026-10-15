@@ -8,7 +8,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
 - wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0592, 0593, 0602
-- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0594, 0595, 0596, 0601
+- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0594, 0595, 0596, 0601, 0514
 
 ## Queue
 
@@ -31,24 +31,23 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 17. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
 18. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
 19. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-20. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
-21. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
-22. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-23. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-24. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-25. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
-26. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-27. 0582 `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention" — ready
-28. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
-29. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
-30. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
-31. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
-32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
-33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
-34. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
-35. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
-36. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
-37. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
+20. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+21. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+22. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+23. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+24. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
+25. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
+26. 0582 `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention" — ready
+27. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
+28. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
+29. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
+30. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
+31. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
+32. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
+33. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
+34. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
+35. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
+36. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
 
 ## Log
 
@@ -669,3 +668,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 12:50 — finished 0585 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2047; from its lane, behind 0509
 - 2026-10-15 12:50 — assigned 0593 to wording (full) as next: from the Cursor runs: an unsealed by = owner line named as the tool's in stackvet_check and before sv review asks; sv-cli, wording's
 - 2026-10-15 12:50 — assigned 0602 to wording (full) as next: prompt 5's preview step (ask before installing; tests use their own database; open the page over the server); the prompt page, wording's
+- 2026-10-15 13:04 — released 0514
+- 2026-10-15 13:04 — assigned 0514 to documentation (full) as next: the owner's drawings are in the repository now (15 October); check each cell against the frameworks' text and put the two diagrams on the reports page; documentation's files

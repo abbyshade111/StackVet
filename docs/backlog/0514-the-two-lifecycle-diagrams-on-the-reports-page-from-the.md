@@ -1,6 +1,6 @@
 # The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -25,3 +25,5 @@ description):
 
 - How verified: not built; the files are not in the repository.
 - Needs a decision record?: no.
+
+**The owner, 15 October 2026:** the diagrams can happen now. The orchestrating session copied the five files from the drive into the repository as this item asked (`docs/website/diagrams/sdlc-cycle.svg` and `.png`, `docs/website/diagrams/frameworks-by-sdlc-phase.svg` and `.png`, and `docs/website/diagrams/source/make_diagrams.py`, unchanged); the item is released to documentation's line to check the cells against the frameworks' text and put the diagrams on the reports page.
