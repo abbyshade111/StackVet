@@ -269,6 +269,9 @@ pub(super) struct Flaws {
     /// Refuses an upload with the same 201 "stored" a stored file gets, keeping nothing. Not a flaw: only
     /// fetching the file back tells the two apart (backlog 0560).
     pub(super) upload_refused_alike: bool,
+    /// Refuses an admin page to an ordinary user with a page of its own served with 200, as an app that
+    /// renders its 403 template without setting the status does. Not a flaw (backlog 0560).
+    pub(super) admin_denied_on_200: bool,
     /// Not a flaw of the app's: the sign-in page has a Turkish heading and data-protection notice in
     /// capitals before its form, and each capital dotted `İ` grows from two bytes to three when
     /// lowered with `to_lowercase` (backlog 0278).
@@ -2239,6 +2242,20 @@ impl FakeApp {
             ("GET", "/admin") => {
                 if is_admin || (user.is_some() && self.flaws.admin_open) {
                     Self::respond(200, vec![], "admin")
+                } else if user.is_some() && self.flaws.admin_denied_on_200 {
+                    Self::respond(
+                        200,
+                        vec![],
+                        "<h1>Access denied</h1><p>This page needs another account.</p>",
+                    )
+                } else {
+                    Self::respond(403, vec![], "no")
+                }
+            }
+            // A second admin page, refused with 403 to everybody else, for a test that lists two.
+            ("GET", "/admin/people") => {
+                if is_admin {
+                    Self::respond(200, vec![], "people")
                 } else {
                     Self::respond(403, vec![], "no")
                 }

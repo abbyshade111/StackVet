@@ -184,6 +184,8 @@ pub(super) fn admin_checks(
     let mut refused_and_confirmed = 0;
     let mut opened_by_ordinary = Vec::new();
     let mut unconfirmed = Vec::new();
+    // Pages the ordinary user got a 200 for that shows little of what the admin got there, and why.
+    let mut unlike = Vec::new();
     let mut ordinary_ids: Vec<String> = Vec::new();
     for (i, path) in users.admin.iter().enumerate() {
         let as_a = http.send(&get(&format!("admin-a-{i}"), path, &a.session));
@@ -191,8 +193,19 @@ pub(super) fn admin_checks(
             .as_ref()
             .map(|admin| http.send(&get(&format!("admin-admin-{i}"), path, &admin.session)));
         let admin_opens = as_admin.as_ref().is_some_and(ok);
-        if ok(&as_a) {
-            // A 2xx to an ordinary user is a finding whether or not the admin was confirmed.
+        // Beside the admin's own page when there is one (backlog 0560, ADR-119): a 403 page served with 200 is
+        // a 2xx too. Without the admin's page there is nothing to read it beside, and a 2xx is a finding as before.
+        let admin_page = as_admin
+            .as_ref()
+            .and_then(Option::as_ref)
+            .filter(|_| admin_opens);
+        let shows_admins = match (&as_a, admin_page) {
+            (Some(page), Some(reference)) => super::control::shows_page(reference, page),
+            _ => true,
+        };
+        if ok(&as_a) && !shows_admins {
+            unlike.push(path.clone());
+        } else if ok(&as_a) {
             opened_by_ordinary.push(path.clone());
             ordinary_ids.push(format!("admin-a-{i}"));
         } else if as_a.is_some() && admin_opens {
@@ -211,6 +224,18 @@ pub(super) fn admin_checks(
             format!(
                 "Signed in as an ordinary test user, the app served {}.",
                 opened_by_ordinary.join(", ")
+            ),
+        ));
+    }
+    if !unlike.is_empty() {
+        out.not_assessed.push((
+            "V8.2.1".to_owned(),
+            format!(
+                "Signed in as an ordinary test user, {} answered 200 with a page that shows little of \
+                 what the admin was served there. That may be the app refusing on a page of its own \
+                 (\"Access denied\" served with 200) rather than opening it, so it is neither a finding \
+                 nor a refusal.",
+                unlike.join(", ")
             ),
         ));
     }
@@ -242,7 +267,11 @@ pub(super) fn admin_checks(
     }
     // Credited only when every admin page was judged: a page that could not be read is reported as not
     // assessed, and the pages that were judged do not stand in for it.
-    if refused_and_confirmed > 0 && opened_by_ordinary.is_empty() && unconfirmed.is_empty() {
+    if refused_and_confirmed > 0
+        && opened_by_ordinary.is_empty()
+        && unconfirmed.is_empty()
+        && unlike.is_empty()
+    {
         out.verified.push(crate::Verified::new(
             ADMIN_PAGE.rule_id,
             ADMIN_PAGE.requirement_ids,
@@ -2006,3 +2035,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod beside_admin_tests;

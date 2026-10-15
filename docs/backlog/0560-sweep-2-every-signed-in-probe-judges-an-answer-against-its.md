@@ -82,3 +82,10 @@ the GIF sent after a refusal as taken only when it was answered as the first ord
 200 page no longer lets a refusal stand. Still open from item 2's note: the first ordinary GIF itself is taken on
 "under 400" (a 200 re-render of the form there would pass the gate), which a `serves-at` fetch could settle.
 
+**Fifth batch, built (admin pages, part of list item 5):** an ordinary user's 200 for an admin page is read beside
+the admin's own page there (`control::shows_page`: half of its pieces of text or more): the page shown is a finding as
+before; a 200 page showing little of it (a 403 template served with 200) is neither a finding nor a refusal, says so,
+and keeps the credit from resting on the pages that were judged. Without the admin's page, a 2xx is a finding as
+before. Still open from item 5: the role written into sign-up and into the email change, which have no admin page of
+their own to read beside, since they do not sign the admin in.
+

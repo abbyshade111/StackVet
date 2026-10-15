@@ -122,6 +122,24 @@ fn shape_differs(control: &ProbeResponse, answer: &ProbeResponse) -> Option<Stri
     })
 }
 
+/// Whether `answer` shows the page `reference` is: at least half of the reference's pieces of text (cut at tags
+/// and line ends, three characters or more) are in the answer. The same page served to somebody else differs in a
+/// name or two; a page refused on a 200 ("Access denied") shares little of it. A reference with no such piece
+/// shows nothing either way, and is `false`.
+pub(super) fn shows_page(reference: &ProbeResponse, answer: &ProbeResponse) -> bool {
+    let pieces: Vec<&str> = reference
+        .body
+        .split(['<', '>', '\n'])
+        .map(str::trim)
+        .filter(|p| p.chars().count() >= 3)
+        .collect();
+    if pieces.is_empty() {
+        return false;
+    }
+    let found = pieces.iter().filter(|p| answer.body.contains(**p)).count();
+    found * 2 >= pieces.len()
+}
+
 fn names(keys: &[String]) -> String {
     if keys.is_empty() {
         return "none".to_owned();
