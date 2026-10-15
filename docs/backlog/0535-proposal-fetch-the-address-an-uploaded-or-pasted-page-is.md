@@ -1,6 +1,6 @@
 # Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** open
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
