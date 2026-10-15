@@ -44,5 +44,33 @@
         "typescript": "[(arguments (number) @used)\n (throw_statement (new_expression constructor: (identifier) @used))\n ((assignment_expression left: (member_expression property: (property_identifier) @field) right: (number) @used)\n  (#match? @field \"^(status|statusCode)$\"))]"
       }
     }
+  ],
+  "packages": [
+    {
+      "id": "locate.web-server",
+      "questions": [
+        "V4.2.1"
+      ],
+      "finds": "the web server package inside the app, which reads each request after whatever is in front of the app has passed it on",
+      "says": "A known flaw in this version, request smuggling among them, is listed as something to fix when the advisory data has been downloaded and StackVet is run with --advisories; the machines in front of the app are not in the list of packages, and nothing here says what they run.",
+      "names": {
+        "Python": [
+          "gunicorn",
+          "uvicorn",
+          "hypercorn",
+          "waitress",
+          "daphne",
+          "granian"
+        ],
+        "Ruby": [
+          "puma",
+          "unicorn",
+          "thin",
+          "passenger",
+          "falcon",
+          "webrick"
+        ]
+      }
+    }
   ]
 }

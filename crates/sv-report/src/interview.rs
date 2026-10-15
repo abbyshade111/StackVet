@@ -188,7 +188,30 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
         out.push_str(&format!("   Where to look: {}\n", one_line(look)));
     }
     out.push_str(&rests_on(item, fence));
+    out.push_str(&in_the_packages(item, fence));
+    if let Some(why) = &item.why_not_checked {
+        out.push_str(&format!(
+            "   Why StackVet cannot check it: {}\n",
+            one_line(why)
+        ));
+    }
     out
+}
+
+/// The packages of the app's a question is about (backlog 0490), each name through `fence`, with what the report says
+/// of them and the sentence that they are where to look and not evidence.
+fn in_the_packages(item: &Item, fence: &crate::fence::Fence) -> String {
+    let Some(found) = &item.in_the_packages else {
+        return String::new();
+    };
+    let packages: Vec<String> = found.packages.iter().map(|p| fence.wrap(p)).collect();
+    format!(
+        "   In the packages, {}: {}. {} {}\n",
+        found.finds,
+        packages.join(", "),
+        one_line(&found.says),
+        sv_check::human::PACKAGES_SAY
+    )
 }
 
 /// The lines of the app's code a question is about (backlog 0487), each piece of the app's text through `fence`, and

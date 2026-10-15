@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0605, 0576, 0599, 0582
-- wording — arm: full — holds: 0590 (since 2026-10-15) — next: 0603, 0597
-- documentation — arm: full — holds: 0583 (since 2026-10-15) — next: 0490, 0493, 0491, 0497, 0494
+- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0576, 0599, 0582
+- wording — arm: full — holds: 0603 (since 2026-10-15) — next: 0597
+- documentation — arm: full — holds: 0493 (since 2026-10-15) — next: 0491, 0497, 0494
 
 ## Queue
 
@@ -705,3 +705,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 15:36 — assigned 0494 to documentation (full) into the lane after 0497: the cryptographic inventory read from the code, a static pointer proposal; locate and the questions
 - 2026-10-15 15:50 — finished 0565 by wording (full): https://github.com/abbyshade111/StackVet/pull/2073; now holds 0566
 - 2026-10-15 15:50 — finished 0566 by wording (full): https://github.com/abbyshade111/StackVet/pull/2070; now holds 0590
+- 2026-10-15 16:20 — finished 0590 by wording (full): https://github.com/abbyshade111/StackVet/pull/2076; now holds 0603
+- 2026-10-15 16:20 — finished 0583 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2077; now holds 0490
+- 2026-10-15 16:20 — finished 0605 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2078; from its lane, behind 0232
+- 2026-10-15 16:20 — withdrew 0490 from documentation (full), on hold: honesty built it whole on claude/honesty-0490-server before the move landed; it goes back to honesty to open the pull request from that branch
+- 2026-10-15 16:20 — released 0490
+- 2026-10-15 16:20 — assigned 0490 to honesty (full) into the lane after 0232: back to honesty, whose branch claude/honesty-0490-server holds the whole build, tested; open the pull request from it

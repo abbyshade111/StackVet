@@ -83,8 +83,9 @@ fn prompt_6_leaves_its_sandbox_with_a_yes_and_checks_the_commit_it_installed() {
          run it outside your sandbox only after I say yes.",
         "If you find an older or kept copy of StackVet, or a link to one, tell me, and install with Homebrew (Scoop \
          on Windows) unless I say otherwise.",
-        "After installing or updating, `sv --version` must name the commit you expected, the latest on StackVet's \
-         GitHub page: if it does not, stop and tell me.",
+        // Since backlog 0597: the installed commit is compared with what the install printed, fetching nothing.
+        "After installing or updating, compare the commit `sv --version` prints with the one the install printed, \
+         fetching nothing to do it: if they differ, stop and tell me.",
     ] {
         assert!(full.contains(said), "{said}: {full}");
     }

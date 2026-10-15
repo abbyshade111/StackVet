@@ -55,7 +55,8 @@
       "asks": "Do all the components a request passes through — load balancers, firewalls, and the application server — agree on where one HTTP message ends and the next begins? When they disagree, somebody can hide a second request inside the first.",
       "plain": "If a request passes through other machines before reaching the app (a load balancer, a firewall), do they all agree on where one request ends and the next begins?",
       "whereMeans": "the configuration for the server or proxy in front of the app",
-      "howToFindOut": "Find what sits in front of the app — a load balancer, a reverse proxy, your host's edge. Check whether each one and the app agree on request size limits, chunked encoding, and duplicate headers. If you run nothing in front of the app, say so: that is the answer."
+      "howToFindOut": "Find what sits in front of the app — a load balancer, a reverse proxy, your host's edge. Check whether each one and the app agree on request size limits, chunked encoding, and duplicate headers. If you run nothing in front of the app, say so: that is the answer.",
+      "whyNotChecked": "The machines in front of the app, such as a load balancer, a reverse proxy, or your host's edge, are not in the app's folder, and StackVet runs the app on its own, with nothing in front of it. Sending the app a request built to be read two ways would test only the app's own server, and would say nothing about what is in front of it once the app is live."
     },
     {
       "id": "V8.2.3",
