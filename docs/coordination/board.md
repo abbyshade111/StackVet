@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0576, 0599, 0582
-- wording — arm: full — holds: 0603 (since 2026-10-15) — next: 0597
+- wording — arm: full — holds: 0603 (since 2026-10-15)
 - documentation — arm: full — holds: 0493 (since 2026-10-15) — next: 0491, 0497, 0494
 
 ## Queue
@@ -711,3 +711,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 16:20 — withdrew 0490 from documentation (full), on hold: honesty built it whole on claude/honesty-0490-server before the move landed; it goes back to honesty to open the pull request from that branch
 - 2026-10-15 16:20 — released 0490
 - 2026-10-15 16:20 — assigned 0490 to honesty (full) into the lane after 0232: back to honesty, whose branch claude/honesty-0490-server holds the whole build, tested; open the pull request from it
+- 2026-10-15 16:50 — finished 0597 by wording (full): https://github.com/abbyshade111/StackVet/pull/2080; from its lane, behind 0603
