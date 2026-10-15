@@ -172,6 +172,9 @@ pub(super) struct FakeApp {
     leak_next: bool,
     /// Seats booked. There is one seat.
     pub(super) bookings: u32,
+    /// The one user who may book at all, when set: the others are refused for want of permission
+    /// (backlog 0574).
+    pub(super) booking_only_for: Option<String>,
     /// Who holds the seat, once somebody does.
     booked_by: Option<String>,
     /// While copies are being sent at the same instant: the bookings there were when they
@@ -1955,12 +1958,33 @@ impl FakeApp {
                 }
                 Self::respond(303, vec![("Location", "/account".into())], "")
             }
+            ("POST", "/unbook") => {
+                if user.is_none() {
+                    return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
+                }
+                if !token_ok {
+                    return Some(Self::respond(403, vec![], "refused"));
+                }
+                if self.bookings == 0 || self.booked_by != user {
+                    return Some(Self::respond(409, vec![], "nothing of yours to cancel"));
+                }
+                self.bookings -= 1;
+                self.booked_by = None;
+                Self::respond(303, vec![("Location", "/account".into())], "")
+            }
             ("POST", "/book") => {
                 if user.is_none() {
                     return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
                 }
                 if !token_ok {
                     return Some(Self::respond(403, vec![], "refused"));
+                }
+                if self
+                    .booking_only_for
+                    .as_ref()
+                    .is_some_and(|only| user.as_ref() != Some(only))
+                {
+                    return Some(Self::respond(403, vec![], "you may not book"));
                 }
                 if let Some((_, arrived)) = self.together.as_mut() {
                     *arrived += 1;
@@ -3421,6 +3445,7 @@ pub(super) fn users() -> UsersSection {
                 .collect(),
             json: BTreeMap::new(),
             completed: "Booked".into(),
+            reset: None,
         }),
         delete_account: Some(t(
             "/account/delete",
