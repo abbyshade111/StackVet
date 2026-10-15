@@ -1105,9 +1105,14 @@ fn running_app(
                     }
                     .to_owned(),
                 };
-                let (mut running_findings, running_verified, signed_in_not_assessed) =
+                let (mut running_findings, mut running_verified, signed_in_not_assessed) =
                     running_app_evidence(&outcome, &plan, &private_files);
                 limits_set_for_the_run(&mut running_findings, &plan.start);
+                gaps.extend(loosened_for_the_run(
+                    &mut running_findings,
+                    &mut running_verified,
+                    &plan.start,
+                ));
                 let mut record = crate::seen::record(
                     secret_rules,
                     &anonymous_requests(&plan, &private_files),
@@ -2949,6 +2954,50 @@ pub(crate) fn limits_set_for_the_run(findings: &mut [sv_check::Finding], start: 
     }
 }
 
+/// A setting the start command loosens the copy with earns that copy no credit for the rules it bears on (backlog 0564,
+/// ADR-114, Later): what the run saw there is not what the app does as shipped. Each such credit is taken out and said
+/// as a gap naming the setting; each finding under one of those rules says it is about the loosened copy. Settings that
+/// bear on no rule are only warned about, as before (`sv_run::weakening_note`).
+pub(crate) fn loosened_for_the_run(
+    findings: &mut [sv_check::Finding],
+    verified: &mut Vec<sv_check::Verified>,
+    start: &str,
+) -> Vec<sv_report::Gap> {
+    let mut gaps = Vec::new();
+    for (setting, rules) in sv_run::start_settings::loosened(start) {
+        let (withheld, kept): (Vec<_>, Vec<_>) = std::mem::take(verified)
+            .into_iter()
+            .partition(|v| rules.contains(&v.check_id.as_str()));
+        *verified = kept;
+        for credit in withheld {
+            gaps.push(sv_report::Gap {
+                what: format!(
+                    "{}, by running the app ({})",
+                    credit.requirement_ids.join(", "),
+                    credit.check_id
+                ),
+                why: format!(
+                    "The copy `sv` ran had `{setting}` set in its start command in stackvet.toml, so what the run \
+                     saw here is not what the app does as it is shipped, and it is not credited. Take the setting out \
+                     of the start command, or set it as the shipped app has it, and run again."
+                ),
+                reason: sv_report::GapReason::LeftOut,
+                requirements: credit.requirement_ids.clone(),
+            });
+        }
+        for finding in findings
+            .iter_mut()
+            .filter(|f| rules.contains(&f.rule_id.as_str()))
+        {
+            finding.description.push_str(&format!(
+                " The copy `sv` ran had `{setting}` set in its start command, so this is about that copy, and the \
+                 app as it is shipped may not have it."
+            ));
+        }
+    }
+    gaps
+}
+
 /// A finding the manifest's answers made, pointed at the manifest by the name it has in this app.
 fn at_the_manifest(mut finding: sv_check::Finding, manifest_file: &str) -> sv_check::Finding {
     if finding.location.file == sv_frameworks::names::MANIFEST {
@@ -3128,3 +3177,7 @@ mod counts_tests;
 #[cfg(test)]
 #[path = "assemble_start_limits_tests.rs"]
 mod start_limits_tests;
+
+#[cfg(test)]
+#[path = "assemble_loosened_tests.rs"]
+mod loosened_tests;

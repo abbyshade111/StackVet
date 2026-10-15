@@ -41,7 +41,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 27. 0574 The once check's other user may be refused for want of permission, not for losing the race — ready
 28. 0575 The forgery check never sends a token from another session with the signed-in user's cookies — ready
 29. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
-30. 0570 A query given by a function sv did not follow: a finding, or not verified (the owner's choice) — hold: the owner's choice: a query given by a function sv did not follow is a finding or not verified
 
 ## Log
 
@@ -592,3 +591,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 07:20 — queued 0570, on hold: the owner's choice: a query given by a function sv did not follow is a finding or not verified, marked
 - 2026-10-15 07:20 — assigned 0571 to honesty (full) into the lane after 0495: from the third sweep: the download-name check's missing case, one request more; honesty's probe files
 - 2026-10-15 07:20 — assigned 0572 to honesty (full) into the lane after 0571: from the third sweep: the wrong-password check with no sign-up tries the right password too (ADR-119)
+- 2026-10-15 07:33 — released 0570
+- 2026-10-15 07:34 — dropped 0570 from the queue

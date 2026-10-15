@@ -44,3 +44,39 @@ keep the figures at 4 October and add the work since beside them. Built meanwhil
   13 October, and the board's log (every line, and one row per item finished).
 - `figure-three-arms.html`, the one figure that gave no date, now names its data and date.
 Still to do, after the owner's answer: the figures' refresh, or a "since the cut-off" figure beside them.
+
+**The paper's outline, from the owner on 15 October 2026, and how the tables serve it.** The research section has three
+parts, and each table and figure should say which part it serves:
+- *Making sv* (the prompt, V1, V2, StackVet): the three milestone periods above, with the faults, corrections, tests,
+  and ADR tables per period and combined.
+- *Fine-tuning* (the loop trials; context against orchestration): the second loop trial's table (builds, arms, scores,
+  findings per build, what dodged a check), the first loop trial's where its records allow, and the orchestration
+  trial's measurement (backlog 0273: the coordination log, minutes per item, arms) as the context-against-orchestration
+  table.
+- *Building across three AI tools with the same prompts* (security, compliance, what the tool said against what it
+  did): the three-tool trial's tables from `docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`, split into those three
+  headings, with the like-for-like report counts as the compliance table and the said-versus-did table as its own.
+The paper's central question has four dimensions, security, quality, compliance, and usability: wherever a trial's data
+can be read on one of them, the table says which (the three-tool trial's quality rubric and the loop trials' scoring
+are quality; the setup times and prompt adherence are usability). Two things the outline names have no data table yet
+and should be listed in DATA.md as "not in the tables": the OWASP Top 10 for LLMs and Agents (sv checks AISVS and the
+Agentic Skills Top 10, not that list), and the first loop trial if its records are not complete enough for a table.
+The health-tracking app built for a friend stays anonymous in every cell.
+
+**The owner, 15 October 2026:** everything builds up to the three-tool trial; the earlier tests answered parts of the
+question and that trial answered it altogether, and it is the basis for most of the paper's conclusions. So its tables
+get the most care: every cell traceable to a record on the owner's drive (the chat step, turn, or line; the file and
+line in the app; the report field), the two readings' scripts that rendered the records and measured the apps
+committed under `tools/` (they read the drive's folders by path and write no private text into the repository), and
+a "Limits" block in DATA.md beside those tables: one run per tool, one owner, three different models, three apps built
+to one brief but not one app, and nothing after prompt 6. Those limits are the paper's to state, not to hide.
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** neither (a) nor (b): the paper is not written yet, so the 4 October cut-off is arbitrary. Break the timeline at three milestones and build every table and figure per period, then combined tables for everything up to now: (1) version 1, up to the cut-over when v1 was tagged in GitHub (the tags v1-paper and v1-final; the promotion of sv to main on 26 September 2026); (2) version 2, from that cut-over to the renaming to StackVet; (3) StackVet, from the renaming to the day of the build. Take each boundary's date and commit from git (the tags, the promotion merge, the commit that renamed the project), name them in DATA.md, and say in every table which period a row is in. The paper's prose is the owner's to write against these.
+
+**The owner, 15 October 2026: a chart comparing the three models.** The three tools ran three different models
+(Antigravity: Gemini 3.8 Flash; Cursor: grok-4.7 with high reasoning; VS Code with Copilot: gpt-6-luna, chosen by its
+auto mode), so harness and model are confounded in the trial, and the tool that gamed two checks was also the one
+with the smallest model. Add one table and one figure comparing the three: vendor, the tier the vendor gives it
+(flash, mini, full, reasoning), release date, context window, published parameter count where one is published and
+"not published" where not, the reasoning setting used in the trial, and the price tier, each cell with its source (the
+vendor's own page, dated). No guessing a size the vendor has not published. Beside it, in the "Limits" block: the
+confound, in one sentence, and the follow-up trial that separates them (backlog 0577).
