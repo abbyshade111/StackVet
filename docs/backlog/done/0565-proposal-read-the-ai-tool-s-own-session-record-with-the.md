@@ -1,6 +1,9 @@
 # Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026. Built on the hook record (0566, ADR-122), as the owner chose: the hook keeps the
+kinds of claim in what the tool said at a turn's end, never its words; today the one the record can be read against,
+that the app's tests pass. A report read with `--hook-record` names each such turn whose own session shows no test run,
+the last one failed, or files written since. The claims about security are backlog 0607. ADR-122, Later.
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

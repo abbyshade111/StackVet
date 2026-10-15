@@ -36,6 +36,11 @@ pub struct HookSeen {
     pub last_test_failed: bool,
     /// Files written after the last test command (or every one, when none ran).
     pub written_after_last_test: usize,
+    /// Turns the tool ended saying the app's tests pass (backlog 0565), and those where the record shows otherwise. Only
+    /// the kind of claim is kept, never the tool's words.
+    pub claims: usize,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub mismatches: Vec<Said>,
     /// Lines whose chain checks out, and the line where it first does not, counting from 1.
     pub chained: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -46,6 +51,25 @@ pub struct HookSeen {
     /// What became of the last sealed report's tip.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub earlier: Option<Earlier>,
+}
+
+/// A turn the tool ended saying the app's tests pass, where its own session's record shows otherwise.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Said {
+    pub at: String,
+    pub what: Mismatch,
+}
+
+/// What the record showed against a claim that the app's tests pass.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Mismatch {
+    /// No test command ran in that session before it.
+    NoTestRan,
+    /// The last test command before it, at `at`, failed.
+    LastTestFailed { at: String },
+    /// The last test command before it, at `at`, finished without an error, and `files` files were written after it.
+    WrittenSince { at: String, files: usize },
 }
 
 /// Where a record's chain ended.
@@ -117,6 +141,38 @@ fn said(seen: &HookSeen) -> Vec<String> {
         ),
         None => "None of the commands ran the app's tests.".to_owned(),
     });
+    if seen.claims > 0 {
+        out.push(format!(
+            "The tool ended {} saying the app's tests pass (only that is kept of what it said, never its words); \
+             {}.",
+            count(seen.claims, "turn", "turns"),
+            match seen.mismatches.len() {
+                0 => "in each, the last test command in that session had finished without an error, with no file \
+                      written since"
+                    .to_owned(),
+                n if n == seen.claims => "in each, the record shows otherwise".to_owned(),
+                n => format!("in {n} of them the record shows otherwise"),
+            }
+        ));
+        for said in &seen.mismatches {
+            out.push(format!(
+                "At {}, the tool said the tests pass: {}.",
+                said.at,
+                match &said.what {
+                    Mismatch::NoTestRan => "no test command had run in that session".to_owned(),
+                    Mismatch::LastTestFailed { at } =>
+                        format!("the last test command before it, at {at}, failed"),
+                    Mismatch::WrittenSince { at, files } => format!(
+                        "the tests last ran at {at}, and {} written after",
+                        match files {
+                            1 => "1 file was".to_owned(),
+                            n => format!("{n} files were"),
+                        }
+                    ),
+                }
+            ));
+        }
+    }
     out.push(match seen.broken_at {
         None => format!("The chain holds over all {} lines.", seen.chained),
         Some(at) => format!(
