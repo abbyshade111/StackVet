@@ -90,24 +90,25 @@ ROWS = [
         ("main", "Capture security requirements: its first step, named Planning."),
         ("in part", "Part of the same first step: the requirements the design must meet."),
         ("main", "Its core: architecture, the principles and patterns, the five-part review checklist, peer "
-                 "review, risk triage, and threat modeling (steps 2 to 8)."),
+                 "review, risk triage, optional threat modeling, and the finished design (steps 2 to 8)."),
         ("in part", "Handoff to development with the finished design (step 9)."),
-        ("in part", "Plans the tests in design: ASVS-aligned and negative tests (MT-03, MT-04)."),
+        ("in part", "Plans the tests in design: ASVS-aligned and negative tests (MT-03), and controls "
+                 "checkable in test (MT-04)."),
         ("in part", "Design-drift watch (step 10); logging, alerts, and a rehearsed incident plan chosen up "
                  "front (MT-01, MT-02, MT-06)."),
     ]),
     ("ASVS", "OWASP 5.0", "Requirements to build to, and to verify against", [
-        ("in part", "Choose a level, 1 to 3, from what the app holds; the requirements double as a checklist."),
-        ("main", "Which requirements apply; each chapter's documentation section says what to decide and "
-                 "write down (V2.1, V8.1, V15.1)."),
-        ("in part", "Architecture requirements (V1.1, V15.2) and recorded decisions, such as the inventory of "
+        ("in part", "Choose a level, 1 to 3: every requirement says which level it belongs to."),
+        ("main", "Which requirements apply; 11 of the 17 chapters open with a documentation section on what "
+                 "to decide and write down (V2.1, V8.1, V15.1)."),
+        ("in part", "Its architecture sections (V1.1, V15.2) and recorded decisions, such as the inventory of "
                  "cryptography (V11.1)."),
         ("main", "Build to the 17 chapters: encoding, validation, sign-in, sessions, authorization, "
                  "cryptography, and more."),
         ("main", "Its purpose: verify each requirement. It is the Application Security Verification "
                  "Standard."),
-        ("in part", "Deadlines for updating dependencies (V15.1, V15.2), configuration (V13), and security "
-                 "logging (V16)."),
+        ("in part", "Deadlines for updating dependencies (V15.1, V15.2), a schedule for rotating secrets "
+                 "(V13.1.4), and how long logs are kept (V16.1.1)."),
     ]),
     ("AISVS", "OWASP 1.0", "For apps that use AI, and, in its Appendix C, apps built with AI", [
         ("in part", "A workflow that covers every phase and keeps its security gates (AC.1); qualify the AI "

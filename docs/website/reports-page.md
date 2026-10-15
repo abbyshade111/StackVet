@@ -67,9 +67,28 @@ in several states: *needs attention*, *checked*, *checked in part*, *not verifie
   `sv report examples/notes-with-users --no-tools --out docs/website/reports/notes-with-users`, on 14 October 2026.
   The health-tracking app built for a friend is never used as an example.
 
+## Where the standards fit in building an app
+
+**The standards StackVet checks against are not only for the end.**
+
+Building software goes round a cycle of six phases: planning, analysis, design, implementation, testing and
+integration, and maintenance, and then back to planning for the next change.
+
+![The software development lifecycle: six phases in a ring, Planning, Analysis, Design, Implementation, Testing &
+Integration, and Maintenance, which leads back to Planning.](diagrams/sdlc-cycle.svg)
+
+Each of the three standards in a StackVet report is chiefly for some of those phases, and reaches into others for
+part of its work. Secure by Design is decided before any code is written; ASVS is the list of requirements to build
+to and check against; AISVS is for apps that use AI, and its Appendix C for apps built with it.
+
+![Where Secure by Design, ASVS, and AISVS touch the lifecycle: each standard against the six phases, each cell
+marked Main or In part, with the sections it rests on.](diagrams/frameworks-by-sdlc-phase.svg)
+
+*The owner drew both on 13 October 2026 (`diagrams/source/make_diagrams.py`). Each cell of the second was checked
+against the standards' own text as StackVet carries it (`data/frameworks`) on 15 October 2026, and six cells' words
+were corrected to say no more than the sections they cite; no cell's tag changed (backlog 0514).*
+
 ## Not yet on this page
 
-- **Two diagrams:** the software development lifecycle, and where Secure by Design, ASVS, and AISVS touch it. The
-  owner drew both on 13 October 2026; they are kept outside the repository for now, and are backlog 0514.
 - **The report as a PDF,** beside `report.html`, once backlog 0412 builds it: a row in the table above, and in
   `report.html`'s own list.
