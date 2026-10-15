@@ -74,3 +74,11 @@ entry's control, read back the same way). When the record cannot be read back, t
 control's, and an answer unlike it is not judged. The simple-request check gives each of its three forms a marker of
 its own, and judges a 3xx the same way rather than calling it unclear.
 
+**Third batch, built (uploads and archives, list item 2):** the oversized file, the mismatched file, and each
+compressed file past the limits are read beside the ordinary file's answer. Where `serves-at` found the ordinary GIF
+by its name, the file is fetched back by its own name: there, it was kept; not found, it was not. An answer unlike the
+ordinary file's that nothing fetched back settles is not assessed and says what was compared. `refusal_stands` counts
+the GIF sent after a refusal as taken only when it was answered as the first ordinary GIF was, so a quota shown on a
+200 page no longer lets a refusal stand. Still open from item 2's note: the first ordinary GIF itself is taken on
+"under 400" (a 200 re-render of the form there would pass the gate), which a `serves-at` fetch could settle.
+

@@ -2495,7 +2495,7 @@ pub fn slowest_line(report: &Report) -> Option<String> {
 fn slowest_of(timings: &[Timing]) -> Option<String> {
     let mut slowest: Vec<&Timing> = timings
         .iter()
-        .filter(|t| !t.what.starts_with(REQUEST_TIMING))
+        .filter(|t| !t.what.starts_with(REQUEST_TIMING) && !t.what.starts_with(CHECK_TIMING))
         .collect();
     slowest.sort_by_key(|a| std::cmp::Reverse(a.took_ms));
     let named: Vec<String> = slowest
@@ -2512,14 +2512,37 @@ fn slowest_of(timings: &[Timing]) -> Option<String> {
             !t.what.starts_with(TOOL_TIMING)
                 && !t.what.starts_with(SUITE_TIMING)
                 && !t.what.starts_with(REQUEST_TIMING)
+                && !t.what.starts_with(CHECK_TIMING)
         })
         .map(|t| t.took_ms)
         .sum();
-    Some(format!(
+    let mut line = format!(
         "This run took {:.1} s. The slowest parts: {}.",
         total as f64 / 1000.0,
         named.join(", ")
-    ))
+    );
+    // Inside the suites (backlog 0526): the checks and the waiting for a limiter that took a second or more, the
+    // longest three, so a slow suite says where its time went.
+    let mut inside: Vec<&Timing> = timings
+        .iter()
+        .filter(|t| t.what.starts_with(CHECK_TIMING) && t.took_ms >= 1000)
+        .collect();
+    inside.sort_by_key(|a| std::cmp::Reverse(a.took_ms));
+    if !inside.is_empty() {
+        let named: Vec<String> = inside
+            .iter()
+            .take(3)
+            .map(|t| {
+                format!(
+                    "{} ({:.1} s)",
+                    &t.what[CHECK_TIMING.len()..],
+                    t.took_ms as f64 / 1000.0
+                )
+            })
+            .collect();
+        line.push_str(&format!(" Inside them, the longest: {}.", named.join(", ")));
+    }
+    Some(line)
 }
 
 /// How an outside tool's timing is named, so the total counts each moment once: a tool runs
@@ -2534,6 +2557,11 @@ pub const SUITE_TIMING: &str = "the running app, ";
 /// runs inside its suite, so it is counted in no total, and it is left out of the slowest parts,
 /// which would otherwise name a request beside the suite that holds it.
 pub const REQUEST_TIMING: &str = "the request ";
+
+/// How a check inside a suite, or the suite's waiting for the app's limit on requests, is named in the timings
+/// (backlog 0526). Inside its suite, so counted in no total and not among the slowest parts; named after them, so a
+/// slow check, or a limiter waited out, is told from a slow app.
+pub const CHECK_TIMING: &str = "inside the suites, ";
 
 /// The findings that went between the first check of the build loop and the last while their lines still read as
 /// they did, named one by one, for the top of the report (backlog 0401): a fix changes the line, so each went some
@@ -3757,6 +3785,9 @@ fn stake(level: u8) -> u8 {
 
 #[cfg(test)]
 mod timing_tests;
+
+#[cfg(test)]
+mod timing_inside_tests;
 #[cfg(test)]
 mod whose_word_tests;
 

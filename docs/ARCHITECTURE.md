@@ -183,7 +183,9 @@ This is the one table of them; the README and the guide link here (`crates/sv-cl
 | Every other command | Finished | Never | Never | Its own failure |
 
 - `--fail-on any` is both `attention` and `not-assessed`. 1 outranks 2, and 3 is never combined with anything, since a
-  run that failed has no result to rank. Ctrl-C keeps 130, the usual code for it.
+  run that failed has no result to rank. Ctrl-C keeps 130, the usual code for it. A reader that closes the output
+  before `sv` finishes printing (`sv --version | head -1`) gets 141, the usual code for that, with nothing said: never
+  0, so a check whose output was cut short is not read as passing.
 - `--baseline <an older report folder>`: `--fail-on attention` then exits 1 only for a finding that report did not
   hold. Every finding is still listed and counted, and those it held are marked; a baseline `sv` cannot read, or one
   for an app of another name, stops the run (3).

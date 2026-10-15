@@ -238,6 +238,9 @@ pub struct RunningApp {
     /// How long each request to the running app took (backlog 226, part 2, item 13). Empty when the
     /// app was not run.
     pub request_timings: Vec<(String, u64)>,
+    /// How long each check inside the suites took, and their waiting for the app's limit on requests (backlog 0526).
+    /// Empty when the app was not run.
+    pub check_timings: Vec<(String, u64)>,
 }
 
 /// The owner's word, from the notes, the decisions file, and the manifest's design and hand-check
@@ -408,11 +411,13 @@ pub fn assemble_report_saying(
                 seen: None,
                 timings: Vec::new(),
                 request_timings: Vec::new(),
+                check_timings: Vec::new(),
             }
         }
     };
     let suite_timings = run.timings.clone();
     let request_timings = run.request_timings.clone();
+    let check_timings = run.check_timings.clone();
     stage(9);
     gaps.extend(tools.gaps);
     let manual_only = what_was_not_read(&scene, &mut gaps, &mut examined);
@@ -460,6 +465,7 @@ pub fn assemble_report_saying(
         &report.examined,
         &suite_timings,
         &request_timings,
+        &check_timings,
     );
     Ok(report)
 }
@@ -472,6 +478,7 @@ fn timings(
     examined: &[sv_report::Examined],
     suites: &[(&'static str, u64)],
     requests: &[(String, u64)],
+    checks: &[(String, u64)],
 ) -> Vec<sv_report::Timing> {
     let ms = |d: std::time::Duration| u64::try_from(d.as_millis()).unwrap_or(u64::MAX);
     let mut timings: Vec<sv_report::Timing> = began
@@ -498,6 +505,10 @@ fn timings(
     }));
     timings.extend(requests.iter().map(|(request, took_ms)| sv_report::Timing {
         what: format!("{}{request}", sv_report::REQUEST_TIMING),
+        took_ms: *took_ms,
+    }));
+    timings.extend(checks.iter().map(|(check, took_ms)| sv_report::Timing {
+        what: format!("{}{check}", sv_report::CHECK_TIMING),
         took_ms: *took_ms,
     }));
     timings
@@ -1065,6 +1076,7 @@ fn running_app(
     let mut run_steps: Vec<String> = Vec::new();
     let mut suite_timings = Vec::new();
     let mut request_timings = Vec::new();
+    let mut check_timings = Vec::new();
     let run_status;
 
     if options.run_the_app {
@@ -1074,6 +1086,12 @@ fn running_app(
             Ok((outcome, plan)) => {
                 suite_timings.clone_from(&outcome.suite_timings);
                 request_timings.clone_from(&outcome.request_timings);
+                // Every suite's checks and waits, as `asked` lists the suites (backlog 0526).
+                check_timings = outcome
+                    .asked()
+                    .into_iter()
+                    .flat_map(|(_, asked)| asked.timings.iter().cloned())
+                    .collect();
                 run_status = sv_report::RunStatus::Started {
                     image: plan.image.clone(),
                     asked: anonymous_requests(&plan, &private_files).len(),
@@ -1443,6 +1461,7 @@ fn running_app(
         seen,
         timings: suite_timings,
         request_timings,
+        check_timings,
     }
 }
 
@@ -3087,6 +3106,9 @@ fn scope_confirmed(
 
 #[cfg(test)]
 mod timing_tests;
+
+#[cfg(test)]
+mod check_timings_tests;
 
 /// Splits the findings into those that count and the test-file information that does not (ADR-091). A
 /// test-file information finding that a reviewer's sealed `counts` entry says is real counts (ADR-093).

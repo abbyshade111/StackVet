@@ -263,6 +263,12 @@ pub(super) struct Flaws {
     pub(super) forgery_refused_alike: bool,
     /// The JSON API refuses with 200 and `{"error": ...}` instead of a 4xx. Not a flaw (backlog 0560).
     pub(super) api_refuses_with_200: bool,
+    /// Refuses an upload (too large, not what its name says, or past the storage quota) with the upload
+    /// form shown again, with 200 and the reason, where a stored file gets 201. Not a flaw (backlog 0560).
+    pub(super) upload_refusals_on_200: bool,
+    /// Refuses an upload with the same 201 "stored" a stored file gets, keeping nothing. Not a flaw: only
+    /// fetching the file back tells the two apart (backlog 0560).
+    pub(super) upload_refused_alike: bool,
     /// Not a flaw of the app's: the sign-in page has a Turkish heading and data-protection notice in
     /// capitals before its form, and each capital dotted `İ` grows from two bytes to three when
     /// lowered with `to_lowercase` (backlog 0278).
@@ -887,6 +893,21 @@ impl FakeApp {
             if let Some(tag) = tag.filter(|_| self.model_up) {
                 self.model_fetched.insert(tag.to_owned());
             }
+        }
+    }
+
+    /// An upload refused, as `upload_refusals_on_200` and `upload_refused_alike` say to answer it.
+    fn upload_refused(&self, status: u16, why: &str) -> ProbeResponse {
+        if self.flaws.upload_refusals_on_200 {
+            Self::respond(
+                200,
+                vec![],
+                &format!("<form method=post><input type=file name=file> {why}</form>"),
+            )
+        } else if self.flaws.upload_refused_alike {
+            Self::respond(201, vec![], "stored")
+        } else {
+            Self::respond(status, vec![], why)
         }
     }
 
@@ -2269,7 +2290,7 @@ impl FakeApp {
                     .upload_quota
                     .is_some_and(|most| self.uploads.len() >= most)
                 {
-                    return Some(Self::respond(403, vec![], "your storage is full"));
+                    return Some(self.upload_refused(403, "your storage is full"));
                 }
                 // A compressed file, read as bytes: judged by what it really unpacks to, or, under
                 // `archive_trusts_stated_sizes`, by what its headers say.
@@ -2312,7 +2333,7 @@ impl FakeApp {
                         return Some(if self.flaws.archive_crashes {
                             Self::respond(500, vec![], "out of memory")
                         } else {
-                            Self::respond(422, vec![], "this archive unpacks past our limits")
+                            self.upload_refused(422, "this archive unpacks past our limits")
                         });
                     }
                     self.uploads
@@ -2344,12 +2365,12 @@ impl FakeApp {
                     .unwrap_or_default();
                 self.largest_upload = self.largest_upload.max(contents.len());
                 if contents.len() > UPLOAD_LIMIT && !self.flaws.oversized_upload_ok {
-                    return Some(Self::respond(413, vec![], "too large"));
+                    return Some(self.upload_refused(413, "too large"));
                 }
                 let claims_gif = name.ends_with(".gif");
                 let is_gif = contents.starts_with("GIF87a") || contents.starts_with("GIF89a");
                 if claims_gif && !is_gif && !self.flaws.unchecked_contents_ok {
-                    return Some(Self::respond(415, vec![], "not a gif"));
+                    return Some(self.upload_refused(415, "not a gif"));
                 }
                 if name.ends_with(".svg") && self.flaws.refuses_svg {
                     return Some(Self::respond(415, vec![], "no svg"));

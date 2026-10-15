@@ -135,6 +135,7 @@ pub(super) fn send_bytes(
 pub(super) fn refusal_stands(
     http: &mut dyn Http,
     upload: &UploadSection,
+    ordinary_answer: &ProbeResponse,
     session: &Session,
     token: &Token,
     after: &str,
@@ -150,7 +151,26 @@ pub(super) fn refusal_stands(
         contents: format!("{GIF_MAGIC}sv-probe-ordinary-file"),
     };
     let answer = send_upload(http, upload, &ordinary, session, token);
-    if refused(&answer) {
+    // The file after stands for the first ordinary one only when it was answered the same way (backlog
+    // 0560): a quota shown on a 200 page is under 400 too.
+    let after_like = beside(ordinary_answer, &answer);
+    if let Beside::Unclear(why) = &after_like {
+        out.steps.push(format!(
+            "sent {} and then an ordinary GIF: the GIF could not be told taken ({why})",
+            what.to_lowercase()
+        ));
+        out.not_assessed.push((
+            requirement.to_owned(),
+            format!(
+                "{what} was refused at {}, but an ordinary GIF sent straight after it was answered \
+                 unlike the first ordinary one ({why}), so the refusal may have been a quota, a \
+                 limit, or a spent token rather than anything about the file.",
+                upload.path
+            ),
+        ));
+        return false;
+    }
+    if refused(&answer) || after_like == Beside::Refused {
         out.steps.push(format!(
             "sent {} and then an ordinary GIF: both refused",
             what.to_lowercase()
@@ -168,6 +188,72 @@ pub(super) fn refusal_stands(
         return false;
     }
     true
+}
+
+/// What an upload did, judged against the ordinary file (backlog 0560, ADR-119).
+pub(super) enum Took {
+    /// It was taken: how that is known.
+    Yes(String),
+    /// It was refused (a 4xx, no answer, or a crash, as before), or it is not there when fetched back.
+    No,
+    /// Neither can be told: what was compared.
+    Unclear(String),
+}
+
+/// Where the ordinary GIF was found when fetched back by its name, which makes fetching a later file back by
+/// its name a way to tell whether it was kept: `None` without `serves-at`, or when the ordinary file was not
+/// found that way.
+pub(super) fn served_back_works(
+    http: &mut dyn Http,
+    upload: &UploadSection,
+    session: &Session,
+) -> Option<String> {
+    let serves_at = upload.serves_at.as_deref()?;
+    let path = serves_at.replace("{name}", "sv-probe.gif");
+    let fetched = http.send(&get("upload-ordinary-served", &path, session))?;
+    ((200..300).contains(&fetched.status) && fetched.body.contains("sv-probe-ordinary-file"))
+        .then_some(path)
+}
+
+/// An upload's answer, read beside the ordinary file's: a 4xx, no answer, or a crash is refused as before
+/// (`refusal_stands` then asks whether the refusal was about the file). Otherwise, when fetching back by name
+/// found the ordinary file, the file is fetched back by its name and `holds` looked for; and when it was not,
+/// or the fetch shows nothing either way, the answer is read beside the ordinary file's.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn took(
+    http: &mut dyn Http,
+    upload: &UploadSection,
+    ordinary_answer: &ProbeResponse,
+    served: Option<&str>,
+    answer: &Option<ProbeResponse>,
+    (id, name, holds): (&str, &str, Option<&str>),
+    session: &Session,
+) -> Took {
+    let Some(given) = answer.as_ref().filter(|r| r.status < 400) else {
+        return Took::No;
+    };
+    if let (Some(_), Some(serves_at), Some(holds)) = (served, &upload.serves_at, holds) {
+        let path = serves_at.replace("{name}", name);
+        if let Some(fetched) = http.send(&get(&format!("{id}-served"), &path, session)) {
+            if (200..300).contains(&fetched.status) && fetched.body.contains(holds) {
+                return Took::Yes(format!(
+                    "answered {}, and the file was served back at {path}",
+                    given.status
+                ));
+            }
+            if matches!(fetched.status, 404 | 410) {
+                return Took::No;
+            }
+        }
+    }
+    match beside(ordinary_answer, answer) {
+        Beside::Like => Took::Yes(format!(
+            "answered {} as the ordinary file was",
+            given.status
+        )),
+        Beside::Refused => Took::No,
+        Beside::Unclear(why) => Took::Unclear(why),
+    }
 }
 
 /// The three files an app ought to refuse, and what it serves back afterwards.
@@ -200,7 +286,7 @@ pub(super) fn upload_checks(
         contents: format!("{GIF_MAGIC}sv-probe-ordinary-file"),
     };
     let accepted = send_upload(http, upload, &ordinary, session, &token);
-    if accepted.as_ref().is_none_or(|r| r.status >= 400) {
+    let Some(ordinary_answer) = accepted.clone().filter(|r| r.status < 400) else {
         out.not_assessed.push((
             "V5.2.1, V5.2.2, V5.3.1, V3.2.1".to_owned(),
             format!(
@@ -212,9 +298,10 @@ pub(super) fn upload_checks(
             ),
         ));
         return;
-    }
+    };
     out.steps
         .push(format!("uploaded an ordinary GIF to {}", upload.path));
+    let served = served_back_works(http, upload, session);
 
     // 2. V5.2.1: a file larger than the owner says the app accepts.
     match upload.max_bytes {
@@ -242,50 +329,73 @@ pub(super) fn upload_checks(
                 contents: format!("{GIF_MAGIC}{}", "A".repeat((most + 1024) as usize)),
             };
             let answer = send_upload(http, upload, &big, session, &token);
-            let refused = answer.as_ref().is_none_or(|r| r.status >= 400);
-            out.steps.push(format!(
-                "sent a file of {} bytes where {most} is the stated limit: {}",
-                most + 1024 + GIF_MAGIC.len() as u64,
-                if refused { "refused" } else { "accepted" }
-            ));
-            if refused
-                && !refusal_stands(
-                    http,
-                    upload,
-                    session,
-                    &token,
-                    "oversized",
-                    "V5.2.1",
-                    "A file larger than the stated limit",
-                    out,
-                )
-            {
-                // Not assessed, and said so.
-            } else if refused {
-                out.verified.push(crate::Verified::new(
-                    OVERSIZED_FILE.rule_id,
-                    OVERSIZED_FILE.requirement_ids,
-                    format!(
-                        "a file about {} bytes larger than the {most} you stated, refused where an \
-                         ordinary one was accepted",
-                        1024 + GIF_MAGIC.len() as u64
-                    ),
-                )
-                // One file on the one upload route stackvet.toml names (ADR-053, Later).
-                .in_part());
-            } else {
-                out.findings.push(finding_on(
-                    vec!["upload-oversized".to_owned()],
-                    &OVERSIZED_FILE,
-                    "A file larger than the stated limit was accepted",
-                    Severity::Medium,
-                    format!(
-                        "stackvet.toml says the app accepts at most {most} bytes. A file larger \
-                         than that was accepted at {} ({}).",
-                        upload.path,
-                        status(&answer)
-                    ),
-                ));
+            let holds = format!("{GIF_MAGIC}AAAAAAAA");
+            let judged = took(
+                http,
+                upload,
+                &ordinary_answer,
+                served.as_deref(),
+                &answer,
+                ("upload-oversized", big.name, Some(&holds)),
+                session,
+            );
+            let sent = most + 1024 + GIF_MAGIC.len() as u64;
+            let step = format!("sent a file of {sent} bytes where {most} is the stated limit");
+            match judged {
+                Took::Unclear(why) => {
+                    out.steps.push(format!("{step}: could not tell, {why}"));
+                    out.not_assessed.push((
+                        "V5.2.1".to_owned(),
+                        format!(
+                            "A file larger than the stated limit was answered unlike the ordinary \
+                             file at {} ({why}), and nothing fetched back could show whether it \
+                             was kept.",
+                            upload.path
+                        ),
+                    ));
+                }
+                Took::No => {
+                    out.steps.push(format!("{step}: refused"));
+                    if refusal_stands(
+                        http,
+                        upload,
+                        &ordinary_answer,
+                        session,
+                        &token,
+                        "oversized",
+                        "V5.2.1",
+                        "A file larger than the stated limit",
+                        out,
+                    ) {
+                        out.verified.push(
+                            crate::Verified::new(
+                                OVERSIZED_FILE.rule_id,
+                                OVERSIZED_FILE.requirement_ids,
+                                format!(
+                                    "a file about {} bytes larger than the {most} you stated, \
+                                     refused where an ordinary one was accepted",
+                                    1024 + GIF_MAGIC.len() as u64
+                                ),
+                            )
+                            // One file on the one upload route stackvet.toml names (ADR-053, Later).
+                            .in_part(),
+                        );
+                    }
+                }
+                Took::Yes(how) => {
+                    out.steps.push(format!("{step}: accepted"));
+                    out.findings.push(finding_on(
+                        vec!["upload-oversized".to_owned()],
+                        &OVERSIZED_FILE,
+                        "A file larger than the stated limit was accepted",
+                        Severity::Medium,
+                        format!(
+                            "stackvet.toml says the app accepts at most {most} bytes. A file \
+                             larger than that was accepted at {}: it {how}.",
+                            upload.path
+                        ),
+                    ));
+                }
             }
         }
     }
@@ -298,54 +408,79 @@ pub(super) fn upload_checks(
         contents: "<?php echo 'sv-probe'; ?>\nthis is not a GIF at all\n".to_owned(),
     };
     let answer = send_upload(http, upload, &mismatched, session, &token);
-    let refused = answer.as_ref().is_none_or(|r| r.status >= 400);
-    out.steps.push(format!(
-        "sent a .gif whose contents are not a GIF: {}",
-        if refused { "refused" } else { "accepted" }
-    ));
-    if refused
-        && !refusal_stands(
-            http,
-            upload,
-            session,
-            &token,
-            "mismatched",
-            "V5.2.2",
-            "A .gif whose contents are not a GIF",
-            out,
-        )
-    {
-        // Not assessed, and said so.
-    } else if refused {
-        out.verified.push(crate::Verified::new(
-            CONTENT_MISMATCH.rule_id,
-            CONTENT_MISMATCH.requirement_ids,
-            "a file named .gif whose contents are not a GIF, refused where a real GIF of the same \
-             name and shape was accepted"
-                .to_owned(),
-        )
-        // One file on the one upload route stackvet.toml names (ADR-053, Later).
-        .in_part());
-    } else {
-        out.findings.push(finding_on(
-            vec!["upload-mismatched".to_owned()],
-            &CONTENT_MISMATCH,
-            "A file is accepted on the strength of its name",
-            Severity::Medium,
-            format!(
-                "A file called `.gif` holding no GIF at all was accepted at {} ({}), where a real \
-                 GIF was accepted too: nothing looked at the contents.",
-                upload.path,
-                status(&answer)
-            ),
-        ));
+    let judged = took(
+        http,
+        upload,
+        &ordinary_answer,
+        served.as_deref(),
+        &answer,
+        (
+            "upload-mismatched",
+            mismatched.name,
+            Some("this is not a GIF at all"),
+        ),
+        session,
+    );
+    let step = "sent a .gif whose contents are not a GIF";
+    match judged {
+        Took::Unclear(why) => {
+            out.steps.push(format!("{step}: could not tell, {why}"));
+            out.not_assessed.push((
+                "V5.2.2".to_owned(),
+                format!(
+                    "A .gif whose contents are not a GIF was answered unlike the ordinary file at \
+                     {} ({why}), and nothing fetched back could show whether it was kept.",
+                    upload.path
+                ),
+            ));
+        }
+        Took::No => {
+            out.steps.push(format!("{step}: refused"));
+            if refusal_stands(
+                http,
+                upload,
+                &ordinary_answer,
+                session,
+                &token,
+                "mismatched",
+                "V5.2.2",
+                "A .gif whose contents are not a GIF",
+                out,
+            ) {
+                out.verified.push(
+                    crate::Verified::new(
+                        CONTENT_MISMATCH.rule_id,
+                        CONTENT_MISMATCH.requirement_ids,
+                        "a file named .gif whose contents are not a GIF, refused where a real GIF \
+                         of the same name and shape was accepted"
+                            .to_owned(),
+                    )
+                    // One file on the one upload route stackvet.toml names (ADR-053, Later).
+                    .in_part(),
+                );
+            }
+        }
+        Took::Yes(how) => {
+            out.steps.push(format!("{step}: accepted"));
+            out.findings.push(finding_on(
+                vec!["upload-mismatched".to_owned()],
+                &CONTENT_MISMATCH,
+                "A file is accepted on the strength of its name",
+                Severity::Medium,
+                format!(
+                    "A file called `.gif` holding no GIF at all was accepted at {}: it {how}. A \
+                     real GIF was accepted too: nothing looked at the contents.",
+                    upload.path
+                ),
+            ));
+        }
     }
 
     // 4. V1.3.4 and V5.4.3: an SVG image carrying a script, and the antivirus test file. Each can
     //    be answered by a refusal, so each is sent whether or not the app serves uploads back.
-    svg_check(http, upload, session, &token, out);
-    scan_check(http, upload, session, &token, out);
-    traversal_check(http, upload, session, &token, out);
+    svg_check(http, upload, &ordinary_answer, session, &token, out);
+    scan_check(http, upload, &ordinary_answer, session, &token, out);
+    traversal_check(http, upload, &ordinary_answer, session, &token, out);
 
     // 5. V5.3.1 and V3.2.1: what the app does with an upload when it is fetched back.
     let Some(serves_at) = &upload.serves_at else {
@@ -387,6 +522,7 @@ fn served_one_folder_up(serves_at: &str, name: &str) -> Option<String> {
 fn traversal_check(
     http: &mut dyn Http,
     upload: &UploadSection,
+    ordinary_answer: &ProbeResponse,
     session: &Session,
     token: &Token,
     out: &mut Outcome,
@@ -411,6 +547,7 @@ fn traversal_check(
         if !refusal_stands(
             http,
             upload,
+            ordinary_answer,
             session,
             token,
             "traversal",
@@ -537,6 +674,7 @@ pub(super) fn refused(answer: &Option<ProbeResponse>) -> bool {
 fn svg_check(
     http: &mut dyn Http,
     upload: &UploadSection,
+    ordinary_answer: &ProbeResponse,
     session: &Session,
     token: &Token,
     out: &mut Outcome,
@@ -557,7 +695,17 @@ fn svg_check(
     let stored = send_upload(http, upload, &svg, session, token);
     if refused(&stored) {
         let what = "An SVG image carrying a script";
-        if !refusal_stands(http, upload, session, token, "svg", "V1.3.4", what, out) {
+        if !refusal_stands(
+            http,
+            upload,
+            ordinary_answer,
+            session,
+            token,
+            "svg",
+            "V1.3.4",
+            what,
+            out,
+        ) {
             return;
         }
         out.steps
@@ -688,6 +836,7 @@ fn svg_check(
 fn scan_check(
     http: &mut dyn Http,
     upload: &UploadSection,
+    ordinary_answer: &ProbeResponse,
     session: &Session,
     token: &Token,
     out: &mut Outcome,
@@ -722,7 +871,17 @@ fn scan_check(
     let stored = send_upload(http, upload, &test_file, session, token);
     if refused(&stored) {
         let what = "The antivirus test file (EICAR)";
-        if !refusal_stands(http, upload, session, token, "eicar", "V5.4.3", what, out) {
+        if !refusal_stands(
+            http,
+            upload,
+            ordinary_answer,
+            session,
+            token,
+            "eicar",
+            "V5.4.3",
+            what,
+            out,
+        ) {
             return;
         }
         out.steps.push(
@@ -1487,7 +1646,7 @@ mod tests {
     }
     // ---- Uploads (V5.2.1, V5.2.2, V5.3.1, V3.2.1)
 
-    fn with_upload(serves_at: Option<&str>, max_bytes: Option<u64>) -> UsersSection {
+    pub(super) fn with_upload(serves_at: Option<&str>, max_bytes: Option<u64>) -> UsersSection {
         let mut u = users();
         u.upload = Some(sv_manifest::UploadSection {
             path: "/upload".into(),
@@ -1797,7 +1956,7 @@ mod tests {
 
     /// A run with the upload form carrying a `title` of `{marker}`, against the app as `adjust`
     /// leaves it.
-    fn upload_run_adjusted(flaws: Flaws, adjust: impl FnOnce(&mut FakeApp)) -> Outcome {
+    pub(super) fn upload_run_adjusted(flaws: Flaws, adjust: impl FnOnce(&mut FakeApp)) -> Outcome {
         let mut users = with_upload(Some("/files/{name}"), Some(UPLOAD_LIMIT as u64));
         if let Some(upload) = &mut users.upload {
             upload
@@ -2664,3 +2823,6 @@ mod served_set_tests;
 
 #[cfg(test)]
 mod against_control_tests;
+
+#[cfg(test)]
+mod beside_ordinary_tests;
