@@ -22,3 +22,6 @@ an earlier tip; and sv already notices hook settings being changed, so a switche
 and that it writes nothing into the tool's settings.
 
 **The owner's go, 14 October 2026:** build it whenever the board has room; in the order 0564, 0565, 0566, after the probe sweeps.
+
+**Record, proposed before building (15 October 2026, wording):** ADR-122, "The hook record, kept by a hook the person
+installs, read only with their consent". 0565 is built on this record after it (the owner's answer on 0565).
