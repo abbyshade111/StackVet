@@ -5,6 +5,7 @@ use serde_json::Value;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
+use sv_frameworks::paths::Canonical;
 
 fn copy(from: &Path, to: &Path) {
     std::fs::create_dir_all(to).unwrap();
@@ -39,7 +40,7 @@ impl Place {
         std::fs::create_dir_all(&home).unwrap();
         Place {
             scratch,
-            app: app.canonicalize().unwrap(),
+            app: app.canonical().unwrap(),
             home,
         }
     }
