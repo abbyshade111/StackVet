@@ -838,6 +838,7 @@ pub fn page(report: &Report) -> String {
                 } + &rests_on(item)
                     + &in_the_packages(item)
                     + &routes(item)
+                    + &pathways(item)
             ));
         }
         b.push_str("</table>\n");
@@ -1174,6 +1175,34 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
         ));
     }
     b.push_str("</ul>\n");
+}
+
+/// The ways into the app the code shows, beside a sign-in pathway question (backlog 0491), with the sentence that says
+/// they are where to look and not evidence; empty when none was found.
+fn pathways(item: &sv_check::human::Item) -> String {
+    let Some(found) = &item.pathways else {
+        return String::new();
+    };
+    let mut b = format!(
+        "<br><span class=\"note\">{}</span>\n<ul>\n",
+        escape(sv_check::sign_in_paths::PATHWAYS_SAY)
+    );
+    for way in &found.ways {
+        b.push_str(&format!(
+            "<li>{} (<code>{}</code>, line {})</li>\n",
+            escape(&way.what),
+            escape(&way.file),
+            way.line
+        ));
+    }
+    b.push_str("</ul>");
+    if found.more > 0 {
+        b.push_str(&format!(
+            "<span class=\"note\">And {} more, not shown.</span>",
+            found.more
+        ));
+    }
+    b
 }
 
 /// The app's routes and what is written on each, beside an authorization question (backlog 0493), with the sentence

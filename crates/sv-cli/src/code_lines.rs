@@ -229,6 +229,27 @@ pub fn route_questions(listing: &sv_scan::files::Listing, report: &mut sv_report
     }
 }
 
+/// The questions the ways into the app are shown beside (backlog 0491): every sign-in pathway written down, and none
+/// that is not.
+pub const PATHWAY_QUESTIONS: &[&str] = &["V6.1.3", "V6.3.4"];
+
+/// Gives each sign-in pathway question the ways into the app the code shows, when any was found (backlog 0491). Where
+/// to look, never evidence: nothing else reads the list.
+pub fn pathway_questions(listing: &sv_scan::files::Listing, report: &mut sv_report::Report) {
+    let pathways = sv_check::sign_in_paths::read(listing);
+    if pathways.ways.is_empty() {
+        return;
+    }
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+        .filter(|item| PATHWAY_QUESTIONS.contains(&item.id.as_str()))
+    {
+        item.pathways = Some(pathways.clone());
+    }
+}
+
 /// Whether `file` names a place inside the app's folder: relative, and never climbing out of it.
 fn inside(file: &str) -> bool {
     let path = Path::new(file);

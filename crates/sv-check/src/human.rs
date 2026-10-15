@@ -86,6 +86,10 @@ pub struct Item {
     /// never evidence, like `rests_on`; never in `report.json`, which holds none of the app's code.
     #[serde(skip)]
     pub routes: Option<crate::route_guards::RouteTable>,
+    /// The ways into the app the code shows, for the sign-in pathway questions (backlog 0491). Where to look, never
+    /// evidence, as `routes` is; never in `report.json`.
+    #[serde(skip)]
+    pub pathways: Option<crate::sign_in_paths::Pathways>,
 }
 
 /// What the standard's own words are called where a question shows them under its plain words.
@@ -199,6 +203,7 @@ pub fn checklist(
                 in_the_packages: None,
                 why_not_checked: None,
                 routes: None,
+                pathways: None,
             });
         }
     }
@@ -216,6 +221,7 @@ pub fn checklist(
                 in_the_packages: None,
                 why_not_checked: question.why_not_checked.clone(),
                 routes: None,
+                pathways: None,
             });
         }
     }
@@ -233,6 +239,7 @@ pub fn checklist(
                 in_the_packages: None,
                 why_not_checked: None,
                 routes: None,
+                pathways: None,
             });
         }
     }

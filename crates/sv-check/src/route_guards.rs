@@ -65,8 +65,16 @@ pub struct RouteTable {
     pub more: usize,
 }
 
-/// The routes in the app's own files, not counting test code.
+/// The routes in the app's own files, not counting test code, the first `MOST_ROUTES` kept.
 pub fn read(listing: &sv_scan::files::Listing) -> RouteTable {
+    let mut routes = read_all(listing);
+    let more = routes.len().saturating_sub(MOST_ROUTES);
+    routes.truncate(MOST_ROUTES);
+    RouteTable { routes, more }
+}
+
+/// Every route in the app's own files, not counting test code, in file and line order.
+pub fn read_all(listing: &sv_scan::files::Listing) -> Vec<RouteLine> {
     let mut routes = Vec::new();
     for entry in listing.app_files() {
         let Some(language) = entry.language else {
@@ -91,9 +99,7 @@ pub fn read(listing: &sv_scan::files::Listing) -> RouteTable {
         }
         routes.extend(in_source(key, &entry.relative, &source));
     }
-    let more = routes.len().saturating_sub(MOST_ROUTES);
-    routes.truncate(MOST_ROUTES);
-    RouteTable { routes, more }
+    routes
 }
 
 /// The routes in one file, in the grammar `key` names.
