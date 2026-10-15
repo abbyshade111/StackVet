@@ -167,6 +167,7 @@ source files, and in two tests:
 | [ADR-118](ADR-118.md) | Several flows and WebSocket paths in stackvet.toml, so the checks that try one can try each (accepted, 15 October 2026) |
 | [ADR-119](ADR-119.md) | A probe reads its answer against its own setup and its own control (accepted, 15 October 2026) |
 | [ADR-120](ADR-120.md) | The guide's word budget is 4,500 (accepted, 15 October 2026) |
+| [ADR-121](ADR-121.md) | The checklist before going live, a report file of its own that credits nothing (accepted, 15 October 2026) |
 
 ## Names in the records
 

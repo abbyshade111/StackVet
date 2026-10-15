@@ -6,7 +6,7 @@ home page's section 4 links here.
 
 ## What you get
 
-**One folder, nine files, each with a reader of its own.**
+**One folder, ten files, each with a reader of its own.**
 
 When StackVet checks your app, it writes a folder named `stackvet-report` inside the app's folder. Start with
 `report.html`: it is the whole report on one page, and it ends with this same list.
@@ -17,6 +17,7 @@ When StackVet checks your app, it writes a folder named `stackvet-report` inside
 | `compliance.md` | Every requirement that applies, chapter by chapter, with what is known of each; the threats; what only you can check; and the tests worth writing | Anyone who needs the whole picture against the standards, you or someone you show it to |
 | `security.md` | What the checks found, each in full (where, the code, how sure, why it matters, what to do, and how to set it aside), then what was not examined | Whoever fixes the code, you or your AI coding tool |
 | `low-findings.md` | Every low-severity finding in full, where the other reports group them by rule | You or your AI coding tool, when you want the detail |
+| `before-going-live.md` | What to do or confirm before the app is on the internet, in the order you would do it, with what could not be verified at its end. It credits nothing | You, or whoever puts the app on the internet |
 | `stackvet.sarif` | The findings as SARIF, a standard format for findings (named findings.sarif before 14 October 2026) | Code editors and GitHub's code scanning, which show a finding beside its line |
 | `report.json` | The report's data as JSON | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | What sv saw of the running app, with every key and sign-in in it cut short | You, to see what a finding rests on |

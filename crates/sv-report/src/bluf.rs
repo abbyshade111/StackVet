@@ -498,6 +498,7 @@ mod tests {
             tests_to_write: Vec::new(),
             only_you_can_check: Vec::new(),
             before_going_live: Vec::new(),
+            on_the_internet: false,
             ai_tool: Default::default(),
             look_away: Default::default(),
             questions_for_you: Vec::new(),

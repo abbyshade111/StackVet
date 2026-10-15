@@ -35,6 +35,7 @@ cargo run -p sv-cli -- sbom ./my-app     # what the app ships, as CycloneDX JSON
 cargo run -p sv-cli -- audit ./my-app --advisories ./osv   # against known vulnerabilities
 cargo run -p sv-cli -- report ./my-app   # the whole thing, written out to read and to keep
 cargo run -p sv-cli -- report ./my-app --advisories ./osv  # …with known vulnerabilities in it too
+cargo run -p sv-cli -- before-live ./my-app  # the checklist before going live, from the last report
 cargo run -p sv-cli -- bundle ./my-app   # the app, its report and a SHA-256 for every file, in one zip beside the app
 cargo run -p sv-cli -- dashboard ./app-one ./app-two --out ~/sv-dashboard.html  # one page for several apps, from their reports
 cargo run -p sv-cli -- mcp --root ~/code  # serve the checks to your AI coding tool (see below)
@@ -132,7 +133,7 @@ give `--out`. Add `--run` to start the app behind the fence and include what it 
 that are installed (Bandit, gosec, Brakeman, and Semgrep) run unless you add `--no-tools`, which is the quick run.
 CodeQL runs only when you turn it on with `[tools] codeql = true` in `stackvet.toml`: its license allows it only on an
 app released under an open-source license, for academic research, or with a paid GitHub Advanced Security license,
-and StackVet cannot tell which applies to yours. Off, the report does not name it. It writes nine files:
+and StackVet cannot tell which applies to yours. Off, the report does not name it. It writes ten files:
 
 | File | What it holds | Who it is for |
 |---|---|---|
@@ -140,6 +141,7 @@ and StackVet cannot tell which applies to yours. Off, the report does not name i
 | `compliance.md` | Every requirement that applies, chapter by chapter, with what is known of each; the threats; what only you can check; and the tests worth writing | Anyone who needs the whole picture against the standards, you or someone you show it to |
 | `security.md` | What the checks found, each in full (where, the code, how sure, why it matters, what to do, and how to set it aside), then what was not examined | Whoever fixes the code, you or your AI coding tool |
 | `low-findings.md` | Every low-severity finding in full, where the other reports group them by rule | You or your AI coding tool, when you want the detail |
+| `before-going-live.md` | What to do or confirm before the app is on the internet, in the order you would do it, with what could not be verified at its end. It credits nothing | You, or whoever puts the app on the internet |
 | `stackvet.sarif` | The findings as SARIF, a standard format for findings (named findings.sarif before 14 October 2026) | Code editors and GitHub's code scanning, which show a finding beside its line |
 | `report.json` | The report's data as JSON | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | What sv saw of the running app, with every key and sign-in in it cut short | You, to see what a finding rests on |

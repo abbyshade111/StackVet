@@ -1,6 +1,9 @@
 # Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026. Built as the owner answered, in two pull requests: this one writes
+`before-going-live.md` with every report (four parts in a deployment's order, and what could not be verified at its
+end), puts the same checklist in `report.html`, and adds `sv before-live`, which prints it again from the last sealed
+report; ticking lines in `sv review` is backlog 0604. ADR-121.
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

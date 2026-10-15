@@ -59,10 +59,11 @@ fn more_help(name: &str) -> &'static str {
              terminal. The whole flow: docs/GETTING-STARTED.md, section 5, \"Answer the questions\".\n"
         }
         "report" => {
-            "\nIt writes eight files into stackvet-report in the app's folder, unless --out names another.\n\
+            "\nIt writes ten files into stackvet-report in the app's folder, unless --out names another.\n\
              Open report.html in a browser first: it is the whole report on one page. compliance.md and\n\
-             security.md say the same in plain text, for you or your AI coding tool; the rest are for\n\
-             programs. What each file is for: README.md, \"What a report holds\". What --run needs\n\
+             security.md say the same in plain text, for you or your AI coding tool; before-going-live.md\n\
+             is what to do before the app is on the internet (`sv before-live` prints it again); most of\n\
+             the rest are for programs. What each file is for: README.md, \"What a report holds\". What --run needs\n\
              first: docs/INSTALL.md, \"Installing StackVet on your computer, for `--run`\".\n"
         }
         "doctor" => {
@@ -221,6 +222,10 @@ fn run() -> Result<i32> {
                 .map(PathBuf::from),
             rest.iter().any(|a| a == "--no-report"),
         )),
+        "before-live" => {
+            print!("{}", sv_cli::before_live::command(rest)?);
+            Ok(exit::CLEAN)
+        }
         "bundle" => finished(cmd_bundle(rest)),
         "connect" => {
             print!("{}", sv_cli::connect::command(rest)?);
@@ -383,6 +388,13 @@ const COMMANDS: &[Command] = &[
         flags: &["--no-report"],
         valued: &[],
         help: "  sv review [PATH] [--no-report]\n                     record, in your own terminal, the findings you set aside, the answers\n                     you confirm, and your own answers and checks made by hand; only what\n                     you record here counts as yours\n                     when something was recorded, the report is written again with the\n                     options of the last one (--run included), unless --no-report\n",
+    },
+    Command {
+        name: "before-live",
+        word: Some("PATH"),
+        flags: &[],
+        valued: &[],
+        help: "  sv before-live [PATH]\n                     print again the checklist before going live kept with the app's last\n                     report: what to do or confirm, in order; it credits nothing, checks\n                     nothing, and writes nothing\n",
     },
     Command {
         name: "bundle",
