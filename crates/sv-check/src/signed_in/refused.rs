@@ -27,14 +27,18 @@ pub(crate) fn fields_sent(login: &RequestTemplate) -> String {
     }
 }
 
-/// The words the page showed, cut to [`SAID_CHARS`], with the test account's password masked if the page echoes it,
-/// and no character that would move or hide text on a terminal. `None` when it showed none.
-pub(crate) fn page_said(response: &ProbeResponse, password: &str) -> Option<String> {
-    let mut words = crate::text::visible_words(&response.body);
-    if password.chars().count() >= 4 {
-        words = words.replace(password, "[the test password]");
-    }
-    let words: String = words
+/// Whether the page repeats the test account's password: then its words are not quoted at all. Only this yes or no
+/// is taken from the password, so nothing written can carry it.
+pub(crate) fn repeats_password(response: &ProbeResponse, password: &str) -> bool {
+    password.chars().count() >= 4
+        && (response.body.contains(password)
+            || crate::text::visible_words(&response.body).contains(password))
+}
+
+/// The words the page showed, cut to [`SAID_CHARS`], with no character that would move or hide text on a terminal.
+/// `None` when it showed none.
+pub(crate) fn page_said(response: &ProbeResponse) -> Option<String> {
+    let words: String = crate::text::visible_words(&response.body)
         .chars()
         .filter(|c| !c.is_control() && !matches!(c, '\u{200e}' | '\u{200f}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}'))
         .collect();
@@ -43,27 +47,34 @@ pub(crate) fn page_said(response: &ProbeResponse, password: &str) -> Option<Stri
 }
 
 /// What the sign-in sent and what its page said: "it sent the fields `a`, `b`, and the page said: “…”".
+/// `repeats_password` is [`repeats_password`]'s answer: such a page is not quoted.
 pub(crate) fn sent_and_said(
     login: &RequestTemplate,
     response: &ProbeResponse,
-    password: &str,
+    repeats_password: bool,
 ) -> String {
-    format!(
-        "it sent {}{}",
-        fields_sent(login),
-        match page_said(response, password) {
+    let said = if repeats_password {
+        ", and the page repeated the test account's password, so its words are not quoted"
+            .to_owned()
+    } else {
+        match page_said(response) {
             Some(words) => format!(", and the page said: \u{201c}{words}\u{201d}"),
             None => ", and the page showed no words".to_owned(),
         }
-    )
+    };
+    format!("it sent {}{said}", fields_sent(login))
 }
 
 /// The sign-in's answer in a sentence, for a reason given later: its status, then [`sent_and_said`].
-pub(crate) fn answer(login: &RequestTemplate, response: &ProbeResponse, password: &str) -> String {
+pub(crate) fn answer(
+    login: &RequestTemplate,
+    response: &ProbeResponse,
+    repeats_password: bool,
+) -> String {
     format!(
         "the sign-in answered {}; {}",
         response.status,
-        sent_and_said(login, response, password)
+        sent_and_said(login, response, repeats_password)
     )
 }
 

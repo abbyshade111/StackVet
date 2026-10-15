@@ -28,11 +28,11 @@ AI coding tool reading the report, can fix the manifest or the app.
   the page's anti-forgery token): it sent the fields `csrf_token`, `password`, `username`, and the page said: “…”"
   (`crates/sv-check/src/signed_in/refused.rs`). When the first private page then does not open, which is also how a
   sign-in answered 200 with the form shown again is caught, the "not assessed" reason ends "To tell which: the sign-in
-  answered 400; it sent the fields …, and the page said: “…”". Field names only, never values; the test password is
-  masked if the page echoes it, and characters that move or hide text are dropped; the page's words are cut to 300
+  answered 400; it sent the fields …, and the page said: “…”". Field names only, never values; a page that repeats the test password is not quoted at all (only a yes or no is
+  taken from the password, so no text can carry it; CodeQL flagged the first build, which masked it in place), and characters that move or hide text are dropped; the page's words are cut to 300
   characters.
 
 Not done: the visible-text pick is the page's words in order, not `.error` or `.alert` blocks by name; a page whose
 error sits below 300 characters of navigation is quoted from its navigation. Tests:
-`sv-run` `docker/error_words_tests.rs` (3) and `sv-check` `signed_in/refused_tests.rs` (5), one of them a run against
+`sv-run` `docker/error_words_tests.rs` (3) and `sv-check` `signed_in/refused_tests.rs` (6), one of them a run against
 the fake app with a broken sign-in; each half broken on purpose turned its test red.

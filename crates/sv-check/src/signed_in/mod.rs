@@ -767,7 +767,9 @@ pub(crate) fn sign_in(
     } else {
         ""
     };
-    let answer = refused::answer(login, &response, &account.password);
+    // Only a yes or no is taken from the password (backlog 0527): a page that repeats it is not quoted.
+    let repeats_password = refused::repeats_password(&response, &account.password);
+    let answer = refused::answer(login, &response, repeats_password);
     if response.status >= 400 {
         // Refused: why, in the page's words, is the one thing that lets the person fix it (backlog 0527).
         // A crash is not a refusal (ADR-021): 500 and up "failed".
@@ -780,7 +782,7 @@ pub(crate) fn sign_in(
                 "was refused"
             },
             response.status,
-            refused::sent_and_said(login, &response, &account.password)
+            refused::sent_and_said(login, &response, repeats_password)
         ));
     } else {
         steps.push(format!(

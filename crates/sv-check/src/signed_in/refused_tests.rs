@@ -34,8 +34,6 @@ fn the_trial_page_is_told_by_its_fields_and_words() {
          <form><input name=\"username\" value=\"sv-a\"></form></body></html>",
         "body { margin: 0 } ".repeat(300)
     );
-    // The test password is built at run time, so nothing here looks like a key.
-    let password = ["sv", "-test-", "pw"].concat();
     let said = answer(
         &login(
             &[
@@ -46,7 +44,7 @@ fn the_trial_page_is_told_by_its_fields_and_words() {
             &[],
         ),
         &answered(400, &page),
-        &password,
+        false,
     );
     assert!(
         said.starts_with(
@@ -66,14 +64,29 @@ fn the_trial_page_is_told_by_its_fields_and_words() {
 }
 
 #[test]
-fn a_password_the_page_echoes_is_masked_and_hidden_characters_dropped() {
+fn a_page_that_repeats_the_password_is_not_quoted() {
+    // The test password is built at run time, so nothing here looks like a key.
     let password = ["hunter", "-", "2024"].concat();
-    let said = page_said(
-        &answered(200, &format!("<p>Wrong password: {password}\u{202e}</p>")),
-        &password,
-    )
-    .expect("the page has words");
-    assert_eq!(said, "Wrong password: [the test password]");
+    let page = answered(200, &format!("<p>Wrong password: {password}</p>"));
+    let repeats = repeats_password(&page, &password);
+    assert!(repeats, "the setup: the page repeats it");
+    let said = sent_and_said(&login(&[("password", "{password}")], &[]), &page, repeats);
+    assert_eq!(
+        said,
+        "it sent the field `password`, and the page repeated the test account's password, so its words are not quoted"
+    );
+    assert!(!said.contains("hunter"), "{said}");
+    // The control: a page that does not repeat it is quoted, and a password too short to tell is not looked for.
+    let other = answered(200, "<p>Wrong password.</p>");
+    assert!(!repeats_password(&other, &password));
+    assert!(!repeats_password(&answered(200, "<p>pw</p>"), "pw"));
+}
+
+#[test]
+fn characters_that_hide_or_move_text_are_dropped() {
+    let said = page_said(&answered(200, "<p>Wrong\u{202e} password\u{7}.</p>"))
+        .expect("the page has words");
+    assert_eq!(said, "Wrong password.");
 }
 
 #[test]
@@ -81,7 +94,7 @@ fn json_fields_are_named_and_an_empty_page_says_so() {
     let said = answer(
         &login(&[], &[("email", "{user}"), ("password", "{password}")]),
         &answered(401, ""),
-        "pw",
+        false,
     );
     assert_eq!(
         said,
