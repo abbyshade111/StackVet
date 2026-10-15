@@ -1004,6 +1004,22 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
             {
                 arg_node = Some(chosen);
             }
+            // A destination given by name (backlog 0601): Python's `RedirectResponse(url="/")` is judged by the value
+            // given for the destination; in C# and Kotlin, where a query takes an argument's first part, the label
+            // of `url: "/"` is not the destination, and the same argument's value is judged by its own match.
+            if compiled.rule.says_when_checked
+                && let Some(arg) = arg_node
+            {
+                if is_argument_label(arg) {
+                    continue;
+                }
+                if language == "python"
+                    && arg.kind() == "keyword_argument"
+                    && let Some(value) = named_destination(arg, source.as_bytes())
+                {
+                    arg_node = Some(value);
+                }
+            }
             let arg_text = arg_node.and_then(|n| n.utf8_text(source.as_bytes()).ok());
             if let Some(pairs) = compiled.common_names.get(language)
                 && let Some(name) = text_of(m, fn_index)
@@ -2475,3 +2491,38 @@ mod own_helper_tests;
 
 #[cfg(test)]
 mod fixed_functions_tests;
+
+/// The names a destination is given by, as a keyword argument: Starlette's and FastAPI's `url`, Flask's and
+/// Werkzeug's `location`, Django's `redirect_to`, and `to` (backlog 0601).
+const DESTINATION_NAMES: &[&str] = &["url", "location", "redirect_to", "to"];
+
+/// The value given for the destination among a Python call's keyword arguments, `keyword` being one of them: `None`
+/// when none of them is named as a destination, and the whole keyword argument is judged as before.
+fn named_destination<'a>(
+    keyword: tree_sitter::Node<'a>,
+    source: &[u8],
+) -> Option<tree_sitter::Node<'a>> {
+    let list = keyword.parent()?;
+    let mut cursor = list.walk();
+    list.named_children(&mut cursor)
+        .filter(|a| a.kind() == "keyword_argument")
+        .find(|a| {
+            a.child_by_field_name("name")
+                .and_then(|n| n.utf8_text(source).ok())
+                .is_some_and(|name| DESTINATION_NAMES.contains(&name))
+        })
+        .and_then(|a| a.child_by_field_name("value"))
+}
+
+/// Whether `node` is the label of a named argument, the `url` of C#'s `url: "/"` or Kotlin's `url = "/"`: the first
+/// part of an argument, followed by its `:` or `=`.
+fn is_argument_label(node: tree_sitter::Node) -> bool {
+    node.parent()
+        .is_some_and(|p| matches!(p.kind(), "argument" | "value_argument"))
+        && node
+            .next_sibling()
+            .is_some_and(|s| !s.is_named() && matches!(s.kind(), ":" | "="))
+}
+
+#[cfg(test)]
+mod keyword_destination_tests;
