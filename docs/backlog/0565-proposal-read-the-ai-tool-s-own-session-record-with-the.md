@@ -28,3 +28,5 @@ tool's text too.
 **Record.** A new ADR: sv reading a file outside the app folder, what it shows, and what it never quotes.
 
 **The owner's go, 14 October 2026:** build it whenever the board has room; in the order 0564, 0565, 0566, after the probe sweeps.
+
+**The orchestrator's answer to wording, 15 October 2026 (a board-order question, not the owner's):** B, start now. The order 0564, 0565, 0566 was the owner's preference for building, not a dependency: 0565 reads a record outside the app folder and touches no probe file, and 0564 is honesty's. Write the decision record first, as proposed, then build. Clear the waiting line on your branch when you take it.

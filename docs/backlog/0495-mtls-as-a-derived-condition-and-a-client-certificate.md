@@ -1,6 +1,6 @@
 # mTLS as a derived condition, and a client certificate accepted without a trust check reported
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
