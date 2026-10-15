@@ -209,6 +209,26 @@ pub fn point_to_packages(
     }
 }
 
+/// The questions the app's routes are shown beside (backlog 0493): the authorization rules, written down.
+pub const ROUTE_QUESTIONS: &[&str] = &["V8.1.1", "V8.1.2"];
+
+/// Gives each authorization question the app's routes and what is written on each, when any route was read (backlog
+/// 0493). Where to look, never evidence: nothing else reads the table.
+pub fn route_questions(listing: &sv_scan::files::Listing, report: &mut sv_report::Report) {
+    let table = sv_check::route_guards::read(listing);
+    if table.routes.is_empty() {
+        return;
+    }
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+        .filter(|item| ROUTE_QUESTIONS.contains(&item.id.as_str()))
+    {
+        item.routes = Some(table.clone());
+    }
+}
+
 /// Whether `file` names a place inside the app's folder: relative, and never climbing out of it.
 fn inside(file: &str) -> bool {
     let path = Path::new(file);

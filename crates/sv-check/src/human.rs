@@ -82,6 +82,10 @@ pub struct Item {
     /// Why nothing `sv` does can check the requirement, in plain words, for a question whose catalog says (backlog
     /// 0490). Absent for the rest.
     pub why_not_checked: Option<String>,
+    /// The app's routes and what is written on each, for the authorization questions (backlog 0493). Where to look,
+    /// never evidence, like `rests_on`; never in `report.json`, which holds none of the app's code.
+    #[serde(skip)]
+    pub routes: Option<crate::route_guards::RouteTable>,
 }
 
 /// What the standard's own words are called where a question shows them under its plain words.
@@ -194,6 +198,7 @@ pub fn checklist(
                 rests_on: None,
                 in_the_packages: None,
                 why_not_checked: None,
+                routes: None,
             });
         }
     }
@@ -210,6 +215,7 @@ pub fn checklist(
                 rests_on: None,
                 in_the_packages: None,
                 why_not_checked: question.why_not_checked.clone(),
+                routes: None,
             });
         }
     }
@@ -226,6 +232,7 @@ pub fn checklist(
                 rests_on: None,
                 in_the_packages: None,
                 why_not_checked: None,
+                routes: None,
             });
         }
     }

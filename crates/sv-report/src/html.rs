@@ -837,6 +837,7 @@ pub fn page(report: &Report) -> String {
                     }
                 } + &rests_on(item)
                     + &in_the_packages(item)
+                    + &routes(item)
             ));
         }
         b.push_str("</table>\n");
@@ -1173,6 +1174,46 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
         ));
     }
     b.push_str("</ul>\n");
+}
+
+/// The app's routes and what is written on each, beside an authorization question (backlog 0493), with the sentence
+/// that says they are where to look and not evidence; empty when none was read.
+fn routes(item: &sv_check::human::Item) -> String {
+    use sv_check::route_guards::{NONE_FOUND, ROUTES_SAY};
+    let Some(table) = &item.routes else {
+        return String::new();
+    };
+    let mut b = format!(
+        "<br><span class=\"note\">{}</span>\n<table>\n<tr><th>route</th><th>who may use it, as the code says</th><th>where</th></tr>\n",
+        escape(ROUTES_SAY)
+    );
+    for r in &table.routes {
+        let guards = if r.guards.is_empty() {
+            format!("<em>{NONE_FOUND}</em>")
+        } else {
+            r.guards
+                .iter()
+                .map(|g| format!("<code>{}</code>", escape(g)))
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        b.push_str(&format!(
+            "<tr><td><code>{} {}</code></td><td>{guards}</td><td><code>{}</code>, line {}</td></tr>\n",
+            escape(&r.method),
+            escape(&r.path),
+            escape(&r.file),
+            r.line
+        ));
+    }
+    b.push_str("</table>");
+    if table.more > 0 {
+        b.push_str(&format!(
+            "<span class=\"note\">And {} more {}, not shown.</span>",
+            table.more,
+            if table.more == 1 { "route" } else { "routes" }
+        ));
+    }
+    b
 }
 
 /// The lines of the app's code a question is about (backlog 0487), with the sentence that says they are where to look

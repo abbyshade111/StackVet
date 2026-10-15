@@ -441,8 +441,9 @@ RUST_IN_PART = {"probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-he
 # `data/design-questions.json`, and they are deliberately absent from this document: an answer there
 # is the owner's word, which is the one thing this file must not count as coverage. V12.1.2 is named in the
 # report's "Before going live" list (`crates/sv-report/src/live.rs`) as one to check with a scanner, which
-# credits nothing.
-MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.2.1", "V12.1.2"}
+# credits nothing. V8.1.1 and V8.1.2 are the questions the app's routes are shown beside (`crates/sv-cli/src/code_lines.rs`,
+# backlog 0493), which credits nothing.
+MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.2.1", "V12.1.2", "V8.1.1", "V8.1.2"}
 
 ID = r"(?:V|C)\d+\.\d+\.\d+|AC\.\d+\.\d+|SBD-[A-Z]+-\d+"
 
