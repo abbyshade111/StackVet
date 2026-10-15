@@ -88,3 +88,10 @@ answer says where the first record went, that record is read back first, and a b
 there shows nothing either way. A limit shown on a 200 page or as a redirect elsewhere is not assessed, and says what
 was compared.
 
+**Fifth batch, built (admin pages, part of list item 5):** an ordinary user's 200 for an admin page is read beside
+the admin's own page there (`control::shows_page`: half of its pieces of text or more): the page shown is a finding as
+before; a 200 page showing little of it (a 403 template served with 200) is neither a finding nor a refusal, says so,
+and keeps the credit from resting on the pages that were judged. Without the admin's page, a 2xx is a finding as
+before. Still open from item 5: the role written into sign-up and into the email change, which have no admin page of
+their own to read beside, since they do not sign the admin in.
+

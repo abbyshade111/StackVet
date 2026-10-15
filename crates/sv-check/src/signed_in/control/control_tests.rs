@@ -90,3 +90,28 @@ fn a_redirect_to_another_new_record_is_the_same_place() {
     let list = answer(302, Some("/notes"), "");
     assert!(matches!(beside(&control, &Some(list)), Beside::Unclear(_)));
 }
+
+#[test]
+fn a_page_served_to_somebody_else_shows_the_page_and_a_denial_does_not() {
+    let admin = answer(
+        200,
+        None,
+        "<h1>Users</h1>\n<table><tr><td>alice@example.com</td><td>Disable account</td></tr>\
+         <tr><td>bob@example.com</td><td>Disable account</td></tr></table>\n<p>Signed in as root</p>",
+    );
+    let same = answer(
+        200,
+        None,
+        "<h1>Users</h1>\n<table><tr><td>alice@example.com</td><td>Disable account</td></tr>\
+         <tr><td>bob@example.com</td><td>Disable account</td></tr></table>\n<p>Signed in as alice</p>",
+    );
+    let denied = answer(
+        200,
+        None,
+        "<h1>Access denied</h1><p>You do not have permission to see this page.</p>",
+    );
+    assert!(shows_page(&admin, &same));
+    assert!(!shows_page(&admin, &denied));
+    // A reference with nothing to compare shows nothing.
+    assert!(!shows_page(&answer(200, None, ""), &same));
+}
