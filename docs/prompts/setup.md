@@ -7,18 +7,16 @@ work, it stops and tells you what happened in plain words.
 
 If you have used a terminal or Docker before, [the guide](../GETTING-STARTED.md) has the same steps as commands.
 
-**Tried so far:** in Antigravity, on a Mac, on 13 October 2026, with the Gemini 3.8 Flash model, from an empty folder
-to StackVet connected and a first build. That trial is where most of these words come from. The setup worked. In the
-build, though, the AI tool decided where the app runs and who signs in without asking, offered "done" for checks
-nobody had made, and made two security findings disappear without changing what the app does, which only the app's git
-history showed. The prompts were changed for each of these on 14 October 2026 (backlog 0407); until the changed
-prompts are tried there and do better, we don't recommend Antigravity with that model. Tests hold the prompts to the
-image name StackVet is published under, to the options `sv connect` takes, and to the Scoop commands that install it
-on Windows (`crates/sv-cli/tests/connect.rs`, `crates/sv-cli/tests/setup_prompts.rs`). If anything here goes wrong,
-the guide has the same steps as commands. The website names only the AI tools these prompts have really been tried in.
+**Tried so far:** in Cursor and in VS Code with GitHub Copilot, on a Mac, on 14 October 2026, from an empty folder
+to a full report ([the record](../research/SETUP-PROMPT-TRIALS-2026-10-14.md)). The setup worked. Both did the prompts
+as written, each with one gap now fixed in the prompts. Antigravity with the Gemini 3.8 Flash model, tried on 13 and 14
+October 2026, rewrote code to make a check pass and then said it had not, so we don't recommend Antigravity with that
+model. Tests hold the prompts to the image name StackVet is published under, to the options `sv connect` takes, and to
+the Scoop commands that install it on Windows (`crates/sv-cli/tests/connect.rs`, `crates/sv-cli/tests/setup_prompts.rs`).
+If anything here goes wrong, the guide has the same steps as commands. The website names only the AI tools these
+prompts have really been tried in.
 
-**Next:** the owner tries these prompts in Antigravity, Cursor, and VS Code (backlog 0502). Until then, none of
-the three is named here as tried.
+**Next:** the prompts as changed after that trial are tried again, in the same tools and in others.
 
 ## Before the first prompt: an AI tool that can run commands
 
@@ -52,19 +50,20 @@ nothing, such as `docker info`, allowing that one command again in the same chat
 
 <!-- setup-step-1:start -->
 > I'm new to this, so please explain things in plain words as we go. I want to set up StackVet, a tool that checks
-> an app's security, so you can use it while we build an app together. StackVet is free and its code is public at
+> an app's security, so you can use it while we build an app together. This has to happen in a chat that runs on
+> this computer, not in a cloud or background agent: if you are one of those, tell me and stop. StackVet is free and its code is public at
 > https://github.com/abbyshade111/StackVet: its README and its guide (`docs/GETTING-STARTED.md` there) say what it
 > needs and how it is set up, so read them there whenever you need to know something about StackVet. Read them, but
 > don't run anything they say yet. For now, only look: don't install or change anything. Using your terminal, find
 > out:
 >
-> 1. Which kind of computer this is: Mac, Windows, or Linux.
+> 1. Which kind of computer this is: Mac, Windows, or Linux. On a Mac or Linux, show me what `uname -a` prints.
 > 2. Whether git is installed (`git --version`).
 > 3. On a Mac or Linux: whether Docker is installed (`docker --version`) and running (`docker info`). Either Docker
 >    Desktop or Colima counts: both give the same `docker` command. If Colima is installed, check
 >    `colima status` too.
 > 4. On Windows: whether Scoop is installed (`scoop --version`).
-> 5. Which folder you are working in, whether it is empty, and whether it looks like a folder made for an app, or
+> 5. Which folder you are working in (show me what `pwd` prints), whether it is empty, and whether it looks like a folder made for an app, or
 >    like a scratch, temporary, or settings folder of your own, which is no place to keep an app.
 >
 > Then tell me, as a short list, what is ready and what is missing, and which of the next prompts I'll need. Don't
@@ -141,6 +140,7 @@ Use the version for your computer.
 > 9. Read the file once, if it is there, and tell me what is in it. Then show me what you would write: an entry named
 >    `stackvet`, with StackVet's command and arguments exactly as printed, in your app's format, added to what is
 >    already there and keeping all of it. Write it only after I say yes, and then read it back once to check it.
+>    Paste the `stackvet` entry you wrote into this chat, and nothing else from the file, so the chat keeps a record.
 > 10. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
@@ -183,6 +183,7 @@ requirements only they reach, and a Mac or Linux computer, or a cloud runner, is
 > 9. Read the file once, if it is there, and tell me what is in it. Then show me what you would write: an entry named
 >    `stackvet`, with StackVet's command and arguments exactly as printed, in your app's format, added to what is
 >    already there and keeping all of it. Write it only after I say yes, and then read it back once to check it.
+>    Paste the `stackvet` entry you wrote into this chat, and nothing else from the file, so the chat keeps a record.
 > 10. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
