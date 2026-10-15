@@ -62,29 +62,113 @@ pub(super) fn flow_checks(
     out: &mut Outcome,
 ) {
     const ID: &str = "V2.3.1";
-    let Some(flow) = &users.flow else {
-        return;
-    };
-    if flow.steps.len() < 2 {
-        out.not_assessed.push((
-            ID.to_owned(),
-            "The `flow` in stackvet.toml has fewer than two steps, so there is no step to skip."
-                .to_owned(),
-        ));
+    let flows = users.all_flows();
+    if flows.is_empty() {
         return;
     }
-    if flow.completed.trim().is_empty() {
-        out.not_assessed.push((
-            ID.to_owned(),
-            "The `flow` in stackvet.toml does not say what the last step shows when the flow \
-             finished (`completed`), so a skip that worked cannot be told from one that was refused."
-                .to_owned(),
-        ));
+    // Every flow stackvet.toml names is tried as the one was (ADR-118); a flow is named in what is
+    // said by its last step when there are several, and as "the `flow`" when there is one.
+    let several = flows.len() > 1;
+    let mut held: Vec<(String, usize, usize)> = Vec::new();
+    let mut unjudged: Vec<String> = Vec::new();
+    let mut skipped_any = false;
+    for (k, flow) in flows.iter().enumerate() {
+        let name = if several {
+            format!(
+                "the flow ending at {}",
+                flow.steps.last().map_or("?", |s| s.path.as_str())
+            )
+        } else {
+            "the `flow`".to_owned()
+        };
+        match try_flow(http, users, accounts, a, flow, k, &name, out) {
+            Tried::Held { steps, tries } => held.push((name, steps, tries)),
+            Tried::Skipped => skipped_any = true,
+            Tried::NotJudged(why) => {
+                out.not_assessed.push((ID.to_owned(), why));
+                unjudged.push(name);
+            }
+        }
+    }
+    if skipped_any || held.is_empty() {
         return;
+    }
+    let scope = held
+        .iter()
+        .map(|(name, steps, tries)| {
+            format!(
+                "a {steps}-step flow tried {tries} way{} out of order, refused each time, where the \
+                 steps in order finished{}",
+                if *tries == 1 { "" } else { "s" },
+                if several {
+                    format!(" ({name})")
+                } else {
+                    String::new()
+                }
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("; ");
+    out.verified.push(
+        crate::Verified::new(
+            STEP_SKIPPED.rule_id,
+            STEP_SKIPPED.requirement_ids,
+            if unjudged.is_empty() {
+                scope
+            } else {
+                format!("{scope}; not judged: {}", unjudged.join(", "))
+            },
+        )
+        // Every flow stackvet.toml names; one, or one that could not be judged, is in part
+        // (ADR-053, Later; ADR-118).
+        .in_part_if(held.len() == 1 || !unjudged.is_empty()),
+    );
+}
+
+/// What trying one flow showed.
+enum Tried {
+    /// Every out-of-order try was refused, where the steps in order finished.
+    Held { steps: usize, tries: usize },
+    /// A try out of order finished: a finding was written.
+    Skipped,
+    /// Nothing could be told, and why.
+    NotJudged(String),
+}
+
+/// One flow, tried as `flow_checks` says. `k` is its place in the list: the first keeps the request
+/// ids and the marker the one flow always had, and each later one has its own (ADR-118).
+#[allow(clippy::too_many_arguments)]
+fn try_flow(
+    http: &mut dyn Http,
+    users: &UsersSection,
+    accounts: &Accounts,
+    a: &SignedIn,
+    flow: &sv_manifest::FlowSection,
+    k: usize,
+    name: &str,
+    out: &mut Outcome,
+) -> Tried {
+    let label = if k == 0 {
+        "flow".to_owned()
+    } else {
+        format!("flow-{k}")
+    };
+    if flow.steps.len() < 2 {
+        return Tried::NotJudged(format!(
+            "{} in stackvet.toml has fewer than two steps, so there is no step to skip.",
+            capitalized(name)
+        ));
+    }
+    if flow.completed.trim().is_empty() {
+        return Tried::NotJudged(format!(
+            "{} in stackvet.toml does not say what the last step shows when the flow finished \
+             (`completed`), so a skip that worked cannot be told from one that was refused.",
+            capitalized(name)
+        ));
     }
     let steps: Vec<&RequestTemplate> = flow.steps.iter().collect();
     let last = steps[steps.len() - 1];
-    let marker = format!("sv-flow-{}", accounts.spare.get(..8).unwrap_or("0"));
+    let marker = format!("sv-{label}-{}", accounts.spare.get(..8).unwrap_or("0"));
     fn values<'v>(account: &'v Account, marker: &'v str) -> Values<'v> {
         Values {
             user: &account.user,
@@ -98,28 +182,28 @@ pub(super) fn flow_checks(
     let mut session = a.session.clone();
     let done = take_steps(
         http,
-        "a",
+        &if k == 0 {
+            "a".to_owned()
+        } else {
+            format!("a-{k}")
+        },
         &steps,
         &values(&accounts.a, &marker),
         &mut session,
         &users.private,
     );
     if !finished(&done, &flow.completed) {
-        out.not_assessed.push((
-            ID.to_owned(),
-            format!(
-                "Going through the {} steps in order as A ended in {}, without \"{}\", so the flow \
-                 does not finish as stackvet.toml describes and nothing can be told from skipping \
-                 a step.",
-                steps.len(),
-                status(&done),
-                flow.completed
-            ),
+        return Tried::NotJudged(format!(
+            "Going through the {} steps of {name} in order as A ended in {}, without \"{}\", so the \
+             flow does not finish as stackvet.toml describes and nothing can be told from skipping \
+             a step.",
+            steps.len(),
+            status(&done),
+            flow.completed
         ));
-        return;
     }
     out.steps.push(format!(
-        "went through the {} steps of the flow in order as A: finished",
+        "went through the {} steps of {name} in order as A: finished",
         steps.len()
     ));
 
@@ -153,13 +237,11 @@ pub(super) fn flow_checks(
     }
     let mut skipped = Vec::new();
     for (i, (how, these)) in tries.iter().enumerate() {
-        let who = format!("flow-b{i}");
+        let who = format!("{label}-b{i}");
         let Some(b) = sign_in(http, users, &who, &accounts.b, &mut out.steps) else {
-            out.not_assessed.push((
-                ID.to_owned(),
+            return Tried::NotJudged(
                 "B could not sign in again to try skipping a step in a fresh session.".to_owned(),
-            ));
-            return;
+            );
         };
         let mut session = b.session.clone();
         let answer = take_steps(
@@ -172,7 +254,12 @@ pub(super) fn flow_checks(
         );
         let worked = finished(&answer, &flow.completed);
         out.steps.push(format!(
-            "as B, {how}: {}",
+            "as B, {how}{}: {}",
+            if k == 0 {
+                String::new()
+            } else {
+                format!(" ({name})")
+            },
             if worked { "finished" } else { "refused" }
         ));
         if worked {
@@ -181,35 +268,40 @@ pub(super) fn flow_checks(
     }
 
     if skipped.is_empty() {
-        out.verified.push(crate::Verified::new(
-            STEP_SKIPPED.rule_id,
-            STEP_SKIPPED.requirement_ids,
-            format!(
-                "a {}-step flow tried {} way{} out of order, refused each time, where the steps in \
-                 order finished",
-                steps.len(),
-                tries.len(),
-                if tries.len() == 1 { "" } else { "s" }
-            ),
-        )
-        // The one flow stackvet.toml names, not every flow the app has (ADR-053, Later).
-        .in_part());
-    } else {
-        out.findings.push(finding_on(
-            (0..tries.len())
-                .map(|i| format!("login-flow-b{i}"))
-                .collect(),
-            &STEP_SKIPPED,
-            "The flow can be finished without its steps in order",
-            Severity::High,
-            format!(
-                "The flow ended in \"{}\" for B, going {}. Only going through every step in order \
-                 should get there.",
-                flow.completed,
-                skipped.join(", and also ")
-            ),
-        ));
+        return Tried::Held {
+            steps: steps.len(),
+            tries: tries.len(),
+        };
     }
+    out.findings.push(finding_on(
+        (0..tries.len())
+            .map(|i| format!("login-{label}-b{i}"))
+            .collect(),
+        &STEP_SKIPPED,
+        "The flow can be finished without its steps in order",
+        Severity::High,
+        format!(
+            "{} ended in \"{}\" for B, going {}. Only going through every step in order should get \
+             there.",
+            capitalized(if k == 0 && name == "the `flow`" {
+                "the flow"
+            } else {
+                name
+            }),
+            flow.completed,
+            skipped.join(", and also ")
+        ),
+    ));
+    Tried::Skipped
+}
+
+/// `text` with its first letter made a capital.
+fn capitalized(text: &str) -> String {
+    let mut chars = text.chars();
+    chars
+        .next()
+        .map(|c| c.to_uppercase().chain(chars).collect())
+        .unwrap_or_default()
 }
 
 #[cfg(test)]
@@ -487,3 +579,6 @@ mod tests {
         assert!(!rule_ids(&o).contains(&STEP_SKIPPED.rule_id));
     }
 }
+
+#[cfg(test)]
+mod several_tests;

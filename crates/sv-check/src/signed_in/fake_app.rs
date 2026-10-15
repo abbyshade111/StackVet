@@ -82,6 +82,8 @@ pub(super) struct FakeApp {
     checkout: BTreeMap<String, u32>,
     /// Every checkout step each user has had accepted since their last finished order, in order.
     checkout_done: BTreeMap<String, Vec<u32>>,
+    /// How far each user has got through the two-step application, a second flow (ADR-118).
+    apply: BTreeMap<String, u32>,
     pub(super) users: BTreeMap<String, (String, bool)>, // user -> (password, is admin)
     sessions: BTreeMap<String, String>,                 // session id -> user ("" = not signed in)
     notes: Vec<(String, String)>,                       // (owner, text)
@@ -289,6 +291,9 @@ pub(super) struct Flaws {
     pub(super) breached_password_ok: bool,
     /// Any step of the checkout can be taken first.
     pub(super) flow_unguarded: bool,
+    /// Either step of the two-step application can be taken first, though the checkout's cannot: the
+    /// second flow is the one left open (ADR-118).
+    pub(super) apply_unguarded: bool,
     /// The last step of the checkout needs the first, and not the one between.
     pub(super) flow_checks_first_only: bool,
     /// A refused checkout step says "Order placed" in its refusal.
@@ -641,6 +646,9 @@ pub(super) struct Flaws {
     pub(super) code_falls_over: Option<u16>,
     /// The WebSocket at /ws opens for anybody.
     pub(super) ws_open: bool,
+    /// The second private WebSocket, `/chat`, opens for anyone from anywhere, though `/ws` does not
+    /// (ADR-118).
+    pub(super) chat_ws_open: bool,
     /// The WebSocket at /ws opens for any `sid` cookie at all.
     pub(super) ws_any_cookie: bool,
     /// The WebSocket at /ws still opens for a session that was signed out.
@@ -1405,6 +1413,21 @@ impl FakeApp {
             .headers
             .iter()
             .any(|(k, v)| k == "Upgrade" && v == "websocket");
+        // A second private WebSocket, guarded as `/ws` is, for the checks that try every path named
+        // (ADR-118); `chat_ws_open` leaves it open to anyone from anywhere.
+        if upgrade && path == "/chat" {
+            let signed_out = sid.as_ref().is_some_and(|s| self.signed_out.contains(s));
+            let opens = !self.flaws.ws_refuses_all
+                && (!foreign || self.flaws.ws_any_origin || self.flaws.chat_ws_open)
+                && (user.is_some()
+                    || self.flaws.chat_ws_open
+                    || (self.flaws.ws_survives_sign_out && signed_out));
+            return Some(if opens {
+                Self::respond(101, vec![("Upgrade", "websocket".into())], "")
+            } else {
+                Self::respond(401, vec![], "sign in first")
+            });
+        }
         if upgrade && path == "/ws" {
             let signed_out = sid.as_ref().is_some_and(|s| self.signed_out.contains(s));
             let opens = !self.flaws.ws_refuses_all
@@ -2873,6 +2896,27 @@ impl FakeApp {
                     }
                 }
             }
+            // A second flow, of two steps, for the checks that try every flow named (ADR-118).
+            ("POST", step) if step.starts_with("/apply/") => {
+                let Some(who) = user.clone() else {
+                    return Some(Self::respond(401, vec![], "sign in"));
+                };
+                let n: u32 = step["/apply/".len()..].parse().ok()?;
+                let reached = self.apply.get(&who).copied().unwrap_or(0);
+                if !(self.flaws.apply_unguarded || reached + 1 == n) || !token_ok {
+                    return Some(Self::respond(409, vec![], "apply in order"));
+                }
+                if n < 2 {
+                    self.apply.insert(who, n);
+                    return Some(Self::respond(200, vec![], "next step"));
+                }
+                self.apply.remove(&who);
+                Self::respond(
+                    303,
+                    vec![("Location", "/applications/4".into())],
+                    "Application sent",
+                )
+            }
             ("POST", step) if step.starts_with("/checkout/") => {
                 let Some(who) = user.clone() else {
                     return Some(Self::respond(401, vec![], "sign in"));
@@ -3076,8 +3120,10 @@ pub(super) fn users() -> UsersSection {
                 .collect(),
             completed: "/orders/".into(),
         }),
+        flows: Vec::new(),
         browser: None,
         private_websocket: None,
+        private_websockets: Vec::new(),
     }
 }
 

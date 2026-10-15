@@ -254,6 +254,10 @@ pub struct RunSection {
     /// no `Origin` and one from a site the app has never heard of.
     #[serde(default)]
     pub websocket: Option<String>,
+    /// Several such WebSocket paths, each asked the same (ADR-118). In place of `websocket`, not
+    /// beside it.
+    #[serde(default)]
+    pub websockets: Vec<String>,
     /// How the app signs people in through another service ("Sign in with Google"), so the run
     /// can point it at a test provider of `sv`'s own and see what it accepts.
     #[serde(default)]
@@ -270,6 +274,17 @@ pub struct RunSection {
     /// web address), so the run can ask where it will go and whether it follows a redirect.
     #[serde(default)]
     pub fetch: Option<FetchSection>,
+}
+
+impl RunSection {
+    /// Every WebSocket path named for the anonymous probes, from `websockets`, or the one
+    /// `websocket` names (ADR-118). Empty when there is none.
+    pub fn websocket_paths(&self) -> Vec<String> {
+        if !self.websockets.is_empty() {
+            return self.websockets.clone();
+        }
+        self.websocket.iter().cloned().collect()
+    }
 }
 
 /// Whether a name is one an environment variable can have: letters, digits, and `_`, and not empty.
@@ -746,6 +761,9 @@ pub struct UsersSection {
     /// A flow of more than one step, so the probes can try skipping one.
     #[serde(default)]
     pub flow: Option<FlowSection>,
+    /// Several such flows, each tried the same (ADR-118). In place of `flow`, not beside it.
+    #[serde(default)]
+    pub flows: Vec<FlowSection>,
     /// The second step of a two-factor sign-in: `{code}` for the six-digit code, sent in the
     /// session the password step began. Needs `seed`, which is given a third account and its
     /// secret (`SV_USER_TOTP`, `SV_PASSWORD_TOTP`, `SV_TOTP_SECRET`) to enroll, and a secret for the
@@ -761,6 +779,10 @@ pub struct UsersSection {
     /// with the first user's session, with none, and with one the probes made up.
     #[serde(default)]
     pub private_websocket: Option<String>,
+    /// Several such WebSocket paths, each tried the same (ADR-118). In place of
+    /// `private-websocket`, not beside it.
+    #[serde(default)]
+    pub private_websockets: Vec<String>,
 }
 
 /// `[stack.run.users.browser]`: what a real browser is asked to do as the first user.
@@ -933,6 +955,23 @@ impl ArchiveFormat {
 }
 
 impl UsersSection {
+    /// Every flow named, from `flows`, or the one `flow` names (ADR-118). Empty when there is none.
+    pub fn all_flows(&self) -> Vec<&FlowSection> {
+        if !self.flows.is_empty() {
+            return self.flows.iter().collect();
+        }
+        self.flow.iter().collect()
+    }
+
+    /// Every private WebSocket path named, from `private-websockets`, or the one `private-websocket`
+    /// names (ADR-118). Empty when there is none.
+    pub fn private_websocket_paths(&self) -> Vec<&String> {
+        if !self.private_websockets.is_empty() {
+            return self.private_websockets.iter().collect();
+        }
+        self.private_websocket.iter().collect()
+    }
+
     /// Whether the run makes an admin account: for the admin pages, and for the admin actions,
     /// which are sent as the admin too. Until 6 October 2026 only `admin` made one, so
     /// `admin-actions` alone were never asked (the documentation review, item 3).
@@ -1073,12 +1112,26 @@ impl UsersSection {
                 ));
             }
         }
-        if let Some(path) = &self.private_websocket
-            && !path.starts_with('/')
-        {
-            out.push(format!(
-                "`private-websocket` ({path}) is not a path on the app; it has to begin with `/`"
-            ));
+        for path in self.private_websocket_paths() {
+            if !path.starts_with('/') {
+                out.push(format!(
+                    "`private-websocket` ({path}) is not a path on the app; it has to begin with `/`"
+                ));
+            }
+        }
+        if self.private_websocket.is_some() && !self.private_websockets.is_empty() {
+            out.push(
+                "the users section gives both `private-websocket` and `private-websockets`: list \
+                 every path under `private-websockets`, and leave out `private-websocket`"
+                    .to_owned(),
+            );
+        }
+        if self.flow.is_some() && !self.flows.is_empty() {
+            out.push(
+                "the users section gives both `flow` and `flows`: list every flow under `flows`, \
+                 and leave out `flow`"
+                    .to_owned(),
+            );
         }
         if let Some(t) = &self.change_password
             && !t
@@ -1762,6 +1815,15 @@ impl Manifest {
         let manifest: Self = toml::from_str(text)
             .map_err(|e| anyhow::anyhow!(schema::explain(text, &e)))
             .with_context(|| format!("parsing {}", path.display()))?;
+        // One path, or a list of them, but not both: which would be meant is not for `sv` to guess
+        // (ADR-118).
+        let run = &manifest.stack.run;
+        anyhow::ensure!(
+            run.websocket.is_none() || run.websockets.is_empty(),
+            "{} gives both `websocket` and `websockets` under `[stack.run]`: list every path under \
+             `websockets`, and leave out `websocket`",
+            path.display(),
+        );
         Ok(manifest)
     }
 

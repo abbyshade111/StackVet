@@ -551,7 +551,8 @@ pub struct RunPlan {
     pub fetch: Option<sv_manifest::FetchSection>,
     /// Where the app answers GraphQL and WebSocket connections, when stackvet.toml says.
     pub graphql: Option<String>,
-    pub websocket: Option<String>,
+    /// Every WebSocket path, from `websockets` or the one `websocket` (ADR-118).
+    pub websockets: Vec<String>,
     /// Whether other programs are meant to use this app's API, as stackvet.toml claims it.
     /// Introspection is allowed for an API meant for others and not otherwise (V4.3.2), so the
     /// answer to that question depends on this one, and silence here leaves it unanswered.
@@ -637,7 +638,7 @@ impl RunPlan {
             mcp_server: run.mcp_server.clone(),
             fetch: run.fetch.clone(),
             graphql: run.graphql.clone(),
-            websocket: run.websocket.clone(),
+            websockets: run.websocket_paths(),
             public_api: manifest.capabilities.public_api,
             slow: false,
             on_step: None,

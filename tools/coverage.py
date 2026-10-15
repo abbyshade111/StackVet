@@ -726,7 +726,6 @@ RUST_IN_PART |= {
     "probe.failed-sign-ins-unlimited",
     "probe.fetch-follows-redirect",
     "probe.file-contents-unchecked",
-    "probe.flow-step-skipped",
     "probe.graphql-introspection",
     "probe.graphql-no-amount-limit",
     "probe.log-common-format",
@@ -773,8 +772,6 @@ RUST_IN_PART |= {
     "probe.upload-not-scanned",
     "probe.upload-path-traversal",
     "probe.uploaded-svg-keeps-script",
-    "probe.websocket-origin-unchecked",
-    "probe.websocket-without-session",
 }
 
 IN_PART = set(RUST_IN_PART)

@@ -494,9 +494,12 @@ pub(super) fn websocket_session_checks(
     a: &Account,
     out: &mut Outcome,
 ) {
-    let Some(path) = &users.private_websocket else {
+    // Every private WebSocket path stackvet.toml names (ADR-118). The first keeps the request ids the
+    // one path always had; each later one has its own, `websocket-no-session-1` and on.
+    let paths = users.private_websocket_paths();
+    if paths.is_empty() {
         return;
-    };
+    }
     let say =
         |id: &str, why: String, out: &mut Outcome| out.not_assessed.push((id.to_owned(), why));
     let Some(signed_in) = sign_in(http, users, "a-websocket", a, &mut out.steps) else {
@@ -510,137 +513,199 @@ pub(super) fn websocket_session_checks(
         return;
     };
     let session = signed_in.session;
-    let upgraded = |http: &mut dyn Http, label: &str, session: &Session| {
+    let upgraded = |http: &mut dyn Http, label: &str, path: &str, session: &Session| {
         http.send(&ws_handshake(&format!("websocket-{label}"), path, session))
             .is_some_and(|r| r.status == 101)
     };
-    if !upgraded(http, "signed-in", &session) {
-        out.steps
-            .push(format!("opened the WebSocket at {path} signed in: refused"));
-        say(
-            "V4.4.3, V4.4.4",
-            format!(
-                "A WebSocket handshake to {path} with the first test user's session was not \
-                 accepted, so either `private-websocket` is not where the socket is or it refuses \
-                 everybody; either way a refusal without a session would show nothing."
-            ),
-            out,
-        );
-        return;
-    }
-    let anonymous = upgraded(http, "no-session", &Session::default());
-    let invented = session.cookies.first().map(|(name, real)| {
-        let value: String = "sv0probe0invented0session0value0"
-            .chars()
-            .cycle()
-            .take(real.chars().count().max(16))
-            .collect();
-        let mut made_up = Session::default();
-        made_up.cookies.push((name.clone(), value));
-        upgraded(http, "invented-session", &made_up)
-    });
-    out.steps.push(format!(
-        "opened the WebSocket at {path} signed in: accepted; with no session: {}{}",
-        if anonymous { "accepted" } else { "refused" },
-        match invented {
-            Some(true) => "; with a session value this check made up: accepted",
-            Some(false) => "; with a session value this check made up: refused",
-            None => "",
+    let suffix = |k: usize| {
+        if k == 0 {
+            String::new()
+        } else {
+            format!("-{k}")
         }
-    ));
-    if anonymous || invented == Some(true) {
-        out.findings.push(finding_on(
-            vec![
-                "websocket-no-session".to_owned(),
-                "websocket-invented-session".to_owned(),
-            ],
-            &WS_WITHOUT_SESSION,
-            "A private WebSocket opens without a real session",
-            Severity::High,
-            format!(
-                "stackvet.toml names {path} as a WebSocket for signed-in users. A handshake {} \
-                 was accepted (101).",
-                match (anonymous, invented == Some(true)) {
-                    (true, true) => "with no session, and one with a made-up session value,",
-                    (true, false) => "with no session at all",
-                    _ => "with a session value this check made up",
-                }
-            ),
+    };
+    // Per credit: the paths that held, those that could not be judged, and whether one failed.
+    let (mut without_held, mut without_unjudged, mut without_found) =
+        (Vec::new(), Vec::new(), false);
+    let (mut origin_held, mut origin_unjudged, mut origin_found) = (Vec::new(), Vec::new(), false);
+    // The paths shown to need a real session, which signing out should then close.
+    let mut need_a_session: Vec<(usize, &String)> = Vec::new();
+    for (k, path) in paths.iter().copied().enumerate() {
+        let sfx = suffix(k);
+        if !upgraded(http, &format!("signed-in{sfx}"), path, &session) {
+            out.steps
+                .push(format!("opened the WebSocket at {path} signed in: refused"));
+            say(
+                "V4.4.3, V4.4.4",
+                format!(
+                    "A WebSocket handshake to {path} with the first test user's session was not \
+                     accepted, so either `private-websocket` is not where the socket is or it \
+                     refuses everybody; either way a refusal without a session would show nothing."
+                ),
+                out,
+            );
+            without_unjudged.push(path.clone());
+            origin_unjudged.push(path.clone());
+            continue;
+        }
+        let anonymous = upgraded(http, &format!("no-session{sfx}"), path, &Session::default());
+        let invented = session.cookies.first().map(|(name, real)| {
+            let value: String = "sv0probe0invented0session0value0"
+                .chars()
+                .cycle()
+                .take(real.chars().count().max(16))
+                .collect();
+            let mut made_up = Session::default();
+            made_up.cookies.push((name.clone(), value));
+            upgraded(http, &format!("invented-session{sfx}"), path, &made_up)
+        });
+        out.steps.push(format!(
+            "opened the WebSocket at {path} signed in: accepted; with no session: {}{}",
+            if anonymous { "accepted" } else { "refused" },
+            match invented {
+                Some(true) => "; with a session value this check made up: accepted",
+                Some(false) => "; with a session value this check made up: refused",
+                None => "",
+            }
         ));
-    } else if invented == Some(false) {
-        out.verified.push(crate::Verified::new(
-            WS_WITHOUT_SESSION.rule_id,
-            WS_WITHOUT_SESSION.requirement_ids,
-            format!(
-                "WebSocket handshakes to {path} with no session and with a made-up one, refused \
-                 where the signed-in session's was accepted"
-            ),
-        )
-        // Handshakes to the one WebSocket path stackvet.toml names (ADR-053, Later).
-        .in_part());
-    } else {
-        // A session carried some other way than a cookie cannot be made up here, and a refusal
-        // with none at all is half the answer.
-        say(
-            "V4.4.4",
-            format!(
-                "A handshake to {path} with no session was refused, but the session was not a \
-                 cookie, so one with a made-up value could not be tried."
-            ),
-            out,
+        if anonymous || invented == Some(true) {
+            without_found = true;
+            out.findings.push(finding_on(
+                vec![
+                    format!("websocket-no-session{sfx}"),
+                    format!("websocket-invented-session{sfx}"),
+                ],
+                &WS_WITHOUT_SESSION,
+                "A private WebSocket opens without a real session",
+                Severity::High,
+                format!(
+                    "stackvet.toml names {path} as a WebSocket for signed-in users. A handshake {} \
+                     was accepted (101).",
+                    match (anonymous, invented == Some(true)) {
+                        (true, true) => "with no session, and one with a made-up session value,",
+                        (true, false) => "with no session at all",
+                        _ => "with a session value this check made up",
+                    }
+                ),
+            ));
+        } else if invented == Some(false) {
+            without_held.push(path.clone());
+            need_a_session.push((k, path));
+        } else {
+            // A session carried some other way than a cookie cannot be made up here, and a refusal
+            // with none at all is half the answer.
+            say(
+                "V4.4.4",
+                format!(
+                    "A handshake to {path} with no session was refused, but the session was not a \
+                     cookie, so one with a made-up value could not be tried."
+                ),
+                out,
+            );
+            without_unjudged.push(path.clone());
+        }
+
+        // V4.4.2, which the anonymous probe cannot ask of a socket that needs a sign-in: the same
+        // signed-in handshake, from a site the app has never heard of. The plain one upgraded above,
+        // so a refusal is about the origin.
+        let mut foreign = ws_handshake(&format!("websocket-foreign-origin{sfx}"), path, &session);
+        foreign
+            .headers
+            .push(("Origin".to_owned(), STRANGER.to_owned()));
+        let foreign_status = http.send(&foreign).map(|r| r.status);
+        out.steps.push(format!(
+            "opened the WebSocket at {path} signed in, from another site: {}",
+            match foreign_status {
+                Some(101) => "accepted".to_owned(),
+                Some(status) => format!("refused ({status})"),
+                None => "no answer".to_owned(),
+            }
+        ));
+        match foreign_status {
+            Some(101) => {
+                origin_found = true;
+                out.findings.push(finding_on(
+                    vec![format!("websocket-foreign-origin{sfx}")],
+                    &WS_FOREIGN_ORIGIN,
+                    "A private WebSocket is accepted from any website",
+                    Severity::Medium,
+                    format!(
+                        "A handshake to {path} carrying the signed-in session and `Origin: \
+                         {STRANGER}` was accepted (101). A page on any site can open this \
+                         connection as a signed-in visitor."
+                    ),
+                ));
+            }
+            Some(status) => origin_held.push((path.clone(), status)),
+            None => {
+                say(
+                    "V4.4.2",
+                    format!(
+                        "Whether the private WebSocket checks where a handshake comes from: the \
+                         signed-in handshake from another site to {path} got no answer."
+                    ),
+                    out,
+                );
+                origin_unjudged.push(path.clone());
+            }
+        }
+    }
+    let not_judged = |unjudged: &[String]| {
+        if unjudged.is_empty() {
+            String::new()
+        } else {
+            format!("; not judged: {}", unjudged.join(", "))
+        }
+    };
+    if !without_found && !without_held.is_empty() {
+        out.verified.push(
+            crate::Verified::new(
+                WS_WITHOUT_SESSION.rule_id,
+                WS_WITHOUT_SESSION.requirement_ids,
+                format!(
+                    "WebSocket handshakes to {} with no session and with a made-up one, refused \
+                     where the signed-in session's was accepted{}",
+                    without_held.join(", "),
+                    not_judged(&without_unjudged)
+                ),
+            )
+            // Every private WebSocket path stackvet.toml names; one, or one not judged, is in part
+            // (ADR-053, Later; ADR-118).
+            .in_part_if(without_held.len() == 1 || !without_unjudged.is_empty()),
         );
     }
-
-    // V4.4.2, which the anonymous probe cannot ask of a socket that needs a sign-in: the same signed-in
-    // handshake, from a site the app has never heard of. The plain one upgraded above, so a refusal
-    // is about the origin.
-    let mut foreign = ws_handshake("websocket-foreign-origin", path, &session);
-    foreign
-        .headers
-        .push(("Origin".to_owned(), STRANGER.to_owned()));
-    let foreign_status = http.send(&foreign).map(|r| r.status);
-    out.steps.push(format!(
-        "opened the WebSocket at {path} signed in, from another site: {}",
-        match foreign_status {
-            Some(101) => "accepted".to_owned(),
-            Some(status) => format!("refused ({status})"),
-            None => "no answer".to_owned(),
-        }
-    ));
-    match foreign_status {
-        Some(101) => out.findings.push(finding_on(
-            vec!["websocket-foreign-origin".to_owned()],
-            &WS_FOREIGN_ORIGIN,
-            "A private WebSocket is accepted from any website",
-            Severity::Medium,
-            format!(
-                "A handshake to {path} carrying the signed-in session and `Origin: {STRANGER}` was \
-                 accepted (101). A page on any site can open this connection as a signed-in visitor."
-            ),
-        )),
-        Some(status) => out.verified.push(crate::Verified::new(
-            WS_FOREIGN_ORIGIN.rule_id,
-            WS_FOREIGN_ORIGIN.requirement_ids,
+    if !origin_found && !origin_held.is_empty() {
+        let scope = if let [(path, status)] = origin_held.as_slice() {
             format!(
                 "a signed-in WebSocket handshake to {path} from a site the app has never heard of, \
                  refused ({status}) where the same handshake with no Origin was accepted"
-            ),
-        )
-        // One foreign handshake, on the one path stackvet.toml names (ADR-053, Later).
-        .in_part()),
-        None => say(
-            "V4.4.2",
+            )
+        } else {
             format!(
-                "Whether the private WebSocket checks where a handshake comes from: the signed-in \
-                 handshake from another site to {path} got no answer."
-            ),
-            out,
-        ),
+                "signed-in WebSocket handshakes from a site the app has never heard of, refused at \
+                 {}, where the same handshakes with no Origin were accepted",
+                origin_held
+                    .iter()
+                    .map(|(path, status)| format!("{path} ({status})"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        out.verified.push(
+            crate::Verified::new(
+                WS_FOREIGN_ORIGIN.rule_id,
+                WS_FOREIGN_ORIGIN.requirement_ids,
+                format!("{scope}{}", not_judged(&origin_unjudged)),
+            )
+            // One foreign handshake on each path stackvet.toml names; one path, or one not judged,
+            // is in part (ADR-053, Later; ADR-118).
+            .in_part_if(origin_held.len() == 1 || !origin_unjudged.is_empty()),
+        );
     }
 
-    // Signed out, then the old session again. Only when a real session was shown to be needed: a
+    // Signed out, then the old session again. Only on the paths shown to need a real session: a
     // socket that opens without one opens after sign-out too, and that shows nothing more.
-    if anonymous || invented != Some(false) {
+    if need_a_session.is_empty() {
         say(
             "V4.4.3",
             "Whether signing out closes the private WebSocket: it was not shown to need a real \
@@ -681,22 +746,30 @@ pub(super) fn websocket_session_checks(
         );
         return;
     }
-    let after = upgraded(http, "after-sign-out", &before);
-    out.steps.push(format!(
-        "signed that session out, then opened the WebSocket with its old cookie: {}",
-        if after { "accepted" } else { "refused" }
-    ));
-    if after {
-        out.findings.push(finding_on(
-            vec!["websocket-after-sign-out".to_owned()],
-            &WS_AFTER_SIGN_OUT,
-            "A private WebSocket still opens after signing out",
-            Severity::Medium,
-            format!(
-                "After the session was signed out, a handshake to {path} carrying its old cookie \
-                 was accepted (101)."
-            ),
+    for (k, path) in need_a_session {
+        let sfx = suffix(k);
+        let after = upgraded(http, &format!("after-sign-out{sfx}"), path, &before);
+        out.steps.push(format!(
+            "signed that session out, then opened the WebSocket{} with its old cookie: {}",
+            if k == 0 {
+                String::new()
+            } else {
+                format!(" at {path}")
+            },
+            if after { "accepted" } else { "refused" }
         ));
+        if after {
+            out.findings.push(finding_on(
+                vec![format!("websocket-after-sign-out{sfx}")],
+                &WS_AFTER_SIGN_OUT,
+                "A private WebSocket still opens after signing out",
+                Severity::Medium,
+                format!(
+                    "After the session was signed out, a handshake to {path} carrying its old \
+                     cookie was accepted (101)."
+                ),
+            ));
+        }
     }
     say(
         "V4.4.3",
@@ -3287,3 +3360,6 @@ mod answer_ids_tests {
 
 #[cfg(test)]
 mod invented_pages_tests;
+
+#[cfg(test)]
+mod several_websockets_tests;

@@ -1183,10 +1183,9 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     ),
     // The `owned` create, and each `creates` entry forged after it (backlog 0232, part 3).
     (FORGERY.rule_id, &["forged-create", "forged-create-"]),
-    (
-        STEP_SKIPPED.rule_id,
-        &["login-flow-b0", "login-flow-b1", "login-flow-b2"],
-    ),
+    // Each flow's fresh sign-ins as B, the first flow's `login-flow-b<i>` and each later one's
+    // `login-flow-<k>-b<i>` (ADR-118).
+    (STEP_SKIPPED.rule_id, &["login-flow-"]),
     (
         EMAIL_CODE_UNBOUND.rule_id,
         &["email-code-use-crossed", "email-code-private-crossed"],
@@ -1292,11 +1291,29 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     (APP_TOKEN_UNSIGNED.rule_id, &["token-altered"]),
     (APP_TOKEN_ALG_NONE.rule_id, &["token-alg-none"]),
     (APP_TOKEN_EXPIRED.rule_id, &["token-expired"]),
+    // Each private WebSocket path's handshakes, the first path's ids and each later one's with `-<k>`
+    // after them (ADR-118). The signed-in handshake is each path's control: with several paths, one
+    // whose control crashed would otherwise go unjudged while another path's refusal credits it.
     (
         WS_WITHOUT_SESSION.rule_id,
-        &["websocket-no-session", "websocket-invented-session"],
+        &[
+            "websocket-signed-in",
+            "websocket-signed-in-",
+            "websocket-no-session",
+            "websocket-no-session-",
+            "websocket-invented-session",
+            "websocket-invented-session-",
+        ],
     ),
-    (WS_FOREIGN_ORIGIN.rule_id, &["websocket-foreign-origin"]),
+    (
+        WS_FOREIGN_ORIGIN.rule_id,
+        &[
+            "websocket-signed-in",
+            "websocket-signed-in-",
+            "websocket-foreign-origin",
+            "websocket-foreign-origin-",
+        ],
+    ),
     (LOGOUT.rule_id, &["after-logout"]),
     (
         TOTP_OLD_CODE.rule_id,
@@ -4101,7 +4118,8 @@ mod crash_tests {
         signed_up.seed = Some("seed".into());
         signed_up.admin = vec!["/admin".into()];
         let mut sockets_and_files = users();
-        sockets_and_files.private_websocket = Some("/ws".into());
+        // Two private WebSocket paths, so each is held to the crash guard by its own ids (ADR-118).
+        sockets_and_files.private_websockets = vec!["/ws".into(), "/chat".into()];
         sockets_and_files.upload = Some(sv_manifest::UploadSection {
             path: "/upload".into(),
             field: "file".into(),
@@ -4573,7 +4591,8 @@ mod crash_tests {
         signed_up.seed = Some("seed".into());
         signed_up.admin = vec!["/admin".into()];
         let mut sockets_and_files = users();
-        sockets_and_files.private_websocket = Some("/ws".into());
+        // Two private WebSocket paths, so each is held to the crash guard by its own ids (ADR-118).
+        sockets_and_files.private_websockets = vec!["/ws".into(), "/chat".into()];
         sockets_and_files.upload = Some(sv_manifest::UploadSection {
             path: "/upload".into(),
             field: "file".into(),
