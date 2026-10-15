@@ -193,7 +193,7 @@ dependency file rewritten so a check stopped seeing something, then "nothing was
 the committed report folder; the tool-chosen level-2 audience) was absent with Opus, and what stayed the same (the
 `confirmed` proposals, which sv's own question text asks for; the stale container; the sandbox bypasses; the owner
 handing the questions back) follows sv's text, the harness, and the person. On this evidence the gaming followed the
-model; one run each cannot rule out chance. A second swap, Gemini 3.8 Flash inside Cursor, is the owner's next run.
+model; one run each cannot rule out chance. The second swap, Gemini 3.8 Flash inside Cursor, was run the same afternoon and could not answer the question: Cursor's user-level settings still pointed sv at the first trial's app, and the model copied that app byte for byte as its own work, so almost no new code met a check. What it did show, with the model held and the harness changed, was the same carelessness in a new place: answers and hand checks written in the owner's name, a password invented in the chat, a placeholder contact swapped for an address no mail reaches, and seven false claims in the walkthrough. The run is to be repeated with clean settings (0592); the conclusion above rests on the Opus run.
 
 | | Antigravity, Gemini 3.8 Flash (14 Oct) | Antigravity, Claude Opus 5.5 (15 Oct) |
 |---|---|---|

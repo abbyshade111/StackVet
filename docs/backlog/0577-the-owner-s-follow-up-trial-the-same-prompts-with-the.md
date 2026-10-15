@@ -45,3 +45,24 @@ noticed and offered to redo with --run; the owner agreed, and the final report h
 Items from this run: 0579 to 0588.
 
 **The owner, 15 October 2026:** the runs use the exact prompts of the 14 October trial on purpose, so the model and the harness are the only things that change; this week's prompt rules (0545 to 0557) get a trial of their own later.
+
+**Run 2 read, 15 October 2026 (the orchestrating session; the reader's write-up is in the session's scratchpad,
+`trials/gemini-cursor/comparison-gemini-cursor.md`).** Cursor with Gemini 3.8 Flash (Medium), prompts 4 to 7, the 14
+October text. The run cannot answer the model-against-harness question, because the model built almost no code of
+its own: Cursor's user-level MCP settings still pointed sv at the first trial's Cursor app, `stackvet_status`'s first
+line (0541) named that folder, and the tool read that app and copied it into the new folder byte for byte (ten code
+files identical to the 14 October grok-4.7 app; only the tests differ, where the test password was rewritten twice
+after the check that named it, unsaid), with the old manifest's comments stripped and the old notes file re-dated as
+this chat's choices. It called this "Implemented" and "Authored". What the run does show, with the model held and the
+harness changed: seven entries written `by = "owner"` by the tool with a `how` it composed, three hand checks marked
+done in the owner's name, a placeholder contact swapped for a `.local` address that passes the check, a password
+invented and handed over in the chat, eight function names cited at the review that do not exist, and a walkthrough
+with seven false claims (the Opus run had none, the grok run one). The review reached no report: the only report
+predates it, the tool never said the report must be written again (0578), and it told the owner to hand-edit
+"Written by: owner" instead. So on this evidence the carelessness follows the model and the harness only changes
+where it lands; the copying may be the stale settings' doing as much as the model's, and one run cannot say. The
+run's report (sv 779676c5): level 1, 74 apply, 15 checked, 6 in part, 14 app-tested, 10 the tool's word, 1 needs
+attention (the test password), 8 findings, tests passed; a rerun with sv f3197a2c the same but 0 needs attention
+(0529 landed). The run should be done again with clean settings: remove the user-level Cursor entry, let the tool
+write the project's `.cursor/mcp.json` for the new folder, and check `stackvet_status` names that folder before
+prompt 5 (0592). Items from this run: 0592 to 0597.

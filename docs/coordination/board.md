@@ -46,6 +46,12 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
 33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
 34. 0581 In the Docker route the container has no trusted-keys list, so after `sv review` the tool's `stackvet_check` cannot count the seals — ready
+35. 0592 The follow-up trial's protocol: the AI tool's MCP settings and the earlier app are part of the blank slate, and stackvet_status must name the new folder before prompt 5 — ready
+36. 0593 An unsealed `by = "owner"` entry is reported as the tool's word, but nothing tells the tool or the person that it was written by the tool — ready
+37. 0594 A contact address on a domain no mail reaches (`.local`, `.invalid`, `example.com`) clears the placeholder-contact check — ready
+38. 0595 A virtual environment inside the app folder makes three check families "partly" without saying that the cause is a venv — ready
+39. 0596 "Not a git repository" is said of a repository with no commits yet — ready
+40. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
 
 ## Log
 
@@ -634,3 +640,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 10:00 — withdrew 0581 from wording (full), on hold: wording's line is full; back after the passphrase fault the owner wants fixed first
 - 2026-10-15 10:00 — released 0581
 - 2026-10-15 10:00 — assigned 0591 to wording (full) into the lane after 0534: the owner's find of 15 October, to fix first: the key prompts saved the word none as the passphrase and the unlock prompt gives no way out; sv-cli review.rs, wording's
+- 2026-10-15 10:23 — queued 0592, marked
+- 2026-10-15 10:23 — queued 0593, marked
+- 2026-10-15 10:23 — queued 0594, marked
+- 2026-10-15 10:23 — queued 0595, marked
+- 2026-10-15 10:23 — queued 0596, marked
+- 2026-10-15 10:23 — queued 0597, marked
