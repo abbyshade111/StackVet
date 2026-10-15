@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0495, 0571, 0572, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0578, 0565, 0566, 0588
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0578, 0565, 0566, 0588, 0580, 0581
 - documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575, 0585
 
 ## Queue
@@ -42,10 +42,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 28. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
 29. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
 30. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
-31. 0580 sv's own question text asks the tool to write `confirmed = { by = "ai-tool" }` proposals and `[checked-by-hand]` entries, which prompt 5 now forbids — hold: the owner's choice: sv's confirmed proposals against prompt 5's ban
-32. 0581 In the Docker route the container has no trusted-keys list, so after `sv review` the tool's `stackvet_check` cannot count the seals — hold: the owner's choice: how the container gets the trusted-keys list
-33. 0587 A review's seal is bound to the app folder it was made in, so a checkout elsewhere (CI, a moved folder) loses the owner's confirmations — hold: the owner's choice: a seal bound to the folder or to the app
-34. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
+31. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
+32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
+33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
 
 ## Log
 
@@ -623,3 +622,10 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 09:44 — assigned 0579 to honesty (full) into the lane after 0564: 0521's gate did not apply on the Opus app: ten wrong findings on a Flask app in both builds; honesty built the gate
 - 2026-10-15 09:44 — assigned 0588 to wording (full) as next: the prompt page's version line, from the Opus reading; wording's file
 - 2026-10-15 09:44 — assigned 0585 to documentation (full) as next: the browser-form gap's quoted refusal, the family of 0527 which documentation built
+- 2026-10-15 09:58 — dropped 0587 from the queue
+- 2026-10-15 09:58 — released 0580
+- 2026-10-15 09:58 — released 0581
+- 2026-10-15 09:58 — assigned 0580 to wording (full) into the lane after 0588: the owner's choice: keep sv's confirmed proposals, change prompt 5 back and drop 0543's warning; interview.rs, the prompt page, and 0543's warning are wording's
+- 2026-10-15 09:58 — assigned 0581 to wording (full) into the lane after 0580: the owner's choice: sv connect --docker mounts the trusted list and the public key read-only; sv-cli, wording's; ADR-108 Later
+- 2026-10-15 09:58 — queued 0589, on hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command), marked
+- 2026-10-15 09:58 — queued 0590, on hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints), marked

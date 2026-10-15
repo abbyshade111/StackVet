@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 The owner's ask, 15 October 2026, after reading the Opus run's report (backlog 0577): the report is so long that
 things get lost; break it out. Severity: high (usability; the report is the product). A sibling of 0589 (the
 pre-deployment checklist), which would be one of the pages.
