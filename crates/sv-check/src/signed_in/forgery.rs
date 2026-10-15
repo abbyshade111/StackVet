@@ -246,6 +246,49 @@ fn control_for<'a>(
     Ok((control, found))
 }
 
+/// The first create request sent once more with a token from another session (backlog 0575).
+enum OtherToken {
+    /// Not sent: no request was refused without a token, one was taken, or the token is not in its fields.
+    NotAsked,
+    /// The sign-in page gave a stranger no token to send.
+    NoneFound,
+    Refused,
+    Taken,
+    /// Neither taken nor refused could be told: what was compared.
+    Unclear(String),
+}
+
+impl OtherToken {
+    /// What the credit says of it.
+    fn says(&self) -> &'static str {
+        match self {
+            OtherToken::Refused => {
+                "; the first sent again with a token a stranger was handed on the sign-in page, \
+                 refused too"
+            }
+            OtherToken::NoneFound | OtherToken::Unclear(_) => {
+                "; whether a token from another session is refused was not shown"
+            }
+            OtherToken::NotAsked | OtherToken::Taken => "",
+        }
+    }
+
+    /// Whether the request carries a token and one from another session was not shown refused.
+    fn left_open(&self) -> bool {
+        matches!(self, OtherToken::NoneFound | OtherToken::Unclear(_))
+    }
+}
+
+/// An anti-forgery token for a session that is not the signed-in user's: the sign-in page asked for with no
+/// cookies, as a stranger, or another site acting for itself, would ask, read as the sign-in reads it.
+fn stranger_token(http: &mut dyn Http, users: &UsersSection) -> Option<String> {
+    let login = users.login.as_ref()?;
+    let mut session = Session::default();
+    let page = http.send(&get("csrf-other-session", &login.path, &session))?;
+    session.absorb(&page);
+    csrf_token(&page, &session)
+}
+
 /// Whether two strangers are handed the same anti-forgery token on the sign-in page (backlog 0537, 0561,
 /// ADR-119): each visit with no cookies of its own, the token read as the sign-in itself reads it. The same
 /// token for both is one value for everybody, which another site can fetch and use. Different tokens credit
@@ -426,6 +469,70 @@ pub(super) fn forgery_check(
             )),
         }
     }
+    // The first create request refused without a token, sent once more with a token from another session (backlog
+    // 0575, ADR-119): one a stranger is handed on the sign-in page, as another site can fetch for itself. An app that
+    // checks a token is there and is one it made, but not that it is this session's, refuses the first and takes
+    // this. Only where the token goes in the request's own fields: a header carrying it is one another site cannot
+    // make a browser send.
+    let mut other_token = OtherToken::NotAsked;
+    if let (Some((control, read_back)), Some(create)) = (&first_refused, creates.first())
+        && accepted_at.is_empty()
+        && uses_csrf(&create.template)
+    {
+        other_token = match stranger_token(http, users) {
+            None => OtherToken::NoneFound,
+            Some(token) => {
+                let id = format!("{}-other-token", create.id);
+                let other_values = Values {
+                    marker: "sv-probe-forged-other-6a3f",
+                    csrf: Some(token),
+                    ..Default::default()
+                };
+                let mut forged = request(&id, &create.template, &other_values, &cross);
+                forged.headers.retain(|(n, _)| {
+                    !n.to_lowercase().contains("csrf") && !n.to_lowercase().contains("xsrf")
+                });
+                forged
+                    .headers
+                    .push(("Origin".to_owned(), STRANGER.to_owned()));
+                forged
+                    .headers
+                    .push(("Referer".to_owned(), format!("{STRANGER}/")));
+                let response = http.send(&forged);
+                match judge_forged(
+                    http,
+                    read_back.as_ref(),
+                    control,
+                    &response,
+                    &id,
+                    other_values.marker,
+                    session,
+                ) {
+                    Made::Yes(how) => {
+                        accepted_at.push((
+                            id,
+                            format!("{} with a token from another session", create.template.path),
+                            how,
+                        ));
+                        OtherToken::Taken
+                    }
+                    Made::No => OtherToken::Refused,
+                    Made::Unclear(why) => OtherToken::Unclear(why),
+                }
+            }
+        };
+    }
+    match &other_token {
+        OtherToken::NoneFound => out.steps.push(
+            "asked for the sign-in page as a stranger for a token of another session: none was \
+             found on it, so the create request was not sent with one"
+                .to_owned(),
+        ),
+        OtherToken::Unclear(why) => out.steps.push(format!(
+            "sent the create request again with a token from another session: not judged, {why}"
+        )),
+        _ => {}
+    }
     for (path, why) in &unjudged {
         out.not_assessed.push((
             FORGERY.requirement_ids.join(", "),
@@ -452,7 +559,7 @@ pub(super) fn forgery_check(
             format!(
                 "Creating a record was accepted at {} when sent with the signed-in user's cookies \
                  from another site (an Origin of {STRANGER}, or `null` where it says so) and no \
-                 anti-forgery token.{}",
+                 anti-forgery token, or one from another session where it says so.{}",
                 accepted_at
                     .iter()
                     .map(|(_, path, how)| format!("{path} (it {how})"))
@@ -481,7 +588,7 @@ pub(super) fn forgery_check(
                 FORGERY.requirement_ids,
                 format!(
                     "{} sent with a signed-in user's cookies from another origin and without a \
-                     token, and refused at {}{}{}{}",
+                     token, and refused at {}{}{}{}{}",
                     if refused_at.len() == 1 {
                         "a request that creates a record,".to_owned()
                     } else {
@@ -494,6 +601,7 @@ pub(super) fn forgery_check(
                     } else {
                         ""
                     },
+                    other_token.says(),
                     if untried.is_empty() {
                         String::new()
                     } else {
@@ -514,8 +622,14 @@ pub(super) fn forgery_check(
                 ),
             )
             // Every create request named; one, a changing request not sent this way, or one that
-            // could not be judged, is in part (ADR-053, Later).
-            .in_part_if(refused_at.len() == 1 || !untried.is_empty() || !unjudged.is_empty()),
+            // could not be judged, is in part (ADR-053, Later); so is a token from another session not
+            // shown refused, where the request carries one (backlog 0575).
+            .in_part_if(
+                refused_at.len() == 1
+                    || !untried.is_empty()
+                    || !unjudged.is_empty()
+                    || other_token.left_open(),
+            ),
         );
     }
 }
@@ -1497,3 +1611,6 @@ mod shared_token_tests;
 
 #[cfg(test)]
 mod null_origin_tests;
+
+#[cfg(test)]
+mod other_token_tests;

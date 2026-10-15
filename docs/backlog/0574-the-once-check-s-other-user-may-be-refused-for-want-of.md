@@ -13,3 +13,8 @@ be refused because the other user may not do the action at all.
 alone, the race says nothing.
 
 **The owner's answer, 15 October 2026 (asked through the board's waiting line):** (a). Add an optional reset request under `once` (for example, cancel the booking), sent as the holder: with it, the other user tries alone first, the reset puts the thing back, then the race runs; without it, the credit stays in part and says the other user was not shown able to take it. A Later entry on the record that governs the once check and the manifest key.
+
+**Waiting on the owner, 15 October 2026** (documentation). `once` has no request that puts the one thing back, so a
+solo try by the other user before the race would take it and leave the race nothing to take: "after a reset" cannot be
+built from stackvet.toml as it stands. The question, with three ways to answer it, is on the board
+(`docs/coordination/waiting/0574.md`).
