@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Found 15 October 2026 while building backlog 0533. Severity: medium (honest evidence: a check that did not run is
 not said).
 
