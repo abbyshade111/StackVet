@@ -305,7 +305,8 @@ word.
 > Step 5. Never tell me the app is secure. Tell me what was checked and what was not.
 >
 > Step 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
->    questions one at a time. I may let you answer some yourself: each answer you give counts as
+>    questions one at a time, each as StackVet words it, with no answer of yours marked as recommended: if I
+>    ask what you would choose, tell me then, with the lines it rests on. I may let you answer some yourself: each answer you give counts as
 >    yours, not mine, until I record it with `sv review`, and the report says so. When you answer one,
 >    or tell me what the code does for one, quote the file and lines that show it beside the answer,
 >    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
@@ -318,7 +319,7 @@ word.
 >    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
 >    `by = "ai-tool"` and my words in `how`.
 >
-> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint f624459a)*
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint cd92b5e5)*
 <!-- setup-step-5:end -->
 
 What happens next:
@@ -359,11 +360,12 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    and how long it takes before you run it. If you find an older or kept copy of StackVet, or a link to one, tell
 >    me, and install with Homebrew (Scoop on Windows) unless I say otherwise.
 >
-> Step 2. If it is installed, compare the commit `sv --version` prints with the latest on StackVet's GitHub page, and tell
->    me how old it is: StackVet never checks for itself. If it is older, offer to update it: `brew upgrade --fetch-HEAD
+> Step 2. If it is installed, compare the commit `sv --version` prints with the latest on StackVet's GitHub page, read
+>    on the page itself, and tell me how old it is: StackVet never checks for itself. Do not clone, download, or fetch
+>    anything to compare. If it is older, offer to update it: `brew upgrade --fetch-HEAD
 >    sv` if Homebrew installed it, `scoop update sv` on Windows, or the guide's steps for a copy built by hand. After
->    installing or updating, `sv --version` must name the commit you expected, the latest on StackVet's GitHub page:
->    if it does not, stop and tell me.
+>    installing or updating, compare the commit `sv --version` prints with the one the install printed, fetching
+>    nothing to do it: if they differ, stop and tell me.
 >
 > Step 3. On a Mac or Linux, your `stackvet_` tools use a second copy, StackVet's container image. Offer to fetch its latest
 >    with `docker pull ghcr.io/abbyshade111/stackvet-sv`. Don't stop or restart any container for it: a new chat with
@@ -391,7 +393,7 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 > Step 7. Last, tell me that until I run `sv review` myself (prompt 7 on the setup page), every answer recorded so far
 >    counts as yours, not mine, and the report says so.
 >
-> *(StackVet setup prompt 6, text of 15 October 2026, fingerprint e05d380d)*
+> *(StackVet setup prompt 6, text of 15 October 2026, fingerprint 0f41884d)*
 <!-- setup-step-6:end -->
 
 **If you stop here,** every answer your AI tool recorded still counts as its word, not yours, and the report says so,
