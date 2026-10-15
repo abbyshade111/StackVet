@@ -1666,6 +1666,89 @@ impl<'a> Answer<'a> {
 }
 
 /// How a crash or a silence is written down for `RESTS_ON_A_REFUSAL`: the status, or "no answer".
+/// The sign-ups `sv` makes with ordinary values, the kind a person makes: its two test users, the control account, and
+/// the long password (backlog 0528). Not the ones that send something odd on purpose.
+const ORDINARY_SIGNUPS: &[&str] = &["signup-a", "signup-b", "signup-control", "signup-long"];
+
+fn is_ordinary_signup(id: &str) -> bool {
+    ORDINARY_SIGNUPS.contains(&id)
+}
+
+/// A request's fields by name and length, never a value: "`email` (31 characters), `password` (73 characters)".
+fn fields_by_length(request: &ProbeRequest) -> String {
+    let body = request
+        .body
+        .as_deref()
+        .map(String::from_utf8_lossy)
+        .unwrap_or_default();
+    let fields: Vec<(String, usize)> = match serde_json::from_str::<serde_json::Value>(&body) {
+        Ok(serde_json::Value::Object(map)) => map
+            .iter()
+            .map(|(k, v)| (k.clone(), v.as_str().map_or(0, |s| s.chars().count())))
+            .collect(),
+        _ => body
+            .split('&')
+            .filter_map(|pair| pair.split_once('='))
+            .map(|(k, v)| (decode(k), decode(v).chars().count()))
+            .collect(),
+    };
+    fields
+        .into_iter()
+        .filter(|(k, _)| !k.is_empty())
+        .map(|(k, n)| format!("`{k}` ({n} character{})", if n == 1 { "" } else { "s" }))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+/// A form value with `+` and `%XX` read back.
+fn decode(text: &str) -> String {
+    let bytes = text.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'+' => out.push(b' '),
+            b'%' if i + 2 < bytes.len() => {
+                let hex = std::str::from_utf8(&bytes[i + 1..i + 3]).ok();
+                match hex.and_then(|h| u8::from_str_radix(h, 16).ok()) {
+                    Some(b) => {
+                        out.push(b);
+                        i += 2;
+                    }
+                    None => out.push(b'%'),
+                }
+            }
+            b => out.push(b),
+        }
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+/// One finding for the ordinary sign-ups the app crashed on (backlog 0528, ADR-021, Later): the request named by its
+/// fields and their lengths, never a value. What the crash would have answered stays withheld.
+fn crashed_on_ordinary(crashed: &[(String, u16, String)], out: &mut Outcome) {
+    if crashed.is_empty() {
+        return;
+    }
+    let said: Vec<String> = crashed
+        .iter()
+        .map(|(id, status, fields)| format!("`{id}` answered {status}, sent with {fields}"))
+        .collect();
+    out.findings.push(finding_on(
+        crashed.iter().map(|(id, _, _)| id.clone()).collect(),
+        &CRASHED_ON_ORDINARY,
+        "The app crashed on a request a person could make",
+        Severity::Low,
+        format!(
+            "A sign-up with ordinary values got a server error rather than an answer: {}. Nothing the crash would \
+             have answered is credited or reported; the crash itself is the finding. The app's log for that request \
+             says which exception it did not handle.",
+            said.join("; ")
+        ),
+    ));
+}
+
 fn crash_of(response: Option<&ProbeResponse>) -> Option<String> {
     match answer_of(response) {
         Answer::Silent => Some("no answer".to_owned()),
@@ -1782,6 +1865,9 @@ pub struct Patient<'a> {
     /// Requests answered with a server error (5xx) or not answered at all: (request id, status or
     /// "no answer").
     crashed: Vec<(String, String)>,
+    /// Each of `sv`'s ordinary sign-ups the app answered with a server error, with its status and its fields by name
+    /// and length (backlog 0528).
+    crashed_signups: Vec<(String, u16, String)>,
     /// Each wait for the limiter, as (request id, seconds), whether or not the limiter let the request through after
     /// it: until backlog 0526 only the ones it still refused were said, so minutes of waiting went unexplained.
     waits: Vec<(String, u64)>,
@@ -1823,6 +1909,7 @@ impl<'a> Patient<'a> {
             limited_sign_ins: Vec::new(),
             waited: WaitedSoFar::Own(0),
             crashed: Vec::new(),
+            crashed_signups: Vec::new(),
             waits: Vec::new(),
         }
     }
@@ -1840,6 +1927,7 @@ impl<'a> Patient<'a> {
     /// done asking.
     pub fn settle(&mut self, out: &mut Outcome) {
         withhold_what_rests_on_a_crash(&self.crashed, out);
+        crashed_on_ordinary(&self.crashed_signups, out);
         settle_waits(&self.waits, out);
         settle_limited(self, out);
     }
@@ -1894,6 +1982,12 @@ impl Http for Patient<'_> {
         // the guesses included, and read against `RESTS_ON_A_REFUSAL` once the run is over.
         if let Some(status) = crash_of(answer.as_ref()) {
             self.crashed.push((request.id.clone(), status));
+        }
+        if let Answer::Crashed(status) = answer_of(answer.as_ref())
+            && is_ordinary_signup(&request.id)
+        {
+            self.crashed_signups
+                .push((request.id.clone(), status, fields_by_length(request)));
         }
         answer
     }
@@ -2772,6 +2866,8 @@ mod attribute_tests;
 mod blank_page_tests;
 #[cfg(test)]
 mod check_guard_tests;
+#[cfg(test)]
+mod crash_on_signup_tests;
 #[cfg(test)]
 mod email_role_tests;
 #[cfg(test)]

@@ -56,7 +56,7 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
-| L2 | 183 | 95 | 68 | 24 | 0 | 21 | 47 | 24 | 21 | 2 |
+| L2 | 183 | 95 | 68 | 24 | 0 | 21 | 48 | 24 | 21 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
 53 of the 174 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
@@ -153,9 +153,9 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.2.3 | L2 | Reads the code: `config.development-server-started`; The running app: `probe.development-console-open` (sv only ever as a finding: `config.development-server-started`, `probe.development-console-open`) |
 | V15.2.4 | L3 | Reads the code: `ast.download-piped-to-shell` (sv only ever as a finding: `ast.download-piped-to-shell`) |
 | V15.3.3 | L2 | Reads the code: `ast.request-body-passed-whole`; Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-ruby` (sv only ever as a finding: `ast.request-body-passed-whole`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.role-field-trusted`) |
-| V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error` (sv only ever as a finding: `ast.check-passes-on-error`) |
+| V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
-### Settled by asking the running app (116)
+### Settled by asking the running app (117)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -274,6 +274,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V16.4.2 | L2 | The running app: `probe.log-file-served` (sv only ever as a finding: `probe.log-file-served`) |
 | V16.5.1 | L2 | The running app: `probe.error-detail-leak`, `probe.ai-service-error-shown` (sv only ever as a finding: `probe.ai-service-error-shown`) |
 | V16.5.2 | L2 | The running app: `probe.ai-service-failure-handled` |
+| V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 | V16.5.4 | L3 | The running app: `probe.app-stopped-during-questions` (sv only ever as a finding: `probe.app-stopped-during-questions`) |
 
 ### Settled by known-vulnerability data (1)

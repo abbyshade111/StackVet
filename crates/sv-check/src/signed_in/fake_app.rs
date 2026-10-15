@@ -594,6 +594,9 @@ pub(super) struct Flaws {
     pub(super) svg_as_attachment: bool,
     /// Refuses SVG uploads outright. Not a fault: an app that takes no SVG has nothing to clean.
     pub(super) refuses_svg: bool,
+    /// Crashes (500) on a sign-up whose password is longer than 72 characters, as an app whose password-strength library
+    /// refuses longer ones by raising does (backlog 0528).
+    pub(super) crashes_on_long_password: bool,
     /// Keeps a user name apart from the address: sign-up takes a `username` of 3 to 30 characters beside the `email`,
     /// and sign-in takes either (backlog 0599). Not a fault: an app's own rule, which a 38-character address breaks.
     pub(super) usernames_up_to_30: bool,
@@ -2352,6 +2355,9 @@ impl FakeApp {
                     .get("email")
                     .or_else(|| f.get("username").filter(|_| self.flaws.usernames_up_to_30));
                 let (email, password) = (named?.clone(), f.get("password")?.clone());
+                if self.flaws.crashes_on_long_password && password.chars().count() > 72 {
+                    return Some(Self::respond(500, vec![], "Internal Server Error"));
+                }
                 // The app's own rule for user names (backlog 0599).
                 if self.flaws.usernames_up_to_30
                     && let Some(name) = f.get("username")

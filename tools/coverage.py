@@ -221,6 +221,7 @@ RUST_CHECKS = {
     "probe.session-token-static": ("signed-in", ["V7.2.2"]),
     "probe.password-altered": ("signed-in", ["V6.2.8"]),
     "probe.long-password-refused": ("signed-in", ["V6.2.9"]),
+    "probe.crashed-on-ordinary-request": ("signed-in", ["V16.5.3"]),
     "probe.password-field-unmasked": ("signed-in", ["V6.2.6"]),
     "probe.password-paste-blocked": ("signed-in", ["V6.2.7"]),
     "probe.sign-out-on-get": ("signed-in", ["V3.5.3"]),
@@ -332,6 +333,8 @@ RUST_FINDINGS_ONLY = {
     "probe.forwarded-for-trusted",
     "probe.password-in-url",
     "probe.password-paste-blocked",
+    # A sign-up that did not crash shows nothing about every other request (backlog 0528).
+    "probe.crashed-on-ordinary-request",
     "probe.reset-code-guessable",
     "probe.reset-code-in-answer",
     "probe.reset-keeps-old-password",
