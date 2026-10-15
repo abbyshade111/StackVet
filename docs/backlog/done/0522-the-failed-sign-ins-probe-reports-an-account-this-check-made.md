@@ -1,6 +1,6 @@
 # The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -32,3 +32,5 @@ evidence for V6.3.1 changes.
 **Built 15 October 2026, by honesty, in the setup sweep (0559, ADR-119); left open for the board, which queues it,
 to finish:** the guessing check signs in as its own
 account before guessing, and says the question is not assessed, and why, when the account was not made.
+
+**Closed by the board, 15 October 2026:** built in the probe sweeps (0559 for 0522, PR 1948; 0560 for 0523, PR 1996; 0561's first batch for 0524, PR 1997), under ADR-119; the orchestrating session read the code (the validation probe now judges its answer beside the control's) before closing.
