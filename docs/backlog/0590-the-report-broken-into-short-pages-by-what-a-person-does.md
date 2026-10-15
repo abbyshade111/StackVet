@@ -35,3 +35,5 @@ knows security) stays one file or splits the same way; and which page `sv report
 
 **Record.** ADR-0NN Later on the record that names the report's files (the one `docs/ARCHITECTURE.md`'s reports page
 cites), since what sv writes into the person's folder changes; 0589's record covers the checklist page.
+
+**The owner's answer, 15 October 2026:** as recommended: security.md stays one file (it is the one handed to somebody else); sv report prints the front page's path, then "Fix now" when it has anything. Build it; a Later entry on the record that names the report's files.

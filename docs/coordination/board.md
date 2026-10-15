@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0592, 0593, 0602
-- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0594, 0595, 0596, 0601, 0514
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0593, 0602
+- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0596, 0601, 0514
 
 ## Queue
 
@@ -42,12 +42,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 28. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
 29. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
 30. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
-31. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
-32. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
+31. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — ready
+32. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — ready
 33. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
 34. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
 35. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
 36. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
+37. 0603 sv's question text lets the tool record a check it made itself by reading the code, which prompt 5 forbids — ready
 
 ## Log
 
@@ -670,3 +671,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 12:50 — assigned 0602 to wording (full) as next: prompt 5's preview step (ask before installing; tests use their own database; open the page over the server); the prompt page, wording's
 - 2026-10-15 13:04 — released 0514
 - 2026-10-15 13:04 — assigned 0514 to documentation (full) as next: the owner's drawings are in the repository now (15 October); check each cell against the frameworks' text and put the two diagrams on the reports page; documentation's files
+- 2026-10-15 13:20 — released 0589
+- 2026-10-15 13:20 — released 0590
+- 2026-10-15 13:20 — finished 0592 by wording (full): https://github.com/abbyshade111/StackVet/pull/2050; from its lane, behind 0534
+- 2026-10-15 13:20 — finished 0594 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2051; from its lane, behind 0509
+- 2026-10-15 13:20 — queued 0603, marked

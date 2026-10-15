@@ -31,3 +31,5 @@ serves (through `sv review`'s existing hand checks) or only as a note; and wheth
 report folder or is printed by a command (`sv before-live`) so it is never stale.
 
 **Record.** A new ADR: what the checklist is, that it credits nothing by itself, and what a tick records.
+
+**The owner's answer, 15 October 2026:** as recommended: a tick counts as a hand check only when the line names a requirement and the person confirms it through sv review, otherwise it is a note; both forms, written with the report and reprinted by `sv before-live` from the last report. Build it; a new ADR in the building pull request.
