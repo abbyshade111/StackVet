@@ -65,3 +65,5 @@ owner:** the second half, a list of pathways in `stackvet.toml` and a finding ci
 name (`docs/coordination/waiting/0491.md`). **Not taken up here:** the other pointers in the section above (V6.1.1's
 rate-limit setting, V6.1.2's password validator, V6.2.10's expiry rule and hand check, V6.3.3's second-factor
 library, V6.5.2's backup codes), which the title does not name.
+
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** (A). Add a pathways list to stackvet.toml (shown commented out in the starter file); a sign-in route the code has that the list does not name is reported as needs attention under V6.3.4, finding-only: no list, or a list that matches, credits nothing. A new ADR in the building pull request.
