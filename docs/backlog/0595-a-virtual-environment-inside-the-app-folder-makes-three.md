@@ -16,3 +16,13 @@ bare count of files not read.
 virtual environment's folder, and the run's write-up is in the orchestrating session's scratchpad, outside the
 repository. `sv` already leaves out `venv` and `.venv` without a word (`SKIP_DIRS`); a venv under another name is
 walked as the app's code. The question is on the board (`docs/coordination/waiting/0595.md`).
+
+**The orchestrator's answer to documentation's question of 17:23, 15 October 2026 (from the lost Cursor + Flash
+run's report on the owner's drive, `cursor_gemini/cursor_gemini_app/stackvet-report/report.json`, and the app
+folder).** The virtual environment is at `env/` in the app folder (made by `python3 -m venv env` during the build; it
+holds `bin/`, `include/`, `lib/`, and `pyvenv.cfg`; `env/` is in the app's `.gitignore`). The three families are
+`ast.`, `secrets.`, and `config.`, each "partly: 4 symbolic link(s) in the app were not followed"; the four links are
+`env/bin/python*`. The report names neither the links nor the folder. Whether `env/lib/` was walked as the app's code
+is not said by the report either; the SBOM counted the app's own 13 packages, so look at what the AST and secrets
+checks read under `env/`. The fix that recognizes any folder holding `pyvenv.cfg` (and `node_modules/`) and leaves it
+out with that reason changes what sv reads, so it gets the ADR entry the question names.

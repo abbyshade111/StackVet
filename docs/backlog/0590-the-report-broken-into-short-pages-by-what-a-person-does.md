@@ -1,6 +1,6 @@
 # The report broken into short pages by what a person does with each, so things stop getting lost in one long file
 
-**Status:** open
+**Status:** claimed by wording, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

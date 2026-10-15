@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0593, 0602
-- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0596, 0601, 0514
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0602, 0589, 0590
+- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0514, 0586, 0600
 
 ## Queue
 
@@ -40,15 +40,11 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 26. 0582 `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention" — ready
 27. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
 28. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
-29. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
-30. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
-31. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — ready
-32. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — ready
-33. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
-34. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
-35. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
-36. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
-37. 0603 sv's question text lets the tool record a check it made itself by reading the code, which prompt 5 forbids — ready
+29. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
+30. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
+31. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
+32. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
+33. 0603 sv's question text lets the tool record a check it made itself by reading the code, which prompt 5 forbids — ready
 
 ## Log
 
@@ -676,3 +672,10 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 13:20 — finished 0592 by wording (full): https://github.com/abbyshade111/StackVet/pull/2050; from its lane, behind 0534
 - 2026-10-15 13:20 — finished 0594 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2051; from its lane, behind 0509
 - 2026-10-15 13:20 — queued 0603, marked
+- 2026-10-15 13:50 — finished 0593 by wording (full): https://github.com/abbyshade111/StackVet/pull/2055; from its lane, behind 0534
+- 2026-10-15 13:50 — finished 0596 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2056; from its lane, behind 0509
+- 2026-10-15 13:50 — finished 0601 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2054; from its lane, behind 0509
+- 2026-10-15 13:50 — assigned 0589 to wording (full) as next: the owner's go of 15 October with the answers recorded: the pre-deployment checklist report; sv-report, wording's; a new ADR
+- 2026-10-15 13:50 — assigned 0590 to wording (full) as next: the owner's go of 15 October with the answers recorded: the report in short pages; sv-report, wording's; a Later entry on the reports record; after 0589
+- 2026-10-15 13:50 — assigned 0586 to documentation (full) as next: the build-loop record from the first MCP call; sv-cli's mcp, no file shared with the other lanes
+- 2026-10-15 13:50 — assigned 0600 to documentation (full) as next: the summary's count of requirements resting on a tool-answered false; sv-report's summary, no file shared with wording's two report items (check before building; if 0590 touches the same summary, take it after)

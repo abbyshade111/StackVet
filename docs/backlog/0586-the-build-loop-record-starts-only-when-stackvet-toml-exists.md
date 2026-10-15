@@ -1,6 +1,6 @@
 # The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
