@@ -232,6 +232,7 @@ fn run() -> Result<i32> {
             eprintln!("{}", sv_cli::connect::where_it_goes(rest));
             Ok(exit::CLEAN)
         }
+        "hook-record" => finished(sv_cli::hook_record::command(rest)),
         "doctor" => finished(cmd_doctor(rest)),
         "mcp" => finished(mcp::cmd_mcp(rest)),
         other => unreachable!("{other} is in COMMANDS and has no arm"),
@@ -372,6 +373,7 @@ const COMMANDS: &[Command] = &[
             "--no-tools",
             "--keep-tool-output",
             "--quiet",
+            "--hook-record",
         ],
         valued: &[
             "--out",
@@ -380,7 +382,7 @@ const COMMANDS: &[Command] = &[
             "--baseline",
             "--codeql-results",
         ],
-        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--no-tools | --keep-tool-output] [--advisories DIR] [--codeql-results FILE] [--fail-on WHAT] [--baseline DIR] [--quiet]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n                     the outside tools (Semgrep, Bandit, and the rest) run unless\n                     --no-tools; Semgrep fetches its rules from semgrep.dev as it runs;\n                     CodeQL runs only with [tools] codeql = true in stackvet.toml\n                     --keep-tool-output keeps each tool's own report,\n                     credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --codeql-results FILE, CodeQL's SARIF from your own CI: read only when it\n                     is of the commit checked out, with nothing changed since; any other\n                     file is named in the report and credits nothing\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, an outside tool that\n                     could not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
+        help: "  sv report [PATH] [--out DIR] [--run [--slow]] [--no-tools | --keep-tool-output] [--advisories DIR] [--codeql-results FILE] [--fail-on WHAT] [--baseline DIR] [--quiet] [--hook-record]\n                     write the reports: what applies, what was found, what nobody has answered,\n                     into PATH/stackvet-report unless --out says where; --run starts the app\n                     as `sv run` does, downloading its packages first with `install = true`\n                     the outside tools (Semgrep, Bandit, and the rest) run unless\n                     --no-tools; Semgrep fetches its rules from semgrep.dev as it runs;\n                     CodeQL runs only with [tools] codeql = true in stackvet.toml\n                     --keep-tool-output keeps each tool's own report,\n                     credentials cut out, in seen.json beside the report\n                     --quiet leaves out the progress and timing lines; counts and errors stay\n                     --hook-record reads, for this report only, the record kept by the\n                     hook `sv connect claude --hook` prints; it credits nothing\n                     --codeql-results FILE, CodeQL's SARIF from your own CI: read only when it\n                     is of the commit checked out, with nothing changed since; any other\n                     file is named in the report and credits nothing\n                     --fail-on also fails for attention[:SEVERITY] (a finding at SEVERITY\n                     or worse: critical, high, medium, low (the default), or info),\n                     not-assessed (also a symbolic link not followed, an outside tool that\n                     could not run, or an --advisories comparison that did not cover the app),\n                     or any (both), several separated by commas\n                     --baseline DIR, an older report folder: attention fails only for a\n                     finding that report did not hold; every finding is still listed and\n                     counted, and those it held are marked\n                     exit status: 0 finished; 1 needs attention (only with --fail-on);\n                     2 not assessed: a check could not run, no file of the app was read,\n                     or --run was given and the app could not be started;\n                     3 sv itself failed (no stackvet.toml, a bad manifest, no such folder)\n",
     },
     Command {
         name: "review",
@@ -427,9 +429,16 @@ const COMMANDS: &[Command] = &[
     Command {
         name: "connect",
         word: Some("TOOL"),
-        flags: &[],
+        flags: &["--hook"],
         valued: &["--docker", "--user", "--keys", "--folder"],
-        help: "  sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--folder DIR]\n                     print StackVet's MCP server for this folder, the paths already filled\n                     in: with no TOOL, its name, command, and arguments, for any AI coding\n                     tool to put in its own settings; with TOOL (claude, vscode, or\n                     cursor), that tool's settings block;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux, --keys DIR (your key folder,\n                     \"$HOME/.config/stackvet\") so the container can count what you\n                     recorded in sv review: it reads that folder's list of trusted keys\n                     alone, read-only; writes nothing\n",
+        help: "  sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--folder DIR] [--hook]\n                     print StackVet's MCP server for this folder, the paths already filled\n                     in: with no TOOL, its name, command, and arguments, for any AI coding\n                     tool to put in its own settings; with TOOL (claude, vscode, or\n                     cursor), that tool's settings block;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux, --keys DIR (your key folder,\n                     \"$HOME/.config/stackvet\") so the container can count what you\n                     recorded in sv review: it reads that folder's list of trusted keys\n                     alone, read-only; writes nothing\n                     claude --hook prints instead a Claude Code hook that records each\n                     command the tool runs and each file it writes, outside the app's\n                     folder, for sv report --hook-record to read\n",
+    },
+    Command {
+        name: "hook-record",
+        word: None,
+        flags: &[],
+        valued: &["--app"],
+        help: "  sv hook-record --app DIR\n                     what the hook sv connect claude --hook prints runs: adds one line\n                     to DIR's hook record for what Claude Code hands it; not for typing\n",
     },
     Command {
         name: "doctor",
@@ -2565,6 +2574,9 @@ struct ReportArgs {
     keep_tool_output: bool,
     /// Leave out the progress and timing lines (`sv report` only; backlog 0247).
     quiet: bool,
+    /// Read the hook record for this report (`sv report` only; backlog 0566, ADR-122): the person's consent, for this
+    /// run alone, since the record is outside the app's folder.
+    hook_record: bool,
     /// A folder the owner downloaded on purpose. `sv` never fetches advisories itself.
     advisories_dir: Option<PathBuf>,
     /// A CodeQL results file from the owner's own CI (`sv report` only; ADR-113).
@@ -2580,6 +2592,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
         run_tools: tools_by_default(),
         keep_tool_output: false,
         quiet: false,
+        hook_record: false,
         advisories_dir: None,
         codeql_results: None,
     };
@@ -2600,6 +2613,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
             "--no-tools" => no_tools = true,
             "--keep-tool-output" => parsed.keep_tool_output = true,
             "--quiet" => parsed.quiet = true,
+            "--hook-record" => parsed.hook_record = true,
             "--advisories" => {
                 parsed.advisories_dir = Some(PathBuf::from(
                     rest.next().context("--advisories needs a folder")?,
@@ -2764,6 +2778,7 @@ fn report_command(
         run_tools,
         keep_tool_output,
         quiet,
+        hook_record,
         advisories_dir,
         codeql_results,
     } = parse_report_args(args, "a directory")?;
@@ -2810,6 +2825,10 @@ fn report_command(
         advisories_dir.as_deref(),
         codeql_results.as_deref(),
     );
+    // Read before this report replaces it: where the last report's hook record ended (backlog 0566).
+    let earlier_tip = hook_record
+        .then(|| sv_cli::hook_record::earlier_tip(&out_dir))
+        .flatten();
     let report_folder::ReportFolder {
         report, written, ..
     } = report_folder::write_report_folder(
@@ -2849,6 +2868,12 @@ fn report_command(
             sv_cli::assemble::stage_finished(started.take());
             if let Some(record) = report.run_record.as_mut() {
                 record.options = Some(options.clone());
+            }
+            if hook_record {
+                report.hook_record = Some(sv_cli::hook_record::read_for(
+                    &app_dir,
+                    earlier_tip.as_ref(),
+                ));
             }
             if let Some(b) = &baseline {
                 b.same_app(&report.app_name)?;

@@ -148,9 +148,35 @@ fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
 /// Where the container's settings folder is, when it is given the list of trusted keys.
 const CONTAINER_CONFIG: &str = "/sv-config";
 
-/// `sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--folder DIR]`.
+/// The hooks block that keeps the hook record for the app in `folder` (backlog 0566, ADR-122): Claude Code's, for the
+/// person to add to its settings. Each runs `program hook-record --app folder` after a command or file write, whether it
+/// finished or failed, and at the end of each turn.
+pub fn hook_block(program: &Path, folder: &Path) -> Value {
+    let command = format!(
+        "{} hook-record --app {}",
+        shell_word(&program.display().to_string()),
+        shell_word(&folder.display().to_string())
+    );
+    let hooks = json!([{ "type": "command", "command": command }]);
+    let matcher = format!("^({})$", crate::hook_record::TOOLS.join("|"));
+    json!({
+        "hooks": {
+            "PostToolUse": [{ "matcher": matcher, "hooks": hooks }],
+            "PostToolUseFailure": [{ "matcher": matcher, "hooks": hooks }],
+            "Stop": [{ "hooks": hooks }],
+        }
+    })
+}
+
+/// A path as one word of a shell command: in single quotes, a quote inside it closed, escaped, and opened again.
+fn shell_word(word: &str) -> String {
+    format!("'{}'", word.replace('\'', r"'\''"))
+}
+
+/// `sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--folder DIR] [--hook]`.
 pub fn command(args: &[String]) -> Result<String> {
     let mut tool = None;
+    let mut hook = false;
     let mut docker = None;
     let mut user = None;
     let mut keys = None;
@@ -171,6 +197,7 @@ pub fn command(args: &[String]) -> Result<String> {
                     words.next().context("--folder needs a folder")?,
                 ))
             }
+            "--hook" => hook = true,
             other if other.starts_with("--") => bail!("unknown option: {other}"),
             other => {
                 tool = Some(Tool::named(other).with_context(|| {
@@ -188,6 +215,9 @@ pub fn command(args: &[String]) -> Result<String> {
         .with_context(|| format!("{} is not a folder `sv` can open", folder.display()))?;
     if !folder.is_dir() {
         bail!("{} is not a folder", folder.display());
+    }
+    if hook {
+        return hook_for(tool, docker.is_some(), &folder);
     }
     let runner = match docker {
         Some(docker) => {
@@ -240,8 +270,36 @@ pub fn command(args: &[String]) -> Result<String> {
     Ok(format!("{text}\n"))
 }
 
+/// `sv connect claude --hook`: the hook block, for an `sv` installed on this computer, which the hook runs.
+fn hook_for(tool: Option<Tool>, docker: bool, folder: &Path) -> Result<String> {
+    if tool != Some(Tool::Claude) {
+        bail!(
+            "--hook prints Claude Code's hook, the one tool whose hook input is documented for it: give `claude`. Other \
+             AI coding tools are not offered one yet"
+        );
+    }
+    if docker || in_a_container() {
+        bail!(
+            "--hook is not offered for sv in its container yet: the hook runs sv after each of the tool's commands, and \
+             needs a copy of sv installed on your computer (docs/INSTALL.md)"
+        );
+    }
+    let program = std::env::current_exe()
+        .and_then(|p| p.canonical())
+        .context("could not find where this copy of `sv` is")?;
+    let text = serde_json::to_string_pretty(&hook_block(&program, folder))?;
+    Ok(format!("{text}\n"))
+}
+
 /// The line that says where the block goes, for standard error, so standard output is the block alone.
 pub fn where_it_goes(args: &[String]) -> String {
+    if args.iter().any(|a| a == "--hook") {
+        return "Add this to .claude/settings.local.json in the app's folder, under \"hooks\" with any hooks already \
+                there, then restart Claude Code. It runs sv after each command Claude Code runs and each file it \
+                writes, and records what it did outside this folder (no file contents, output, or prompts). Nothing \
+                reads that record unless you run `sv report --hook-record`."
+            .to_owned();
+    }
     match args.iter().find_map(|a| Tool::named(a)) {
         Some(tool) => format!(
             "Put this in {} in the app's folder, then restart your AI coding tool and ask it to list the \

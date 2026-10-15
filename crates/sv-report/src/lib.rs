@@ -26,6 +26,7 @@ pub mod dashboard;
 pub mod fence;
 pub mod folder;
 pub mod groups;
+pub mod hook;
 pub mod html;
 pub mod interview;
 pub mod json;
@@ -1211,6 +1212,10 @@ pub struct Report {
     /// before going live (`checklist`, backlog 0589) has its steps at the host and at the live address.
     #[serde(default)]
     pub on_the_internet: bool,
+    /// What the hook record showed (backlog 0566, ADR-122), only when the person asked for it to be read for this run
+    /// (`sv report --hook-record`). Its own section, apart from every count; credits nothing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hook_record: Option<hook::HookSeen>,
     /// What the AI coding tool's own files in the folder let it do (ADR-049). Not the app, so it
     /// credits nothing and finds nothing; the report says it apart from everything else.
     pub ai_tool: sv_check::ai_tool::AiToolFiles,
@@ -2906,6 +2911,10 @@ mod next_step_tests;
 mod checklist_tests;
 
 #[cfg(test)]
+#[path = "hook_tests.rs"]
+mod hook_tests;
+
+#[cfg(test)]
 #[path = "build_loop_tail_tests.rs"]
 mod build_loop_tail_tests;
 
@@ -3768,6 +3777,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         tests_to_write,
         before_going_live,
         on_the_internet: inputs.on_the_internet,
+        hook_record: None,
         ai_tool: inputs.ai_tool,
         look_away: inputs.look_away,
         only_you_can_check,

@@ -453,7 +453,7 @@ pub fn render(report: &Report) -> String {
 }
 
 /// `sv`'s words for a page: escaped, with each `` `span` `` shown as code.
-fn text(words: &str) -> String {
+pub(crate) fn text(words: &str) -> String {
     words
         .split('`')
         .enumerate()

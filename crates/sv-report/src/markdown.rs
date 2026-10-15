@@ -593,6 +593,16 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
         out.push('\n');
     }
 
+    // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
+    if let Some(seen) = &report.hook_record {
+        out.push_str(&format!("## {}\n\n", crate::hook::HEADING));
+        let (lines, command) = crate::hook::sentences(seen);
+        for line in lines {
+            let line = inert(&line).replace(crate::hook::COMMAND, &code(command.unwrap_or("")));
+            out.push_str(&format!("{line}\n\n"));
+        }
+    }
+
     // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
     if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
         out.push_str("## What your AI coding tool's files let it do\n\n");
@@ -1362,6 +1372,7 @@ mod tests {
             only_you_can_check: Vec::new(),
             before_going_live: Vec::new(),
             on_the_internet: false,
+            hook_record: None,
             ai_tool: Default::default(),
             look_away: Default::default(),
             questions_for_you: Vec::new(),

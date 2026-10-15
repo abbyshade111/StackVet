@@ -180,6 +180,16 @@ grade: the commands its settings run, the permissions that let it act without as
 any characters hidden in its instruction files (`AGENTS.md`, `CLAUDE.md`, and the like) that a person reading them
 cannot see (ADR-049).
 
+### What the AI coding tool did, from a hook you install
+
+`sv connect claude --hook` prints a Claude Code hook for you to add to `.claude/settings.local.json`; `sv` never writes
+it. After each command Claude Code runs and each file it writes, the hook adds a line to a record kept outside the
+app's folder, in `~/.local/state/stackvet/hook-records/`: the command, with any key cut short, or the file's path, and
+never a file's contents, a command's output, your prompts, or the tool's words. `sv report --hook-record` reads it for
+that report alone: a section of its own says how many commands and file writes it saw, which ran the tests and whether
+the last of them failed, and whether the record was changed since the last report. It credits nothing, and the tool,
+which runs as you, could have changed the record before then (ADR-122).
+
 ### The questions no tool can answer
 
 Nineteen of the requirements at level 1 and 2 ask for a written decision and nothing else: what counts

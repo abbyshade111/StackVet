@@ -843,6 +843,19 @@ pub fn page(report: &Report) -> String {
     // The same, with everything else to do before going live, in the order of a deployment (backlog 0589).
     b.push_str(&crate::checklist::html(report));
 
+    // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
+    if let Some(seen) = &report.hook_record {
+        b.push_str(&format!("<h2>{}</h2>\n", escape(crate::hook::HEADING)));
+        let (lines, command) = crate::hook::sentences(seen);
+        for line in lines {
+            let line = crate::checklist::text(&line).replace(
+                crate::hook::COMMAND,
+                &format!("<code>{}</code>", escape(command.unwrap_or(""))),
+            );
+            b.push_str(&format!("<p>{line}</p>\n"));
+        }
+    }
+
     // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
     if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
         b.push_str("<h2>What your AI coding tool's files let it do</h2>\n");
@@ -1415,6 +1428,7 @@ mod tests {
             only_you_can_check: Vec::new(),
             before_going_live: Vec::new(),
             on_the_internet: false,
+            hook_record: None,
             ai_tool: Default::default(),
             look_away: Default::default(),
             questions_for_you: Vec::new(),
