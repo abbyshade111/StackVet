@@ -1,6 +1,6 @@
 # Whether CodeQL hides a result its lgtm or codeql comment marks, checked with a real run
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** open
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -17,3 +17,9 @@ says something was there.
   real SARIF kept as a fixture, as `crates/sv-check/tests/suppressed.rs` does for the others.
 - How verified: not yet; no `codeql` in the cloud session's container.
 - Needs a decision record?: only if CodeQL is run differently (ADR-111 governs the outside tools).
+
+**Released, 15 October 2026** (documentation session). The board assigned it to documentation with "if CodeQL is not
+installed in the session, say so on the item and move on", and the owner said the same day that it goes to a session
+with CodeQL. This cloud session has no `codeql` (not on the path, nor in `/opt` or `~/.codeql`), so nothing was run
+and nothing is known yet about whether CodeQL drops a result its comment marks. Left open for a session that has
+CodeQL installed.
