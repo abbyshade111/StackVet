@@ -6,9 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0582, 0528, 0536, 0535, 0492
-- wording — arm: full — holds: 0584 (since 2026-10-15)
-- documentation — arm: full — holds: 0491 (since 2026-10-15) — next: 0497, 0494, 0488, 0498
+- honesty — arm: full — holds: 0232 (since 2026-10-15)
+- documentation — arm: full — holds: 0497 (since 2026-10-15)
 
 ## Queue
 
@@ -25,6 +24,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 11. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
 12. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
 13. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
+14. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+15. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+16. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+17. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
+18. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
+19. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — ready
+20. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
 
 ## Log
 
@@ -717,3 +723,21 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 17:50 — finished 0599 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2087; from its lane, behind 0232
 - 2026-10-15 17:50 — assigned 0488 to documentation (full) as next: pointer proposals that read the code (locators and their questions), in documentation's pointer lane after 0494
 - 2026-10-15 17:50 — assigned 0498 to documentation (full) as next: pointer proposals that read the code (locators and their questions), in documentation's pointer lane after 0494
+- 2026-10-15 18:40 — finished 0584 by wording (full): https://github.com/abbyshade111/StackVet/pull/2089
+- 2026-10-15 18:40 — finished 0491 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2092; now holds 0497
+- 2026-10-15 18:40 — finished 0582 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2093; from its lane, behind 0232
+- 2026-10-15 18:43 — withdrew 0528 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
+- 2026-10-15 18:43 — released 0528
+- 2026-10-15 18:43 — withdrew 0536 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
+- 2026-10-15 18:43 — released 0536
+- 2026-10-15 18:43 — withdrew 0535 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
+- 2026-10-15 18:43 — released 0535
+- 2026-10-15 18:43 — withdrew 0492 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
+- 2026-10-15 18:43 — released 0492
+- 2026-10-15 18:43 — withdrew 0494 from documentation (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
+- 2026-10-15 18:43 — released 0494
+- 2026-10-15 18:43 — withdrew 0488 from documentation (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
+- 2026-10-15 18:43 — released 0488
+- 2026-10-15 18:43 — withdrew 0498 from documentation (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
+- 2026-10-15 18:43 — released 0498
+- 2026-10-15 18:43 — session wording removed

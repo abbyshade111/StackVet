@@ -1,6 +1,6 @@
 # A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** open
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
