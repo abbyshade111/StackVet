@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0560 (since 2026-10-14) — next: 0561, 0564, 0539, 0232
-- wording — arm: full — holds: 0530 (since 2026-10-15) — next: 0534, 0525, 0565, 0566
+- honesty — arm: full — holds: 0560 (since 2026-10-14) — next: 0561, 0564, 0495, 0539, 0232
+- wording — arm: full — holds: 0530 (since 2026-10-15) — next: 0534, 0565, 0566
 - documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0529, 0509
 
 ## Queue
@@ -25,22 +25,21 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 11. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
 12. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — ready
 13. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
-14. 0495 mTLS as a derived condition, and a client certificate accepted without a trust check reported — ready
-15. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
-16. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — ready
-17. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
-18. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
-19. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
-20. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-21. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
-22. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
-23. 0523 The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding — ready
-24. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
-25. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-26. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-27. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-28. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
-29. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
+14. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
+15. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — ready
+16. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
+17. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
+18. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
+19. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
+20. 0514 The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October — hold: waits on the owner's own drawings (an SVG and a PNG of each, on the owner's drive) being added to the repository
+21. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+22. 0523 The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding — ready
+23. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
+24. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+25. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+26. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+27. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
+28. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
 
 ## Log
 
@@ -573,3 +572,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 00:21 — assigned 0566 to wording (full) as next: wording's lane while 0530 and 0534 wait on the owner: the AST rule's constant case, then the two observability proposals with the owner's go (the tool's session record read with consent; the hook log), none in the probe folder the sweeps rewrite
 - 2026-10-15 00:21 — queued 0509, marked
 - 2026-10-15 00:21 — assigned 0509 to documentation (full) as next: documentation's lane while 0568 and 0529 wait on the owner: the CodeQL run over a fixture; if CodeQL is not installed in the session, say so on the item and move on
+- 2026-10-15 01:20 — finished 0525 by wording (full): https://github.com/abbyshade111/StackVet/pull/1984; from its lane, behind 0530
+- 2026-10-15 01:20 — assigned 0495 to honesty (full) into the lane after 0564: the first of the pointer proposals in the owner's order of 14 October (0495, then 0490, then 0500 after the sweeps): a derived mTLS condition and one finding; sv-check and the applicability data
