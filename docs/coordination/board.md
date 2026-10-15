@@ -36,7 +36,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 22. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
 23. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
 24. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
-25. 0509 Whether CodeQL hides a result its lgtm or codeql comment marks, checked with a real run — hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
 
 ## Log
 
@@ -695,3 +694,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 14:50 — finished 0595 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2061; now holds 0586
 - 2026-10-15 14:50 — assigned 0583 to documentation (full) as next: the Semgrep logger rule on id-only lines, with its row in docs/research/SEMGREP-FALSE-ALARMS.md; no file shared with honesty's next five (pointer, settings file, SVG upload, sign-up names, path rule)
 - 2026-10-15 14:50 — assigned 0597 to wording (full) as next: prompt 6's commit check and prompt 5's unrecommended questions; the prompt page, wording's
+- 2026-10-15 15:01 — dropped 0509 from the queue
