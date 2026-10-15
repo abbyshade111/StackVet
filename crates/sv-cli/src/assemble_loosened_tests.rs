@@ -92,10 +92,9 @@ fn a_value_that_could_be_a_key_is_never_shown() {
 
 #[test]
 fn every_rule_the_table_bears_on_is_one_of_svs() {
-    let reach = std::fs::read_to_string(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../data/reach.json"),
-    )
-    .expect("data/reach.json");
+    // Through the data finder, as every read of `data/` is (ADR-036).
+    let reach =
+        std::fs::read_to_string(sv_frameworks::data::file("reach.json")).expect("data/reach.json");
     for rule in sv_run::start_settings::rules_borne_on() {
         assert!(
             reach.contains(&format!("\"{rule}\"")),
