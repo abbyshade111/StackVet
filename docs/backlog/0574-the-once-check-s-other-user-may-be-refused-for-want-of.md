@@ -11,3 +11,5 @@ be refused because the other user may not do the action at all.
 
 **What to build.** A solo try by the other user, after a reset, before the race (more than two requests); refused
 alone, the race says nothing.
+
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** (a). Add an optional reset request under `once` (for example, cancel the booking), sent as the holder: with it, the other user tries alone first, the reset puts the thing back, then the race runs; without it, the credit stays in part and says the other user was not shown able to take it. A Later entry on the record that governs the once check and the manifest key.
