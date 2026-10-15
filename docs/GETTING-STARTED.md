@@ -231,6 +231,8 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >
 > Step 4. After each change, tell me in plain words what you changed. List every file you changed because
 >    of a check, with the check's words beside it. Ask me before you delete anything.
+>    Before the first commit, add `stackvet-report/` to `.gitignore`: the report is for me to read, not for the
+>    repository. Keep `.stackvet/` in the repository: it is StackVet's record of the build, which the report reads.
 >
 > Step 5. Never tell me the app is secure. Tell me what was checked and what was not.
 >

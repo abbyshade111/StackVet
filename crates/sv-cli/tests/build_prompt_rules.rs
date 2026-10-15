@@ -59,6 +59,17 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "Fill in `owned` there too when the app has a record one person makes that another must not see: it \
              lets StackVet try to read it as somebody else and to submit a forged form.",
         ),
+        // Backlog 0557, the owner's choice A of 15 October 2026: in the trial Antigravity committed the report folder
+        // three times and put `.stackvet/` in `.gitignore`, which keeps the build record out of CI (ADR-076).
+        (
+            "keep the report folder out of git",
+            "Before the first commit, add `stackvet-report/` to `.gitignore`: the report is for me to read, not for \
+             the repository.",
+        ),
+        (
+            "keep the build record in git",
+            "Keep `.stackvet/` in the repository: it is StackVet's record of the build, which the report reads.",
+        ),
         (
             "only the stackvet_ tools",
             "never run commands inside its container",
