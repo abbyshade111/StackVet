@@ -296,7 +296,9 @@ word.
 >    contradiction is wrong, leave the code as it is and tell me; I decide.
 >
 > Step 4. After each change, tell me in plain words what you changed. List every file you changed because
->    of a check, with the check's words beside it. Ask me before you delete anything.
+>    of a check, with the check's words beside it. Ask me before you delete anything, and before you install anything.
+>    Your tests use a database of their own, never the app's. Before you tell me a page works, open it the way a person
+>    would, over the running server, and tell me what you saw.
 >    Before the first commit, add `stackvet-report/` to `.gitignore`: the report is for me to read, not for the
 >    repository. Keep `.stackvet/` in the repository: it is StackVet's record of the build, which the report reads.
 >
@@ -316,7 +318,7 @@ word.
 >    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
 >    `by = "ai-tool"` and my words in `how`.
 >
-> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint 03286748)*
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint f624459a)*
 <!-- setup-step-5:end -->
 
 What happens next:
