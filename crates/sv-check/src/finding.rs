@@ -53,6 +53,10 @@ pub struct Secret {
     redacted: String,
     /// How long the original was, which is sometimes the only way to tell two findings apart.
     length: usize,
+    /// Whether the original was made of words, such as `violet-canoe-marble-ledger`, rather than random characters
+    /// (`crate::secrets::reads_as_words`). Kept for `Finding::is_test_information`, never written to a report.
+    #[serde(skip)]
+    reads_as_words: bool,
 }
 
 impl Secret {
@@ -66,7 +70,13 @@ impl Secret {
         Secret {
             redacted: crate::text::cut_with_count(value, 4.min(total / 3)),
             length: total,
+            reads_as_words: crate::secrets::reads_as_words(value),
         }
+    }
+
+    /// Whether the original value was made of words rather than random characters.
+    pub fn reads_as_words(&self) -> bool {
+        self.reads_as_words
     }
 
     pub fn as_str(&self) -> &str {
@@ -87,7 +97,9 @@ pub const INFORMATION_ONLY: &[&str] = &[crate::suite::NAME_MISMATCH];
 /// 11 October 2026): Bandit's assert (B101) and its password-looking strings (B105, B106, B107). An assert is how
 /// a test is written, and a password string in a test file is usually a fixture. Such a finding is listed in its
 /// own section, for the owner to review, and it does not count. The secrets scan's rules are not on this list,
-/// so a real-looking key in a test file still counts.
+/// so a real-looking key in a test file still counts. One more is information, by the owner's answer of
+/// 15 October 2026 (backlog 0529; ADR-091, Later): a credential assignment in test code whose value is made of words,
+/// such as `violet-canoe-marble-ledger` (`Finding::is_test_information`).
 pub const TEST_FILE_INFORMATION: &[&str] =
     &["bandit.B101", "bandit.B105", "bandit.B106", "bandit.B107"];
 
@@ -320,11 +332,19 @@ impl Finding {
     }
 
     /// Whether this is information rather than a finding: one of `TEST_FILE_INFORMATION`, in test code, that no
-    /// other tool also reported (ADR-091). Listed in its own section, never counted.
+    /// other tool also reported (ADR-091); or a credential assignment in test code whose value is made of words,
+    /// reported by no other rule but those (backlog 0529). A random-looking value in a test file still counts: it
+    /// can be a real key. Listed in its own section, never counted.
     pub fn is_test_information(&self) -> bool {
         self.in_test_code()
-            && self.also_reported_by.is_empty()
-            && TEST_FILE_INFORMATION.contains(&self.rule_id.as_str())
+            && ((self.also_reported_by.is_empty()
+                && TEST_FILE_INFORMATION.contains(&self.rule_id.as_str()))
+                || (self.rule_id == crate::secrets::ASSIGNMENT_RULE
+                    && self.secret.as_ref().is_some_and(Secret::reads_as_words)
+                    && self
+                        .also_reported_by
+                        .iter()
+                        .all(|r| TEST_FILE_INFORMATION.contains(&r.as_str()))))
     }
 
     /// Whether the finding is only "worth a look": reported by one of the Semgrep rules in

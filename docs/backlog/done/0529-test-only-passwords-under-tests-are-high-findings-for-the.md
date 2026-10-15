@@ -1,6 +1,6 @@
 # Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -16,3 +16,10 @@ file is information with the words "in a test file; a test password reused elsew
 against V13.3.1 or SBD-AC-05. A value that looks like a real key (a provider's prefix) stays a finding wherever it is.
 
 **Record.** The secrets check's record: a Later entry, since what counts as a finding changes.
+
+**Done, 15 October 2026** (documentation session), as the owner answered, (b). A credential assignment in a test file
+whose value is made of words, such as `violet-canoe-marble-ledger`, is test information, listed in the report's own
+section and not counted, with the words "a test password reused elsewhere is still a risk" in its description. A
+random-looking value in a test file still counts (ADR-091), and so does the same passphrase in the app's own code. The
+finding's title, and so its fingerprint, are unchanged. ADR-091 has a dated "Later" entry. Tests:
+`crates/sv-check/src/secrets/test_passphrase_tests.rs` (5).
