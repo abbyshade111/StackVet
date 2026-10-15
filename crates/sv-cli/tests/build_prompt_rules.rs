@@ -52,6 +52,13 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up on its \
              own, and ask whether to seed a test code for the run, and where it would live.",
         ),
+        // Backlog 0533: in the trial of 14 October 2026 two of three tools left `owned` out, so the other-user and
+        // forged-form checks never ran.
+        (
+            "say what `owned` is for",
+            "Fill in `owned` there too when the app has a record one person makes that another must not see: it \
+             lets StackVet try to read it as somebody else and to submit a forged form.",
+        ),
         (
             "only the stackvet_ tools",
             "never run commands inside its container",

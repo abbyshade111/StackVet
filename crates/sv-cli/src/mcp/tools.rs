@@ -265,13 +265,13 @@ impl Server {
         let app_dir = self.app_dir(args)?;
         // Asked here, so the remedy names the tool the AI coding tool has, not `sv init`.
         needs_manifest(&app_dir, "ask for the preflight again")?;
-        let (items, ahead, unread) = crate::preflight::of(&app_dir)?;
+        let (items, ahead, left_out, unread) = crate::preflight::of(&app_dir)?;
         Ok(json!({
             "content": [{
                 "type": "text",
-                "text": sv_report::fence::fenced(|fence| crate::preflight::markdown_with(&items, &ahead, &unread, fence)),
+                "text": sv_report::fence::fenced(|fence| crate::preflight::markdown_with(&items, &ahead, &left_out, &unread, fence)),
             }],
-            "structuredContent": crate::preflight::to_json(&items, &ahead, &unread),
+            "structuredContent": crate::preflight::to_json(&items, &ahead, &left_out, &unread),
             "isError": false,
         }))
     }

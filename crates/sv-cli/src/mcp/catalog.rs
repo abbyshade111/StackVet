@@ -307,9 +307,28 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                     "items": items.clone(),
                     // What `sv run` will check once the app runs, read in the code (ADR-035, Later).
                     "willLookFor": items,
+                    // The optional keys of `[stack.run.users]` left out, and what each costs (backlog 0533).
+                    "leftOut": {
+                        "type": "array",
+                        "items": object(
+                            json!({
+                                "key": string,
+                                "checks": string,
+                                "requirements": strings,
+                            }),
+                            &["key", "checks", "requirements"],
+                        ),
+                    },
                     "notRead": strings,
                 }),
-                &["ran", "credits", "items", "willLookFor", "notRead"],
+                &[
+                    "ran",
+                    "credits",
+                    "items",
+                    "willLookFor",
+                    "leftOut",
+                    "notRead",
+                ],
             )
         }
         "stackvet_before" => {
