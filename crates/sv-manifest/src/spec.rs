@@ -210,6 +210,8 @@ health = "/"              # a path that returns 200 once the app is up
 #   `field` is the form field the file goes in; `serves-at` is where an upload can be fetched back,
 #   with {name} standing for its file name — leave it out if uploads are never served over the web.
 #   `max-bytes` is the largest file you say the app accepts, which is what it is held to.
+#   If the app takes only some kinds of file, add `accepts = ["html"]` (extensions or media types, in your order):
+#   every file `sv` sends is the first of those it can make (gif, png, jpg, html, pdf, txt, csv, json), a GIF without it.
 #   If the app unpacks compressed files, add `unpacks-archives = ["zip", "gzip", "tar", "7z"]` (only those it
 #   unpacks; `tar` and `7z` are stored, uncompressed), `max-unpacked-bytes` (the most one may unpack to), and
 #   `max-files` (the most files one zip may hold): `sv` sends one just over each, after its other uploads, at most

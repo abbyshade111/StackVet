@@ -916,6 +916,12 @@ pub struct UploadSection {
     /// cannot be checked, a number can. Absent means V5.2.1 is not assessed.
     #[serde(default)]
     pub max_bytes: Option<u64>,
+    /// The kinds of file the owner says the app takes, as extensions (`html`, `.png`) or media types
+    /// (`text/html`, `image/*`), in the order they are given (backlog 0584, ADR-046, Later). The upload
+    /// checks send the first kind on the list `sv` can make: an ordinary one first, then the same kind
+    /// too large, with the wrong contents, and so on. Absent means not said, and a GIF is sent.
+    #[serde(default)]
+    pub accepts: Option<Vec<String>>,
     /// The compressed formats the owner says the app unpacks (V5.2.3; ADR-046). Absent means not
     /// said, and no archive is sent; empty means none, and none is sent either. Only the formats
     /// listed are sent, so an app that unpacks zip and not gzip is never judged on gzip.
@@ -3142,3 +3148,6 @@ mod account_changes_tests;
 mod email_code_condition_tests;
 #[cfg(test)]
 mod rich_text_condition_tests;
+
+#[cfg(test)]
+mod upload_accepts_tests;

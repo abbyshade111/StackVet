@@ -1,6 +1,6 @@
 # The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
