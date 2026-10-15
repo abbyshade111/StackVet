@@ -185,7 +185,11 @@ fn one_change(
 
     // Asks for the change, then opens `shows`: the answer to the change, whether the page could be
     // opened, and whether it shows the value.
-    let mut attempt = |http: &mut dyn Http, password: &str, value: &str, label: &str| {
+    let mut attempt = |http: &mut dyn Http,
+                       request: &RequestTemplate,
+                       password: &str,
+                       value: &str,
+                       label: &str| {
         let values = Values {
             user: &account.user,
             password,
@@ -195,7 +199,7 @@ fn one_change(
         let answer = send_template(
             http,
             &format!("change-{kind}-{label}"),
-            &request,
+            request,
             &values,
             session,
             &pages,
@@ -227,7 +231,7 @@ fn one_change(
     };
 
     let value = new_value(kind, spare, 0, &account.user);
-    let (answer, opened, shown) = attempt(http, wrong, &value, "wrong-password");
+    let (answer, opened, shown) = attempt(http, &request, wrong, &value, "wrong-password");
     out.steps.push(format!(
         "asked to change {what} giving a wrong password ({})",
         status(&answer)
@@ -258,8 +262,48 @@ fn one_change(
         return;
     }
 
+    // The same change with the password field left out (backlog 0561, ADR-119): an app that checks the
+    // password only when it is sent refuses the wrong one above and takes this.
+    let left_out = super::passwords::without_password(&request);
+    if let Some(left_out) = &left_out {
+        // Turn 4, not 2: the phone's third value would be the two-factor number's first, and the page is read
+        // for a value anywhere on it.
+        let value = new_value(kind, spare, 4, &account.user);
+        let label = "no-password";
+        let (answer, _, shown) = attempt(http, left_out, "", &value, label);
+        out.steps.push(format!(
+            "asked to change {what} with the password left out ({})",
+            status(&answer)
+        ));
+        if shown {
+            out.findings.push(finding_on(
+                vec![
+                    format!("change-{kind}-{label}"),
+                    format!("shows-{kind}-{label}"),
+                ],
+                rule_for(kind),
+                match kind {
+                    "phone" => "The phone number can be changed with the password left out",
+                    "two-factor" => {
+                        "The two-factor settings can be changed with the password left out"
+                    }
+                    _ => "What recovers the account can be changed with the password left out",
+                },
+                Severity::High,
+                format!(
+                    "A request to {} with the password left out changed {what}: {} then showed \
+                     the new value. The same change giving a wrong password was refused, so the \
+                     app checks the password only when it is sent.",
+                    change.path, change.shows
+                ),
+            ));
+            return;
+        }
+    }
+
     let value = new_value(kind, spare, 1, &account.user);
-    let (answer, opened, shown) = attempt(http, &account.password, &value, "right-password");
+    let (answer, opened, shown) =
+        attempt(http, &request, &account.password, &value, "right-password");
     out.steps.push(format!(
         "asked to change {what} giving the right password ({})",
         status(&answer)
@@ -309,9 +353,14 @@ fn one_change(
             rule.rule_id,
             rule.requirement_ids,
             format!(
-                "a change of {what} through {} giving a wrong password, refused where the same \
-                 change with the right one took",
-                change.path
+                "a change of {what} through {} giving a wrong password{}, refused where the \
+                 same change with the right one took",
+                change.path,
+                if left_out.is_some() {
+                    ", and one leaving it out,"
+                } else {
+                    ""
+                }
             ),
         )
         // One of what V7.5.1 names; whether it is met whole is decided with the report (ADR-105).

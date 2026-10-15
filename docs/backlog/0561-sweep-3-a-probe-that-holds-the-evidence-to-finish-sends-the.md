@@ -67,3 +67,9 @@ password or the address, so the right change after it fails; only then is the le
 signed in with, which keeps a correct app's sign-ins as they were. Taken, it is the finding ("... with the current
 one left out", "... with the password left out"); refused with the wrong one, the credit says both were refused.
 `account_changes.rs` (phone, two-factor, and recovery details) is still to do.
+
+**Fifth batch, built (the rest of inventory item 3):** the phone, two-factor, and recovery changes are also sent with
+the password field left out, between the wrong password and the right one, and read on their `shows` page as the
+others are; a change taken that way is the finding ("... with the password left out"), and a credit says both were
+refused. Its new value is the fifth of the kind (turn 4), since the phone's third would be the two-factor number's
+first and the page is read for a value anywhere on it; the test caught turn 2.
