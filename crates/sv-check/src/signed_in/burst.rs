@@ -42,12 +42,17 @@ pub(super) fn burst_check(
 ) {
     // `owned`'s create first, then each request `creates` names (the owner's decision, 6 October
     // 2026): each is its own action, judged on its own.
-    let extra: Vec<RequestTemplate> = users.creates.iter().map(|c| c.request()).collect();
-    let creates: Vec<&RequestTemplate> = users
+    // Each with where its record is read back (`read` and `id-field`), to show the first of a burst was made.
+    let extra: Vec<(RequestTemplate, ReadBack)> = users
+        .creates
+        .iter()
+        .map(|c| (c.request(), (c.read.as_deref(), c.id_field.as_deref())))
+        .collect();
+    let creates: Vec<(&RequestTemplate, ReadBack)> = users
         .owned
         .iter()
-        .map(|o| &o.create)
-        .chain(extra.iter())
+        .map(|o| (&o.create, (o.read.as_deref(), o.id_field.as_deref())))
+        .chain(extra.iter().map(|(t, r)| (t, *r)))
         .collect();
     if creates.is_empty() {
         out.not_assessed.push((
@@ -95,10 +100,14 @@ pub(super) fn burst_check(
         ));
         return;
     };
-    for create in creates {
-        burst_one(http, users, &mut session, create, n, out);
+    for (create, read_back) in creates {
+        burst_one(http, users, &mut session, (create, read_back), n, out);
     }
 }
+
+/// Where a create's record is read back: its `read` path (with `{id}`), and the field of its answer that holds
+/// the id; with neither, the `Location` the create sent.
+type ReadBack<'a> = (Option<&'a str>, Option<&'a str>);
 
 /// One burst through `create`, signed in as `session`, against the `n` a minute stackvet.toml
 /// states: the finding, the credit, or why neither, for this action alone.
@@ -106,7 +115,7 @@ fn burst_one(
     http: &mut dyn Http,
     users: &UsersSection,
     session: &mut Session,
-    create: &RequestTemplate,
+    (create, (read, id_field)): (&RequestTemplate, ReadBack),
     n: u32,
     out: &mut Outcome,
 ) {
@@ -139,16 +148,46 @@ fn burst_one(
         })
         .collect();
     let took = http.now().saturating_sub(began);
+    // The first record, read back where its answer says it went: an answer that only looks like a record made
+    // (the form shown again with 200, a redirect back to it) makes every answer after it look the same.
+    let first_made = answers.first().and_then(Option::as_ref).and_then(|r| {
+        let path = super::admin::record_path_with(read, id_field, r)?;
+        let page = http.send(&get("burst-1-read", &path, session))?;
+        (page.status < 500 && page.status != 429)
+            .then(|| (200..300).contains(&page.status) && page.body.contains(&markers[0]))
+            .map(|made| (made, path))
+    });
     let still = still_in(http, users, "after", session);
     // The limit this set off, left to lapse before anything else is asked.
     http.wait(61);
-    let through = answers.iter().filter(|a| accepted(a)).count();
+    // Through means answered as the first was, not "under 400" (backlog 0560, ADR-119): a limit shown on a 200
+    // page, or as a redirect back to the form, is under 400 too.
+    let control = answers
+        .first()
+        .and_then(Option::as_ref)
+        .filter(|_| answers.first().is_some_and(accepted));
+    let judged: Vec<super::control::Beside> = answers
+        .iter()
+        .map(|a| match control {
+            Some(c) => super::control::beside(c, a),
+            None => super::control::Beside::Refused,
+        })
+        .collect();
+    let through = judged
+        .iter()
+        .filter(|b| **b == super::control::Beside::Like)
+        .count();
+    // A limit's own answer (429, or 503 with `Retry-After`) is no puzzle: it is read below as a limit.
+    let unclear = judged.iter().zip(&answers).find_map(|(b, a)| match b {
+        super::control::Beside::Unclear(why) if !limit_answer(a) => Some(why.clone()),
+        _ => None,
+    });
     let crashed = answers
         .iter()
         .filter(|a| super::answer_of(a.as_ref()).is_crash_or_silence())
         .count();
     let first = answers.first().is_some_and(accepted);
-    let last = answers.last().is_some_and(accepted);
+    let last = judged.last() == Some(&super::control::Beside::Like);
     let sent = n as usize + 1;
     out.steps.push(format!(
         "created {sent} records through {} in {took} second{}: {through} went through, {crashed} \
@@ -175,6 +214,17 @@ fn burst_one(
             ),
             out,
         );
+    } else if let Some((false, path)) = &first_made {
+        say(
+            format!(
+                "Whether creating records is limited: the first of the burst through {} answered \
+                 {}, but its record was not there when read back at {path}, so the answers show \
+                 nothing about records going through.",
+                create.path,
+                status(&answers[0])
+            ),
+            out,
+        );
     } else if took > 55 {
         say(
             format!(
@@ -195,6 +245,18 @@ fn burst_one(
                 create.path
             ),
         ));
+    } else if crashed == 0
+        && let Some(why) = &unclear
+    {
+        say(
+            format!(
+                "Whether creating records is limited: of the {sent} sent through {}, {through} were \
+                 answered as the first was, and one was answered otherwise ({why}), which shows \
+                 neither a record made nor a limit.",
+                create.path
+            ),
+            out,
+        );
     } else if crashed > 0 {
         say(
             format!(
@@ -268,7 +330,7 @@ mod tests {
     }
 
     /// The scripted app, changed by `adjust`, against 10 a minute stated.
-    fn run_adjusted(adjust: impl FnOnce(&mut FakeApp)) -> Outcome {
+    pub(super) fn run_adjusted(adjust: impl FnOnce(&mut FakeApp)) -> Outcome {
         let acc = accounts();
         let mut app = FakeApp::new(Flaws::default());
         adjust(&mut app);
@@ -381,7 +443,7 @@ mod tests {
         }
     }
 
-    fn why_not(o: &Outcome) -> &str {
+    pub(super) fn why_not(o: &Outcome) -> &str {
         o.not_assessed
             .iter()
             .find(|(ids, _)| ids == "V2.4.1")
@@ -657,3 +719,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod beside_first_tests;
