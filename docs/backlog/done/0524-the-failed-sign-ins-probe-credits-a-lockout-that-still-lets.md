@@ -1,6 +1,6 @@
 # The failed-sign-ins probe credits a lockout that still lets the right password in
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -23,3 +23,5 @@ and stops after the push-back.
 **Built, 15 October 2026 (honesty):** in 0561's first batch. After a push-back, the account's own password is sent
 once; a lockout that lets it in is the finding "After the limit, the right password still signs in", and nothing is
 credited. Left open for the coordination board to close, since 0524 is queued there.
+
+**Closed by the board, 15 October 2026:** built in the probe sweeps (0559 for 0522, PR 1948; 0560 for 0523, PR 1996; 0561's first batch for 0524, PR 1997), under ADR-119; the orchestrating session read the code (the validation probe now judges its answer beside the control's) before closing.

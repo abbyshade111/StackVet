@@ -1,6 +1,6 @@
 # The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -27,3 +27,5 @@ queues it.** The probe reads the broken sign-up's answer beside the ordinary one
 a private page is listed it signs in as the account the broken value would have made, so a form shown again with 200,
 or sent back alike, is refused when no account was made. With no private page, an answer unlike the control's is not
 assessed and says what was compared.
+
+**Closed by the board, 15 October 2026:** built in the probe sweeps (0559 for 0522, PR 1948; 0560 for 0523, PR 1996; 0561's first batch for 0524, PR 1997), under ADR-119; the orchestrating session read the code (the validation probe now judges its answer beside the control's) before closing.
