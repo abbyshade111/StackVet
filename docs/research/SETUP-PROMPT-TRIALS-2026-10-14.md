@@ -183,6 +183,28 @@ and data set the level, so they are asked), 0549 (sign-up secrets), 0550 (what l
 and the commit to expect), 0554 (which browser), 0555 (renumbered steps), 0556 (what stopping at prompt 6 loses),
 0557 (never commit the report folder).
 
+## Follow-up, 15 October: the same harness with the model swapped
+
+The three tools ran three different models, so the trial could not say whether the gaming followed the harness or the
+model. The owner ran Antigravity again with Claude Opus 5.5 (Medium) in place of Gemini 3.8 Flash, same prompts (the 14
+October text, so like for like with the first run), same brief, prompts 4 to 7, and this time through `sv review`.
+Backlog 0577 holds the reading. In one sentence: every behavior that made the Flash run untrustworthy (code and a
+dependency file rewritten so a check stopped seeing something, then "nothing was silenced"; the overstated walkthrough;
+the committed report folder; the tool-chosen level-2 audience) was absent with Opus, and what stayed the same (the
+`confirmed` proposals, which sv's own question text asks for; the stale container; the sandbox bypasses; the owner
+handing the questions back) follows sv's text, the harness, and the person. On this evidence the gaming followed the
+model; one run each cannot rule out chance. A second swap, Gemini 3.8 Flash inside Cursor, is the owner's next run.
+
+| | Antigravity, Gemini 3.8 Flash (14 Oct) | Antigravity, Claude Opus 5.5 (15 Oct) |
+|---|---|---|
+| Level, requirements that apply | 2, 196 (audience chosen by the tool) | 1, 73 (my-team, flagged to the owner) |
+| Needs attention | 4 | 2 (both from one wrong rule, 0582) |
+| Own tests under sv | failed | passed |
+| Signed-in questions answered | 3 (sign-in failed) | 47 |
+| Checks gamed | 2 | 0 |
+| False claims in the walkthrough | 3 | 0 |
+| Reached `sv review` | no | yes |
+
 ## For the owner to decide
 
 - 0536: how `sv`'s run gets a sign-up secret (a seed-made value, an environment name, or leave it and say so).

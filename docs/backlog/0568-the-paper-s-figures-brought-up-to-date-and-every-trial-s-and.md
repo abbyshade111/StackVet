@@ -1,6 +1,6 @@
 # The paper's figures brought up to date, and every trial's and measurement's data compiled into tables the owner can analyze
 
-**Status:** done, 15 October 2026
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -99,9 +99,7 @@ Still to do: the hand-drawn figures per period. Each is drawn by hand from a tab
 tables are split, and redrawing each figure from them is what remains, so the item stays claimed. The paper's prose is
 the owner's to write against these.
 
-**The owner's answer, 15 October 2026 (asked through the board's waiting line, after part 2):** (b), "extend to today
-and then redraw": the hand-made tables the figures are drawn from (faults, corrections, coordination, tests by day)
-are extended past the 4 October cut-off to today, and the figures are then redrawn per period from them. Part 3.
+**The owner's answer, 15 October 2026 (the second question, asked through the board's waiting line):** (b). Extend the tables the hand-drawn figures are drawn from (faults, corrections, coordination, tests by day) to the day of the build, compiling the records since 4 October the same way the periods were read, then redraw each of the 19 figures with a panel per period (version 1, version 2, StackVet) and the combined view where the figure has one. The StackVet period is the one the paper's conclusions rest on.
 
 **Part 3 built, 15 October 2026** (documentation), as the owner answered (b). `docs/paper/tables/ledgers.py` writes
 the four hand-made ledgers to today in `docs/paper/tables/to-today/`: each is the ledger at the cut-off, unchanged,
@@ -114,3 +112,9 @@ was counted once. `docs/paper/tables/period_figures.py` redraws six figures per 
 cut-off: tests and faults, how faults were caught, corrections, coordination, the decision records, and the two deep
 reviews. DATA.md says how each was made, and which figures are not redrawn and why (one-time records, and figures
 drawn from documents written at the cut-off, which are the owner's to write again).
+
+Still to do (part 4): the owner's answer asks for each of the 19 hand-drawn figures redrawn with a panel per period;
+part 3 redrew six. The other 13 (the cost, the decisions, the timeline, the security findings, the agentic record,
+the top ten, the usability notes, the trials, the study, the self-assessment, the three arms, how v1's faults were
+found, and how `sv` works) are drawn from their tables at the cut-off, already split per period by part 2, and are
+redrawn from those in part 4, so the item stays claimed.

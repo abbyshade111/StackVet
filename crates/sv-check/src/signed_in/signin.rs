@@ -418,6 +418,15 @@ pub(super) fn brute_force_check(
             csrf,
             ..Default::default()
         };
+        // The first guess, at an account this check made, is also the log's wrong password for an
+        // account that exists (V16.3.1, backlog 0232 part 5): bracketed by two marked requests
+        // rather than sent as a sign-in of its own, which the run's sign-ins have no room for. The
+        // markers' own time is outside the attempt's.
+        let around =
+            (n == 0 && real_account).then(|| log_window(login, "wrong", &log_tag(accounts)));
+        if let Some(around) = &around {
+            log_mark(http, &around.open);
+        }
         let started = std::time::Instant::now();
         let (response, _) = send_template(
             http,
@@ -428,6 +437,11 @@ pub(super) fn brute_force_check(
             &[],
         );
         let elapsed = started.elapsed().as_millis();
+        if let Some(around) = around {
+            log_mark(http, &around.close);
+            out.log_markers.wrong_password = Some(wrong.user.clone());
+            out.log_markers.wrong_password_window = Some(around);
+        }
         match response {
             Some(r) => answers.push((r.status, elapsed)),
             // No answer at all, read as 0: not pushing back, and past the limit not a credit.
@@ -669,6 +683,37 @@ pub(super) fn brute_force_check(
 /// down: a request's path. The two sign-ins are each bracketed by a request for a page nobody has
 /// (`/sv-log-before-…`, `/sv-log-after-…`), and the refused request is asked a second time with
 /// the marker as the last part of its path. `logs.rs` says why each keeps its meaning.
+/// A unique run-scoped tag for the log markers, taken from the account names the run already made
+/// unique.
+pub(super) fn log_tag(accounts: &Accounts) -> String {
+    accounts
+        .a
+        .user
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .take(16)
+        .collect()
+}
+
+/// A request for a page nobody has, carrying a marker and nothing else: nobody's session, no form,
+/// no personal data. Whatever the app answers, it is only ever read as a place in the log.
+pub(super) fn log_mark(http: &mut dyn Http, marker: &str) {
+    http.send(&get(
+        &format!("log-marker-{marker}"),
+        &format!("/{marker}"),
+        &Session::default(),
+    ));
+}
+
+/// The two marked requests around one sign-in.
+pub(super) fn log_window(login: &RequestTemplate, which: &str, tag: &str) -> crate::logs::Window {
+    crate::logs::Window {
+        open: format!("sv-log-before-{which}-{tag}"),
+        close: format!("sv-log-after-{which}-{tag}"),
+        login_path: login.path.split('?').next().unwrap_or_default().to_owned(),
+    }
+}
+
 pub(super) fn plant_log_markers(
     http: &mut dyn Http,
     users: &UsersSection,
@@ -676,28 +721,9 @@ pub(super) fn plant_log_markers(
     signed_in_works: bool,
     out: &mut Outcome,
 ) {
-    // A unique run-scoped tag, taken from the account names the run already made unique.
-    let tag: String = accounts
-        .a
-        .user
-        .chars()
-        .filter(|c| c.is_ascii_alphanumeric())
-        .take(16)
-        .collect();
-    // A request for a page nobody has, carrying a marker and nothing else: nobody's session, no
-    // form, no personal data. Whatever the app answers, it is only ever read as a place in the log.
-    let mark = |http: &mut dyn Http, marker: &str| {
-        http.send(&get(
-            &format!("log-marker-{marker}"),
-            &format!("/{marker}"),
-            &Session::default(),
-        ));
-    };
-    let window = |login: &RequestTemplate, which: &str| crate::logs::Window {
-        open: format!("sv-log-before-{which}-{tag}"),
-        close: format!("sv-log-after-{which}-{tag}"),
-        login_path: login.path.split('?').next().unwrap_or_default().to_owned(),
-    };
+    let tag = log_tag(accounts);
+    let mark = log_mark;
+    let window = |login: &RequestTemplate, which: &str| log_window(login, which, &tag);
 
     // 1. A sign-in for an account that does not exist. Its name can only reach the log because a
     //    failed authentication was written down; and a sign-in event written between the two
@@ -756,6 +782,29 @@ pub(super) fn plant_log_markers(
             out.log_markers.successful_sign_in = Some(only.user);
         }
     }
+
+    // The other ways to authenticate stackvet.toml names, none of them marked here: V16.3.1 asks
+    // for all of them, so each keeps its credit in part (backlog 0232, part 5).
+    let named = [
+        (users.email_code.is_some(), "a sign-in with an emailed code"),
+        (users.totp.is_some(), "a sign-in with a two-factor code"),
+        (users.change_password.is_some(), "a password change"),
+        (users.reset.is_some(), "a password reset"),
+        (users.change_email.is_some(), "an email change"),
+        (
+            users.change_two_factor.is_some(),
+            "a change to the two-factor settings",
+        ),
+        (
+            users.change_recovery.is_some(),
+            "a change to what recovers the account",
+        ),
+    ];
+    out.log_markers.untried = named
+        .iter()
+        .filter(|(given, _)| *given)
+        .map(|(_, what)| (*what).to_owned())
+        .collect();
 
     // 3. Each private page asked for by nobody, with a marker in the address, which the app should
     //    refuse. Only planted once the pages are known to be private at all. Every listed page, not

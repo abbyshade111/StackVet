@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0495, 0571, 0572, 0539, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566
-- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0569, 0573, 0574, 0575
+- honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0495, 0571, 0572, 0232
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0591, 0578, 0565, 0566, 0588, 0580
+- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575, 0585
 
 ## Queue
 
@@ -38,6 +38,14 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 24. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
 25. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
 26. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
+27. 0582 `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention" — ready
+28. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
+29. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
+30. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
+31. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
+32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
+33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
+34. 0581 In the Docker route the container has no trusted-keys list, so after `sv review` the tool's `stackvet_check` cannot count the seals — ready
 
 ## Log
 
@@ -597,3 +605,32 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 08:20 — assigned 0573 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
 - 2026-10-15 08:20 — assigned 0574 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
 - 2026-10-15 08:20 — assigned 0575 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
+- 2026-10-15 09:18 — queued 0578, marked
+- 2026-10-15 09:18 — assigned 0578 to wording (full) into the lane after 0534: the owner's find of 15 October from prompt 7: sv review's second report wipes the --run evidence; sv-cli, wording's; first on its line
+- 2026-10-15 09:20 — finished 0569 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2019; from its lane, behind 0568
+- 2026-10-15 09:44 — queued 0579, marked
+- 2026-10-15 09:44 — queued 0582, marked
+- 2026-10-15 09:44 — queued 0583, marked
+- 2026-10-15 09:44 — queued 0584, marked
+- 2026-10-15 09:44 — queued 0585, marked
+- 2026-10-15 09:44 — queued 0586, marked
+- 2026-10-15 09:44 — queued 0588, marked
+- 2026-10-15 09:44 — queued 0580, on hold: the owner's choice: sv's confirmed proposals against prompt 5's ban, marked
+- 2026-10-15 09:44 — queued 0581, on hold: the owner's choice: how the container gets the trusted-keys list, marked
+- 2026-10-15 09:44 — queued 0587, on hold: the owner's choice: a seal bound to the folder or to the app, marked
+- 2026-10-15 09:44 — withdrew 0539 from honesty (full), on hold: honesty's line is full with the Django gate that did not apply (0579) put first; the image build comes back when the line has room
+- 2026-10-15 09:44 — released 0539
+- 2026-10-15 09:44 — assigned 0579 to honesty (full) into the lane after 0564: 0521's gate did not apply on the Opus app: ten wrong findings on a Flask app in both builds; honesty built the gate
+- 2026-10-15 09:44 — assigned 0588 to wording (full) as next: the prompt page's version line, from the Opus reading; wording's file
+- 2026-10-15 09:44 — assigned 0585 to documentation (full) as next: the browser-form gap's quoted refusal, the family of 0527 which documentation built
+- 2026-10-15 09:58 — dropped 0587 from the queue
+- 2026-10-15 09:58 — released 0580
+- 2026-10-15 09:58 — released 0581
+- 2026-10-15 09:58 — assigned 0580 to wording (full) into the lane after 0588: the owner's choice: keep sv's confirmed proposals, change prompt 5 back and drop 0543's warning; interview.rs, the prompt page, and 0543's warning are wording's
+- 2026-10-15 09:58 — assigned 0581 to wording (full) into the lane after 0580: the owner's choice: sv connect --docker mounts the trusted list and the public key read-only; sv-cli, wording's; ADR-108 Later
+- 2026-10-15 09:58 — queued 0589, on hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command), marked
+- 2026-10-15 09:58 — queued 0590, on hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints), marked
+- 2026-10-15 10:00 — queued 0591, marked
+- 2026-10-15 10:00 — withdrew 0581 from wording (full), on hold: wording's line is full; back after the passphrase fault the owner wants fixed first
+- 2026-10-15 10:00 — released 0581
+- 2026-10-15 10:00 — assigned 0591 to wording (full) into the lane after 0534: the owner's find of 15 October, to fix first: the key prompts saved the word none as the passphrase and the unlock prompt gives no way out; sv-cli review.rs, wording's

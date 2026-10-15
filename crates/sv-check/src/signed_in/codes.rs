@@ -29,7 +29,14 @@ pub(super) fn email_code_checks(
             return;
         }
     };
-    if !flow.signs_in(http, &code, &mut first, "1", out) {
+    // Bracketed for the log (V16.3.1, backlog 0232 part 5): a code that signs in, and below, one
+    // refused.
+    let tag = super::signin::log_tag(accounts);
+    let accepted = super::signin::log_window(&flow.entry.use_code, "code-ok", &tag);
+    super::signin::log_mark(http, &accepted.open);
+    let signed_in = flow.signs_in(http, &code, &mut first, "1", out);
+    super::signin::log_mark(http, &accepted.close);
+    if !signed_in {
         out.not_assessed.push((
             IDS.to_owned(),
             format!(
@@ -61,7 +68,15 @@ pub(super) fn email_code_checks(
     };
     codes.extend([one.clone(), two.clone()]);
     email_code_short_check(&codes, out);
+    let refused = super::signin::log_window(&flow.entry.use_code, "code-wrong", &tag);
+    super::signin::log_mark(http, &refused.open);
     let crossed = flow.signs_in(http, &one, &mut asked_two, "crossed", out);
+    super::signin::log_mark(http, &refused.close);
+    out.log_markers.mark_factor(crate::logs::FactorMarkers {
+        what: crate::logs::EMAILED_CODE.to_owned(),
+        accepted: Some(accepted),
+        refused: (!crossed).then_some(refused),
+    });
     let bound =
         if crossed {
             out.findings.push(finding_on(

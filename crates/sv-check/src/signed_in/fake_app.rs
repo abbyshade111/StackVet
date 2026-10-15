@@ -630,6 +630,11 @@ pub(super) struct Flaws {
     /// Each refusal lets the next attempt through: one attempt per refusal, as a token bucket, a
     /// sliding window, or `nginx limit_req` does, whatever it thinks about addresses.
     pub(super) lockout_leaks: bool,
+    /// The log records a sign-in refused for a name with no account, but not a wrong password for
+    /// an account that exists (backlog 0232, part 5).
+    pub(super) logs_no_wrong_password: bool,
+    /// The log records no code given to sign in, emailed or two-factor (backlog 0232, part 5).
+    pub(super) logs_no_codes: bool,
     /// The limit's window rolls over once, just as the first attempt claiming another address
     /// arrives: that attempt gets through whatever the header says, and nothing after it does.
     /// Timing a real limiter can produce by chance.
@@ -1367,18 +1372,45 @@ impl FakeApp {
         if r.method == "POST" && path == "/login" {
             let email = form(r).get("email").cloned().unwrap_or_default();
             let worked = (300..400).contains(&status) && self.users.contains_key(&email);
+            let quiet =
+                self.flaws.logs_no_wrong_password && !worked && self.users.contains_key(&email);
             let next = self.log_ids.len() + 1;
             let id = *self.log_ids.entry(email.clone()).or_insert(next);
+            if !quiet {
+                self.log.push(match (style, worked) {
+                    (LogStyle::Full, true) => format!("{ts} signed in {email} from 127.0.0.1"),
+                    (LogStyle::Full, false) => {
+                        format!("{ts} sign-in failed for {email} from 127.0.0.1")
+                    }
+                    (LogStyle::Private, true) => {
+                        format!(r#"{{"ts":"{ts}","event":"login","user_id":{id},"path":"{path}"}}"#)
+                    }
+                    (LogStyle::Private, false) => {
+                        format!(r#"{{"ts":"{ts}","event":"login_failed","path":"{path}"}}"#)
+                    }
+                });
+            }
+        }
+        // A code given to sign in, in words of its own, and none of them a sign-in word, so the
+        // log reader is seen to know them: the two-factor code and the emailed one.
+        if r.method == "POST"
+            && (path == "/login/2fa" || path == "/login/verify")
+            && !self.flaws.logs_no_codes
+        {
+            let worked = (300..400).contains(&status);
+            let kind = if path == "/login/2fa" {
+                "2fa"
+            } else {
+                "magic link"
+            };
             self.log.push(match (style, worked) {
-                (LogStyle::Full, true) => format!("{ts} signed in {email} from 127.0.0.1"),
-                (LogStyle::Full, false) => {
-                    format!("{ts} sign-in failed for {email} from 127.0.0.1")
-                }
+                (LogStyle::Full, true) => format!("{ts} {kind} code accepted"),
+                (LogStyle::Full, false) => format!("{ts} {kind} code rejected"),
                 (LogStyle::Private, true) => {
-                    format!(r#"{{"ts":"{ts}","event":"login","user_id":{id},"path":"{path}"}}"#)
+                    format!(r#"{{"ts":"{ts}","event":"otp_verified","path":"{path}"}}"#)
                 }
                 (LogStyle::Private, false) => {
-                    format!(r#"{{"ts":"{ts}","event":"login_failed","path":"{path}"}}"#)
+                    format!(r#"{{"ts":"{ts}","event":"otp_failed","path":"{path}"}}"#)
                 }
             });
         }
