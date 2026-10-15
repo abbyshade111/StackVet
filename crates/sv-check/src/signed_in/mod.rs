@@ -4364,6 +4364,7 @@ mod crash_tests {
             ]),
             max_unpacked_bytes: Some(ARCHIVE_UNPACK_LIMIT),
             max_files: Some(ARCHIVE_FILE_LIMIT),
+            accepts: None,
         });
         u
     }
@@ -4389,6 +4390,7 @@ mod crash_tests {
             ]),
             max_unpacked_bytes: Some(ARCHIVE_UNPACK_LIMIT),
             max_files: Some(ARCHIVE_FILE_LIMIT),
+            accepts: None,
         });
         vec![
             // ADR-055: a list that holds the first common word and not the other two.
@@ -4862,6 +4864,7 @@ mod crash_tests {
             ]),
             max_unpacked_bytes: Some(ARCHIVE_UNPACK_LIMIT),
             max_files: Some(ARCHIVE_FILE_LIMIT),
+            accepts: None,
         });
         let scenarios = [
             Scenario {
