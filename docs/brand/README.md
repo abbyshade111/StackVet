@@ -60,6 +60,14 @@ word, the AI tool's word, not verified, not assessed), and light-background vers
 "checked". A diagram that needs them chooses them from this palette's family, says so, and adds them here once the
 owner settles them. Never show a status by color alone: each carries its word too, as the reports do.
 
+**Two tags for how much a thing applies,** settled by the owner in the lifecycle diagrams of 13 October 2026
+(`docs/website/diagrams/frameworks-by-sdlc-phase.svg`, backlog 0514), for any later diagram that needs them:
+
+- **Main:** chiefly for this, in white on the accent (`#C2410C`), its cell tinted with the bubble color (`#FBEFE7`).
+- **In part:** reaches into part of this, in the accent text color (`#9A3412`) on a panel, with an accent outline.
+
+Each tag is written out in its box, so neither rests on color alone.
+
 To show the light or dark logo to match the reader's GitHub theme, the README can use:
 
 ```html

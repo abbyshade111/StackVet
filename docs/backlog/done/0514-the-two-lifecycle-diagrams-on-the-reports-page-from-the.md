@@ -1,6 +1,6 @@
 # The two lifecycle diagrams on the reports page, from the owner's drawings of 13 October
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -27,3 +27,22 @@ description):
 - Needs a decision record?: no.
 
 **The owner, 15 October 2026:** the diagrams can happen now. The orchestrating session copied the five files from the drive into the repository as this item asked (`docs/website/diagrams/sdlc-cycle.svg` and `.png`, `docs/website/diagrams/frameworks-by-sdlc-phase.svg` and `.png`, and `docs/website/diagrams/source/make_diagrams.py`, unchanged); the item is released to documentation's line to check the cells against the frameworks' text and put the diagrams on the reports page.
+
+**Done, 15 October 2026** (documentation). Every cell of the second diagram was checked against the frameworks' own
+text as `data/frameworks` carries it: every cited id exists, and twelve cells say what their sections say. Six said
+more, and their words were corrected, with no tag changed:
+- Secure by Design, Design: "threat modeling (steps 2 to 8)" left out step 8; it now lists "optional threat
+  modeling, and the finished design (steps 2 to 8)".
+- Secure by Design, Testing: MT-04 is controls made checkable in test, not ASVS-aligned or negative tests (MT-03).
+- ASVS, Planning: "from what the app holds" and "double as a checklist" are not in the text StackVet carries; it now
+  says only that every requirement says which level it belongs to.
+- ASVS, Analysis: 11 of the 17 chapters open with a documentation section, not each one.
+- ASVS, Design: V1.1 and V15.2 are architecture sections whose requirements are only partly about architecture.
+- ASVS, Maintenance: V13 and V16 set no general deadlines; it now names the secret-rotation schedule (V13.1.4) and how
+  long logs are kept (V16.1.1).
+
+The script draws the committed SVG byte for byte before the change, so the SVG was drawn again from it; the PNG was
+drawn again from the SVG at twice its size in Chromium, with Atkinson Hyperlegible and JetBrains Mono from their
+Fontsource packages (the owner's PNG looks to have been drawn in a fallback face such as Helvetica Neue, the script's second choice). The cycle diagram is
+unchanged. Both are on the reports page (`docs/website/reports-page.md`, "Where the standards fit in building an
+app"), its "Not yet on this page" line for them is gone, and `docs/brand/README.md` records the two tags.
