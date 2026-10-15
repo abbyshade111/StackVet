@@ -7,8 +7,48 @@ CSV files: they open in any spreadsheet. Nothing in any of them names the health
 **Two kinds of table.** The paper is written at one cut-off, `main` at 157ddc3, 11:37 Eastern on 4 October 2026, and
 the first kind are its tables, made by hand at that cut-off and still exactly what the figures and the text quote.
 The second kind, in `docs/paper/tables/`, are made by a script from the records kept since: the trials and the
-coordination of 12 to 15 October. Whether the paper's cut-off moves to include them is the owner's to decide (asked
-on 15 October 2026, `docs/coordination/waiting/0568.md`); until then the figures stay at 4 October.
+coordination of 12 to 15 October. The owner answered on 15 October 2026 that the 4 October cut-off is arbitrary, since
+the paper is not written yet: the timeline is broken at three milestones instead, and every table says which period
+each row is in (below, "The three periods"). The hand-drawn figures stay as they were drawn, at 4 October.
+
+## The three periods
+
+Made by `python3 docs/paper/tables/periods.py`, which reads each boundary from git rather than from this page, and
+writes the tables below to the commit it is run at (`--check` says what no longer matches, at the commit named in
+`periods.csv`). Times are Eastern.
+
+| Period | From | To | How the boundary is found |
+|---|---|---|---|
+| 1. version 1 | `c85c174a2`, 18 September 09:32: the first commit of this history (the history before it was destroyed, `CORRECTIONS.md`) | `412092da2`, 26 September 20:46: the tag `v1-final`, v1's last commit on main (`v1-paper`, 20 September, is inside the period) | the tag |
+| 2. version 2 | `278575a07`, 26 September 21:22: the merge of #224, "Promote sv to the top of the repository; v1 moves to the v1 branch" | `d2433cd54`, 8 October 20:30: the last commit on main before the rename finished | the first commit on main that holds the promotion commit |
+| 3. StackVet | `c75ea2cf9`, 8 October 20:59: the merge of #1127, "StackVet step 3: the documents and the image say StackVet" (ADR-062; steps 1 and 2 merged from 19:41 the same evening) | the commit the tables are built at | the first commit on main that holds step 3 |
+
+A row is in the period its date falls in; a table whose rows carry no date is one dated record, and its date is the
+one this page gives it below. The day of a boundary has a row on each side of it where a table counts by day.
+
+**Combined, every period to the build** (`docs/paper/tables/`):
+- `periods.csv`: one row per period and one for all three: its first and last commit, days, commits (every commit
+  reachable from main that day), commits on main's own line, pull requests merged, the tests in the tree at its end,
+  decision records added, and backlog items done.
+- `days.csv`: one row per day and period: the same counts, and the tests and decision records in the tree at the end
+  of that part of the day. Tests are counted in the tree, not run: Rust's `#[test]` and `#[tokio::test]`, v1's
+  TypeScript `it(` and `test(` in its test files, and Python's `def test_`.
+- `decision_records.csv`: every record in `docs/adr/`, its status, when the first commit touched it, its period, and
+  how many "Later" entries it has. v1's own records are on the `v1` branch and are not in it; `days.csv` counts them
+  in the tree during version 1.
+- `backlog_items.csv`: every backlog item, its status, and the day and period it was done, read from its status
+  line. Items became files on 9 October, so work done before then is mostly not dated there.
+
+**Per period** (`docs/paper/tables/by-period/<period>/`, for `v1`, `v2`, and `stackvet`): every table above and
+every table on this page, cut to the rows in that period, each row with its `period`. **Every table with its period
+column** (`by-period/all/`): the hand-made tables and the tables of the work since the cut-off, whole. The originals
+are left as they are.
+
+**The figure:** `figure-periods.html`, made by the same script: commits per day colored by period, the tests in the
+tree as a line, and `periods.csv` beneath it.
+
+**Not split by period:** the hand-drawn figures. Each is drawn by hand from a table at the 4 October cut-off, which
+holds versions 1 and 2 only; their tables are split above, and redrawing each figure per period is left to do.
 
 ## The paper's tables, at the 4 October cut-off
 
@@ -33,7 +73,8 @@ on 4 October (`2026-10-04/`, the source at the cut-off, scanned by `sv` at 84dcb
 a Claude Code session and marked accepted, a false alarm, or real (27 September: 61 accepted, 191 false alarms;
 4 October: 60 accepted, 413 false alarms, 6 real). These are records, not made by any script in the repository.
 
-**`trials/make_figure.py`** is the one script among the figures: it writes `figure-trials.html` from the trials'
+**`trials/make_figure.py`** is the one script among the figures at the cut-off (`tables/periods.py` writes
+`figure-periods.html` since, above): it writes `figure-trials.html` from the trials'
 results files in `docs/prompts/library-trial/`, typing only each trial's size and cost from its write-up.
 
 **What these tables do not hold:** anything after 11:37 on 4 October (that afternoon is `SINCE-THE-CUTOFF.md`); v1's
@@ -42,7 +83,7 @@ owner's study folder, not here.
 
 ## The figures, and the date of their data
 
-All but two are drawn by hand, with their numbers typed into the page from the table or document they cite. Each says
+All but two of the figures at the cut-off are drawn by hand (`figure-periods.html`, added since, is made by a script), with their numbers typed into the page from the table or document they cite. Each says
 the date of its data on the page.
 
 | Figure | Its data | Date of its data |
@@ -65,6 +106,7 @@ the date of its data on the page.
 | `figure-timeline.html` | `TIMELINE.md` | 16 September to the cut-off |
 | `figure-top10.html` | `TOP10.md`, `findings.csv`, the self-assessment | to the cut-off |
 | `figure-trials.html` | made by `trials/make_figure.py` | 5 to 8 October |
+| `figure-periods.html` | made by `tables/periods.py` from git | 18 September to the build |
 | `figure-usability.html` | `figure-how-found.html` and the issue lists | to the cut-off |
 
 ## The work since the cut-off: `docs/paper/tables/`

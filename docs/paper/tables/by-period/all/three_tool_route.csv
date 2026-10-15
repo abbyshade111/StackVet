@@ -1,0 +1,22 @@
+row,tool,level,value,source,period
+MCP server,Antigravity,,"Docker image, settings written account-wide (one entry for every app)","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+MCP server,Cursor,,"Docker image, user-level and project settings","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+MCP server,VS Code,,"Docker image, `.mcp.json` in the folder, after asking","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+`sv` for prompt 6,Antigravity,,"Homebrew, after the sandbox refused once","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+`sv` for prompt 6,Cursor,,Built from the owner's checkout (a kept copy was found),"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+`sv` for prompt 6,VS Code,,"Homebrew, after asking twice","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+`sv` commit in the report,Antigravity,,064b8521,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+`sv` commit in the report,Cursor,,cc64d2b8 (the first install copied a stale binary; 0540),"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+`sv` commit in the report,VS Code,,672710f2,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompts 1 to 3,Antigravity,,No record,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompts 1 to 3,Cursor,,Ran in a cloud agent on Linux; the settings pointed at `/usr/bin/docker`,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompts 1 to 3,VS Code,,"On record, done as written","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 4 to a working connection,Antigravity,,16 minutes: the container served an older app's folder (0541),"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 4 to a working connection,Cursor,,"4 failed starts (the Linux path), then connected","docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 4 to a working connection,VS Code,,4 minutes,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 5 to the full report,Antigravity,,47 minutes,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 5 to the full report,Cursor,,49 minutes,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 5 to the full report,VS Code,,38 minutes,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 7,Antigravity,,Not pasted,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 7,Cursor,,Not pasted,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet
+Prompt 7,VS Code,,Not pasted,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""Route, version, and time""",stackvet

@@ -514,10 +514,13 @@ pub(super) struct Flaws {
     pub(super) download_no_filename: bool,
     /// Writes the uploaded name into `Content-Disposition` as it came in, unquoted.
     pub(super) download_name_raw: bool,
-    /// Quotes the uploaded name but does not clean it. Not a fault: a `;` inside a quoted
-    /// string is part of the name, and this is here so a check that split on it would be
-    /// caught accusing a correct app.
+    /// Quotes the uploaded name but does not clean it, escaping `\` and `"` inside the quotes as a quoted string
+    /// must. Not a fault: a `;` inside a quoted string is part of the name, and this is here so a check that split
+    /// on it would be caught accusing a correct app.
     pub(super) download_name_quoted_uncleaned: bool,
+    /// Quotes the uploaded name without escaping a `"` in it, so a name with a quote ends the quoted string and
+    /// starts a parameter of its own (backlog 0571).
+    pub(super) download_name_quoted_unescaped: bool,
     /// Accepts a session cookie it never issued.
     pub(super) session_not_verified: bool,
     /// The sign-up form states maxlength, and the server does not apply it.
@@ -2501,11 +2504,8 @@ impl FakeApp {
                 // `archive_trusts_stated_sizes`, by what its headers say.
                 let raw = r.body.as_deref().unwrap_or_default();
                 let head = String::from_utf8_lossy(&raw[..raw.len().min(2048)]).into_owned();
-                let file_name = head
-                    .split("filename=\"")
-                    .nth(1)
-                    .and_then(|rest| rest.split('"').next())
-                    .unwrap_or("");
+                let file_name = quoted_filename(&head);
+                let file_name = file_name.as_str();
                 if self.flaws.refuses_phtml && file_name.ends_with(".phtml") {
                     return Some(Self::respond(415, vec![], "not that kind of file"));
                 }
@@ -2555,12 +2555,7 @@ impl FakeApp {
                 {
                     return Some(Self::respond(409, vec![], "you already uploaded that"));
                 }
-                let name = body
-                    .split("filename=\"")
-                    .nth(1)
-                    .and_then(|rest: &str| rest.split('"').next())
-                    .unwrap_or("")
-                    .to_owned();
+                let name = quoted_filename(&body);
                 // The file's own bytes: everything after the blank line that ends its part.
                 let contents = body
                     .split("application/octet-stream\r\n\r\n")
@@ -2661,7 +2656,9 @@ impl FakeApp {
                 )
             }
             ("GET", path) if path.starts_with("/files/") => {
-                let name = path.trim_start_matches("/files/");
+                // A `"` comes percent-encoded in an address; the name it was stored under has it plain.
+                let decoded = path.trim_start_matches("/files/").replace("%22", "\"");
+                let name = decoded.as_str();
                 let set_aside = self.flaws.scans_after.is_some_and(|after| {
                     self.uploads.get(name) == Some(&super::uploads::eicar())
                         && self.clock >= self.upload_times.get(name).copied().unwrap_or(0) + after
@@ -2742,8 +2739,11 @@ impl FakeApp {
                     "attachment".to_owned()
                 } else if self.flaws.download_name_raw {
                     format!("attachment; filename={name}")
-                } else if self.flaws.download_name_quoted_uncleaned {
+                } else if self.flaws.download_name_quoted_unescaped {
                     format!("attachment; filename=\"{name}\"")
+                } else if self.flaws.download_name_quoted_uncleaned {
+                    let escaped = name.replace('\\', "\\\\").replace('"', "\\\"");
+                    format!("attachment; filename=\"{escaped}\"")
                 } else {
                     let clean: String = name
                         .chars()
@@ -3450,6 +3450,24 @@ pub(super) fn admin_secret() -> Vec<u8> {
 }
 
 /// Runs the suite against the fake app, seeded the way `seed` would seed it.
+/// The `filename` of a multipart part, read as the quoted string it is: up to the first `"` not escaped with
+/// `\`, with each escape taken off (backlog 0571).
+fn quoted_filename(text: &str) -> String {
+    let Some(rest) = text.split("filename=\"").nth(1) else {
+        return String::new();
+    };
+    let mut out = String::new();
+    let mut chars = rest.chars();
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => out.extend(chars.next()),
+            '"' => break,
+            c => out.push(c),
+        }
+    }
+    out
+}
+
 pub(super) fn run_against(flaws: Flaws, users: &UsersSection) -> Outcome {
     run_against_keeping(flaws, users).0
 }
