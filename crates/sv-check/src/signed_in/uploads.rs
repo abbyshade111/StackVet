@@ -743,11 +743,15 @@ fn svg_check(
         }
         out.steps
             .push("sent an SVG image carrying a script: refused".to_owned());
+        // The same drawing named `.gif` (backlog 0576): an app that judges by the name alone takes it.
+        let Some(as_gif) = svg_named_gif(http, upload, &svg.contents, session, token, out) else {
+            return;
+        };
         out.verified.push(crate::Verified::new(
             UPLOAD_SVG_SCRIPT.rule_id,
             UPLOAD_SVG_SCRIPT.requirement_ids,
             format!(
-                "an SVG image carrying a script, refused at {} where an ordinary GIF was accepted",
+                "an SVG image carrying a script, refused at {} where an ordinary GIF was accepted; {as_gif}",
                 upload.path
             ),
         )
@@ -858,6 +862,128 @@ fn svg_check(
             ),
         ));
     }
+}
+
+/// The SVG that was refused by its `.svg` name, sent again named `.gif` (backlog 0576, ADR-053, Later). An app that
+/// judges a file by its name alone takes it, and may serve it as the drawing it is, script and all. What the credit
+/// adds when the refusal holds up: refused again, or taken and served as something a browser does not run as a
+/// drawing. `None` when it does not hold up, with the finding or the gap already said.
+fn svg_named_gif(
+    http: &mut dyn Http,
+    upload: &UploadSection,
+    contents: &str,
+    session: &Session,
+    token: &Token,
+    out: &mut Outcome,
+) -> Option<String> {
+    const MARKER: &str = "sv-probe-svg-marker-3d9e";
+    const SHAPE: &str = "sv-probe-svg-shape-3d9e";
+    let as_gif = Upload {
+        id: "upload-svg-as-gif",
+        name: "sv-probe-svg.gif",
+        contents: contents.to_owned(),
+    };
+    let stored = send_upload(http, upload, &as_gif, session, token);
+    if refused(&stored) {
+        out.steps
+            .push("sent the same SVG image named `.gif`: refused too".to_owned());
+        return Some("the same image named `.gif` was refused too".to_owned());
+    }
+    out.steps
+        .push("sent the same SVG image named `.gif`: taken".to_owned());
+    let Some(serves_at) = &upload.serves_at else {
+        out.not_assessed.push((
+            "V1.3.4".to_owned(),
+            "An SVG image carrying a script was refused named `.svg` but taken named `.gif`, and the `upload` \
+             entry has no `serves-at`, so nothing here could fetch it back to see whether it is served as the \
+             drawing it is."
+                .to_owned(),
+        ));
+        return None;
+    };
+    let path = serves_at.replace("{name}", as_gif.name);
+    let fetched = http
+        .send(&get("upload-svg-as-gif-fetch", &path, session))
+        .filter(|r| r.status < 400);
+    let Some(fetched) = fetched.filter(|r| r.body.contains(MARKER) || r.body.contains(SHAPE))
+    else {
+        out.not_assessed.push((
+            "V1.3.4".to_owned(),
+            format!(
+                "An SVG image carrying a script was refused named `.svg` but taken named `.gif`, and what {path} \
+                 answered is not that image (none of its marks is in it), so nothing here saw what it is served as."
+            ),
+        ));
+        return None;
+    };
+    let served_as = fetched
+        .header("content-type")
+        .unwrap_or_default()
+        .trim()
+        .to_lowercase();
+    if served_as.is_empty() {
+        out.not_assessed.push((
+            "V1.3.4".to_owned(),
+            format!(
+                "An SVG image carrying a script was refused named `.svg` but taken named `.gif`, and {path} served \
+                 it with no `Content-Type`, so what a browser makes of it depends on the browser."
+            ),
+        ));
+        return None;
+    }
+    let as_drawing = ["svg", "xml", "html"].iter().any(|t| served_as.contains(t));
+    let body = fetched.body.to_lowercase();
+    let kept = body.contains("<script") || body.contains("<foreignobject");
+    if !as_drawing || !kept {
+        let what = if as_drawing {
+            format!("taken and served from {path} as `{served_as}` with its script removed")
+        } else {
+            format!(
+                "taken and served from {path} as `{served_as}`, which a browser does not run as a drawing"
+            )
+        };
+        out.steps
+            .push(format!("fetched the SVG named `.gif` back: {what}"));
+        return Some(format!("the same image named `.gif` was {what}"));
+    }
+    let disposition = fetched
+        .header("content-disposition")
+        .unwrap_or_default()
+        .to_lowercase();
+    let csp = fetched
+        .header("content-security-policy")
+        .unwrap_or_default()
+        .to_lowercase();
+    let contained = disposition.contains("attachment") || csp.contains("sandbox");
+    out.steps.push(format!(
+        "fetched the SVG named `.gif` back from {path}: served as `{served_as}`, its script kept"
+    ));
+    out.findings.push(finding_on(
+        vec![
+            "upload-svg-as-gif".to_owned(),
+            "upload-svg-as-gif-fetch".to_owned(),
+        ],
+        &UPLOAD_SVG_SCRIPT,
+        "An SVG image refused by its name is taken named `.gif`",
+        if contained {
+            Severity::Medium
+        } else {
+            Severity::High
+        },
+        format!(
+            "An SVG image carrying a script was refused at {} when it was named `.svg`, but the same image named \
+             `.gif` was taken, and {path} served it as `{served_as}` with its script still in it: the refusal was \
+             of the name, not of what the file is. {}",
+            upload.path,
+            if contained {
+                "It was served as an attachment or with a sandbox policy, so opening that address does not run \
+                 it, but the file was neither refused nor cleaned."
+            } else {
+                "It was served for the browser to show, so opening that address runs the script as this app."
+            }
+        ),
+    ));
+    None
 }
 
 /// V5.4.3: the antivirus test file, and whether the app keeps it and hands it back.
@@ -2956,3 +3082,6 @@ mod quoted_name_tests;
 
 #[cfg(test)]
 mod download_is_the_file_tests;
+
+#[cfg(test)]
+mod svg_named_gif_tests;
