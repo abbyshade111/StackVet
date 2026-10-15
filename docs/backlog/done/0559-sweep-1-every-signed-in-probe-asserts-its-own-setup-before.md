@@ -1,6 +1,6 @@
 # Sweep 1: every signed-in probe asserts its own setup before concluding, and reports "not assessed" with the reason when it failed
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -24,3 +24,16 @@ findings and credits still appear; after it, each is "not assessed" with its rea
 the pull request, with the ones that already asserted their setup named too.
 
 **Record.** ADR-119, accepted in this pull request.
+
+**Built 15 October 2026, by honesty** (ADR-119, accepted, with its Later entry listing every check read).
+- **Fixed:** the password-guessing check (0522) and the emailed code's first check now sign in as the account they
+  made, and open the first private page, before concluding anything; without it, they say what the sign-up answered
+  and that the form may need a value stackvet.toml does not carry, such as an invite code.
+- **Already asserted:** the password rules, change, and email change; re-sign-up; deletion; the reset; the roles
+  written into sign-up and into the email change; the changes beside the email change; the log marker; the cross-site
+  and simple-request checks; the burst; the uploads.
+- **Safe without it:** whether a failed sign-in or a sign-up tells accounts apart, which are only ever a finding.
+- **Held by** `crates/sv-check/src/signed_in/setup_sweep_tests.rs` (A and B seeded, a sign-up that is refused or makes
+  nothing: no finding, and each check's line says why) and `signed_in/signin/own_account_tests.rs` (0522's case).
+  Undoing either fix turns them red.
+- The spec's sign-ins in a run go from 60 to 62 (ADR-028, Later).

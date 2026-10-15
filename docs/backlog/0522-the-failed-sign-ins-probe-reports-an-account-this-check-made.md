@@ -28,3 +28,7 @@ have" path and its honest wording. Add the fake-app case: a sign-up that answers
 evidence for V6.3.1 changes.
 
 **Built by the sweep:** this is the first case of backlog 0559 (ADR-119); it closes with it.
+
+**Built 15 October 2026, by honesty, in the setup sweep (0559, ADR-119); left open for the board, which queues it,
+to finish:** the guessing check signs in as its own
+account before guessing, and says the question is not assessed, and why, when the account was not made.
