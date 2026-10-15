@@ -222,6 +222,9 @@ pub enum Outranked {
     /// An outside tool's finding from a rule written for a web framework, named here, that the app's
     /// package lists say it does not use (backlog 0521; ADR-111, Later). It decides nothing.
     OtherFramework { framework: String },
+    /// Semgrep's rule for credentials written to a log, on a logger call whose every logged value is an id, named
+    /// here: its message mentions a secret, and the line logs none (backlog 0583; ADR-111, Later). It decides nothing.
+    LogsOnlyIds { names: Vec<String> },
 }
 
 /// Semgrep rules whose findings are listed apart as "worth a look" (Semgrep follow-up 5, the owner's
@@ -315,7 +318,11 @@ impl Finding {
     pub fn withholds_credit(&self) -> bool {
         if matches!(
             self.outranked,
-            Some(Outranked::CheckedWhileRunning { .. } | Outranked::OtherFramework { .. })
+            Some(
+                Outranked::CheckedWhileRunning { .. }
+                    | Outranked::OtherFramework { .. }
+                    | Outranked::LogsOnlyIds { .. }
+            )
         ) {
             return false;
         }

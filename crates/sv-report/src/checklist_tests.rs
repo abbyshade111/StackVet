@@ -68,7 +68,7 @@ fn loosened(setting: &str, requirement: &str) -> Gap {
 }
 
 /// An app on the internet with something for every part.
-fn report() -> Report {
+pub(crate) fn report() -> Report {
     let mut report = empty_report(vec![
         loosened("SESSION_COOKIE_SECURE=0", "V3.3.1"),
         loosened("SESSION_COOKIE_SECURE=0", "V3.3.4"),

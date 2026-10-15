@@ -40,6 +40,7 @@ pub mod launch;
 pub mod level_hints;
 pub mod live_tls;
 pub mod locate;
+pub mod logged_ids;
 pub mod logs;
 pub mod look_away;
 pub mod manifest_lock;

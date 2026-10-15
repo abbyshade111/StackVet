@@ -1,6 +1,9 @@
 # The report broken into short pages by what a person does with each, so things stop getting lost in one long file
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026. Four pages cut whole from the reports, `fix-now.md`, `your-decisions.md`,
+`not-examined.md`, and `information.md`, beside the checklist (0589); report.html, the front page, lists them; `sv
+report` prints the front page's path, then "Fix now" when it has anything; security.md and compliance.md stay whole.
+ADR-121, Later.
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

@@ -251,6 +251,10 @@ pub(super) fn report_file_description(name: &str) -> &'static str {
         "before-going-live.md" => {
             "What to do or confirm before the app is on the internet, in order; it credits nothing."
         }
+        "fix-now.md" => "What needs attention, worst first, each with where it is and what to do.",
+        "your-decisions.md" => "The questions only the person can answer.",
+        "not-examined.md" => "What the report could not look at, and why.",
+        "information.md" => "What is worth knowing and asks nothing.",
         "stackvet.sarif" => "The findings in SARIF, for code-scanning tools.",
         "seen.json" => {
             "What the running app answered when sv asked it, credentials cut out: the app's own text."

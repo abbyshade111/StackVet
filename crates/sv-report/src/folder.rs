@@ -15,8 +15,8 @@ pub struct FolderFile {
     pub for_whom: &'static str,
 }
 
-/// The ten files, in the order they are written.
-pub const FILES: [FolderFile; 10] = [
+/// The fourteen files, in the order they are written.
+pub const FILES: [FolderFile; 14] = [
     FolderFile {
         name: "report.html",
         holds: "The whole report on one page: what to fix first, what was not examined, and every requirement that \
@@ -46,6 +46,29 @@ pub const FILES: [FolderFile; 10] = [
         holds: "What to do or confirm before the app is on the internet, in the order you would do it, with what \
                 could not be verified at its end. It credits nothing",
         for_whom: "You, or whoever puts the app on the internet",
+    },
+    // The report in short pages, one per purpose (backlog 0590).
+    FolderFile {
+        name: crate::pages::FIX_NOW.file,
+        holds: "What needs attention, worst first, each with where it is and what to do: the findings of security.md \
+                that are things to fix",
+        for_whom: "You or your AI coding tool, first",
+    },
+    FolderFile {
+        name: crate::pages::DECISIONS.file,
+        holds: "The questions only you can answer and the checks only you can make, from compliance.md",
+        for_whom: "You",
+    },
+    FolderFile {
+        name: crate::pages::NOT_EXAMINED.file,
+        holds: "What this report could not look at, and why, with the outside tools' runs, from compliance.md",
+        for_whom: "You, before you read anything as safe",
+    },
+    FolderFile {
+        name: crate::pages::INFORMATION.file,
+        holds: "What asks nothing of you: findings in test code, checks that found nothing, your AI coding tool's \
+                files, and the text of each requirement, from compliance.md and security.md",
+        for_whom: "You, when you want the rest",
     },
     FolderFile {
         name: crate::SARIF_FILE,

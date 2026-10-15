@@ -191,6 +191,85 @@ pub fn loosened(start: &str) -> Vec<(String, Vec<&'static str>)> {
     out
 }
 
+/// The environment files the start command itself reads (backlog 0605, ADR-114, Later): the file after `--env-file`
+/// (`node --env-file=.env`, `uvicorn --env-file .env`) and the file a shell `source`s or `.`s. Each as written, in the
+/// order written. Any other file the app reads its settings from is not named here and is not read.
+pub fn env_files_named_in(start: &str) -> Vec<String> {
+    let unquoted: String = start.chars().filter(|c| !matches!(c, '"' | '\'')).collect();
+    let mut out: Vec<String> = Vec::new();
+    let mut add = |file: &str| {
+        if !file.is_empty() && !file.starts_with('-') && !out.iter().any(|f| f == file) {
+            out.push(file.to_owned());
+        }
+    };
+    // One command at a time, so `source` and `.` count only where a command starts: `cd . && python app.py` reads no
+    // file called `python`.
+    for command in unquoted.split(|c: char| ";&|()`\n".contains(c)) {
+        let words: Vec<&str> = command.split_whitespace().collect();
+        if matches!(words.first(), Some(&"source" | &"."))
+            && let Some(file) = words.get(1)
+        {
+            add(file);
+        }
+        for (i, word) in words.iter().enumerate() {
+            if let Some(file) = word.strip_prefix("--env-file=") {
+                add(file);
+            } else if *word == "--env-file"
+                && let Some(file) = words.get(i + 1)
+            {
+                add(file);
+            }
+        }
+    }
+    out
+}
+
+/// What an environment file sets, read for its format first (backlog 0605): each line blank, a `#` comment, or
+/// `NAME=value` with an optional `export ` before it, the form a shell, Docker, and Node's `--env-file` all read. The
+/// settings, one `NAME=value` a line for `loosened`, a value with a space in it given as the name alone (a value only
+/// ever shows when it is a short word); or, when a line is in no such form, which line, by number, and nothing read:
+/// a file in a form `sv` does not know is not judged by a guess at it.
+pub fn env_file_settings(text: &str) -> Result<String, String> {
+    let mut out: Vec<String> = Vec::new();
+    for (n, line) in text.lines().enumerate() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let line = line.strip_prefix("export ").map_or(line, str::trim_start);
+        let Some((name, value)) = line.split_once('=') else {
+            return Err(format!("line {} is not a `NAME=value` setting", n + 1));
+        };
+        let variable = name
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+            && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+        if !variable {
+            return Err(format!(
+                "line {} does not start with a setting's name",
+                n + 1
+            ));
+        }
+        let value = value.trim();
+        let value = value
+            .strip_prefix('"')
+            .and_then(|v| v.strip_suffix('"'))
+            .or_else(|| value.strip_prefix('\'').and_then(|v| v.strip_suffix('\'')))
+            .unwrap_or(value);
+        if value.chars().any(char::is_whitespace) {
+            out.push(name.to_owned());
+        } else {
+            out.push(format!("{name}={value}"));
+        }
+    }
+    Ok(out.join("\n"))
+}
+
 #[cfg(test)]
 #[path = "start_settings_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "env_file_tests.rs"]
+mod env_file_tests;

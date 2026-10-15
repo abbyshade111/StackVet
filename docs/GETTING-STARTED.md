@@ -242,7 +242,8 @@ Open the app's folder in your AI tool and paste this, with your app described at
 > Step 5. Never tell me the app is secure. Tell me what was checked and what was not.
 >
 > Step 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
->    questions one at a time. I may let you answer some yourself: each answer you give counts as
+>    questions one at a time, each as StackVet words it, with no answer of yours marked as recommended: if I
+>    ask what you would choose, tell me then, with the lines it rests on. I may let you answer some yourself: each answer you give counts as
 >    yours, not mine, until I record it with `sv review`, and the report says so. When you answer one,
 >    or tell me what the code does for one, quote the file and lines that show it beside the answer,
 >    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
@@ -255,7 +256,7 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
 >    `by = "ai-tool"` and my words in `how`.
 >
-> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint f624459a)*
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint cd92b5e5)*
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
@@ -343,21 +344,21 @@ download, installed with Scoop, though these checks are untried on Windows: a Ma
 On a Mac or Linux it means building StackVet, which Homebrew does for you. The steps, and updates,
 are on [Installing StackVet on your computer](INSTALL.md).
 
-If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in
-`stackvet.toml`. The app runs with no internet, so it cannot fetch its own packages; this line lets StackVet
-download them first, in a separate box that sees only the list of packages, never your code. That download is the
+If your app uses packages, as most do, starting it also needs the line `install = true` under `[stack.run]` in
+`stackvet.toml`. The app runs with no internet; this line lets StackVet download its packages
+first, in a separate box that sees only the list of packages, never your code. That download is the
 one time StackVet uses the internet for your app, and the report says when it did. Without it, such an app does not
 start, and what needs it running is *not assessed*.
 
 **The full check is that one command.** `sv report --run` also runs the other security tools installed on your
 computer, such as Bandit and Semgrep, and puts their findings in the same report.
-Your AI coding tool's StackVet connection never runs them or starts the app, since each runs code, which stays your
-decision at a terminal; so its reports and checks leave both out, and say so. To leave them out, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
+Your AI coding tool's StackVet connection never runs them or starts the app: each runs code, your decision at a
+terminal, so its reports and checks leave both out and say so. To leave them out, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
 `[tools] codeql = true`, which its license allows only for an open-source app, research, or a paid GitHub license.
 
-**Where the report is.** When your AI tool writes the report (`stackvet_write_report`), or you run
-`sv report`, it goes in a folder named `stackvet-report` inside the app's folder. Open `report.html` in
-a browser. Each file in the folder has a reader of its own:
+**Where the report is.** However it is written, the report goes in a folder named `stackvet-report` inside the
+app's folder. Open `report.html` in
+a browser. Each file has a reader of its own:
 
 | File | Who it is for |
 |---|---|
@@ -366,6 +367,10 @@ a browser. Each file in the folder has a reader of its own:
 | `security.md` | Whoever fixes the code, you or your AI coding tool |
 | `low-findings.md` | You or your AI coding tool, when you want the detail |
 | `before-going-live.md` | You, or whoever puts the app on the internet |
+| `fix-now.md` | You or your AI coding tool, first |
+| `your-decisions.md` | You |
+| `not-examined.md` | You, before you read anything as safe |
+| `information.md` | You, when you want the rest |
 | `stackvet.sarif` | Code editors and GitHub's code scanning, which show a finding beside its line |
 | `report.json` | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | You, to see what a finding rests on |

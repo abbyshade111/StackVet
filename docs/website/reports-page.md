@@ -6,7 +6,7 @@ home page's section 4 links here.
 
 ## What you get
 
-**One folder, ten files, each with a reader of its own.**
+**One folder, fourteen files, each with a reader of its own.**
 
 When StackVet checks your app, it writes a folder named `stackvet-report` inside the app's folder. Start with
 `report.html`: it is the whole report on one page, and it ends with this same list.
@@ -18,6 +18,10 @@ When StackVet checks your app, it writes a folder named `stackvet-report` inside
 | `security.md` | What the checks found, each in full (where, the code, how sure, why it matters, what to do, and how to set it aside), then what was not examined | Whoever fixes the code, you or your AI coding tool |
 | `low-findings.md` | Every low-severity finding in full, where the other reports group them by rule | You or your AI coding tool, when you want the detail |
 | `before-going-live.md` | What to do or confirm before the app is on the internet, in the order you would do it, with what could not be verified at its end. It credits nothing | You, or whoever puts the app on the internet |
+| `fix-now.md` | What needs attention, worst first, each with where it is and what to do: the findings of security.md that are things to fix | You or your AI coding tool, first |
+| `your-decisions.md` | The questions only you can answer and the checks only you can make, from compliance.md | You |
+| `not-examined.md` | What this report could not look at, and why, with the outside tools' runs, from compliance.md | You, before you read anything as safe |
+| `information.md` | What asks nothing of you: findings in test code, checks that found nothing, your AI coding tool's files, and the text of each requirement, from compliance.md and security.md | You, when you want the rest |
 | `stackvet.sarif` | The findings as SARIF, a standard format for findings (named findings.sarif before 14 October 2026) | Code editors and GitHub's code scanning, which show a finding beside its line |
 | `report.json` | The report's data as JSON | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | What sv saw of the running app, with every key and sign-in in it cut short | You, to see what a finding rests on |

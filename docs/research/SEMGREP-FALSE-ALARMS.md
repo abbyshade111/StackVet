@@ -335,6 +335,16 @@ than C2: it spares a stored bcrypt hash and a hex digest under a name that says 
 under a name that says only password, so it removes 3 of C2's 7 false alarms (DESIGN, "Semgrep follow-ups 2 and 4").
 (3), one finding per line, is not built.
 
+**Since (15 October 2026):** one rule's false alarm, not in the measurement above, is read against the code now. In
+the Opus run of 15 October 2026 (backlog 0577), `python-logger-credential-disclosure` fired four times on log lines
+that logged a user id or a game id: the rule matches a log message that mentions a password, token, or key, not what
+is logged. A finding of it on a line whose every logged value is an id, and none named for a secret, is listed apart
+and decides nothing; one logging anything else still counts (backlog 0583; ADR-111, Later).
+
+| rule | what it matched | what was logged | verdict | what `sv` does now |
+|---|---|---|---|---|
+| `python-logger-credential-disclosure` | a message naming a password, token, or key | ids alone (`user_id`, `game.id`) | false | listed apart, decides nothing |
+
 Per language: Ruby, Java and Go need only (1); JS/TS needs (1) and (2); Python's remaining noise is
 the long tail on microblog (6 `var-in-href`, 4 Django CSRF on a Flask-WTF app, 3 developer CLI
 commands) and is best served by (5) and, later, a "this app uses Flask-WTF/Jinja autoescape" hint;
