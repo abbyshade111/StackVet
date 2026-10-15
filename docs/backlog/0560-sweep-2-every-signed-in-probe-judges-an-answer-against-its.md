@@ -120,3 +120,7 @@ between tags, so two pages built from the same `<form>` and `<button>` are not t
 body, even an empty one, as the same page; the admin-page and private-page checks that use it are unchanged in their
 tests.
 
+**Tenth batch, built (the download name, list item 10):** a file fetched back to read the name it is served under is
+the file only when the answer is a 2xx holding its own contents; a redirect to where it is kept, or a page of the
+app's own, is not assessed and says so, for the ordinary file (V5.4.1) and the file with the hostile name (V5.4.2).
+

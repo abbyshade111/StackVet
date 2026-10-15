@@ -1026,8 +1026,10 @@ fn download_name_checks(
 
     // ---- V5.4.1: the ordinary file, uploaded before any of this ran.
     let ordinary_path = serves_at.replace("{name}", "sv-probe.gif");
+    // The file itself, not "under 400" (backlog 0560, ADR-119): a redirect to where it is kept, or a page of the
+    // app's own, has no file name of the file's to judge.
     match http.send(&get("download-ordinary", &ordinary_path, session)) {
-        Some(r) if r.status < 400 => {
+        Some(r) if (200..300).contains(&r.status) && r.body.contains("sv-probe-ordinary-file") => {
             let header = r
                 .header("content-disposition")
                 .unwrap_or_default()
@@ -1079,6 +1081,15 @@ fn download_name_checks(
                 ));
             }
         }
+        Some(r) if r.status < 400 => out.not_assessed.push((
+            "V5.4.1".to_owned(),
+            format!(
+                "Fetching the ordinary upload back from {ordinary_path} answered {} with something \
+                 other than the file (a redirect to where it is kept, or a page of the app's own), \
+                 so nothing here saw what name the file itself is served under.",
+                r.status
+            ),
+        )),
         answer => out.not_assessed.push((
             "V5.4.1".to_owned(),
             format!(
@@ -1109,13 +1120,15 @@ fn download_name_checks(
     }
     let path = serves_at.replace("{name}", HOSTILE);
     let fetched = http.send(&get("download-hostile", &path, session));
-    let Some(fetched) = fetched.filter(|r| r.status < 400) else {
+    let Some(fetched) = fetched
+        .filter(|r| (200..300).contains(&r.status) && r.body.contains("sv-probe-hostile-name"))
+    else {
         out.not_assessed.push((
             "V5.4.2".to_owned(),
             format!(
-                "A file named `{HOSTILE}` was accepted but could not be fetched back from {path}. \
-                 The app may have stored it under a safer name, which would be right; either way \
-                 nothing here saw the name served."
+                "A file named `{HOSTILE}` was accepted but could not be fetched back from {path} as \
+                 the file itself. The app may have stored it under a safer name, which would be \
+                 right; either way nothing here saw the name served."
             ),
         ));
         return;
@@ -2826,3 +2839,6 @@ mod against_control_tests;
 
 #[cfg(test)]
 mod beside_ordinary_tests;
+
+#[cfg(test)]
+mod download_is_the_file_tests;

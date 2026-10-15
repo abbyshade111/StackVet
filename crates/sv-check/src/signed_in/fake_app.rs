@@ -273,6 +273,9 @@ pub(super) struct Flaws {
     /// Refuses an upload with the same 201 "stored" a stored file gets, keeping nothing. Not a flaw: only
     /// fetching the file back tells the two apart (backlog 0560).
     pub(super) upload_refused_alike: bool,
+    /// Serves an uploaded file by sending the browser to where it is kept, with no `Content-Disposition` of its
+    /// own. Not a flaw: the answer is not the file (backlog 0560).
+    pub(super) files_redirect_to_storage: bool,
     /// Refuses the sign-out the way Flask-WTF apps often do: the page shown again with 200 and "The CSRF
     /// token is missing.", the session kept and its cookie left alone. Not a flaw (backlog 0560).
     pub(super) logout_refused_on_200: bool,
@@ -2504,6 +2507,16 @@ impl FakeApp {
             ("GET", path) if self.escaped.contains_key(path.trim_start_matches('/')) => {
                 let contents = self.escaped[path.trim_start_matches('/')].clone();
                 Self::respond(200, vec![("Content-Type", "image/gif".into())], &contents)
+            }
+            ("GET", path)
+                if path.starts_with("/files/") && self.flaws.files_redirect_to_storage =>
+            {
+                let name = path.trim_start_matches("/files/");
+                Self::respond(
+                    302,
+                    vec![("Location", format!("https://storage.example/{name}?sig=1"))],
+                    "",
+                )
             }
             ("GET", path) if path.starts_with("/files/") => {
                 let name = path.trim_start_matches("/files/");
