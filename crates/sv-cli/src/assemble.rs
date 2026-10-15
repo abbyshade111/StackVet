@@ -1574,9 +1574,10 @@ fn what_was_not_read(
                 if listing.skipped.len() == 1 { "" } else { "s" }
             ),
             why: format!(
-                "a folder named like an ecosystem's output, beside the file that makes it so, holds \
-                 code the app installed or built rather than wrote, and no check read it: {}{}. If \
-                 one holds the app's own code, move it or rename the folder.",
+                "a folder named like an ecosystem's output, beside the file that makes it so, or a Python \
+                 virtual environment under any name, holds code the app installed or built rather than \
+                 wrote, and no check read it, which is normal: {}{}. If one holds the app's own code, \
+                 move it or rename the folder.",
                 shown.join(", "),
                 if listing.skipped.len() > 5 {
                     format!(", and {} more", listing.skipped.len() - 5)

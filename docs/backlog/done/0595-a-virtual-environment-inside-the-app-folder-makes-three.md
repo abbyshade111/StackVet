@@ -1,6 +1,6 @@
 # A virtual environment inside the app folder makes three check families "partly" without saying that the cause is a venv
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -26,3 +26,11 @@ holds `bin/`, `include/`, `lib/`, and `pyvenv.cfg`; `env/` is in the app's `.git
 is not said by the report either; the SBOM counted the app's own 13 packages, so look at what the AST and secrets
 checks read under `env/`. The fix that recognizes any folder holding `pyvenv.cfg` (and `node_modules/`) and leaves it
 out with that reason changes what sv reads, so it gets the ADR entry the question names.
+
+**Done, 15 October 2026** (documentation), from the orchestrator's answer. A folder holding `pyvenv.cfg` under any
+name is left out (`sv_scan::ecosystems::Skip::Environment`), and listed in the report's "folders left out as
+installed or built code" with "a Python virtual environment: it holds pyvenv.cfg", which now says that is normal; a
+`pyvenv.cfg` that is a link does not count. `node_modules/` was already left out by name. With `env/` left out, its
+`bin/python*` links are no longer met, so the three families are not "partly" for them; and the "partly" line for
+links not followed now names the first three (`static_scan.rs`). ADR-099, Later. Tests:
+`crates/sv-scan/tests/virtual_env.rs` (2); with the `pyvenv.cfg` rule switched off, the first fails.
