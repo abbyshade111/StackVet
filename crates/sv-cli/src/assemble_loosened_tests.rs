@@ -32,15 +32,17 @@ fn finding(rule: &str) -> sv_check::Finding {
     })
 }
 
+/// A credit as its rule makes it: in part, citing what the rule cites, since the suite's census reads every credit made
+/// and holds each rule to what `tools/coverage.py` says of it.
 fn credit(rule: &str, ids: &[&str]) -> sv_check::Verified {
-    sv_check::Verified::new(rule, ids, "what the run saw".into())
+    sv_check::Verified::new(rule, ids, "what the run saw".into()).in_part()
 }
 
 #[test]
 fn a_credit_the_loosened_setting_bears_on_is_withheld_and_said() {
     let mut findings = vec![finding("probe.cookie-attributes")];
     let mut verified = vec![
-        credit("probe.session-cookie-attributes", &["V3.3.1"]),
+        credit("probe.session-cookie-attributes", &["V3.3.2", "V3.3.4"]),
         credit("probe.cross-site-request-accepted", &["V3.5.1"]),
     ];
     let gaps = loosened_for_the_run(
@@ -57,7 +59,7 @@ fn a_credit_the_loosened_setting_bears_on_is_withheld_and_said() {
         "{}",
         gaps[0].why
     );
-    assert_eq!(gaps[0].requirements, ["V3.3.1"]);
+    assert_eq!(gaps[0].requirements, ["V3.3.2", "V3.3.4"]);
     assert!(
         findings[0].description.contains("this is about that copy"),
         "{}",

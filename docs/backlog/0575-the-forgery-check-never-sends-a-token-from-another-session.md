@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the inventory of sweep 3 (backlog 0561, ADR-119); two or three requests, filed rather than built there.
 
 **What is wrong.** The forgery check (V3.5.1) sends no token at all. An app that checks a token is present and well

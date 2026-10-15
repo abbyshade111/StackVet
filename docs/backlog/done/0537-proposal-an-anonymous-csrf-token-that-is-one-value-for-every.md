@@ -1,6 +1,6 @@
 # Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -20,3 +20,5 @@ two strangers" under V3.5.1 (read its text first), crediting nothing when they d
 
 **Built, 15 October 2026 (honesty):** in 0561's second batch, as `probe.csrf-token-shared` (V3.5.1). Left open for
 the coordination board to close, since 0537 is queued there.
+
+**Closed by the board, 15 October 2026:** built in 0561's second batch (PR 1999) as `probe.csrf-token-shared` under ADR-119; closed by the orchestrating session.
