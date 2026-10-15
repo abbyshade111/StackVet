@@ -143,3 +143,8 @@ uses is one function now (`signin::sign_out_may_be_refused`), and the WebSocket 
 answered with a page or sent straight back to a private page, after which the browser's own session still opens the
 first private page, leaves the socket opening afterwards not judged.
 
+**Fourteenth batch, built (the session timeouts, the rest of list item 11):** after the wait, a session's read of the
+private page counts as opening it only when it shows the page it opened at the start, so "your session has expired"
+served with 200 is the session ended, not the page opening; the session kept busy, read at the same moment, has to
+show the page still, which is the control.
+

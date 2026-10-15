@@ -30,6 +30,8 @@ pub(super) struct FakeApp {
     pub(super) seconds_per_request: u64,
     /// Seconds a signed-in session may go unused, when this app ends idle sessions at all.
     pub(super) idle_limit: Option<u64>,
+    /// Sessions that timed out, by id, for `expired_on_200`.
+    expired: std::collections::BTreeSet<String>,
     /// Seconds a signed-in session may last, when this app limits that at all.
     pub(super) lifetime_limit: Option<u64>,
     /// Per session: when it was first seen signed in, and when it was last used.
@@ -273,6 +275,9 @@ pub(super) struct Flaws {
     /// Refuses an upload with the same 201 "stored" a stored file gets, keeping nothing. Not a flaw: only
     /// fetching the file back tells the two apart (backlog 0560).
     pub(super) upload_refused_alike: bool,
+    /// Answers a private page asked with a session that timed out with "Your session has expired" served
+    /// with 200, rather than a redirect to sign in. Not a flaw (backlog 0560).
+    pub(super) expired_on_200: bool,
     /// Answers an admin action that was done with 200 "Posted." rather than a redirect. Not a flaw.
     pub(super) admin_action_answers_200: bool,
     /// Serves an uploaded file by sending the browser to where it is kept, with no `Content-Disposition` of its
@@ -1399,6 +1404,7 @@ impl FakeApp {
             if idle_over || life_over {
                 self.sessions.remove(s);
                 self.session_times.remove(s);
+                self.expired.insert(s.clone());
             } else if let Some(times) = self.session_times.get_mut(s) {
                 times.1 = now;
             }
@@ -2283,6 +2289,14 @@ impl FakeApp {
                     })
                 {
                     Self::respond(200, vec![], "<p>Unknown user. Ask an administrator.</p>")
+                } else if self.flaws.expired_on_200
+                    && sid.as_ref().is_some_and(|s| self.expired.contains(s))
+                {
+                    Self::respond(
+                        200,
+                        vec![],
+                        "<p>Your session has expired. Please sign in again.</p>",
+                    )
                 } else if self.hides_private {
                     Self::respond(404, vec![], "none")
                 } else if self.flaws.private_signin_on_200 {
