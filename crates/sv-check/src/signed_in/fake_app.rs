@@ -278,6 +278,12 @@ pub(super) struct Flaws {
     /// Answers a private page asked with a session that timed out with "Your session has expired" served
     /// with 200, rather than a redirect to sign in. Not a flaw (backlog 0560).
     pub(super) expired_on_200: bool,
+    /// Keeps no upload at all, answering every one, the ordinary file too, with the upload form shown again
+    /// with 200 and "Uploads are switched off." Not a flaw: nothing can be judged (backlog 0560).
+    pub(super) uploads_off_on_200: bool,
+    /// Answers a file it kept with the upload form shown again, with 200 and "Saved.", where it would answer
+    /// 201. Not a flaw: fetching the file back shows it was kept (backlog 0560).
+    pub(super) uploads_kept_answer_form: bool,
     /// Answers an admin action that was done with 200 "Posted." rather than a redirect. Not a flaw.
     pub(super) admin_action_answers_200: bool,
     /// Serves an uploaded file by sending the browser to where it is kept, with no `Content-Disposition` of its
@@ -1229,6 +1235,17 @@ impl Http for FakeApp {
         }
         let answer = self.answer(r)?;
         let mut answer = self.follow_next(r, answer);
+        if self.flaws.uploads_kept_answer_form
+            && r.method == "POST"
+            && r.path == "/upload"
+            && answer.status == 201
+        {
+            answer = Self::respond(
+                200,
+                vec![],
+                "<form method=post><input type=\"file\" name=file> Saved.</form>",
+            );
+        }
         if self.flaws.private_cors_echoes
             && r.path == "/account"
             && answer.status == 200
@@ -2377,6 +2394,13 @@ impl FakeApp {
                 }
                 if self.single_use_tokens && !token_ok {
                     return Some(Self::respond(403, vec![], "this form has expired"));
+                }
+                if self.flaws.uploads_off_on_200 {
+                    return Some(Self::respond(
+                        200,
+                        vec![],
+                        "<form method=post><input type=file name=file> Uploads are switched off.</form>",
+                    ));
                 }
                 if self
                     .upload_quota

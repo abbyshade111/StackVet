@@ -200,6 +200,15 @@ pub(super) enum Took {
     Unclear(String),
 }
 
+/// Whether an answer carries a file field: the upload form shown again, as an app refusing a file may.
+pub(super) fn shows_upload_form(answer: &ProbeResponse) -> bool {
+    let body = answer.body.to_ascii_lowercase();
+    (200..300).contains(&answer.status)
+        && ["type=file", "type=\"file\"", "type='file'"]
+            .iter()
+            .any(|field| body.contains(field))
+}
+
 /// Where the ordinary GIF was found when fetched back by its name, which makes fetching a later file back by
 /// its name a way to tell whether it was kept: `None` without `serves-at`, or when the ordinary file was not
 /// found that way.
@@ -302,6 +311,28 @@ pub(super) fn upload_checks(
     out.steps
         .push(format!("uploaded an ordinary GIF to {}", upload.path));
     let served = served_back_works(http, upload, session);
+    // An answer under 400 is not yet a file kept: an app may refuse it by showing the upload form again with
+    // 200. Unless fetching the file back found it, that answer shows nothing was kept, and every refusal below
+    // would be read beside a refusal (backlog 0560, ADR-119).
+    if served.is_none() && shows_upload_form(&ordinary_answer) {
+        out.not_assessed.push((
+            "V5.2.1, V5.2.2, V5.3.1, V3.2.1".to_owned(),
+            format!(
+                "The ordinary file sent to {} was answered {} with the upload form again, and nothing \
+                 showed it was kept{}. A file refused for being wrong cannot be told from one refused \
+                 because the upload does not work as stackvet.toml describes.",
+                upload.path,
+                ordinary_answer.status,
+                if upload.serves_at.is_some() {
+                    ": fetching it back by `serves-at` did not find it"
+                } else {
+                    ". Saying where a kept file is served, as `serves-at` under the `upload` entry, lets \
+                     this fetch it back"
+                }
+            ),
+        ));
+        return;
+    }
 
     // 2. V5.2.1: a file larger than the owner says the app accepts.
     match upload.max_bytes {
@@ -2839,6 +2870,8 @@ mod against_control_tests;
 
 #[cfg(test)]
 mod beside_ordinary_tests;
+#[cfg(test)]
+mod first_upload_tests;
 
 #[cfg(test)]
 mod download_is_the_file_tests;
