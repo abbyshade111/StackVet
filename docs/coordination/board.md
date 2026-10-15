@@ -7,7 +7,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0495, 0571, 0572, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0578, 0565, 0566, 0588, 0580, 0581
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0591, 0578, 0565, 0566, 0588, 0580
 - documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575, 0585
 
 ## Queue
@@ -45,6 +45,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 31. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
 32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
 33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
+34. 0581 In the Docker route the container has no trusted-keys list, so after `sv review` the tool's `stackvet_check` cannot count the seals — ready
 
 ## Log
 
@@ -629,3 +630,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 09:58 — assigned 0581 to wording (full) into the lane after 0580: the owner's choice: sv connect --docker mounts the trusted list and the public key read-only; sv-cli, wording's; ADR-108 Later
 - 2026-10-15 09:58 — queued 0589, on hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command), marked
 - 2026-10-15 09:58 — queued 0590, on hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints), marked
+- 2026-10-15 10:00 — queued 0591, marked
+- 2026-10-15 10:00 — withdrew 0581 from wording (full), on hold: wording's line is full; back after the passphrase fault the owner wants fixed first
+- 2026-10-15 10:00 — released 0581
+- 2026-10-15 10:00 — assigned 0591 to wording (full) into the lane after 0534: the owner's find of 15 October, to fix first: the key prompts saved the word none as the passphrase and the unlock prompt gives no way out; sv-cli review.rs, wording's

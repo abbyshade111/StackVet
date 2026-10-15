@@ -1,6 +1,6 @@
 # In the Docker route the container has no trusted-keys list, so after `sv review` the tool's `stackvet_check` cannot count the seals
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** open
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
