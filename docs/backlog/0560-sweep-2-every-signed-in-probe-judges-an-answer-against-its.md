@@ -101,3 +101,9 @@ be a sign-out refused on a page of its own. A sign-out that sends the browser el
 done, and the old session is asked again as before. Still open from item 7: the WebSocket after sign-out
 (`sessions.rs`), which reads its own sign-out the same old way.
 
+**Seventh batch, built (a private page asked without signing in, list item 8):** each private page served with a 2xx
+to somebody not signed in is read beside the same page served to the first test user once signed in
+(`control::shows_page`): the page shown is a finding as before; a page showing little of it (a sign-in form served
+with 200) is neither a finding nor a refusal, says so, and is not credited. Where the user's own page is not in hand
+(signing in got no answer, or the page did not open for the user), a 2xx is a finding as before.
+
