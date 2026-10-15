@@ -588,6 +588,10 @@ pub(super) struct Flaws {
     pub(super) svg_as_attachment: bool,
     /// Refuses SVG uploads outright. Not a fault: an app that takes no SVG has nothing to clean.
     pub(super) refuses_svg: bool,
+    /// Serves an upload whose contents are a drawing (`<svg`) as `image/svg+xml`, whatever its name: an app that
+    /// sets the type from what the file holds (backlog 0576). With `refuses_svg` and `unchecked_contents_ok`, an SVG
+    /// refused by its name is taken named `.gif` and served as the drawing it is.
+    pub(super) types_by_contents: bool,
     /// Builds the path an upload is saved at from its name as it came in, so a name starting
     /// `../` lands one folder above the upload folder (V5.3.2). Without it, a name is reduced to
     /// its last part, as `secure_filename` and `path.basename` do.
@@ -2754,7 +2758,9 @@ impl FakeApp {
                     }
                     return Some(Self::respond(404, vec![], "no such file"));
                 };
-                if name.ends_with(".svg") {
+                if name.ends_with(".svg")
+                    || (self.flaws.types_by_contents && contents.starts_with("<svg"))
+                {
                     // Served for the browser to show, as an image, unless told otherwise.
                     let mut headers = vec![("Content-Type", "image/svg+xml".to_owned())];
                     if self.flaws.svg_as_attachment {
