@@ -62,7 +62,7 @@ with the request's path, as an app with no router matches its pages; Passport st
 header name. It is where to look, never evidence, and credits nothing (ADR-022, Later). On the example apps it lists
 oidc-notes' `/login/google` and `/callback` and notes-with-users' `/login`; flask-booking has none. **Waiting on the
 owner:** the second half, a list of pathways in `stackvet.toml` and a finding citing V6.3.4 for a way in it does not
-name (`docs/coordination/waiting/0491.md`). **Not taken up here:** the other pointers in the section above (V6.1.1's
+name (asked on the board; answered below). **Not taken up here:** the other pointers in the section above (V6.1.1's
 rate-limit setting, V6.1.2's password validator, V6.2.10's expiry rule and hand check, V6.3.3's second-factor
 library, V6.5.2's backup codes), which the title does not name.
 
