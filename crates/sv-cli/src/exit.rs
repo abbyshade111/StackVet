@@ -14,7 +14,8 @@
 //!   letting it end with Rust's 101). Nothing about the app is known from such a run.
 //!
 //! 1 outranks 2, and 3 is never combined with anything: a run that failed produced no result to rank.
-//! Ctrl-C keeps 130, the usual code for it.
+//! Ctrl-C keeps 130, the usual code for it. A reader that went away before `sv` finished printing
+//! (`sv --version | head -1`) keeps 141, the usual code for that, quietly (backlog 0563).
 //!
 //! Most of what a static run cannot see is not on these lists, on purpose. Every app the owner had
 //! on 4 October 2026 had requirements "not verified by anything" (121 to 230 of them) and checks
@@ -47,6 +48,12 @@ pub fn worse(a: i32, b: i32) -> i32 {
 
 /// Stopped with Ctrl-C: the usual code for it.
 pub const INTERRUPTED: i32 = 130;
+
+/// The reader of `sv`'s output closed it before `sv` finished printing (backlog 0563): the usual code for it, 128
+/// and the broken-pipe signal's 13, as `cat` or `ls` end. The reader's choice, not a fault in `sv`, so nothing is said;
+/// and never 0, so a check whose output was cut short is not read as having passed. The report commands have
+/// written their files before they print.
+pub const CLOSED_PIPE: i32 = 141;
 
 /// What to do before `sv` ends because it was stopped with Ctrl-C, set once by the command that
 /// wants it: `sv report` keeps a record of the stopped run when history is on (ADR-083, part 2).

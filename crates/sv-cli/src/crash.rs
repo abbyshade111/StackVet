@@ -45,6 +45,18 @@ pub fn noted() -> Option<(String, String)> {
     SEEN.lock().ok().and_then(|seen| seen.clone())
 }
 
+/// Whether the panic the hook noted was printing to a pipe whose reader had gone (backlog 0563): Rust's `println!`
+/// panics with "failed printing to stdout: Broken pipe (os error 32)", or on Windows "The pipe is being closed.
+/// (os error 232)". The reader's choice, not a fault in `sv`.
+pub fn closed_pipe() -> bool {
+    noted().is_some_and(|(what, _)| {
+        what.starts_with("failed printing to stdout")
+            && ["Broken pipe", "(os error 32)", "(os error 232)"]
+                .iter()
+                .any(|sign| what.contains(sign))
+    })
+}
+
 /// The lines `main` prints for the panic the hook noted.
 pub fn said() -> String {
     let (what, place) = SEEN

@@ -92,6 +92,9 @@ fn main() {
             eprintln!("Error: {error:?}");
             exit::exit_with(exit::FAILED)
         }
+        // The reader went away first (`sv --version | head -1`): its choice, not a fault, so nothing is said and
+        // no crash file is written (backlog 0563).
+        Err(_) if crash::closed_pipe() => exit::exit_with(exit::CLOSED_PIPE),
         Err(_) => {
             use std::io::Write;
             let _ = std::io::stdout().flush();
