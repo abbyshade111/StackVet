@@ -1,6 +1,7 @@
 //! Which findings are information in test code rather than findings (ADR-091): the four Bandit rules, in test
 //! files, that no other tool also reported. Everything else keeps counting, and the secrets rules are never on
-//! the list.
+//! the list; the one exception, a credential assignment in a test file whose value is made of words (backlog 0529),
+//! is held in `crates/sv-check/src/secrets/test_passphrase_tests.rs`.
 
 use super::*;
 
