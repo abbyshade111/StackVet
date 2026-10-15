@@ -192,7 +192,11 @@ fn sections_since(
     );
     if !contradicted.is_empty() {
         contradictions.lead =
-            "\nstackvet.toml says one thing and the code another (the code wins):\n".to_owned();
+            "\nThe code names something that usually means the app does what stackvet.toml says it does \
+             not, so those requirements are switched on. Do not change the code to make one of these go \
+             away: if the app does not do it, leave the code as it is and tell the person; the \
+             requirements stay switched on.\n"
+                .to_owned();
     }
     for claim in contradicted {
         contradictions.items.push(Item::text(format!(

@@ -3744,8 +3744,9 @@ impl Ord for Status {
 fn claim_line(claim: &ResolvedClaim) -> ClaimLine {
     let note = match claim.state {
         ClaimState::Contradicted => {
-            "The code says otherwise, and the code wins: the requirements this would have switched \
-             off are switched on."
+            "The code names something that usually means the app does this, so the requirements \
+             this would have switched off are switched on. If the app does not do this, leave the \
+             code as it is and tell the person; the requirements stay switched on."
         }
         ClaimState::Unsupported => {
             "Claimed, and nothing in the code shows it. The requirements still apply — a claim is \
