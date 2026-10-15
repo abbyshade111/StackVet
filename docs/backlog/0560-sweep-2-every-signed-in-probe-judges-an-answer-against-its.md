@@ -95,3 +95,9 @@ and keeps the credit from resting on the pages that were judged. Without the adm
 before. Still open from item 5: the role written into sign-up and into the email change, which have no admin page of
 their own to read beside, since they do not sign the admin in.
 
+**Seventh batch, built (a private page asked without signing in, list item 8):** each private page served with a 2xx
+to somebody not signed in is read beside the same page served to the first test user once signed in
+(`control::shows_page`): the page shown is a finding as before; a page showing little of it (a sign-in form served
+with 200) is neither a finding nor a refusal, says so, and is not credited. Where the user's own page is not in hand
+(signing in got no answer, or the page did not open for the user), a 2xx is a finding as before.
+
