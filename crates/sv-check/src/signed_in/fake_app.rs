@@ -448,6 +448,9 @@ pub(super) struct Flaws {
     /// A request carrying `X-Remote-User` naming an account is served as that account, signed in
     /// or not, as behind a proxy the app trusts without one being there (V4.1.3).
     pub(super) trusts_identity_header: bool,
+    /// Answers a private page asked for with a header naming a user, and no session, with "Unknown user"
+    /// served with 200, as a middleware that reads the header and finds nobody does. Not a flaw (backlog 0560).
+    pub(super) identity_header_unknown_user: bool,
     /// The new-password field of the change page alone is an ordinary text field.
     pub(super) new_field_shown: bool,
     /// Deleting an account leaves its other sessions working.
@@ -2271,6 +2274,13 @@ impl FakeApp {
                         )
                     };
                     Self::respond(200, headers, &body)
+                } else if self.flaws.identity_header_unknown_user
+                    && r.headers.iter().any(|(k, _)| {
+                        let k = k.to_ascii_lowercase();
+                        k.starts_with("x-") && k.contains("user")
+                    })
+                {
+                    Self::respond(200, vec![], "<p>Unknown user. Ask an administrator.</p>")
                 } else if self.hides_private {
                     Self::respond(404, vec![], "none")
                 } else if self.flaws.private_signin_on_200 {
