@@ -29,8 +29,22 @@ if [ -n "${SV_BINARY:-}" ]; then
     binary=$SV_BINARY
 else
     # --locked: the versions in Cargo.lock, the ones every test ran with, and never newer ones chosen today.
-    cargo build --release --locked --manifest-path "$repository/Cargo.toml" -p sv-cli
+    # --target-dir: the build lands where the copy below reads it, even when CARGO_TARGET_DIR (an AI coding tool's
+    # sandbox sets one) would send it elsewhere and leave an older sv there to be installed (backlog 0540).
+    cargo build --release --locked --manifest-path "$repository/Cargo.toml" -p sv-cli \
+        --target-dir "$repository/target"
     binary="$repository/target/release/sv"
+    # The program to install says which commit it was built from; it must be this checkout's, or it is an older
+    # build, and nothing is installed. Without git there is nothing to compare with, and nothing is said.
+    if head=$(git -C "$repository" rev-parse HEAD 2>/dev/null); then
+        built=$("$binary" --version | sed -n 's/.*(commit \([0-9a-f]*\)).*/\1/p')
+        if [ "$built" != "$head" ]; then
+            echo "The sv just built says it is commit ${built:-unknown}, and this checkout is $head." >&2
+            echo "That is an older build, so nothing was installed. Run this again; if it says the same," >&2
+            echo "remove $repository/target/release/sv and run it once more." >&2
+            exit 1
+        fi
+    fi
 fi
 
 mkdir -p "$home" "$prefix/bin"
