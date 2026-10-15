@@ -159,6 +159,9 @@ pub(super) struct FakeApp {
     pub(super) notes_per_minute: Option<u32>,
     /// When each user created each note, by the clock.
     note_times: BTreeMap<String, Vec<u64>>,
+    /// `notes_per_minute` counted for each session rather than each user, so a fresh sign-in starts the
+    /// count again (backlog 0573).
+    pub(super) notes_limit_per_session: bool,
     /// Comments one user may post in a minute through `/comments`, answered 429 past it. `None`, the
     /// default, is no limit: a second kind of record for `creates`.
     pub(super) comments_per_minute: Option<u32>,
@@ -3026,7 +3029,12 @@ impl FakeApp {
                 }
                 if let Some(limit) = self.notes_per_minute {
                     let now = self.clock;
-                    let times = self.note_times.entry(owner.clone()).or_default();
+                    let counted = if self.notes_limit_per_session {
+                        sid.clone().unwrap_or_default()
+                    } else {
+                        owner.clone()
+                    };
+                    let times = self.note_times.entry(counted).or_default();
                     times.retain(|t| now.saturating_sub(*t) < 60);
                     // Past the limit only: a note within it says nothing of what lets one
                     // through, so it does not move the turn.

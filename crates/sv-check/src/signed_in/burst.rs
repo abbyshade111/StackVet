@@ -101,7 +101,14 @@ pub(super) fn burst_check(
         return;
     };
     for (create, read_back) in creates {
-        burst_one(http, users, &mut session, (create, read_back), n, out);
+        burst_one(
+            http,
+            (users, account),
+            &mut session,
+            (create, read_back),
+            n,
+            out,
+        );
     }
 }
 
@@ -113,7 +120,7 @@ type ReadBack<'a> = (Option<&'a str>, Option<&'a str>);
 /// states: the finding, the credit, or why neither, for this action alone.
 fn burst_one(
     http: &mut dyn Http,
-    users: &UsersSection,
+    (users, account): (&UsersSection, &Account),
     session: &mut Session,
     (create, (read, id_field)): (&RequestTemplate, ReadBack),
     n: u32,
@@ -158,8 +165,6 @@ fn burst_one(
             .map(|made| (made, path))
     });
     let still = still_in(http, users, "after", session);
-    // The limit this set off, left to lapse before anything else is asked.
-    http.wait(61);
     // Through means answered as the first was, not "under 400" (backlog 0560, ADR-119): a limit shown on a 200
     // page, or as a redirect back to the form, is under 400 too.
     let control = answers
@@ -189,6 +194,30 @@ fn burst_one(
     let first = answers.first().is_some_and(accepted);
     let last = judged.last() == Some(&super::control::Beside::Like);
     let sent = n as usize + 1;
+    // Everything the credit below needs, and a limit's answer at the end (backlog 0573): before crediting it,
+    // B signs in again in a session of its own and creates one more, inside the same minute. A limit kept per
+    // session lets that one through, though one user signing in again goes on creating.
+    let would_credit = still
+        && first
+        && !matches!(&first_made, Some((false, _)))
+        && took <= 55
+        && through < sent
+        && crashed == 0
+        && unclear.is_none()
+        && !last
+        && answers.last().is_some_and(limit_answer);
+    let again = would_credit.then(|| {
+        once_more(
+            http,
+            (users, account),
+            session,
+            create,
+            control,
+            &markers[0],
+        )
+    });
+    // The limit this set off, left to lapse before anything else is asked.
+    http.wait(61);
     out.steps.push(format!(
         "created {sent} records through {} in {took} second{}: {through} went through, {crashed} \
          crashed or did not answer",
@@ -286,6 +315,15 @@ fn burst_one(
             ),
             out,
         );
+    } else if let Some(Err(why)) = again {
+        say(
+            format!(
+                "Whether creating records is limited: the last of the {sent} sent through {} was \
+                 refused as a limit refuses, but {why}",
+                create.path
+            ),
+            out,
+        );
     } else {
         out.verified.push(crate::Verified::new(
             CREATE_UNLIMITED.rule_id,
@@ -293,12 +331,73 @@ fn burst_one(
             format!(
                 "{sent} records created through {} within {took} seconds by one user: the first \
                  went through and the last was refused, against the {n} a minute stackvet.toml \
-                 states. One action, not every function V2.4.1 names",
+                 states, and one more sent after signing in again was refused too. One action, \
+                 not every function V2.4.1 names",
                 create.path
             ),
         )
         // One action stands for none of the others V2.4.1 names (ADR-053, Later).
         .in_part());
+    }
+}
+
+/// After a burst a limit refused, B signs in again, in a session of its own, and creates one more inside the
+/// same minute (backlog 0573). `Ok` when the limit refused that one as well, so it counts the user and not
+/// the session; otherwise why the burst shows nothing about a limit on one user. The new session takes the
+/// old one's place, as an app that ends the old session on a new sign-in would have it.
+fn once_more(
+    http: &mut dyn Http,
+    (users, account): (&UsersSection, &Account),
+    session: &mut Session,
+    create: &RequestTemplate,
+    control: Option<&ProbeResponse>,
+    first_marker: &str,
+) -> Result<(), String> {
+    let mut steps = Vec::new();
+    let fresh = sign_in(http, users, "burst-again", account, &mut steps)
+        .map(|s| s.session)
+        .filter(|s| still_in(http, users, "again", s));
+    let Some(mut fresh) = fresh else {
+        return Err(
+            "the second user could not sign in again, or was not shown a private page once \
+                    signed in, to show whether the limit holds for a new session too: a limit kept \
+                    per session starts again at each sign-in."
+                .to_owned(),
+        );
+    };
+    let values = with_token(
+        http,
+        "burst-again-create",
+        create,
+        &Values::default(),
+        &mut fresh,
+        &users.private,
+    );
+    let marker = format!("{first_marker}-again");
+    let v = Values {
+        marker: &marker,
+        ..values
+    };
+    let answer = http.send(&request("burst-again", create, &v, &fresh));
+    *session = fresh;
+    if limit_answer(&answer) {
+        return Ok(());
+    }
+    match control.map(|c| super::control::beside(c, &answer)) {
+        Some(super::control::Beside::Like) => Err(format!(
+            "after the second user signed in again, one more sent through {} went through ({}): \
+             the limit counts each session, not the user, and one user signing in again goes on \
+             creating records.",
+            create.path,
+            status(&answer)
+        )),
+        _ => Err(format!(
+            "after the second user signed in again, one more sent through {} was answered {}, \
+             which shows neither a record made nor the limit, so whether the limit holds for a new \
+             session is not known: a limit kept per session starts again at each sign-in.",
+            create.path,
+            status(&answer)
+        )),
     }
 }
 
@@ -722,3 +821,5 @@ mod tests {
 
 #[cfg(test)]
 mod beside_first_tests;
+#[cfg(test)]
+mod fresh_session_tests;
