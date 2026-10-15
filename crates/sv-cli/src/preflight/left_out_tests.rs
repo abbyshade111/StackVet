@@ -31,8 +31,9 @@ fn a_manifest_without_owned_is_told_what_that_costs_in_a_table_of_its_own() {
     );
     assert!(
         text.contains(
-            "| `owned` | reading one user's record as another user, a forged form sent from another site, and the \
-             limit on making records | V8.2.2, V3.5.1, V3.5.2, V2.4.1 |"
+            "| `owned` | reading one user's record as another user, a forged form sent from another site, the limit \
+             on making records, which fields a record read back hands over, and saved text written back into a page \
+             unencoded | V8.2.2, V3.5.1, V3.5.2, V2.4.1, V15.3.1, V8.2.3, V1.2.1 |"
         ),
         "{text}"
     );
