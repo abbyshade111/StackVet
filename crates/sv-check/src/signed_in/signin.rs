@@ -258,9 +258,9 @@ fn forwarded_check(
 /// the check report apps that defend themselves in a way this did not anticipate, and a check that
 /// cries wolf is one people learn to skip.
 ///
-/// Three things it does not do. It never uses A or B, whose sessions the checks above depend on,
-/// and never the admin: it makes its own account through `signup`, or uses a name no account can
-/// have. It does not test `within-minutes`, because every attempt here lands within a few seconds,
+/// Three things it does not do. It never guesses at A or B, whose sessions the checks above depend
+/// on, nor at the admin: it makes its own account through `signup`, or uses a name no account can
+/// have (and then signs A in once, with the right password, after a push-back). It does not test `within-minutes`, because every attempt here lands within a few seconds,
 /// which is inside any window worth stating — the count is the testable half and the report says so.
 /// And a clean result is *checked* rather than a pass: it shows the app pushed back at the stated
 /// number on one run, not that the control is correct.
@@ -555,14 +555,35 @@ pub(super) fn brute_force_check(
     // After a refusal, the account's own password, once (backlog 0561, ADR-119): a limit that refuses only wrong
     // passwords stops nobody, since the guess that is right still gets in, and its answer says so. Only after a
     // refusal: a limit that slows every attempt down still lets the right password in, as it should.
-    let right_after = match (
-        real_account && reading.answered_differently(),
-        users.private.first(),
-    ) {
-        (true, Some(confirm)) => right_password_after(http, login, &target, confirm),
+    // With no `signup`, the name guessed at has no password to be right, so it is A's, from the same address
+    // (backlog 0572): a limit by address that refuses only wrong passwords lets A in, and so does a sound limit
+    // that counts wrong passwords for each name. The two cannot be told apart, so A signing in withholds the
+    // credit rather than making a finding, and A refused shows a limit by address that stops the right password.
+    let whose = if real_account { &target } else { &accounts.a };
+    let right_after = match (reading.answered_differently(), users.private.first()) {
+        (true, Some(confirm)) => right_password_after(http, login, whose, confirm),
         _ => None,
     };
-    if right_after == Some(true) {
+    if !real_account && right_after == Some(true) {
+        out.steps.push(format!(
+            "after the limit, signed in once as {} from the same address: it signed in",
+            accounts.a.user
+        ));
+        out.not_assessed.push((
+            "V6.3.1".to_owned(),
+            format!(
+                "Whether the app resists password guessing: with no `signup` in stackvet.toml, this \
+                 check tried {attempts} wrong passwords against a user name no account has, and the \
+                 app {how}. Straight after, {} signed in from the same address with the right \
+                 password. That is what an app that counts wrong passwords for each name does, \
+                 which is sound, and also what a limit that refuses only wrong passwords does, \
+                 which stops nobody, since the guess that is right still gets in. A name with no \
+                 account has no right password to try, so the two cannot be told apart. Add a \
+                 `signup` section so this check can make an account of its own to try.",
+                accounts.a.user
+            ),
+        ));
+    } else if right_after == Some(true) {
         out.steps.push(
             "after the limit, signed in once with the account's own password: it signed in"
                 .to_owned(),
@@ -585,10 +606,15 @@ pub(super) fn brute_force_check(
         ));
     } else if pushed_back {
         let and_then = match right_after {
-            Some(false) => {
-                "; the account's own password, sent once straight after, was refused too"
+            Some(false) if real_account => {
+                "; the account's own password, sent once straight after, was refused too".to_owned()
             }
-            _ => "",
+            Some(false) => format!(
+                "; {} signing in with the right password from the same address straight after was \
+                 refused too",
+                accounts.a.user
+            ),
+            _ => String::new(),
         };
         out.verified.push(crate::Verified::new(
             NO_BRUTE_FORCE_LIMIT.rule_id,

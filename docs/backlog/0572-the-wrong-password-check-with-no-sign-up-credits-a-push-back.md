@@ -13,3 +13,9 @@ with an account of its own (0561's first batch), so a limit that refuses only wr
 **What to build.** After the push-back, sign A in from the same address (the sign-in page, the post, the first
 private page, about three requests). If A signs in, the limit lets a right password through. Mind the sign-in budget
 (62 in a run, `SIGN_INS_IN_A_RUN`): it comes after the guesses, so it is counted with them.
+
+**Built, 15 October 2026 (honesty).** After the push-back, A signs in once from the same address (`guess-right`, then
+the first private page). A refused: credited, and the credit says A was refused too. A let in: not credited and no
+finding, because a sound limit counting each name lets A in exactly as a limit refusing only wrong passwords does
+(ADR-119, Later). Tests: `crates/sv-check/src/signed_in/no_signup_right_password_tests.rs`. Left open for the board
+to close.
