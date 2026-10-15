@@ -248,15 +248,15 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    or tell me what the code does for one, quote the file and lines that show it beside the answer,
 >    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
->    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
->    as done yourself, and never write `by = "owner"`: only I can, with `sv review`. When you suggest
+>    `security-notes.md`, outside its questions, is not read as an answer. Never write `by = "owner"`:
+>    only I can, with `sv review`. When you suggest
 >    how I could check an answer of yours or a check by hand, write it beside it as a proposal,
 >    `confirmed = { by = "ai-tool", how = "what to look at, and what it should show" }`: it counts
 >    only once I confirm it in `sv review`.
->    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
->    `by = "ai-tool"` and my words in `how`.
+>    Write a `[checked-by-hand]` entry, with `by = "ai-tool"`, for a check you made reading the code (its
+>    lines in `how`; it counts as your word, not mine) or one I made and told you of (my words in `how`).
 >
-> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint cd92b5e5)*
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint 0d976f0b)*
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
@@ -267,7 +267,7 @@ the Cursor build, a plain "please push" was taken as covering a push that bypass
 
 More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md). The ones
 shown to work are already given to your AI tool, so you need not paste them; the rest are there too (`sv prompts`
-prints them, and your AI tool fetches them with `stackvet_prompts`), each saying whether it has been shown to work.
+prints them; your AI tool fetches them with `stackvet_prompts`), each saying whether it has been shown to work.
 
 StackVet also helps before code is written, and tells your AI tool when: what to decide before building
 (`stackvet_plan`, or `sv plan`), a brief before one feature such as sign-in, uploads, or payments
@@ -293,7 +293,7 @@ sv review ~/code/my-app
 ```
 
 **With only Docker** (you have not built StackVet on your computer), run it from the container instead.
-Once, make the folder it keeps its key in, so that the folder is yours and only yours:
+Once, make the folder it keeps its key in, yours alone:
 
 ```bash
 mkdir -p ~/.config/stackvet && chmod 700 ~/.config/stackvet && touch ~/.config/stackvet/allowed_signers

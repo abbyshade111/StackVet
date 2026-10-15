@@ -128,7 +128,7 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
         ),
         (
             "never by = owner",
-            "Never mark a check by hand as done yourself, and never write `by = \"owner\"`: only I can, with `sv review`.",
+            "Never write `by = \"owner\"`: only I can, with `sv review`.",
         ),
         // Backlog 0580, the owner's choice of 15 October 2026 (A): the tool proposes how to check, as sv's own question
         // text asks, and nothing counts until the person confirms it in `sv review`. It replaced 0547's "never write
@@ -138,13 +138,13 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "write it beside it as a proposal, `confirmed = { by = \"ai-tool\", how = \"what to look at, and what it \
              should show\" }`: it counts only once I confirm it in `sv review`.",
         ),
-        // Backlog 0547, the owner's choice of 14 October 2026 (B): in the trial Antigravity wrote twelve
-        // `confirmed` blocks of its own and VS Code marked a check done with `by = "ai-tool"`. The tool still writes a
-        // hand check the person made, as a proposal for `sv review`, since that is the only way one is recorded.
+        // Backlog 0603, the owner's choice of 15 October 2026 (A): the prompt matches what `stackvet_check` tells the
+        // tool. It may write a check it made by reading the code, as its own word, beside one the person made and
+        // told it of. It replaced 0547's "only for a check I made", which told the tool the opposite of sv.
         (
-            "write a hand check only for one the person made",
-            "Write a `[checked-by-hand]` entry only for a check I made and described to you, with `by = \"ai-tool\"` \
-             and my words in `how`.",
+            "write a hand check the tool made from the code, as its word, or one the person made",
+            "Write a `[checked-by-hand]` entry, with `by = \"ai-tool\"`, for a check you made reading the code (its \
+             lines in `how`; it counts as your word, not mine) or one I made and told you of (my words in `how`).",
         ),
         ("never secure", "Never tell me the app is secure"),
     ] {
