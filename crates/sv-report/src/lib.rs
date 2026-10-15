@@ -381,6 +381,50 @@ impl ExcludedRequirement {
     }
 }
 
+/// The requirements that do not apply only because stackvet.toml says no about the app, counted, with
+/// the answers they rest on (backlog 0600). A tool can answer `false` to a dozen questions it did not check, and
+/// "does not apply" then grows on its word alone; the count says so where the counts are. `None` when no
+/// requirement rests on such an answer.
+pub fn resting_on_a_no(excluded: &[ExcludedRequirement], claims: &[ClaimLine]) -> Option<String> {
+    let answered_no = |name: &str| {
+        claims
+            .iter()
+            .any(|c| c.name == name && c.claimed == Some(false))
+    };
+    let mut names: Vec<String> = Vec::new();
+    let mut n = 0;
+    for ex in excluded {
+        if ex.rests_on != "claim" || !answered_no(&ex.condition) {
+            continue;
+        }
+        n += 1;
+        let name = format!("`{}`", ex.condition);
+        if !names.contains(&name) {
+            names.push(name);
+        }
+    }
+    if n == 0 {
+        return None;
+    }
+    names.sort();
+    Some(format!(
+        "{n} requirement{} {} not apply only because stackvet.toml says no to {}. `sv` did not \
+         check {}: stackvet.toml does not record who gave {}, so {} read as your AI coding tool's word, and \
+         finding nothing in the code does not show that an app lacks something. If one is wrong, change it to \
+         `true` and run `sv` again.",
+        if n == 1 { "" } else { "s" },
+        if n == 1 { "does" } else { "do" },
+        list_and(&names),
+        if names.len() == 1 {
+            "that answer"
+        } else {
+            "those answers"
+        },
+        if names.len() == 1 { "it" } else { "them" },
+        if names.len() == 1 { "it is" } else { "each is" },
+    ))
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct UndecidedRequirement {
     pub id: String,
@@ -399,6 +443,20 @@ pub struct ClaimLine {
     pub state: String,
     /// One sentence a person can act on.
     pub note: String,
+    /// Who gave the answer, as a design answer's `by` says it: `ai-tool` for every answer stackvet.toml
+    /// gives, since a capability line records nobody and an answer is never the owner's on nobody's say-so;
+    /// `None` when it gives none (backlog 0600).
+    pub by: Option<&'static str>,
+}
+
+impl ClaimLine {
+    /// Who gave the answer, for a person.
+    pub fn who_said(&self) -> &'static str {
+        match self.by {
+            Some(_) => "not recorded, so read as your AI coding tool's",
+            None => "nobody",
+        }
+    }
 }
 
 /// A check found something and named a requirement this app is not being assessed against.
@@ -3815,6 +3873,7 @@ fn claim_line(claim: &ResolvedClaim) -> ClaimLine {
         found_in_code: claim.found_in_code,
         state: format!("{:?}", claim.state).to_lowercase(),
         note: note.to_owned(),
+        by: claim.claimed.map(|_| "ai-tool"),
     }
 }
 
@@ -3835,6 +3894,8 @@ fn stake(level: u8) -> u8 {
 #[cfg(test)]
 mod timing_tests;
 
+#[cfg(test)]
+mod resting_on_a_no_tests;
 #[cfg(test)]
 mod timing_inside_tests;
 #[cfg(test)]
