@@ -2683,6 +2683,8 @@ mod asked_tests;
 #[cfg(test)]
 mod attribute_tests;
 #[cfg(test)]
+mod blank_page_tests;
+#[cfg(test)]
 mod check_guard_tests;
 #[cfg(test)]
 mod email_role_tests;

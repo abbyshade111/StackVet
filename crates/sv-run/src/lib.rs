@@ -736,6 +736,12 @@ pub struct RunOutcome {
     /// and what Docker said: every request after it got no answer because nothing was there to
     /// ask, not because the app was silent (ADR-025, Later, 8 October 2026).
     pub sidecar_lost: Option<String>,
+    /// The answers that came with less body than their `Content-Length` said, as "id (status, N of M bytes)"
+    /// (backlog 0598, ADR-021): a blank page in a browser, read as no answer, and said once.
+    pub short_answers: Vec<String>,
+    /// The first line of the app's output that speaks of a `Content-Length`, when an answer came short: the app's
+    /// own word on why.
+    pub short_answers_log: Option<String>,
     /// The packages installed before the run (ADR-052), and whether each came from an earlier
     /// run's download. Empty when `install` was not asked for.
     pub installed: Vec<(install::Ecosystem, bool)>,
@@ -775,6 +781,8 @@ impl RunOutcome {
             left_over_removed: _,
             liveness: _,
             sidecar_lost: _,
+            short_answers: _,
+            short_answers_log: _,
             installed: _,
             stand_ins: _,
             resources: _,

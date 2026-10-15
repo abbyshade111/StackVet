@@ -56,6 +56,8 @@ fn outcome(probe_responses: Vec<ProbeResponse>) -> sv_run::RunOutcome {
         left_over_removed: Vec::new(),
         liveness: Vec::new(),
         sidecar_lost: None,
+        short_answers: Vec::new(),
+        short_answers_log: None,
         installed: Vec::new(),
         stand_ins: Default::default(),
         resources: None,

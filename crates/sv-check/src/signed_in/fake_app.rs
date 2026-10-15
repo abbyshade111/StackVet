@@ -638,6 +638,9 @@ pub(super) struct Flaws {
     pub(super) logs_no_wrong_password: bool,
     /// The log records no code given to sign in, emailed or two-factor (backlog 0232, part 5).
     pub(super) logs_no_codes: bool,
+    /// A signed-in GET of `/account` comes back as the transport gives an answer shorter than its `Content-Length`:
+    /// none (backlog 0598). The app began it and failed, as uvicorn does when a body outgrows the length it set.
+    pub(super) account_page_blank: bool,
     /// The limit's window rolls over once, just as the first attempt claiming another address
     /// arrives: that attempt gets through whatever the header says, and nothing after it does.
     /// Timing a real limiter can produce by chance.
@@ -1272,6 +1275,13 @@ impl Http for FakeApp {
             std::thread::sleep(std::time::Duration::from_millis(*ms));
         }
         let answer = self.answer(r)?;
+        if self.flaws.account_page_blank
+            && r.method == "GET"
+            && r.path == "/account"
+            && (200..300).contains(&answer.status)
+        {
+            return None;
+        }
         let mut answer = self.follow_next(r, answer);
         if self.flaws.uploads_kept_answer_form
             && r.method == "POST"

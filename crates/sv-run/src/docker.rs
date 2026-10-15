@@ -210,6 +210,8 @@ const MOST_CPUS: u64 = 2;
 mod container_record_tests;
 #[cfg(all(test, unix))]
 mod resource_reading_tests;
+#[cfg(test)]
+mod short_body_tests;
 #[cfg(all(test, unix))]
 mod stand_in_ready_tests;
 
@@ -261,6 +263,9 @@ pub struct DockerBackend {
     /// The first request that found the sidecar gone, when one did: the request's id and what
     /// Docker said. Every request after it reads as "no answer", and the run says why.
     sidecar_lost: std::sync::Mutex<Option<String>>,
+    /// The answers that came with less body than their `Content-Length` said, as "id (status, N of M bytes)": each is
+    /// read as no answer, and the run says so once (backlog 0598, ADR-021).
+    short_answers: std::sync::Mutex<Vec<String>>,
     /// What the teardown of the last run that failed could not remove, each with what Docker said:
     /// that teardown runs as the run unwinds (`Teardown`'s drop), after the run's own answer is
     /// gone, so it is kept here for the failure to say (backlog 226, part 2, item 18).
@@ -299,6 +304,7 @@ impl DockerBackend {
             run: std::sync::Mutex::new(None),
             clock_offset: OnceLock::new(),
             sidecar_lost: std::sync::Mutex::new(None),
+            short_answers: std::sync::Mutex::new(Vec::new()),
             left_behind: std::sync::Mutex::new(Vec::new()),
             request_times: std::sync::Mutex::new(Vec::new()),
             session: std::sync::Mutex::new(None),
@@ -1084,6 +1090,13 @@ impl DockerBackend {
             ));
         }
 
+        // The app's own word on an answer that came short, read while its container is still there (backlog 0598).
+        let short_answers = self.short_answers();
+        let short_answers_log = if short_answers.is_empty() {
+            None
+        } else {
+            content_length_line(&self.app_log(&app))
+        };
         for left in guard.finish() {
             if !container.not_removed.contains(&left) {
                 container.not_removed.push(left);
@@ -1104,6 +1117,8 @@ impl DockerBackend {
             liveness,
             installed,
             sidecar_lost: self.sidecar_lost(),
+            short_answers,
+            short_answers_log,
             container,
             stand_ins,
             resources,
@@ -2917,6 +2932,7 @@ fn in_turn_script(host: &str, port: u16, sizes: &[usize], which: &[usize], mark:
     )
 }
 
+#[cfg(test)]
 /// The answers in the output of `at_once_script`, in order, each under its request's id: `None`
 /// for a copy that got none.
 fn parse_at_once(
@@ -2924,18 +2940,23 @@ fn parse_at_once(
     out: &str,
     mark: &str,
 ) -> Vec<Option<sv_check::probes::ProbeResponse>> {
-    (1..=ids.len())
+    at_once_raws(ids.len(), out, mark)
+        .into_iter()
+        .zip(ids)
+        .map(|(raw, id)| raw.and_then(|raw| parse_response(id, raw)))
+        .collect()
+}
+
+/// Each copy's raw answer in the output of `at_once_script`, in order: `None` for a copy that got none.
+fn at_once_raws<'a>(copies: usize, out: &'a str, mark: &str) -> Vec<Option<&'a str>> {
+    (1..=copies)
         .map(|i| {
-            let id = ids[i - 1];
             let start = format!("\n{mark}{i}@@\n");
             let next = format!("\n{mark}{}@@\n", i + 1);
             let from = out.find(&start)? + start.len();
             let to = out[from..].find(&next).map_or(out.len(), |n| from + n);
             let raw = &out[from..to];
-            if raw.trim().is_empty() {
-                return None;
-            }
-            parse_response(id, raw)
+            (!raw.trim().is_empty()).then_some(raw)
         })
         .collect()
 }
@@ -3308,6 +3329,38 @@ fn sidecar_gone(out: &str) -> bool {
     out.contains("no such container") || out.contains("is not running")
 }
 
+/// The first line of the app's output that speaks of a `Content-Length`, cut to a line's worth: what a server says
+/// when an answer it sent came short (uvicorn's "Response content longer than Content-Length"), for the run to put
+/// beside the answers it read as none (backlog 0598).
+fn content_length_line(log: &str) -> Option<String> {
+    log.lines()
+        .find(|l| {
+            let l = l.to_lowercase();
+            l.contains("content-length") || l.contains("content length")
+        })
+        .map(|l| l.trim().chars().take(300).collect())
+}
+
+/// An answer that came with less body than its `Content-Length` said: (bytes that came, bytes it said). A server
+/// that writes its headers and then fails sends this, and uvicorn does when a handler's body outgrows the length it
+/// set (backlog 0598): the page is blank in a browser, so it is no answer to read. Never for an answer that has no
+/// body by HTTP's rules: one to `HEAD`, or 1xx, 204, or 304.
+fn short_body(raw: &str, head: bool) -> Option<(usize, usize)> {
+    let (head_part, body) = raw
+        .split_once("\r\n\r\n")
+        .or_else(|| raw.split_once("\n\n"))?;
+    let (status, headers) = sv_check::probes::read_head(head_part);
+    let status = status?;
+    if head || status < 200 || status == 204 || status == 304 {
+        return None;
+    }
+    let said: usize = sv_check::probes::header_in(&headers, "content-length")?
+        .trim()
+        .parse()
+        .ok()?;
+    (body.len() < said).then_some((body.len(), said))
+}
+
 /// Turns a raw HTTP response into the shape the probes read; `None` when it has no status line.
 fn parse_response(id: &str, raw: &str) -> Option<sv_check::probes::ProbeResponse> {
     // A header block ends at the first blank line; tolerate a server that uses bare newlines.
@@ -3436,7 +3489,37 @@ impl DockerBackend {
         if code != 0 && out.trim().is_empty() {
             return None;
         }
-        parse_response(&request.id, &out)
+        self.whole_answer(
+            &request.id,
+            &out,
+            request.method.eq_ignore_ascii_case("HEAD"),
+        )
+    }
+
+    /// `parse_response`, with an answer shorter than its `Content-Length` said written down and read as no answer
+    /// (backlog 0598, ADR-021).
+    fn whole_answer(
+        &self,
+        id: &str,
+        raw: &str,
+        head: bool,
+    ) -> Option<sv_check::probes::ProbeResponse> {
+        let answer = parse_response(id, raw)?;
+        if let Some((came, said)) = short_body(raw, head) {
+            if let Ok(mut short) = self.short_answers.lock() {
+                short.push(format!("{id} ({}, {came} of {said} bytes)", answer.status));
+            }
+            return None;
+        }
+        Some(answer)
+    }
+
+    /// What `whole_answer` wrote down, for the run's outcome.
+    fn short_answers(&self) -> Vec<String> {
+        self.short_answers
+            .lock()
+            .map(|s| s.clone())
+            .unwrap_or_default()
     }
 
     /// Sends one request through the session kept open in the sidecar (`exec_session`), starting it when there is
@@ -3539,7 +3622,17 @@ impl DockerBackend {
             return None;
         }
         let ids: Vec<&str> = requests.iter().map(|r| r.id.as_str()).collect();
-        Some(parse_at_once(&ids, &out, &mark))
+        Some(
+            at_once_raws(ids.len(), &out, &mark)
+                .into_iter()
+                .zip(requests)
+                .map(|(raw, r)| {
+                    raw.and_then(|raw| {
+                        self.whole_answer(&r.id, raw, r.method.eq_ignore_ascii_case("HEAD"))
+                    })
+                })
+                .collect(),
+        )
     }
 
     /// `probe`, for requests sent together. `None` when one of them cannot be sent at all or the
@@ -3563,7 +3656,17 @@ impl DockerBackend {
             return None;
         }
         let ids: Vec<&str> = requests.iter().map(|r| r.id.as_str()).collect();
-        Some(parse_at_once(&ids, &out, &mark))
+        Some(
+            at_once_raws(ids.len(), &out, &mark)
+                .into_iter()
+                .zip(requests)
+                .map(|(raw, r)| {
+                    raw.and_then(|raw| {
+                        self.whole_answer(&r.id, raw, r.method.eq_ignore_ascii_case("HEAD"))
+                    })
+                })
+                .collect(),
+        )
     }
 }
 

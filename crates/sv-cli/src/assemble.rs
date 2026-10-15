@@ -1113,6 +1113,11 @@ fn running_app(
                     &mut running_verified,
                     &plan.start,
                 ));
+                gaps.extend(short_answers_gap(
+                    secret_rules,
+                    &outcome.short_answers,
+                    outcome.short_answers_log.as_deref(),
+                ));
                 let mut record = crate::seen::record(
                     secret_rules,
                     &anonymous_requests(&plan, &private_files),
@@ -3000,6 +3005,47 @@ pub(crate) fn loosened_for_the_run(
     gaps
 }
 
+/// The answers that came with less body than their `Content-Length` said, said once (backlog 0598, ADR-021): each was
+/// read as no answer, so what the checks would have read from those pages is not assessed, and a page that came blank is
+/// never a finding about what it lacks. The app's own log line on it, redacted, beside them.
+pub(crate) fn short_answers_gap(
+    rules: &sv_check::secrets::SecretRules,
+    short: &[String],
+    log: Option<&str>,
+) -> Option<sv_report::Gap> {
+    if short.is_empty() {
+        return None;
+    }
+    let logged = match log {
+        Some(line) => {
+            let (line, _) = sv_check::secrets::redact_text(rules, line);
+            format!(" The app's own log says: `{}`.", line.replace('`', "'"))
+        }
+        None => String::new(),
+    };
+    Some(sv_report::Gap {
+        what: format!(
+            "{} answer{} the app sent with less body than {} said",
+            short.len(),
+            if short.len() == 1 { "" } else { "s" },
+            if short.len() == 1 { "it" } else { "they" },
+        ),
+        why: format!(
+            "The app began {} with a status and a `Content-Length`, then sent less than that: {}. A browser shows such \
+             a page blank, so each was read as no answer, and what the checks would have read from it is not \
+             assessed.{logged} Fix the error, and run again.",
+            if short.len() == 1 {
+                "this answer"
+            } else {
+                "these answers"
+            },
+            short.join(", ")
+        ),
+        reason: sv_report::GapReason::Partial,
+        requirements: Vec::new(),
+    })
+}
+
 /// A finding the manifest's answers made, pointed at the manifest by the name it has in this app.
 fn at_the_manifest(mut finding: sv_check::Finding, manifest_file: &str) -> sv_check::Finding {
     if finding.location.file == sv_frameworks::names::MANIFEST {
@@ -3183,3 +3229,7 @@ mod start_limits_tests;
 #[cfg(test)]
 #[path = "assemble_loosened_tests.rs"]
 mod loosened_tests;
+
+#[cfg(test)]
+#[path = "short_answers_gap_tests.rs"]
+mod short_answers_gap_tests;

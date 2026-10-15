@@ -21,3 +21,12 @@ answer" and says so once, with the app-log line beside it; the checks that read 
 that reason, never a finding about what the page lacks. A fake-app case that truncates its body.
 
 **Record.** ADR-021 Later (what counts as the app answering).
+
+**Built, 15 October 2026 (honesty)** (ADR-021, "Later, 15 October 2026: an answer shorter than its `Content-Length` is
+no answer"). The transport reads an answer with less body than its `Content-Length` said as no answer (never for
+`HEAD`, 1xx, 204, or 304), writes it down, and the run says them once as a gap with the app's own log line, redacted.
+Tests: `crates/sv-run/src/docker/short_body_tests.rs` (the trial's 200 with 5,415 bytes said and none sent),
+`crates/sv-cli/src/short_answers_gap_tests.rs`, and `crates/sv-check/src/signed_in/blank_page_tests.rs`, where the
+fake app's flaw `account_page_blank` gives the private page as the transport now gives a short one. Read instead as a
+200 with an empty body, as before, that page drew "no sign-out link", caching, and header findings. Left open for the
+board to close.
