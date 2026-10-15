@@ -138,12 +138,13 @@ fn a_new_key_made_after_moving_the_old_aside_leaves_the_old_one_trusted() {
     assert!(sv_check::signed::trust_here(&keys, &new, &app).unwrap());
     let trusted = std::fs::read_to_string(keys.join(sv_check::signed::TRUSTED_FILE)).unwrap();
     std::fs::remove_dir_all(&folder).ok();
+    // Named, never printed: the list holds keys, if only their public halves.
     assert!(
         trusted.contains(&old.trusted_line(&app).unwrap()),
-        "{trusted}"
+        "the old key's line is no longer in the trusted list"
     );
     assert!(
         trusted.contains(&new.trusted_line(&app).unwrap()),
-        "{trusted}"
+        "the new key's line is not in the trusted list"
     );
 }
