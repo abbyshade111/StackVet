@@ -228,8 +228,12 @@ word.
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
 >    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
 >    app runs, whether anyone signs in, or how it is reached** (`auth`, `tls`, and the `[stack.run]`
->    lines), and tell me whenever you change one. Name the app's pages and routes in it, under
+>    lines), and tell me whenever you change one. **Ask me, too, who uses the app (`audience`) and
+>    what it keeps about people (`[data] categories`):** they decide whether it is held to ASVS
+>    level 1 or the stricter level 2. Name the app's pages and routes in it, under
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
+>    If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up
+>    on its own, and ask whether to seed a test code for the run, and where it would live.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
 >    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
@@ -245,9 +249,12 @@ word.
 > 5. Never tell me the app is secure. Tell me what was checked and what was not.
 > 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
 >    questions one at a time. When you tell me what the code does for one, quote the lines and say
->    it is your reading, not a check. Record my answers with `stackvet_record_answer`, and only what
->    I actually answer as mine. Never mark a check by hand as done, or write `by = "owner"`: only I
->    can, with `sv review`.
+>    it is your reading, not a check. Record my answers only with `stackvet_record_answer`, under the
+>    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
+>    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
+>    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
+>    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
+>    `by = "ai-tool"` and my words in `how`.
 <!-- setup-step-5:end -->
 
 What happens next:

@@ -60,3 +60,5 @@ sentence ("where to look, not evidence: StackVet found them by their names") is 
   and say 11 more were found (14 in all). `:209` and `:210` are found but not shown, and `:133` is the 403 for a
   forged form, not a check of what a person may do. Better than nothing, and still a wrong line among three: filed
   as **0518**, to be built before the proposals (0488 to 0500) rest on pointers.
+
+**The second reading, 14 October 2026 (the orchestrating session), after 0518 (#1928):** sv at main rerun on the four example apps against the first reading: the false pointer in oidc-notes (a URL constructor shown as an authorization check) is gone; notes-with-users now shows its owner query, admin refusal, and owner-scoped delete (app.py 241, 209, 316), with the six forged-form and wrong-password refusals left out (each confirmed by changing the line in a copy); flask-booking and tested-notes, which have no authorization code, show no pointer. One count nit filed as 0562 (the "and N more" line counts a refusal's event and send lines as two). Clean: the proposals 0488 to 0500 are released.

@@ -17,3 +17,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   `rejectUnauthorized: false`, nginx `ssl_verify_client optional_no_ca`. Tier: applicability (a reason, not a status),
   and `sv`'s own for the finding. Partial-checks proposes the finding; the derived condition is new, and it takes the
   requirement off every ordinary app's "not verified" list honestly.
+
+**The owner's choice, 14 October 2026:** build it first of the three: the derived condition (does not apply, with the reason, for the app that asks for no client certificate) and the finding for a certificate accepted without a trust check. A Later line on the applicability record.

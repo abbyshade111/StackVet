@@ -1,6 +1,6 @@
 # `sv preflight` does not say that the test command's program is not among the packages `install = true` installs
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
