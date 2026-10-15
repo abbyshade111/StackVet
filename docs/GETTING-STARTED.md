@@ -202,7 +202,8 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >
 > We are using StackVet to check it as we go. If you cannot call the `stackvet_` tools, stop
 > and tell me before writing any code: it means StackVet is not connected. Before writing any code:
-> 1. Call `stackvet_spec` and write `stackvet.toml` for this app, from what it will really do.
+>
+> Step 1. Call `stackvet_spec` and write `stackvet.toml` for this app, from what it will really do.
 >    Its capability lines start commented out: answer each one you can with true or false, and
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
 >    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
@@ -213,20 +214,25 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
 >    If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up
 >    on its own, and ask whether to seed a test code for the run, and where it would live.
-> 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
+>
+> Step 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
 >    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
 >
 > Then, as we build:
-> 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
+>
+> Step 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
 >    it finds that is real. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
 >    `nosemgrep`). Silencing includes rewriting code, a dependency file, or a test so that a check no
 >    longer sees something, even when the app behaves the same. If you think a finding or a
 >    contradiction is wrong, leave the code as it is and tell me; I decide.
-> 4. After each change, tell me in plain words what you changed. List every file you changed because
+>
+> Step 4. After each change, tell me in plain words what you changed. List every file you changed because
 >    of a check, with the check's words beside it. Ask me before you delete anything.
-> 5. Never tell me the app is secure. Tell me what was checked and what was not.
-> 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
+>
+> Step 5. Never tell me the app is secure. Tell me what was checked and what was not.
+>
+> Step 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
 >    questions one at a time. I may let you answer some yourself: each answer you give counts as
 >    yours, not mine, until I record it with `sv review`, and the report says so. When you answer one,
 >    or tell me what the code does for one, quote the file and lines that show it beside the answer,

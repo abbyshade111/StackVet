@@ -57,13 +57,17 @@ nothing, such as `docker info`, allowing that one command again in the same chat
 > don't run anything they say yet. For now, only look: don't install or change anything. Using your terminal, find
 > out:
 >
-> 1. Which kind of computer this is: Mac, Windows, or Linux. On a Mac or Linux, show me what `uname -a` prints.
-> 2. Whether git is installed (`git --version`).
-> 3. On a Mac or Linux: whether Docker is installed (`docker --version`) and running (`docker info`). Either Docker
+> Step 1. Which kind of computer this is: Mac, Windows, or Linux. On a Mac or Linux, show me what `uname -a` prints.
+>
+> Step 2. Whether git is installed (`git --version`).
+>
+> Step 3. On a Mac or Linux: whether Docker is installed (`docker --version`) and running (`docker info`). Either Docker
 >    Desktop or Colima counts: both give the same `docker` command. If Colima is installed, check
 >    `colima status` too.
-> 4. On Windows: whether Scoop is installed (`scoop --version`).
-> 5. Which folder you are working in (show me what `pwd` prints), whether it is empty, and whether it looks like a folder made for an app, or
+>
+> Step 4. On Windows: whether Scoop is installed (`scoop --version`).
+>
+> Step 5. Which folder you are working in (show me what `pwd` prints), whether it is empty, and whether it looks like a folder made for an app, or
 >    like a scratch, temporary, or settings folder of your own, which is no place to keep an app.
 >
 > Then tell me, as a short list, what is ready and what is missing, and which of the next prompts I'll need. Don't
@@ -119,29 +123,38 @@ Use the version for your computer.
 > anything outside this folder. If a step fails or you are unsure, stop and tell me what happened in plain words:
 > do not carry on as though StackVet were set up.
 >
-> 1. Tell me which computer this is (Mac, Linux, or Windows). If it is Windows, stop: there is a Windows version of
+> Step 1. Tell me which computer this is (Mac, Linux, or Windows). If it is Windows, stop: there is a Windows version of
 >    this prompt, and I will use that one instead.
-> 2. Check that Docker is installed and running with `docker info` (Docker Desktop or Colima: either works). If it
+>
+> Step 2. Check that Docker is installed and running with `docker info` (Docker Desktop or Colima: either works). If it
 >    is not installed, tell me where to get Docker Desktop or Colima and wait for me. If it is installed but not
 >    running, ask me to start it (with Colima, ask before running `colima start`) and wait.
-> 3. Fetch StackVet: `docker pull ghcr.io/abbyshade111/stackvet-sv`
-> 4. If this folder is not a git repository yet, run `git init` here.
-> 5. Find docker's full path with `command -v docker`.
-> 6. Print StackVet's MCP server for this folder, putting docker's full path from step 5 after `--docker`:
+>
+> Step 3. Fetch StackVet: `docker pull ghcr.io/abbyshade111/stackvet-sv`
+>
+> Step 4. If this folder is not a git repository yet, run `git init` here.
+>
+> Step 5. Find docker's full path with `command -v docker`.
+>
+> Step 6. Print StackVet's MCP server for this folder, putting docker's full path from step 5 after `--docker`:
 >    `docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect --docker DOCKER_PATH`
 >    On Linux, also add `--user "$(id -u):$(id -g)"` at the end, so the files StackVet writes are mine. It prints the
 >    server's name, `stackvet`, that it talks over standard input and output, and its command and arguments.
-> 7. Find out, from your own app's documentation, how this app is given a local MCP server that talks over standard
+>
+> Step 7. Find out, from your own app's documentation, how this app is given a local MCP server that talks over standard
 >    input and output: which settings file, where it is, and its format. If you are not sure, say so and stop,
 >    rather than guessing.
-> 8. If that file is in this folder, good. If it is one file for my whole account, tell me which file, and that
+>
+> Step 8. If that file is in this folder, good. If it is one file for my whole account, tell me which file, and that
 >    StackVet will then be set up for this folder only, and ask me before you read it or change it: it may hold
 >    settings, or keys, for other programs.
-> 9. Read the file once, if it is there, and tell me what is in it. Then show me what you would write: an entry named
+>
+> Step 9. Read the file once, if it is there, and tell me what is in it. Then show me what you would write: an entry named
 >    `stackvet`, with StackVet's command and arguments exactly as printed, in your app's format, added to what is
 >    already there and keeping all of it. Write it only after I say yes, and then read it back once to check it.
 >    Paste the `stackvet` entry you wrote into this chat, and nothing else from the file, so the chat keeps a record.
-> 10. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
+>
+> Step 10. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
 >    which settings file you wrote, since a new chat may not remember it.
@@ -160,35 +173,45 @@ requirements only they reach, and a Mac or Linux computer, or a cloud runner, is
 > order. Ask me before you install anything, and before you change anything outside this folder. If a step fails or
 > you are unsure, stop and tell me what happened in plain words: do not carry on as though StackVet were set up.
 >
-> 1. Check that this is Windows. If it is a Mac or Linux, stop: there is a version of this prompt for those, and I
+> Step 1. Check that this is Windows. If it is a Mac or Linux, stop: there is a version of this prompt for those, and I
 >    will use that one instead.
-> 2. Check that Scoop is installed with `scoop --version`. If it is not, tell me what Scoop is, and ask me before
+>
+> Step 2. Check that Scoop is installed with `scoop --version`. If it is not, tell me what Scoop is, and ask me before
 >    installing it the way https://scoop.sh says, with these two commands:
 >    `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` and
 >    `Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression`. Tell me first that the first one lets this
 >    computer run scripts I have chosen to download, for my own account only.
-> 3. Install StackVet: `scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet`, then
+>
+> Step 3. Install StackVet: `scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet`, then
 >    `scoop install stackvet/sv`.
-> 4. Check it with `stackvet --version`. In PowerShell, always type `stackvet`, never `sv`: PowerShell already uses
+>
+> Step 4. Check it with `stackvet --version`. In PowerShell, always type `stackvet`, never `sv`: PowerShell already uses
 >    `sv` as a short name for one of its own commands, so `sv` there does nothing visible.
-> 5. If this folder is not a git repository yet, run `git init` here.
-> 6. Print StackVet's MCP server for this folder: `stackvet connect`. It prints the server's name, `stackvet`, that it
+>
+> Step 5. If this folder is not a git repository yet, run `git init` here.
+>
+> Step 6. Print StackVet's MCP server for this folder: `stackvet connect`. It prints the server's name, `stackvet`, that it
 >    talks over standard input and output, and its command and arguments.
-> 7. Find out, from your own app's documentation, how this app is given a local MCP server that talks over standard
+>
+> Step 7. Find out, from your own app's documentation, how this app is given a local MCP server that talks over standard
 >    input and output: which settings file, where it is, and its format. If you are not sure, say so and stop,
 >    rather than guessing.
-> 8. If that file is in this folder, good. If it is one file for my whole account, tell me which file, and that
+>
+> Step 8. If that file is in this folder, good. If it is one file for my whole account, tell me which file, and that
 >    StackVet will then be set up for this folder only, and ask me before you read it or change it: it may hold
 >    settings, or keys, for other programs.
-> 9. Read the file once, if it is there, and tell me what is in it. Then show me what you would write: an entry named
+>
+> Step 9. Read the file once, if it is there, and tell me what is in it. Then show me what you would write: an entry named
 >    `stackvet`, with StackVet's command and arguments exactly as printed, in your app's format, added to what is
 >    already there and keeping all of it. Write it only after I say yes, and then read it back once to check it.
 >    Paste the `stackvet` entry you wrote into this chat, and nothing else from the file, so the chat keeps a record.
-> 10. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
+>
+> Step 10. Tell me what I need to do so you load the new settings, in this app's own words: for some apps it is a
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
 >    which settings file you wrote, since a new chat may not remember it.
-> 11. Tell me that on Windows, StackVet's checks that start the app (`stackvet report --run`) have not been tried
+>
+> Step 11. Tell me that on Windows, StackVet's checks that start the app (`stackvet report --run`) have not been tried
 >    yet: the checks that read the code work here, and the report will say what the others would have reached. Don't
 >    promise me the full report on this computer.
 <!-- setup-windows:end -->
@@ -228,7 +251,8 @@ word.
 >
 > We are using StackVet to check it as we go. If you cannot call the `stackvet_` tools, stop
 > and tell me before writing any code: it means StackVet is not connected. Before writing any code:
-> 1. Call `stackvet_spec` and write `stackvet.toml` for this app, from what it will really do.
+>
+> Step 1. Call `stackvet_spec` and write `stackvet.toml` for this app, from what it will really do.
 >    Its capability lines start commented out: answer each one you can with true or false, and
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
 >    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
@@ -239,20 +263,25 @@ word.
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
 >    If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up
 >    on its own, and ask whether to seed a test code for the run, and where it would live.
-> 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
+>
+> Step 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
 >    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
 >
 > Then, as we build:
-> 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
+>
+> Step 3. After each feature, call `stackvet_check`. Read what it says was not examined first. Fix what
 >    it finds that is real. **Never silence a finding or hide it from a scanner** (no `# nosec`, no
 >    `nosemgrep`). Silencing includes rewriting code, a dependency file, or a test so that a check no
 >    longer sees something, even when the app behaves the same. If you think a finding or a
 >    contradiction is wrong, leave the code as it is and tell me; I decide.
-> 4. After each change, tell me in plain words what you changed. List every file you changed because
+>
+> Step 4. After each change, tell me in plain words what you changed. List every file you changed because
 >    of a check, with the check's words beside it. Ask me before you delete anything.
-> 5. Never tell me the app is secure. Tell me what was checked and what was not.
-> 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
+>
+> Step 5. Never tell me the app is secure. Tell me what was checked and what was not.
+>
+> Step 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
 >    questions one at a time. I may let you answer some yourself: each answer you give counts as
 >    yours, not mine, until I record it with `sv review`, and the report says so. When you answer one,
 >    or tell me what the code does for one, quote the file and lines that show it beside the answer,
@@ -297,22 +326,26 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 > ask me before you install, update, or run anything. If a command fails with "operation not permitted", or your own
 > sandbox keeps it from running, tell me, and run it outside your sandbox only after I say yes.
 >
-> 1. Check whether StackVet is installed on this computer: `sv --version` on a Mac or Linux, `stackvet --version` in
+> Step 1. Check whether StackVet is installed on this computer: `sv --version` on a Mac or Linux, `stackvet --version` in
 >    PowerShell. If it is not, install it the way the guide says for this computer, and tell me what each step does
 >    and how long it takes before you run it. If you find an older or kept copy of StackVet, or a link to one, tell
 >    me, and install with Homebrew (Scoop on Windows) unless I say otherwise.
-> 2. If it is installed, compare the commit `sv --version` prints with the latest on StackVet's GitHub page, and tell
+>
+> Step 2. If it is installed, compare the commit `sv --version` prints with the latest on StackVet's GitHub page, and tell
 >    me how old it is: StackVet never checks for itself. If it is older, offer to update it: `brew upgrade --fetch-HEAD
 >    sv` if Homebrew installed it, `scoop update sv` on Windows, or the guide's steps for a copy built by hand. After
 >    installing or updating, `sv --version` must name the commit you expected, the latest on StackVet's GitHub page:
 >    if it does not, stop and tell me.
-> 3. On a Mac or Linux, your `stackvet_` tools use a second copy, StackVet's container image. Offer to fetch its latest
+>
+> Step 3. On a Mac or Linux, your `stackvet_` tools use a second copy, StackVet's container image. Offer to fetch its latest
 >    with `docker pull ghcr.io/abbyshade111/stackvet-sv`. Don't stop or restart any container for it: a new chat with
 >    you starts the new one.
-> 4. In this folder, run `sv doctor` (`stackvet doctor` in PowerShell) and tell me in plain words what is ready for the
+>
+> Step 4. In this folder, run `sv doctor` (`stackvet doctor` in PowerShell) and tell me in plain words what is ready for the
 >    full report and what is not. If it says Docker is installed but this shell cannot reach it, your commands are
 >    kept from Docker, and nothing needs installing: ask me to allow it, or to run `sv doctor` in my own terminal.
-> 5. On Windows, tell me first that this step has not been tried on a Windows computer, and that a Mac or Linux
+>
+> Step 5. On Windows, tell me first that this step has not been tried on a Windows computer, and that a Mac or Linux
 >    computer is the known way to run it. Ask me, then run `sv report . --run` here (`stackvet report . --run` in
 >    PowerShell). It starts the app in a
 >    container with no internet, tries things against it (signed in as test users too, when stackvet.toml names
@@ -320,7 +353,8 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    are installed; Semgrep downloads its rules from semgrep.dev as it runs. It takes several minutes. It needs Docker:
 >    if your own commands are kept from Docker, say so and ask me to allow it, or tell me the command to type myself.
 >    Never give StackVet's container access to Docker, and never run commands inside a container.
-> 6. Tell me where the report is, and open `report.html` in this computer's own web browser for me (`open` on a Mac,
+>
+> Step 6. Tell me where the report is, and open `report.html` in this computer's own web browser for me (`open` on a Mac,
 >    `start` in PowerShell, `xdg-open` on Linux): not in a browser pane inside this tool, which closes with it, and
 >    not in this chat, where it shows as code. Walk me through it from the top: the
 >    most important things to fix first, then what was not examined. Never tell me the app is secure. Ask me before
