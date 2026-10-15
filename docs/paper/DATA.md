@@ -96,12 +96,41 @@ or added since.
 | `figure-adrs-by-period.html` | `decision_records.csv`, `days.csv` |
 | `figure-review-by-period.html` | `review.csv`, `since-cutoff/open_at_cutoff.csv`, `deep_review.csv` |
 
-**Not redrawn, and why.** Each of these is one dated record, not a ledger that grows: `figure-study.html` (one
-study, run 11), `figure-self-assessment.html` (two runs of `sv` on itself), `figure-three-arms.html` and
-`figure-how-found.html` (v1's fixed record), `figure-trials.html` (made by its own script), and `figure-how-sv-works.html`
-(the code at the cut-off). The rest are drawn from documents written at the cut-off (`AGENTIC.md`, `OPTIMIZATION.md`,
-`DECISIONS.md`, `TIMELINE.md`, `TOP10.md`, the usability notes); extending them is writing those documents again,
-which is the owner's.
+**The other thirteen, redrawn per period** (part 4; `docs/paper/tables/period_records.py`, `--check` to compare),
+each beside the figure of the cut-off, which stays as drawn. A row goes in the period of the time its record gives it,
+read as `periods.py` reads a moment; a period is a span of time, not a version, so `sv`'s rows from before its promotion
+are in version 1's. A row its record does not date is counted as not dated, never guessed. Where a record ends at the
+cut-off, the periods it does not reach say so, beside the nearest measure compiled since, named as a different measure
+where it is one.
+
+| Figure | Redrawn from | What the periods after its record hold |
+|---|---|---|
+| `figure-timeline-by-period.html` | `days.csv`, `periods.csv` | everything, from git; the milestones since are not chosen (the owner's) |
+| `figure-security-by-period.html` | `reach_history.csv` (164 versions of `COVERAGE.md` on main's own line, from git; 86 to the cut-off, ending at 163, as the cut-off figure has), `requirements.csv` | everything |
+| `figure-top10-by-period.html` | `cutoff-records/top10.csv` (92 rows), `to-today/faults.csv` | the ledger's `security` and `fail-open` faults, without a category: none is placed through a CWE |
+| `figure-agentic-by-period.html` | `cutoff-records/agentic.csv` (86 rows) | nothing: no fault since is placed against the agentic list |
+| `figure-decisions-by-period.html` | `cutoff-records/decisions.csv` (36 rows), `decision_records.csv` | the decision records added; who proposed and who chose each is not read |
+| `figure-usability-by-period.html` | `cutoff-records/usability.csv` (62 rows), `to-today/faults.csv` | faults by what found them (friction that is not a fault is not compiled) |
+| `figure-how-found-by-period.html` | `cutoff-records/usability.csv` (v1's 13), `to-today/faults.csv` | the same, labeled a different measure |
+| `figure-trials-by-period.html` | `trials/make_figure.py`'s list, `loop2_builds.csv`, `three_tool_route.csv`, `pointer_trial.csv` | the four trials since; each trial is placed by when its write-up first reached the repository |
+| `figure-cost-by-period.html` | `OPTIMIZATION.md` (v1, typed as the cut-off figure has it), the trials | the owner's API credit on trial builds; `sv` spends none |
+| `figure-self-assessment-by-period.html` | the two `triage.json`, v1's row typed from the cut-off figure | nothing: `sv` has not been run on itself since |
+| `figure-study-by-period.html` | `study.csv`, `three_tool_reports.csv` | the three-tool trial, named as a different experiment |
+| `figure-three-arms-by-period.html` | `requirements.csv`, `study.csv`, `three_tool_reports.csv` | the same |
+| `figure-how-sv-works-by-period.html` | `snapshots.csv` (from git at each period's last commit), `reach_history.csv` | counts of what `sv` was made of; the drawing is not redrawn (drawing it again is the owner's to ask for) |
+
+**`tables/cutoff-records/`.** The rows of four cut-off documents, one per weakness, verdict, risk mark, decision, or
+problem, each with the date that places it and how that date was got (`date_source`), compiled by Claude Code sessions
+reading `TOP10.md` (sections 1 and 2), `AGENTIC.md` (the risk tables of sections 1 to 5), `DECISIONS.md` ("The
+decisions"), and `figure-usability.html` with `figure-how-found.html`. A row dated by its own text uses that date; one
+that names a pull request is dated by its merge on main, a commit by its own time. Every total of the documents is
+reproduced: 49 weaknesses and 43 verdicts; 24 incidents (16 to 27 September), 13 open, 21 controls, 25 checks; the 36
+decisions as "The count" has them; the nine groups of problems. Where the record is unsure, `confidence` says why: the
+fix's merge stands for when cato-pipeline's and the study's problems were found (their reports are outside this
+repository), and 16 agentic controls and checks are standing files, not events, so they are not dated. AGENTIC.md's
+"to 27 September" brackets count rows by their sub-table, and seven of those rows are dated after the version 1
+boundary (#239, #242, #252, the "Answered by:" incident, and the three self-check rows of section 5), so they are
+in version 2 here.
 
 ## The paper's tables, at the 4 October cut-off
 
