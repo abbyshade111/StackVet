@@ -3481,8 +3481,9 @@ mod invented_beside_tests;
 #[cfg(test)]
 mod invented_pages_tests;
 #[cfg(test)]
-mod ws_sign_out_tests;
 mod timeout_page_tests;
+#[cfg(test)]
+mod ws_sign_out_tests;
 
 #[cfg(test)]
 mod several_websockets_tests;
