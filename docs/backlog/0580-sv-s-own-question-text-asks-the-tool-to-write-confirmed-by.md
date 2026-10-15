@@ -1,6 +1,6 @@
 # sv's own question text asks the tool to write `confirmed = { by = "ai-tool" }` proposals and `[checked-by-hand]` entries, which prompt 5 now forbids
 
-**Status:** open
+**Status:** claimed by wording, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -22,3 +22,5 @@ drop the warning 0543 asked for. (B) Forbid proposals: remove them from `intervi
 the person then writes every `how` themselves in sv review. (C) Keep both texts as they are (not recommended).
 
 **Record.** ADR-026 (what `sv review` records) Later, either way; the prompt-library test holds the sentence.
+
+**The owner's answer, 15 October 2026:** A: keep sv's mechanism (the tool proposes a check as confirmed = { by = "ai-tool", how = ... }; the person confirms through sv review; nothing counts until they do). Change prompt 5 back to match (0547's sentence replaced: write the proposal, never by = "owner", it counts only when I confirm it in sv review), and drop the warning 0543 asked for. ADR-026 Later.

@@ -20,3 +20,5 @@ report written on the computer. The first keeps the review where it is; the seco
 folder (a record). The owner decides which.
 
 **Record.** ADR-108 (the Docker route) or ADR-026 Later, depending on the choice.
+
+**The owner's answer, 15 October 2026:** A: sv connect --docker adds two read-only file mounts, the trusted-keys list and the public key, never the private key or the folder; the container then counts seals as the computer does. ADR-108 Later. (B rejected: the AI tool can write the app's .stackvet folder, so a trusted list there could be added to by the tool.)

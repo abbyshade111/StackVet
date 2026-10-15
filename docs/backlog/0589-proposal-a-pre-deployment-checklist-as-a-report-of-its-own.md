@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 The owner's ask, 15 October 2026, after running prompt 7 in the follow-up model trial (backlog 0577): consider a
 pre-deployment checklist as a separate report. A proposal; the owner shapes it before it is built.
 

@@ -1,6 +1,6 @@
 # A review's seal is bound to the app folder it was made in, so a checkout elsewhere (CI, a moved folder) loses the owner's confirmations
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -15,3 +15,5 @@ with the app) applied to the seal. The orchestrating session recommends (B) only
 needs reports from CI with the owner's confirmations counted; otherwise (A).
 
 **Record.** The seal's record (ADR-026 or the one that names the app in seals) Later, if (B).
+
+**The owner's answer, 15 October 2026:** A: keep the seal bound to the folder; moving or copying the app means reviewing again, and the report says so. Revisit only if reports from CI or a second computer must count the owner's confirmations. Closed as decided.
