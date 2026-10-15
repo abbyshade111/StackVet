@@ -23,6 +23,9 @@ pub struct Declared {
 pub struct Unread {
     pub manifest: String,
     pub why: String,
+    /// The language whose packages it lists, by `ecosystems`' name for it ("Python", "npm"): an npm list
+    /// unread leaves npm's packages unknown, never Python's (backlog 0579).
+    pub ecosystem: String,
 }
 
 /// Every package list in `listing` that `read_in` finds and cannot read. The formats it reads line by
@@ -58,6 +61,7 @@ pub fn unread_in(listing: &super::files::Listing) -> Vec<Unread> {
             out.insert(Unread {
                 manifest: eco.manifest.clone(),
                 why,
+                ecosystem: eco.name.clone(),
             });
         }
         // A Gradle build reads its versions from a catalog beside it; one that is there and cannot
@@ -71,6 +75,7 @@ pub fn unread_in(listing: &super::files::Listing) -> Vec<Unread> {
             out.insert(Unread {
                 manifest: catalog.path,
                 why: catalog.why.to_owned(),
+                ecosystem: eco.name.clone(),
             });
         }
     }

@@ -2235,17 +2235,16 @@ pub fn kept_help_uri(uri: &str) -> Option<String> {
 
 /// Lists apart each outside tool's finding from a rule written for a framework the app does not use (backlog
 /// 0521; ADR-111, Later): one the app's package lists in that framework's language were all read and none
-/// names. Nothing is set apart when no such list was read, or one could not be: then whether the app uses
-/// the framework is not known, and the finding counts as before. Nor when another tool found the same.
+/// names. Nothing is set apart when no such list was read, or one in that language could not be: then whether
+/// the app uses the framework is not known, and the finding counts as before. A list in another language unread
+/// says nothing about it: a Flask app's `static/` library's `package.json` cannot name Django (backlog 0579).
+/// Nor when another tool found the same.
 pub fn set_apart_other_frameworks(
     adapters: &Adapters,
     findings: &mut [crate::Finding],
     declared: &[sv_scan::deps::Declared],
     unread: &[sv_scan::deps::Unread],
 ) {
-    if !unread.is_empty() {
-        return;
-    }
     let plain = |name: &str| name.to_lowercase().replace('_', "-");
     for f in findings.iter_mut() {
         if f.outranked.is_some() || !f.also_reported_by.is_empty() {
@@ -2258,6 +2257,9 @@ pub fn set_apart_other_frameworks(
         let Some(framework) = framework else {
             continue;
         };
+        if unread.iter().any(|u| u.ecosystem == framework.ecosystem) {
+            continue;
+        }
         let lists: Vec<&sv_scan::deps::Declared> = declared
             .iter()
             .filter(|d| d.ecosystem == framework.ecosystem)
