@@ -556,6 +556,22 @@ pub(crate) fn get(id: &str, path: &str, session: &Session) -> ProbeRequest {
     }
 }
 
+/// The finding for the private pages that opened to somebody not signed in, when there are any.
+fn served_without_signing_in(pages: &[String]) -> Option<crate::Finding> {
+    (!pages.is_empty()).then(|| {
+        finding_on(
+            vec!["private-anonymous".to_owned()],
+            &PRIVATE_PAGE,
+            "A page meant for signed-in users opens without signing in",
+            Severity::High,
+            format!(
+                "Asked as somebody who had not signed in, the app served {}.",
+                pages.join(", ")
+            ),
+        )
+    })
+}
+
 /// Whether an answer is the app's page shell: a success with a body exactly the front page's, short
 /// enough to have been kept whole. Matching a cut body would set aside a server-rendered page that
 /// only begins as the front page does.
@@ -1925,8 +1941,8 @@ fn run_checks(
         let response = http.send(&get("private-anonymous", path, &anonymous));
         if is_page_shell(&response, &front) {
             shells.push(path.clone());
-        } else if ok(&response) {
-            served_anonymously.push(path.clone());
+        } else if let Some(page) = response.filter(|r| (200..300).contains(&r.status)) {
+            served_anonymously.push((path.clone(), page));
         }
     }
     let judged;
@@ -1968,27 +1984,46 @@ fn run_checks(
             ),
         ));
     }
-    if !served_anonymously.is_empty() {
-        out.findings.push(finding_on(
-            vec!["private-anonymous".to_owned()],
-            &PRIVATE_PAGE,
-            "A page meant for signed-in users opens without signing in",
-            Severity::High,
-            format!(
-                "Asked as somebody who had not signed in, the app served {}.",
-                served_anonymously.join(", ")
-            ),
-        ));
-    }
 
     // 2. Signing in, and showing it worked. Without this every check below would be comparing
     //    refusals to refusals.
     let Some(a) = sign_in(http, users, "a", &accounts.a, &mut out.steps) else {
+        let pages: Vec<String> = served_anonymously.into_iter().map(|(p, _)| p).collect();
+        out.findings.extend(served_without_signing_in(&pages));
         out.not_assessed.push((
             "V8.2.1, V8.2.2, V7.2.4, V7.4.1, V3.5.1, V3.3.2, V3.3.4, V14.3.2, V7.4.4".to_owned(),
             "Signing in as the first test user got no answer from the app.".to_owned(),
         ));
         return out;
+    };
+    // A page served to somebody not signed in is read beside the same page served to the signed-in user (backlog
+    // 0560, ADR-119): a sign-in form served with 200 at the private address is a 2xx too. Without the user's own
+    // page to read it beside, it is a finding as before.
+    // Every page served to somebody not signed in, judged or not: none of them is credited below.
+    let served_anonymously: Vec<String> = {
+        let mut opened = Vec::new();
+        let mut unlike = Vec::new();
+        let paths = served_anonymously.iter().map(|(p, _)| p.clone()).collect();
+        for (i, (path, page)) in served_anonymously.into_iter().enumerate() {
+            let own = http.send(&get(&format!("private-a-beside-{i}"), &path, &a.session));
+            match own.filter(|r| (200..300).contains(&r.status)) {
+                Some(own) if !control::shows_page(&own, &page) => unlike.push(path),
+                _ => opened.push(path),
+            }
+        }
+        out.findings.extend(served_without_signing_in(&opened));
+        if !unlike.is_empty() {
+            out.not_assessed.push((
+            PRIVATE_PAGE.requirement_ids.join(", "),
+            format!(
+                "Asked as somebody not signed in, {} answered 200 with a page that shows little of \
+                 what the signed-in user was served there, such as a sign-in form served with 200 \
+                 rather than a redirect to one. It is neither a finding nor a refusal.",
+                unlike.join(", ")
+            ),
+        ));
+        }
+        paths
     };
     let confirm_path = users.private.first().cloned();
     let signed_in_works = match &confirm_path {
@@ -4943,3 +4978,5 @@ mod page_shell_tests {
 
 #[cfg(test)]
 mod setup_sweep_tests;
+#[cfg(test)]
+mod signin_form_on_200_tests;

@@ -387,6 +387,9 @@ pub(crate) struct Fixed {
     /// How deep `local` is in judging one name by another, so a name defined by itself
     /// (`sort = sort + ""`) ends instead of going round for ever.
     pub(super) depth: std::cell::Cell<u8>,
+    /// Backlog 0525: Python functions at the top of the module whose one `return` gives fixed text and which nothing
+    /// else in the file binds, so `executescript(_database_schema())` is the schema it returns.
+    pub(super) functions: BTreeSet<String>,
 }
 
 /// One binding of a name: the value it was given, when the code says, and whether it sits at the top
@@ -433,6 +436,9 @@ impl Fixed {
             if !found {
                 break;
             }
+        }
+        if fixed.python {
+            fixed.functions = fixed_functions(root, source, &bindings, &fixed);
         }
         // Names read back from the database, and what is built from them alone, the same way.
         loop {
@@ -500,10 +506,18 @@ impl Fixed {
         {
             return fixed;
         }
+        let text = |n: tree_sitter::Node| n.utf8_text(source).unwrap_or("");
+        // A call to a function whose one return is fixed text, whatever it is given.
+        if node.kind() == "call"
+            && let Some(function) = node.child_by_field_name("function")
+            && function.kind() == "identifier"
+            && self.functions.contains(text(function))
+        {
+            return true;
+        }
         if self.names.is_empty() && self.tables.is_empty() {
             return false;
         }
-        let text = |n: tree_sitter::Node| n.utf8_text(source).unwrap_or("");
         let table = |n: Option<tree_sitter::Node>| {
             n.is_some_and(|n| n.kind() == "identifier" && self.tables.contains(text(n)))
         };
@@ -974,6 +988,80 @@ pub(super) fn at_top(node: tree_sitter::Node) -> bool {
         }
     }
     false
+}
+
+/// The Python functions defined at the top of the module that give only fixed text (backlog 0525): each defined
+/// there once and bound nowhere else in the file, with no `yield`, and with one `return` in its own body (not counting
+/// a function or lambda inside it) whose value is fixed text. In the trial of 14 October 2026 a VS Code build ran
+/// `executescript(_database_schema())`, where the function returned one triple-quoted schema, and was told its query
+/// was built by hand. A function with two returns, a return that joins in a value, or a name bound again is not one.
+fn fixed_functions(
+    root: tree_sitter::Node,
+    source: &[u8],
+    bindings: &BTreeMap<String, Vec<Binding>>,
+    fixed: &Fixed,
+) -> BTreeSet<String> {
+    // The `return` and `yield` nodes of a function's own body.
+    fn own<'a>(
+        node: tree_sitter::Node<'a>,
+        returns: &mut Vec<tree_sitter::Node<'a>>,
+        yields: &mut bool,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            match child.kind() {
+                "function_definition" | "lambda" | "class_definition" => {}
+                "return_statement" => returns.push(child),
+                "yield" => *yields = true,
+                _ => own(child, returns, yields),
+            }
+        }
+    }
+    let mut defined: BTreeMap<String, Vec<tree_sitter::Node>> = BTreeMap::new();
+    fn all_defs<'a>(
+        node: tree_sitter::Node<'a>,
+        source: &[u8],
+        out: &mut BTreeMap<String, Vec<tree_sitter::Node<'a>>>,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            if child.kind() == "function_definition"
+                && let Some(name) = child.child_by_field_name("name")
+                && let Ok(text) = name.utf8_text(source)
+            {
+                out.entry(text.to_owned()).or_default().push(child);
+            }
+            all_defs(child, source, out);
+        }
+    }
+    all_defs(root, source, &mut defined);
+    let mut found = BTreeSet::new();
+    for (name, defs) in &defined {
+        let [def] = defs.as_slice() else { continue };
+        let top = def.parent().is_some_and(|p| {
+            p.kind() == "module"
+                || (p.kind() == "decorated_definition"
+                    && p.parent().is_some_and(|g| g.kind() == "module"))
+        });
+        if !top || bindings.contains_key(name) {
+            continue;
+        }
+        let Some(body) = def.child_by_field_name("body") else {
+            continue;
+        };
+        let (mut returns, mut yields) = (Vec::new(), false);
+        own(body, &mut returns, &mut yields);
+        let [only] = returns.as_slice() else { continue };
+        let value = {
+            let mut cursor = only.walk();
+            only.named_children(&mut cursor)
+                .find(|c| c.kind() != "comment")
+        };
+        if !yields && value.is_some_and(|v| is_literal(v, source, fixed)) {
+            found.insert(name.clone());
+        }
+    }
+    found
 }
 
 /// Every place in the file that binds a name, with the value when the code gives one.

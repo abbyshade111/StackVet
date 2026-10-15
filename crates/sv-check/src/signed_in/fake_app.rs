@@ -287,6 +287,9 @@ pub(super) struct Flaws {
     /// Refuses an admin page to an ordinary user with a page of its own served with 200, as an app that
     /// renders its 403 template without setting the status does. Not a flaw (backlog 0560).
     pub(super) admin_denied_on_200: bool,
+    /// Answers a private page asked for without signing in with its sign-in form, served with 200, rather
+    /// than a redirect to it. Not a flaw (backlog 0560).
+    pub(super) private_signin_on_200: bool,
     /// Not a flaw of the app's: the sign-in page has a Turkish heading and data-protection notice in
     /// capitals before its form, and each capital dotted `İ` grows from two bytes to three when
     /// lowered with `to_lowercase` (backlog 0278).
@@ -2267,6 +2270,14 @@ impl FakeApp {
                     Self::respond(200, headers, &body)
                 } else if self.hides_private {
                     Self::respond(404, vec![], "none")
+                } else if self.flaws.private_signin_on_200 {
+                    Self::respond(
+                        200,
+                        vec![],
+                        "<h1>Please sign in</h1><form method='post' action='/login'>\
+                         <input name='email'><input name='password' type='password'>\
+                         <button>Sign in</button></form>",
+                    )
                 } else {
                     Self::respond(302, vec![("Location", "/login".into())], "")
                 }
