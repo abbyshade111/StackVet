@@ -86,7 +86,7 @@ pub(super) struct FakeApp {
     apply: BTreeMap<String, u32>,
     pub(super) users: BTreeMap<String, (String, bool)>, // user -> (password, is admin)
     sessions: BTreeMap<String, String>,                 // session id -> user ("" = not signed in)
-    notes: Vec<(String, String)>,                       // (owner, text)
+    pub(super) notes: Vec<(String, String)>,            // (owner, text)
     /// Comments made through `POST /comments`, as (owner, text), read back at `/comments/{n}`.
     comments: Vec<(String, String)>,
     /// The notes deleted, by number: read back as not there.
@@ -254,6 +254,15 @@ pub(super) struct Flaws {
     /// to them answers 405 for everybody, the note's owner too (ADR-053, Later).
     pub(super) writes_need_another_method: bool,
     pub(super) no_csrf_check: bool,
+    /// Refuses a note sent without its token the way Flask-WTF apps often do: the form shown again, with
+    /// 200 and "The CSRF token is missing.", where a note that was made is sent on to its page. Not a flaw
+    /// (backlog 0560).
+    pub(super) forgery_refused_on_200: bool,
+    /// Refuses a note sent without its token with a redirect shaped like a made note's, to a note that does
+    /// not exist. Not a flaw: only reading the record back tells the two apart (backlog 0560).
+    pub(super) forgery_refused_alike: bool,
+    /// The JSON API refuses with 200 and `{"error": ...}` instead of a 4xx. Not a flaw (backlog 0560).
+    pub(super) api_refuses_with_200: bool,
     /// Not a flaw of the app's: the sign-in page has a Turkish heading and data-protection notice in
     /// capitals before its form, and each capital dotted `İ` grows from two bytes to three when
     /// lowered with `to_lowercase` (backlog 0278).
@@ -2532,7 +2541,9 @@ impl FakeApp {
                     return Some(Self::respond(401, vec![], "sign in"));
                 };
                 let refuse = |app: &Self, status: u16| {
-                    if app.flaws.api_redirects_refusals {
+                    if app.flaws.api_refuses_with_200 {
+                        Self::respond(200, vec![], "{\"error\":\"not taken\"}")
+                    } else if app.flaws.api_redirects_refusals {
                         Self::respond(302, vec![("Location", "/".into())], "")
                     } else {
                         Self::respond(status, vec![], "no")
@@ -2714,6 +2725,17 @@ impl FakeApp {
                     return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
                 };
                 if !self.flaws.no_csrf_check && (foreign || !token_ok) {
+                    if self.flaws.forgery_refused_on_200 {
+                        return Some(Self::respond(
+                            200,
+                            vec![],
+                            "<form method=post><input name=text> The CSRF token is missing.</form>",
+                        ));
+                    }
+                    if self.flaws.forgery_refused_alike {
+                        let next = format!("/notes/{}", self.notes.len() + 1);
+                        return Some(Self::respond(303, vec![("Location", next)], ""));
+                    }
                     return Some(Self::respond(403, vec![], "forged"));
                 }
                 if self.flaws.refuses_null_origin

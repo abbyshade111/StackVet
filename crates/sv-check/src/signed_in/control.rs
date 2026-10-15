@@ -45,7 +45,7 @@ pub(super) fn beside(control: &ProbeResponse, answer: &Option<ProbeResponse>) ->
     }
     if is == 3 {
         let (to, control_to) = (target(answer), target(control));
-        if to != control_to {
+        if to.map(path_shape) != control_to.map(path_shape) {
             return Beside::Unclear(format!(
                 "sent the browser to {} where the control was sent to {}",
                 to.unwrap_or("nowhere named"),
@@ -74,6 +74,21 @@ fn target(r: &ProbeResponse) -> Option<&str> {
     let to = r.header("location")?;
     let to = super::admin::strip_origin(to);
     to.split(['?', '#']).next()
+}
+
+/// A path with each part that holds a digit read as an id, so the redirect to one new record (`/notes/7`) is
+/// the same place as to the next (`/notes/8`).
+pub(super) fn path_shape(path: &str) -> String {
+    path.split('/')
+        .map(|part| {
+            if part.chars().any(|c| c.is_ascii_digit()) {
+                "{id}"
+            } else {
+                part
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("/")
 }
 
 /// How two successful answers differ in shape, when they do in a way this can read: JSON objects with other
