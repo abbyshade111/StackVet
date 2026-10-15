@@ -28,7 +28,7 @@ fn made_with(name: &str, typed: &str) -> (Stored, String) {
 fn pressing_enter_chooses_a_passphrase() {
     let (stored, out) = made_with("enter", "\nhorse battery staple\nhorse battery staple\n");
     assert!(matches!(stored, Stored::Locked(_)), "{out}");
-    assert!(out.contains("Press Enter to choose one"), "{out}");
+    assert!(out.contains("(yes/no, Enter for yes)"), "{out}");
     assert!(!out.contains("horse"), "{out}");
 }
 

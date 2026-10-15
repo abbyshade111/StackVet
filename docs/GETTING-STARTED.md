@@ -299,8 +299,8 @@ On Linux, add `--user "$(id -u):$(id -g)"` after `docker run`, as in section 3.
 With StackVet installed on the computer itself (section 6), this is just `sv review .`.
 
 It shows each answer that does not yet count as yours, asks your name or `owner`, and signs it with a key of its own,
-kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose
-one, or type `none`). Only then does the report count the answer as yours: a line saying `owner` that was never recorded
+kept in your own settings folder; the first time, it asks whether to protect that key with a passphrase (yes or no; Enter
+means yes). Only then does the report count the answer as yours: a line saying `owner` that was never recorded
 this way still counts as the tool's word, since a tool could write it too. A real
 finding is fixed in the code and checked again; recording it does not make it go away. When you record something,
 `sv review` then writes the report again with the options of the last one, `--run` included, so your answers count
