@@ -80,3 +80,21 @@ with the smallest model. Add one table and one figure comparing the three: vendo
 "not published" where not, the reasoning setting used in the trial, and the price tier, each cell with its source (the
 vendor's own page, dated). No guessing a size the vendor has not published. Beside it, in the "Limits" block: the
 confound, in one sentence, and the follow-up trial that separates them (backlog 0577).
+
+**Part 2 built, 15 October 2026** (documentation), as the owner answered: three periods, each boundary read from git
+by `docs/paper/tables/periods.py`, and named in `docs/paper/DATA.md` ("The three periods"):
+1. version 1, from `c85c174a2` (18 September 09:32 Eastern, the first commit of this history) to the tag `v1-final`
+   (`412092da2`, 26 September 20:46);
+2. version 2, from the promotion of `sv` to main (#224, `278575a07`, 26 September 21:22) to the commit before the rename
+   finished;
+3. StackVet, from the rename's last step (#1127, `c75ea2cf9`, 8 October 20:59, ADR-062) to the build.
+
+Built: `periods.csv`, `days.csv`, `decision_records.csv`, and `backlog_items.csv`, combined to the build; every table,
+the hand-made ones at the cut-off included, cut per period in `tables/by-period/<period>/` and whole with its period
+column in `tables/by-period/all/`; `figure-periods.html`, made by the script; and the tables of the work since the
+cut-off regenerated (`make_tables.py`) before they were split. `--check` on both scripts passes. The originals are left
+as they were.
+
+Still to do: the hand-drawn figures per period. Each is drawn by hand from a table at the 4 October cut-off; their
+tables are split, and redrawing each figure from them is what remains, so the item stays claimed. The paper's prose is
+the owner's to write against these.

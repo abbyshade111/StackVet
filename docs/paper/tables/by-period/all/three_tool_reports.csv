@@ -1,0 +1,31 @@
+measure,tool,level,value,source,period
+Requirements that apply,Antigravity,level 2,196,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Requirements that apply,Cursor,level 1,73,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Requirements that apply,VS Code,level 1,67,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Needs attention,Antigravity,level 2,4,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Needs attention,Cursor,level 1,2,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Needs attention,VS Code,level 1,4,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+"Checked, in full or in part",Antigravity,level 2,15,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+"Checked, in full or in part",Cursor,level 1,15,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+"Checked, in full or in part",VS Code,level 1,19,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Tested only by the app's own tests,Antigravity,level 2,0,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Tested only by the app's own tests,Cursor,level 1,16,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Tested only by the app's own tests,VS Code,level 1,7,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Rests on the tool's word,Antigravity,level 2,30,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Rests on the tool's word,Cursor,level 1,0,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Rests on the tool's word,VS Code,level 1,7,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Not verified by anything,Antigravity,level 2,147,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Not verified by anything,Cursor,level 1,40,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Not verified by anything,VS Code,level 1,30,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Cannot be placed (a question unanswered),Antigravity,level 2,35,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Cannot be placed (a question unanswered),Cursor,level 1,63,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Cannot be placed (a question unanswered),VS Code,level 1,8,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Findings,Antigravity,level 2,15,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Findings,Cursor,level 1,12,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+Findings,VS Code,level 1,19,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+The app's own tests under `sv`,Antigravity,level 2,Failed (`pytest` not installed),"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+The app's own tests under `sv`,Cursor,level 1,Passed,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+The app's own tests under `sv`,VS Code,level 1,Passed,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+The run,Antigravity,level 2,15 s,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+The run,Cursor,level 1,27 s,"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet
+The run,VS Code,level 1,174 s (0526),"docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md, ""The three reports, like for like""",stackvet

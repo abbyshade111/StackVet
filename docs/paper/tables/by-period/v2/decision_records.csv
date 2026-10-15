@@ -1,0 +1,50 @@
+adr,title,status,added_et,period_added,later_entries,source
+015,"ADR-015: What the owner says can add requirements and never remove one, and silence is not a ""no""",accepted,2026-09-27 13:14,v2,12,docs/adr/ADR-015.md
+016,"ADR-016: The OWASP data files: one copy while both versions lived here, and two since",accepted,2026-09-27 13:14,v2,1,docs/adr/ADR-016.md
+017,ADR-017: `sv` never writes the app's code,accepted,2026-09-27 13:14,v2,12,docs/adr/ADR-017.md
+018,"ADR-018: `sv` checks apps written in any language, with rules of its own among the checks",accepted,2026-09-27 13:38,v2,19,docs/adr/ADR-018.md
+019,ADR-019: `sv` runs the app in a container on a network with no way out,accepted,2026-09-27 18:06,v2,23,docs/adr/ADR-019.md
+020,ADR-020: `sv` is written in Rust,accepted,2026-09-29 21:39,v2,4,docs/adr/ADR-020.md
+021,ADR-021: A crash's or a rate limiter's answer is never read as the app refusing,accepted,2026-10-03 21:02,v2,16,docs/adr/ADR-021.md
+022,"ADR-022: Whose word counts, and at which tier",accepted,2026-10-03 21:02,v2,10,docs/adr/ADR-022.md
+023,"ADR-023: False alarms and accepted risks a person records, and test code's findings listed apart",accepted,2026-10-03 21:02,v2,17,docs/adr/ADR-023.md
+024,ADR-024: An unanswered data list holds the app to ASVS level 2,accepted,2026-10-03 21:02,v2,5,docs/adr/ADR-024.md
+025,ADR-025: `sv run` has an end,accepted,2026-10-03 21:02,v2,7,docs/adr/ADR-025.md
+026,ADR-026: The owner's word counts only when `sv review` recorded it,accepted,2026-10-04 16:36,v2,8,docs/adr/ADR-026.md
+027,"ADR-027: `sv probe` asks only public addresses, and only the ones it checked",accepted,2026-10-04 18:09,v2,8,docs/adr/ADR-027.md
+028,"ADR-028: Decide before you build: the design comes first, and nothing is credited for it",accepted,2026-10-04 18:57,v2,12,docs/adr/ADR-028.md
+029,"ADR-029: Exit codes: 2 only when a check could not run, 1 only when asked, 3 when `sv` failed",accepted,2026-10-04 19:28,v2,6,docs/adr/ADR-029.md
+030,ADR-030: A plan before any code,accepted,2026-10-04 22:07,v2,2,docs/adr/ADR-030.md
+031,ADR-031: A `not-the-app` list that would set apart all of the app's code is not used,accepted,2026-10-04 23:48,v2,3,docs/adr/ADR-031.md
+032,"ADR-032: Git, run in the app's folder, runs no program the app's repository names",accepted,2026-10-05 00:58,v2,6,docs/adr/ADR-032.md
+033,"ADR-033: CVSS v4 scores, computed with FIRST's own tables",accepted,2026-10-05 02:16,v2,0,docs/adr/ADR-033.md
+034,ADR-034: A report is offered as `sv`'s only when its seal shows `sv` wrote it,accepted,2026-10-05 07:25,v2,5,docs/adr/ADR-034.md
+035,"ADR-035: A preflight of the run settings, read from the code and never run",accepted,2026-10-05 14:07,v2,5,docs/adr/ADR-035.md
+036,"ADR-036: `sv` finds its data beside itself, and an install does not live in a working folder",accepted,2026-10-05 16:18,v2,3,docs/adr/ADR-036.md
+037,"ADR-037: A Python project with no lockfile does not pin, `setup.py` and `setup.cfg` included",accepted,2026-10-05 20:28,v2,2,docs/adr/ADR-037.md
+038,"ADR-038: The SQL injection probe only reads, only on `sv`'s own copy of the app, and only ever finds",accepted,2026-10-06 06:09,v2,1,docs/adr/ADR-038.md
+039,"ADR-039: The sign-in token checks, and which key addresses they may name",accepted,2026-10-06 06:09,v2,2,docs/adr/ADR-039.md
+040,"ADR-040: A credential name over a sentence is reported low, and says so",accepted,2026-10-06 06:09,v2,4,docs/adr/ADR-040.md
+041,"ADR-041: One run at a time in a report folder, held by a lock file `sv` writes there",accepted,2026-10-06 06:09,v2,5,docs/adr/ADR-041.md
+042,"ADR-042: The test model answers in the shape the app asked for, and a wrong shape refused is credit for C7.1.1",accepted,2026-10-06 17:54,v2,5,docs/adr/ADR-042.md
+043,"ADR-043: A seal is a signature any computer can check, against keys the owner chose to trust",accepted,2026-10-06 18:21,v2,5,docs/adr/ADR-043.md
+044,ADR-044: The coding prompts shown to work reach the AI tool when it builds what they are for,accepted,2026-10-06 19:31,v2,8,docs/adr/ADR-044.md
+045,ADR-045: The app's own tools are called in a loop only when the owner marks them read-only,accepted,2026-10-06 22:22,v2,0,docs/adr/ADR-045.md
+046,"ADR-046: Compressed archives sent to the upload, to the limits the owner states",accepted,2026-10-06 22:34,v2,4,docs/adr/ADR-046.md
+047,ADR-047: V3.4.3 is credited only for a Content-Security-Policy with the directives it names,accepted,2026-10-07 07:23,v2,2,docs/adr/ADR-047.md
+048,ADR-048: The weak password-derivation rule cites storing passwords as well as making keys,accepted,2026-10-07 07:31,v2,0,docs/adr/ADR-048.md
+049,"ADR-049: `sv` reads the AI coding tool's own files in the project folder, apart from the app's grade",accepted,2026-10-07 09:04,v2,2,docs/adr/ADR-049.md
+050,"ADR-050: The app's own tests are a tier of their own, below an automated check",accepted,2026-10-07 14:17,v2,1,docs/adr/ADR-050.md
+051,"ADR-051: The tests must pass before a pull request merges into main, and every commit on main is tested",accepted,2026-10-07 14:17,v2,15,docs/adr/ADR-051.md
+052,"ADR-052: Packages installed before the run, outside the fence, in a container that sees only the dependency files",accepted,2026-10-07 16:25,v2,4,docs/adr/ADR-052.md
+053,"ADR-053: Another user's records are checked for reading, listing, changing, and deleting, and one read alone is ""checked in part""",accepted,2026-10-07 17:48,v2,19,docs/adr/ADR-053.md
+054,"ADR-054: Templates and notebooks are read for what they can hold, and never pass silently",accepted,2026-10-07 19:59,v2,2,docs/adr/ADR-054.md
+055,"ADR-055: Two checks stop resting on one sample: cross-site access asks the private pages, and a common password is three",accepted,2026-10-07 21:31,v2,0,docs/adr/ADR-055.md
+056,"ADR-056: An error answer is credited only when the app was made to give one, and it was clean",accepted,2026-10-07 22:25,v2,1,docs/adr/ADR-056.md
+057,"ADR-057: A dashboard for `sv`, optional, with history kept only when the owner asks, outside the app's folder",accepted,2026-10-08 05:01,v2,9,docs/adr/ADR-057.md
+058,"ADR-058: A private set of pages for the owner to read `sv`'s documentation, in the home folder, without the paper",accepted,2026-10-08 07:20,v2,1,docs/adr/ADR-058.md
+059,"ADR-059: Every check that gives credit is seen withholding it in the test suite, or the build fails",accepted,2026-10-08 11:43,v2,4,docs/adr/ADR-059.md
+060,ADR-060: One file per design entry,accepted,2026-10-08 12:23,v2,0,docs/adr/ADR-060.md
+061,"ADR-061: One file per backlog item, with a status line",accepted,2026-10-08 14:07,v2,9,docs/adr/ADR-061.md
+062,ADR-062: The product is StackVet; the command stays `sv`,accepted,2026-10-08 18:39,v2,2,docs/adr/ADR-062.md
+063,"ADR-063: StackVet's logo is the code bracket, in terracotta",accepted,2026-10-08 19:07,v2,0,docs/adr/ADR-063.md
