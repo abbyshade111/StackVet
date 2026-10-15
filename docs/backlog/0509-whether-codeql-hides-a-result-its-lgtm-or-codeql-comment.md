@@ -1,6 +1,8 @@
 # Whether CodeQL hides a result its lgtm or codeql comment marks, checked with a real run
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 Left over from backlog 0400 (14 October 2026). The report now lists every `lgtm` and `codeql[...]` comment in the
 app's code (`crates/sv-check/src/look_away.rs`), but whether CodeQL itself leaves out a result such a comment marks,

@@ -1,6 +1,6 @@
 # Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show
 
-**Status:** open
+**Status:** claimed by wording, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

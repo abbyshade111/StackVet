@@ -16,6 +16,7 @@ pub mod deps;
 pub mod ecosystems;
 pub mod files;
 pub mod glob;
+pub mod imports;
 pub mod jvm;
 mod not_the_app;
 pub mod requirements;
@@ -125,6 +126,10 @@ pub enum Evidence {
     /// No check for this claim is possible, and this is why. Distinct from `NothingFound`, which
     /// means `sv` looked: this one means there was never anywhere to look.
     NoCheckExists { reason: String },
+    /// The only sign of it is in the app's tests: a pattern in a test file, or a declared package
+    /// that only test files import (backlog 0538). Tests are not what the app does, so it counts
+    /// neither as a yes nor as a no.
+    OnlyInTests { shown_by: String },
 }
 
 #[derive(Debug, Clone)]
@@ -257,8 +262,11 @@ pub fn scan_listing_app(
                 .collect()
         })
         .collect();
-    // The first file each signature's patterns matched: (the pattern as written, the file).
+    // The first file each signature's patterns matched: (the pattern as written, the file). A test
+    // file's match is kept apart (backlog 0538), as is what each file imports.
     let mut source_hits: Vec<Option<(String, String)>> = vec![None; signatures.signatures.len()];
+    let mut test_hits: Vec<Option<(String, String)>> = vec![None; signatures.signatures.len()];
+    let mut imports = imports::Imports::default();
 
     for entry in listing.app_files().filter(|e| ours(&e.relative)) {
         let Some(ext) = &entry.extension else {
@@ -290,22 +298,29 @@ pub fn scan_listing_app(
         }
         report.files_read += 1;
         report.languages.insert(language.to_owned());
+        imports.read(language, &entry.relative, &contents);
+        let test = files::is_test_path(&entry.relative);
+        let hits = if test {
+            &mut test_hits
+        } else {
+            &mut source_hits
+        };
         // Lowercased only while a signature not yet found has patterns for this language (backlog 0369): once each
         // is found, or for a language none speaks to, no copy of the file is made.
-        let wanted = |i: usize| source_hits[i].is_none() && lowered[i].contains_key(language);
+        let wanted = |i: usize| hits[i].is_none() && lowered[i].contains_key(language);
         if !(0..signatures.signatures.len()).any(wanted) {
             continue;
         }
         let haystack = contents.to_lowercase();
         for (i, sig) in signatures.signatures.iter().enumerate() {
-            if source_hits[i].is_some() {
+            if hits[i].is_some() {
                 continue;
             }
             let Some(patterns) = lowered[i].get(language) else {
                 continue;
             };
             if let Some(at) = patterns.iter().position(|p| haystack.contains(p.as_str())) {
-                source_hits[i] = Some((sig.source[language][at].clone(), entry.relative.clone()));
+                hits[i] = Some((sig.source[language][at].clone(), entry.relative.clone()));
             }
         }
     }
@@ -315,7 +330,11 @@ pub fn scan_listing_app(
             sig.condition,
             sig,
             &report,
-            source_hits[i].as_ref(),
+            &Hits {
+                source: source_hits[i].as_ref(),
+                test: test_hits[i].as_ref(),
+                imports: &imports,
+            },
         ));
     }
 
@@ -397,12 +416,16 @@ fn compose_with_two_builds(app_dir: &Path, paths: &BTreeSet<String>) -> Option<S
         .cloned()
 }
 
-fn evaluate(
-    condition: Condition,
-    sig: &Signature,
-    report: &ScanReport,
-    source_hit: Option<&(String, String)>,
-) -> Answer {
+/// What the one pass over the files found for one signature.
+struct Hits<'a> {
+    /// The first match in the app's own files: (the pattern as written, the file).
+    source: Option<&'a (String, String)>,
+    /// The first match in a test file.
+    test: Option<&'a (String, String)>,
+    imports: &'a imports::Imports,
+}
+
+fn evaluate(condition: Condition, sig: &Signature, report: &ScanReport, hits: &Hits) -> Answer {
     // 0. Some claims cannot be checked from the code at all. Answering "not found" for those would
     // be a kind of lie by omission: it reads as a search that came up empty rather than as a
     // question nobody here can answer.
@@ -441,13 +464,26 @@ fn evaluate(
         }
     }
 
-    // 3. A declared dependency.
+    // 3. A declared dependency, unless only the app's tests import it (backlog 0538).
+    let mut only_in_tests = None;
     for declared in &report.declared {
         if let Some(names) = sig.packages.get(&declared.ecosystem)
             && names
                 .iter()
                 .any(|n| package_matches(&declared.ecosystem, n, &declared.name))
         {
+            if let Some(test) = hits
+                .imports
+                .only_in_tests(&declared.ecosystem, &declared.name)
+            {
+                only_in_tests.get_or_insert_with(|| {
+                    format!(
+                        "`{}`, declared in {} and imported only by {test}",
+                        declared.name, declared.manifest
+                    )
+                });
+                continue;
+            }
             {
                 return Answer {
                     condition,
@@ -463,7 +499,7 @@ fn evaluate(
 
     // 4. A pattern in the app's own source — how a standard-library use is caught. Found in the
     //    one pass over the files in `scan_listing`.
-    if let Some((pattern, file)) = source_hit {
+    if let Some((pattern, file)) = hits.source {
         return Answer {
             condition,
             value: Some(true),
@@ -471,6 +507,19 @@ fn evaluate(
                 pattern: pattern.clone(),
                 file: file.clone(),
             },
+        };
+    }
+
+    // 4a. Only the app's tests show it. Not a yes, since tests are not what the app does, and not a
+    //     no either: the same pattern in a test may stand for code the app has elsewhere.
+    if let Some(shown_by) = only_in_tests.or_else(|| {
+        hits.test
+            .map(|(pattern, file)| format!("`{pattern}`, in {file}"))
+    }) {
+        return Answer {
+            condition,
+            value: None,
+            evidence: Evidence::OnlyInTests { shown_by },
         };
     }
 
