@@ -1,6 +1,6 @@
 # `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention"
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

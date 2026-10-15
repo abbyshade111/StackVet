@@ -1,6 +1,6 @@
 # The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -27,3 +27,5 @@ under emulation for hours, but in the same shape: a native job on GitHub's arm64
 image, and `publish` pushes both and joins them into one manifest, signing it and each platform's image (ADR-080,
 Later). The interim note on the warning is not added: this is the fix it was waiting for. Left open for the board to
 close; what the published image holds is seen only after the first push to `main`.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2020); honesty left the item open for the board to close.

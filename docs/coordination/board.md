@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
-- wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0589, 0590
-- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0586, 0600
+- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0605, 0576, 0599, 0582
+- wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0590, 0603, 0597
+- documentation — arm: full — holds: 0586 (since 2026-10-15) — next: 0600, 0583
 
 ## Queue
 
@@ -20,31 +20,23 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 6. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
 7. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — ready
 8. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
-9. 0490 V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it — ready
-10. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — ready
-11. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
-12. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — ready
-13. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
-14. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
-15. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — ready
-16. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
-17. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
-18. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
-19. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-20. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
-21. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-22. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-23. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-24. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
-25. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-26. 0582 `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention" — ready
-27. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
-28. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
-29. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
-30. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
-31. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
-32. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
-33. 0603 sv's question text lets the tool record a check it made itself by reading the code, which prompt 5 forbids — ready
+9. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — ready
+10. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
+11. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — ready
+12. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
+13. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
+14. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — ready
+15. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
+16. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
+17. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
+18. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
+19. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+20. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+21. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+22. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+23. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
+24. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
+25. 0509 Whether CodeQL hides a result its lgtm or codeql comment marks, checked with a real run — hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
 
 ## Log
 
@@ -682,3 +674,24 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 14:20 — finished 0534 by wording (full): https://github.com/abbyshade111/StackVet/pull/2060; now holds 0565
 - 2026-10-15 14:20 — finished 0602 by wording (full): https://github.com/abbyshade111/StackVet/pull/2057; from its lane, behind 0565
 - 2026-10-15 14:20 — finished 0514 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2059; from its lane, behind 0509
+- 2026-10-15 14:34 — finished 0564 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2007; now holds 0579
+- 2026-10-15 14:34 — finished 0579 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2034; now holds 0598
+- 2026-10-15 14:34 — finished 0598 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2044; now holds 0495
+- 2026-10-15 14:34 — finished 0495 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2013; now holds 0571
+- 2026-10-15 14:34 — finished 0571 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2015; now holds 0232
+- 2026-10-15 14:34 — queued 0605, on hold: the owner's choice: where the manifest names the run's environment and settings files, marked
+- 2026-10-15 14:34 — assigned 0490 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
+- 2026-10-15 14:34 — assigned 0572 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
+- 2026-10-15 14:34 — assigned 0576 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
+- 2026-10-15 14:34 — assigned 0599 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
+- 2026-10-15 14:34 — assigned 0582 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
+- 2026-10-15 14:38 — released 0605
+- 2026-10-15 14:39 — assigned 0603 to wording (full) as next: the owner's choice A of 15 October: prompt 5 and the guide match sv's question text on the tool's own hand checks; the prompt page and interview.rs, wording's
+- 2026-10-15 14:39 — assigned 0605 to honesty (full) into the lane after 0490: the owner's choice b of 15 October: the settings file the start command names is read for loosened settings; the rest of 0564, honesty's
+- 2026-10-15 14:45 — dropped 0539 from the queue
+- 2026-10-15 14:45 — withdrew 0509 from documentation (full), on hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
+- 2026-10-15 14:45 — finished 0572 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2018; from its lane, behind 0232
+- 2026-10-15 14:50 — finished 0589 by wording (full): https://github.com/abbyshade111/StackVet/pull/2063; from its lane, behind 0565
+- 2026-10-15 14:50 — finished 0595 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2061; now holds 0586
+- 2026-10-15 14:50 — assigned 0583 to documentation (full) as next: the Semgrep logger rule on id-only lines, with its row in docs/research/SEMGREP-FALSE-ALARMS.md; no file shared with honesty's next five (pointer, settings file, SVG upload, sign-up names, path rule)
+- 2026-10-15 14:50 — assigned 0597 to wording (full) as next: prompt 6's commit check and prompt 5's unrecommended questions; the prompt page, wording's

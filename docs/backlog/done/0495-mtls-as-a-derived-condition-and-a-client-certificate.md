@@ -1,6 +1,6 @@
 # mTLS as a derived condition, and a client certificate accepted without a trust check reported
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -29,3 +29,5 @@ for Go's `ClientAuth` set to `tls.RequestClientCert` or `tls.RequireAnyClientCer
 beside `rejectUnauthorized: false` (ADR-018, Later). Left: nginx's `ssl_verify_client optional_no_ca`, which needs a
 check in Rust since no grammar reads nginx settings, and Python's `CERT_OPTIONAL` with `getpeercert()`, which one
 file cannot tie together.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2011 and PR 2013); honesty left the item open for the board to close, as its line's items are.
