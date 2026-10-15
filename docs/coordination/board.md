@@ -8,7 +8,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 - honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0560, 0561, 0564, 0539, 0232
 - wording — arm: full — holds: 0557 (since 2026-10-14) — next: 0533, 0530, 0534
-- documentation — arm: full — holds: 0526 (since 2026-10-14) — next: 0563, 0568
+- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0562, 0529, 0531, 0538
 
 ## Queue
 
@@ -38,16 +38,12 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 24. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
 25. 0525 `ast.sql-built-by-hand` flags `executescript(f())` where `f` returns a constant schema, a high finding under V1.2.4 — ready
 26. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-27. 0529 Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information — ready
-28. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
-29. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-30. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-31. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
-32. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
-33. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
-34. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
-35. 0565 Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show — ready
-36. 0566 Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report — ready
+27. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+28. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+29. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
+30. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
+31. 0565 Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show — ready
+32. 0566 Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report — ready
 
 ## Log
 
@@ -563,3 +559,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 22:50 — finished 0555 by wording (full): https://github.com/abbyshade111/StackVet/pull/1961; now holds 0556
 - 2026-10-14 22:50 — finished 0556 by wording (full): https://github.com/abbyshade111/StackVet/pull/1964; now holds 0557
 - 2026-10-14 22:50 — finished 0527 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1960; now holds 0526
+- 2026-10-14 23:20 — finished 0526 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1967; now holds 0563
+- 2026-10-14 23:20 — finished 0563 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1969; now holds 0568
+- 2026-10-14 23:20 — assigned 0562 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
+- 2026-10-14 23:20 — assigned 0529 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
+- 2026-10-14 23:20 — assigned 0531 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
+- 2026-10-14 23:20 — assigned 0538 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner

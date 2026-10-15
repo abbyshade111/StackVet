@@ -1,6 +1,6 @@
 # Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

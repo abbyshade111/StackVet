@@ -1,6 +1,6 @@
 # The pointer's "and N more places" counts a refusal's log line and its response line as two places
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
