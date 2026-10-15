@@ -204,6 +204,15 @@ handing the questions back) follows sv's text, the harness, and the person. The 
 | False claims in the walkthrough | 3 | 0 |
 | Reached `sv review` | no | yes |
 
+## The blank slate, for any later trial
+
+What the lost Cursor run of 15 October showed a blank slate must also clear (backlog 0592). Before each run: no `sv`, no
+key folder, and no image, as on 14 October; a new, empty folder for the app; and the AI tool's own MCP settings, not
+only the folder's. A tool that keeps one MCP setting for the whole account (Cursor's `~/.cursor/mcp.json`, and
+Antigravity's) still points at the last run's app until that entry is removed or rewritten, or the tool is asked to
+write one for the new folder only. Then, at prompt 4, `stackvet_status` must name the new folder before prompt 5 is
+pasted; prompt 4 now tells the tool to stop, and not to read or use the folder, when it names another.
+
 ## For the owner to decide
 
 - 0536: how `sv`'s run gets a sign-up secret (a seed-made value, an environment name, or leave it and say so).
