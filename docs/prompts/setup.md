@@ -359,7 +359,13 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    not in this chat, where it shows as code. Walk me through it from the top: the
 >    most important things to fix first, then what was not examined. Never tell me the app is secure. Ask me before
 >    you delete the report's folder, or anything else.
+>
+> Step 7. Last, tell me that until I run `sv review` myself (prompt 7 on the setup page), every answer recorded so far
+>    counts as yours, not mine, and the report says so.
 <!-- setup-step-6:end -->
+
+**If you stop here,** every answer your AI tool recorded still counts as its word, not yours, and the report says so,
+until you run `sv review` in step 7.
 
 ## 7. Record my answers as mine
 
