@@ -2006,6 +2006,7 @@ mod tests {
                 .collect(),
             before_login: Vec::new(),
             landed: String::new(),
+            answer: String::new(),
             limited: false,
         }
     }

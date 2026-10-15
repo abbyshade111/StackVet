@@ -74,6 +74,7 @@ mod owner_field;
 mod passwords;
 pub mod recording;
 mod redirects;
+mod refused;
 mod reset;
 mod rules;
 mod sessions;
@@ -720,6 +721,9 @@ pub(crate) struct SignedIn {
     /// Where the sign-in answer left the browser, for a reason when the session turns out not to
     /// be signed in: "answered 200", or "sent the browser to /login/2fa".
     pub(crate) landed: String,
+    /// The sign-in's answer in a sentence: its status, the fields sent (names only), and the words the page showed,
+    /// for the reason when the session turns out not to be signed in (backlog 0527).
+    pub(crate) answer: String,
     /// Whether the sign-in was answered by the app's rate limiter, after the wait [`Patient`] gives
     /// it: the limit on sign-in attempts refused `sv`, so nothing about the session says anything
     /// about the app's checks or stackvet.toml.
@@ -758,16 +762,35 @@ pub(crate) fn sign_in(
         &[],
     );
     let response = response?;
-    steps.push(format!(
-        "signed in as {} ({}{})",
-        who.to_uppercase(),
-        response.status,
-        if values.csrf.is_some() {
-            ", with the page's anti-forgery token"
-        } else {
-            ""
-        }
-    ));
+    let token = if values.csrf.is_some() {
+        ", with the page's anti-forgery token"
+    } else {
+        ""
+    };
+    // Only a yes or no is taken from the password (backlog 0527): a page that repeats it is not quoted.
+    let repeats_password = refused::repeats_password(&response, account);
+    let answer = refused::answer(login, &response, repeats_password);
+    if response.status >= 400 {
+        // Refused: why, in the page's words, is the one thing that lets the person fix it (backlog 0527).
+        // A crash is not a refusal (ADR-021): 500 and up "failed".
+        steps.push(format!(
+            "signing in as {} {} ({}{token}): {}",
+            who.to_uppercase(),
+            if response.status >= 500 {
+                "failed"
+            } else {
+                "was refused"
+            },
+            response.status,
+            refused::sent_and_said(login, &response, repeats_password)
+        ));
+    } else {
+        steps.push(format!(
+            "signed in as {} ({}{token})",
+            who.to_uppercase(),
+            response.status,
+        ));
+    }
     if let Some(field) = &users.token_field {
         session.bearer = serde_json::from_str::<serde_json::Value>(&response.body)
             .ok()
@@ -789,6 +812,7 @@ pub(crate) fn sign_in(
         set_at_login,
         before_login,
         landed,
+        answer,
         limited: rate_limited(&response).is_some(),
     })
 }
@@ -1949,8 +1973,9 @@ fn run_checks(
             format!(
                 "Signing in as the first test user did not open {} — the sign-in request, the \
                  accounts, or the page is not what stackvet.toml says — so nothing here can say \
-                 what a signed-in user can do.",
-                confirm_path.as_deref().unwrap_or("")
+                 what a signed-in user can do. To tell which: {}.",
+                confirm_path.as_deref().unwrap_or(""),
+                a.answer
             ),
         ));
         return out;

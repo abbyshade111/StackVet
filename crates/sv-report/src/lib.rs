@@ -2010,7 +2010,7 @@ fn exchange_line(e: &seen::Exchange) -> String {
     } else {
         String::new()
     };
-    let words = visible_words(&e.body);
+    let words = sv_check::text::visible_words(&e.body);
     let said = if words.is_empty() {
         String::new()
     } else if words.chars().count() > SAW_CHARS {
@@ -2047,46 +2047,6 @@ fn reading_line(r: &seen::Reading) -> String {
             "did not answer"
         }
     )
-}
-
-/// The words a person would read on a page, one space between them: the head, scripts, and styles left out, every
-/// tag taken away with its attributes, and the common entities read.
-fn visible_words(body: &str) -> String {
-    let lower = body.to_ascii_lowercase();
-    let mut text = String::with_capacity(body.len());
-    let mut i = 0;
-    while i < body.len() {
-        let rest = &lower[i..];
-        let skip_to = ["head", "script", "style"].iter().find_map(|tag| {
-            rest.starts_with(&format!("<{tag}"))
-                .then(|| {
-                    rest.find(&format!("</{tag}>"))
-                        .map(|end| end + tag.len() + 3)
-                })
-                .flatten()
-        });
-        if let Some(n) = skip_to {
-            i += n;
-            continue;
-        }
-        if rest.starts_with('<') {
-            i += rest.find('>').map_or(rest.len(), |end| end + 1);
-            text.push(' ');
-            continue;
-        }
-        let c = body[i..].chars().next().expect("a character");
-        text.push(c);
-        i += c.len_utf8();
-    }
-    let text = text
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#x27;", "'")
-        .replace("&#39;", "'")
-        .replace("&nbsp;", " ");
-    text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 #[cfg(test)]
