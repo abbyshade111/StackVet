@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0591, 0578, 0565, 0566, 0588, 0580
-- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575, 0585
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0591, 0565, 0566, 0588, 0580
+- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0574, 0575, 0585
 
 ## Queue
 
@@ -659,3 +659,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 11:23 — withdrew 0572 from honesty (full), on hold: honesty's line is full; back after the empty-body answer (0598), which outranks it
 - 2026-10-15 11:23 — released 0572
 - 2026-10-15 11:23 — assigned 0598 to honesty (full) into the lane after 0579: from the clean Cursor run: pages answering 200 with an empty body counted as answered; the run's reading of an answer, ADR-021 Later; honesty's probe files
+- 2026-10-15 11:25 — finished 0578 by wording (full): https://github.com/abbyshade111/StackVet/pull/2035; from its lane, behind 0534
+- 2026-10-15 11:25 — finished 0568 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2032; now holds 0509
+- 2026-10-15 11:25 — finished 0573 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2036; from its lane, behind 0509
