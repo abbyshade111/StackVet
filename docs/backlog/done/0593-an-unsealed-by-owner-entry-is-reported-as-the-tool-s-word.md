@@ -1,6 +1,6 @@
 # An unsealed `by = "owner"` entry is reported as the tool's word, but nothing tells the tool or the person that it was written by the tool
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -16,3 +16,11 @@ sealed it.
 checked yourself" before asking. The prompt side is 0580 (the owner's choice A).
 
 **Record.** ADR-026 Later (what the review shows before it asks).
+
+**Done, 15 October 2026.** `sv` cannot tell who wrote a line, so it does not say the tool did; it says the tool can. The
+report's line for an answer or check by hand given as the owner's and not recorded through `sv review` now says "Your AI
+coding tool can write `by = "owner"` as well as you can" (and, for a check, "the `how` beside it"), so it counts as the
+tool's word; `sv review`, before asking, says the answer and any `how` may be the tool's words, and to record it only if
+the person gave the answer or made the check. ADR-026, a Later entry. Tests: `design_owner_written_tests.rs`,
+`hand_owner_written_tests.rs` (sv-check), `review/owner_written_tests.rs` (sv-cli); each sentence broken in turn turned
+its own test red.

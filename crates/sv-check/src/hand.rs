@@ -173,9 +173,10 @@ pub fn evaluate(
         }
         let scope = match (unrecorded, &answer.recorded) {
             (Some(why), _) => format!(
-                "stackvet.toml says you checked it by hand on {}: \"{how}\" But {why}, so it \
-                 counts as your AI coding tool's word. If you made the check, run `sv review` in \
-                 your own terminal to record it as yours. Nothing here repeated it.",
+                "stackvet.toml says you checked it by hand on {}: \"{how}\" But {why}. Your AI \
+                 coding tool can write `by = \"owner\"`, and the `how` beside it, as well as you can, \
+                 so it counts as your AI coding tool's word. If you made the check, run `sv review` \
+                 in your own terminal to record it as yours. Nothing here repeated it.",
                 on.show()
             ),
             (None, Ok(sealed)) if by_owner => format!(
@@ -246,6 +247,10 @@ fn problem(check: &crate::human::HumanCheck, how: &str, on: Day, who: &str) -> F
         ),
     })
 }
+
+#[cfg(test)]
+#[path = "hand_owner_written_tests.rs"]
+mod owner_written_tests;
 
 #[cfg(test)]
 mod tests {
