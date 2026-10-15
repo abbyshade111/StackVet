@@ -68,3 +68,22 @@ fn prompt_4_asks_about_this_folder_and_stops_an_old_container_only_with_a_yes() 
         assert!(check.contains(said), "{said}: {check}");
     }
 }
+
+/// Backlog 0553: in the trial, Antigravity's sandbox kept Homebrew, Docker, `sv report`, and `open` from running, and
+/// Cursor found a kept copy of StackVet behind a broken link, built one by hand, and installed a stale one first.
+/// Prompt 6 has the tool leave its sandbox only with a yes, install with Homebrew or Scoop over a kept copy, and stop
+/// when `sv --version` does not name the commit it expected.
+#[test]
+fn prompt_6_leaves_its_sandbox_with_a_yes_and_checks_the_commit_it_installed() {
+    let full = prompt("setup-step-6");
+    for said in [
+        "If a command fails with \"operation not permitted\", or your own sandbox keeps it from running, tell me, and \
+         run it outside your sandbox only after I say yes.",
+        "If you find an older or kept copy of StackVet, or a link to one, tell me, and install with Homebrew (Scoop \
+         on Windows) unless I say otherwise.",
+        "After installing or updating, `sv --version` must name the commit you expected, the latest on StackVet's \
+         GitHub page: if it does not, stop and tell me.",
+    ] {
+        assert!(full.contains(said), "{said}: {full}");
+    }
+}

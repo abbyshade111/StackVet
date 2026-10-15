@@ -294,14 +294,18 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 > internet, and runs the security tools each language has. Your `stackvet_` tools can't make it: it is made at the
 > terminal, by StackVet installed on this computer itself. StackVet's page on GitHub (`docs/INSTALL.md`, the
 > section "Installing StackVet on your computer, for `--run`") says how. Walk me through it one step at a time, and
-> ask me before you install, update, or run anything.
+> ask me before you install, update, or run anything. If a command fails with "operation not permitted", or your own
+> sandbox keeps it from running, tell me, and run it outside your sandbox only after I say yes.
 >
 > 1. Check whether StackVet is installed on this computer: `sv --version` on a Mac or Linux, `stackvet --version` in
 >    PowerShell. If it is not, install it the way the guide says for this computer, and tell me what each step does
->    and how long it takes before you run it.
+>    and how long it takes before you run it. If you find an older or kept copy of StackVet, or a link to one, tell
+>    me, and install with Homebrew (Scoop on Windows) unless I say otherwise.
 > 2. If it is installed, compare the commit `sv --version` prints with the latest on StackVet's GitHub page, and tell
 >    me how old it is: StackVet never checks for itself. If it is older, offer to update it: `brew upgrade --fetch-HEAD
->    sv` if Homebrew installed it, `scoop update sv` on Windows, or the guide's steps for a copy built by hand.
+>    sv` if Homebrew installed it, `scoop update sv` on Windows, or the guide's steps for a copy built by hand. After
+>    installing or updating, `sv --version` must name the commit you expected, the latest on StackVet's GitHub page:
+>    if it does not, stop and tell me.
 > 3. On a Mac or Linux, your `stackvet_` tools use a second copy, StackVet's container image. Offer to fetch its latest
 >    with `docker pull ghcr.io/abbyshade111/stackvet-sv`. Don't stop or restart any container for it: a new chat with
 >    you starts the new one.
