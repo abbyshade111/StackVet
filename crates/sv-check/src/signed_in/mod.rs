@@ -2063,14 +2063,53 @@ fn run_checks(
         ));
         return out;
     }
+    // Each private page after the first opened as A too (backlog 0561, ADR-119): a listed address that refuses
+    // everybody, a wrong path or a page that needs a role A lacks, is refused to a stranger as well, and that
+    // shows nothing about whether it is private.
+    let refused_to_a: Vec<String> = if signed_in_works && served_anonymously.is_empty() {
+        users
+            .private
+            .iter()
+            .enumerate()
+            .skip(1)
+            .filter_map(|(i, path)| {
+                let response = http.send(&get(&format!("private-a-also-{i}"), path, &a.session));
+                (!ok(&response)).then(|| format!("{path} ({})", status(&response)))
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    if !refused_to_a.is_empty() {
+        out.not_assessed.push((
+            PRIVATE_PAGE.requirement_ids.join(", "),
+            format!(
+                "{} refused the signed-in user as well as somebody not signed in, so whether {} \
+                 private is not shown. Check the {} in stackvet.toml: a page every signed-in user \
+                 can open is what this asks about.",
+                refused_to_a.join(", "),
+                if refused_to_a.len() == 1 {
+                    "it is"
+                } else {
+                    "they are"
+                },
+                if refused_to_a.len() == 1 {
+                    "address"
+                } else {
+                    "addresses"
+                }
+            ),
+        ));
+    }
+    let judged_pages = users.private.len() - refused_to_a.len();
     if signed_in_works && served_anonymously.is_empty() {
         out.verified.push(crate::Verified::new(
             PRIVATE_PAGE.rule_id,
             PRIVATE_PAGE.requirement_ids,
             format!(
                 "{} private page{}, refused to somebody not signed in and opened by a signed-in user{}",
-                users.private.len(),
-                if users.private.len() == 1 { "" } else { "s" },
+                judged_pages,
+                if judged_pages == 1 { "" } else { "s" },
                 if shells.is_empty() {
                     String::new()
                 } else {
@@ -2082,8 +2121,9 @@ fn run_checks(
                 }
             ),
         )
-        // Each private page listed is asked; one listed is one sample (ADR-053, Later).
-        .in_part_if(users.private.len() == 1));
+        // Each private page listed is asked; one judged is one sample (ADR-053, Later), and a page left out is
+        // a part not shown.
+        .in_part_if(judged_pages == 1 || !refused_to_a.is_empty()));
     }
 
     // 2a. The same private pages, as nobody but naming A in a header a proxy would add. Here,
@@ -2664,6 +2704,8 @@ mod non_ascii_tests;
 mod owner_field_tests;
 #[cfg(test)]
 mod page_cookie_tests;
+#[cfg(test)]
+mod private_pages_opened_tests;
 #[cfg(test)]
 mod resignup_tests;
 #[cfg(test)]

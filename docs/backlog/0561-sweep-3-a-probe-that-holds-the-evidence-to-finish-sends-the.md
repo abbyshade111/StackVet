@@ -73,3 +73,7 @@ the password field left out, between the wrong password and the right one, and r
 others are; a change taken that way is the finding ("... with the password left out"), and a credit says both were
 refused. Its new value is the fifth of the kind (turn 4), since the phone's third would be the two-factor number's
 first and the page is read for a value anywhere on it; the test caught turn 2.
+
+**Sixth batch, built (inventory item 4):** each private page after the first is asked for with A's session before
+the private-page credit counts it; a page refused to A as well is left out of the count, said with its status as not
+assessed, and the credit is in part.
