@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-15)
-- documentation — arm: full — holds: 0497 (since 2026-10-15)
+- honesty — arm: full — holds: 0536 (since 2026-10-15) — next: 0535, 0492, 0488, 0498, 0489
+- documentation — arm: full — holds: nothing
 
 ## Queue
 
@@ -23,14 +23,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 10. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
 11. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
 12. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-13. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
-14. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-15. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-16. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-17. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
-18. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
-19. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — ready
-20. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
+13. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
+14. 0232 More samples for the checks that rest on one sample (groups A to H) — hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue
 
 ## Log
 
@@ -741,3 +735,12 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 18:43 — withdrew 0498 from documentation (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session
 - 2026-10-15 18:43 — released 0498
 - 2026-10-15 18:43 — session wording removed
+- 2026-10-15 19:13 — finished 0497 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2095
+- 2026-10-15 19:13 — withdrew 0232 from honesty (full), on hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue
+- 2026-10-15 19:13 — assigned 0536 to honesty (full): the one queue for one session (the owner's choice of 15 October), in order
+- 2026-10-15 19:13 — assigned 0535 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order
+- 2026-10-15 19:13 — assigned 0492 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order
+- 2026-10-15 19:13 — assigned 0488 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order
+- 2026-10-15 19:13 — assigned 0498 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order
+- 2026-10-15 19:14 — assigned 0489 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order
+- 2026-10-15 19:14 — dropped 0528 from the queue

@@ -1,6 +1,6 @@
 # A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
