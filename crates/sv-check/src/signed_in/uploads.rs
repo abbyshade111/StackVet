@@ -1,3 +1,5 @@
+use super::control::{Beside, beside};
+use super::passwords::account_works;
 use super::*;
 
 /// The most this check will ever send in one upload.
@@ -1311,8 +1313,8 @@ pub(super) fn client_side_validation_check(
         user: format!("valid.{}", accounts.a.user),
         password: format!("Sv-Valid-{}-aZ9!", accounts.b.password.len()),
     };
-    if sign_up(http, users, signup, "validation-control", &control).is_none_or(|r| r.status >= 400)
-    {
+    let control_answer = sign_up(http, users, signup, "validation-control", &control);
+    let Some(control_answer) = control_answer.filter(|r| r.status < 400) else {
         out.not_assessed.push((
             "V2.2.2".to_owned(),
             "An ordinary sign-up was not accepted, so a refusal of the broken value would say \
@@ -1320,7 +1322,7 @@ pub(super) fn client_side_validation_check(
                 .to_owned(),
         ));
         return;
-    }
+    };
 
     let broken_account = Account {
         user: format!("broken.{}", accounts.a.user),
@@ -1334,6 +1336,16 @@ pub(super) fn client_side_validation_check(
     };
     let mut session = session.clone();
     let mut template = signup.clone();
+    // When the broken value is the one sign-in reads, the account it would have made is named by it.
+    let made_as = if signup
+        .form
+        .get(&field)
+        .is_some_and(|v| v.contains("{user}"))
+    {
+        value.clone()
+    } else {
+        broken_account.user.clone()
+    };
     template.form.insert(field.clone(), value);
     let (response, _) = send_template(
         http,
@@ -1343,12 +1355,78 @@ pub(super) fn client_side_validation_check(
         &mut session,
         &[],
     );
-    let accepted = response.as_ref().is_some_and(|r| r.status < 400);
+    // Accepted means answered the way the ordinary sign-up was (backlog 0523, 0560): a form shown again with
+    // 200 and an error is under 400 too. Signing in as the account the broken value would have made settles it
+    // either way, when there is a private page to open: two sign-ups sent back to the form alike made nothing.
+    let judged = beside(&control_answer, &response);
+    if judged == Beside::Refused {
+        out.steps.push(format!(
+            "sent `{field}` breaking the form's own {constraint}: refused ({})",
+            status(&response)
+        ));
+        return;
+    }
+    let compared = match (users.private.first(), judged) {
+        (None, Beside::Unclear(why)) => {
+            out.steps.push(format!(
+                "sent `{field}` breaking the form's own {constraint}: could not tell, {why}"
+            ));
+            out.not_assessed.push((
+                "V2.2.2".to_owned(),
+                format!(
+                    "Whether the server applies the rules its own form states: a sign-up with \
+                     `{field}` breaking {constraint} was answered unlike the ordinary sign-up \
+                     ({why}), and with no private page in stackvet.toml to open, signing in as \
+                     that account could not show whether it was made."
+                ),
+            ));
+            return;
+        }
+        (None, _) => Some(format!(
+            "answered as the ordinary sign-up did ({})",
+            status(&response)
+        )),
+        (Some(confirm), judged) => {
+            let how = match judged {
+                Beside::Unclear(why) => why,
+                _ => format!(
+                    "answered as the ordinary sign-up did ({})",
+                    status(&response)
+                ),
+            };
+            out.steps.push(format!(
+                "sent `{field}` breaking the form's own {constraint}: {how}, so signed in as \
+                 the account it would have made"
+            ));
+            let made = Account {
+                user: made_as,
+                password: broken_account.password.clone(),
+            };
+            account_works(
+                http,
+                users,
+                "validation-made",
+                &made,
+                confirm,
+                &mut out.steps,
+            )
+            .then(|| {
+                format!(
+                    "{how}, and signing in as the account it made opened the first private page \
+                     stackvet.toml lists"
+                )
+            })
+        }
+    };
     out.steps.push(format!(
         "sent `{field}` breaking the form's own {constraint}: {}",
-        if accepted { "accepted" } else { "refused" }
+        if compared.is_some() {
+            "accepted"
+        } else {
+            "refused"
+        }
     ));
-    if accepted {
+    if let Some(compared) = compared {
         out.findings.push(finding_on(
             vec!["validation-broken".to_owned()],
             &CLIENT_SIDE_VALIDATION,
@@ -1356,8 +1434,7 @@ pub(super) fn client_side_validation_check(
             Severity::Medium,
             format!(
                 "The sign-up page says `{field}` must satisfy {constraint}. Sent directly, without \
-                 a browser, a value breaking that was accepted ({}).",
-                status(&response)
+                 a browser, a value breaking that was accepted: it {compared}."
             ),
         ));
     }
@@ -2584,3 +2661,6 @@ mod tests {
 
 #[cfg(test)]
 mod served_set_tests;
+
+#[cfg(test)]
+mod against_control_tests;

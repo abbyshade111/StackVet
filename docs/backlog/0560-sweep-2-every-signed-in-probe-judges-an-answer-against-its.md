@@ -23,3 +23,46 @@ right answer.
 
 **Record.** ADR-119 (accepted by sweep 1's pull request; this one says `ADR-119: unchanged, because ...` or adds a Later
 line if a rule is refined).
+
+## The inventory (15 October 2026, honesty)
+
+Every read under `signed_in/` that decides on a status class or threshold, and its control. Crashes and a limiter's
+answers are already set aside per request (`RESTS_ON_A_REFUSAL`, `RAISED_ON_A_REFUSAL`), so this is about 2xx, 3xx,
+and 4xx answers read wrongly.
+
+**Already read against the control or settled by a second request:** the reads of a marker written and read back
+(`admin.rs` `shows`, `holds_marker`, the change and its control; `uploads.rs` traversal, SVG, scan, and served
+uploads; `owner_field.rs`; `stored_markup.rs`), the flows and once checks (the `completed` text), the WebSocket
+handshakes (exactly 101), the account checks (`one_change` reads the value back), the emailed and TOTP codes (the
+right code as control), whether sign-in or sign-up tells accounts apart (status and page shape), the open redirect
+(3xx and a target off the app), and every check that confirms an account through `passwords::account_works`.
+
+**Decided on status alone while a control of the same kind is in hand** (each is a batch of this sweep, in the order
+a real app is likely to trip it):
+
+1. `forgery.rs` `forgery_check` and `simple_request_check`: a create without the token, or as a simple request, read
+   as `accepted` (any 2xx or 3xx); Flask-WTF shows the form again with 200, or redirects back to it. The control's
+   answer is in hand for `creates`; reading the marker back settles both.
+2. `uploads.rs` the oversized file and the content mismatch, and `refusal_stands`; `archives.rs` the archive check:
+   a refusal flashed on a 200 page where the ordinary file was redirected.
+3. `burst.rs` `burst_one`: a limit shown as a 200 flash or a redirect back to the form; counting the markers on the
+   list page settles it.
+4. `signin.rs` `brute_force_check` through `limit.rs` `past_the_limit`: status codes only, so a lockout shown on a 200
+   page with other words is missed. Belongs with sweep 3 (0561), which tries the right password after the guesses.
+5. `admin.rs` `admin_checks` and `role_field_check`, `email_role.rs`: the ordinary user's 200 beside the admin's 200,
+   class only; a 403 template served with 200 is a finding. Compare the page's shape with the admin's.
+6. `admin.rs` `owned_checks`, the delete: a 404 after B's change is read as deleted; A reading the record again just
+   before B's delete settles it.
+7. `signin.rs` `logout_check` and `sessions.rs` the WebSocket after sign-out: a sign-out refused on a 200 page passes
+   as accepted.
+8. `mod.rs` `run_checks`, a private page opened without signing in: a sign-in form served with 200 at the private
+   address. A's own read of the page is the control; it is sent after and never compared.
+9. `sessions.rs` `invented_session_check`: pages already served anonymously are asked again with an invented cookie.
+10. `uploads.rs` `download_name_checks`: a 2xx or 3xx that is not the file is read as the download.
+11. `sessions.rs` `identity_header_check`, idle and lifetime timeouts: class only beside A's read.
+12. `admin.rs` `admin_action_checks` with no `check` page: no control is sent at all.
+13. `sql.rs`: two conditions compared with each other, with no unmodified request as a baseline.
+
+**First batch, built:** the shared comparison (`signed_in/control.rs`: the same status class, the same redirect
+target, and for two successes JSON with the same names or no form where the control had none) and the browser-
+validation probe (0523).

@@ -21,3 +21,9 @@ compared. Fake-app case: a sign-up that re-renders the form with 200 on a bad va
 (Check which record governs `signed_in/uploads.rs` before the build.)
 
 **Built by the sweep:** this is the first case of backlog 0560 (ADR-119); it closes with it.
+
+**Built 15 October 2026, by honesty, in the first batch of sweep 2 (0560, ADR-119); left open for the board, which
+queues it.** The probe reads the broken sign-up's answer beside the ordinary one's (`signed_in/control.rs`), and when
+a private page is listed it signs in as the account the broken value would have made, so a form shown again with 200,
+or sent back alike, is refused when no account was made. With no private page, an answer unlike the control's is not
+assessed and says what was compared.
