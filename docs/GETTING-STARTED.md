@@ -246,6 +246,8 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
 >    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
 >    `by = "ai-tool"` and my words in `how`.
+>
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint 21439403)*
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
