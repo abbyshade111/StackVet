@@ -132,6 +132,7 @@ fn without_a_python_package_list_read_whether_the_app_uses_django_is_not_known()
         &[Unread {
             manifest: "pyproject.toml".to_owned(),
             why: "it could not be read".to_owned(),
+            ecosystem: "Python".to_owned(),
         }],
     );
     assert_eq!(outranked(&findings, DJANGO_FORM), None);

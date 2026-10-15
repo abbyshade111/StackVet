@@ -888,6 +888,8 @@ fn the_reports_name_the_bill_of_materials_beside_them_and_the_page_links_it() {
         json: "{}".into(),
         components: 12,
         complete: false,
+        unread_lists: 1,
+        at_asked_versions: 0,
     });
     let html = sv_report::html::page(&report);
     assert!(
@@ -911,6 +913,8 @@ fn the_reports_name_the_bill_of_materials_beside_them_and_the_page_links_it() {
         json: "{}".into(),
         components: 0,
         complete: true,
+        unread_lists: 0,
+        at_asked_versions: 0,
     });
     let html = sv_report::html::page(&report);
     assert!(
