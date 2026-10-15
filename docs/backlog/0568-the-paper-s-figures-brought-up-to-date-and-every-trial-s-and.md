@@ -98,3 +98,5 @@ as they were.
 Still to do: the hand-drawn figures per period. Each is drawn by hand from a table at the 4 October cut-off; their
 tables are split, and redrawing each figure from them is what remains, so the item stays claimed. The paper's prose is
 the owner's to write against these.
+
+**The owner's answer, 15 October 2026 (the second question, asked through the board's waiting line):** (b). Extend the tables the hand-drawn figures are drawn from (faults, corrections, coordination, tests by day) to the day of the build, compiling the records since 4 October the same way the periods were read, then redraw each of the 19 figures with a panel per period (version 1, version 2, StackVet) and the combined view where the figure has one. The StackVet period is the one the paper's conclusions rest on.

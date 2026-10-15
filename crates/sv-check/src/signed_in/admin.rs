@@ -805,6 +805,15 @@ pub(super) fn owned_checks(
              `owned` record under `[stack.run.users]`."
                 .to_owned(),
         ));
+        // The two checks run on the record `owned` makes, and on no other (backlog 0569): what a record read back
+        // hands over (`record_fields_check`) and whether saved text comes back unencoded (`stored_markup_check`).
+        out.not_assessed.push((
+            "V15.3.1, V8.2.3, V1.2.1".to_owned(),
+            "Which fields a record read back hands over, and whether text saved in a record is written back into a \
+             page unencoded: both are tried on the `owned` record, and stackvet.toml lists none under \
+             `[stack.run.users]`."
+                .to_owned(),
+        ));
         return None;
     };
     let marker = "sv-probe-private-4c7e";

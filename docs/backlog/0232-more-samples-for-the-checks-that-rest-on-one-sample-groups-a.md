@@ -83,6 +83,15 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0373-the-authorization-failure-log-check-on-every-listed-page-12-october.md`): a marker on every listed
    private page, whole only when two or more were refused and each refusal was found with its status.
+   **Scope of the next claim (15 October 2026, by honesty):** the sign-in log check (`probe.authentication-logged`,
+   V16.3.1, which asks that *all* authentication operations be logged, successful and unsuccessful). Each way of
+   signing in stackvet.toml names (the password; `email-code`; `totp`) is made to succeed once and fail once, each
+   between two marked requests, and looked for in the app's output. The password's failure is tried for a real
+   account (a wrong password for the account the check made) as well as for a name no account has. The credit is
+   whole only when every one of these was found and the manifest names no other authentication operation the check
+   did not try (a password change, a reset, or a change to the account's sign-in details), which mirrors part C;
+   otherwise it is in part and names what was not tried. The line's metadata, format, and timestamp are not in this
+   claim. **Record, `Status: proposed`:** a Later entry on ADR-053, accepted in the pull request that builds it.
    **Built, first batch, 15 October 2026 (honesty)** (ADR-053, "Later, 15 October 2026: the sign-ins in the log";
    `docs/design/0390-the-sign-ins-in-the-log-whole-when-every-one-is-found-15.md`): the password-guessing check's
    first wrong password, at an account that exists, is bracketed and read, and the credit is whole when all three

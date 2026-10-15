@@ -1,6 +1,6 @@
 # Without an owned record, V8.2.3, V15.3.1, and V1.2.1 are never listed as not assessed
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -17,3 +17,10 @@ name none of V8.2.3, V15.3.1, or V1.2.1 (V15.3.3 is named, for another reason).
 **Fix.** Name those requirements in the `owned` gap, or give each skipped check its own line, after reading each
 requirement's text to confirm the check speaks to it; then add their ids to the `owned` row of
 `crates/sv-check/src/signed_in/unset_keys.rs`, whose test will then hold them.
+
+**Done, 15 October 2026** (documentation session). With no `owned` under `[stack.run.users]`, the run now records a
+second not-assessed line, for V15.3.1, V8.2.3, and V1.2.1: the record-fields check and the stored-markup check run
+only on the record `owned` makes (their only callers in `crates/sv-check/src/signed_in/admin.rs`). Each requirement's
+text was read first: V15.3.1 and V8.2.3 are the fields a record hands back, V1.2.1 output encoding. The three ids are
+added to the `owned` row of `crates/sv-check/src/signed_in/unset_keys.rs`, so `sv preflight` names them too, and its
+test holds them to the run; with the line's ids changed, that test names V15.3.1 and goes red.
