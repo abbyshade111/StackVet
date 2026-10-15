@@ -90,6 +90,10 @@ pub struct Item {
     /// evidence, as `routes` is; never in `report.json`.
     #[serde(skip)]
     pub pathways: Option<crate::sign_in_paths::Pathways>,
+    /// The fields the app's schema shows whose names look like personal data, for the data-classification questions
+    /// (backlog 0497). Where to look, never evidence; never in `report.json`.
+    #[serde(skip)]
+    pub personal_fields: Option<crate::personal_fields::PersonalFields>,
 }
 
 /// What the standard's own words are called where a question shows them under its plain words.
@@ -204,6 +208,7 @@ pub fn checklist(
                 why_not_checked: None,
                 routes: None,
                 pathways: None,
+                personal_fields: None,
             });
         }
     }
@@ -222,6 +227,7 @@ pub fn checklist(
                 why_not_checked: question.why_not_checked.clone(),
                 routes: None,
                 pathways: None,
+                personal_fields: None,
             });
         }
     }
@@ -240,6 +246,7 @@ pub fn checklist(
                 why_not_checked: None,
                 routes: None,
                 pathways: None,
+                personal_fields: None,
             });
         }
     }

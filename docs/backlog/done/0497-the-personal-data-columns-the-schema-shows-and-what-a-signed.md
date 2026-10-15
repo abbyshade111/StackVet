@@ -1,6 +1,6 @@
 # The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -23,3 +23,13 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   results of the checks that are its measurable parts (V14.2.1 password in URL, V14.3.2 private page cached, V16.2.5
   sensitive data in logs, V14.3.1 cleared at sign-out), as the threat model groups requirements, so the owner reads one
   place. No new check. Tier: *checked by hand*.
+
+**Done, 15 October 2026.** V14.1.1 and V14.1.2 now carry the columns and fields the app's schema shows whose names look
+like personal data, by table (`crates/sv-check/src/personal_fields.rs`): from SQL `CREATE TABLE` in a `.sql` file or a
+string, SQLAlchemy and Django models, Prisma models, and Mongoose and Sequelize fields, test code left out, at most 30.
+And when the signed-in run's first account gets a JWT, the run keeps the names of the fields in its readable part
+(never the values) and where it travels, and the questions show them with the personal-looking ones marked. Where to
+look, never evidence; nothing is credited, and none of it is in `report.json` (ADR-022, Later). Not verified: the token
+sentence reaching a question through a real run, which needs Docker; its two halves are tested, the run against the
+in-process test app and the sentence on its own. None of the example apps declares a schema, so no question there shows
+a list. Not built: V14.2.4's grouping, and a base64 session cookie read the same way; filed as backlog 0610.

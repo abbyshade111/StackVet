@@ -197,6 +197,15 @@ pub(super) fn app_token_checks(
     let Some(jwt) = Jwt::find(&signed_in.session) else {
         return;
     };
+    // What the token carries where anyone holding it can read it, for the data-classification questions (backlog
+    // 0497): the field names, never the values.
+    out.token_fields = Some(crate::personal_fields::TokenFields {
+        carried: match &jwt.carried {
+            Carried::Bearer => "the `Authorization` header".to_owned(),
+            Carried::Cookie(name) => format!("the cookie `{name}`"),
+        },
+        fields: jwt.payload.keys().cloned().collect(),
+    });
     placeholder_secret_check(&jwt, out);
     let Some(confirm) = confirm else {
         out.not_assessed.push((
@@ -620,6 +629,9 @@ fn duration_text(seconds: u64) -> String {
         (m, s) => format!("{} {}", plural(m, "minute"), plural(s, "second")),
     }
 }
+
+#[cfg(test)]
+mod fields_tests;
 
 #[cfg(test)]
 mod tests {

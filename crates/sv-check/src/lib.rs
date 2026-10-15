@@ -48,6 +48,7 @@ pub mod mcp_server;
 pub mod model_files;
 pub mod notes;
 pub mod oidc;
+pub mod personal_fields;
 pub mod probes;
 pub mod production;
 pub mod prompts;

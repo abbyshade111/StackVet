@@ -250,6 +250,32 @@ pub fn pathway_questions(listing: &sv_scan::files::Listing, report: &mut sv_repo
     }
 }
 
+/// The questions the fields that look personal are shown beside (backlog 0497): the data identified and classified,
+/// and each level's protection written down.
+pub const CLASSIFICATION_QUESTIONS: &[&str] = &["V14.1.1", "V14.1.2"];
+
+/// Gives each data-classification question the fields the app's schema shows whose names look like personal data, when
+/// any was found (backlog 0497). Where to look, never evidence: nothing else reads the list.
+pub fn classification_questions(
+    listing: &sv_scan::files::Listing,
+    token: Option<sv_check::personal_fields::TokenFields>,
+    report: &mut sv_report::Report,
+) {
+    let mut fields = sv_check::personal_fields::read(listing);
+    fields.token = token.filter(|t| !t.fields.is_empty());
+    if fields.fields.is_empty() && fields.token.is_none() {
+        return;
+    }
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+        .filter(|item| CLASSIFICATION_QUESTIONS.contains(&item.id.as_str()))
+    {
+        item.personal_fields = Some(fields.clone());
+    }
+}
+
 /// Whether `file` names a place inside the app's folder: relative, and never climbing out of it.
 fn inside(file: &str) -> bool {
     let path = Path::new(file);
