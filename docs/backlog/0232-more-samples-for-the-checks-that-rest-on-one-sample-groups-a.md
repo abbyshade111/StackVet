@@ -51,6 +51,11 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 14 October 2026** (ADR-053, "Later, 14 October 2026: the simple-request check on every JSON create
    request"; `docs/design/0386-the-simple-request-check-on-every-json-create-request-14.md`).
    **Part status:** partly done: the null-Origin check, the flow, and the WebSocket
+   **Scope of the next claim (14 October 2026, by honesty; the owner's word the same day):** several flows and
+   WebSocket paths in stackvet.toml, `flows`, `private-websockets`, and `websockets` beside the single keys, each tried
+   as the one is now, and each credit whole only when two or more were named, judged, and held.
+   **Record, `Status: proposed`: ADR-118.** The null-Origin check is left out: it credits nothing (it reports an app
+   refusing its own forms, which no requirement asks), so it has no sample to add.
 4. **D. Each upload route, more than one file.** Every upload route the manifest names, with a small set of files
    per check rather than one.
    **Scope of this claim (12 October 2026):** a small set of files for the two served-file checks, on the one
