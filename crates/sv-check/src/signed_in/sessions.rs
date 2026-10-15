@@ -570,6 +570,11 @@ pub(super) fn websocket_session_checks(
         );
         return;
     };
+    let set_at_login: Vec<String> = signed_in
+        .set_at_login
+        .iter()
+        .map(|c| c.name.clone())
+        .collect();
     let session = signed_in.session;
     let upgraded = |http: &mut dyn Http, label: &str, path: &str, session: &Session| {
         http.send(&ws_handshake(&format!("websocket-{label}"), path, session))
@@ -607,14 +612,24 @@ pub(super) fn websocket_session_checks(
             continue;
         }
         let anonymous = upgraded(http, &format!("no-session{sfx}"), path, &Session::default());
-        let invented = session.cookies.first().map(|(name, real)| {
-            let value: String = "sv0probe0invented0session0value0"
-                .chars()
-                .cycle()
-                .take(real.chars().count().max(16))
-                .collect();
+        // The browser's own cookies, with each one set at sign-in given a made-up value of the same length, as
+        // `invented_session_check` makes it (backlog 0561, ADR-119): the first cookie alone may be one set
+        // before sign-in, and a session of that alone is no session at all. With none set at sign-in, every
+        // cookie is made up. No token: a session carried by one is not this question.
+        let invented = (!session.cookies.is_empty()).then(|| {
             let mut made_up = Session::default();
-            made_up.cookies.push((name.clone(), value));
+            for (name, real) in &session.cookies {
+                let value = if set_at_login.is_empty() || set_at_login.contains(name) {
+                    "sv0probe0invented0session0value0"
+                        .chars()
+                        .cycle()
+                        .take(real.chars().count().max(16))
+                        .collect()
+                } else {
+                    real.clone()
+                };
+                made_up.cookies.push((name.clone(), value));
+            }
             upgraded(http, &format!("invented-session{sfx}"), path, &made_up)
         });
         out.steps.push(format!(
@@ -3482,6 +3497,8 @@ mod invented_beside_tests;
 mod invented_pages_tests;
 #[cfg(test)]
 mod timeout_page_tests;
+#[cfg(test)]
+mod ws_invented_tests;
 #[cfg(test)]
 mod ws_sign_out_tests;
 
