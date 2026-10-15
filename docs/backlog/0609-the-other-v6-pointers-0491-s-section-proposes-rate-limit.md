@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Filed by documentation finishing backlog 0491, 15 October 2026. Severity: low (coverage, not a fault).
 
 0491's section of the deep review (backlog 0417) proposes more than its title names; 0491 built the sign-in pathways

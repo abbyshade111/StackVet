@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Filed by wording, 15 October 2026, building backlog 0565, whose last paragraph this is: "Claims found in the
 transcript ('rate limiting added', 'XSS fixed') land in the same section, worded as 0538 asks (what the code shows,
 never a word to make go away)." 0565 was built on the hook record (ADR-122, the owner's choice of 15 October) for the

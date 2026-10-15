@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Filed by documentation building backlog 0494, 15 October 2026. Severity: low (coverage, not a fault).
 
 0494's section of the deep review (backlog 0417) proposes two more pieces its build left out:

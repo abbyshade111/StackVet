@@ -7,7 +7,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0536 (since 2026-10-15) — next: 0535, 0492, 0488, 0498, 0489
-- documentation — arm: full — holds: nothing
 
 ## Queue
 
@@ -23,8 +22,14 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 10. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
 11. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
 12. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-13. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
-14. 0232 More samples for the checks that rest on one sample (groups A to H) — hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue
+13. 0232 More samples for the checks that rest on one sample (groups A to H) — hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue
+14. 0604 Ticking the checklist before going live in sv review: a hand check for a requirement sv accepts one for, otherwise a sealed note — ready
+15. 0606 Who gave a capability answer in stackvet.toml cannot be recorded, and no person can confirm one in sv review — ready
+16. 0607 The hook record's claims about security, read against the requirements each speaks to (from 0565) — ready
+17. 0608 The route table beside V8.1.1 reads Python decorators and Express calls only, and V8.1.2's field-level lists are not shown — ready
+18. 0609 The other V6 pointers 0491's section proposes: rate-limit settings, the password validator, password expiry, a second-factor library, and backup codes — ready
+19. 0610 V14.2.4's measurable parts grouped under it, and a base64 session cookie read for personal fields as a JWT's payload is — ready
+20. 0611 The rest of 0494's section: the crypto libraries with a hand-rolled-crypto finding (V11.2.1), and the hard-coded algorithm names counted for crypto agility (V11.2.2) — ready
 
 ## Log
 
@@ -744,3 +749,12 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 19:13 — assigned 0498 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order
 - 2026-10-15 19:14 — assigned 0489 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order
 - 2026-10-15 19:14 — dropped 0528 from the queue
+- 2026-10-15 19:20 — dropped 0494 from the queue
+- 2026-10-15 19:20 — session documentation removed
+- 2026-10-15 19:20 — queued 0604, marked
+- 2026-10-15 19:20 — queued 0606, marked
+- 2026-10-15 19:20 — queued 0607, marked
+- 2026-10-15 19:20 — queued 0608, marked
+- 2026-10-15 19:20 — queued 0609, marked
+- 2026-10-15 19:20 — queued 0610, marked
+- 2026-10-15 19:20 — queued 0611, marked

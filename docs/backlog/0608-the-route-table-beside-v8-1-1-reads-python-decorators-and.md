@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Filed by documentation building backlog 0493, 15 October 2026. Severity: low (coverage of a pointer, not a fault).
 
 **What 0493 built.** `crates/sv-check/src/route_guards.rs` lists the routes declared with Python decorators (Flask,
