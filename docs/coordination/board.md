@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0495, 0571, 0572, 0232
+- honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
 - wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0591, 0578, 0565, 0566, 0588, 0580
 - documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575, 0585
 
@@ -52,6 +52,11 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 38. 0595 A virtual environment inside the app folder makes three check families "partly" without saying that the cause is a venv — ready
 39. 0596 "Not a git repository" is said of a repository with no commits yet — ready
 40. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
+41. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
+42. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
+43. 0601 `ast.open-redirect` fires on `RedirectResponse(url="/")`: the literal-argument exemption does not see a keyword argument — ready
+44. 0602 Prompt 5's preview step installs packages and writes into the app's real database without a yes, and never opens the sign-in page — ready
+45. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
 
 ## Log
 
@@ -646,3 +651,11 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 10:23 — queued 0595, marked
 - 2026-10-15 10:23 — queued 0596, marked
 - 2026-10-15 10:23 — queued 0597, marked
+- 2026-10-15 11:23 — queued 0598, marked
+- 2026-10-15 11:23 — queued 0599, marked
+- 2026-10-15 11:23 — queued 0600, marked
+- 2026-10-15 11:23 — queued 0601, marked
+- 2026-10-15 11:23 — queued 0602, marked
+- 2026-10-15 11:23 — withdrew 0572 from honesty (full), on hold: honesty's line is full; back after the empty-body answer (0598), which outranks it
+- 2026-10-15 11:23 — released 0572
+- 2026-10-15 11:23 — assigned 0598 to honesty (full) into the lane after 0579: from the clean Cursor run: pages answering 200 with an empty body counted as answered; the run's reading of an answer, ADR-021 Later; honesty's probe files

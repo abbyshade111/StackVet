@@ -1,6 +1,6 @@
 # The wrong-password check with no sign-up credits a push-back without trying the right password
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** open
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
