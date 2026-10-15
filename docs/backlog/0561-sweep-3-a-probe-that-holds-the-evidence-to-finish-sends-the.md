@@ -77,3 +77,7 @@ first and the page is read for a value anywhere on it; the test caught turn 2.
 **Sixth batch, built (inventory item 4):** each private page after the first is asked for with A's session before
 the private-page credit counts it; a page refused to A as well is left out of the count, said with its status as not
 assessed, and the credit is in part.
+
+**Seventh batch, built (inventory item 5):** the WebSocket's made-up session keeps the browser's cookies and gives
+those set at sign-in made-up values, so a cookie set before sign-in no longer stands for the session. The same one
+request as before; what it carries changed.
