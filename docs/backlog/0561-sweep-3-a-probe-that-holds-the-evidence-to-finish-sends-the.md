@@ -32,3 +32,31 @@ only slows attempts is not asked. 0524 is built by this, and left for the board 
 before signing in; the same anti-forgery token both times is the finding `probe.csrf-token-shared` (V3.5.1, medium,
 only ever a finding). The item's third request, once more within one session, is not sent: it would only matter to a
 credit, and different tokens credit nothing. 0537 is built by this, and left for the board to close.
+
+**The inventory (15 October 2026, honesty):** the probes under `signed_in/` that stop one request short, from a
+read of every file. Items 1, 2, and 7 are checked against the code and by a test that fails without their fix; the
+rest are from the read alone, and each is checked again when it is built:
+
+1. `admin.rs` `owned_checks` (V8.2.2): the second user never shown signed in. One request. Built in the third batch.
+2. `codes.rs` `email_code_guessing` (V6.6.3): the right code already sent after the guesses, and its answer ignored
+   when the wrong ones were refused. No request. Built in the third batch.
+3. `passwords.rs` `change_password_checks` (V6.2.3) and `change_email_check` (V7.5.1), `account_changes.rs`
+   `one_change` (V7.5.1): the change never sent with the password field left out, only with a wrong one; an app that
+   checks the password only when the field is there takes it. One request each.
+4. `mod.rs` `run_checks` (V8.2.1): only the first private page is opened as A; the others are only known refused to a
+   stranger, so a listed path that refuses everybody counts as private. One request per page.
+5. `sessions.rs` `websocket_session_checks` (V4.4.3): the made-up session is built from the first cookie, which may
+   not be the session cookie. One handshake.
+6. `forgery.rs` `forgery_check` and `simple_request_check` (V3.5.1, V3.5.2): `Origin: null` without a token is never
+   sent; an allow-list that takes `null` lets a sandboxed frame through. One request.
+7. `flows.rs` `try_flow` (V2.3.1): the second user's fresh sign-ins never shown. One request each. Built in the
+   third batch.
+8. `uploads.rs` `download_name_checks` (V5.4.2): a name with a quote in it is not tried. Two requests (upload, fetch).
+
+More than two requests, to be filed as items of their own: the wrong-password check with no `signup` (the right
+password needs A, about three); the burst limit per session or per user (about three); the once check's solo try; a
+token from another session sent with A's cookies (two or three); an SVG named `.gif` and fetched back (two or more).
+
+**Third batch, built (inventory items 1, 2, and 7):** the second user shown signed in before the other-users'-data and
+skipped-step checks read refusals as theirs; and the wrong-code check's right code, already sent, read: taken after a
+limit that refused the wrong ones, it is the finding "After the limit, the right emailed code still signs in".

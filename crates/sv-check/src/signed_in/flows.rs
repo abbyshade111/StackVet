@@ -238,9 +238,18 @@ fn try_flow(
     let mut skipped = Vec::new();
     for (i, (how, these)) in tries.iter().enumerate() {
         let who = format!("{label}-b{i}");
-        let Some(b) = sign_in(http, users, &who, &accounts.b, &mut out.steps) else {
+        // Shown signed in before a refusal is read as about the skip (backlog 0561, ADR-119): a sign-in that
+        // quietly failed leaves a session of nobody, and every step is refused to nobody.
+        let b = sign_in(http, users, &who, &accounts.b, &mut out.steps).filter(|b| {
+            users.private.first().is_none_or(|confirm| {
+                ok(&http.send(&get(&format!("private-{who}"), confirm, &b.session)))
+            })
+        });
+        let Some(b) = b else {
             return Tried::NotJudged(
-                "B could not sign in again to try skipping a step in a fresh session.".to_owned(),
+                "B could not be shown signed in again (the fresh session did not open the first \
+                 private page stackvet.toml lists), so skipping a step could not be tried."
+                    .to_owned(),
             );
         };
         let mut session = b.session.clone();

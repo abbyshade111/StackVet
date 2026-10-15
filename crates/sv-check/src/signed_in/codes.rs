@@ -436,6 +436,34 @@ pub(super) fn email_code_guessing(
         ));
         return;
     }
+    // A limit that refuses the wrong codes and still takes the right one stops nobody: the guesser keeps going at
+    // full speed, and the right guess gets in (backlog 0561, ADR-119, as for passwords). A limit that only slows
+    // the guesses down is meant to take the right code, and is read below as before.
+    if right_still_works && reading.answered_differently() {
+        out.steps.push(format!(
+            "sent {attempts} wrong emailed codes in a row, then the right one; the app pushed back \
+             ({}), and then took the right code",
+            reading.last
+        ));
+        out.findings.push(finding_on(
+            vec![
+                "email-code-use-after-guesses".to_owned(),
+                "email-code-private-after-guesses".to_owned(),
+            ],
+            &EMAIL_CODE_GUESSING,
+            "After the limit, the right emailed code still signs in",
+            Severity::High,
+            format!(
+                "stackvet.toml says the app should allow {allowed} wrong codes in a row. Sent \
+                 {attempts} wrong codes through {}, the app pushed back on the last ({}, where the \
+                 first got {first_status}); but the right code, sent straight after, still signed \
+                 in. The limit refuses only wrong codes, so guessing goes on at full speed and the \
+                 right guess gets in.",
+                flow.entry.use_code.path, reading.last
+            ),
+        ));
+        return;
+    }
     let how = if !right_still_works {
         "then refused the right code".to_owned()
     } else if reading.refused {
@@ -1658,3 +1686,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod right_after_limit_tests;
