@@ -29,7 +29,7 @@ AI coding tool reading the report, can fix the manifest or the app.
   (`crates/sv-check/src/signed_in/refused.rs`). When the first private page then does not open, which is also how a
   sign-in answered 200 with the form shown again is caught, the "not assessed" reason ends "To tell which: the sign-in
   answered 400; it sent the fields …, and the page said: “…”". Field names only, never values; a page that repeats the test password is not quoted at all (only a yes or no is
-  taken from the password, so no text can carry it; CodeQL flagged the first build, which masked it in place), and characters that move or hide text are dropped; the page's words are cut to 300
+  taken from the password, so no text can carry it; the first build masked it in place; CodeQL's alerts on it were the tests' written-in passwords, now made at run time), and characters that move or hide text are dropped; the page's words are cut to 300
   characters.
 
 Not done: the visible-text pick is the page's words in order, not `.error` or `.alert` blocks by name; a page whose
