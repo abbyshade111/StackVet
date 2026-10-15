@@ -100,6 +100,14 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built, second batch, 15 October 2026 (honesty)** (ADR-053, "Later, 15 October 2026: the code sign-ins in the
    log"; `docs/design/0391-the-code-sign-ins-in-the-log-15-october-2026.md`): a code taken and one refused, for the
    emailed code and for two-factor, each bracketed and read. This claim is built.
+   **Scope of the next claim (15 October 2026, by honesty):** the line's metadata (V16.2.1), its timestamp's zone
+   (V16.2.2), and its format (V16.2.4), read from every security event's line the log checks found, not the refused
+   sign-in's alone: the refused sign-in for a name with no account, the wrong password for an account that exists,
+   the accepted sign-in, each code taken and refused, and each refused request. Each credit is whole only when two or
+   more lines were read and every one passes (V16.2.1 also needs each line to show who, so a line found only by when
+   it was written keeps it in part); one line, or any line that fails, keeps it in part or not assessed as now, and a
+   timestamp without its zone on any line is the finding, as now. Recorded as a Later entry on ADR-053 in the pull
+   request that builds it.
    **Part status:** partly done: the line's metadata, format, and timestamp
 6. **F. Each browser page and form.** The browser-driven checks run on each page and form the owner lists.
    **Scope of this claim (12 October 2026):** the typed-text check (`probe.text-rendered-as-markup`, V3.2.2) on every
