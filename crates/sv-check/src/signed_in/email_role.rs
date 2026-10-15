@@ -12,7 +12,7 @@ pub(super) fn email_role_check(
     http: &mut dyn Http,
     users: &UsersSection,
     accounts: &Accounts,
-    confirm: Option<&str>,
+    (confirm, admins_pages): (Option<&str>, &[Option<ProbeResponse>]),
     out: &mut Outcome,
 ) {
     const IDS: &str = "V8.3.1, V15.3.3";
@@ -135,16 +135,36 @@ pub(super) fn email_role_check(
             sessions.push(s.session);
         }
     }
-    let opened: Vec<String> = refused
-        .iter()
-        .enumerate()
-        .filter(|(i, page)| {
-            sessions.iter().enumerate().any(|(j, s)| {
-                ok(&http.send(&get(&format!("email-role-admin-{i}-after-{j}"), page, s)))
-            })
-        })
-        .map(|(_, page)| (*page).clone())
-        .collect();
+    let mut answered = Vec::new();
+    for (i, page) in refused.iter().enumerate() {
+        let first_shown = sessions.iter().enumerate().find_map(|(j, s)| {
+            http.send(&get(&format!("email-role-admin-{i}-after-{j}"), page, s))
+                .filter(|r| (200..300).contains(&r.status))
+        });
+        if let Some(answer) = first_shown {
+            // Its place among the admin pages, for the admin's own read of it.
+            let at = users.admin.iter().position(|p| p == *page).unwrap_or(0);
+            answered.push((at, answer));
+        }
+    }
+    let (shown, unlike) = super::admin::beside_admins_pages(admins_pages, answered);
+    let opened: Vec<String> = shown.iter().map(|i| users.admin[*i].clone()).collect();
+    if !unlike.is_empty() {
+        out.not_assessed.push((
+            IDS.to_owned(),
+            format!(
+                "A role written into the email change: after it, the account was answered 200 at {}, \
+                 with a page that shows little of what the admin is served there. That may be the app \
+                 holding the account or refusing on a page of its own, so it is neither a finding nor \
+                 a refusal.",
+                unlike
+                    .iter()
+                    .map(|i| users.admin[*i].as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        ));
+    }
     if !opened.is_empty() {
         out.findings.push(finding_on(
             vec!["email-role-old".to_owned(), "email-role-new".to_owned(), "email-role-change".to_owned()],
@@ -168,7 +188,7 @@ pub(super) fn email_role_check(
                 opened.join(", ")
             ),
         ));
-    } else {
+    } else if unlike.is_empty() {
         // Only ever a finding: five guessed names refused say nothing about a sixth, so the check is
         // recorded as having run and credits no requirement, as at sign-up.
         out.verified.push(crate::Verified::new(

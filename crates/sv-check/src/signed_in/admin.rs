@@ -169,13 +169,13 @@ pub(super) fn admin_checks(
     accounts: &Accounts,
     a: &SignedIn,
     out: &mut Outcome,
-) {
+) -> Vec<Option<ProbeResponse>> {
     if users.admin.is_empty() {
         out.not_assessed.push((
             "V8.2.1".to_owned(),
             "Admin pages: stackvet.toml lists none under `[stack.run.users]` admin.".to_owned(),
         ));
-        return;
+        return Vec::new();
     }
     let AdminSignIn {
         signed: admin,
@@ -187,6 +187,8 @@ pub(super) fn admin_checks(
     // Pages the ordinary user got a 200 for that shows little of what the admin got there, and why.
     let mut unlike = Vec::new();
     let mut ordinary_ids: Vec<String> = Vec::new();
+    // The admin's own page at each address, which the role checks later read their answers beside.
+    let mut admins_pages = Vec::new();
     for (i, path) in users.admin.iter().enumerate() {
         let as_a = http.send(&get(&format!("admin-a-{i}"), path, &a.session));
         let as_admin = admin
@@ -199,6 +201,7 @@ pub(super) fn admin_checks(
             .as_ref()
             .and_then(Option::as_ref)
             .filter(|_| admin_opens);
+        admins_pages.push(admin_page.cloned());
         let shows_admins = match (&as_a, admin_page) {
             (Some(page), Some(reference)) => super::control::shows_page(reference, page),
             _ => true,
@@ -283,6 +286,7 @@ pub(super) fn admin_checks(
         // Each admin page listed is asked; one judged is one sample (ADR-053, Later).
         .in_part_if(refused_and_confirmed == 1));
     }
+    admins_pages
 }
 
 /// Fields a sign-up request might carry to make its account an admin. Values are sent as text,
@@ -309,6 +313,24 @@ fn signed_in_session(
     ok(&http.send(&get(&format!("private-{who}"), confirm, &signed.session))).then_some(signed)
 }
 
+/// The admin pages (by their place in `users.admin`) answered with a 2xx to an account that sent role fields, each
+/// read beside the admin's own page there, as the admin-page check read it (backlog 0560, ADR-119): the pages that
+/// show it, and the pages that show little of it (an "awaits review" page served with 200 is a 2xx too). Without
+/// the admin's page, a 2xx counts as the page shown, as before. Nothing is sent, so no sign-in is added to a run.
+pub(super) fn beside_admins_pages(
+    admins_pages: &[Option<ProbeResponse>],
+    answered: Vec<(usize, ProbeResponse)>,
+) -> (Vec<usize>, Vec<usize>) {
+    let (mut shown, mut unlike) = (Vec::new(), Vec::new());
+    for (i, answer) in answered {
+        match admins_pages.get(i).and_then(Option::as_ref) {
+            Some(reference) if !super::control::shows_page(reference, &answer) => unlike.push(i),
+            _ => shown.push(i),
+        }
+    }
+    (shown, unlike)
+}
+
 /// A sign-up with a role written into it (V8.3.1, V15.3.3).
 ///
 /// Two accounts are made through the app's own sign-up: one plain, and one whose request also
@@ -320,7 +342,7 @@ pub(super) fn role_field_check(
     http: &mut dyn Http,
     users: &UsersSection,
     accounts: &Accounts,
-    confirm: Option<&str>,
+    (confirm, admins_pages): (Option<&str>, &[Option<ProbeResponse>]),
     out: &mut Outcome,
 ) {
     const IDS: &str = "V8.3.1, V15.3.3";
@@ -388,8 +410,7 @@ pub(super) fn role_field_check(
         return;
     };
 
-    let mut opened = Vec::new();
-    let mut opened_ids: Vec<String> = Vec::new();
+    let mut answered = Vec::new();
     let mut compared = 0usize;
     for (i, page) in users.admin.iter().enumerate() {
         let as_plain = http.send(&get(
@@ -408,10 +429,31 @@ pub(super) fn role_field_check(
             page,
             &claimed_in.session,
         ));
-        if ok(&as_claimed) {
-            opened.push(page.clone());
-            opened_ids.push(format!("role-admin-{i}-claimed"));
+        if let Some(answer) = as_claimed.filter(|r| (200..300).contains(&r.status)) {
+            answered.push((i, answer));
         }
+    }
+    let (shown, unlike) = beside_admins_pages(admins_pages, answered);
+    let opened: Vec<String> = shown.iter().map(|i| users.admin[*i].clone()).collect();
+    let opened_ids: Vec<String> = shown
+        .iter()
+        .map(|i| format!("role-admin-{i}-claimed"))
+        .collect();
+    if !unlike.is_empty() {
+        out.not_assessed.push((
+            IDS.to_owned(),
+            format!(
+                "A role written into the sign-up form: the account signed up with the role fields \
+                 was answered 200 at {}, with a page that shows little of what the admin is served \
+                 there. That may be the app holding the account or refusing on a page of its own, \
+                 so it is neither a finding nor a refusal.",
+                unlike
+                    .iter()
+                    .map(|i| users.admin[*i].as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        ));
     }
     if !opened.is_empty() {
         out.findings.push(finding_on(
@@ -430,7 +472,7 @@ pub(super) fn role_field_check(
                 opened.join(", ")
             ),
         ));
-    } else if compared > 0 {
+    } else if compared > 0 && unlike.is_empty() {
         // Only ever a finding: five guessed names refused say nothing about a sixth, so the check is
         // recorded as having run and credits no requirement.
         out.verified.push(crate::Verified::new(
@@ -2123,6 +2165,8 @@ mod tests {
 
 #[cfg(test)]
 mod beside_admin_tests;
+#[cfg(test)]
+mod role_beside_tests;
 
 #[cfg(test)]
 mod delete_before_tests;
