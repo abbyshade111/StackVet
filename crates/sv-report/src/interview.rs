@@ -188,6 +188,43 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
         out.push_str(&format!("   Where to look: {}\n", one_line(look)));
     }
     out.push_str(&rests_on(item, fence));
+    out.push_str(&routes(item, fence));
+    out
+}
+
+/// The app's routes and what is written on each (backlog 0493), each piece of the app's text through `fence`, with
+/// the sentence that says they are where to look and not evidence.
+fn routes(item: &Item, fence: &crate::fence::Fence) -> String {
+    use sv_check::route_guards::{NONE_FOUND, ROUTES_SAY};
+    let Some(table) = &item.routes else {
+        return String::new();
+    };
+    let mut out = format!("   {ROUTES_SAY}\n");
+    for r in &table.routes {
+        let guards = if r.guards.is_empty() {
+            NONE_FOUND.to_owned()
+        } else {
+            r.guards
+                .iter()
+                .map(|g| fence.wrap(g))
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+        out.push_str(&format!(
+            "     {} {} ({}, line {}): {guards}\n",
+            r.method,
+            fence.wrap(&r.path),
+            fence.wrap(&r.file),
+            r.line
+        ));
+    }
+    if table.more > 0 {
+        out.push_str(&format!(
+            "     And {} more {}, not shown.\n",
+            table.more,
+            if table.more == 1 { "route" } else { "routes" }
+        ));
+    }
     out
 }
 

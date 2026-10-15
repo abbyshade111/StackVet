@@ -75,6 +75,10 @@ pub struct Item {
     /// look, never evidence: it changes nothing about the requirement's state. Absent when no locator
     /// speaks to the question, or one does and found nothing.
     pub rests_on: Option<RestsOn>,
+    /// The app's routes and what is written on each, for the authorization questions (backlog 0493). Where to look,
+    /// never evidence, like `rests_on`; never in `report.json`, which holds none of the app's code.
+    #[serde(skip)]
+    pub routes: Option<crate::route_guards::RouteTable>,
 }
 
 /// What the standard's own words are called where a question shows them under its plain words.
@@ -171,6 +175,7 @@ pub fn checklist(
                 route: Route::WriteItDown,
                 where_means: None,
                 rests_on: None,
+                routes: None,
             });
         }
     }
@@ -185,6 +190,7 @@ pub fn checklist(
                 route: Route::AnswerInTheManifest,
                 where_means: Some(question.where_means.clone()),
                 rests_on: None,
+                routes: None,
             });
         }
     }
@@ -199,6 +205,7 @@ pub fn checklist(
                 route: Route::GoAndLook,
                 where_means: None,
                 rests_on: None,
+                routes: None,
             });
         }
     }

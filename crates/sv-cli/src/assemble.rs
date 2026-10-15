@@ -2907,6 +2907,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         secret_rules,
         &mut report,
     );
+    // The app's routes and what is written on each, beside the authorization questions (backlog 0493).
+    crate::code_lines::route_questions(listing, &mut report);
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped
     // here, so nothing past this point holds the app's code twice.
     if options.keep_tool_output {

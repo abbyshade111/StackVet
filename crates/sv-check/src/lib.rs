@@ -54,6 +54,7 @@ pub mod prompts;
 pub mod public_keys;
 pub mod review;
 pub mod rich_text;
+pub mod route_guards;
 pub mod running;
 pub mod sbom;
 pub mod script;
