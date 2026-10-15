@@ -4,6 +4,7 @@ fn docker(user: Option<&str>) -> Runner {
     Runner::Docker {
         docker: "/usr/local/bin/docker".to_owned(),
         user: user.map(str::to_owned),
+        keys: None,
     }
 }
 

@@ -416,8 +416,8 @@ const COMMANDS: &[Command] = &[
         name: "connect",
         word: Some("TOOL"),
         flags: &[],
-        valued: &["--docker", "--user", "--folder"],
-        help: "  sv connect [TOOL] [--docker PATH] [--user UID:GID] [--folder DIR]\n                     print StackVet's MCP server for this folder, the paths already filled\n                     in: with no TOOL, its name, command, and arguments, for any AI coding\n                     tool to put in its own settings; with TOOL (claude, vscode, or\n                     cursor), that tool's settings block;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux; writes nothing\n",
+        valued: &["--docker", "--user", "--keys", "--folder"],
+        help: "  sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--folder DIR]\n                     print StackVet's MCP server for this folder, the paths already filled\n                     in: with no TOOL, its name, command, and arguments, for any AI coding\n                     tool to put in its own settings; with TOOL (claude, vscode, or\n                     cursor), that tool's settings block;\n                     --docker PATH (where docker is, from `which docker`) for the\n                     container, --user UID:GID on Linux, --keys DIR (your key folder,\n                     \"$HOME/.config/stackvet\") so the container can count what you\n                     recorded in sv review: it reads that folder's list of trusted keys\n                     alone, read-only; writes nothing\n",
     },
     Command {
         name: "doctor",
