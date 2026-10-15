@@ -432,51 +432,8 @@ fn marks_test(attribute: &str) -> bool {
             && (attribute.ends_with("::test]") || attribute.contains("::test(")))
 }
 
-/// A path that belongs to tests, fixtures, or samples, by the conventions of the languages `sv`
-/// reads: a folder named for them, or a file named the way each test runner finds its tests.
-pub fn is_test_path(path: &str) -> bool {
-    let path = path.replace('\\', "/");
-    let mut parts: Vec<&str> = path.split('/').filter(|p| !p.is_empty()).collect();
-    let Some(file) = parts.pop() else {
-        return false;
-    };
-    const FOLDERS: &[&str] = &[
-        "test",
-        "tests",
-        "__tests__",
-        "spec",
-        "specs",
-        "testdata",
-        "fixtures",
-        "__fixtures__",
-        "e2e",
-        "cypress",
-        "examples",
-        "example",
-        "samples",
-    ];
-    if parts
-        .iter()
-        .any(|p| FOLDERS.contains(&p.to_ascii_lowercase().as_str()))
-    {
-        return true;
-    }
-    let lower = file.to_ascii_lowercase();
-    let stem = lower.split('.').next().unwrap_or(&lower);
-    lower == "conftest.py"
-        || stem == "tests"
-        || stem == "test"
-        || (lower.starts_with("test_") && lower.ends_with(".py"))
-        || stem.ends_with("_test")
-        || lower.contains(".test.")
-        || lower.contains(".spec.")
-        || lower.ends_with("_spec.rb")
-        || file.ends_with("Test.java")
-        || file.ends_with("Tests.java")
-        || file.ends_with("Test.kt")
-        || file.ends_with("Tests.cs")
-        || file.ends_with("Test.php")
-}
+/// Moved to `sv_scan::files` so the technology scan reads tests apart by the same rule (backlog 0538).
+pub use sv_scan::files::is_test_path;
 
 /// Findings that report the same kind of weakness on the same line of the same file, merged so the
 /// owner reads each once.

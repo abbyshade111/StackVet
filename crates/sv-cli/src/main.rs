@@ -683,7 +683,10 @@ fn cmd_scope(path: Option<PathBuf>) -> Result<()> {
         .collect();
     if !contradicted.is_empty() {
         println!(
-            "\nThe manifest and the code disagree about {} thing{}. The code wins:",
+            "\nThe code names something that usually means the app does what the manifest says it \
+             does not, for {} thing{}, so those requirements are switched on. If the app does not do \
+             one of these, leave the code as it is and tell the person; the requirements stay \
+             switched on:",
             contradicted.len(),
             if contradicted.len() == 1 { "" } else { "s" }
         );
