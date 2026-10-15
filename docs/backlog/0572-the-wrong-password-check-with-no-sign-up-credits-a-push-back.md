@@ -1,0 +1,13 @@
+# The wrong-password check with no sign-up credits a push-back without trying the right password
+
+**Status:** open
+
+From the inventory of sweep 3 (backlog 0561, ADR-119); more than two requests, so filed rather than built there.
+
+**What is wrong.** With no `signup` in stackvet.toml, the wrong-password check (V6.3.1, `signin.rs`) guesses at a name
+no account has, and a push-back by address is credited. It never tries a right password afterwards, as it now does
+with an account of its own (0561's first batch), so a limit that refuses only wrong passwords is credited here.
+
+**What to build.** After the push-back, sign A in from the same address (the sign-in page, the post, the first
+private page, about three requests). If A signs in, the limit lets a right password through. Mind the sign-in budget
+(62 in a run, `SIGN_INS_IN_A_RUN`): it comes after the guesses, so it is counted with them.
