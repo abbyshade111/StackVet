@@ -26,4 +26,4 @@ decision does not name.
 **First batch, built (the lockout, backlog 0524):** after a push-back by a refusal or another status, the account's own
 password is sent once, straight after, under a `guess-` id: signed in, it is the finding "After the limit, the right
 password still signs in" (high) and nothing is credited; refused, the credit stands in part and says so. A limit that
-only slows attempts is not asked. 0524 is done with this.
+only slows attempts is not asked. 0524 is built by this, and left for the board to close.
