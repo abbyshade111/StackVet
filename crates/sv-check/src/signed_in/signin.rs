@@ -264,6 +264,36 @@ fn forwarded_check(
 /// which is inside any window worth stating — the count is the testable half and the report says so.
 /// And a clean result is *checked* rather than a pass: it shows the app pushed back at the stated
 /// number on one run, not that the control is correct.
+/// The account's own password, sent once after the wrong ones and in the same way, under a `guess-` id since it
+/// belongs to the guessing (it comes last of the run's sign-ins, with them): whether it signed in and opened
+/// `confirm`. `None` when the sign-in got no answer.
+fn right_password_after(
+    http: &mut dyn Http,
+    login: &RequestTemplate,
+    account: &Account,
+    confirm: &str,
+) -> Option<bool> {
+    let mut session = Session::default();
+    let mut csrf = None;
+    if let Some(page) = http.send(&get("guess-page-right", &login.path, &session)) {
+        session.absorb(&page);
+        csrf = csrf_token(&page, &session);
+    }
+    let values = Values {
+        user: &account.user,
+        password: &account.password,
+        csrf,
+        ..Default::default()
+    };
+    let (response, _) = send_template(http, "guess-right", login, &values, &mut session, &[]);
+    response.as_ref()?;
+    Some(ok(&http.send(&get(
+        "guess-right-private",
+        confirm,
+        &session,
+    ))))
+}
+
 pub(super) fn brute_force_check(
     http: &mut dyn Http,
     users: &UsersSection,
@@ -522,14 +552,51 @@ pub(super) fn brute_force_check(
         forwarded_check(http, login, &wrong, first_status, out);
     }
 
-    if pushed_back {
+    // After a refusal, the account's own password, once (backlog 0561, ADR-119): a limit that refuses only wrong
+    // passwords stops nobody, since the guess that is right still gets in, and its answer says so. Only after a
+    // refusal: a limit that slows every attempt down still lets the right password in, as it should.
+    let right_after = match (
+        real_account && reading.answered_differently(),
+        users.private.first(),
+    ) {
+        (true, Some(confirm)) => right_password_after(http, login, &target, confirm),
+        _ => None,
+    };
+    if right_after == Some(true) {
+        out.steps.push(
+            "after the limit, signed in once with the account's own password: it signed in"
+                .to_owned(),
+        );
+        let mut evidence: Vec<String> = (0..attempts).map(|n| format!("guess-{n}")).collect();
+        evidence.extend(["guess-right".to_owned(), "guess-right-private".to_owned()]);
+        out.findings.push(finding_on(
+            evidence,
+            &NO_BRUTE_FORCE_LIMIT,
+            "After the limit, the right password still signs in",
+            Severity::High,
+            format!(
+                "stackvet.toml says the app should allow {allowed} wrong passwords in a row. Asked \
+                 {attempts} times in a row with a wrong password, against {against}, the app {how}; \
+                 but the account's own password, sent once straight after, still signed in and \
+                 opened {}. The limit refuses only wrong passwords, so guessing goes on at full \
+                 speed and the right guess gets in.",
+                users.private.first().map_or("", String::as_str)
+            ),
+        ));
+    } else if pushed_back {
+        let and_then = match right_after {
+            Some(false) => {
+                "; the account's own password, sent once straight after, was refused too"
+            }
+            _ => "",
+        };
         out.verified.push(crate::Verified::new(
             NO_BRUTE_FORCE_LIMIT.rule_id,
             NO_BRUTE_FORCE_LIMIT.requirement_ids,
             format!(
                 "{attempts} wrong passwords in a row against {against}, the number you stated plus \
-                 two: the app {how}. The count is what was tested; `within-minutes` was not, \
-                 because every attempt landed within a few seconds"
+                 two: the app {how}{and_then}. The count is what was tested; `within-minutes` was \
+                 not, because every attempt landed within a few seconds"
             ),
         ).in_part());
     } else if !real_account {
@@ -2118,6 +2185,9 @@ mod made_up_name_tests;
 
 #[cfg(test)]
 mod own_account_tests;
+
+#[cfg(test)]
+mod right_after_limit_tests;
 
 #[cfg(test)]
 mod logout_refused_tests;

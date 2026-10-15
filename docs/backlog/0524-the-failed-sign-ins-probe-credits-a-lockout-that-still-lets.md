@@ -19,3 +19,7 @@ and stops after the push-back.
 **Record.** The probe's record: a Later entry (what counts as evidence for V6.3.1).
 
 **Built by the sweep:** this is the first case of backlog 0561 (ADR-119); it closes with it.
+
+**Built, 15 October 2026 (honesty):** in 0561's first batch. After a push-back, the account's own password is sent
+once; a lockout that lets it in is the finding "After the limit, the right password still signs in", and nothing is
+credited. Left open for the coordination board to close, since 0524 is queued there.

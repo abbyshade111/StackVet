@@ -606,6 +606,9 @@ pub(super) struct Flaws {
     pub(super) trusts_forwarded_for: bool,
     /// A lockout lasts for one refused attempt and then lifts by itself.
     pub(super) lockout_forgets: bool,
+    /// The lockout is applied only to a wrong password: the password is checked first, and the right one signs
+    /// in during the lockout, as the VS Code app of the trial of 14 October 2026 does (backlog 0524).
+    pub(super) lockout_checks_password_first: bool,
     /// Each refusal lets the next attempt through: one attempt per refusal, as a token bucket, a
     /// sliding window, or `nginx limit_req` does, whatever it thinks about addresses.
     pub(super) lockout_leaks: bool,
@@ -1615,8 +1618,13 @@ impl FakeApp {
                     self.leaked_once = true;
                     *count = (*count).min(limit.saturating_sub(1));
                 }
+                let right_password = self
+                    .users
+                    .get(email)
+                    .is_some_and(|(p, _)| self.password_matches(p, given));
                 if let Some(limit) = self.flaws.locks_out_after
                     && self.failures.get(&key).copied().unwrap_or(0) >= limit
+                    && !(self.flaws.lockout_checks_password_first && right_password)
                 {
                     if self.flaws.lockout_forgets {
                         self.failures.remove(&key);
