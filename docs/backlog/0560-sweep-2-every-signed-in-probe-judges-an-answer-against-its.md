@@ -120,6 +120,10 @@ between tags, so two pages built from the same `<form>` and `<button>` are not t
 body, even an empty one, as the same page; the admin-page and private-page checks that use it are unchanged in their
 tests.
 
+**Tenth batch, built (the download name, list item 10):** a file fetched back to read the name it is served under is
+the file only when the answer is a 2xx holding its own contents; a redirect to where it is kept, or a page of the
+app's own, is not assessed and says so, for the ordinary file (V5.4.1) and the file with the hostile name (V5.4.2).
+
 **Eleventh batch, built (the identity header, part of list item 11):** each private page asked for with a header that
 names a user, and no session, is read beside the same page served to the signed-in user: the page shown is a finding
 as before; a 200 showing little of it ("unknown user", a sign-in form served with 200) is neither a finding nor a
