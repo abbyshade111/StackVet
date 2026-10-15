@@ -85,6 +85,19 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "a reading of the code is not a check",
             "say it is your reading, not a check",
         ),
+        // Backlog 0550, the owner's choice of 14 October 2026: every trial ended with the person letting the tool
+        // answer, so the prompt says that is allowed and what it costs, and an answer the tool gives must show its
+        // lines.
+        (
+            "say the person may let the tool answer, and what it costs",
+            "I may let you answer some yourself: each answer you give counts as yours, not mine, until I record it \
+             with `sv review`, and the report says so.",
+        ),
+        (
+            "quote the file and lines beside an answer the tool gives",
+            "quote the file and lines that show it beside the answer, and say it is your reading, not a check: an \
+             answer with no lines is a guess.",
+        ),
         // Backlog 0546: in the Cursor trial of 14 October 2026, the tool wrote security-notes.md by hand and never
         // called stackvet_record_answer, so nothing it wrote counted.
         (

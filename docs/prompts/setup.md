@@ -248,8 +248,10 @@ word.
 >    of a check, with the check's words beside it. Ask me before you delete anything.
 > 5. Never tell me the app is secure. Tell me what was checked and what was not.
 > 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
->    questions one at a time. When you tell me what the code does for one, quote the lines and say
->    it is your reading, not a check. Record my answers only with `stackvet_record_answer`, under the
+>    questions one at a time. I may let you answer some yourself: each answer you give counts as
+>    yours, not mine, until I record it with `sv review`, and the report says so. When you answer one,
+>    or tell me what the code does for one, quote the file and lines that show it beside the answer,
+>    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
 >    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
 >    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
