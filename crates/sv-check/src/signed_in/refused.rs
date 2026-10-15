@@ -3,7 +3,7 @@
 //! said its anti-forgery token was refused, and nothing showed it. Now the step and the reason name the fields that
 //! were sent (their names, never their values) and quote the words the page showed.
 
-use super::RequestTemplate;
+use super::{Account, RequestTemplate};
 use crate::probes::ProbeResponse;
 
 /// How many characters of the page's words are quoted.
@@ -29,10 +29,11 @@ pub(crate) fn fields_sent(login: &RequestTemplate) -> String {
 
 /// Whether the page repeats the test account's password: then its words are not quoted at all. Only this yes or no
 /// is taken from the password, so nothing written can carry it.
-pub(crate) fn repeats_password(response: &ProbeResponse, password: &str) -> bool {
-    password.chars().count() >= 4
-        && (response.body.contains(password)
-            || crate::text::visible_words(&response.body).contains(password))
+pub(crate) fn repeats_password(response: &ProbeResponse, account: &Account) -> bool {
+    let secret = account.password.as_str();
+    secret.chars().count() >= 4
+        && (response.body.contains(secret)
+            || crate::text::visible_words(&response.body).contains(secret))
 }
 
 /// The words the page showed, cut to [`SAID_CHARS`], with no character that would move or hide text on a terminal.

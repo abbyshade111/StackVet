@@ -68,8 +68,12 @@ fn a_page_that_repeats_the_password_is_not_quoted() {
     // The test password is made at run time from this run's process id, with no written-in text in it, so no
     // password is written in the code (CodeQL's hard-coded cryptographic value).
     let password = std::process::id().to_string().repeat(4);
+    let account = |secret: &str| Account {
+        user: "a@example.test".into(),
+        password: secret.to_owned(),
+    };
     let page = answered(200, &format!("<p>Wrong password: {password}</p>"));
-    let repeats = repeats_password(&page, &password);
+    let repeats = repeats_password(&page, &account(&password));
     assert!(repeats, "the setup: the page repeats it");
     let said = sent_and_said(&login(&[("password", "{password}")], &[]), &page, repeats);
     assert_eq!(
@@ -79,11 +83,11 @@ fn a_page_that_repeats_the_password_is_not_quoted() {
     assert!(!said.contains(&password), "{said}");
     // The control: a page that does not repeat it is quoted, and a password too short to tell is not looked for.
     let other = answered(200, "<p>Wrong password.</p>");
-    assert!(!repeats_password(&other, &password));
+    assert!(!repeats_password(&other, &account(&password)));
     let short: String = password.chars().take(3).collect();
     assert!(!repeats_password(
         &answered(200, &format!("<p>{short}</p>")),
-        &short
+        &account(&short)
     ));
 }
 
