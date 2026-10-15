@@ -156,3 +156,9 @@ V3.2.1) are not assessed, and the reason says that `serves-at` would settle it, 
 app that keeps the file and shows the form again is judged as before once fetching the ordinary GIF back finds it. The
 ordinary archive of each format is read the same way (V5.2.3), without the fetch, since an archive is never fetched
 back.
+
+**Sixteenth batch, built (the SQL baseline, list item 13):** each spot is asked unchanged first, as the baseline, and
+an address that is not a success unchanged gets no condition. A pair answered differently is the finding only when
+the always-true one was answered as the unchanged address was (`control::beside`), and under an either-or the
+always-false one too; otherwise it is not judged, and the step says what was compared. A finding names the
+unchanged request among its evidence.
