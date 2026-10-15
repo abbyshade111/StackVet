@@ -30,4 +30,4 @@ Later entry.
 
 Found while building it, not fixed here: without `owned`, the record-fields, stored-markup, and owner-field checks
 return without a not-assessed line of their own, so a run with no `owned` never lists V8.2.3, V15.3.1, or V1.2.1 as
-not assessed (checked against the fake app on 15 October 2026). Filed as an item of its own.
+not assessed (checked against the fake app on 15 October 2026). Filed as backlog 0569.
