@@ -454,11 +454,15 @@ pub fn fill_fingerprints(app_dir: &Path, findings: &mut [Finding]) {
     for f in findings {
         let fingerprint = texts.fingerprint(f, &f.rule_id);
         let earlier = texts.earlier_fingerprint(f, &f.rule_id);
-        f.earlier_fingerprints = if earlier == fingerprint {
-            Vec::new()
-        } else {
-            vec![earlier]
-        };
+        // A check may already give the finding a fingerprint it had under an earlier title (backlog 0530); it is kept,
+        // after the form used before 5 October 2026.
+        let mut earlier_fingerprints = Vec::new();
+        for kept in std::iter::once(earlier).chain(std::mem::take(&mut f.earlier_fingerprints)) {
+            if kept != fingerprint && !earlier_fingerprints.contains(&kept) {
+                earlier_fingerprints.push(kept);
+            }
+        }
+        f.earlier_fingerprints = earlier_fingerprints;
         f.fingerprint = fingerprint;
     }
 }
@@ -534,6 +538,8 @@ pub fn apply(
                     f.fingerprint.clone()
                 };
                 own == entry.fingerprint
+                    // A fingerprint the finding had under an earlier title (backlog 0530).
+                    || (kept && f.earlier_fingerprints.contains(&entry.fingerprint))
                     || (merged
                         && (if earlier {
                             texts.earlier_fingerprint(f, &entry.rule)
@@ -798,6 +804,10 @@ mod counts_tests;
 #[cfg(test)]
 #[path = "review_still_reads_tests.rs"]
 mod still_reads_tests;
+
+#[cfg(test)]
+#[path = "review_renamed_title_tests.rs"]
+mod renamed_title_tests;
 
 #[cfg(test)]
 mod tests {
