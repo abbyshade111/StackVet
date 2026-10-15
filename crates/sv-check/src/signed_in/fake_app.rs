@@ -432,6 +432,11 @@ pub(super) struct Flaws {
     pub(super) logout_on_get: bool,
     /// A password change does not check the current password.
     pub(super) change_without_current: bool,
+    /// Checks the current password only when the change sends one: a wrong one is refused, and one left out
+    /// is not asked for (backlog 0561).
+    pub(super) change_current_only_if_given: bool,
+    /// Checks the password in an email change only when the change sends one (backlog 0561).
+    pub(super) email_password_only_if_given: bool,
     /// A password change adds the new password and leaves the old one working.
     pub(super) change_keeps_old: bool,
     /// A password change answers as if it worked and changes nothing.
@@ -1760,10 +1765,21 @@ impl FakeApp {
                     return Some(Self::respond(403, vec![], "refused"));
                 }
                 let f = form(r);
-                let (current, new) = (f.get("current")?.clone(), f.get("new")?.clone());
+                let new = f.get("new")?.clone();
                 let stored = self.users.get(&who)?.0.clone();
-                if !self.flaws.change_without_current && !self.password_matches(&stored, &current) {
-                    return Some(Self::respond(403, vec![], "wrong password"));
+                match f.get("current") {
+                    None if !self.flaws.change_current_only_if_given
+                        && !self.flaws.change_without_current =>
+                    {
+                        return Some(Self::respond(400, vec![], "the current password is needed"));
+                    }
+                    Some(current)
+                        if !self.flaws.change_without_current
+                            && !self.password_matches(&stored, current) =>
+                    {
+                        return Some(Self::respond(403, vec![], "wrong password"));
+                    }
+                    _ => {}
                 }
                 if !self.flaws.change_does_nothing {
                     if self.flaws.change_keeps_old {
@@ -1839,7 +1855,16 @@ impl FakeApp {
                     return Some(Self::respond(403, vec![], "refused"));
                 }
                 let f = form(r);
-                let (password, to) = (f.get("password")?.clone(), f.get("email")?.clone());
+                let to = f.get("email")?.clone();
+                let password = match f.get("password") {
+                    Some(given) => given.clone(),
+                    None if self.flaws.email_password_only_if_given
+                        || self.flaws.email_change_without_password =>
+                    {
+                        String::new()
+                    }
+                    None => return Some(Self::respond(400, vec![], "the password is needed")),
+                };
                 let mut stored = self.users.get(&who)?.clone();
                 let asked_for_admin = f.get("role").is_some_and(|v| v == "admin")
                     || f.get("is_admin").is_some_and(|v| v == "true");
@@ -1851,6 +1876,7 @@ impl FakeApp {
                     self.held.insert(to.clone());
                 }
                 if !self.flaws.email_change_without_password
+                    && f.get("password").is_some()
                     && !self.password_matches(&stored.0, &password)
                 {
                     return Some(Self::respond(403, vec![], "wrong password"));
