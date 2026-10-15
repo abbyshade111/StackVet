@@ -61,7 +61,7 @@ or added since.
 |---|---|---|---|
 | `faults.csv` | 254 rows (255 faults; a row can hold several, `count`) | 366 | read from each backlog item and merge (below) |
 | `corrections.csv` | 76 | 158 | read the same way |
-| `coordination.csv` | 359 | 830 | claims and merges resolved by hand counted from git; pull requests closed unmerged from GitHub; the other kinds read |
+| `coordination.csv` | 359 | 899 | claims and merges resolved by hand counted from git; pull requests closed unmerged from GitHub; the other kinds read |
 | `tests_by_day.csv` | 23 days | 12 days | git |
 
 - **Read, not counted.** The faults and corrections since were compiled on 15 October 2026 by Claude Code sessions,
@@ -83,7 +83,7 @@ or added since.
   counted this way, 3 October's 15,115 reads 15,069, so the two are near, not the same.
 - **Coordination since.** A claim is a merge to main, named for a claim, that touched only the backlog or the board; a
   merge resolved by hand is a merge of main into a branch whose combined diff has lines that match neither parent, as
-  `COORDINATION.md` counted them (467 since, against 103 to the cut-off, over about 1,750 pull requests).
+  `COORDINATION.md` counted them (467 since, against 103 to the cut-off, over 1,431 pull requests merged since).
 
 **The figures redrawn per period** (`docs/paper/`), each beside the figure of the cut-off, which stays as drawn:
 

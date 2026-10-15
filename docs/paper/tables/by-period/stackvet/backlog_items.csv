@@ -380,4 +380,5 @@ item,title,status,done_date,period_done,source
 0562,"The pointer's ""and N more places"" counts a refusal's log line and its response line as two places",done,2026-10-15,stackvet,docs/backlog/done/0562-the-pointer-s-and-n-more-places-counts-a-refusal-s-log-line.md
 0563,"`sv --version` piped into `head` reports ""sv itself failed: a fault in sv"" on the closed pipe",done,2026-10-15,stackvet,docs/backlog/done/0563-sv-version-piped-into-head-reports-sv-itself-failed-a-fault.md
 0567,Not built: sealing the build-loop record with a key the AI tool cannot reach,done,2026-10-14,stackvet,docs/backlog/done/0567-not-built-sealing-the-build-loop-record-with-a-key-the-ai.md
+0569,"Without an owned record, V8.2.3, V15.3.1, and V1.2.1 are never listed as not assessed",done,2026-10-15,stackvet,docs/backlog/done/0569-without-an-owned-record-v8-2-3-v15-3-1-and-v1-2-1-are-never.md
 0570,"A query given by a function sv did not follow: a finding, or not verified (the owner's choice)",done,2026-10-15,stackvet,docs/backlog/done/0570-a-query-given-by-a-function-sv-did-not-follow-a-finding-or.md

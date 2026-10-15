@@ -102,3 +102,15 @@ the owner's to write against these.
 **The owner's answer, 15 October 2026 (asked through the board's waiting line, after part 2):** (b), "extend to today
 and then redraw": the hand-made tables the figures are drawn from (faults, corrections, coordination, tests by day)
 are extended past the 4 October cut-off to today, and the figures are then redrawn per period from them. Part 3.
+
+**Part 3 built, 15 October 2026** (documentation), as the owner answered (b). `docs/paper/tables/ledgers.py` writes
+the four hand-made ledgers to today in `docs/paper/tables/to-today/`: each is the ledger at the cut-off, unchanged,
+followed by the rows since, every row with its period. Faults: 366 since (and the 61 open at the cut-off, all fixed by
+5 October, with their pull requests); corrections: 158 since; coordination: 899 since (claims and merges resolved by
+hand from git, pull requests closed unmerged from GitHub, 67 read); tests by day: 12 days since, from git. The faults
+and corrections since were compiled by Claude Code sessions reading every backlog item and the merges of 4 to 8
+October; each row cites its source and says how sure the reading was (155 of 524 unsure), and one defect read twice
+was counted once. `docs/paper/tables/period_figures.py` redraws six figures per period beside the figures of the
+cut-off: tests and faults, how faults were caught, corrections, coordination, the decision records, and the two deep
+reviews. DATA.md says how each was made, and which figures are not redrawn and why (one-time records, and figures
+drawn from documents written at the cut-off, which are the owner's to write again).
