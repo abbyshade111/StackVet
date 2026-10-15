@@ -31,7 +31,7 @@ fn the_check_names_each_line_the_tool_vouched_for_itself() {
 "V4.1.3" = { answer = "yes", by = "ai-tool", confirmed = { by = "ai-tool", on = "2026-10-14", how = "Read the code." } }
 
 [checked-by-hand]
-"V2.2.1" = { result = "done", on = "2026-10-14", by = "ai-tool", how = "Sent a long name; it was refused." }
+"V12.1.2" = { result = "done", on = "2026-10-14", by = "ai-tool", how = "Tried it; it held." }
 "#,
     );
     let not_examined = said
@@ -46,7 +46,7 @@ fn the_check_names_each_line_the_tool_vouched_for_itself() {
         "Only `sv review`, run by the person in their own terminal",
         "counts only as the tool's word, never as a check",
         "[design] V4.1.3, confirmed by the AI coding tool",
-        "[checked-by-hand] V2.2.1, checked by hand by the AI coding tool",
+        "[checked-by-hand] V12.1.2, checked by hand by the AI coding tool",
     ] {
         assert!(
             said.contains(words),

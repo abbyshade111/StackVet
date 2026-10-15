@@ -1,6 +1,6 @@
 //! The lines in stackvet.toml where the AI coding tool vouches for its own work (backlog 0543). In the three-tool trial
 //! of 14 October 2026 one tool wrote `confirmed = { by = "ai-tool", ... }` on twelve design answers and another wrote
-//! `[checked-by-hand] "V2.2.1" = { result = "done", by = "ai-tool" }`. `sv` counted both right, and said nothing the
+//! a `[checked-by-hand]` entry with `result = "done"` and `by = "ai-tool"`. `sv` counted both right, and said nothing the
 //! tool would read as "stop": the confirmations sat in one gap among other reasons, the check by hand in no gap at
 //! all. This names each such line in a gap of its own, which `stackvet_check` puts before anything else.
 
