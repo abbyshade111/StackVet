@@ -30,3 +30,10 @@ tool's text too.
 **The owner's go, 14 October 2026:** build it whenever the board has room; in the order 0564, 0565, 0566, after the probe sweeps.
 
 **The orchestrator's answer to wording, 15 October 2026 (a board-order question, not the owner's):** B, start now. The order 0564, 0565, 0566 was the owner's preference for building, not a dependency: 0565 reads a record outside the app folder and touches no probe file, and 0564 is honesty's. Write the decision record first, as proposed, then build. Clear the waiting line on your branch when you take it.
+
+**The owner's answer, 15 October 2026 (asked by wording):** the hook record. Claude Code's documentation calls the
+transcript's entry format internal and liable to change between releases (its sessions page, "Where transcripts are
+stored"), and the Agent SDK treats the entries as opaque, so the first condition above rules the transcript out. 0565
+is built on 0566's hook instead, after it: the last thing the tool said each turn (`Stop`'s `last_assistant_message`)
+and each command it ran (`PostToolUse`'s `tool_input`), both documented hook fields. It covers only what happened after
+the person installed the hook.
