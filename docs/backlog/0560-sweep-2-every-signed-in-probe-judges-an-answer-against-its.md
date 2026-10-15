@@ -130,3 +130,11 @@ as before; a 200 showing little of it ("unknown user", a sign-in form served wit
 refusal, and says so. Without the user's page, a 2xx is a finding as before. Still open from item 11: the idle and
 lifetime timeouts, read by status class beside the busy and fresh sessions.
 
+**Twelfth batch, built (an admin action with no `check` page, list item 12):** the ordinary user's success status is
+read beside the admin's own same request, sent as the control: answered alike, it is the finding by the status
+alone, at medium confidence, as before; answered unlike (a refusal shown on a 200 page where the admin was sent on)
+it is not judged, says so, and keeps the credit from resting on the actions that were. When the admin's own request
+was not taken either, there is nothing to read it beside, and it is read as before. The existing test that held a
+refusal answered 200 to be a status-only finding now holds it not judged, and a case answered alike keeps the
+status-only finding covered.
+
