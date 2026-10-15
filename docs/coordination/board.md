@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0560 (since 2026-10-14) — next: 0561, 0564, 0539, 0232
-- wording — arm: full — holds: 0557 (since 2026-10-14) — next: 0533, 0530, 0534
-- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0562, 0529, 0531, 0538
+- wording — arm: full — holds: 0530 (since 2026-10-15) — next: 0534, 0525, 0565, 0566
+- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0529, 0509
 
 ## Queue
 
@@ -36,14 +36,11 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 22. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
 23. 0523 The browser-validation probe reads any answer under 400 as "accepted", so a refusal shown on a 200 page is a finding — ready
 24. 0524 The failed-sign-ins probe credits a lockout that still lets the right password in — ready
-25. 0525 `ast.sql-built-by-hand` flags `executescript(f())` where `f` returns a constant schema, a high finding under V1.2.4 — ready
-26. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-27. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-28. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-29. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
-30. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
-31. 0565 Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show — ready
-32. 0566 Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report — ready
+25. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+26. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+27. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+28. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
+29. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
 
 ## Log
 
@@ -566,3 +563,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 23:20 — assigned 0531 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
 - 2026-10-14 23:20 — assigned 0538 to documentation (full) as next: small sv-check items from the trial outside the probe folder the sweeps rewrite (the pointer's count, the secrets check's test files and invite names, the claim words); documentation's lane while 0568 waits on the owner
 - 2026-10-14 23:50 — finished 0521 by honesty (full): https://github.com/abbyshade111/StackVet/pull/1972; now holds 0560
+- 2026-10-15 00:20 — finished 0557 by wording (full): https://github.com/abbyshade111/StackVet/pull/1978; now holds 0533
+- 2026-10-15 00:20 — finished 0533 by wording (full): https://github.com/abbyshade111/StackVet/pull/1970; now holds 0530
+- 2026-10-15 00:20 — finished 0562 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1975; from its lane, behind 0568
+- 2026-10-15 00:20 — finished 0531 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1977; from its lane, behind 0568
+- 2026-10-15 00:20 — finished 0538 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1979; from its lane, behind 0568
+- 2026-10-15 00:20 — assigned 0525 to wording (full) as next: wording's lane while 0530 and 0534 wait on the owner: the AST rule's constant case, then the two observability proposals with the owner's go (the tool's session record read with consent; the hook log), none in the probe folder the sweeps rewrite
+- 2026-10-15 00:20 — assigned 0565 to wording (full) as next: wording's lane while 0530 and 0534 wait on the owner: the AST rule's constant case, then the two observability proposals with the owner's go (the tool's session record read with consent; the hook log), none in the probe folder the sweeps rewrite
+- 2026-10-15 00:21 — assigned 0566 to wording (full) as next: wording's lane while 0530 and 0534 wait on the owner: the AST rule's constant case, then the two observability proposals with the owner's go (the tool's session record read with consent; the hook log), none in the probe folder the sweeps rewrite
+- 2026-10-15 00:21 — queued 0509, marked
+- 2026-10-15 00:21 — assigned 0509 to documentation (full) as next: documentation's lane while 0568 and 0529 wait on the owner: the CodeQL run over a fixture; if CodeQL is not installed in the session, say so on the item and move on
