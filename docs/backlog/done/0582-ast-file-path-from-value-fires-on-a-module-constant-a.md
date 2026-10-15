@@ -1,6 +1,6 @@
 # `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention"
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -21,3 +21,5 @@ parameter a narrow `re.fullmatch` (or a `secure_filename` comparison) stops the 
 request's value by name or not, a name with any value not shown safe, a loose or non-stopping check, and a module name a
 function sets from a request. `vibegames/games.py` was not in the cloud container, so the three shapes are the ones the
 reading names, not its lines. Tests in `crates/sv-check/src/ast/followed_tests.rs`.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2093); left open for the board to close.
