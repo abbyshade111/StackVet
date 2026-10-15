@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0604, 0572, 0576, 0599, 0582
+- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0605, 0572, 0576, 0599, 0582
 - wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0589, 0590, 0603
 - documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0586, 0600
 
@@ -681,12 +681,12 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 14:34 — finished 0598 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2044; now holds 0495
 - 2026-10-15 14:34 — finished 0495 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2013; now holds 0571
 - 2026-10-15 14:34 — finished 0571 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2015; now holds 0232
-- 2026-10-15 14:34 — queued 0604, on hold: the owner's choice: where the manifest names the run's environment and settings files, marked
+- 2026-10-15 14:34 — queued 0605, on hold: the owner's choice: where the manifest names the run's environment and settings files, marked
 - 2026-10-15 14:34 — assigned 0490 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
 - 2026-10-15 14:34 — assigned 0572 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
 - 2026-10-15 14:34 — assigned 0576 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
 - 2026-10-15 14:34 — assigned 0599 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
 - 2026-10-15 14:34 — assigned 0582 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files
-- 2026-10-15 14:38 — released 0604
+- 2026-10-15 14:38 — released 0605
 - 2026-10-15 14:39 — assigned 0603 to wording (full) as next: the owner's choice A of 15 October: prompt 5 and the guide match sv's question text on the tool's own hand checks; the prompt page and interview.rs, wording's
-- 2026-10-15 14:39 — assigned 0604 to honesty (full) into the lane after 0490: the owner's choice b of 15 October: the settings file the start command names is read for loosened settings; the rest of 0564, honesty's
+- 2026-10-15 14:39 — assigned 0605 to honesty (full) into the lane after 0490: the owner's choice b of 15 October: the settings file the start command names is read for loosened settings; the rest of 0564, honesty's

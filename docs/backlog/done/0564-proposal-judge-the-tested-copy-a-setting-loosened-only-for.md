@@ -38,4 +38,4 @@ there is nothing more to read until the manifest has a place for them; reading a
 itself names (an `--env-file`, or a `.env` it sources) is the one case left, and it needs that file's format read
 first.
 
-**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2007, the start command's loosened settings; the part left, settings files and an environment the manifest could name, is backlog 0604); honesty left the item open for the board to close, as its line's items are.
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2007, the start command's loosened settings; the part left, settings files and an environment the manifest could name, is backlog 0605); honesty left the item open for the board to close, as its line's items are.
