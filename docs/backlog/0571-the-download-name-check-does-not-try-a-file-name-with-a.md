@@ -13,3 +13,8 @@ own.
 
 **What to build.** Two requests more: upload `sv-probe";svinjected=1.gif` and fetch it back from `serves-at`; a
 `Content-Disposition` with a parameter `svinjected` is the finding. A fake-app case that quotes without escaping.
+
+**Built, 15 October 2026 (honesty):** the second name is sent and fetched back when the first came back whole; broken
+by the quote, it is the finding; kept whole, the credit says both. The fake app now escapes a quoted name as a quoted
+string must, and a new flaw quotes it without escaping. Left open for the coordination board to close, since 0571 is
+on honesty's line there.

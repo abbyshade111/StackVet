@@ -31,3 +31,9 @@ HTTPS, CSP, two-factor codes, rate limits, authentication) and says each as a ga
 those rules say they are about that copy. A setting that only looks like a sign-in limit withholds nothing, since
 ADR-114 asks the copy to raise exactly that. The record is ADR-114, Later. Not built: reading the environment the
 manifest sets and the settings files it names, which the start command does not show; that is the part left.
+
+**The part left, 15 October 2026 (honesty):** stackvet.toml sets no environment for the run and names no settings
+file today: `[stack.run]` holds `start`, `build`, `test`, and the like, and only `start` gives the copy settings. So
+there is nothing more to read until the manifest has a place for them; reading a settings file the start command
+itself names (an `--env-file`, or a `.env` it sources) is the one case left, and it needs that file's format read
+first.
