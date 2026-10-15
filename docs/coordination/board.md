@@ -8,7 +8,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 - honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0560, 0561, 0564, 0539, 0232
 - wording — arm: full — holds: 0555 (since 2026-10-14) — next: 0556, 0557, 0533, 0530, 0534
-- documentation — arm: full — holds: 0540 (since 2026-10-14) — next: 0527, 0526, 0563
+- documentation — arm: full — holds: 0527 (since 2026-10-14) — next: 0526, 0563
 
 ## Queue
 
@@ -557,3 +557,4 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 22:19 — assigned 0533 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
 - 2026-10-14 22:19 — assigned 0530 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
 - 2026-10-14 22:19 — assigned 0534 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
+- 2026-10-14 22:21 — finished 0540 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1958; now holds 0527
