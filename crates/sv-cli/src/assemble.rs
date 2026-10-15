@@ -50,6 +50,8 @@ pub(crate) fn say_step(what: &str) {
     }
 }
 
+mod self_confirmed;
+
 #[cfg(test)]
 #[path = "assemble_progress_tests.rs"]
 mod progress_tests;
@@ -2407,11 +2409,20 @@ fn the_owners_word(
             requirements: Vec::new(),
         });
     }
+    // The tool vouching for its own work is named in a gap of its own (backlog 0543), so not again here.
+    let self_confirmed = self_confirmed::of(manifest);
     let not_counted: Vec<&(String, String)> = confirmed_design
         .not_counted
         .iter()
-        .chain(confirmed_hand.not_counted.iter())
+        .filter(|(id, _)| !self_confirmed.design.contains(id))
+        .chain(
+            confirmed_hand
+                .not_counted
+                .iter()
+                .filter(|(id, _)| !self_confirmed.hand.contains(id)),
+        )
         .collect();
+    gaps.extend(self_confirmed.gap());
     if !not_counted.is_empty() {
         gaps.push(sv_report::Gap {
             what: format!(
