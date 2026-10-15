@@ -647,6 +647,9 @@ pub struct Answers {
     /// that section, so what is under it is in `kept`, not in an answer (ADR-022, "Later, 4 October
     /// 2026: a section ends at any heading").
     pub not_read: Vec<(String, String)>,
+    /// Headings of somebody's own before any of the file's questions, as a file written by hand under its own
+    /// headings has them: nothing under them is read as an answer (backlog 0542).
+    pub outside: Vec<String>,
 }
 
 impl Answers {
@@ -918,6 +921,14 @@ pub fn read_answers(catalog: &Catalog, text: &str) -> Answers {
             kept.break_chunk();
             kept.push(raw);
             continue;
+        }
+        // A heading of somebody's own before any question: what is under it is kept, as before, and named, so a
+        // file written under headings of its own does not count for nothing without a word (backlog 0542).
+        if last.is_none()
+            && t != TITLE_LINE
+            && let Some(heading) = other_heading(raw)
+        {
+            answers.outside.push(heading);
         }
         match open.as_mut() {
             Some(section) => section.line(raw, t, &is_own, &mut kept),
@@ -1202,6 +1213,8 @@ pub struct Evidence {
     /// Headings of somebody's own, each with the section it followed: what is under them was not
     /// read as an answer.
     pub not_read: Vec<String>,
+    /// Headings of somebody's own before any question: nothing under them counts (backlog 0542).
+    pub outside: Vec<String>,
 }
 
 /// Evidence for every requirement the notes answer.
@@ -1283,11 +1296,15 @@ pub fn evidence(
         .iter()
         .map(|(heading, after)| format!("\"{heading}\", after {after}"))
         .collect();
+    out.outside = answers.outside.clone();
     out
 }
 
 #[cfg(test)]
 mod confirmed_tests;
+
+#[cfg(test)]
+mod outside_tests;
 
 #[cfg(test)]
 mod tests {
