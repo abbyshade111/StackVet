@@ -21,6 +21,7 @@
 
 pub mod bluf;
 pub mod chapters;
+pub mod checklist;
 pub mod dashboard;
 pub mod fence;
 pub mod folder;
@@ -1148,6 +1149,10 @@ pub struct Report {
     /// For an app that will be on the internet, the requirements only its live site can answer,
     /// and who answers each (`live`). Empty for any other app. Credits nothing.
     pub before_going_live: Vec<live::LiveItem>,
+    /// Whether stackvet.toml says the app will be on the internet (`deployment = "internet"`): when the checklist
+    /// before going live (`checklist`, backlog 0589) has its steps at the host and at the live address.
+    #[serde(default)]
+    pub on_the_internet: bool,
     /// What the AI coding tool's own files in the folder let it do (ADR-049). Not the app, so it
     /// credits nothing and finds nothing; the report says it apart from everything else.
     pub ai_tool: sv_check::ai_tool::AiToolFiles,
@@ -2839,6 +2844,10 @@ mod mark_tests;
 mod next_step_tests;
 
 #[cfg(test)]
+#[path = "checklist_tests.rs"]
+mod checklist_tests;
+
+#[cfg(test)]
 #[path = "build_loop_tail_tests.rs"]
 mod build_loop_tail_tests;
 
@@ -3700,6 +3709,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         checklist_above_level,
         tests_to_write,
         before_going_live,
+        on_the_internet: inputs.on_the_internet,
         ai_tool: inputs.ai_tool,
         look_away: inputs.look_away,
         only_you_can_check,

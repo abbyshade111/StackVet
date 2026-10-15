@@ -112,6 +112,10 @@ fn the_report_lists_its_files_and_each_markdown_report_says_its_reader() {
             sv_report::LOW_FINDINGS_FILE,
             sv_report::markdown::low_findings(&report),
         ),
+        (
+            sv_report::checklist::FILE,
+            sv_report::checklist::render(&report),
+        ),
     ] {
         let opening: String = text.lines().take(6).collect::<Vec<_>>().join("\n");
         assert!(

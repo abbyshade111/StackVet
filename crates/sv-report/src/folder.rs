@@ -15,8 +15,8 @@ pub struct FolderFile {
     pub for_whom: &'static str,
 }
 
-/// The nine files, in the order they are written.
-pub const FILES: [FolderFile; 9] = [
+/// The ten files, in the order they are written.
+pub const FILES: [FolderFile; 10] = [
     FolderFile {
         name: "report.html",
         holds: "The whole report on one page: what to fix first, what was not examined, and every requirement that \
@@ -39,6 +39,13 @@ pub const FILES: [FolderFile; 9] = [
         name: crate::LOW_FINDINGS_FILE,
         holds: "Every low-severity finding in full, where the other reports group them by rule",
         for_whom: "You or your AI coding tool, when you want the detail",
+    },
+    // Backlog 0589, ADR-121.
+    FolderFile {
+        name: crate::checklist::FILE,
+        holds: "What to do or confirm before the app is on the internet, in the order you would do it, with what \
+                could not be verified at its end. It credits nothing",
+        for_whom: "You, or whoever puts the app on the internet",
     },
     FolderFile {
         name: crate::SARIF_FILE,

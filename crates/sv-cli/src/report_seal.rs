@@ -114,6 +114,12 @@ fn missing(name: &str) -> String {
              running app answered, whose seal covers five files and not the six sv seals now; write \
              the report again"
         )
+    } else if name == sv_report::checklist::FILE {
+        // Backlog 0589, ADR-121.
+        format!(
+            "{name} is missing, as it is from a report written by an sv from before it wrote the checklist \
+             before going live, whose seal does not cover it; write the report again"
+        )
     } else {
         format!("{name} is missing")
     }

@@ -1,4 +1,4 @@
-//! The nine files a report is written as: each name, what kind of file it is, and how it is rendered.
+//! The ten files a report is written as: each name, what kind of file it is, and how it is rendered.
 //!
 //! The one table in this crate that every reader of a report folder's names derives from (BACKLOG,
 //! "From the architecture assessment of 8 October 2026", item 5): `write_report` writes these in this
@@ -19,8 +19,8 @@ pub struct ReportFile {
     pub render: fn(&sv_report::Report) -> String,
 }
 
-/// The nine files, in the order they are written and sealed.
-pub const REPORT_FILES: [ReportFile; 9] = [
+/// The ten files, in the order they are written and sealed.
+pub const REPORT_FILES: [ReportFile; 10] = [
     ReportFile {
         name: "report.html",
         mime: "text/html",
@@ -41,6 +41,12 @@ pub const REPORT_FILES: [ReportFile; 9] = [
         name: sv_report::LOW_FINDINGS_FILE,
         mime: "text/markdown",
         render: sv_report::markdown::low_findings,
+    },
+    // What to do before going live, in the order of a deployment; credits nothing (backlog 0589, ADR-121).
+    ReportFile {
+        name: sv_report::checklist::FILE,
+        mime: "text/markdown",
+        render: sv_report::checklist::render,
     },
     ReportFile {
         name: sv_report::SARIF_FILE,

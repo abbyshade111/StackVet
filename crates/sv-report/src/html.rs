@@ -77,6 +77,7 @@ code { font-family: ui-monospace, monospace; font-size: .9em; }
 .bar.thin { height: .8rem; }
 .bar span { min-width: 2px; }
 .key, .bluf ul.key { list-style: none; padding: 0; margin: .4rem 0 0; display: flex; flex-wrap: wrap; gap: .2rem 1.1rem; font-size: .9em; }
+ul.checklist { list-style: none; padding-left: .4rem; }
 .key i { display: inline-block; width: .8rem; height: .8rem; border: 1px solid var(--edge); border-radius: 2px; margin-right: .35rem; vertical-align: -.05rem; }
 .seg-needs-attention { background: var(--bad); }
 .seg-checked { background: var(--seg-checked); }
@@ -836,6 +837,9 @@ pub fn page(report: &Report) -> String {
         b.push_str("</table>\n");
     }
 
+    // The same, with everything else to do before going live, in the order of a deployment (backlog 0589).
+    b.push_str(&crate::checklist::html(report));
+
     // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
     if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
         b.push_str("<h2>What your AI coding tool's files let it do</h2>\n");
@@ -1407,6 +1411,7 @@ mod tests {
             tests_to_write: vec![],
             only_you_can_check: Vec::new(),
             before_going_live: Vec::new(),
+            on_the_internet: false,
             ai_tool: Default::default(),
             look_away: Default::default(),
             questions_for_you: Vec::new(),
