@@ -16,6 +16,10 @@ pub const MOST_FINDINGS: usize = 300;
 /// The most characters of one line kept.
 pub const LINE_CHARS: usize = 200;
 
+/// How many lines apart two places a locator found can be and still be one place: a statement and the one or two
+/// lines that finish it (backlog 0562).
+const SAME_PLACE: usize = 2;
+
 /// A file larger than this is not read for its lines.
 const MOST_BYTES: u64 = 2_000_000;
 
@@ -87,37 +91,46 @@ pub fn point_questions(
     use sv_check::human::{MOST_POINTERS, Pointer, RestsOn};
     let mut texts: BTreeMap<String, Option<Vec<String>>> = BTreeMap::new();
     // Per question, each locator that found a place it could show: what it finds, the places that could be read (at
-    // most `MOST_POINTERS`), and how many more it found.
+    // most `MOST_POINTERS`), and how many more it found. A place within `SAME_PLACE` lines of one already taken for
+    // the question, in the same file, is the same place (backlog 0562): a refusal written as its log line and then its
+    // answer (`event(..., status=403)` above `send(403, ...)`) was shown once and counted again among the "more".
     let mut by_question: BTreeMap<String, Vec<(String, Vec<Pointer>, usize)>> = BTreeMap::new();
+    let mut taken: BTreeMap<String, Vec<(String, usize)>> = BTreeMap::new();
     for locator in locators.all() {
         let Some(places) = found.places.get(&locator.id) else {
             continue;
         };
-        let mut shown = Vec::new();
-        let mut more = found.more.get(&locator.id).copied().unwrap_or(0);
-        for place in places {
-            if shown.len() == MOST_POINTERS {
-                more += 1;
-                continue;
-            }
-            match window(app_dir, &mut texts, &place.file, place.line, rules) {
-                Some(lines) => shown.push(Pointer {
-                    file: place.file.clone(),
-                    line: place.line,
-                    lines,
-                }),
-                None => more += 1,
-            }
-        }
-        if shown.is_empty() {
-            continue;
-        }
         for id in &locator.questions {
-            by_question.entry(id.clone()).or_default().push((
-                locator.finds.clone(),
-                shown.clone(),
-                more,
-            ));
+            let taken = taken.entry(id.clone()).or_default();
+            let mut shown = Vec::new();
+            let mut more = found.more.get(&locator.id).copied().unwrap_or(0);
+            for place in places {
+                if taken.iter().any(|(file, line)| {
+                    *file == place.file && line.abs_diff(place.line) <= SAME_PLACE
+                }) {
+                    continue;
+                }
+                taken.push((place.file.clone(), place.line));
+                if shown.len() == MOST_POINTERS {
+                    more += 1;
+                    continue;
+                }
+                match window(app_dir, &mut texts, &place.file, place.line, rules) {
+                    Some(lines) => shown.push(Pointer {
+                        file: place.file.clone(),
+                        line: place.line,
+                        lines,
+                    }),
+                    None => more += 1,
+                }
+            }
+            if !shown.is_empty() {
+                by_question.entry(id.clone()).or_default().push((
+                    locator.finds.clone(),
+                    shown,
+                    more,
+                ));
+            }
         }
     }
     // Several locators can speak to one question (backlog 0516): the first place of each, then the second, in the
