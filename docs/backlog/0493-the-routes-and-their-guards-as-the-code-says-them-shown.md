@@ -1,6 +1,6 @@
 # The routes and their guards, as the code says them, shown beside the authorization questions
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

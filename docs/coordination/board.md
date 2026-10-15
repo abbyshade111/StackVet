@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0605, 0576, 0599, 0582
+- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0605, 0576, 0599, 0582
 - wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0590, 0603, 0597
-- documentation — arm: full — holds: 0583 (since 2026-10-15)
+- documentation — arm: full — holds: 0583 (since 2026-10-15) — next: 0490, 0493, 0491, 0497, 0494
 
 ## Queue
 
@@ -19,23 +19,19 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 5. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
 6. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
 7. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — ready
-8. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
-9. 0491 Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported — ready
-10. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
-11. 0493 The routes and their guards, as the code says them, shown beside the authorization questions — ready
-12. 0494 A cryptographic inventory drafted from what the code shows, and weak key generation reported — ready
-13. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
-14. 0497 The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question — ready
-15. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
-16. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
-17. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
-18. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-19. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
-20. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-21. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-22. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-23. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-24. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
+8. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
+9. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
+10. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
+11. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
+12. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
+13. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
+14. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+15. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
+16. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+17. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+18. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
+19. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
+20. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
 
 ## Log
 
@@ -697,3 +693,13 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 15:01 — dropped 0509 from the queue
 - 2026-10-15 15:20 — finished 0586 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2065; now holds 0600
 - 2026-10-15 15:20 — finished 0600 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2068; now holds 0583
+- 2026-10-15 15:36 — withdrew 0490 from honesty (full), on hold: moved to documentation's new lane: the pointer proposals as one lane, in the owner's order, apart from honesty's probe items
+- 2026-10-15 15:36 — released 0490
+- 2026-10-15 15:36 — assigned 0490 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files
+- 2026-10-15 15:36 — assigned 0493 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files
+- 2026-10-15 15:36 — assigned 0491 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files
+- 2026-10-15 15:36 — assigned 0497 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files
+- 2026-10-15 15:36 — assigned 0489 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files
+- 2026-10-15 15:36 — withdrew 0489 from documentation (full), on hold: its second half tries a stated limit on the running app, in honesty's probe files; it stays in the queue for honesty
+- 2026-10-15 15:36 — released 0489
+- 2026-10-15 15:36 — assigned 0494 to documentation (full) into the lane after 0497: the cryptographic inventory read from the code, a static pointer proposal; locate and the questions
