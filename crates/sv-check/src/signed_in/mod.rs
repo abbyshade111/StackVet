@@ -2215,7 +2215,8 @@ fn run_checks(
     );
 
     // 6. Admin pages, as an ordinary user, confirmed against the admin.
-    asked!(
+    // The admin's own page at each address, which the role checks below read their answers beside.
+    let admins_pages = asked!(
         out,
         http,
         "admin_checks",
@@ -2447,7 +2448,7 @@ fn run_checks(
         http,
         users,
         accounts,
-        confirm.as_deref(),
+        (confirm.as_deref(), &admins_pages),
         &mut out
     ));
     //     The same fields sent with an email change, by an account made for it (finding 13(a)).
@@ -2455,7 +2456,7 @@ fn run_checks(
         http,
         users,
         accounts,
-        confirm.as_deref(),
+        (confirm.as_deref(), &admins_pages),
         &mut out
     ));
     // 9e. The action that should go through once, sent many times at the same instant by A.

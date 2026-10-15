@@ -32,6 +32,8 @@ pub(super) struct FakeApp {
     pub(super) idle_limit: Option<u64>,
     /// Sessions that timed out, by id, for `expired_on_200`.
     expired: std::collections::BTreeSet<String>,
+    /// Accounts that asked for a role, for `role_request_held_on_200`.
+    held: std::collections::BTreeSet<String>,
     /// Seconds a signed-in session may last, when this app limits that at all.
     pub(super) lifetime_limit: Option<u64>,
     /// Per session: when it was first seen signed in, and when it was last used.
@@ -278,6 +280,10 @@ pub(super) struct Flaws {
     /// Answers a private page asked with a session that timed out with "Your session has expired" served
     /// with 200, rather than a redirect to sign in. Not a flaw (backlog 0560).
     pub(super) expired_on_200: bool,
+    /// Holds an account that asked for a role, at sign-up or in an email change, for review, and answers its
+    /// admin page with 200 "Your request for more access awaits review." Not a flaw: the role was not given
+    /// (backlog 0560).
+    pub(super) role_request_held_on_200: bool,
     /// Keeps no upload at all, answering every one, the ordinary file too, with the upload form shown again
     /// with 200 and "Uploads are switched off." Not a flaw: nothing can be judged (backlog 0560).
     pub(super) uploads_off_on_200: bool,
@@ -1808,11 +1814,14 @@ impl FakeApp {
                 let f = form(r);
                 let (password, to) = (f.get("password")?.clone(), f.get("email")?.clone());
                 let mut stored = self.users.get(&who)?.clone();
-                if self.flaws.email_change_trusts_role
-                    && (f.get("role").is_some_and(|v| v == "admin")
-                        || f.get("is_admin").is_some_and(|v| v == "true"))
-                {
+                let asked_for_admin = f.get("role").is_some_and(|v| v == "admin")
+                    || f.get("is_admin").is_some_and(|v| v == "true");
+                if self.flaws.email_change_trusts_role && asked_for_admin {
                     stored.1 = true;
+                }
+                if self.flaws.role_request_held_on_200 && asked_for_admin {
+                    self.held.insert(who.clone());
+                    self.held.insert(to.clone());
                 }
                 if !self.flaws.email_change_without_password
                     && !self.password_matches(&stored.0, &password)
@@ -2162,6 +2171,9 @@ impl FakeApp {
                     let asked_for_admin = f.get("role").is_some_and(|v| v == "admin")
                         || f.get("is_admin").is_some_and(|v| v == "true");
                     let admin = self.flaws.signup_trusts_role && asked_for_admin;
+                    if self.flaws.role_request_held_on_200 && asked_for_admin {
+                        self.held.insert(email.clone());
+                    }
                     self.users.insert(email.clone(), (password, admin));
                     if self.activation {
                         self.next += 1;
@@ -2331,6 +2343,12 @@ impl FakeApp {
             ("GET", "/admin") => {
                 if is_admin || (user.is_some() && self.flaws.admin_open) {
                     Self::respond(200, vec![], "admin")
+                } else if user.as_ref().is_some_and(|u| self.held.contains(u)) {
+                    Self::respond(
+                        200,
+                        vec![],
+                        "<p>Your request for more access awaits review.</p>",
+                    )
                 } else if user.is_some() && self.flaws.admin_denied_on_200 {
                     Self::respond(
                         200,

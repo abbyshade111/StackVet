@@ -1,6 +1,6 @@
 # Sweep 2: every signed-in probe judges an answer against its control, never against a status threshold alone
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -162,3 +162,10 @@ an address that is not a success unchanged gets no condition. A pair answered di
 the always-true one was answered as the unchanged address was (`control::beside`), and under an either-or the
 always-false one too; otherwise it is not judged, and the step says what was compared. A finding names the
 unchanged request among its evidence.
+
+**Seventeenth batch, built (the role at sign-up and in the email change, the rest of list item 5):** the admin-page
+check hands on the admin's own page at each admin address, read earlier in the run, and both role checks read their
+2xx answers beside it: the page shown is the finding as before; a 200 that shows little of it ("your request awaits
+review") is not judged, says so, and the record that the check ran is not written. Signing the admin in again for
+this would have taken a run past the 62 sign-ins the spec states (`a_run_signs_in_no_more_often_than_the_spec_says`
+caught it), so nothing more is sent. With this, every item of the inventory is built.
