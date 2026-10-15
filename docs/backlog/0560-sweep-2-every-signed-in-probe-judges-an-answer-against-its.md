@@ -112,3 +112,7 @@ user's delete is sent, and a 404 or 410 afterwards is the delete only when the r
 change above sent it away), the delete is not judged, and says so. A crash of that read withholds the credit, as the
 table of answers a credit rests on says (`RESTS_ON_A_REFUSAL`, ADR-021).
 
+**Tenth batch, built (the download name, list item 10):** a file fetched back to read the name it is served under is
+the file only when the answer is a 2xx holding its own contents; a redirect to where it is kept, or a page of the
+app's own, is not assessed and says so, for the ordinary file (V5.4.1) and the file with the hostile name (V5.4.2).
+
