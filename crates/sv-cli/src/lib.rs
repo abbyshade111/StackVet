@@ -132,6 +132,9 @@ pub fn describe(evidence: &Evidence) -> String {
         }
         Evidence::Incomplete { reason } => reason.clone(),
         Evidence::NoCheckExists { .. } => "no check for this is possible".to_owned(),
+        Evidence::OnlyInTests { shown_by } => format!(
+            "the only sign of it is {shown_by}, which belongs to the app's tests and counts neither way"
+        ),
     }
 }
 

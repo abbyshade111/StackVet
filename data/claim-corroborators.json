@@ -1958,8 +1958,7 @@
           "inlinedata",
           "inline_data",
           "\"type\": \"image\"",
-          "'type': 'image'",
-          "media_type"
+          "'type': 'image'"
         ],
         "javascript": [
           "image_url",
