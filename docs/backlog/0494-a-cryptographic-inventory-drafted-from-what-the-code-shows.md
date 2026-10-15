@@ -30,3 +30,13 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   `rsa.generate_private_key(key_size=1024)`, `openssl genrsa 1024` in scripts), DSA, ECDSA on a retired curve
   (`secp192r1`, `secp224r1`), a public exponent of 3. Absence credits nothing. Route 4: the key-generation and signing
   call sites shown with the hand check. Tier: `sv`'s own (finding-only); *checked by hand*.
+
+**Built, 15 October 2026, in the pull request that holds this note; its done mark waits on the coordination board, which withdrew 0494 at 18:43 before the owner gave it to this session.** V11.1.1 and V11.1.2 now carry a first draft of the cryptographic inventory
+(`crates/sv-check/src/crypto_inventory.rs`). It holds the places the code hashes, encrypts, signs, derives a key from a
+password, makes a key, or makes random bytes for a secret, each named with the call; files named as keys or
+certificates, never opened; the cryptography libraries among the packages; and the settings named for a secret, by
+name. On the example apps it lists notes-with-users' PBKDF2 password hashing and token generation, oidc-notes' token
+check, hashing, and `OIDC_CLIENT_SECRET`, and flask-booking's `pyjwt`. And `ast.weak-key-generation`
+(`crates/sv-check/src/weak_keys.rs`) reports, against V11.6.1, a key made too weak: RSA under 2048 bits, DSA, a
+192-bit curve, or an exponent of 3, finding-only. ADR-022, a Later entry. Not built: V11.2.1's hand-rolled-crypto
+finding and V11.2.2's count of hard-coded algorithms, filed as backlog 0611.

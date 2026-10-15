@@ -94,6 +94,10 @@ pub struct Item {
     /// (backlog 0497). Where to look, never evidence; never in `report.json`.
     #[serde(skip)]
     pub personal_fields: Option<crate::personal_fields::PersonalFields>,
+    /// A first draft of the app's cryptographic inventory, for the key-management questions (backlog 0494). Where to
+    /// look, never evidence; never in `report.json`.
+    #[serde(skip)]
+    pub crypto: Option<crate::crypto_inventory::CryptoInventory>,
 }
 
 /// What the standard's own words are called where a question shows them under its plain words.
@@ -209,6 +213,7 @@ pub fn checklist(
                 routes: None,
                 pathways: None,
                 personal_fields: None,
+                crypto: None,
             });
         }
     }
@@ -228,6 +233,7 @@ pub fn checklist(
                 routes: None,
                 pathways: None,
                 personal_fields: None,
+                crypto: None,
             });
         }
     }
@@ -247,6 +253,7 @@ pub fn checklist(
                 routes: None,
                 pathways: None,
                 personal_fields: None,
+                crypto: None,
             });
         }
     }

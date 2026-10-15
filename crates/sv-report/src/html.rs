@@ -840,6 +840,7 @@ pub fn page(report: &Report) -> String {
                     + &routes(item)
                     + &pathways(item)
                     + &personal_fields(item)
+                    + &crypto(item)
             ));
         }
         b.push_str("</table>\n");
@@ -1176,6 +1177,51 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
         ));
     }
     b.push_str("</ul>\n");
+}
+
+/// The draft cryptographic inventory, beside a key-management question (backlog 0494), with the sentence that says it
+/// is where to look and not evidence; empty when nothing was found.
+fn crypto(item: &sv_check::human::Item) -> String {
+    let Some(found) = &item.crypto else {
+        return String::new();
+    };
+    let mut b = format!(
+        "<br><span class=\"note\">{}</span>\n<ul>\n",
+        escape(sv_check::crypto_inventory::INVENTORY_SAYS)
+    );
+    for place in found.uses.iter().chain(&found.settings) {
+        b.push_str(&format!(
+            "<li>{} (<code>{}</code>, line {})</li>\n",
+            escape(&place.what),
+            escape(&place.file),
+            place.line
+        ));
+    }
+    for file in &found.key_files {
+        b.push_str(&format!(
+            "<li>a key or certificate file, <code>{}</code> (not opened)</li>\n",
+            escape(file)
+        ));
+    }
+    if !found.libraries.is_empty() {
+        b.push_str(&format!(
+            "<li>cryptography libraries among the packages: {}</li>\n",
+            found
+                .libraries
+                .iter()
+                .map(|l| format!("<code>{}</code>", escape(l)))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+    }
+    b.push_str("</ul>");
+    if found.more > 0 {
+        b.push_str(&format!(
+            "<span class=\"note\">And {} more, not shown.</span>",
+            found.more
+        ));
+    }
+    b
 }
 
 /// The fields the app's schema shows that look like personal data, beside a data-classification question (backlog
