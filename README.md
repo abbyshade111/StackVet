@@ -187,7 +187,9 @@ it. After each command Claude Code runs and each file it writes, the hook adds a
 app's folder, in `~/.local/state/stackvet/hook-records/`: the command, with any key cut short, or the file's path, and
 never a file's contents, a command's output, your prompts, or the tool's words. `sv report --hook-record` reads it for
 that report alone: a section of its own says how many commands and file writes it saw, which ran the tests and whether
-the last of them failed, and whether the record was changed since the last report. It credits nothing, and the tool,
+the last of them failed, each time the tool ended a turn saying the tests pass when its own record shows no test
+ran, the last one failed, or files were written since (the hook keeps that the tool said so, never its words), and
+whether the record was changed since the last report. It credits nothing, and the tool,
 which runs as you, could have changed the record before then (ADR-122).
 
 ### The questions no tool can answer

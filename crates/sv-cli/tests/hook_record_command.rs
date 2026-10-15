@@ -127,7 +127,8 @@ fn the_printed_hook_records_and_a_report_reads_it_only_when_asked() {
     for input in [
         format!(r#"{{"hook_event_name":"PostToolUse","session_id":"s","tool_name":"Write","tool_input":{{"file_path":"{app}/app.py"}}}}"#),
         r#"{"hook_event_name":"PostToolUse","session_id":"s","tool_name":"Bash","tool_input":{"command":"pytest -q"}}"#.to_owned(),
-        r#"{"hook_event_name":"Stop","session_id":"s"}"#.to_owned(),
+        r#"{"hook_event_name":"Stop","session_id":"s","last_assistant_message":"All tests pass."}"#
+            .to_owned(),
     ] {
         // Run as Claude Code runs a command hook: the printed string, through the shell.
         let ran = place.run(Command::new("sh").args(["-c", &hook]), Some(&input));
@@ -179,5 +180,11 @@ fn the_printed_hook_records_and_a_report_reads_it_only_when_asked() {
         compliance.contains("It saw 1 command, 1 file write, and 1 turn ended"),
         "{compliance}"
     );
+    // The claim is read against the session's own test command, which finished without an error; the words are not kept.
+    assert!(
+        compliance.contains("The tool ended 1 turn saying the app's tests pass"),
+        "{compliance}"
+    );
+    assert!(!compliance.contains("All tests pass"), "{compliance}");
     assert!(read("report.html").contains("What the hook saw your AI coding tool do"));
 }

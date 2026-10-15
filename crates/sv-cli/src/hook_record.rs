@@ -74,7 +74,13 @@ pub fn line_of(
         line["session"] = json!(sv_check::text::cut_with_count(session, 80));
     }
     match event {
-        "Stop" => {}
+        "Stop" => {
+            // What the tool said it had done, by kind, never its words (backlog 0565, ADR-122, Later).
+            let claims = claims_in(input["last_assistant_message"].as_str().unwrap_or_default());
+            if !claims.is_empty() {
+                line["claims"] = json!(claims);
+            }
+        }
         "PostToolUse" | "PostToolUseFailure" => {
             let tool = input["tool_name"].as_str().filter(|t| TOOLS.contains(t))?;
             line["tool"] = json!(tool);
@@ -214,6 +220,64 @@ pub fn append(path: &Path, mut line: Value) -> Result<()> {
         .with_context(|| format!("writing {}", path.display()))
 }
 
+/// The kinds of claim `said` makes that the record can be read against (backlog 0565): today one, that the app's tests
+/// pass. A sentence claims it when it names tests and passing and says nothing of failing, of not passing, or of
+/// passing only some day or on some condition.
+pub fn claims_in(said: &str) -> Vec<&'static str> {
+    let claims_tests_pass = said
+        .split(['.', '!', '?', '\n', ';'])
+        .map(str::to_lowercase)
+        .any(|sentence| {
+            let words: Vec<&str> = sentence
+                .split(|c: char| !c.is_alphanumeric() && c != '\'')
+                .filter(|w| !w.is_empty())
+                .collect();
+            let tests = words.iter().any(|w| w.starts_with("test"));
+            let pass = words
+                .iter()
+                .any(|w| matches!(*w, "pass" | "passes" | "passed" | "passing" | "green"));
+            let against = words.iter().any(|w| {
+                w.starts_with("fail")
+                    || matches!(
+                        *w,
+                        "not"
+                            | "no"
+                            | "don't"
+                            | "doesn't"
+                            | "didn't"
+                            | "won't"
+                            | "can't"
+                            | "couldn't"
+                            | "never"
+                            // An intention or a condition is not a claim that they do.
+                            | "will"
+                            | "i'll"
+                            | "should"
+                            | "would"
+                            | "could"
+                            | "might"
+                            | "need"
+                            | "needs"
+                            | "make"
+                            | "once"
+                            | "until"
+                            | "if"
+                            | "try"
+                            | "unless"
+                    )
+            });
+            tests && pass && !against
+        });
+    if claims_tests_pass {
+        vec![TESTS_PASS]
+    } else {
+        Vec::new()
+    }
+}
+
+/// The claim that the app's tests pass.
+pub const TESTS_PASS: &str = "tests-pass";
+
 /// Whether a command runs an app's tests: the test runners of the languages `sv` reads, by their own command words.
 pub fn runs_tests(command: &str) -> bool {
     const RUNNERS: [&str; 16] = [
@@ -244,7 +308,7 @@ pub fn runs_tests(command: &str) -> bool {
 
 /// What the record at `path` holds, for a report, read against the last sealed report's tip, when there was one.
 pub fn read(path: &Path, earlier: Option<&sv_report::hook::Tip>) -> sv_report::hook::HookSeen {
-    use sv_report::hook::{Earlier, HookSeen, Tip};
+    use sv_report::hook::{Earlier, HookSeen, Mismatch, Tip};
     let mut seen = HookSeen::default();
     if !std::fs::symlink_metadata(path).is_ok_and(|m| m.is_file()) {
         seen.not_read = Some(
@@ -263,6 +327,9 @@ pub fn read(path: &Path, earlier: Option<&sv_report::hook::Tip>) -> sv_report::h
     }
     let mut previous = GENESIS.to_owned();
     let mut chains: Vec<String> = Vec::new();
+    // Each session's last test command, when, and whether it failed, and the files written after it: a claim that the
+    // tests pass is read against its own session's commands (backlog 0565).
+    let mut sessions: std::collections::HashMap<String, Session> = std::collections::HashMap::new();
     let mut lines = 0;
     for raw in String::from_utf8_lossy(&bytes).lines() {
         if raw.trim().is_empty() {
@@ -297,21 +364,61 @@ pub fn read(path: &Path, earlier: Option<&sv_report::hook::Tip>) -> sv_report::h
         if at.is_some() {
             seen.last = at.clone();
         }
+        let session = value["session"].as_str().unwrap_or_default().to_owned();
         match (value["event"].as_str(), value["tool"].as_str()) {
-            (Some("Stop"), _) => seen.turns += 1,
+            (Some("Stop"), _) => {
+                seen.turns += 1;
+                let claims = value["claims"].as_array().cloned().unwrap_or_default();
+                if claims.iter().any(|c| c == TESTS_PASS) {
+                    seen.claims += 1;
+                    let at = at.clone().unwrap_or_default();
+                    let mismatch = match sessions.get(&session) {
+                        None
+                        | Some(Session {
+                            last_test: None, ..
+                        }) => Some(Mismatch::NoTestRan),
+                        Some(Session {
+                            last_test: Some((when, true)),
+                            ..
+                        }) => Some(Mismatch::LastTestFailed { at: when.clone() }),
+                        Some(Session {
+                            last_test: Some((when, false)),
+                            written_after,
+                        }) if *written_after > 0 => Some(Mismatch::WrittenSince {
+                            at: when.clone(),
+                            files: *written_after,
+                        }),
+                        Some(_) => None,
+                    };
+                    if let Some(what) = mismatch {
+                        seen.mismatches.push(sv_report::hook::Said { at, what });
+                    }
+                }
+            }
             (Some(event @ ("PostToolUse" | "PostToolUseFailure")), Some("Bash" | "PowerShell")) => {
                 seen.commands += 1;
                 let command = value["command"].as_str().unwrap_or_default();
                 if runs_tests(command) {
                     seen.tests += 1;
+                    let failed = event == "PostToolUseFailure";
+                    sessions.insert(
+                        session,
+                        Session {
+                            last_test: Some((at.clone().unwrap_or_default(), failed)),
+                            written_after: 0,
+                        },
+                    );
                     seen.last_test = Some((at.unwrap_or_default(), command.to_owned()));
-                    seen.last_test_failed = event == "PostToolUseFailure";
+                    seen.last_test_failed = failed;
                     seen.written_after_last_test = 0;
                 }
             }
             (Some("PostToolUse" | "PostToolUseFailure"), Some(_)) => {
                 seen.writes += 1;
                 seen.written_after_last_test += 1;
+                if let Some(s) = sessions.get_mut(&session) {
+                    s.written_after += 1;
+                }
             }
             _ => {}
         }
@@ -328,6 +435,13 @@ pub fn read(path: &Path, earlier: Option<&sv_report::hook::Tip>) -> sv_report::h
         }
     });
     seen
+}
+
+/// A session's last test command, as `read` follows it.
+#[derive(Default)]
+struct Session {
+    last_test: Option<(String, bool)>,
+    written_after: usize,
 }
 
 /// What the record of the app at `app_dir` holds, for a report the person asked to read it for.
