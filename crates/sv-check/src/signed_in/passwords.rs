@@ -771,6 +771,17 @@ pub(super) fn password_field_checks(
 /// Whether a password can be changed (V6.2.2), and whether changing it needs the current one
 /// (V6.2.3), through `change-password`.
 ///
+/// `template` with every field that carries the account's password taken out, as a browser's request would be
+/// with the field deleted: `None` when no field carries it, so there is nothing to leave out.
+pub(super) fn without_password(template: &RequestTemplate) -> Option<RequestTemplate> {
+    let mut left = template.clone();
+    let carries = |v: &String| v.contains("{password}");
+    let before = left.form.len() + left.json.len();
+    left.form.retain(|_, v| !carries(v));
+    left.json.retain(|_, v| !carries(v));
+    (left.form.len() + left.json.len() < before).then_some(left)
+}
+
 /// The wrong current password first, then the right one, each told by signing in afterwards. If the
 /// change with a wrong current password takes, that is the finding, and it has also shown a
 /// password can be changed. If it does not, the same change with the right current password has to
@@ -833,35 +844,61 @@ pub(super) fn change_password_checks(
     let first = format!("N1-{}-aZ9!", &spare[8..32]);
     let second = format!("N2-{}-aZ9!", &spare[2..26]);
 
-    let changed = |http: &mut dyn Http, current: &str, new: &str, label: &str| {
-        let mut quiet = Vec::new();
-        let signed_in = sign_in(http, users, label, &account, &mut quiet)?;
-        let mut session = signed_in.session;
-        let values = Values {
-            user: &account.user,
-            password: current,
-            new_password: new,
-            ..Default::default()
-        };
-        // As for deletion: the form may be on the account page rather than at the address it posts
-        // to.
-        let pages: Vec<String> = users.private.clone();
-        send_template(
-            http,
-            &format!("change-password-{label}"),
-            change,
-            &values,
-            &mut session,
-            &pages,
-        )
-        .0
-    };
     let as_with = |password: &str| Account {
         user: account.user.clone(),
         password: password.to_owned(),
     };
 
-    let answer = changed(http, &wrong, &first, "wrong-current");
+    // First the change with the current password left out, then with a wrong one, in one session (backlog 0561,
+    // ADR-119): an app that checks the current password only when it is sent refuses the wrong one and takes the
+    // change without it. Told apart by signing in afterwards: the wrong one's password just below, and the left-out
+    // one's only where the right change then fails, so a correct app signs in no more often than before.
+    let left_out = without_password(change);
+    let third = format!("N3-{}-aZ9!", &spare[10..32]);
+    let answer = {
+        let mut quiet = Vec::new();
+        match sign_in(http, users, "wrong-current", &account, &mut quiet) {
+            None => None,
+            Some(signed_in) => {
+                let mut session = signed_in.session;
+                let pages: Vec<String> = users.private.clone();
+                if let Some(left_out) = &left_out {
+                    let values = Values {
+                        user: &account.user,
+                        new_password: &third,
+                        ..Default::default()
+                    };
+                    let (answer, _) = send_template(
+                        http,
+                        "change-password-no-current",
+                        left_out,
+                        &values,
+                        &mut session,
+                        &pages,
+                    );
+                    out.steps.push(format!(
+                        "asked to change the password with the current one left out ({})",
+                        status(&answer)
+                    ));
+                }
+                let values = Values {
+                    user: &account.user,
+                    password: &wrong,
+                    new_password: &first,
+                    ..Default::default()
+                };
+                send_template(
+                    http,
+                    "change-password-wrong-current",
+                    change,
+                    &values,
+                    &mut session,
+                    &pages,
+                )
+                .0
+            }
+        }
+    };
     out.steps.push(format!(
         "asked to change the password giving a wrong current one ({})",
         status(&answer)
@@ -961,6 +998,51 @@ pub(super) fn change_password_checks(
         confirm,
         &mut out.steps,
     );
+    // The right change failing may be the left-out change having taken first: the password is then the one it
+    // set, and the right current password is no longer right.
+    if !new_works
+        && left_out.is_some()
+        && account_works(
+            http,
+            users,
+            "no-current",
+            &as_with(&third),
+            confirm,
+            &mut out.steps,
+        )
+    {
+        out.findings.push(finding_on(
+            vec![
+                "change-password-no-current".to_owned(),
+                "private-no-current".to_owned(),
+            ],
+            &CHANGE_WITHOUT_CURRENT,
+            "The password can be changed with the current one left out",
+            Severity::High,
+            format!(
+                "A request to {} with the current password left out changed it: the new password \
+                 then signed in. The same change giving a wrong current password was refused, so \
+                 the app checks the current password only when it is sent.",
+                change.path
+            ),
+        ));
+        out.verified.push(crate::Verified::new(
+            CHANGE_PASSWORD.rule_id,
+            CHANGE_PASSWORD.requirement_ids,
+            format!(
+                "a password change through {}, after which the new password signed in",
+                change.path
+            ),
+        ));
+        out.not_assessed.push((
+            "V7.4.3, V6.3.7".to_owned(),
+            "What a password change does to the account's other sessions, and whether it emails the \
+             account holder: the change was taken with the current password left out, so the \
+             account's password was no longer the one known here to try it again."
+                .to_owned(),
+        ));
+        return;
+    }
     if !new_works {
         out.not_assessed.push((
             IDS.to_owned(),
@@ -1004,9 +1086,14 @@ pub(super) fn change_password_checks(
         CHANGE_WITHOUT_CURRENT.rule_id,
         CHANGE_WITHOUT_CURRENT.requirement_ids,
         format!(
-            "a change through {} giving a wrong current password, refused where the same change \
+            "a change through {} giving a wrong current password{}, refused where the same change \
              with the right one took",
-            change.path
+            change.path,
+            if left_out.is_some() {
+                ", and one leaving it out,"
+            } else {
+                ""
+            }
         ),
     ).in_part());
     sessions_after_change(bystander_open_after, &change.path, out);
@@ -1104,7 +1191,54 @@ pub(super) fn change_email_check(
         .0
     };
 
-    let answer = changed(http, &wrong, &by_wrong, "wrong-password");
+    // As for the password change (backlog 0561, ADR-119): first the change with the password left out, then with a
+    // wrong one, in one session; the left-out one is told apart only where the right change then fails.
+    let left_out = without_password(change);
+    let by_none = moved("moved-none");
+    let answer = {
+        let mut quiet = Vec::new();
+        match sign_in(http, users, "email-wrong-password", &account, &mut quiet) {
+            None => None,
+            Some(signed_in) => {
+                let mut session = signed_in.session;
+                let pages: Vec<String> = users.private.clone();
+                if let Some(left_out) = &left_out {
+                    let values = Values {
+                        user: &account.user,
+                        new_email: &by_none.user,
+                        ..Default::default()
+                    };
+                    let (answer, _) = send_template(
+                        http,
+                        "change-email-no-password",
+                        left_out,
+                        &values,
+                        &mut session,
+                        &pages,
+                    );
+                    out.steps.push(format!(
+                        "asked to change the email address with the password left out ({})",
+                        status(&answer)
+                    ));
+                }
+                let values = Values {
+                    user: &account.user,
+                    password: &wrong,
+                    new_email: &by_wrong.user,
+                    ..Default::default()
+                };
+                send_template(
+                    http,
+                    "change-email-wrong-password",
+                    change,
+                    &values,
+                    &mut session,
+                    &pages,
+                )
+                .0
+            }
+        }
+    };
     out.steps.push(format!(
         "asked to change the email address giving a wrong password ({})",
         status(&answer)
@@ -1147,6 +1281,35 @@ pub(super) fn change_email_check(
         confirm,
         &mut out.steps,
     ) {
+        // The right change failing may be the left-out change having taken first: the address is then the one it
+        // set, and the right change signed in under the old one.
+        if left_out.is_some()
+            && account_works(
+                http,
+                users,
+                "email-moved-none",
+                &by_none,
+                confirm,
+                &mut out.steps,
+            )
+        {
+            out.findings.push(finding_on(
+                vec![
+                    "change-email-no-password".to_owned(),
+                    "private-email-moved-none".to_owned(),
+                ],
+                &EMAIL_CHANGE_WITHOUT_PASSWORD,
+                "The email address can be changed with the password left out",
+                Severity::High,
+                format!(
+                    "A request to {} with the password left out changed the account's email \
+                     address: the new address then signed in. The same change giving a wrong \
+                     password was refused, so the app checks the password only when it is sent.",
+                    change.path
+                ),
+            ));
+            return;
+        }
         out.not_assessed.push((
             IDS.to_owned(),
             format!(
@@ -1160,17 +1323,24 @@ pub(super) fn change_email_check(
         ));
         return;
     }
-    out.verified.push(crate::Verified::new(
-        EMAIL_CHANGE_WITHOUT_PASSWORD.rule_id,
-        EMAIL_CHANGE_WITHOUT_PASSWORD.requirement_ids,
-        format!(
-            "a change of email address through {} giving a wrong password, refused where the same \
-             change with the right one took",
-            change.path
-        ),
-    )
-    // The email address alone, not phone, MFA, or recovery details (ADR-053, Later).
-    .in_part());
+    out.verified.push(
+        crate::Verified::new(
+            EMAIL_CHANGE_WITHOUT_PASSWORD.rule_id,
+            EMAIL_CHANGE_WITHOUT_PASSWORD.requirement_ids,
+            format!(
+                "a change of email address through {} giving a wrong password{}, refused where the \
+             same change with the right one took",
+                change.path,
+                if left_out.is_some() {
+                    ", and one leaving it out,"
+                } else {
+                    ""
+                }
+            ),
+        )
+        // The email address alone, not phone, MFA, or recovery details (ADR-053, Later).
+        .in_part(),
+    );
 }
 
 /// V7.4.3: whether a second session of the account still opened a private page after the password
@@ -2958,3 +3128,6 @@ mod tests {
 #[cfg(test)]
 #[path = "passwords_ids_tests.rs"]
 mod passwords_ids_tests;
+
+#[cfg(test)]
+mod left_out_tests;

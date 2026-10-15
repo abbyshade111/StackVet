@@ -60,3 +60,10 @@ token from another session sent with A's cookies (two or three); an SVG named `.
 **Third batch, built (inventory items 1, 2, and 7):** the second user shown signed in before the other-users'-data and
 skipped-step checks read refusals as theirs; and the wrong-code check's right code, already sent, read: taken after a
 limit that refused the wrong ones, it is the finding "After the limit, the right emailed code still signs in".
+
+**Fourth batch, built (inventory item 3, the password and email changes):** each change is also sent with the
+password field left out, first, in the session that then sends the wrong one. A left-out change that took moves the
+password or the address, so the right change after it fails; only then is the left-out one's password or address
+signed in with, which keeps a correct app's sign-ins as they were. Taken, it is the finding ("... with the current
+one left out", "... with the password left out"); refused with the wrong one, the credit says both were refused.
+`account_changes.rs` (phone, two-factor, and recovery details) is still to do.
