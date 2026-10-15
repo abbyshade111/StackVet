@@ -77,6 +77,16 @@ pub struct Markers {
     /// The two marked requests sent just before and just after the successful sign-in, set only
     /// when that sign-in was shown to work.
     pub successful_window: Option<Window>,
+    /// The account the password-guessing check made and guessed at, whose first wrong password is
+    /// a refused sign-in for an account that exists, which an app may log differently from one for
+    /// a name it has never heard of (backlog 0232, part 5).
+    pub wrong_password: Option<String>,
+    /// The two marked requests sent just before and just after that first wrong password.
+    pub wrong_password_window: Option<Window>,
+    /// The authentication operations stackvet.toml names that no marker was planted for, each as
+    /// the report says it ("a password change"). Any of them keeps V16.3.1's credit in part: the
+    /// requirement asks for *all* authentication operations (backlog 0232, part 5).
+    pub untried: Vec<String>,
 }
 
 /// Two requests `sv` made, each with a marker in its path, around exactly one sign-in.
@@ -269,8 +279,21 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
     };
     let failed_line =
         by_name(&markers.failed_sign_in).or_else(|| by_window(&markers.failed_window, true));
-    let succeeded_line = by_name(&markers.successful_sign_in)
+    // The accepted sign-in's account is also the one given a wrong password, so a line naming it
+    // counts for the one it says: the refusal only when it says it failed, the success only when
+    // it does not.
+    let by_name_saying = |name: &Option<String>, failed: bool| {
+        name.as_deref()
+            .and_then(|n| {
+                log.lines()
+                    .find(|l| l.contains(n) && says_failed(&l.replace(n, " ")) == failed)
+            })
+            .map(|l| (l, true))
+    };
+    let succeeded_line = by_name_saying(&markers.successful_sign_in, false)
         .or_else(|| by_window(&markers.successful_window, false));
+    let wrong_line = by_name_saying(&markers.wrong_password, true)
+        .or_else(|| by_window(&markers.wrong_password_window, true));
     if let Some((line, _)) = failed_line {
         out.lines.push(KeptLine::new(
             "the failed sign-in (V16.3.1, V16.2.1, V16.2.2, V16.2.4)",
@@ -312,16 +335,54 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
                          their path just before and just after it"
                     }
                 };
-                out.verified.push(crate::Verified::new(
+                // Whole only when a wrong password for a real account was found too, and nothing
+                // else stackvet.toml names as a way to authenticate went untried (backlog 0232,
+                // part 5; ADR-053, Later).
+                let mut not_shown = Vec::new();
+                match (&markers.wrong_password, wrong_line) {
+                    (Some(_), Some(_)) => {}
+                    (Some(_), None) => not_shown.push(
+                        "a wrong password for an account that exists, which was tried and not \
+                         found in the app's output"
+                            .to_owned(),
+                    ),
+                    (None, _) => not_shown.push(
+                        "a wrong password for an account that exists, which could not be tried"
+                            .to_owned(),
+                    ),
+                }
+                not_shown.extend(markers.untried.iter().map(|u| format!("{u}, not tried")));
+                let credit = crate::Verified::new(
                     "probe.authentication-logged",
                     &["V16.3.1"],
-                    format!(
-                        "two sign-ins this run made — one refused, for an account that does not \
-                         exist, and one accepted, by an account used for nothing else — {found}"
-                    ),
-                )
-                // Two sign-ins, not every authentication operation V16.3.1 names (ADR-053, Later).
-                .in_part());
+                    if not_shown.is_empty() {
+                        format!(
+                            "three sign-ins this run made — one refused, for an account that does \
+                             not exist; one accepted, by an account used for nothing else; and one \
+                             refused, a wrong password for that account — {found}, and the third \
+                             too; stackvet.toml names no other way to authenticate"
+                        )
+                    } else {
+                        format!(
+                            "two sign-ins this run made — one refused, for an account that does \
+                             not exist, and one accepted, by an account used for nothing else — \
+                             {found}; not shown: {}",
+                            not_shown.join("; ")
+                        )
+                    },
+                );
+                if wrong_line.is_some() {
+                    out.steps.push(
+                        "the app's output recorded the wrong password for an account that exists"
+                            .to_owned(),
+                    );
+                }
+                out.verified.push(if not_shown.is_empty() {
+                    credit
+                } else {
+                    // Not every authentication operation V16.3.1 names (ADR-053, Later).
+                    credit.in_part()
+                });
             }
             (failed, succeeded) => {
                 // Naming which half was missing matters: an app that logs only successes is a
