@@ -66,6 +66,7 @@ fn run(open: Vec<&'static str>) -> (Outcome, Scripted) {
         &signed_in(),
         Some("/account"),
         &private(),
+        &[],
         Some(true),
         &mut out,
     );
@@ -157,6 +158,7 @@ fn one_page_listed_is_one_sample() {
         &signed_in(),
         Some("/account"),
         &["/account".to_owned()],
+        &[],
         Some(true),
         &mut out,
     );

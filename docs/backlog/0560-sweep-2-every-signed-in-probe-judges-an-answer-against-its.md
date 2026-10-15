@@ -112,3 +112,11 @@ user's delete is sent, and a 404 or 410 afterwards is the delete only when the r
 change above sent it away), the delete is not judged, and says so. A crash of that read withholds the credit, as the
 table of answers a credit rests on says (`RESTS_ON_A_REFUSAL`, ADR-021).
 
+**Ninth batch, built (the made-up session, list item 9):** a private page that opened to somebody not signed in is
+not asked with a made-up session (it would open, and be blamed on the session), and says so in a step; a made-up
+session answered with a page that shows little of the real session's (a sign-in form served with 200) is neither the
+page opening nor a refusal, says so, and leaves the credit in part. `control::shows_page` now compares only the words
+between tags, so two pages built from the same `<form>` and `<button>` are not taken for one, and counts the same
+body, even an empty one, as the same page; the admin-page and private-page checks that use it are unchanged in their
+tests.
+
