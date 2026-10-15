@@ -202,6 +202,14 @@ pub fn answers(app_dir: &std::path::Path, asked: &Asked) -> Vec<Line> {
                 "Docker is running and runs Linux containers, so `sv report --run` can start the \
                  app.",
             ),
+            // Installed and kept from this shell, as by an AI coding tool's sandbox (backlog 0544): what Docker can
+            // do is not known from here, and "not ready" would send the person to install what they have.
+            Err(
+                why @ CannotRun::NoBackend {
+                    unreachable: Some(_),
+                    ..
+                },
+            ) => line("Docker", State::CannotTell, why.explain()),
             Err(why) => line("Docker", State::NotReady, why.explain()),
         }
     });
@@ -249,3 +257,7 @@ mod tests;
 #[cfg(test)]
 #[path = "doctor/windows_tests.rs"]
 mod windows_tests;
+
+#[cfg(test)]
+#[path = "doctor/unreachable_tests.rs"]
+mod unreachable_tests;

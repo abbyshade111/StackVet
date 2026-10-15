@@ -306,7 +306,8 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >    with `docker pull ghcr.io/abbyshade111/stackvet-sv`. Don't stop or restart any container for it: a new chat with
 >    you starts the new one.
 > 4. In this folder, run `sv doctor` (`stackvet doctor` in PowerShell) and tell me in plain words what is ready for the
->    full report and what is not.
+>    full report and what is not. If it says Docker is installed but this shell cannot reach it, your commands are
+>    kept from Docker, and nothing needs installing: ask me to allow it, or to run `sv doctor` in my own terminal.
 > 5. On Windows, tell me first that this step has not been tried on a Windows computer, and that a Mac or Linux
 >    computer is the known way to run it. Ask me, then run `sv report . --run` here (`stackvet report . --run` in
 >    PowerShell). It starts the app in a

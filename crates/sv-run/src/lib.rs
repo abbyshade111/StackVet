@@ -55,8 +55,13 @@ pub mod start_settings;
 /// Why the app could not be run. Every one of these produces `not assessed`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CannotRun {
-    /// No container backend on this machine.
-    NoBackend { checked: String },
+    /// No container backend this shell can use. `unreachable` is Docker's socket when Docker answered that this shell
+    /// may not open it (permission denied): Docker is installed, and the shell is kept from it, as an AI coding tool's
+    /// sandbox keeps it (backlog 0544).
+    NoBackend {
+        checked: String,
+        unreachable: Option<String>,
+    },
     /// The manifest does not say how to start the app.
     NoRunCommand { missing: Vec<String> },
     /// `image` under `[stack.run]` is not a name Docker reads as one (`image_reference`), so it
@@ -101,6 +106,10 @@ impl CannotRun {
     /// printed: for when what they printed cannot be shown.
     pub fn kind(&self) -> &'static str {
         match self {
+            CannotRun::NoBackend {
+                unreachable: Some(_),
+                ..
+            } => "Docker is installed and this shell cannot reach it",
             CannotRun::NoBackend { .. } => "no container backend",
             CannotRun::NoRunCommand { .. } => "stackvet.toml does not say how to run it",
             CannotRun::BadImage { .. } => "the image named is not one Docker reads",
@@ -116,7 +125,16 @@ impl CannotRun {
     /// Plain language, for the reports and the terminal.
     pub fn explain(&self) -> String {
         match self {
-            CannotRun::NoBackend { checked } => format!(
+            CannotRun::NoBackend {
+                unreachable: Some(socket),
+                ..
+            } => format!(
+                "Docker is installed but this shell cannot reach it (permission denied on {socket}). Everything \
+                 that needs the app running is reported as not assessed — not as passing, and not as failing. An AI \
+                 coding tool's sandbox keeps its commands from Docker: run `sv doctor` outside the tool's sandbox or \
+                 in your own terminal, and run this again there."
+            ),
+            CannotRun::NoBackend { checked, .. } => format!(
                 "No container backend on this computer ({checked}). Everything that needs the app \
                  running is reported as not assessed — not as passing, and not as failing. To have \
                  it checked, get Docker running with Linux containers (Docker Desktop, or \
@@ -1844,6 +1862,7 @@ mod tests {
         for reason in [
             CannotRun::NoBackend {
                 checked: "`docker` could not be started".into(),
+                unreachable: None,
             },
             CannotRun::BackendFailed {
                 detail: "Cannot connect to the Docker daemon".into(),
@@ -1863,6 +1882,7 @@ mod tests {
         for reason in [
             CannotRun::NoBackend {
                 checked: "docker".into(),
+                unreachable: None,
             },
             CannotRun::NoRunCommand {
                 missing: vec!["image".into()],

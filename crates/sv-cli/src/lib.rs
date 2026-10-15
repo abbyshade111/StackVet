@@ -201,11 +201,20 @@ pub fn probe_the_running_app(
     ))
 }
 
+#[cfg(test)]
+#[path = "run_gap_reason_tests.rs"]
+mod run_gap_reason_tests;
+
 /// Which kind of gap a run that could not happen leaves (`sv_report::GapReason`).
 fn run_gap_reason(why: &sv_run::CannotRun) -> sv_report::GapReason {
     use sv_report::GapReason;
     use sv_run::CannotRun;
     match why {
+        // Docker installed and kept from this shell (backlog 0544): `docker info` ran and was refused.
+        CannotRun::NoBackend {
+            unreachable: Some(_),
+            ..
+        } => GapReason::Stopped,
         CannotRun::NoBackend { .. } => GapReason::NotInstalled,
         CannotRun::NoRunCommand { .. } => GapReason::NotAsked,
         CannotRun::BadImage { .. } | CannotRun::BadHealth { .. } => GapReason::CouldNotRead,
