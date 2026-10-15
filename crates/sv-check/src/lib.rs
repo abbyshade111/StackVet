@@ -22,6 +22,7 @@ pub mod client_tech;
 pub mod coding_rules;
 pub mod config;
 pub mod confirm;
+pub mod crypto_inventory;
 pub mod cvss;
 pub mod cvss4;
 mod cvss4_tables;
@@ -76,6 +77,7 @@ pub mod text;
 pub mod test_support;
 pub mod totp;
 pub mod verified;
+pub mod weak_keys;
 pub mod workflows;
 
 pub use finding::{Confidence, Finding, Location, Secret, Severity};

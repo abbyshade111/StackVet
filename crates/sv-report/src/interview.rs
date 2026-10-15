@@ -198,6 +198,45 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
     out.push_str(&routes(item, fence));
     out.push_str(&pathways(item, fence));
     out.push_str(&personal_fields(item, fence));
+    out.push_str(&crypto(item, fence));
+    out
+}
+
+/// The draft cryptographic inventory (backlog 0494), each piece of the app's text through `fence`, with the sentence
+/// that says it is where to look and not evidence.
+fn crypto(item: &Item, fence: &crate::fence::Fence) -> String {
+    let Some(found) = &item.crypto else {
+        return String::new();
+    };
+    let mut out = format!("   {}\n", sv_check::crypto_inventory::INVENTORY_SAYS);
+    for place in found.uses.iter().chain(&found.settings) {
+        out.push_str(&format!(
+            "     {} ({}, line {})\n",
+            fence.wrap(&place.what),
+            fence.wrap(&place.file),
+            place.line
+        ));
+    }
+    for file in &found.key_files {
+        out.push_str(&format!(
+            "     a key or certificate file, {} (not opened)\n",
+            fence.wrap(file)
+        ));
+    }
+    if !found.libraries.is_empty() {
+        out.push_str(&format!(
+            "     cryptography libraries among the packages: {}\n",
+            found
+                .libraries
+                .iter()
+                .map(|l| fence.wrap(l))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+    }
+    if found.more > 0 {
+        out.push_str(&format!("     And {} more, not shown.\n", found.more));
+    }
     out
 }
 

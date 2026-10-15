@@ -2831,6 +2831,14 @@
     "finding_only": false
    }
   ],
+  "V11.6.1": [
+   {
+    "id": "ast.weak-key-generation",
+    "run": "Reads the code",
+    "looks_for": "A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3",
+    "finding_only": true
+   }
+  ],
   "V12.1.1": [
    {
     "id": "semgrep",
