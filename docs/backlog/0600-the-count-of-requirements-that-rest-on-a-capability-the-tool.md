@@ -1,6 +1,6 @@
 # The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
