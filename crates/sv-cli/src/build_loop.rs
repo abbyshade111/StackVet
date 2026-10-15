@@ -61,6 +61,9 @@ pub struct Line {
     /// fetched (backlog 0227, decided 11 October 2026, ADR-084). Keyed by the same name as `handed`;
     /// empty for a line written before sizes were kept, and then the dashboard says so.
     pub handed_sizes: BTreeMap<String, u64>,
+    /// The call came at the folder the server serves before it held a `stackvet.toml` (backlog 0586): the AI tool's
+    /// first calls, `stackvet_status` and the spec, are written down too, and say so.
+    pub no_manifest: bool,
 }
 
 /// The most names a line keeps of what a call asked, and of what was handed over.
@@ -203,6 +206,9 @@ impl Line {
         if !self.handed_sizes.is_empty() {
             line["sizes"] = json!(self.handed_sizes);
         }
+        if self.no_manifest {
+            line["no_manifest"] = json!(true);
+        }
         if let Some(c) = &self.counts {
             line["counts"] = json!({
                 "findings": c.findings,
@@ -330,6 +336,7 @@ impl Line {
             asked,
             handed,
             handed_sizes,
+            no_manifest: v.get("no_manifest") == Some(&Value::Bool(true)),
         })
     }
 }
