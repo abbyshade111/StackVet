@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0495, 0571, 0572, 0539, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0578, 0565, 0566
-- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575
+- honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0495, 0571, 0572, 0232
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0578, 0565, 0566, 0588
+- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0573, 0574, 0575, 0585
 
 ## Queue
 
@@ -38,6 +38,14 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 24. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
 25. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
 26. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
+27. 0582 `ast.file-path-from-value` fires on a module constant, a `secrets.token_hex` name, and a validated name, making V1.2.1 and V5.3.2 "needs attention" — ready
+28. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
+29. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
+30. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
+31. 0580 sv's own question text asks the tool to write `confirmed = { by = "ai-tool" }` proposals and `[checked-by-hand]` entries, which prompt 5 now forbids — hold: the owner's choice: sv's confirmed proposals against prompt 5's ban
+32. 0581 In the Docker route the container has no trusted-keys list, so after `sv review` the tool's `stackvet_check` cannot count the seals — hold: the owner's choice: how the container gets the trusted-keys list
+33. 0587 A review's seal is bound to the app folder it was made in, so a checkout elsewhere (CI, a moved folder) loses the owner's confirmations — hold: the owner's choice: a seal bound to the folder or to the app
+34. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
 
 ## Log
 
@@ -600,3 +608,18 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 09:18 — queued 0578, marked
 - 2026-10-15 09:18 — assigned 0578 to wording (full) into the lane after 0534: the owner's find of 15 October from prompt 7: sv review's second report wipes the --run evidence; sv-cli, wording's; first on its line
 - 2026-10-15 09:20 — finished 0569 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2019; from its lane, behind 0568
+- 2026-10-15 09:44 — queued 0579, marked
+- 2026-10-15 09:44 — queued 0582, marked
+- 2026-10-15 09:44 — queued 0583, marked
+- 2026-10-15 09:44 — queued 0584, marked
+- 2026-10-15 09:44 — queued 0585, marked
+- 2026-10-15 09:44 — queued 0586, marked
+- 2026-10-15 09:44 — queued 0588, marked
+- 2026-10-15 09:44 — queued 0580, on hold: the owner's choice: sv's confirmed proposals against prompt 5's ban, marked
+- 2026-10-15 09:44 — queued 0581, on hold: the owner's choice: how the container gets the trusted-keys list, marked
+- 2026-10-15 09:44 — queued 0587, on hold: the owner's choice: a seal bound to the folder or to the app, marked
+- 2026-10-15 09:44 — withdrew 0539 from honesty (full), on hold: honesty's line is full with the Django gate that did not apply (0579) put first; the image build comes back when the line has room
+- 2026-10-15 09:44 — released 0539
+- 2026-10-15 09:44 — assigned 0579 to honesty (full) into the lane after 0564: 0521's gate did not apply on the Opus app: ten wrong findings on a Flask app in both builds; honesty built the gate
+- 2026-10-15 09:44 — assigned 0588 to wording (full) as next: the prompt page's version line, from the Opus reading; wording's file
+- 2026-10-15 09:44 — assigned 0585 to documentation (full) as next: the browser-form gap's quoted refusal, the family of 0527 which documentation built
