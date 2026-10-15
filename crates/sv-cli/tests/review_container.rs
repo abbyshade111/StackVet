@@ -67,12 +67,33 @@ fn the_guide_gives_the_containers_sv_review_as_the_readme_does() {
     );
 }
 
+/// The guide's step 5 gives the AI tool's container the list through `sv connect --keys` (backlog 0581), where it
+/// once showed the settings written by hand; run as the guide words it, `sv connect` mounts the list alone, read-only.
 #[test]
 fn the_ai_tools_container_is_given_the_list_alone_and_read_only() {
     let step = step_five();
-    let json = blocks(&step, "json");
-    assert_eq!(json.len(), 1, "one .mcp.json in step 5");
-    let config: serde_json::Value = serde_json::from_str(&json[0]).expect("the .mcp.json parses");
+    assert!(
+        step.contains("`sv connect` with `--keys\n\"$HOME/.config/stackvet\"`")
+            || step.contains("`sv connect` with `--keys \"$HOME/.config/stackvet\"`"),
+        "step 5 names --keys: {step}"
+    );
+    let dir = std::env::temp_dir().join(format!("sv-review-container-keys-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_sv"))
+        .current_dir(&dir)
+        .args(["connect", "claude", "--docker", "/usr/local/bin/docker"])
+        .args(["--keys", "/Users/you/.config/stackvet"])
+        .env("SV_CONNECT_IN_CONTAINER", "1")
+        .output()
+        .unwrap();
+    std::fs::remove_dir_all(&dir).ok();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let config: serde_json::Value =
+        serde_json::from_slice(&out.stdout).expect("the .mcp.json parses");
     let args: Vec<&str> = config["mcpServers"]["stackvet"]["args"]
         .as_array()
         .unwrap()
@@ -102,7 +123,7 @@ fn the_ai_tools_container_is_given_the_list_alone_and_read_only() {
     assert!(
         !mounts
             .iter()
-            .any(|m| m.ends_with("/.config/securevibe:/sv-config/securevibe")),
+            .any(|m| m.ends_with("/.config/stackvet:/sv-config/stackvet")),
         "the whole key folder is given to the AI tool's container: {mounts:?}"
     );
     assert!(

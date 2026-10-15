@@ -143,8 +143,11 @@ Use the version for your computer.
 >
 > Step 5. Find docker's full path with `command -v docker`.
 >
-> Step 6. Print StackVet's MCP server for this folder, putting docker's full path from step 5 after `--docker`:
->    `docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect --docker DOCKER_PATH`
+> Step 6. Make the list of keys StackVet will trust, empty for now, so it can later count the answers I record as mine.
+>    It goes in my own settings folder, outside this one, so ask me first, then run
+>    `mkdir -p "$HOME/.config/stackvet" && chmod 700 "$HOME/.config/stackvet" && touch "$HOME/.config/stackvet/allowed_signers"`.
+>    Then print StackVet's MCP server for this folder, putting docker's full path from step 5 after `--docker`:
+>    `docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/stackvet-sv connect --docker DOCKER_PATH --keys "$HOME/.config/stackvet"`
 >    On Linux, also add `--user "$(id -u):$(id -g)"` at the end, so the files StackVet writes are mine. It prints the
 >    server's name, `stackvet`, that it talks over standard input and output, and its command and arguments.
 >
@@ -166,7 +169,7 @@ Use the version for your computer.
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
 >    which settings file you wrote, since a new chat may not remember it.
 >
-> *(StackVet setup prompt 3 for a Mac or Linux, text of 15 October 2026, fingerprint b25b5b77)*
+> *(StackVet setup prompt 3 for a Mac or Linux, text of 15 October 2026, fingerprint 4ab48b82)*
 <!-- setup-prompt:end -->
 
 ### On Windows

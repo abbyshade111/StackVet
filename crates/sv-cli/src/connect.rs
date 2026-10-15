@@ -20,6 +20,12 @@
 //! - without it: this copy of `sv`, installed on the computer, by its real place. Inside the container
 //!   that place means nothing outside it, so there it stops and asks for `--docker`.
 //!
+//! With `--docker`, `--keys DIR` names the person's key folder on their computer (`~/.config/stackvet`), and the
+//! container is given its list of trusted keys, `allowed_signers`, one file, read-only, and nothing else of the
+//! folder (backlog 0581, the owner's choice of 15 October 2026): the folder also holds the key that signs as them.
+//! Without the list, the container could not count what they recorded with `sv review`. The file must be there before
+//! the container starts, or Docker makes a folder in its place; the setup makes it empty first.
+//!
 //! # What it is worth
 //!
 //! Nothing, as evidence: it reads no file of the app's and credits nothing. A block that is right is
@@ -69,6 +75,8 @@ pub enum Runner {
     Docker {
         docker: String,
         user: Option<String>,
+        /// The person's key folder on their computer, whose list of trusted keys the container reads (backlog 0581).
+        keys: Option<String>,
     },
     /// This copy of `sv`, at its real place.
     Installed(PathBuf),
@@ -101,7 +109,7 @@ pub const SERVER_NAME: &str = "stackvet";
 fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
     let folder = folder.display().to_string();
     let (command, args) = match runner {
-        Runner::Docker { docker, user } => {
+        Runner::Docker { docker, user, keys } => {
             let mut args = vec![
                 "run".to_owned(),
                 "-i".to_owned(),
@@ -112,6 +120,17 @@ fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
                 "-v".to_owned(),
                 format!("{folder}:{folder}"),
             ];
+            if let Some(keys) = keys {
+                // The list alone, read-only, at the place `sv` looks for it once XDG_CONFIG_HOME names the folder above.
+                args.push("-v".to_owned());
+                args.push(format!(
+                    "{keys}/{list}:{CONTAINER_CONFIG}/{dir}/{list}:ro",
+                    list = sv_check::signed::TRUSTED_FILE,
+                    dir = sv_frameworks::names::CONFIG_DIR,
+                ));
+                args.push("-e".to_owned());
+                args.push(format!("XDG_CONFIG_HOME={CONTAINER_CONFIG}"));
+            }
             if let Some(user) = user {
                 args.push("--user".to_owned());
                 args.push(user.clone());
@@ -126,17 +145,27 @@ fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
     (command, args)
 }
 
-/// `sv connect [TOOL] [--docker PATH] [--user UID:GID] [--folder DIR]`.
+/// Where the container's settings folder is, when it is given the list of trusted keys.
+const CONTAINER_CONFIG: &str = "/sv-config";
+
+/// `sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--folder DIR]`.
 pub fn command(args: &[String]) -> Result<String> {
     let mut tool = None;
     let mut docker = None;
     let mut user = None;
+    let mut keys = None;
     let mut folder = None;
     let mut words = args.iter();
     while let Some(arg) = words.next() {
         match arg.as_str() {
             "--docker" => docker = Some(words.next().context("--docker needs docker's full path")?),
             "--user" => user = Some(words.next().context("--user needs UID:GID")?),
+            "--keys" => {
+                keys =
+                    Some(words.next().context(
+                        "--keys needs your key folder, such as \"$HOME/.config/stackvet\"",
+                    )?)
+            }
             "--folder" => {
                 folder = Some(PathBuf::from(
                     words.next().context("--folder needs a folder")?,
@@ -171,14 +200,22 @@ pub fn command(args: &[String]) -> Result<String> {
             if let Some(user) = user {
                 check_user(user)?;
             }
+            let keys = keys.map(|k| check_keys(k)).transpose()?;
             Runner::Docker {
                 docker: docker.clone(),
                 user: user.cloned(),
+                keys,
             }
         }
         None => {
             if user.is_some() {
                 bail!("--user is for the container: give it with --docker");
+            }
+            if keys.is_some() {
+                bail!(
+                    "--keys is for the container: give it with --docker. A copy of `sv` installed on your computer \
+                     reads your key folder itself"
+                );
             }
             if in_a_container() {
                 bail!(
@@ -248,6 +285,34 @@ fn check_user(user: &str) -> Result<()> {
         );
     }
     Ok(())
+}
+
+/// The key folder as Docker is given it: a full path, without a trailing `/`, and holding no `:` or `,`, which Docker
+/// reads as separators. Outside the container its list of trusted keys must be there already: Docker would make a folder
+/// in its place. Inside, the person's folders cannot be seen, and the setup makes the file first.
+fn check_keys(keys: &str) -> Result<String> {
+    let trimmed = keys.trim_end_matches('/');
+    if !trimmed.starts_with('/') {
+        bail!(
+            "--keys needs your key folder's full path, such as \"$HOME/.config/stackvet\" (the shell fills in \
+             $HOME), not {keys}"
+        );
+    }
+    if trimmed.contains([':', ',']) {
+        bail!(
+            "--keys cannot name a folder whose path holds `:` or `,`, which Docker reads as separators: {keys}"
+        );
+    }
+    let list = Path::new(trimmed).join(sv_check::signed::TRUSTED_FILE);
+    if !in_a_container() && !list.is_file() {
+        bail!(
+            "{} is not there yet, and Docker would make a folder in its place. Make it first: mkdir -p {trimmed} && \
+             chmod 700 {trimmed} && touch {}",
+            list.display(),
+            list.display()
+        );
+    }
+    Ok(trimmed.to_owned())
 }
 
 /// Docker marks every container with `/.dockerenv`.
