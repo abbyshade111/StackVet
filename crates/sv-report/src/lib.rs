@@ -1628,6 +1628,13 @@ pub fn test_output_intro(t: &sv_check::suite::FailingOutput) -> String {
             "The app's own tests had not finished after {after}, the most a test run may take, \
              and were stopped. {what}{redacted}"
         ),
+        // The shell's own code for a program it could not find: most often the test runner, not installed where the
+        // app runs (backlog 0532).
+        None if t.exit_code == 127 => format!(
+            "The app's own tests could not start when `sv` ran them (exit 127, the shell's code for a program it \
+             could not find): most often the test runner is not installed where the app runs. `sv preflight` says \
+             whether the packages `install = true` installs include it. {what}{redacted}"
+        ),
         None => format!(
             "The app's own tests failed when `sv` ran them (exit {}). {what}{redacted}",
             t.exit_code
