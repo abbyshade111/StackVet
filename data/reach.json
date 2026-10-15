@@ -3627,6 +3627,12 @@
     "run": "Reads the code",
     "looks_for": "A check answers \"yes\" when it fails",
     "finding_only": true
+   },
+   {
+    "id": "probe.crashed-on-ordinary-request",
+    "run": "Signed in",
+    "looks_for": "A request anybody could send makes the app fail with a server error rather than an answer: the person gets no useful message, and an exception the app does not handle can leave work half done.",
+    "finding_only": true
    }
   ],
   "V16.5.4": [

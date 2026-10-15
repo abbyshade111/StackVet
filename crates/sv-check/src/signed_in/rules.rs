@@ -702,6 +702,20 @@ pub(super) const ALTERED_PASSWORD: Rule = Rule {
           password, or use one without the limit, such as Argon2id.",
 };
 
+/// A server error on one of `sv`'s ordinary sign-ups (backlog 0528): the crash still credits and reports nothing it
+/// would have answered (ADR-021), and is itself the weakness. V16.5.3 asks that the app fail gracefully when an
+/// exception occurs; a 500 on a request a person could make is an exception the app did not handle.
+pub(super) const CRASHED_ON_ORDINARY: Rule = Rule {
+    rule_id: "probe.crashed-on-ordinary-request",
+    requirement_ids: &["V16.5.3"],
+    cwe: &["CWE-755"],
+    impact: "A request anybody could send makes the app fail with a server error rather than an answer: the \
+             person gets no useful message, and an exception the app does not handle can leave work half done.",
+    fix: "Find the exception in the app's log for that request and handle it: check the value before it reaches the \
+          code that fails (a password longer than a library takes, for example), and answer with a message saying \
+          what to change.",
+};
+
 pub(super) const LONG_PASSWORD: Rule = Rule {
     rule_id: "probe.long-password-refused",
     requirement_ids: &["V6.2.9"],
