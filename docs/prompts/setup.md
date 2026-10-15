@@ -27,8 +27,8 @@ computer, in what it calls a terminal, asks you before it does, and can use MCP 
 AI tool to use another program, and it is how your tool uses StackVet. Many tools can. These prompts name none of
 them: prompt 3 asks your tool how its own app adds an MCP server, and has it add StackVet's.
 
-Open your AI tool in a folder for your app: an empty folder called `my-app` in your home folder is a good one. If you
-have not made one yet, prompt 2 offers to make it with you. Then go through the prompts in order.
+Open your AI tool in a folder for your app: an empty folder in your home folder is a good one, called `my-app` or any
+name you like. If you have not made one yet, prompt 2 offers to make it with you. Then go through the prompts in order.
 
 While it works, your AI tool may ask whether it may read pages from github.com or raw.githubusercontent.com. Those are
 StackVet's own instructions, which prompt 1 points it to, and reading them changes nothing: say yes.
@@ -79,8 +79,8 @@ Skip this one if prompt 1 said nothing was missing.
 > Please help me get ready, one thing at a time.
 >
 > First, the folder. If the folder you are working in is not an empty folder made for this app (for example, it is
-> a scratch, temporary, or settings folder of yours), offer to make one called `my-app` in my home folder. Ask
-> before you make it. Then tell me, step by step, how to open that folder in the app I'm using now, in that app's
+> a scratch, temporary, or settings folder of yours), offer to make one in my home folder, called `my-app` or any
+> name I choose: ask me which. Ask before you make it. Then tell me, step by step, how to open that folder in the app I'm using now, in that app's
 > own words for its menus and buttons, and wait for me to say I'm done: the rest of the setup happens there. If you
 > are not sure how this app does it, say so and ask me what I see, rather than guessing. Opening it may start a new
 > chat with you: if it does, I'll paste the first prompt there, then this one again, and you can skip what is
