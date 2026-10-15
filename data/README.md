@@ -110,6 +110,9 @@ What a match must look like to be reported, each optional (per language unless i
   the call, to text the pattern matches.
 - `functionNamesRead` (true or false): `functionPatterns` also matches through the name `@fn` begins with, read as
   what the function around it sets it to.
+- `safeNamesRead` (true or false, Python only): an argument is also safe when each name in it is, followed to where
+  the same file sets it: every value fixed text, matching `safeArgumentPatterns`, or made by `secrets.token_*` or
+  `uuid4`; a parameter only when a narrow check before the call stops the function without it (backlog 0582).
 
 What a finding says, each optional and false when left out:
 

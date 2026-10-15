@@ -484,6 +484,7 @@
         "typescript": "a file opened, written, or deleted at a path built from a value, through Node's file calls (`readFile`, `writeFile`, `appendFile`, `createReadStream`, `createWriteStream`, `unlink`, `rm`, and their `Sync` forms) on `fs`, `fs.promises`, or `fsp`, the same calls imported on their own from `fs/promises`, and Express's `res.sendFile` and `res.download`"
       },
       "argumentNamesRead": true,
+      "safeNamesRead": true,
       "inPart": true
     },
     {
