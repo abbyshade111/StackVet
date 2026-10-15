@@ -282,7 +282,7 @@ pub fn anonymous_requests(
     requests.extend(probes::route_requests(&named_routes(plan)));
     requests.extend(probes::api_requests(
         plan.graphql.as_deref(),
-        plan.websocket.as_deref(),
+        &plan.websockets,
     ));
     requests.extend(sv_check::running::requests(
         &admin_pages(plan),
@@ -311,7 +311,7 @@ pub fn running_app_evidence(
     let mut verified = probes::verified_with_routes(&outcome.probe_responses, &named_routes(plan));
     let mut not_assessed = Vec::new();
     let (api_findings, api_verified, api_not_assessed) =
-        probes::evaluate_api(&outcome.probe_responses, plan.public_api);
+        probes::evaluate_api(&outcome.probe_responses, plan.public_api, &plan.websockets);
     findings.extend(api_findings);
     verified.extend(api_verified);
     not_assessed.extend(api_not_assessed);

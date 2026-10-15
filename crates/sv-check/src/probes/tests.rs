@@ -1136,6 +1136,7 @@ fn graphql_questions_are_asked_only_of_a_path_that_answers_graphql() {
             gql("graphql-aliases", 404, "not found"),
         ],
         Some(false),
+        &ws(),
     );
     assert!(f.is_empty() && v.is_empty(), "{f:?} {v:?}");
     assert!(
@@ -1154,12 +1155,12 @@ fn introspection_is_judged_against_whether_the_api_is_meant_for_others() {
             r#"{"data":{"__schema":{"queryType":{"name":"Query"}}}}"#,
         ),
     ];
-    let (f, _, _) = evaluate_api(&open, Some(false));
+    let (f, _, _) = evaluate_api(&open, Some(false), &ws());
     assert!(
         f.iter().any(|x| x.rule_id == "probe.graphql-introspection"),
         "{f:?}"
     );
-    let (f, v, _) = evaluate_api(&open, Some(true));
+    let (f, v, _) = evaluate_api(&open, Some(true), &ws());
     assert!(
         f.is_empty(),
         "an API meant for others may be introspected: {f:?}"
@@ -1168,7 +1169,7 @@ fn introspection_is_judged_against_whether_the_api_is_meant_for_others() {
         v.iter()
             .any(|x| x.check_id == "probe.graphql-introspection")
     );
-    let (f, v, na) = evaluate_api(&open, None);
+    let (f, v, na) = evaluate_api(&open, None, &ws());
     assert!(
         f.is_empty()
             && !v
@@ -1190,7 +1191,7 @@ fn introspection_is_judged_against_whether_the_api_is_meant_for_others() {
             r#"{"errors":[{"message":"introspection is disabled"}]}"#,
         ),
     ];
-    let (f, v, _) = evaluate_api(&closed, Some(false));
+    let (f, v, _) = evaluate_api(&closed, Some(false), &ws());
     assert!(f.is_empty());
     assert!(
         v.iter()
@@ -1217,6 +1218,7 @@ fn a_thousand_aliases_run_is_a_finding_and_read_from_the_start_of_the_answer() {
             gql("graphql-aliases", 200, &cut),
         ],
         Some(false),
+        &ws(),
     );
     assert!(
         f.iter()
@@ -1239,6 +1241,7 @@ fn a_refused_alias_flood_is_credited_only_beside_a_working_plain_query() {
     let (f, v, _) = evaluate_api(
         &[gql("graphql-plain", 200, PLAIN_OK), refused.clone()],
         Some(false),
+        &ws(),
     );
     assert!(f.is_empty());
     assert!(
@@ -1246,7 +1249,11 @@ fn a_refused_alias_flood_is_credited_only_beside_a_working_plain_query() {
             .any(|x| x.check_id == "probe.graphql-no-amount-limit")
     );
     // Without the plain query working, the refusal proves nothing.
-    let (_, v, _) = evaluate_api(&[gql("graphql-plain", 500, "boom"), refused], Some(false));
+    let (_, v, _) = evaluate_api(
+        &[gql("graphql-plain", 500, "boom"), refused],
+        Some(false),
+        &ws(),
+    );
     assert!(
         !v.iter()
             .any(|x| x.check_id == "probe.graphql-no-amount-limit")
@@ -1259,6 +1266,7 @@ fn a_websocket_is_judged_only_when_a_plain_handshake_upgrades() {
     let (f, _, _) = evaluate_api(
         &[upgraded("ws-no-origin"), upgraded("ws-foreign-origin")],
         None,
+        &ws(),
     );
     assert!(
         f.iter()
@@ -1272,6 +1280,7 @@ fn a_websocket_is_judged_only_when_a_plain_handshake_upgrades() {
             response("ws-foreign-origin", 403, &[], ""),
         ],
         None,
+        &ws(),
     );
     assert!(f.is_empty());
     assert!(
@@ -1291,6 +1300,7 @@ fn a_websocket_is_judged_only_when_a_plain_handshake_upgrades() {
             response("ws-foreign-origin", 404, &[], ""),
         ],
         None,
+        &ws(),
     );
     assert!(f.is_empty() && v.is_empty());
     assert!(na.iter().any(|(id, _)| id == "V4.4.2"), "{na:?}");
@@ -1305,7 +1315,11 @@ fn a_partial_answer_with_errors_is_a_limit_not_a_run() {
         200,
         r#"{"data":{"a0":"Query","a1":"Query"},"errors":[{"message":"query cost limit reached"}]}"#,
     );
-    let (f, v, _) = evaluate_api(&[gql("graphql-plain", 200, PLAIN_OK), partial], Some(false));
+    let (f, v, _) = evaluate_api(
+        &[gql("graphql-plain", 200, PLAIN_OK), partial],
+        Some(false),
+        &ws(),
+    );
     assert!(
         !f.iter()
             .any(|x| x.rule_id == "probe.graphql-no-amount-limit"),
@@ -1326,7 +1340,11 @@ fn an_empty_schema_beside_an_error_is_introspection_refused() {
         200,
         r#"{"data":{"__schema":null},"errors":[{"message":"introspection is disabled"}]}"#,
     );
-    let (f, _, _) = evaluate_api(&[gql("graphql-plain", 200, PLAIN_OK), refused], Some(false));
+    let (f, _, _) = evaluate_api(
+        &[gql("graphql-plain", 200, PLAIN_OK), refused],
+        Some(false),
+        &ws(),
+    );
     assert!(
         !f.iter().any(|x| x.rule_id == "probe.graphql-introspection"),
         "{f:?}"
@@ -1347,6 +1365,7 @@ fn an_api_meant_for_others_may_be_introspected() {
             ),
         ],
         Some(true),
+        &ws(),
     );
     assert!(f.is_empty(), "{f:?}");
 }
@@ -1362,6 +1381,7 @@ fn a_websocket_that_refuses_every_handshake_is_not_credited() {
             response("ws-foreign-origin", 403, &[], ""),
         ],
         None,
+        &ws(),
     );
     assert!(f.is_empty());
     assert!(
@@ -1375,7 +1395,11 @@ fn a_websocket_that_refuses_every_handshake_is_not_credited() {
 #[test]
 fn a_websocket_accepting_any_origin_is_found() {
     let up = |id: &str| response(id, 101, &[("Upgrade", "websocket")], "");
-    let (f, v, _) = evaluate_api(&[up("ws-no-origin"), up("ws-foreign-origin")], Some(true));
+    let (f, v, _) = evaluate_api(
+        &[up("ws-no-origin"), up("ws-foreign-origin")],
+        Some(true),
+        &ws(),
+    );
     assert!(
         f.iter()
             .any(|x| x.rule_id == "probe.websocket-origin-unchecked"),
@@ -1389,14 +1413,14 @@ fn a_websocket_accepting_any_origin_is_found() {
 
 #[test]
 fn the_api_requests_are_only_made_for_what_the_app_has() {
-    assert!(api_requests(None, None).is_empty());
-    let only_ws = api_requests(None, Some("/ws"));
+    assert!(api_requests(None, &[]).is_empty());
+    let only_ws = api_requests(None, &ws());
     assert!(only_ws.iter().all(|r| r.id.starts_with("ws-")));
-    let gql_reqs = api_requests(Some("/graphql"), None);
+    let gql_reqs = api_requests(Some("/graphql"), &[]);
     let aliases = gql_reqs.iter().find(|r| r.id == "graphql-aliases").unwrap();
     assert!(aliases.body_text().contains("a999:__typename"));
     // And every id the evaluation reads is one a request really carries.
-    let all = api_requests(Some("/graphql"), Some("/ws"));
+    let all = api_requests(Some("/graphql"), &ws());
     for id in [
         "graphql-plain",
         "graphql-introspection",
@@ -2281,4 +2305,9 @@ fn a_page_that_is_not_a_log_is_never_taken_for_one() {
             "{path} {status}: {found:?}"
         );
     }
+}
+
+/// The one WebSocket path the tests above name.
+fn ws() -> Vec<String> {
+    vec!["/ws".to_owned()]
 }

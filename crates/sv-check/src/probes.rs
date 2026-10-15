@@ -613,9 +613,8 @@ fn name_credits(credits: Vec<crate::Verified>) -> Vec<crate::Verified> {
                     vec!["graphql-introspection".to_owned()]
                 }
                 id if id == GRAPHQL_AMOUNT.rule_id => vec!["graphql-aliases".to_owned()],
-                id if id == WS_ORIGIN.rule_id => {
-                    vec!["ws-no-origin".to_owned(), "ws-foreign-origin".to_owned()]
-                }
+                // Named where it is credited, one pair of handshakes for each path that held (ADR-118).
+                id if id == WS_ORIGIN.rule_id => credit.evidence.clone(),
                 _ => Vec::new(),
             };
             credit.with_evidence(ids)
@@ -1034,7 +1033,7 @@ fn ws_request(id: &str, path: &str, origin: Option<&str>) -> ProbeRequest {
 }
 
 /// The requests for the GraphQL and WebSocket questions, for whichever of the two the app has.
-pub fn api_requests(graphql: Option<&str>, websocket: Option<&str>) -> Vec<ProbeRequest> {
+pub fn api_requests(graphql: Option<&str>, websockets: &[String]) -> Vec<ProbeRequest> {
     let mut out = Vec::new();
     if let Some(path) = graphql {
         out.push(graphql_request("graphql-plain", path, "{__typename}"));
@@ -1050,11 +1049,27 @@ pub fn api_requests(graphql: Option<&str>, websocket: Option<&str>) -> Vec<Probe
             &format!("{{{}}}", aliases.join(" ")),
         ));
     }
-    if let Some(path) = websocket {
-        out.push(ws_request("ws-no-origin", path, None));
-        out.push(ws_request("ws-foreign-origin", path, Some(STRANGER)));
+    // Each WebSocket path stackvet.toml names (ADR-118): the first keeps the ids the one path always
+    // had, and each later one has `-<k>` after them.
+    for (k, path) in websockets.iter().enumerate() {
+        let sfx = ws_suffix(k);
+        out.push(ws_request(&format!("ws-no-origin{sfx}"), path, None));
+        out.push(ws_request(
+            &format!("ws-foreign-origin{sfx}"),
+            path,
+            Some(STRANGER),
+        ));
     }
     out
+}
+
+/// What the `k`th WebSocket path's request ids end in: nothing for the first, `-<k>` after it.
+fn ws_suffix(k: usize) -> String {
+    if k == 0 {
+        String::new()
+    } else {
+        format!("-{k}")
+    }
 }
 
 /// A GraphQL answer that carries data and no errors: the query was accepted and run.
@@ -1075,6 +1090,7 @@ fn graphql_ran(r: &ProbeResponse, key: &str) -> bool {
 pub fn evaluate_api(
     responses: &[ProbeResponse],
     public_api: Option<bool>,
+    websockets: &[String],
 ) -> (Vec<Finding>, Vec<crate::Verified>, Vec<(String, String)>) {
     let mut findings = Vec::new();
     let mut verified = Vec::new();
@@ -1163,42 +1179,83 @@ pub fn evaluate_api(
         }
     }
 
-    // ---- WebSocket
-    if let (Some(plain), Some(foreign)) = (find("ws-no-origin"), find("ws-foreign-origin")) {
+    // ---- WebSocket: each path stackvet.toml names (ADR-118), judged as the one always was.
+    let several = websockets.len() > 1;
+    let (mut held, mut unjudged, mut evidence) = (Vec::new(), Vec::new(), Vec::new());
+    let mut found = false;
+    for (k, path) in websockets.iter().enumerate() {
+        let sfx = ws_suffix(k);
+        let (plain_id, foreign_id) = (
+            format!("ws-no-origin{sfx}"),
+            format!("ws-foreign-origin{sfx}"),
+        );
+        let (Some(plain), Some(foreign)) = (find(&plain_id), find(&foreign_id)) else {
+            continue;
+        };
+        let at = if several {
+            format!(" at {path}")
+        } else {
+            String::new()
+        };
         if plain.status != 101 {
             not_assessed.push((
                 "V4.4.2".to_owned(),
                 format!(
-                    "The WebSocket path answered a plain handshake with {} rather than switching \
-                     protocols, so either it is not where stackvet.toml says or it refuses every \
-                     handshake; either way a refusal of a foreign one would prove nothing.",
+                    "The WebSocket path{at} answered a plain handshake with {} rather than \
+                     switching protocols, so either it is not where stackvet.toml says or it \
+                     refuses every handshake; either way a refusal of a foreign one would prove \
+                     nothing.",
                     plain.status
                 ),
             ));
+            unjudged.push(path.clone());
         } else if foreign.status == 101 {
+            found = true;
             findings.push(finding_on(
-                vec!["ws-no-origin".to_owned(), "ws-foreign-origin".to_owned()],
+                vec![plain_id, foreign_id],
                 &WS_ORIGIN,
                 "A WebSocket connection is accepted from any website",
                 Severity::Medium,
                 format!(
-                    "A handshake carrying `Origin: {STRANGER}` was accepted (101). A page on any \
+                    "A handshake{at} carrying `Origin: {STRANGER}` was accepted (101). A page on any \
                      site can open this connection with the visitor's cookies."
                 ),
             ));
         } else {
-            verified.push(crate::Verified::new(
-                WS_ORIGIN.rule_id,
-                WS_ORIGIN.requirement_ids,
-                format!(
-                    "a WebSocket handshake from a site the app has never heard of, refused ({}) \
-                     where one with no Origin was accepted",
-                    foreign.status
-                ),
-            )
-            // One foreign handshake, on the one path stackvet.toml names (ADR-053, Later).
-            .in_part());
+            held.push((path.clone(), foreign.status));
+            evidence.extend([plain_id, foreign_id]);
         }
+    }
+    if !found && !held.is_empty() {
+        let scope = if let [(_, status)] = held.as_slice()
+            && !several
+        {
+            format!(
+                "a WebSocket handshake from a site the app has never heard of, refused ({status}) \
+                 where one with no Origin was accepted"
+            )
+        } else {
+            format!(
+                "WebSocket handshakes from a site the app has never heard of, refused at {}, where \
+                 ones with no Origin were accepted{}",
+                held.iter()
+                    .map(|(path, status)| format!("{path} ({status})"))
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                if unjudged.is_empty() {
+                    String::new()
+                } else {
+                    format!("; not judged: {}", unjudged.join(", "))
+                }
+            )
+        };
+        verified.push(
+            crate::Verified::new(WS_ORIGIN.rule_id, WS_ORIGIN.requirement_ids, scope)
+                .with_evidence(evidence)
+                // One foreign handshake on each path stackvet.toml names; one path, or one not
+                // judged, is in part (ADR-053, Later; ADR-118).
+                .in_part_if(held.len() == 1 || !unjudged.is_empty()),
+        );
     }
     (findings, name_credits(verified), not_assessed)
 }
@@ -2558,3 +2615,6 @@ mod probes_evidence_tests;
 
 #[cfg(test)]
 mod framing_tests;
+
+#[cfg(test)]
+mod several_websockets_tests;

@@ -35,6 +35,7 @@ test-report = ""          # where `test` writes its report (JUnit XML, TAP, or J
 health = "/"              # a path that returns 200 once the app is up
 # graphql = "/graphql"      # where it answers GraphQL, if it does
 # websocket = "/ws"         # where it accepts WebSocket connections, if it does
+# websockets = ["/ws", "/chat"]  # several, in place of `websocket`; one named is checked in part only
 #   `install = true`: the app runs with no network and a read-only folder, so `build` cannot install
 #   packages. With `install = true`, `sv` installs them first, in a separate container that is
 #   given only requirements.txt (every line pinned, `name==1.2.3`), package.json with
@@ -223,7 +224,10 @@ health = "/"              # a path that returns 200 once the app is up
 # flow = { steps = [{ path = "/checkout/address", form = { street = "1 Main St", csrf_token = "{csrf}" } }, { path = "/checkout/pay", form = { card = "4242", csrf_token = "{csrf}" } }, { path = "/checkout/confirm", form = { csrf_token = "{csrf}" } }], completed = "Order placed" }
 #   Anything done in more than one step, in order. `completed` is text the last step answers with
 #   only when the whole thing really finished — in the page, or in the address it sends you on to.
-#   The probes go through it once in order, then try skipping steps as another user.
+#   The probes go through it once in order, then try skipping steps as another user. Where the
+#   app has more than one such flow (a checkout, an application, a reset), name each instead:
+#   `flows = [{ steps = [...], completed = "Order placed" }, { steps = [...], completed = "Sent" }]`.
+#   With one flow named, the result can only be "checked in part". Give `flow` or `flows`, not both.
 # totp = { path = "/login/2fa", form = { code = "{code}", csrf_token = "{csrf}" } }
 #   The code step of a two-factor sign-in, sent after the password in the same session. Needs
 #   `seed`: make one more account from SV_USER_TOTP and SV_PASSWORD_TOTP, and enroll it in
@@ -247,6 +251,8 @@ health = "/"              # a path that returns 200 once the app is up
 # private-websocket = "/ws"
 #   A WebSocket that only a signed-in user should be able to open. The handshake is sent with the
 #   first user's session, then with no session, with one the probes made up, and after signing out.
+#   Several, each tried the same: `private-websockets = ["/ws", "/chat"]`, in place of
+#   `private-websocket`. With one named, the result can only be "checked in part".
 
 [data]
 # What kinds of information the app holds about people. Starts commented out, like the capabilities:
