@@ -260,6 +260,13 @@ health = "/"              # a path that returns 200 once the app is up
 #   Several, each tried the same: `private-websockets = ["/ws", "/chat"]`, in place of
 #   `private-websocket`. With one named, the result can only be "checked in part".
 
+# [stack.auth]
+# Every way to sign in, by the path or the name the code uses: the sign-in form's path, each "sign in
+# with" provider's, a magic link's, an API key's header. `sv` lists the ways in it finds in the code
+# beside the question about them, and reports any this list does not name. Leave it out to compare
+# nothing; a path names the paths below it too ("/auth/google" covers "/auth/google/callback").
+# pathways = ["/login", "/auth/google", "x-api-key"]
+
 [data]
 # What kinds of information the app holds about people. Starts commented out, like the capabilities:
 # a list nobody filled in is read as unanswered, and the app is held to ASVS level 2, the level for

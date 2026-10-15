@@ -169,6 +169,7 @@ source files, and in two tests:
 | [ADR-120](ADR-120.md) | The guide's word budget is 4,500 (accepted, 15 October 2026) |
 | [ADR-121](ADR-121.md) | The checklist before going live, a report file of its own that credits nothing (accepted, 15 October 2026) |
 | [ADR-122](ADR-122.md) | The hook record, kept by a hook the person installs, read only with their consent (accepted, 15 October 2026) |
+| [ADR-123](ADR-123.md) | A way into the app the code shows that stackvet.toml's list of sign-in pathways does not name is a finding (accepted, 15 October 2026) |
 
 ## Names in the records
 

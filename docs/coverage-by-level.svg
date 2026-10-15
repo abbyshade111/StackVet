@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 934 210" width="934" height="210" role="img" aria-labelledby="t d" font-family="Atkinson Hyperlegible, -apple-system, Segoe UI, sans-serif">
 <title id="t">ASVS 5.0 by level: what a check can reach</title>
-<desc id="d">Level 1: 70 requirements, 44 can be credited, 14 can only be found failing, 3 a check helps, a person decides, 9 no check; Level 2: 183 requirements, 68 can be credited, 27 can only be found failing, 6 a check helps, a person decides, 82 no check; Level 3: 92 requirements, 9 can be credited, 12 can only be found failing, 0 a check helps, a person decides, 71 no check. The same counts are the table in docs/COVERAGE.md.</desc>
+<desc id="d">Level 1: 70 requirements, 44 can be credited, 14 can only be found failing, 3 a check helps, a person decides, 9 no check; Level 2: 183 requirements, 68 can be credited, 27 can only be found failing, 7 a check helps, a person decides, 81 no check; Level 3: 92 requirements, 9 can be credited, 12 can only be found failing, 0 a check helps, a person decides, 71 no check. The same counts are the table in docs/COVERAGE.md.</desc>
 <style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}.none{fill:#182A23;stroke:#3B4842}}</style>
 <rect class="bg" width="934" height="210"/>
 <text class="ink" x="12" y="28" font-size="18" font-weight="700">ASVS 5.0 by level: what a check can reach</text>
@@ -22,9 +22,9 @@
 <text class="ink" x="12" y="135" font-size="13">Level 2</text>
 <rect fill="#3A9470" x="300.0" y="122" width="139.2" height="18" rx="2"><title>Level 2: 68 can be credited</title></rect>
 <rect fill="#D9692B" x="441.2" y="122" width="54.1" height="18" rx="2"><title>Level 2: 27 can only be found failing</title></rect>
-<rect fill="#5470C0" x="497.3" y="122" width="10.5" height="18" rx="2"><title>Level 2: 6 a check helps, a person decides</title></rect>
-<rect class="none" x="509.7" y="122" width="168.3" height="18" rx="2"><title>Level 2: 82 no check</title></rect>
-<text class="soft" x="692" y="135" font-size="13">68 · 27 · 6 · 82  of 183</text>
+<rect fill="#5470C0" x="497.3" y="122" width="12.5" height="18" rx="2"><title>Level 2: 7 a check helps, a person decides</title></rect>
+<rect class="none" x="511.8" y="122" width="166.2" height="18" rx="2"><title>Level 2: 81 no check</title></rect>
+<text class="soft" x="692" y="135" font-size="13">68 · 27 · 7 · 81  of 183</text>
 <text class="ink" x="12" y="161" font-size="13">Level 3</text>
 <rect fill="#3A9470" x="300.0" y="148" width="16.7" height="18" rx="2"><title>Level 3: 9 can be credited</title></rect>
 <rect fill="#D9692B" x="318.7" y="148" width="22.9" height="18" rx="2"><title>Level 3: 12 can only be found failing</title></rect>

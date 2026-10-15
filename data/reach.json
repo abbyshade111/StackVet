@@ -2065,6 +2065,14 @@
     "finding_only": true
    }
   ],
+  "V6.3.4": [
+   {
+    "id": "config.sign-in-pathway-not-listed",
+    "run": "Reads the code",
+    "looks_for": "A way into the app the code shows (a sign-in route, a Passport strategy, an API key read by header) that the list of sign-in pathways in stackvet.toml does not name",
+    "finding_only": true
+   }
+  ],
   "V6.3.7": [
    {
     "id": "probe.password-change-notified",

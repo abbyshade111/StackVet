@@ -1,6 +1,6 @@
 # Every sign-in pathway the code has, listed for the owner, and one the manifest does not name reported
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -62,6 +62,17 @@ with the request's path, as an app with no router matches its pages; Passport st
 header name. It is where to look, never evidence, and credits nothing (ADR-022, Later). On the example apps it lists
 oidc-notes' `/login/google` and `/callback` and notes-with-users' `/login`; flask-booking has none. **Waiting on the
 owner:** the second half, a list of pathways in `stackvet.toml` and a finding citing V6.3.4 for a way in it does not
-name (`docs/coordination/waiting/0491.md`). **Not taken up here:** the other pointers in the section above (V6.1.1's
+name (asked on the board; answered below). **Not taken up here:** the other pointers in the section above (V6.1.1's
 rate-limit setting, V6.1.2's password validator, V6.2.10's expiry rule and hand check, V6.3.3's second-factor
 library, V6.5.2's backup codes), which the title does not name.
+
+**The owner's answer, 15 October 2026:** yes, as recommended: a list of pathways in `stackvet.toml`, and a way in the code
+shows that the list does not name reported as needs attention citing V6.3.4; finding-only (no list, or a full match,
+credits nothing), the list asked commented out in the starter file, and a new decision record.
+
+**Done, 15 October 2026.** The second half, as the owner answered: `[stack.auth] pathways` in stackvet.toml, asked
+commented out in the starter file, names every way to sign in by its path or the name the code uses. A way in the code
+shows (the first half's reader) that the list does not name is a finding, `config.sign-in-pathway-not-listed`, against
+V6.3.4, at the line it is on. No list, or one naming every way found, credits nothing (ADR-123). An entry names a path
+below it, and a Passport strategy by its short name. `sv check`, which the AI coding tool calls while building, does
+not compare yet; the reports do. The other pointers in this section are filed as backlog 0609.

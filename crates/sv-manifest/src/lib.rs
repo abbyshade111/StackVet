@@ -1255,6 +1255,19 @@ pub struct StackSection {
     pub languages: Vec<String>,
     #[serde(default)]
     pub run: RunSection,
+    /// `[stack.auth]`: what the owner says about how the app signs people in.
+    #[serde(default)]
+    pub auth: Option<AuthSection>,
+}
+
+/// `[stack.auth]` in stackvet.toml (backlog 0491; ADR-123).
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct AuthSection {
+    /// Every way to sign in, by the path or the name the code uses: `/login`, `/auth/google`, `x-api-key`. A way in the
+    /// code shows that this does not name is reported against V6.3.4. Left out, nothing is compared.
+    #[serde(default)]
+    pub pathways: Option<Vec<String>>,
 }
 
 /// Outside tools that run only when the owner turns them on (ADR-115). Today that is CodeQL, whose
@@ -3144,6 +3157,8 @@ pub fn locate_or_bail(app_dir: &Path) -> Result<Located> {
 #[cfg(test)]
 mod account_changes_tests;
 
+#[cfg(test)]
+mod auth_pathways_tests;
 #[cfg(test)]
 mod email_code_condition_tests;
 #[cfg(test)]

@@ -93,6 +93,7 @@ RUST_CHECKS = {
     "config.mcp-server-unpinned": ("static", ["C10.1.1"]),
     "config.mcp-transport-unencrypted": ("static", ["C10.3.1"]),
     "config.rich-text-without-sanitizer": ("static", ["V1.3.1"]),
+    "config.sign-in-pathway-not-listed": ("static", ["V6.3.4"]),
     "config.client-tech-unsupported": ("static", ["V3.7.1"]),
     "config.retired-grant-enabled": ("static", ["V10.4.4"]),
     "config.model-file-can-run-code": ("static", ["C4.1.2"]),
@@ -354,6 +355,8 @@ RUST_FINDINGS_ONLY = {
     "config.development-server-started",
     "config.mcp-server-unpinned",
     "config.rich-text-without-sanitizer",
+    # A list that names every way in found credits nothing: a way in may be one the reader does not find (ADR-123).
+    "config.sign-in-pathway-not-listed",
     # A refusal of TLS 1.0 and 1.1 is half of V12.1.1; the other half, the newest version preferred,
     # is not something curl reports reliably, so a refusal is said and not credited.
     "probe.old-tls-accepted",
@@ -540,6 +543,7 @@ def framework(path):
 # read it from: checks that only ever credit a requirement, and the configuration checks built
 # differently. Every other check's words are read from the code or data where the check is defined.
 DESCRIBED = {
+    "config.sign-in-pathway-not-listed": "A way into the app the code shows (a sign-in route, a Passport strategy, an API key read by header) that the list of sign-in pathways in stackvet.toml does not name",
     "config.certificate-checks-off": "A setting that switches off certificate checking for every connection the app makes",
     "config.firebase-rules-open": "A Firebase rules file that lets anybody in: an `allow` with no condition, `if true`, or test mode's date alone, or a Realtime Database `.read` or `.write` set to true",
     "config.supabase-table-without-rls": "A table a Supabase migration creates with no row-level security turned on, open to the key every visitor's browser holds",
