@@ -22,15 +22,15 @@ date,version,tests_level,tests_level_measure,tests_level_first_parent,tests_adde
 2026-10-02,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,0,34ca633,34ca633,,0,0,0,0,0,0,0,0,,v2,at the cut-off
 2026-10-03,sv,1645,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1645,154,fb1c625,fb1c625,,19,0,0,19,18,1,15115,797,,v2,at the cut-off
 2026-10-04,sv,1655,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1655,10,157ddc3,157ddc3,,57,0,0,57,57,0,787,207,,v2,at the cut-off
-2026-10-04 (after 11:37),sv,1910,#[test] lines at the last commit that day on main's own line,1910,255,f3415eb,f3415eb,,0,0,,0,0,0,18163,3377,6024,v2,since the cut-off
-2026-10-05,sv,2131,#[test] lines at the last commit that day on main's own line,2131,221,6643a30,6643a30,,0,0,,0,0,0,17722,3843,5248,v2,since the cut-off
-2026-10-06,sv,2252,#[test] lines at the last commit that day on main's own line,2252,121,ee1fa37,ee1fa37,,0,0,,0,0,0,10783,1479,3208,v2,since the cut-off
-2026-10-07,sv,2351,#[test] lines at the last commit that day on main's own line,2351,99,1b8a818,1b8a818,,0,0,,0,0,0,9785,1777,686,v2,since the cut-off
-2026-10-08,sv,2570,#[test] lines at the last commit that day on main's own line,2570,219,bd3b278,bd3b278,,0,0,,0,0,0,18929,7042,60543,stackvet,since the cut-off
-2026-10-09,sv,2914,#[test] lines at the last commit that day on main's own line,2914,344,2ae9a11,2ae9a11,,0,0,,0,0,0,18339,10036,10356,stackvet,since the cut-off
-2026-10-10,sv,3037,#[test] lines at the last commit that day on main's own line,3037,123,65b4722,65b4722,,0,0,,0,0,0,7759,3435,2327,stackvet,since the cut-off
-2026-10-11,sv,3121,#[test] lines at the last commit that day on main's own line,3121,84,9edd689,9edd689,,0,0,,0,0,0,3715,1767,935,stackvet,since the cut-off
-2026-10-12,sv,3286,#[test] lines at the last commit that day on main's own line,3286,165,a91df1d,a91df1d,,0,0,,0,0,0,9858,4216,3604,stackvet,since the cut-off
-2026-10-13,sv,3412,#[test] lines at the last commit that day on main's own line,3412,126,0575848,0575848,,0,0,,0,0,0,7742,4167,1980,stackvet,since the cut-off
-2026-10-14,sv,3739,#[test] lines at the last commit that day on main's own line,3739,327,15b1951,15b1951,,0,0,,0,0,0,17053,8432,7978,stackvet,since the cut-off
-2026-10-15,sv,3827,#[test] lines at the last commit that day on main's own line,3827,88,5f05b6e,5f05b6e,,0,0,,0,0,0,4212,2356,1002,stackvet,since the cut-off
+2026-10-04 (after 11:37),sv,1910,#[test] lines at the last commit that day on main's own line,1910,255,f3415eb,f3415eb,,16,2,,14,15,1,18163,3377,6024,v2,since the cut-off
+2026-10-05,sv,2131,#[test] lines at the last commit that day on main's own line,2131,221,6643a30,6643a30,,56,0,,56,56,0,17722,3843,5248,v2,since the cut-off
+2026-10-06,sv,2252,#[test] lines at the last commit that day on main's own line,2252,121,ee1fa37,ee1fa37,,13,0,,13,13,0,10783,1479,3208,v2,since the cut-off
+2026-10-07,sv,2351,#[test] lines at the last commit that day on main's own line,2351,99,1b8a818,1b8a818,,26,0,,26,24,2,9785,1777,686,v2,since the cut-off
+2026-10-08,sv,2570,#[test] lines at the last commit that day on main's own line,2570,219,bd3b278,bd3b278,,42,2,,40,38,4,18929,7042,60543,stackvet,since the cut-off
+2026-10-09,sv,2914,#[test] lines at the last commit that day on main's own line,2914,344,2ae9a11,2ae9a11,,33,2,,31,31,2,18339,10036,10356,stackvet,since the cut-off
+2026-10-10,sv,3037,#[test] lines at the last commit that day on main's own line,3037,123,65b4722,65b4722,,2,0,,2,1,1,7759,3435,2327,stackvet,since the cut-off
+2026-10-11,sv,3121,#[test] lines at the last commit that day on main's own line,3121,84,9edd689,9edd689,,6,2,,4,4,2,3715,1767,935,stackvet,since the cut-off
+2026-10-12,sv,3286,#[test] lines at the last commit that day on main's own line,3286,165,a91df1d,a91df1d,,50,1,,49,47,3,9858,4216,3604,stackvet,since the cut-off
+2026-10-13,sv,3412,#[test] lines at the last commit that day on main's own line,3412,126,0575848,0575848,,65,2,,63,57,8,7742,4167,1980,stackvet,since the cut-off
+2026-10-14,sv,3739,#[test] lines at the last commit that day on main's own line,3739,327,15b1951,15b1951,,44,0,,44,43,1,17053,8432,7978,stackvet,since the cut-off
+2026-10-15,sv,3827,#[test] lines at the last commit that day on main's own line,3827,88,5f05b6e,5f05b6e,,13,0,,13,13,0,4212,2356,1002,stackvet,since the cut-off

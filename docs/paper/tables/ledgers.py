@@ -194,32 +194,35 @@ def with_period(header, rows, date_at, periods, added):
     return header + ["period", "in_the_ledger"], out
 
 
+# Two columns the rows since the cut-off add: the backlog item a row was read from, and how sure its reading was.
+READING = ["backlog_item", "confidence"]
+
+
 def faults_to_today(periods):
     header, at_cutoff = read_csv(PAPER / "faults.csv")
     fixes = {r[0]: r for r in read_csv(SINCE / "open_at_cutoff.csv")[1]}
     fix_header = ["fixed_since_date", "fixed_since_pr", "fixed_since_test_in_fix", "fixed_since_source"]
+    h = header + fix_header + READING
     rows = []
     for r in at_cutoff:
         f = fixes.get(r[0])
-        rows.append(r + ([f[1], f[2], f[3], f[4]] if f else ["", "", "", ""]))
-    h = header + fix_header
-    h, rows = with_period(h, rows, h.index("found_date"), periods, "at the cut-off")
+        rows.append(r + ([f[1], f[2], f[3], f[4]] if f else ["", "", "", ""]) + ["", f[5] if f else ""])
+    h2, rows = with_period(h, rows, h.index("found_date"), periods, "at the cut-off")
     since_header, since = read_csv(SINCE / "faults.csv")
-    added = []
-    for r in since:
-        d = dict(zip(since_header, r))
-        added.append([d.get(c, "") for c in header] + ["", "", "", ""])
-    _, added = with_period(header + fix_header, added, header.index("found_date"), periods, "since the cut-off")
-    return h, rows + added
+    added = [[dict(zip(since_header, r)).get(c, "") for c in h] for r in since]
+    _, added = with_period(h, added, h.index("found_date"), periods, "since the cut-off")
+    return h2, rows + added
 
 
-def simple_to_today(name, date_column, periods, extra=()):
+def simple_to_today(name, date_column, periods, extra=(), reading=False):
     header, at_cutoff = read_csv(PAPER / name)
-    h, rows = with_period(header, at_cutoff, header.index(date_column), periods, "at the cut-off")
+    h = header + (READING if reading else [])
+    pad = [""] * (len(READING) if reading else 0)
+    h2, rows = with_period(h, [r + pad for r in at_cutoff], h.index(date_column), periods, "at the cut-off")
     since_header, since = read_csv(SINCE / name)
-    added = [[dict(zip(since_header, r)).get(c, "") for c in header] for r in since] + list(extra)
-    _, added = with_period(header, added, header.index(date_column), periods, "since the cut-off")
-    return h, rows + added
+    added = [[dict(zip(since_header, r)).get(c, "") for c in h] for r in since] + [list(r) + pad for r in extra]
+    _, added = with_period(h, added, h.index(date_column), periods, "since the cut-off")
+    return h2, rows + added
 
 
 def outputs(until):
@@ -228,9 +231,10 @@ def outputs(until):
     files = {}
     fh, faults = faults_to_today(periods)
     files[OUT / "faults.csv"] = P.as_csv(fh, faults)
-    files[OUT / "corrections.csv"] = P.as_csv(*simple_to_today("corrections.csv", "date", periods))
+    files[OUT / "corrections.csv"] = P.as_csv(*simple_to_today("corrections.csv", "date", periods, reading=True))
     git_rows = sorted(claims(until, after) + conflicts(until, after) + closed_unmerged(), key=lambda r: (r[0], r[1]))
-    files[OUT / "coordination.csv"] = P.as_csv(*simple_to_today("coordination.csv", "date", periods, git_rows))
+    files[OUT / "coordination.csv"] = P.as_csv(*simple_to_today("coordination.csv", "date", periods, git_rows,
+                                                                    reading=True))
     th, tbody = read_csv(PAPER / "tests_by_day.csv")
     since_faults = [dict(zip(fh, r)) for r in faults if r[-1] == "since the cut-off"]
     tests_rows = tests_by_day(main, periods, since_faults, after)
