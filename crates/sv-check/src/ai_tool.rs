@@ -93,12 +93,17 @@ pub fn read(listing: &Listing, rules: &SecretRules) -> AiToolFiles {
             )
         } else if is(relative, ".vscode/mcp.json") {
             Kind::Servers("servers", "VS Code")
+        } else if is(relative, ".cursor/mcp.json") {
+            // Cursor's MCP page (https://cursor.com/docs/mcp, read 15 October 2026, its text kept in
+            // `docs/research/CURSOR-MCP-2026-10-15.md`): the project's servers under `mcpServers`,
+            // each with `command` and `args` or with `url`, as `.mcp.json` has them.
+            Kind::Servers("mcpServers", "Cursor")
         } else if relative.starts_with(".cursor/") || relative.contains("/.cursor/") {
-            // Cursor's documentation could not be reached when this was written, so its files are
-            // named and not read rather than read by a guess at their format.
+            // That page describes `mcp.json` alone, so Cursor's other files are named and not read
+            // rather than read by a guess at their format.
             out.not_read.push(format!(
-                "`{relative}` (Cursor's own documentation of its files was not available to read \
-                 their format from)"
+                "`{relative}` (Cursor's documentation that `sv` was built from describes only \
+                 `.cursor/mcp.json`, not this file's format)"
             ));
             continue;
         } else if instruction_file(relative) {
@@ -656,8 +661,8 @@ mod tests {
         let dir = scratch("cursor");
         write(
             &dir,
-            ".cursor/mcp.json",
-            r#"{"mcpServers": {"gh": {"command": "npx", "args": ["x"]}}}"#,
+            ".cursor/environment.json",
+            r#"{"install": "npm install", "start": "npx x"}"#,
         );
         write(&dir, ".claude/settings.json", "{ not json");
         let files = read(&Listing::of(&dir), rules());
@@ -665,7 +670,9 @@ mod tests {
         assert!(files.read.is_empty());
         let all = files.not_read.join("\n");
         assert!(
-            all.contains("`.cursor/mcp.json` (Cursor's own documentation"),
+            all.contains(
+                "`.cursor/environment.json` (Cursor's documentation that `sv` was built from"
+            ),
             "{all}"
         );
         assert!(
@@ -781,3 +788,7 @@ mod tests {
 #[cfg(test)]
 #[path = "ai_tool_redact_tests.rs"]
 mod redact_tests;
+
+#[cfg(test)]
+#[path = "ai_tool_cursor_tests.rs"]
+mod cursor_tests;

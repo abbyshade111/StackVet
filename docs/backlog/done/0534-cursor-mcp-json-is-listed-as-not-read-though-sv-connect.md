@@ -1,6 +1,10 @@
 # `.cursor/mcp.json` is listed as "not read" though `sv connect cursor` writes it and it has the shape `.mcp.json` has
 
-**Status:** claimed by wording, 14 October 2026
+**Status:** done, 15 October 2026. Cursor's MCP page (<https://cursor.com/docs/mcp>) could still not be reached from
+the cloud session, so the owner copied it, and its parts `sv` relies on are kept in
+`docs/research/CURSOR-MCP-2026-10-15.md` (choice B). `.cursor/mcp.json` is read as `.mcp.json` is, named as Cursor's;
+no note says Cursor starts its servers without asking, as the page says it asks first. The other `.cursor/` files are
+still named as not read. ADR-049, Later, 15 October 2026; held by `crates/sv-check/src/ai_tool_cursor_tests.rs`.
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

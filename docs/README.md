@@ -44,6 +44,7 @@ still leads to it.
 | [`research/SEMGREP-FALSE-ALARMS.md`](research/SEMGREP-FALSE-ALARMS.md) | Where one set of Semgrep rules' false alarms came from, measured; its rows are [`semgrep-false-alarms.csv`](semgrep-false-alarms.csv). | dated 4 October 2026 |
 | [`research/AGENTIC-SKILLS-TOP-10.md`](research/AGENTIC-SKILLS-TOP-10.md) | OWASP's Agentic Skills Top 10, and what it would mean for `sv`. | dated 7 October 2026 |
 | [`research/SETUP-PROMPT-TRIALS-2026-10-14.md`](research/SETUP-PROMPT-TRIALS-2026-10-14.md) | The setup prompts tried in Antigravity, Cursor, and VS Code on one day: what each tool said against what it did, the three reports like for like, and what was filed (0521 to 0557). | dated 14 October 2026 |
+| [`research/CURSOR-MCP-2026-10-15.md`](research/CURSOR-MCP-2026-10-15.md) | Cursor's MCP page, the parts `sv` reads `.cursor/mcp.json` by (ADR-049), copied by the owner because the page could not be reached from the session that built it. | dated 15 October 2026 |
 
 ## Folders
 
