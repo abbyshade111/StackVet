@@ -2235,6 +2235,7 @@ fn run_checks(
             &a,
             confirm_path.clone().filter(|_| signed_in_works).as_deref(),
             &users.private,
+            &served_anonymously,
             carried,
             &mut out
         )

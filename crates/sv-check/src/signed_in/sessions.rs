@@ -299,6 +299,7 @@ pub(super) fn invented_session_check(
     signed_in: &SignedIn,
     confirm: Option<&str>,
     private: &[String],
+    served_anonymously: &[String],
     carried: Option<bool>,
     out: &mut Outcome,
 ) {
@@ -372,6 +373,9 @@ pub(super) fn invented_session_check(
         }
     }
     let (mut refused, mut opened, mut skipped) = (Vec::new(), Vec::new(), Vec::new());
+    // Answered with a 200 page that shows little of what the real session got (a sign-in form served with
+    // 200): neither opened nor refused (backlog 0560, ADR-119).
+    let mut unlike = Vec::new();
     for (i, page) in pages.iter().enumerate() {
         let id = |what: &str| {
             if i == 0 {
@@ -380,18 +384,44 @@ pub(super) fn invented_session_check(
                 format!("{what}-{i}")
             }
         };
-        if !ok(&http.send(&get(
-            &id("invented-session-control"),
-            page,
-            &signed_in.session,
-        ))) {
+        // A page that opens to somebody not signed in opens to a made-up session too, and says nothing about
+        // the session being checked (backlog 0560): the finding about it is the private page's own.
+        if served_anonymously.iter().any(|p| p == page) {
+            out.steps.push(format!(
+                "did not ask {page} with a made-up session: it opened to somebody not signed in"
+            ));
+            skipped.push(*page);
+            continue;
+        }
+        let control = http
+            .send(&get(
+                &id("invented-session-control"),
+                page,
+                &signed_in.session,
+            ))
+            .filter(|r| (200..300).contains(&r.status));
+        let Some(control) = control else {
             out.steps.push(format!(
                 "asked for {page} with the real session, before making one up: refused"
             ));
             skipped.push(*page);
             continue;
+        };
+        let answer = http.send(&get(&id("invented-session"), page, &session));
+        if ok(&answer)
+            && !answer
+                .as_ref()
+                .is_some_and(|a| super::control::shows_page(&control, a))
+        {
+            out.steps.push(format!(
+                "asked for {page} with the real session (opened), then with a session value this \
+                 check invented: answered {} with a page that shows little of the real session's",
+                status(&answer)
+            ));
+            unlike.push(*page);
+            continue;
         }
-        let took = ok(&http.send(&get(&id("invented-session"), page, &session)));
+        let took = ok(&answer);
         out.steps.push(format!(
             "asked for {page} with the real session (opened), then with a session value this \
              check invented in {altered} and every other cookie kept: {}",
@@ -402,6 +432,20 @@ pub(super) fn invented_session_check(
         } else {
             refused.push(*page);
         }
+    }
+    if !unlike.is_empty() {
+        say(
+            format!(
+                "Whether a made-up session value is refused at {}: it was answered with a page \
+                 showing little of what the real session got there, such as a sign-in form served \
+                 with 200, which is neither the page opening nor a refusal.",
+                unlike.join(", ")
+            ),
+            out,
+        );
+    }
+    if refused.is_empty() && opened.is_empty() && !unlike.is_empty() {
+        return;
     }
     if refused.is_empty() && opened.is_empty() {
         say(
@@ -458,7 +502,7 @@ pub(super) fn invented_session_check(
             )
             // Each private page listed is asked; one refused, or one the real session could not
             // open, is one sample (ADR-053, Later).
-            .in_part_if(refused.len() == 1 || !skipped.is_empty()),
+            .in_part_if(refused.len() == 1 || !skipped.is_empty() || !unlike.is_empty()),
         );
     }
 }
@@ -2027,6 +2071,7 @@ mod tests {
                 &signed_in_with(None, &["sid"]),
                 Some("/account"),
                 &[],
+                &[],
                 carried,
                 &mut out,
             );
@@ -2050,6 +2095,7 @@ mod tests {
             &signed_in_with(None, &["sid"]),
             Some("/account"),
             &[],
+            &[],
             Some(true),
             &mut out,
         );
@@ -2069,6 +2115,7 @@ mod tests {
             &mut app,
             &signed_in_with(None, &["sid"]),
             Some("/account"),
+            &[],
             &[],
             Some(true),
             &mut out,
@@ -2103,6 +2150,7 @@ mod tests {
             &signed_in_with(None, &["sid"]),
             Some("/account"),
             &[],
+            &[],
             Some(true),
             &mut out,
         );
@@ -2131,6 +2179,7 @@ mod tests {
                 &mut app,
                 &signed_in,
                 Some("/account"),
+                &[],
                 &[],
                 Some(true),
                 &mut out,
@@ -3359,6 +3408,8 @@ mod answer_ids_tests {
     }
 }
 
+#[cfg(test)]
+mod invented_beside_tests;
 #[cfg(test)]
 mod invented_pages_tests;
 

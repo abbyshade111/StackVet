@@ -122,14 +122,32 @@ fn shape_differs(control: &ProbeResponse, answer: &ProbeResponse) -> Option<Stri
     })
 }
 
-/// Whether `answer` shows the page `reference` is: at least half of the reference's pieces of text (cut at tags
-/// and line ends, three characters or more) are in the answer. The same page served to somebody else differs in a
-/// name or two; a page refused on a 200 ("Access denied") shares little of it. A reference with no such piece
-/// shows nothing either way, and is `false`.
+/// Whether `answer` shows the page `reference` is: at least half of the reference's pieces of text (the words
+/// between its tags, cut at line ends, three characters or more) are in the answer. The same page served to
+/// somebody else differs in a name or two; a page refused on a 200 ("Access denied") shares little of it. The same
+/// body is the same page; otherwise a reference with no such piece shows nothing either way, and is `false`.
 pub(super) fn shows_page(reference: &ProbeResponse, answer: &ProbeResponse) -> bool {
-    let pieces: Vec<&str> = reference
-        .body
-        .split(['<', '>', '\n'])
+    // The same answer, even an empty one, is the same page.
+    if reference.body == answer.body {
+        return true;
+    }
+    // The words between tags, not the tags: two pages built from the same `<form>` and `<button>` are not
+    // the same page.
+    let mut text = String::new();
+    let mut in_tag = false;
+    for c in reference.body.chars() {
+        match c {
+            '<' => {
+                in_tag = true;
+                text.push('\n');
+            }
+            '>' => in_tag = false,
+            _ if !in_tag => text.push(c),
+            _ => {}
+        }
+    }
+    let pieces: Vec<&str> = text
+        .split('\n')
         .map(str::trim)
         .filter(|p| p.chars().count() >= 3)
         .collect();
