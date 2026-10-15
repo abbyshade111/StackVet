@@ -19,9 +19,12 @@ pub struct Unset {
 pub const UNSET: &[Unset] = &[
     Unset {
         key: "owned",
-        checks: "reading one user's record as another user, a forged form sent from another site, and the limit on \
-                 making records",
-        ids: &["V8.2.2", "V3.5.1", "V3.5.2", "V2.4.1"],
+        checks: "reading one user's record as another user, a forged form sent from another site, the limit on \
+                 making records, which fields a record read back hands over, and saved text written back into a page \
+                 unencoded",
+        ids: &[
+            "V8.2.2", "V3.5.1", "V3.5.2", "V2.4.1", "V15.3.1", "V8.2.3", "V1.2.1",
+        ],
     },
     Unset {
         key: "update` or `delete` under `owned",
