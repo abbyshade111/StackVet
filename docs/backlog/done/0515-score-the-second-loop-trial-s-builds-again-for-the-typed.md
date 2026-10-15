@@ -1,6 +1,6 @@
 # Score the second loop trial's builds again for the typed-text forms, on the owner's computer
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 Filed 14 October 2026 by honesty, from backlog 0504. 0504 fixed `docs/prompts/loop-2/score_loop2.py`, which counted
 no typed-text form in any build: it now reads `[stack.run.users.browser]` and counts `text-forms` or the one
@@ -11,3 +11,5 @@ What to do, on the owner's computer, where the builds are (`~/sv-loop2`): run `s
 score`, copy the new scores into `docs/prompts/loop-2/scores.json`, and write finding 6 from the new count: how many
 builds named a form, with which key, and whether every build where the check was answered named one. That also checks
 0389's reading, not yet checked build by build, that the unanswered builds named no form.
+
+**The owner's answer, 15 October 2026:** close: the re-scoring was done already.

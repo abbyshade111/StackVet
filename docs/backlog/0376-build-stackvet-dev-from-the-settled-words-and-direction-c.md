@@ -20,3 +20,5 @@ published. Nothing is live from this item until the owner says so.
   the report shows (the owner: "this inventory can serve dual purposes"), and from `docs/paper/HOW-SV-WORKS.md`.
 - **StackVet checks itself**: StackVet's own report on its own repository (`docs/paper/self-assessment-v2`), its SBOM
   (backlog 0382), and the rest, linked to where each lives on GitHub.
+
+**The owner's answer, 15 October 2026:** after the paper's data is done.

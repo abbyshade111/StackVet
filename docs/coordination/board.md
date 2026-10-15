@@ -43,8 +43,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 29. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
 30. 0586 The build-loop record starts only when stackvet.toml exists, so the tool's first calls (status, guidance, spec) are not recorded — ready
 31. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
-32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
-33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
+32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — ready
+33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — ready
 34. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
 35. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
 36. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
@@ -669,3 +669,5 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 12:50 — finished 0585 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2047; from its lane, behind 0509
 - 2026-10-15 12:50 — assigned 0593 to wording (full) as next: from the Cursor runs: an unsealed by = owner line named as the tool's in stackvet_check and before sv review asks; sv-cli, wording's
 - 2026-10-15 12:50 — assigned 0602 to wording (full) as next: prompt 5's preview step (ask before installing; tests use their own database; open the page over the server); the prompt page, wording's
+- 2026-10-15 13:10 — released 0589
+- 2026-10-15 13:10 — released 0590
