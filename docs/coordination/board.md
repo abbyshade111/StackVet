@@ -6,8 +6,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0576, 0599, 0582
-- wording — arm: full — holds: 0603 (since 2026-10-15)
+- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0599, 0582, 0528, 0536, 0535, 0492
+- wording — arm: full — holds: 0603 (since 2026-10-15) — next: 0584
 - documentation — arm: full — holds: 0493 (since 2026-10-15) — next: 0491, 0497, 0494
 
 ## Queue
@@ -19,19 +19,14 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 5. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
 6. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
 7. 0488 Output escaping switched off, read from the template engine's own setting, and in part credited when it is on — ready
-8. 0492 A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest — ready
-9. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
-10. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
-11. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
-12. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
-13. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-14. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
-15. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
-16. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-17. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-18. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-19. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
-20. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
+8. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
+9. 0498 A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation — ready
+10. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
+11. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
+12. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
+13. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+14. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
+15. 0489 The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over — ready
 
 ## Log
 
@@ -712,3 +707,10 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 16:20 — released 0490
 - 2026-10-15 16:20 — assigned 0490 to honesty (full) into the lane after 0232: back to honesty, whose branch claude/honesty-0490-server holds the whole build, tested; open the pull request from it
 - 2026-10-15 16:50 — finished 0597 by wording (full): https://github.com/abbyshade111/StackVet/pull/2080; from its lane, behind 0603
+- 2026-10-15 17:20 — finished 0490 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2081; from its lane, behind 0232
+- 2026-10-15 17:20 — finished 0576 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2085; from its lane, behind 0232
+- 2026-10-15 17:20 — assigned 0584 to wording (full) as next: the upload's accepted kinds, a manifest field and the run's control upload; free of honesty's files now that 0576 (uploads) has landed and honesty's next items are sign-up and an AST rule
+- 2026-10-15 17:20 — assigned 0528 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files
+- 2026-10-15 17:20 — assigned 0536 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files
+- 2026-10-15 17:21 — assigned 0535 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files
+- 2026-10-15 17:21 — assigned 0492 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files

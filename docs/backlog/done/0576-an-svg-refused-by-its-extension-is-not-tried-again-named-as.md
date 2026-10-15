@@ -1,6 +1,6 @@
 # An SVG refused by its extension is not tried again named as a GIF
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -18,3 +18,5 @@ finding under the same rule, High, or Medium when served as an attachment or wit
 Taken and served as another type, or with the script removed: the credit says what it was served as. Taken with no
 `serves-at`, not fetched back, or served with no `Content-Type`: not assessed, saying why. Tests in
 `crates/sv-check/src/signed_in/uploads/svg_named_gif_tests.rs`.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2085); left open for the board to close.

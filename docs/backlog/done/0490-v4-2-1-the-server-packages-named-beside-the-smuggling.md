@@ -1,6 +1,6 @@
 # V4.2.1: the server packages named beside the smuggling question, and why nothing in the fence can settle it
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -27,3 +27,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
 evidence, a pointer to `--advisories` for a known flaw in that version, and the plain reason nothing StackVet does can
 check it (`whyNotChecked` in `data/design-questions.json`). The requirement stays the owner's word. ADR-022, Later
 entry of 15 October 2026. Not covered: Node, Go, Java, and PHP apps, and nginx named in a Dockerfile.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2081); left open for the board to close.
