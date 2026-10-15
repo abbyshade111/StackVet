@@ -97,7 +97,10 @@ by speaking for what its requirement names. One part per group of the inventory 
    first wrong password, at an account that exists, is bracketed and read, and the credit is whole when all three
    password sign-ins were found and stackvet.toml names no other way to authenticate. Next in this claim: the
    emailed-code and two-factor sign-ins.
-   **Part status:** partly done: the emailed-code and two-factor sign-ins, and the line's metadata, format, and timestamp
+   **Built, second batch, 15 October 2026 (honesty)** (ADR-053, "Later, 15 October 2026: the code sign-ins in the
+   log"; `docs/design/0391-the-code-sign-ins-in-the-log-15-october-2026.md`): a code taken and one refused, for the
+   emailed code and for two-factor, each bracketed and read. This claim is built.
+   **Part status:** partly done: the line's metadata, format, and timestamp
 6. **F. Each browser page and form.** The browser-driven checks run on each page and form the owner lists.
    **Scope of this claim (12 October 2026):** the typed-text check (`probe.text-rendered-as-markup`, V3.2.2) on every
    text form the owner names. **Record, `Status: proposed`: ADR-097**, since it adds a key to stackvet.toml.

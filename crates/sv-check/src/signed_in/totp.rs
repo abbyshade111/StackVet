@@ -15,6 +15,19 @@ impl TotpSignIn<'_> {
     /// already opened there: then the code is not what let anybody in, and nothing about codes can
     /// be told.
     fn attempt(&self, http: &mut dyn Http, code: &str, who: &str, gate: bool) -> Option<bool> {
+        self.attempt_marked(http, code, who, gate, None)
+    }
+
+    /// `attempt`, with the code alone, not the password before it, between `around`'s two marked
+    /// requests, for the log (V16.3.1, backlog 0232 part 5).
+    fn attempt_marked(
+        &self,
+        http: &mut dyn Http,
+        code: &str,
+        who: &str,
+        gate: bool,
+        around: Option<&crate::logs::Window>,
+    ) -> Option<bool> {
         let mut quiet = Vec::new();
         let mut session = sign_in(http, self.users, who, self.account, &mut quiet)?.session;
         if gate && ok(&http.send(&get(&format!("totp-gate-{who}"), self.confirm, &session))) {
@@ -26,6 +39,9 @@ impl TotpSignIn<'_> {
             code,
             ..Default::default()
         };
+        if let Some(around) = around {
+            super::signin::log_mark(http, &around.open);
+        }
         send_template(
             http,
             &format!("totp-{who}"),
@@ -34,6 +50,9 @@ impl TotpSignIn<'_> {
             &mut session,
             &self.users.private,
         );
+        if let Some(around) = around {
+            super::signin::log_mark(http, &around.close);
+        }
         Some(ok(&http.send(&get(
             &format!("totp-confirm-{who}"),
             self.confirm,
@@ -106,7 +125,10 @@ pub(super) fn totp_checks(
     let old = crate::totp::code_at_step(secret, step.saturating_sub(5));
 
     // 1. The old code, before any code has been used.
-    let Some(stale) = signing.attempt(http, &old, "1", true) else {
+    let tag = super::signin::log_tag(accounts);
+    let refused = super::signin::log_window(entry, "totp-wrong", &tag);
+    let accepted = super::signin::log_window(entry, "totp-ok", &tag);
+    let Some(stale) = signing.attempt_marked(http, &old, "1", true, Some(&refused)) else {
         out.not_assessed.push((
             IDS.to_owned(),
             format!(
@@ -128,8 +150,9 @@ pub(super) fn totp_checks(
     let mut reused = false;
     let mut unsure = false;
     for round in 0..2 {
+        let around = (round == 0).then_some(&accepted);
         if !signing
-            .attempt(http, &current, &format!("2-{round}"), false)
+            .attempt_marked(http, &current, &format!("2-{round}"), false, around)
             .unwrap_or(false)
         {
             let ended = http.now() / crate::totp::STEP != step;
@@ -164,6 +187,13 @@ pub(super) fn totp_checks(
         step = now_step;
         current = crate::totp::code_at_step(secret, step);
     }
+    // The current code took (the loop above returns otherwise), and the old one is a refusal only
+    // when it was refused.
+    out.log_markers.mark_factor(crate::logs::FactorMarkers {
+        what: crate::logs::TWO_FACTOR_CODE.to_owned(),
+        accepted: Some(accepted),
+        refused: (!stale).then_some(refused),
+    });
     out.steps.push(format!(
         "the two-factor account's code from 2½ minutes ago: {}; the current code: opened; the \
          same code again: {}",
