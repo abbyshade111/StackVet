@@ -1694,12 +1694,19 @@ pub(super) fn identity_header_check(
     http: &mut dyn Http,
     user: &str,
     private: &[String],
+    own: &Session,
     out: &mut Outcome,
 ) {
     let mut opened = Vec::new();
     let mut opened_ids: Vec<String> = Vec::new();
+    // Answered 200 with a page that shows little of the signed-in user's own (backlog 0560, ADR-119): a
+    // middleware's "unknown user", or a sign-in form served with 200, is a 2xx too.
+    let mut unlike = Vec::new();
     let mut asked = 0;
     for (p, path) in private.iter().enumerate() {
+        let own_page = http
+            .send(&get(&format!("identity-header-{p}-own"), path, own))
+            .filter(|r| (200..300).contains(&r.status));
         for (n, header) in IDENTITY_HEADERS.iter().enumerate() {
             let value = if *header == "X-User-ID" { "1" } else { user };
             let id = format!("identity-header-{p}-{n}");
@@ -1708,9 +1715,20 @@ pub(super) fn identity_header_check(
                 .headers
                 .push(((*header).to_owned(), value.to_owned()));
             asked += 1;
-            if ok(&http.send(&request)) {
+            let answer = http.send(&request);
+            if !ok(&answer) {
+                continue;
+            }
+            let shows_own = match (&own_page, &answer) {
+                (Some(own_page), Some(answer)) => super::control::shows_page(own_page, answer),
+                // Without the user's own page there is nothing to read it beside, and a 2xx is a finding.
+                _ => true,
+            };
+            if shows_own {
                 opened_ids.push(id.clone());
                 opened.push(format!("{path} with {header}: {value}"));
+            } else {
+                unlike.push(format!("{path} with {header}"));
             }
         }
     }
@@ -1723,6 +1741,17 @@ pub(super) fn identity_header_check(
         if asked == 1 { "" } else { "s" },
         opened.len()
     ));
+    if !unlike.is_empty() {
+        out.not_assessed.push((
+            IDENTITY_HEADER.requirement_ids.join(", "),
+            format!(
+                "Whether a header that names a user lets a request in: {} answered 200 with a page \
+                 that shows little of what the signed-in user gets there (such as \"unknown user\", \
+                 or a sign-in form served with 200), which is neither the page opening nor a refusal.",
+                unlike.join("; ")
+            ),
+        ));
+    }
     if !opened.is_empty() {
         out.findings.push(finding_on(
             opened_ids.clone(),
@@ -3408,6 +3437,8 @@ mod answer_ids_tests {
     }
 }
 
+#[cfg(test)]
+mod identity_beside_tests;
 #[cfg(test)]
 mod invented_beside_tests;
 #[cfg(test)]

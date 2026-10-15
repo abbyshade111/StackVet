@@ -124,6 +124,12 @@ tests.
 the file only when the answer is a 2xx holding its own contents; a redirect to where it is kept, or a page of the
 app's own, is not assessed and says so, for the ordinary file (V5.4.1) and the file with the hostile name (V5.4.2).
 
+**Eleventh batch, built (the identity header, part of list item 11):** each private page asked for with a header that
+names a user, and no session, is read beside the same page served to the signed-in user: the page shown is a finding
+as before; a 200 showing little of it ("unknown user", a sign-in form served with 200) is neither a finding nor a
+refusal, and says so. Without the user's page, a 2xx is a finding as before. Still open from item 11: the idle and
+lifetime timeouts, read by status class beside the busy and fresh sessions.
+
 **Twelfth batch, built (an admin action with no `check` page, list item 12):** the ordinary user's success status is
 read beside the admin's own same request, sent as the control: answered alike, it is the finding by the status
 alone, at medium confidence, as before; answered unlike (a refusal shown on a 200 page where the admin was sent on)
