@@ -1,6 +1,6 @@
 # Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -24,3 +24,5 @@ digits, fourteen letters and digits), and the address stays where it is. A `user
 the address. When the first test user cannot open a private page, the gap now also says what the sign-up answered and
 quotes its page (the field names only, never a value, and nothing when the page repeats the password). Fake-app case:
 `usernames_up_to_30`. Tests in `crates/sv-check/src/signed_in/short_names_tests.rs`.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2087); left open for the board to close.

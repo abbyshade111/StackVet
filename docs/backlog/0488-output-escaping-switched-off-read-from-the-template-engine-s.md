@@ -1,6 +1,6 @@
 # Output escaping switched off, read from the template engine's own setting, and in part credited when it is on
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
