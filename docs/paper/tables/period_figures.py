@@ -348,6 +348,47 @@ def adrs_figure(records, days):
         "cut-off, and in the weekly reviews since.")
 
 
+def reviews_figure(review, deep, open_fixed):
+    """The two deep reviews that have tables: 4 October (review.csv, at eff3f17) and 13 October (deep_review.csv)."""
+    order = ["critical", "high", "medium", "low", "proposals"]
+    first = defaultdict(Counter)
+    for r in review:
+        sev = r["severity"].lower()
+        if r["state"] == "fixed":
+            first[sev]["fixed by the cut-off"] += 1
+        elif f"SV-DR-{r['id']}" in open_fixed or r["id"] in open_fixed:
+            first[sev]["fixed since"] += 1
+        else:
+            first[sev]["still open"] += 1
+    second = defaultdict(Counter)
+    for r in deep:
+        sev = r["severity"].lower()
+        second[sev]["done" if r["status"].startswith("done") else "still open"] += 1
+
+    def table(counts, columns, label):
+        head = "".join(f"<th>{esc(c)}</th>" for c in columns)
+        body = "".join(
+            f"<tr><td>{esc(s)}</td>" + "".join(f'<td class="n">{counts[s][c]}</td>' for c in columns)
+            + f'<td class="n"><b>{sum(counts[s].values())}</b></td></tr>' for s in order if counts[s])
+        total = "".join(f'<td class="n"><b>{sum(counts[s][c] for s in order)}</b></td>' for c in columns)
+        return (f'<div class="scroll"><table aria-label="{esc(label)}"><tr><th>severity</th>{head}<th>all</th></tr>'
+                f'{body}<tr><td><b>total</b></td>{total}<td class="n"><b>{sum(sum(v.values()) for v in counts.values())}'
+                f"</b></td></tr></table></div>")
+
+    return page(
+        "Deep Reviews by Period", "The deep reviews, and what became of their findings, to today",
+        "The figure of the 4 October cut-off (<code>figure-review.html</code>) showed the first deep review as it stood "
+        "at 11:37 that day, with 1 of its 58 findings fixed. Here it is to today, beside the deep review of 13 October.",
+        "<h2>1. The deep review of 4 October (version 2), 58 findings</h2>"
+        + table(first, ["fixed by the cut-off", "fixed since", "still open"], "The 4 October review")
+        + "<h2>2. The deep review of 13 October (StackVet), 83 items</h2>"
+        + table(second, ["done", "still open"], "The 13 October review"),
+        "Sources: <code>review.csv</code> (at the cut-off), <code>tables/since-cutoff/open_at_cutoff.csv</code> (each "
+        "finding's fix since, with its pull request), and <code>tables/deep_review.csv</code> (made by "
+        "<code>tables/make_tables.py</code>). The 13 October review's proposals are suggestions, not defects. The other "
+        "reviews since the cut-off are in <code>tables/to-today/faults.csv</code>, found by <code>review</code>.")
+
+
 def outputs():
     faults = rows(TODAY / "faults.csv")
     files = {
@@ -356,6 +397,9 @@ def outputs():
         PAPER / "figure-corrections-by-period.html": corrections_figure(rows(TODAY / "corrections.csv")),
         PAPER / "figure-coordination-by-period.html": coordination_figure(rows(TODAY / "coordination.csv")),
         PAPER / "figure-adrs-by-period.html": adrs_figure(rows(HERE / "decision_records.csv"), rows(HERE / "days.csv")),
+        PAPER / "figure-review-by-period.html": reviews_figure(
+            rows(PAPER / "review.csv"), rows(HERE / "deep_review.csv"),
+            {r["id"] for r in rows(HERE / "since-cutoff" / "open_at_cutoff.csv") if r["fixed_date"]}),
     }
     return files
 
