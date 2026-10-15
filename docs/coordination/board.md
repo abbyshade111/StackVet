@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0495, 0571, 0572, 0539, 0232
-- wording — arm: full — holds: 0530 (since 2026-10-15) — next: 0534, 0565, 0566
-- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0529, 0509
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566
+- documentation — arm: full — holds: 0568 (since 2026-10-14) — next: 0509, 0569, 0573, 0574, 0575
 
 ## Queue
 
@@ -36,11 +36,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 22. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
 23. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
 24. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-25. 0569 Without an owned record, V8.2.3, V15.3.1, and V1.2.1 are never listed as not assessed — ready
-26. 0573 The burst limit may be per session, not per user, and is never tried in a fresh session — ready
-27. 0574 The once check's other user may be refused for want of permission, not for losing the race — ready
-28. 0575 The forgery check never sends a token from another session with the signed-in user's cookies — ready
-29. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
+25. 0576 An SVG refused by its extension is not tried again named as a GIF — ready
+26. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
 
 ## Log
 
@@ -593,3 +590,10 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 07:20 — assigned 0572 to honesty (full) into the lane after 0571: from the third sweep: the wrong-password check with no sign-up tries the right password too (ADR-119)
 - 2026-10-15 07:33 — released 0570
 - 2026-10-15 07:34 — dropped 0570 from the queue
+- 2026-10-15 08:20 — finished 0530 by wording (full): https://github.com/abbyshade111/StackVet/pull/2012; now holds 0534
+- 2026-10-15 08:20 — finished 0529 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2014; from its lane, behind 0568
+- 2026-10-15 08:20 — queued 0577, on hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done, marked
+- 2026-10-15 08:20 — assigned 0569 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
+- 2026-10-15 08:20 — assigned 0573 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
+- 2026-10-15 08:20 — assigned 0574 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
+- 2026-10-15 08:20 — assigned 0575 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119
