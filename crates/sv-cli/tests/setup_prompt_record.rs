@@ -87,3 +87,28 @@ fn prompt_6_leaves_its_sandbox_with_a_yes_and_checks_the_commit_it_installed() {
         assert!(full.contains(said), "{said}: {full}");
     }
 }
+
+/// Backlog 0556: no trial of 14 October 2026 reached prompt 7, and nothing at the end of prompt 6 said what stopping
+/// there costs. Prompt 6 now ends by saying it, and so does the page after it.
+#[test]
+fn prompt_6_says_what_stopping_before_sv_review_costs() {
+    let last = prompt("setup-step-6");
+    let said = "Step 7. Last, tell me that until I run `sv review` myself (prompt 7 on the setup page), every answer \
+                recorded so far counts as yours, not mine, and the report says so.";
+    assert!(last.contains(said), "{said}: {last}");
+    let page = page();
+    let after = &page[page
+        .find("<!-- setup-step-6:end -->")
+        .expect("prompt 6's end marker")..];
+    let after = after[..after.find("## 7.").expect("step 7's heading")]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert!(
+        after.contains(
+            "**If you stop here,** every answer your AI tool recorded still counts as its word, not yours, and the \
+             report says so, until you run `sv review` in step 7."
+        ),
+        "{after}"
+    );
+}
