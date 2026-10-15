@@ -81,34 +81,48 @@ fn the_guide_updates_the_image_the_workflow_publishes() {
 #[test]
 fn a_version_can_be_held_to_by_its_commit() {
     // The guide says every image is published under the commit `--version` prints. Both come from the
-    // same `github.sha`, or the pinned name would be one nobody pushed. The image is built once, in the
-    // `image` job, and `publish` pushes that same image, loaded from it (backlog 0343).
+    // same `github.sha`, or the pinned name would be one nobody pushed. Each platform's image is built
+    // once, in the `image` and `image-arm64` jobs, and `publish` pushes those same images, loaded from
+    // them (backlog 0343), and one manifest naming both under the commit (backlog 0539).
     let workflow = read(".github/workflows/rust.yml");
     let publish = workflow.split("\n  publish:\n").nth(1).unwrap();
-    let image = workflow
-        .split("\n  image:\n")
-        .nth(1)
-        .and_then(|rest| rest.split("\n  publish:\n").next())
-        .expect("the workflow has an image job before publish");
+    let job = |name: &str| {
+        workflow
+            .split(&format!("\n  {name}:\n"))
+            .nth(1)
+            .and_then(|rest| rest.split("\n  publish:\n").next())
+            .and_then(|rest| rest.split("\n  image-arm64:\n").next())
+            .unwrap_or_else(|| panic!("the workflow has a {name} job before publish"))
+            .to_owned()
+    };
+    for name in ["image", "image-arm64"] {
+        assert!(
+            job(name).contains("--build-arg SV_GIT_COMMIT=${{ github.sha }}"),
+            "{name}: the image's --version names another commit than its tag"
+        );
+    }
+    // `docker buildx imagetools` joins images already pushed; it builds nothing.
     assert!(
-        image.contains("--build-arg SV_GIT_COMMIT=${{ github.sha }}"),
-        "the image's --version names another commit than its tag"
-    );
-    assert!(
-        !publish.contains("docker build"),
+        !publish.lines().any(|l| {
+            let l = l.trim();
+            (l.starts_with("docker build") && !l.starts_with("docker buildx imagetools"))
+                || l.contains("buildx build")
+        }),
         "publish builds an image of its own rather than pushing the one that was tested"
     );
     assert!(
         publish.contains("docker load")
-            && publish.contains("docker tag stackvet/sv \"$IMAGE:${{ github.sha }}\""),
-        "publish does not push the image the image job built"
+            && publish.contains("pattern: sv-image*")
+            && publish.contains("docker tag stackvet/sv \"$IMAGE:${{ github.sha }}-$arch\""),
+        "publish does not push the images the image jobs built"
     );
     assert!(
-        publish.contains("docker push \"$IMAGE:${{ github.sha }}\""),
+        publish.contains("docker buildx imagetools create")
+            && publish.contains("-t \"$IMAGE:${{ github.sha }}\""),
         "no image is published under its commit"
     );
     assert!(
-        publish.contains("docker push \"$IMAGE:latest\""),
+        publish.contains("-t \"$IMAGE:latest\""),
         "the newest is not published as latest"
     );
     let install = read("docs/INSTALL.md");

@@ -21,3 +21,9 @@ say the warning is expected and harmless.
 **Record.** ADR-108 (the release and the image) or ADR-080: a Later entry.
 
 **The owner's choice, 14 October 2026:** yes: build the image for linux/amd64 and linux/arm64 with buildx and push one manifest, attesting both; until it lands, the connect output and prompt 3 say the platform warning is expected. ADR-108 (or ADR-080) Later in the building pull request. The workflow file is routed to the owner's review by CODEOWNERS.
+
+**Built, 15 October 2026 (honesty).** Not with one `docker buildx build --platform` under QEMU, which would build Rust
+under emulation for hours, but in the same shape: a native job on GitHub's arm64 runner builds and drives the arm64
+image, and `publish` pushes both and joins them into one manifest, signing it and each platform's image (ADR-080,
+Later). The interim note on the warning is not added: this is the fix it was waiting for. Left open for the board to
+close; what the published image holds is seen only after the first push to `main`.
