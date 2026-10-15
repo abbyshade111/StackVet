@@ -1,6 +1,8 @@
 # The download-name check does not try a file name with a quote in it
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 From the inventory of sweep 3 (backlog 0561, ADR-119), item 8; read from the code, not yet shown by a test.
 

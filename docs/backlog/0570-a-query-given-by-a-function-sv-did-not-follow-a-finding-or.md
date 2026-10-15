@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Split from backlog 0525 on 15 October 2026, whose first half is built: a call to a Python function in the same file
 whose one return is fixed text is judged as that text. Severity: medium (what counts as evidence).
 
