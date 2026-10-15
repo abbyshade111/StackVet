@@ -14,11 +14,10 @@ containers were running.
 stop the old container with my yes, and tell me to restart the tool."
 
 **Done, 15 October 2026:** prompt 4 now has the tool call `stackvet_status` "with this folder's full path (`pwd` prints
-it)", and goes on: "If it says this folder is not inside the folder the server was started for, StackVet is serving
-another app's folder: on a Mac or Linux, show me what `docker ps` lists, stop the old StackVet container only after I
-say yes, and tell me to restart you." The item's "ask stackvet_status which folder it serves" waits on 0541, which makes
-the status name its folder; until then `stackvet_status` prints only the path it was asked about. Asked about a path
-outside its folder, though, the server already says so, in the words the prompt uses
-(`crates/sv-cli/src/mcp/confine.rs`), so this works now and stays true after 0541. `docker ps` is for a Mac or Linux
-only: on Windows the server is not a container. `crates/sv-cli/tests/setup_prompt_record.rs` holds both sentences;
-with the page as it was, it went red.
+it)", say "which folder it says it serves", and goes on: "If that is not this folder, or it says this folder is not
+inside the folder the server was started for, a StackVet server started for an earlier app is still running: on a Mac
+or Linux, show me what `docker ps` lists, stop the old StackVet container only after I say yes, and tell me to restart
+you." The folder the status names comes from 0541, which landed while this was open and added the "which folder"
+words; the server's answer to a path outside its folder (`crates/sv-cli/src/mcp/confine.rs`) catches the same case
+for a server older than 0541. `docker ps` is for a Mac or Linux only: on Windows the server is not a container.
+`crates/sv-cli/tests/setup_prompt_record.rs` holds both sentences; with the page as it was, it went red.

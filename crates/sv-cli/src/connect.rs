@@ -208,16 +208,23 @@ pub fn where_it_goes(args: &[String]) -> String {
     match args.iter().find_map(|a| Tool::named(a)) {
         Some(tool) => format!(
             "Put this in {} in the app's folder, then restart your AI coding tool and ask it to list the \
-             `stackvet_` tools.",
+             `stackvet_` tools. {OLDER}",
             tool.settings_file()
         ),
         None => "This is StackVet's MCP server for this folder, in no app's format: a local server that talks over \
                  standard input and output. Put its name, command, and arguments, exactly as printed, into your AI \
                  coding tool's MCP settings, in that tool's own way; then have it load them and list the `stackvet_` \
-                 tools."
-            .to_owned(),
+                 tools. "
+            .to_owned()
+            + OLDER,
     }
 }
+
+/// What `sv connect` adds for a tool that keeps one MCP setting for the whole account (backlog 0541): a server
+/// started for an earlier app can still be running, and the tool talking to it.
+pub const OLDER: &str = "Each app's folder has a StackVet server of its own. If your AI tool keeps one MCP setting for your \
+     whole account, a server started for an earlier app may still be running: stop it (`docker ps` lists it, `docker \
+     stop` stops it) or restart the tool, then check that `stackvet_status` names this folder.";
 
 fn tool_word(tool: Tool) -> &'static str {
     match tool {

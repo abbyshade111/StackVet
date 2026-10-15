@@ -281,9 +281,12 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                     ),
                 },
                 "notReady": count.clone(),
+                // The folder this server serves and the app named there (backlog 0541).
+                "root": string,
+                "appName": { "type": ["string", "null"] },
                 "creditsNothing": { "type": "boolean" },
             }),
-            &["lines", "notReady", "creditsNothing"],
+            &["lines", "notReady", "root", "appName", "creditsNothing"],
         ),
         "stackvet_preflight" => {
             let items = json!({

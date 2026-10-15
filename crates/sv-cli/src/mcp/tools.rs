@@ -292,8 +292,21 @@ impl Server {
         };
         let lines = crate::doctor::answers(&app_dir, &asked);
         let shown = args.get("path").and_then(Value::as_str).unwrap_or(".");
+        // Which folder this server serves, and the app named there, first: an AI tool that keeps one setting for
+        // the whole account can be talking to a server started for an earlier app (backlog 0541).
+        let app_name = sv_manifest::locate(&app_dir)
+            .ok()
+            .flatten()
+            .and_then(|found| sv_manifest::Manifest::load(&found.path).ok())
+            .map(|manifest| manifest.app.name)
+            .filter(|name| !name.trim().is_empty());
+        let root = self.root.display().to_string();
         let text = sv_report::fence::fenced(|fence| {
-            crate::doctor::text_quoting(shown, &lines, &|t| fence.wrap(t))
+            format!(
+                "{}\n\n{}",
+                serves(&root, app_name.as_deref(), &|t| fence.wrap(t)),
+                crate::doctor::text_quoting(shown, &lines, &|t| fence.wrap(t))
+            )
         });
         let not_ready = lines
             .iter()
@@ -312,6 +325,8 @@ impl Server {
                     "says": l.said,
                 })).collect::<Vec<_>>(),
                 "notReady": not_ready,
+                "root": root,
+                "appName": app_name,
                 "creditsNothing": true,
             },
             "isError": false,
@@ -784,4 +799,21 @@ fn panic_words(payload: &(dyn std::any::Any + Send)) -> String {
         .map(|s| (*s).to_owned())
         .or_else(|| payload.downcast_ref::<String>().cloned())
         .unwrap_or_else(|| "it gave no reason in words".to_owned())
+}
+
+/// The line `stackvet_status` opens with: the folder this server was started for and the app named in its
+/// stackvet.toml, each quoted through `quote` as the app's own text, and what to do when they are not the app being
+/// built (backlog 0541).
+pub(super) fn serves(root: &str, app_name: Option<&str>, quote: &dyn Fn(&str) -> String) -> String {
+    let named = match app_name {
+        Some(name) => format!(", where stackvet.toml names the app {}", quote(name)),
+        None => ", which has no stackvet.toml yet".to_owned(),
+    };
+    format!(
+        "This StackVet server serves {}{named}. If that is not the folder of the app you are building, this server \
+         was started for an earlier app and is still running: tell the person, and with their yes stop it (`docker \
+         ps` lists it, `docker stop` stops it) or have them restart this AI tool, so the server its settings now name \
+         starts.",
+        quote(root)
+    )
 }

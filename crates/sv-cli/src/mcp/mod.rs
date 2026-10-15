@@ -97,6 +97,8 @@ mod smoke_list_tests;
 #[cfg(test)]
 mod spec_parts_tests;
 #[cfg(test)]
+mod status_serves_tests;
+#[cfg(test)]
 mod status_tests;
 #[cfg(test)]
 mod tell_the_person_tests;
