@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 The owner's trial, started 15 October 2026, after the three-tool trial (`docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`).
 The owner's own to run; a session reads the records afterwards, as 0502's were read.
 
