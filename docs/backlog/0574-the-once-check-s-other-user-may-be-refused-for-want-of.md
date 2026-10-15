@@ -16,3 +16,7 @@ alone, the race says nothing.
 solo try by the other user before the race would take it and leave the race nothing to take: "after a reset" cannot be
 built from stackvet.toml as it stands. The question, with three ways to answer it, is on the board
 (`docs/coordination/waiting/0574.md`).
+
+**The owner's answer, 15 October 2026:** (a), an optional reset request under `once`. With it, the other user tries
+the action alone first, the reset puts the one thing back, and then the race runs; without it, the credit stays in
+part and says the other user was not shown able to take it.

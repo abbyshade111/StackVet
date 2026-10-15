@@ -1,6 +1,6 @@
 # The forgery check never sends a token from another session with the signed-in user's cookies
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
