@@ -11,3 +11,8 @@ From the Cursor + Flash run of 15 October 2026 (backlog 0577). Severity: low (pr
 bare count of files not read.
 
 **Record.** None.
+
+**Waiting, 15 October 2026** (documentation). Not built: the item names neither the three check families nor the
+virtual environment's folder, and the run's write-up is in the orchestrating session's scratchpad, outside the
+repository. `sv` already leaves out `venv` and `.venv` without a word (`SKIP_DIRS`); a venv under another name is
+walked as the app's code. The question is on the board (`docs/coordination/waiting/0595.md`).
