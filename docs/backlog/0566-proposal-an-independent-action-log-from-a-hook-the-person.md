@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the loop-test session's observability ideas, 14 October 2026, assessed by the orchestrating session and agreed by
 the owner the same day: third of three. A proposal, held until the owner says go. It credits nothing.
 
@@ -18,3 +20,5 @@ an earlier tip; and sv already notices hook settings being changed, so a switche
 
 **Record.** A new ADR, or a Later entry on the session-record proposal's: what sv asks to be installed, what it reads,
 and that it writes nothing into the tool's settings.
+
+**The owner's go, 14 October 2026:** build it whenever the board has room; in the order 0564, 0565, 0566, after the probe sweeps.

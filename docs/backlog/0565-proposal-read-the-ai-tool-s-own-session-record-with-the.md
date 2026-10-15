@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 From the loop-test session's observability ideas, 14 October 2026, assessed by the orchestrating session and agreed by
 the owner the same day: second of three. A proposal, held until the owner says go. It credits nothing.
 
@@ -24,3 +26,5 @@ the code shows, never a word to make go away). Commit messages and SECURITY.md a
 tool's text too.
 
 **Record.** A new ADR: sv reading a file outside the app folder, what it shows, and what it never quotes.
+
+**The owner's go, 14 October 2026:** build it whenever the board has room; in the order 0564, 0565, 0566, after the probe sweeps.

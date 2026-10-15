@@ -1,6 +1,6 @@
 # The test-user step took 129 s on one trial app with 7 s of it itemized; the timings cannot say where the time went
 
-**Status:** open
+**Status:** claimed by documentation, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

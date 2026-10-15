@@ -1,6 +1,8 @@
 # Proposal: judge the tested copy: a setting loosened only for sv's run earns no credit for the requirement it serves
 
-**Status:** open
+**Status:** claimed by honesty, 14 October 2026
+
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
 From the loop-test session's observability ideas, 14 October 2026, assessed by the orchestrating session and agreed by
 the owner the same day: first of three. A proposal, held until the owner says go; after the probe sweeps 0559 to 0561,
@@ -20,3 +22,5 @@ the line. Keep the listing as it is for settings sv does not credit.
 
 **Record.** A Later entry on the record that governs what the run credits (ADR-096 or the probes' record), since what
 counts as evidence changes.
+
+**The owner's go, 14 October 2026:** build it whenever the board has room; in the order 0564, 0565, 0566, after the probe sweeps.
