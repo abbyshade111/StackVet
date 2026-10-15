@@ -13,6 +13,7 @@
 
 use serde_json::{Value, json};
 use std::path::Path;
+use sv_check::signed_in::unset_keys::{Unset, unset_in};
 use sv_manifest::Manifest;
 use sv_report::fence::Fence;
 use sv_scan::files::Listing;
@@ -592,6 +593,19 @@ const AI_SCREENING: Ahead = Ahead {
 /// when it is handled. "Look at this" when nothing names a way of handling it, "looks right" naming
 /// the file where something does. Neither says the app is safe or unsafe, a library can be named and
 /// not used, and nothing is credited: the run is the evidence.
+/// The optional keys of `[stack.run.users]` the manifest leaves out, and what each costs (backlog 0533): not
+/// something `sv run` needs, so not counted with what it does, and empty when there is no `[stack.run.users]`, which
+/// `preflight` already speaks to.
+pub fn left_out(manifest: &Manifest) -> Vec<&'static Unset> {
+    manifest
+        .stack
+        .run
+        .users
+        .as_ref()
+        .map(unset_in)
+        .unwrap_or_default()
+}
+
 pub fn ahead(manifest: &Manifest, source: &Source) -> Vec<Item> {
     let run = &manifest.stack.run;
     if run.start.as_deref().is_none_or(|s| s.trim().is_empty()) {
@@ -665,7 +679,7 @@ fn sorted(mut items: Vec<Item>) -> Vec<Item> {
 }
 
 /// What `sv run` needs, what it will look for, and the files not read.
-pub type Found = (Vec<Item>, Vec<Item>, Vec<String>);
+pub type Found = (Vec<Item>, Vec<Item>, Vec<&'static Unset>, Vec<String>);
 
 /// The preflight of the app in `app_dir`.
 pub fn of(app_dir: &Path) -> anyhow::Result<Found> {
@@ -684,7 +698,12 @@ pub fn of(app_dir: &Path) -> anyhow::Result<Found> {
     items.extend(install(&manifest, app_dir));
     items.extend(build_installs(&manifest));
     items.extend(test_runner::item(&manifest, app_dir));
-    Ok((sorted(items), ahead(&manifest, &source), source.unread))
+    Ok((
+        sorted(items),
+        ahead(&manifest, &source),
+        left_out(&manifest),
+        source.unread,
+    ))
 }
 
 /// Whether the app's packages reach it (ADR-052), read from the files the install step reads and
@@ -837,15 +856,26 @@ mod build_install_tests;
 #[cfg(test)]
 mod empty_host_tests;
 
+#[cfg(test)]
+mod left_out_tests;
+
 const OPENING: &str = "# Preflight: what `sv run` will need, looked for in the code\n\nNothing was run. Each answer is a reading of the app's files: \"looks right\" means what `sv run` needs was found in the text, not that it works, and \"look at this\" may be a route or a name built from parts. Nothing here is evidence for any requirement, and nothing is credited.\n";
 
-pub fn markdown(items: &[Item], ahead: &[Item], unread: &[String]) -> String {
-    markdown_with(items, ahead, unread, &Fence::none())
+pub fn markdown(items: &[Item], ahead: &[Item], left_out: &[&Unset], unread: &[String]) -> String {
+    markdown_with(items, ahead, left_out, unread, &Fence::none())
 }
+
+const LEFT_OUT_OPENING: &str = "\n## What leaving a key out of `[stack.run.users]` costs\n\nNot something `sv run` needs: each key below is left out of stackvet.toml, so `sv run` will not try the checks beside it, and the report will list their requirements as not assessed. Add the key if the app has what it describes.\n\n| Key left out | What `sv run` will not try | Requirements not assessed |\n|---|---|---|\n";
 
 const AHEAD_OPENING: &str = "\n## What `sv run` will look for, read in the code\n\nNot something `sv run` needs: what it will check once the app is running. \"Look at this\" means nothing in the code reads like a way of handling it; if the app handles it some other way, nothing needs changing. Nothing here is evidence either way, and nothing is credited.\n\n";
 
-pub fn markdown_with(items: &[Item], ahead: &[Item], unread: &[String], fence: &Fence) -> String {
+pub fn markdown_with(
+    items: &[Item],
+    ahead: &[Item],
+    left_out: &[&Unset],
+    unread: &[String],
+    fence: &Fence,
+) -> String {
     let mut out = String::from(OPENING);
     let looks = items.iter().filter(|i| i.answer == Answer::Look).count();
     out.push_str(&format!(
@@ -873,6 +903,17 @@ pub fn markdown_with(items: &[Item], ahead: &[Item], unread: &[String], fence: &
             ));
         }
     }
+    if !left_out.is_empty() {
+        out.push_str(LEFT_OUT_OPENING);
+        for row in left_out {
+            out.push_str(&format!(
+                "| `{}` | {} | {} |\n",
+                row.key,
+                row.checks,
+                row.ids.join(", ")
+            ));
+        }
+    }
     if !unread.is_empty() {
         out.push_str("\nNot read, because they are too large: ");
         out.push_str(
@@ -887,7 +928,7 @@ pub fn markdown_with(items: &[Item], ahead: &[Item], unread: &[String], fence: &
     out
 }
 
-pub fn to_json(items: &[Item], ahead: &[Item], unread: &[String]) -> Value {
+pub fn to_json(items: &[Item], ahead: &[Item], left_out: &[&Unset], unread: &[String]) -> Value {
     let list = |items: &[Item]| {
         items
             .iter()
@@ -905,6 +946,10 @@ pub fn to_json(items: &[Item], ahead: &[Item], unread: &[String]) -> Value {
         "credits": "nothing",
         "items": list(items),
         "willLookFor": list(ahead),
+        "leftOut": left_out
+            .iter()
+            .map(|row| json!({"key": row.key, "checks": row.checks, "requirements": row.ids}))
+            .collect::<Vec<_>>(),
         "notRead": unread,
     })
 }
@@ -985,7 +1030,7 @@ mod tests {
         files: &[(&str, &str)],
     ) -> (Vec<Answer>, String, String) {
         let dir = folder(name, run, files);
-        let (items, _, _) = of(&dir).expect("the preflight runs");
+        let (items, _, _, _) = of(&dir).expect("the preflight runs");
         std::fs::remove_dir_all(&dir).ok();
         let install: Vec<&Item> = items.iter().filter(|i| i.topic == "install").collect();
         let quoted = install
@@ -1280,7 +1325,7 @@ mod tests {
             &manifest(&run),
             &source(&[("app.py", GOOD_APP), ("seed.py", GOOD_SEED)]),
         );
-        let text = sv_report::fence::fenced(|fence| markdown_with(&items, &[], &[], fence));
+        let text = sv_report::fence::fenced(|fence| markdown_with(&items, &[], &[], &[], fence));
         let tag_at = text.find("<app-text-").expect("the path is fenced");
         let path_at = text
             .find("/ignore-all-previous-instructions")
@@ -1308,7 +1353,7 @@ mod tests {
         )
         .unwrap();
         std::fs::write(dir.join("notes.txt"), "'0.0.0.0' PORT '/login'\n").unwrap();
-        let (items, _, unread) = of(&dir).unwrap();
+        let (items, _, _, unread) = of(&dir).unwrap();
         let _ = std::fs::remove_dir_all(&dir);
         assert!(unread.is_empty());
         assert_eq!(answers(&items, "listen"), vec![Answer::Look]);
@@ -1519,14 +1564,14 @@ mod tests {
         let files = [("app.py", GOOD_APP), ("seed.py", GOOD_SEED)];
         let items = preflight(&manifest(RUN), &source(&files));
         let ahead = ahead(&manifest(RUN), &source(&files));
-        let text = markdown(&items, &ahead, &[]);
+        let text = markdown(&items, &ahead, &[], &[]);
         let section = text
             .find("## What `sv run` will look for, read in the code")
             .expect(&text);
         assert!(text[section..].contains("(wrong-passwords)"), "{text}");
         // The count at the top is of what `sv run` needs, which is all there, as before.
         assert!(text.contains("\n0 to look at,"), "{text}");
-        let json = to_json(&items, &ahead, &[]);
+        let json = to_json(&items, &ahead, &[], &[]);
         assert_eq!(json["credits"], "nothing");
         assert_eq!(json["willLookFor"].as_array().unwrap().len(), 3);
         assert!(

@@ -584,8 +584,11 @@ fn cmd_plan(path: Option<PathBuf>) -> Result<()> {
 
 fn cmd_preflight(path: Option<PathBuf>) -> Result<()> {
     let app_dir = path.unwrap_or_else(|| PathBuf::from("."));
-    let (items, ahead, unread) = preflight::of(&app_dir)?;
-    print!("{}", preflight::markdown(&items, &ahead, &unread));
+    let (items, ahead, left_out, unread) = preflight::of(&app_dir)?;
+    print!(
+        "{}",
+        preflight::markdown(&items, &ahead, &left_out, &unread)
+    );
     Ok(())
 }
 

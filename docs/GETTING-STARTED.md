@@ -212,6 +212,8 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    what it keeps about people (`[data] categories`):** they decide whether it is held to ASVS
 >    level 1 or the stricter level 2. Name the app's pages and routes in it, under
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
+>    Fill in `owned` there too when the app has a record one person makes that another must not see:
+>    it lets StackVet try to read it as somebody else and to submit a forged form.
 >    If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up
 >    on its own, and ask whether to seed a test code for the run, and where it would live.
 >

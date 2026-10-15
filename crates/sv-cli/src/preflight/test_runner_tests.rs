@@ -135,7 +135,7 @@ fn the_whole_preflight_says_it() {
     .unwrap();
     std::fs::write(dir.join("requirements.txt"), "flask==3.0.3\n").unwrap();
     std::fs::write(dir.join("app.py"), "print('hi')\n").unwrap();
-    let (items, _, _) = crate::preflight::of(&dir).expect("the preflight reads the folder");
+    let (items, _, _, _) = crate::preflight::of(&dir).expect("the preflight reads the folder");
     let _ = std::fs::remove_dir_all(&dir);
     let runner = items
         .iter()

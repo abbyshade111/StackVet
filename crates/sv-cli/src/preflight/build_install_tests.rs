@@ -84,10 +84,10 @@ fn the_preflight_of_an_app_folder_says_it() {
     };
     std::fs::write(dir.join("app.py"), "print(1)\n").unwrap();
     std::fs::write(dir.join("stackvet.toml"), manifest("pip install flask")).unwrap();
-    let (items, _, _) = of(&dir).expect("the preflight runs");
+    let (items, _, _, _) = of(&dir).expect("the preflight runs");
     let said = items.iter().filter(|i| i.topic == "build-install").count();
     std::fs::write(dir.join("stackvet.toml"), manifest("python make.py")).unwrap();
-    let (control, _, _) = of(&dir).expect("the preflight runs");
+    let (control, _, _, _) = of(&dir).expect("the preflight runs");
     std::fs::remove_dir_all(&dir).ok();
     assert_eq!(
         said, 1,
