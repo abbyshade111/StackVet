@@ -65,10 +65,192 @@ fn works(response: &Option<ProbeResponse>, users: &sv_manifest::UsersSection) ->
     accepted(response) && !to_sign_in
 }
 
+/// Where a create's record is read back (`read` and `id-field`, or the `Location` the create sends), and the
+/// path the control's record was found at that way, which a read-back has to match in shape to be believed.
+#[derive(Clone)]
+struct ReadBack<'a> {
+    read: Option<&'a str>,
+    id_field: Option<&'a str>,
+    control_path: String,
+}
+
+/// What a create sent as another site would send it did, judged by the record it made and, when that cannot be
+/// read, by its answer beside the control's (backlog 0560, ADR-119).
+enum Made {
+    /// It made the record: how that is known.
+    Yes(String),
+    /// It was refused, or made nothing.
+    No,
+    /// Neither can be told: what was compared.
+    Unclear(String),
+}
+
+/// Whether the record `answer` names holds `marker`, read as the signed-in user, and where it was read: `None`
+/// when the answer names no record, or the read got no answer a page can be judged by (none, a crash, a limit).
+fn record_holds(
+    http: &mut dyn Http,
+    read_back: &ReadBack,
+    id: &str,
+    answer: &ProbeResponse,
+    marker: &str,
+    session: &Session,
+) -> Option<(bool, String)> {
+    let path = super::admin::record_path_with(read_back.read, read_back.id_field, answer)?;
+    let page = http.send(&get(id, &path, session))?;
+    if !(200..500).contains(&page.status) || page.status == 429 {
+        return None;
+    }
+    Some((
+        (200..300).contains(&page.status) && page.body.contains(marker),
+        path,
+    ))
+}
+
+/// A create sent as another site would send it, judged: a 4xx, no answer, or a crash is not taken (the check's
+/// guard withholds the credit for the last two); otherwise the record it would have made is read back when that
+/// way of reading has found the control's record, and the answer is read beside the control's when it has not.
+fn judge_forged(
+    http: &mut dyn Http,
+    read_back: Option<&ReadBack>,
+    control: &ProbeResponse,
+    response: &Option<ProbeResponse>,
+    id: &str,
+    marker: &str,
+    session: &Session,
+) -> Made {
+    let Some(answer) = response.as_ref().filter(|_| accepted(response)) else {
+        return Made::No;
+    };
+    if let Some(read_back) = read_back
+        && let Some((there, path)) = record_holds(
+            http,
+            read_back,
+            &format!("{id}-read"),
+            answer,
+            marker,
+            session,
+        )
+    {
+        if there {
+            return Made::Yes(format!(
+                "answered {}, and the record it made was there when the signed-in user read {path}",
+                answer.status
+            ));
+        }
+        if control::path_shape(&path) == control::path_shape(&read_back.control_path) {
+            return Made::No;
+        }
+    }
+    match control::beside(control, response) {
+        control::Beside::Like => Made::Yes(format!(
+            "answered {} as the app's own request did",
+            answer.status
+        )),
+        control::Beside::Refused => Made::No,
+        control::Beside::Unclear(why) => Made::Unclear(why),
+    }
+}
+
+/// The `owned` create the first user made and read back before these checks ran: the control for forging it.
+pub(super) struct OwnedControl<'a> {
+    pub(super) created: &'a ProbeResponse,
+    pub(super) read_path: &'a str,
+}
+
+/// One create request a check sends as another site would: the `owned` one first (its id is the check's prefix
+/// alone), then each entry of `creates`, with where its record is read back.
+struct Create<'a> {
+    id: String,
+    template: sv_manifest::RequestTemplate,
+    read: Option<&'a str>,
+    id_field: Option<&'a str>,
+}
+
+fn creates_to_send<'a>(
+    users: &'a sv_manifest::UsersSection,
+    owned: &'a sv_manifest::OwnedSection,
+    prefix: &str,
+) -> Vec<Create<'a>> {
+    std::iter::once(Create {
+        id: prefix.to_owned(),
+        template: owned.create.clone(),
+        read: owned.read.as_deref(),
+        id_field: owned.id_field.as_deref(),
+    })
+    .chain(users.creates.iter().enumerate().map(|(i, c)| Create {
+        id: format!("{prefix}-{}", i + 1),
+        template: c.request(),
+        read: c.read.as_deref(),
+        id_field: c.id_field.as_deref(),
+    }))
+    .collect()
+}
+
+/// The control for one create request (backlog 0420, 0560): the `owned` create was made and read back by this
+/// user before these checks ran, so its refusal below means something. A `creates` entry is first sent as the
+/// app's own page would send it, with the session and its token; only if that was accepted does a refusal of the
+/// forged copy say anything. An app that answers 400 to an empty field, 404 to a mistyped path, or 405 to a form
+/// where it wants JSON refuses both. The control's own record is then read back, and only a way of reading that
+/// found it is trusted to say a forged record is not there. `Err` says why there is no control.
+fn control_for<'a>(
+    http: &mut dyn Http,
+    users: &sv_manifest::UsersSection,
+    session: &Session,
+    create: &Create<'a>,
+    is_owned: bool,
+    owned: &OwnedControl,
+) -> Result<(ProbeResponse, Option<ReadBack<'a>>), String> {
+    let read_back = |control_path: String| ReadBack {
+        read: create.read,
+        id_field: create.id_field,
+        control_path,
+    };
+    if is_owned {
+        return Ok((
+            owned.created.clone(),
+            Some(read_back(owned.read_path.to_owned())),
+        ));
+    }
+    let mut own = session.clone();
+    let control_id = format!("{}-control", create.id);
+    let marker = "sv-probe-control-4c1d";
+    let v = with_token(
+        http,
+        &control_id,
+        &create.template,
+        &Values {
+            marker,
+            ..Default::default()
+        },
+        &mut own,
+        &users.private,
+    );
+    let control = http.send(&request(&control_id, &create.template, &v, &own));
+    let (worked, answered) = (works(&control, users), status(&control));
+    let Some(control) = control.filter(|_| worked) else {
+        return Err(format!(
+            "sent with the session and its token, as the app's own page would send it, it was not \
+             accepted ({answered}), so a refusal from another site would show nothing"
+        ));
+    };
+    let trying = read_back(String::new());
+    let found = record_holds(
+        http,
+        &trying,
+        &format!("{control_id}-read"),
+        &control,
+        marker,
+        &own,
+    )
+    .and_then(|(there, path)| there.then(|| read_back(path)));
+    Ok((control, found))
+}
+
 pub(super) fn forgery_check(
     http: &mut dyn Http,
     users: &sv_manifest::UsersSection,
     owned: &sv_manifest::OwnedSection,
+    owned_control: &OwnedControl,
     session: &Session,
     a: &SignedIn,
     out: &mut Outcome,
@@ -90,52 +272,20 @@ pub(super) fn forgery_check(
         csrf: Some(String::new()),
         ..Default::default()
     };
-    let creates: Vec<(String, sv_manifest::RequestTemplate)> =
-        std::iter::once(("forged-create".to_owned(), owned.create.clone()))
-            .chain(
-                users
-                    .creates
-                    .iter()
-                    .enumerate()
-                    .map(|(i, c)| (format!("forged-create-{}", i + 1), c.request())),
-            )
-            .collect();
+    let creates = creates_to_send(users, owned, "forged-create");
     let (mut accepted_at, mut refused_at, mut answers) = (Vec::new(), Vec::new(), Vec::new());
     // Each create request that cannot be judged, by its path, and why.
     let mut unjudged: Vec<(String, String)> = Vec::new();
-    for (id, template) in &creates {
-        // The control (backlog 0420): the `owned` create was made by this user just
-        // before, so its refusal below means something. A `creates` entry is first sent as the app's
-        // own page would send it, with the session and its token; only if that was accepted does a
-        // refusal of the forged copy say anything. An app that answers 400 to an empty field, 404 to a
-        // mistyped path, or 405 to a form where it wants JSON refuses both.
-        if id != "forged-create" {
-            let mut own = session.clone();
-            let control_id = format!("{id}-control");
-            let v = with_token(
-                http,
-                &control_id,
-                template,
-                &Values {
-                    marker: "sv-probe-control-4c1d",
-                    ..Default::default()
-                },
-                &mut own,
-                &users.private,
-            );
-            let control = http.send(&request(&control_id, template, &v, &own));
-            if !works(&control, users) {
-                unjudged.push((
-                    template.path.clone(),
-                    format!(
-                        "sent with the session and its token, as the app's own page would send it, it \
-                         was not accepted ({}), so a refusal from another site would show nothing",
-                        status(&control)
-                    ),
-                ));
-                continue;
-            }
-        }
+    for (i, create) in creates.iter().enumerate() {
+        let (id, template) = (&create.id, &create.template);
+        let (control, read_back) =
+            match control_for(http, users, session, create, i == 0, owned_control) {
+                Ok(found) => found,
+                Err(why) => {
+                    unjudged.push((template.path.clone(), why));
+                    continue;
+                }
+            };
         let mut forged = request(id, template, &values, &cross);
         forged.headers.retain(|(n, _)| {
             !n.to_lowercase().contains("csrf") && !n.to_lowercase().contains("xsrf")
@@ -148,12 +298,27 @@ pub(super) fn forgery_check(
             .push(("Referer".to_owned(), format!("{STRANGER}/")));
         let response = http.send(&forged);
         answers.push(format!("{} ({})", template.path, status(&response)));
-        if accepted(&response) {
-            accepted_at.push((id.clone(), template.path.clone(), status(&response)));
-        } else {
-            // No answer, or a crash, is not a refusal either: the check's guard withholds the whole
-            // credit then, and says so (backlog 0280).
-            refused_at.push(template.path.clone());
+        // Accepted means the record was made, or the answer was the app's own request's (backlog 0560): a form
+        // shown again with 200 and "CSRF token missing" is under 400 too. No answer, or a crash, is not a refusal
+        // either: the check's guard withholds the whole credit then, and says so (backlog 0280).
+        match judge_forged(
+            http,
+            read_back.as_ref(),
+            &control,
+            &response,
+            id,
+            values.marker,
+            session,
+        ) {
+            Made::Yes(how) => accepted_at.push((id.clone(), template.path.clone(), how)),
+            Made::No => refused_at.push(template.path.clone()),
+            Made::Unclear(why) => unjudged.push((
+                template.path.clone(),
+                format!(
+                    "sent as another site would send it, it could not be told whether it was \
+                     taken: {why}"
+                ),
+            )),
         }
     }
     for (path, why) in &unjudged {
@@ -184,7 +349,7 @@ pub(super) fn forgery_check(
                  an Origin of {STRANGER} and no anti-forgery token.{}",
                 accepted_at
                     .iter()
-                    .map(|(_, path, answer)| format!("{path} ({answer})"))
+                    .map(|(_, path, how)| format!("{path} (it {how})"))
                     .collect::<Vec<_>>()
                     .join(", "),
                 if protected_by_same_site {
@@ -381,6 +546,7 @@ pub(super) fn simple_request_check(
     http: &mut dyn Http,
     users: &sv_manifest::UsersSection,
     owned: &sv_manifest::OwnedSection,
+    owned_control: &OwnedControl,
     session: &Session,
     a: &SignedIn,
     out: &mut Outcome,
@@ -389,17 +555,12 @@ pub(super) fn simple_request_check(
     // Each JSON create request, with the prefix its requests' ids start with. A form create request
     // is left out: a browser sends a form from another site without asking first anyway, so no
     // preflight is relied on there, and whether it is refused is the cross-site check's question.
-    let creates: Vec<(String, sv_manifest::RequestTemplate)> =
-        std::iter::once(("simple-request".to_owned(), owned.create.clone()))
-            .chain(
-                users
-                    .creates
-                    .iter()
-                    .enumerate()
-                    .map(|(i, c)| (format!("simple-request-{}", i + 1), c.request())),
-            )
-            .filter(|(_, t)| !t.json.is_empty())
-            .collect();
+    let creates: Vec<(bool, Create)> = creates_to_send(users, owned, "simple-request")
+        .into_iter()
+        .enumerate()
+        .map(|(i, c)| (i == 0, c))
+        .filter(|(_, c)| !c.template.json.is_empty())
+        .collect();
     if creates.is_empty() {
         out.not_assessed.push((
             ID.to_owned(),
@@ -410,11 +571,6 @@ pub(super) fn simple_request_check(
         ));
         return;
     }
-    let values = Values {
-        marker: "sv-probe-simple-request-4e07",
-        csrf: Some(String::new()),
-        ..Default::default()
-    };
     let Some(cross) = as_another_site_sends(session) else {
         out.not_assessed
             .push((ID.to_owned(), TOKEN_ONLY.to_owned()));
@@ -425,76 +581,63 @@ pub(super) fn simple_request_check(
     let mut taken: Vec<(String, String, &str)> = Vec::new();
     let mut refused_at: Vec<String> = Vec::new();
     let mut unjudged: Vec<(String, String)> = Vec::new();
-    for (prefix, template) in &creates {
-        if prefix != "simple-request" {
-            let mut own = session.clone();
-            let control_id = format!("{prefix}-control");
-            let v = with_token(
-                http,
-                &control_id,
-                template,
-                &Values {
-                    marker: "sv-probe-control-4c1d",
-                    ..Default::default()
-                },
-                &mut own,
-                &users.private,
-            );
-            let control = http.send(&request(&control_id, template, &v, &own));
-            if !works(&control, users) {
-                unjudged.push((
-                    template.path.clone(),
-                    format!(
-                        "sent with the session and its token, as the app's own page would send it, \
-                         it was not accepted ({}), so a refusal from another site would show nothing",
-                        status(&control)
-                    ),
-                ));
-                continue;
-            }
-        }
-        let base = request(prefix, template, &values, &cross);
-        let fields: Vec<(String, String)> = template
-            .json
-            .iter()
-            .map(|(k, v)| (k.clone(), fill(v, &values)))
-            .collect();
-        let boundary = "sv-probe-boundary-5c1e";
-        let multipart: String = fields
-            .iter()
-            .map(|(k, v)| {
-                format!(
-                    "--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n"
-                )
-            })
-            .chain(std::iter::once(format!("--{boundary}--\r\n")))
-            .collect();
-        let form: String = fields
-            .iter()
-            .map(|(k, v)| format!("{}={}", form_encode(k), form_encode(v)))
-            .collect::<Vec<_>>()
-            .join("&");
-        let variants = [
-            (
-                "text/plain",
-                "text/plain;charset=UTF-8".to_owned(),
-                base.body_text().into_owned(),
-            ),
-            (
-                "a form",
-                "application/x-www-form-urlencoded".to_owned(),
-                form,
-            ),
-            (
-                "multipart",
-                format!("multipart/form-data; boundary={boundary}"),
-                multipart,
-            ),
-        ];
+    for (is_owned, create) in &creates {
+        let (prefix, template) = (&create.id, &create.template);
+        let (control, read_back) =
+            match control_for(http, users, session, create, *is_owned, owned_control) {
+                Ok(found) => found,
+                Err(why) => {
+                    unjudged.push((template.path.clone(), why));
+                    continue;
+                }
+            };
         let mut refused = 0;
         let mut unclear = Vec::new();
         let mut taken_here = Vec::new();
-        for (name, content_type, body) in variants {
+        for (n, name) in ["text/plain", "a form", "multipart"]
+            .into_iter()
+            .enumerate()
+        {
+            // A marker of its own for each form, so the record one made is not read back as another's.
+            let marker = format!("sv-probe-simple-request-{n}-4e07");
+            let values = Values {
+                marker: &marker,
+                csrf: Some(String::new()),
+                ..Default::default()
+            };
+            let base = request(prefix, template, &values, &cross);
+            let fields: Vec<(String, String)> = template
+                .json
+                .iter()
+                .map(|(k, v)| (k.clone(), fill(v, &values)))
+                .collect();
+            let boundary = "sv-probe-boundary-5c1e";
+            let (content_type, body) = match name {
+                "text/plain" => (
+                    "text/plain;charset=UTF-8".to_owned(),
+                    base.body_text().into_owned(),
+                ),
+                "a form" => (
+                    "application/x-www-form-urlencoded".to_owned(),
+                    fields
+                        .iter()
+                        .map(|(k, v)| format!("{}={}", form_encode(k), form_encode(v)))
+                        .collect::<Vec<_>>()
+                        .join("&"),
+                ),
+                _ => (
+                    format!("multipart/form-data; boundary={boundary}"),
+                    fields
+                        .iter()
+                        .map(|(k, v)| {
+                            format!(
+                                "--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n"
+                            )
+                        })
+                        .chain(std::iter::once(format!("--{boundary}--\r\n")))
+                        .collect(),
+                ),
+            };
             let mut simple = base.clone();
             simple.id = format!("{prefix}-{}", name.replace([' ', '/'], "-"));
             simple.headers.retain(|(n, _)| {
@@ -508,9 +651,23 @@ pub(super) fn simple_request_check(
             ]);
             simple.body = Some(body.into_bytes());
             let response = http.send(&simple);
+            // Taken means the record was made, or the answer was the app's own request's (backlog 0560): a JSON
+            // API that answers 200 with `{"error": ...}` to a body it cannot read took nothing.
             match response.as_ref().map(|r| r.status) {
-                Some(200..=299) => taken_here.push(name),
                 Some(400..=499) => refused += 1,
+                Some(200..=399) => match judge_forged(
+                    http,
+                    read_back.as_ref(),
+                    &control,
+                    &response,
+                    &simple.id,
+                    &marker,
+                    session,
+                ) {
+                    Made::Yes(_) => taken_here.push(name),
+                    Made::No => refused += 1,
+                    Made::Unclear(why) => unclear.push(format!("{name} ({why})")),
+                },
                 _ => unclear.push(format!("{name} ({})", status(&response))),
             }
         }
@@ -874,7 +1031,7 @@ mod tests {
     }
 
     /// `users()`, with the owned record behind a JSON API.
-    fn with_json_api() -> UsersSection {
+    pub(super) fn with_json_api() -> UsersSection {
         let mut u = users();
         u.owned = Some(sv_manifest::OwnedSection {
             create: RequestTemplate {
@@ -1007,7 +1164,7 @@ mod tests {
         assert!(
             simple_request_named(&o)
                 .iter()
-                .any(|w| w.contains("multipart (302)")),
+                .any(|w| w.contains("multipart (302 where the control answered 201)")),
             "{:?}",
             o.not_assessed
         );
@@ -1218,3 +1375,6 @@ mod control_tests;
 
 #[cfg(test)]
 mod simple_request_tests;
+
+#[cfg(test)]
+mod read_back_tests;

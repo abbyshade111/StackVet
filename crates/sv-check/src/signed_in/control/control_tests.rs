@@ -81,3 +81,12 @@ fn two_successes_of_another_shape_cannot_be_told() {
     // A form beside a form is the same shape: this reads no words.
     assert_eq!(beside(&form, &Some(form.clone())), Beside::Like);
 }
+
+#[test]
+fn a_redirect_to_another_new_record_is_the_same_place() {
+    let control = answer(302, Some("/notes/7"), "");
+    let next = answer(302, Some("/notes/8b2f-41c0"), "");
+    assert_eq!(beside(&control, &Some(next)), Beside::Like);
+    let list = answer(302, Some("/notes"), "");
+    assert!(matches!(beside(&control, &Some(list)), Beside::Unclear(_)));
+}

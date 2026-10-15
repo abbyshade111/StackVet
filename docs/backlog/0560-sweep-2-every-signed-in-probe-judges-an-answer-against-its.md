@@ -66,3 +66,11 @@ a real app is likely to trip it):
 **First batch, built:** the shared comparison (`signed_in/control.rs`: the same status class, the same redirect
 target, and for two successes JSON with the same names or no form where the control had none) and the browser-
 validation probe (0523).
+
+**Second batch, built (forgery and simple requests, list item 1):** a create sent as another site would send it is
+taken when the record it made holds its marker when the signed-in user reads it back. A read-back is believed only
+when the same way of reading found the control's own record (the `owned` record its owner read back; a `creates`
+entry's control, read back the same way). When the record cannot be read back, the answer is read beside the
+control's, and an answer unlike it is not judged. The simple-request check gives each of its three forms a marker of
+its own, and judges a 3xx the same way rather than calling it unclear.
+
