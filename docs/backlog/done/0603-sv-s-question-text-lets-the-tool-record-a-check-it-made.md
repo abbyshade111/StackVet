@@ -1,6 +1,8 @@
 # sv's question text lets the tool record a check it made itself by reading the code, which prompt 5 forbids
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026. Prompt 5's step 6 and the guide's copy now match `stackvet_check`: the tool may
+record a check it made reading the code, with `by = "ai-tool"` and its lines in `how`, as its own word; it never writes
+`by = "owner"`. Restamped; two guide phrases tightened to stay under 4,500 words. ADR-026, Later.
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
