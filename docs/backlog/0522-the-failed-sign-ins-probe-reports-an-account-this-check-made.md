@@ -1,6 +1,6 @@
 # The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** open
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -26,3 +26,5 @@ have" path and its honest wording. Add the fake-app case: a sign-up that answers
 
 **Record.** The probe's record (ADR-085 or the one that governs `signed_in/`): a Later entry, since what counts as
 evidence for V6.3.1 changes.
+
+**Built by the sweep:** this is the first case of backlog 0559 (ADR-119); it closes with it.

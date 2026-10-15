@@ -15,3 +15,5 @@ make sure the token is tied to the session.
 two strangers" under V3.5.1 (read its text first), crediting nothing when they differ.
 
 **Record.** A Later entry on the forged-form check's record.
+
+**Built by the sweep:** this is the first case of backlog 0561 (ADR-119); it closes with it.

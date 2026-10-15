@@ -42,7 +42,7 @@ it while it runs, an optional later step, needs StackVet installed on the comput
 - **On Linux:** Docker itself, or Docker Desktop. **On Windows,** skip Docker: see step 3.
 
 **Docker has to be running before you open your AI tool.** If it is not, the StackVet tools are
-simply missing from the tool, and nothing tells you why. After a restart, start Docker first.
+missing, and nothing tells you why. After a restart, start Docker first.
 
 Then fetch StackVet, in a [terminal](GLOSSARY.md#terminal):
 
@@ -59,9 +59,8 @@ Make an empty folder for the app, for example `~/code/my-app`. Then, in a termin
 git init
 ```
 
-This matters more than it looks: the check for a password or key that
-was ever saved into your project's history only runs in a git folder. Without it, that check is
-reported as [*not assessed*](GLOSSARY.md#not-assessed).
+The check for a password or key ever saved into your project's history only runs in a git folder.
+Without git, that check is reported as [*not assessed*](GLOSSARY.md#not-assessed).
 
 ## 3. Connect StackVet to your AI tool
 
@@ -87,9 +86,8 @@ Docker. Not yet tried by hand; the checks that start your app, not at all
 
 ### Claude (the desktop app and Claude Code)
 
-A file named `.mcp.json` in the app's folder. A `.mcp.json` like this was tried in the Claude
-desktop app with StackVet installed directly; this container version of it has been tried by a
-test that talks to it the way the tool does, not yet in the app itself.
+A file named `.mcp.json` in the app's folder. One like it was tried in the Claude desktop app with
+StackVet installed directly; this container version only by a test that talks to it as the tool does.
 
 ```json
 { "mcpServers": { "stackvet": {
@@ -109,9 +107,8 @@ test that talks to it the way the tool does, not yet in the app itself.
 ### VS Code (GitHub Copilot)
 
 **Tried on 27 September 2026, by the owner, start to finish:** Copilot's agent called StackVet's
-tools, asked every question from `stackvet_questions` (since 9 October 2026, `stackvet_check`'s section
-`questions`) one at a time, wrote a fix for the path
-findings `stackvet_check` reported, and checked the fix by running the check again. The answers were
+tools, asked every question one at a time, fixed the path findings `stackvet_check` reported, and ran
+the check again to confirm the fix. The answers were
 saved in the app's folder, and a fresh report showed them and the fix. That was with `sv` installed
 directly; the container settings below have not been tried in VS Code yet.
 
@@ -162,8 +159,8 @@ until then the chat lists none. If it does not work for you, tell us:
 
 ### Did it connect?
 
-Check before you start building, in whichever tool you use. If StackVet is not connected, the tool
-does not say so: it simply builds without it, and nothing gets checked. In the tool's chat, ask:
+Check before you start building. If StackVet is not connected, the tool does not say so: it builds
+without it, and nothing gets checked. In the tool's chat, ask:
 
 > Which `stackvet_` tools can you call? List their names.
 
@@ -177,9 +174,8 @@ not start.
 
 If the tool stops mentioning StackVet later, ask again: after a restart, Docker may not have
 started yet.
-The prompt in step 4 tells the tool to stop and tell you when the tools are missing, and the rules
-file below (`sv rules`) says the same to any tool that reads `AGENTS.md`, so a tool that finds them
-gone later should say so rather than carry on.
+The prompt in step 4, and the rules file below (`sv rules`) for any tool that reads `AGENTS.md`, tell
+the tool to stop and tell you when the tools are missing.
 
 ### A tool without MCP
 
@@ -211,8 +207,12 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    **leave a line commented out rather than guessing `false`**. A line left out is reported as not
 >    assessed; a wrong `false` switches whole sets of checks off. **Ask me before you decide where the
 >    app runs, whether anyone signs in, or how it is reached** (`auth`, `tls`, and the `[stack.run]`
->    lines), and tell me whenever you change one. Name the app's pages and routes in it, under
+>    lines), and tell me whenever you change one. **Ask me, too, who uses the app (`audience`) and
+>    what it keeps about people (`[data] categories`):** they decide whether it is held to ASVS
+>    level 1 or the stricter level 2. Name the app's pages and routes in it, under
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
+>    If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up
+>    on its own, and ask whether to seed a test code for the run, and where it would live.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
 >    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
@@ -228,17 +228,19 @@ Open the app's folder in your AI tool and paste this, with your app described at
 > 5. Never tell me the app is secure. Tell me what was checked and what was not.
 > 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
 >    questions one at a time. When you tell me what the code does for one, quote the lines and say
->    it is your reading, not a check. Record my answers with `stackvet_record_answer`, and only what
->    I actually answer as mine. Never mark a check by hand as done, or write `by = "owner"`: only I
->    can, with `sv review`.
+>    it is your reading, not a check. Record my answers only with `stackvet_record_answer`, under the
+>    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
+>    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
+>    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
+>    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
+>    `by = "ai-tool"` and my words in `how`.
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
 **If you ask your AI tool to push, say so in these words:** "push it, and do not bypass any branch protection or
 ruleset; if the only way to push is to bypass one, stop and ask me first." Without that, a tool may push straight to
-`main`, which skips the pull-request rule you set, and the tools that check the code never see the change first. Its
-own rules say it must not push to `main` unless you ask for that push, but in the Cursor build a plain "please push"
-was taken as covering a push that bypassed the rule. Ask it for a pull request, and merge it yourself.
+`main`, which skips the pull-request rule you set, and the tools that check the code never see the change first. In
+the Cursor build, a plain "please push" was taken as covering a push that bypassed the rule. Ask it for a pull request, and merge it yourself.
 
 More prompts like these, each for one thing StackVet checks, are in [the prompt library](PROMPTS.md). The ones
 shown to work are already given to your AI tool, so you need not paste them; the rest are there too (`sv prompts`
@@ -261,7 +263,7 @@ tool`, since `sv` cannot tell your words from the tool's. `sv review`, in your o
 whose it is: type `mine` where it says what you decided; your name where the tool worked it out from the code and
 you checked it, which the report shows as the tool's words a person confirmed; or Enter to leave it. An answer the
 tool wrote in `stackvet.toml` (`by = "ai-tool"`) is confirmed, not owned; `by = "owner"` by hand is for the rare
-one that is truly your own decision. Run it in your own terminal:
+one that is truly your own decision. Run it:
 
 ```bash
 sv review ~/code/my-app
@@ -282,7 +284,7 @@ docker run --rm -it --network none -v "$PWD":"$PWD" -w "$PWD" -v "$HOME/.config/
 
 On Linux, add `--user "$(id -u):$(id -g)"` after `docker run`, as in section 3.
 
-Once StackVet is installed on the computer itself (section 6), this is just `sv review .`.
+With StackVet installed on the computer itself (section 6), this is just `sv review .`.
 
 It shows each answer that does not yet count as yours, asks your name or `owner`, and signs it with a key of its own,
 kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose
@@ -337,9 +339,8 @@ packages does not start, and everything that needs it running is *not assessed*.
 
 **The full check is that one command.** `sv report --run` also runs the other security tools that are installed on
 your computer, such as Bandit and Semgrep, and puts what they find in the same report as what running the app found.
-Your AI coding tool's StackVet connection never runs them, and never starts the app: each of those runs code, which
-stays your decision at a terminal. So a report your AI tool wrote, or a check it made while building, leaves both out,
-and says so. To leave the other tools out of a check of your own, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
+Your AI coding tool's StackVet connection never runs them or starts the app, since each runs code, which stays your
+decision at a terminal; so its reports and checks leave both out, and say so. To leave the other tools out of a check of your own, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
 `[tools] codeql = true`, which its license allows only for an open-source app, research, or a paid GitHub license.
 
 **Where the report is.** When your AI tool writes the report (`stackvet_write_report`), or you run
@@ -358,8 +359,8 @@ a browser. Each file in the folder has a reader of its own:
 | `sbom.cdx.json` | Tools that read a bill of materials |
 | `report.pdf` | You, or whoever you hand it to |
 
-`security.md` is what to fix; `compliance.md` is the whole picture against the standards. On a small app the two
-open alike, but they are not the same: [the reports page](website/reports-page.md) shows an example of each. To have your AI tool
+On a small app `security.md` and `compliance.md` open alike, but they are not the same:
+[the reports page](website/reports-page.md) shows an example of each. To have your AI tool
 read it with you, starting with what was not checked, give it [the report prompt](prompts/report.md) (not yet tried
 in an AI tool).
 
@@ -380,8 +381,8 @@ is met. Only StackVet's own checks can make a requirement *checked*; your word c
 `sv review`, and the tool's word counts least. [A picture of the nine](ARCHITECTURE.md#the-nine-statuses-strongest-evidence-first)
 shows who can grant each.
 
-If you later run StackVet in an automatic check (CI) whenever the code changes, the number it ends with says what
-happened: [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes) says what each number means.
+If you later run StackVet in an automatic check (CI), [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes)
+says what the number it ends with means.
 
 ## Later
 

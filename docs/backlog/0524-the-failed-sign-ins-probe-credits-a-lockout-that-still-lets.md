@@ -17,3 +17,5 @@ and stops after the push-back.
 ("after the limit, the right password still signed in"), and credit nothing. One request more.
 
 **Record.** The probe's record: a Later entry (what counts as evidence for V6.3.1).
+
+**Built by the sweep:** this is the first case of backlog 0561 (ADR-119); it closes with it.
