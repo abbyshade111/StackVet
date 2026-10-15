@@ -446,6 +446,12 @@ pub(super) struct Flaws {
     pub(super) session_not_verified: bool,
     /// The sign-up form states maxlength, and the server does not apply it.
     pub(super) validation_only_in_browser: bool,
+    /// Refuses a sign-up the way Flask apps do: the form shown again, with 200 and "Enter a valid
+    /// email address.", where a sign-up that worked is sent on to `/login`. Not a flaw (backlog 0523).
+    pub(super) signup_refused_on_200: bool,
+    /// Refuses a sign-up that breaks the form's rule with the same redirect to `/login` a sign-up that
+    /// worked gets, and makes no account. Not a flaw: only signing in can tell the two apart.
+    pub(super) signup_refused_alike: bool,
     /// A record is handed back with the owner's password hash in it.
     pub(super) record_leaks_fields: bool,
     /// A note's page names its owner, as `"user_id":"<who>"` in JSON on the page. Not a flaw on
@@ -2041,6 +2047,16 @@ impl FakeApp {
                 let (email, password) = (f.get("email")?.clone(), f.get("password")?.clone());
                 // The form says maxlength=40. A correct app applies that again here.
                 if email.chars().count() > 40 && !self.flaws.validation_only_in_browser {
+                    if self.flaws.signup_refused_alike {
+                        return Some(Self::respond(303, vec![("Location", "/login".into())], ""));
+                    }
+                    if self.flaws.signup_refused_on_200 {
+                        return Some(Self::respond(
+                            200,
+                            vec![],
+                            "<form method=post><input name=email maxlength=40> Enter a valid email address.</form>",
+                        ));
+                    }
                     return Some(Self::respond(422, vec![], "too long"));
                 }
                 if self.flaws.signup_closed || !self.password_allowed(&password) {

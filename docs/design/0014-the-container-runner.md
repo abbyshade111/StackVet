@@ -287,7 +287,10 @@ what the app says it wants: `maxlength`, `type=number`, `pattern`. Every one of 
 browser applies and anybody sending the request directly does not have to. So the probe reads one
 off the sign-up page and sends a value that breaks it. A correct sign-up has to be accepted first,
 or "refused" means only that sign-up does not work, and it is **only ever a finding**: an app that
-refuses the broken value might be refusing it for some other reason.
+refuses the broken value might be refusing it for some other reason. "Accepted" means answered the
+way the ordinary sign-up was, not "under 400": a form shown again with 200 and an error is under 400 too
+(backlog 0523, ADR-119). With a private page listed, signing in as the account the broken value would
+have made settles it.
 
 **V7.2.1 — a session value this check invented.** The app's own cookie says what a session looks
 like; this sends one of the same name and length that no session store could have issued. A private

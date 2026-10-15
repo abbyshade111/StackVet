@@ -63,6 +63,7 @@ mod admin;
 mod archives;
 mod burst;
 mod codes;
+mod control;
 mod cross_site;
 mod email_role;
 mod flows;
