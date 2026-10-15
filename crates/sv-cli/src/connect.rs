@@ -291,14 +291,27 @@ fn check_user(user: &str) -> Result<()> {
 /// reads as separators. Outside the container its list of trusted keys must be there already: Docker would make a folder
 /// in its place. Inside, the person's folders cannot be seen, and the setup makes the file first.
 fn check_keys(keys: &str) -> Result<String> {
-    let trimmed = keys.trim_end_matches('/');
-    if !trimmed.starts_with('/') {
+    check_keys_on(keys, cfg!(windows))
+}
+
+/// `check_keys`, with whether this is Windows given, so the drive's colon is tested everywhere.
+fn check_keys_on(keys: &str, windows: bool) -> Result<String> {
+    let trimmed = keys.trim_end_matches(['/', '\\']);
+    // On Windows a full path starts with its drive (`C:\Users\…`), whose colon Docker Desktop reads as part of the
+    // path; past it, a colon is a separator there as everywhere.
+    let drive = windows && !trimmed.starts_with('/') && is_drive_path(trimmed);
+    if !trimmed.starts_with('/') && !drive {
         bail!(
             "--keys needs your key folder's full path, such as \"$HOME/.config/stackvet\" (the shell fills in \
              $HOME), not {keys}"
         );
     }
-    if trimmed.contains([':', ',']) {
+    let past_drive = if drive {
+        trimmed.get(2..).unwrap_or_default()
+    } else {
+        trimmed
+    };
+    if past_drive.contains([':', ',']) {
         bail!(
             "--keys cannot name a folder whose path holds `:` or `,`, which Docker reads as separators: {keys}"
         );
@@ -315,6 +328,12 @@ fn check_keys(keys: &str) -> Result<String> {
     Ok(trimmed.to_owned())
 }
 
+/// A Windows path from a drive's root, `C:\…` or `C:/…`: read by hand, so it is told on any computer.
+fn is_drive_path(path: &str) -> bool {
+    let b = path.as_bytes();
+    b.len() >= 3 && b[0].is_ascii_alphabetic() && b[1] == b':' && (b[2] == b'\\' || b[2] == b'/')
+}
+
 /// Docker marks every container with `/.dockerenv`.
 pub fn in_a_container() -> bool {
     Path::new("/.dockerenv").exists() || std::env::var_os("SV_CONNECT_IN_CONTAINER").is_some()
@@ -322,3 +341,6 @@ pub fn in_a_container() -> bool {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod windows_keys_tests;

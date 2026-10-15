@@ -1135,6 +1135,8 @@ pub mod build_loop;
 
 pub mod report_again;
 
+pub mod before_live;
+
 #[cfg(test)]
 mod report_again_tests;
 

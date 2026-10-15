@@ -133,7 +133,7 @@ against lists of known security problems.
 What StackVet writes after a check, in a folder called `stackvet-report` in your app's folder. Open `report.html` in a
 browser first: it is the whole report on one page. `compliance.md` and `security.md` say the same in plain text, for
 you or your AI coding tool, `report.pdf` is the report as one file to print or send, and the other files are for
-programs; [the README's table](../README.md#what-a-report-holds) says what each of the nine is for.
+programs; [the README's table](../README.md#what-a-report-holds) says what each of the ten is for.
 
 ## Seal
 

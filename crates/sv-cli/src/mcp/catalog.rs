@@ -638,7 +638,7 @@ pub(super) fn tool_list() -> Value {
         {
             "name": "stackvet_write_report",
             "title": "Write the full report",
-            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, low-findings.md (every low-severity finding in full), stackvet.sarif (the findings, for code-scanning tools), report.json, seen.json (what the running app answered, credentials cut out), sbom.cdx.json (the bill of materials) and report.pdf (the report as one file for the person to print or send). Same checks as stackvet_check.",
+            "description": "Write the full reports into a folder inside the app (stackvet-report by default): report.html for a person, compliance.md, security.md, low-findings.md (every low-severity finding in full), before-going-live.md (what to do before the app is on the internet, in order; it credits nothing), stackvet.sarif (the findings, for code-scanning tools), report.json, seen.json (what the running app answered, credentials cut out), sbom.cdx.json (the bill of materials) and report.pdf (the report as one file for the person to print or send). Same checks as stackvet_check.",
             "inputSchema": {
                 "type": "object",
                 "properties": {

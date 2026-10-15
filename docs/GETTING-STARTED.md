@@ -365,6 +365,7 @@ a browser. Each file in the folder has a reader of its own:
 | `compliance.md` | Anyone who needs the whole picture against the standards, you or someone you show it to |
 | `security.md` | Whoever fixes the code, you or your AI coding tool |
 | `low-findings.md` | You or your AI coding tool, when you want the detail |
+| `before-going-live.md` | You, or whoever puts the app on the internet |
 | `stackvet.sarif` | Code editors and GitHub's code scanning, which show a finding beside its line |
 | `report.json` | Programs, among them sv review, sv compare, and sv dashboard |
 | `seen.json` | You, to see what a finding rests on |

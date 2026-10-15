@@ -23,6 +23,7 @@ const COMMANDS: &[&str] = &[
     "audit",
     "report",
     "review",
+    "before-live",
     "bundle",
     "dashboard",
     "compare",

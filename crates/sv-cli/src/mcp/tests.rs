@@ -242,6 +242,7 @@ const FOLDER_NAMES: &[&str] = &[
     "compliance.md",
     "security.md",
     "low-findings.md",
+    "before-going-live.md",
     "stackvet.sarif",
     "report.json",
     "seen.json",
