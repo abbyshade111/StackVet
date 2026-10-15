@@ -873,7 +873,14 @@ fn outside_tools(
             exit::exit_with(exit::INTERRUPTED);
         }
         examined.extend(adapters_examined(adapters, &languages, &outcome));
-        findings.extend(outcome.findings);
+        let mut found = outcome.findings;
+        sv_check::adapters::set_apart_other_frameworks(
+            adapters,
+            &mut found,
+            &scan_report.declared,
+            &scan_report.unread_manifests,
+        );
+        findings.extend(found);
         tool_verified = outcome.verified;
         for (id, why, cause) in outcome.not_run {
             use sv_check::adapters::NotRunCause;

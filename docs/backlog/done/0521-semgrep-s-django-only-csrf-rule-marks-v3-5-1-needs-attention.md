@@ -1,6 +1,6 @@
 # Semgrep's Django-only CSRF rule marks V3.5.1 "needs attention" on Flask and FastAPI forms that carry a csrf_token
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -29,3 +29,22 @@ fake-app case first: a Jinja form with a `csrf_token` input in an app without Dj
 "needs attention".
 
 **Record.** ADR-111 governs what the outside tools' findings count as: a Later entry.
+
+**Done 15 October 2026, by honesty.** A Semgrep mapping can name the web framework its rule is written for
+(`framework`: its name, the package lists that would name it, and its packages), written by
+`tools/semgrep_rule_map.py` from its `FRAMEWORKS` table onto 148 rules: Django (45, its template rules included),
+Flask, Pyramid, FastAPI, Express, NestJS, Rails, and Laravel. A template-only rule in the Flask, Express, Rails, or
+Laravel pack keeps counting: it is the template engine's (Jinja, EJS, ERB, Blade), which other frameworks share. When the
+outside tools have run, a finding from such a rule is listed apart (`Outranked::OtherFramework`) when the app's
+package lists in that framework's language were read, none could not be, and none names the framework; it is shown
+in full with why ("From a rule written for Django, and this app's package lists do not name Django") and decides
+nothing in the tables. With no package list in that language, or one unread, the finding counts as before.
+
+The item asked for the hit under "names a requirement this app is not being assessed against". That list holds
+findings about requirements the app is not held to; V3.5.1 is one it is held to, so the finding is listed apart the
+way findings about requirements it is not held to already are (ADR-023, Later), with its own reason.
+
+**Not done here:** Spring, Play, ASP.NET, Symfony, and Gorilla packs are not tagged, since how their packages are
+named in the lists `sv_scan` reads (Maven coordinates, NuGet, Composer vendor names, Go module paths) was not checked
+against an app. Library packs (`python.jwt`, `javascript.jsonwebtoken`, and the like) are not frameworks and are left.
+
