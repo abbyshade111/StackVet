@@ -124,3 +124,11 @@ tests.
 the file only when the answer is a 2xx holding its own contents; a redirect to where it is kept, or a page of the
 app's own, is not assessed and says so, for the ordinary file (V5.4.1) and the file with the hostile name (V5.4.2).
 
+**Twelfth batch, built (an admin action with no `check` page, list item 12):** the ordinary user's success status is
+read beside the admin's own same request, sent as the control: answered alike, it is the finding by the status
+alone, at medium confidence, as before; answered unlike (a refusal shown on a 200 page where the admin was sent on)
+it is not judged, says so, and keeps the credit from resting on the actions that were. When the admin's own request
+was not taken either, there is nothing to read it beside, and it is read as before. The existing test that held a
+refusal answered 200 to be a status-only finding now holds it not judged, and a case answered alike keeps the
+status-only finding covered.
+

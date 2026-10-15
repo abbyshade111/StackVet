@@ -273,6 +273,8 @@ pub(super) struct Flaws {
     /// Refuses an upload with the same 201 "stored" a stored file gets, keeping nothing. Not a flaw: only
     /// fetching the file back tells the two apart (backlog 0560).
     pub(super) upload_refused_alike: bool,
+    /// Answers an admin action that was done with 200 "Posted." rather than a redirect. Not a flaw.
+    pub(super) admin_action_answers_200: bool,
     /// Serves an uploaded file by sending the browser to where it is kept, with no `Content-Disposition` of its
     /// own. Not a flaw: the answer is not the file (backlog 0560).
     pub(super) files_redirect_to_storage: bool,
@@ -2317,6 +2319,9 @@ impl FakeApp {
                 if allowed && !self.flaws.admin_action_broken && !stopped {
                     let text = form(r).get("text").cloned().unwrap_or_default();
                     self.announcements.push(text);
+                    if self.flaws.admin_action_answers_200 {
+                        return Some(Self::respond(200, vec![], "Posted."));
+                    }
                     Self::respond(302, vec![("Location", "/announcements".into())], "")
                 } else if stopped {
                     Self::respond(302, vec![("Location", "/announcements".into())], "")

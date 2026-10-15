@@ -531,6 +531,8 @@ pub(super) fn admin_action_checks(
     let mut answered_ids: Vec<String> = Vec::new();
     let mut unconfirmed = Vec::new();
     let mut unjudged = Vec::new();
+    // Answered with a success status, but unlike the admin's own request, with what was compared.
+    let mut unjudged_unlike = Vec::new();
     for (i, action) in users.admin_actions.iter().enumerate() {
         let request = action.request();
         let a_marker = format!("sv-admin-action-{tag}-{i}-a");
@@ -548,7 +550,32 @@ pub(super) fn admin_action_checks(
         )
         .0;
         let Some(check) = &action.check else {
-            if ok(&as_a) {
+            // With no page to show what took effect, the ordinary user's success is read beside the admin's own
+            // request (backlog 0560, ADR-119): a refusal shown on a 200 page is a success status too. When the
+            // admin's request was not taken either, there is nothing to read it beside, and it is read as before.
+            let like_admin = if ok(&as_a) {
+                let as_admin = send_template(
+                    http,
+                    &format!("admin-action-{i}-admin"),
+                    &request,
+                    &Values {
+                        marker: &admin_marker,
+                        ..Values::default()
+                    },
+                    &mut admin.session,
+                    &admin_pages,
+                )
+                .0;
+                match as_admin.filter(|r| r.status < 400) {
+                    Some(control) => super::control::beside(&control, &as_a),
+                    None => super::control::Beside::Like,
+                }
+            } else {
+                super::control::Beside::Refused
+            };
+            if let super::control::Beside::Unclear(why) = like_admin {
+                unjudged_unlike.push(format!("{} {} ({why})", request.method, request.path));
+            } else if ok(&as_a) {
                 answered_ids.push(format!("admin-action-{i}-a"));
                 answered_ordinary.push(format!(
                     "{} {} (answered {})",
@@ -653,6 +680,17 @@ pub(super) fn admin_action_checks(
         f.confidence = Confidence::Medium;
         out.findings.push(f);
     }
+    if !unjudged_unlike.is_empty() {
+        out.not_assessed.push((
+            "V8.3.1".to_owned(),
+            format!(
+                "Admin actions an ordinary user's request got a success status for, answered unlike \
+                 the admin's own same request, which is neither the action taking nor a refusal: {}. \
+                 A `check` page for the action in stackvet.toml would show whether it took effect.",
+                unjudged_unlike.join("; ")
+            ),
+        ));
+    }
     if !unconfirmed.is_empty() {
         out.not_assessed.push((
             "V8.3.1".to_owned(),
@@ -680,6 +718,7 @@ pub(super) fn admin_action_checks(
         && done_by_ordinary.is_empty()
         && answered_ordinary.is_empty()
         && unjudged.is_empty()
+        && unjudged_unlike.is_empty()
         && unconfirmed.is_empty()
     {
         out.verified.push(
@@ -1331,14 +1370,41 @@ mod tests {
         );
         assert!(action_credited(&checked));
 
-        // Without it, the status is all there is: a finding, at medium confidence, saying so, and
-        // no credit.
+        // Without it, the 200 is read beside the admin's own same request (backlog 0560, ADR-119),
+        // which was sent on to the announcements: unlike it, so neither a finding nor a credit, and
+        // said so. Until 15 October 2026 this was a finding by the status alone.
         let status_only = run_against(flaws, &without_check(users()));
-        let found = action_findings(&status_only);
-        assert_eq!(found.len(), 1, "{:#?}", status_only.findings);
+        assert!(
+            action_findings(&status_only).is_empty(),
+            "{:#?}",
+            status_only.findings
+        );
+        assert!(!action_credited(&status_only));
+        assert!(
+            status_only
+                .not_assessed
+                .iter()
+                .any(|(ids, why)| ids == "V8.3.1"
+                    && why.contains("answered unlike the admin's own same request")),
+            "{:#?}",
+            status_only.not_assessed
+        );
+
+        // An ordinary user's request answered exactly as the admin's is still a finding by the
+        // status, at medium confidence, saying so.
+        let open = run_against(
+            Flaws {
+                admin_action_open: true,
+                admin_action_answers_200: true,
+                ..Default::default()
+            },
+            &without_check(users()),
+        );
+        let found = action_findings(&open);
+        assert_eq!(found.len(), 1, "{:#?}", open.not_assessed);
         assert_eq!(found[0].confidence, Confidence::Medium);
         assert!(found[0].description.contains("status alone"));
-        assert!(!action_credited(&status_only));
+        assert!(!action_credited(&open));
     }
 
     #[test]
@@ -2060,3 +2126,6 @@ mod beside_admin_tests;
 
 #[cfg(test)]
 mod delete_before_tests;
+
+#[cfg(test)]
+mod action_beside_tests;
