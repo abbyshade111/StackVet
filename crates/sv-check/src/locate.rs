@@ -54,6 +54,59 @@ struct LocatorFile {
     #[serde(rename = "_comment", default)]
     _comment: String,
     locators: Vec<Locator>,
+    /// Locators that look in the bill of materials rather than the code (backlog 0490).
+    #[serde(default)]
+    packages: Vec<PackageLocator>,
+}
+
+/// A locator that finds packages by their names in the app's bill of materials, for a question whose answer sits in
+/// how one of them is set up rather than in a line of the app's code (backlog 0490). It finds and does not judge, as a
+/// locator of lines does: a package in the list is not evidence that it is used, or of how.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PackageLocator {
+    pub id: String,
+    /// The requirements whose question these packages are about.
+    pub questions: Vec<String>,
+    /// What the packages are, in plain words, shown before them.
+    pub finds: String,
+    /// What the report already says about them, shown after them.
+    pub says: String,
+    /// Per ecosystem, by the bill of materials' name for it (`Python`, `Ruby`), the package names that count, matched
+    /// with case lowered and `_` read as `-`.
+    pub names: BTreeMap<String, Vec<String>>,
+}
+
+impl PackageLocator {
+    /// Each package of `components` this locator names, as a person reads it: the name and version, and, for a version
+    /// read from what was asked for rather than a lockfile, that it may not be the one installed.
+    pub fn find(&self, components: &[crate::sbom::Component]) -> Vec<String> {
+        let mut found: Vec<String> = components
+            .iter()
+            .filter(|c| {
+                self.names.get(&c.ecosystem).is_some_and(|names| {
+                    names
+                        .iter()
+                        .any(|n| package_name(n) == package_name(&c.name))
+                })
+            })
+            .map(|c| match c.source {
+                crate::sbom::VersionSource::Locked => format!("{} {}", c.name, c.version),
+                crate::sbom::VersionSource::Declared => format!(
+                    "{} {} (the version asked for: no lockfile says which is installed)",
+                    c.name, c.version
+                ),
+            })
+            .collect();
+        found.sort();
+        found.dedup();
+        found
+    }
+}
+
+/// A package's name as two spellings of it compare: `Gunicorn` and `gunicorn`, `uvicorn_x` and `uvicorn-x`.
+fn package_name(name: &str) -> String {
+    name.trim().to_lowercase().replace('_', "-")
 }
 
 struct Compiled {
@@ -65,6 +118,7 @@ struct Compiled {
 
 pub struct Locators {
     compiled: Vec<Compiled>,
+    packages: Vec<PackageLocator>,
 }
 
 /// One place a locator found.
@@ -147,11 +201,36 @@ impl Locators {
                 queries,
             });
         }
-        Ok(Locators { compiled })
+        for locator in &file.packages {
+            if !ids.insert(locator.id.clone()) {
+                anyhow::bail!("{}: two locators are called {}", path.display(), locator.id);
+            }
+            if locator.questions.is_empty()
+                || locator.finds.trim().is_empty()
+                || locator.says.trim().is_empty()
+                || locator.names.values().all(Vec::is_empty)
+            {
+                anyhow::bail!(
+                    "{}: the package locator {} names no question or no package, or does not say what it finds \
+                     or what the report says of it",
+                    path.display(),
+                    locator.id
+                );
+            }
+        }
+        Ok(Locators {
+            compiled,
+            packages: file.packages,
+        })
     }
 
     pub fn all(&self) -> impl Iterator<Item = &Locator> {
         self.compiled.iter().map(|c| &c.locator)
+    }
+
+    /// The locators that look in the bill of materials (backlog 0490).
+    pub fn packages(&self) -> &[PackageLocator] {
+        &self.packages
     }
 
     /// Every place each locator finds in the app's own files, in file and line order, with the
@@ -314,3 +393,6 @@ mod locate_tests;
 
 #[cfg(test)]
 mod examples_tests;
+
+#[cfg(test)]
+mod package_locator_tests;
