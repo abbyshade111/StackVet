@@ -1,6 +1,6 @@
 # A cryptographic inventory drafted from what the code shows, and weak key generation reported
 
-**Status:** claimed by documentation, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -40,3 +40,5 @@ check, hashing, and `OIDC_CLIENT_SECRET`, and flask-booking's `pyjwt`. And `ast.
 (`crates/sv-check/src/weak_keys.rs`) reports, against V11.6.1, a key made too weak: RSA under 2048 bits, DSA, a
 192-bit curve, or an exponent of 3, finding-only. ADR-022, a Later entry. Not built: V11.2.1's hand-rolled-crypto
 finding and V11.2.2's count of hard-coded algorithms, filed as backlog 0611.
+
+**Closed by the board, 15 October 2026:** built by documentation and merged (PR 2098); the part not built is backlog 0611.

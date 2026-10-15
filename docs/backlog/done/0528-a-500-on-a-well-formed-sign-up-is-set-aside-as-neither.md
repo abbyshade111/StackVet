@@ -1,6 +1,6 @@
 # A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -23,3 +23,5 @@ long password) is now a low finding, `probe.crashed-on-ordinary-request`, under 
 gracefully and securely, including when an exception occurs"). It names the request, its status, and its fields by name
 and length, never a value. What the crash would have answered stays withheld. ADR-021, Later entry of 15 October
 2026. Fake-app case: `crashes_on_long_password`.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2096); left open for the board to close.

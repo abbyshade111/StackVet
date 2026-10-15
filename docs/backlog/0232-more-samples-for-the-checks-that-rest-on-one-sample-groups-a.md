@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** claimed by honesty, 14 October 2026
+**Status:** partly done: parts B, D, and F wait on the manifest (B can now use the sign-in pathways list); set aside on the board
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -146,3 +146,5 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Part status:** done, 12 October 2026
 
 **Claim released, 14 October 2026** (the owner's word): session securevibe-trial-prep was archived after the coordination trial with no branch pushed for this item, so the claim was stale. Open again, queued on the board.
+
+**The board, 15 October 2026:** the parts left (B, D, F) wait on the manifest naming each way of signing in and more than one upload route. B can now use the sign-in pathways list 0491 added to stackvet.toml; D and F still wait. 0232 is set aside on the board until a session takes B with the pathways list, so honesty can work the one queue (the owner's choice of 15 October to run one session).

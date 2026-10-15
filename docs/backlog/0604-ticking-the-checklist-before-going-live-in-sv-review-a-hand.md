@@ -2,6 +2,8 @@
 
 **Status:** open
 
+**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+
 Filed by wording, 15 October 2026, building backlog 0589: its second half, the owner's answer of that day on ticks, in
 a pull request of its own because it touches the manifest, the seals, and `sv review` (ADR-121, decision 4).
 
