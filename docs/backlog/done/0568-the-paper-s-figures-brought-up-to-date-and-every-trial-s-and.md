@@ -1,6 +1,6 @@
 # The paper's figures brought up to date, and every trial's and measurement's data compiled into tables the owner can analyze
 
-**Status:** claimed by documentation, 14 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
