@@ -79,7 +79,10 @@ fn a_sign_up_that_made_no_account_is_not_assessed_and_nothing_is_guessed() {
         // that would follow it was sent.
         let guessed = format!("guessed.{}", accounts().a.user);
         let at_it = app.guessed_at.iter().filter(|g| **g == guessed).count();
-        assert_eq!(at_it, 1, "wrong passwords were sent to {guessed}");
+        assert_eq!(
+            at_it, 1,
+            "wrong passwords were sent to the account that was never made"
+        );
     }
 }
 
