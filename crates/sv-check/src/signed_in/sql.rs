@@ -5,6 +5,7 @@
 //! that an always-true condition can never reach a request that changes data. Only ever a finding.
 
 use super::*;
+use control::{Beside, beside};
 
 /// The conditions added: how the value is read, then the always-true and the always-false
 /// ending. Each pair is the same length, so an app that only repeats what it was sent answers
@@ -12,6 +13,18 @@ use super::*;
 const NUMBER: (&str, &str, &str) = ("a number", " AND 1=1", " AND 1=2");
 const QUOTED: (&str, &str, &str) = ("quoted text", "' AND '1'='1", "' AND '1'='2");
 const QUOTED_OR: (&str, &str, &str) = ("quoted text, as either-or", "' OR '1'='1", "' OR '1'='2");
+
+/// Which of a pair a database reading the condition answers as it answers the unmodified address (backlog
+/// 0560, ADR-119): the always-true one, always (the record or the results as they were, or under an `OR` every
+/// result, a page of the same kind); and under an `OR` the always-false one too, the condition adding nothing.
+/// Under an `AND` the always-false one may be anything: no record, or no results.
+fn answered_as_unmodified(true_end: &str) -> &'static [&'static str] {
+    if true_end.contains(" OR ") {
+        &["true", "false"]
+    } else {
+        &["true"]
+    }
+}
 
 /// One place in an address a value can be changed: the address with `{}` where the value goes,
 /// the value as it was, and where it is, in words.
@@ -109,11 +122,8 @@ pub(super) fn encode_value(text: &str) -> String {
 /// What is compared between two answers: the status and the length. Not the text, which may
 /// repeat the condition; the two conditions are the same length, so the length does not change
 /// with them.
-fn shape(response: &Option<ProbeResponse>) -> Option<(u16, usize)> {
-    response
-        .as_ref()
-        .filter(|r| r.status < 500)
-        .map(|r| (r.status, r.body.len()))
+fn shape(response: &ProbeResponse) -> (u16, usize) {
+    (response.status, response.body.len())
 }
 
 /// Sends the always-true and always-false versions of one condition at one spot, each twice and
@@ -124,7 +134,7 @@ fn ask(
     session: &Session,
     spot: &Spot,
     (id, true_end, false_end): (&str, &str, &str),
-) -> Option<((u16, usize), (u16, usize))> {
+) -> Option<(ProbeResponse, ProbeResponse)> {
     let at = |end: &str| {
         spot.template
             .replacen("{}", &encode_value(&format!("{}{end}", spot.value)), 1)
@@ -133,14 +143,17 @@ fn ask(
     let mut answers = Vec::new();
     for round in 1..=2 {
         for (version, path) in [("true", &true_path), ("false", &false_path)] {
-            let response = http.send(&get(&format!("sql-{id}-{version}-{round}"), path, session));
-            answers.push(shape(&response));
+            answers.push(
+                http.send(&get(&format!("sql-{id}-{version}-{round}"), path, session))
+                    .filter(|r| r.status < 500),
+            );
         }
     }
-    let [Some(t1), Some(f1), Some(t2), Some(f2)] = answers[..] else {
+    let [Some(t1), Some(f1), Some(t2), Some(f2)] = &answers[..] else {
         return None;
     };
-    (t1 == t2 && f1 == f2 && (200..300).contains(&t1.0)).then_some((t1, f1))
+    (shape(t1) == shape(t2) && shape(f1) == shape(f2) && (200..300).contains(&t1.status))
+        .then(|| (t1.clone(), f1.clone()))
 }
 
 /// Whether an always-true and an always-false condition, added to a value the app reads from the
@@ -180,49 +193,97 @@ pub(super) fn sql_injection_check(
         return;
     }
     let mut n = 0;
-    for (spot, forms) in &asked {
+    for (k, (spot, forms)) in asked.iter().enumerate() {
+        // The unmodified address, the baseline the pair is read beside: a database reading the condition
+        // answers one of the two as it answers this (backlog 0560, ADR-119).
+        let plain_path = spot.template.replacen("{}", &encode_value(&spot.value), 1);
+        let plain = http
+            .send(&get(
+                &format!("sql-{}-plain", k + 1),
+                &plain_path,
+                &a.session,
+            ))
+            .filter(|r| (200..300).contains(&r.status));
+        let Some(plain) = plain else {
+            out.steps.push(format!(
+                "asked for {} unchanged: not a success, so no database condition was added there",
+                spot.place
+            ));
+            continue;
+        };
         let mut differed = None;
         let mut differed_n = 0;
+        let mut unlike_plain = Vec::new();
         for (words, true_end, false_end) in forms {
             n += 1;
-            if let Some(answers) = ask(
+            let Some((t, f)) = ask(
                 http,
                 &a.session,
                 spot,
                 (&n.to_string(), true_end, false_end),
-            ) && answers.0 != answers.1
-            {
-                differed = Some((*words, *true_end, *false_end, answers));
-                differed_n = n;
-                break;
+            ) else {
+                continue;
+            };
+            if shape(&t) == shape(&f) {
+                continue;
             }
+            let unlike = answered_as_unmodified(true_end).iter().find_map(|version| {
+                let (version, answer) = match *version {
+                    "true" => ("always-true", &t),
+                    _ => ("always-false", &f),
+                };
+                match beside(&plain, &Some(answer.clone())) {
+                    Beside::Like => None,
+                    Beside::Refused => Some((version, format!("refused with {}", answer.status))),
+                    Beside::Unclear(why) => Some((version, why)),
+                }
+            });
+            if let Some((version, why)) = unlike {
+                unlike_plain.push(format!(
+                    "read as {words}, the {version} one was unlike the address unchanged ({why})"
+                ));
+                continue;
+            }
+            differed = Some((*words, *true_end, *false_end, (shape(&t), shape(&f))));
+            differed_n = n;
+            break;
         }
         out.steps.push(format!(
             "added an always-true and an always-false database condition to {}: {}",
             spot.place,
             if differed.is_some() {
-                "answered differently"
+                "answered differently".to_owned()
+            } else if unlike_plain.is_empty() {
+                "nothing told apart".to_owned()
             } else {
-                "nothing told apart"
+                format!(
+                    "answered differently, but not judged: {}, so the difference is not the \
+                     database reading the condition",
+                    unlike_plain.join("; ")
+                )
             }
         ));
         if let Some((words, true_end, false_end, ((ts, tl), (fs, fl)))) = differed {
+            let mut evidence = vec![format!("sql-{}-plain", k + 1)];
+            evidence.extend((1..=2).flat_map(|round| {
+                ["true", "false"].map(|version| format!("sql-{differed_n}-{version}-{round}"))
+            }));
             out.findings.push(finding_on(
-                (1..=2)
-                    .flat_map(|round| {
-                        ["true", "false"]
-                            .map(|version| format!("sql-{differed_n}-{version}-{round}"))
-                    })
-                    .collect(),
+                evidence,
                 &SQL_INJECTION,
                 "A value in a web address is read into a database query",
                 Severity::Critical,
                 format!(
                     "Read as {words}, {} with `{true_end}` added was answered {ts} with \
                      {tl} characters, and with `{false_end}` added {fs} with {fl} characters, the \
-                     same each of the two times asked. Only a database reading the value as part \
-                     of its query tells those apart.",
-                    spot.place
+                     same each of the two times asked, and {} answered as the unchanged address \
+                     was. Only a database reading the value as part of its query tells those apart.",
+                    spot.place,
+                    if answered_as_unmodified(true_end).len() == 2 {
+                        "both were"
+                    } else {
+                        "the always-true one was"
+                    }
                 ),
             ));
         }
@@ -262,14 +323,14 @@ mod tests {
     }
 
     /// stackvet.toml with a search page and a record by query string among the private pages.
-    fn sql_users() -> UsersSection {
+    pub(super) fn sql_users() -> UsersSection {
         let mut u = users();
         u.private.push("/search?q=zz".into());
         u.private.push("/note?id=1".into());
         u
     }
 
-    fn run_twisted(
+    pub(super) fn run_twisted(
         flaws: Flaws,
         u: &UsersSection,
         twist: fn(&ProbeRequest, ProbeResponse, usize) -> Option<ProbeResponse>,
@@ -303,11 +364,14 @@ mod tests {
         run(&mut app, u, &acc, true, &Default::default())
     }
 
-    fn plain(flaws: Flaws, u: &UsersSection) -> (Outcome, Vec<(String, String, String)>) {
+    pub(super) fn plain(
+        flaws: Flaws,
+        u: &UsersSection,
+    ) -> (Outcome, Vec<(String, String, String)>) {
         run_twisted(flaws, u, |_, answer, _| Some(answer))
     }
 
-    fn sql_findings(o: &Outcome) -> Vec<&Finding> {
+    pub(super) fn sql_findings(o: &Outcome) -> Vec<&Finding> {
         o.findings
             .iter()
             .filter(|f| f.rule_id == SQL_INJECTION.rule_id)
@@ -350,9 +414,18 @@ mod tests {
             ours.iter().all(|(_, method, _)| method == "GET"),
             "{ours:?}"
         );
+        // Each spot asked unchanged first, as the baseline (backlog 0560).
+        assert_eq!(
+            ours.iter()
+                .filter(|(id, _, _)| id.ends_with("-plain"))
+                .count(),
+            3,
+            "{ours:?}"
+        );
         // Each address as a request line can carry it: the condition percent-encoded.
         assert!(
             ours.iter()
+                .filter(|(id, _, _)| !id.ends_with("-plain"))
                 .all(|(_, _, path)| !path.contains([' ', '\'']) && path.contains("%20")),
             "{ours:?}"
         );
@@ -527,3 +600,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod baseline_tests;
