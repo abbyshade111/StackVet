@@ -84,6 +84,9 @@ pub fn render(report: &Report) -> String {
                 Some(sv_check::finding::Outranked::OtherFramework { framework }) => {
                     result["properties"]["otherFramework"] = json!(framework);
                 }
+                Some(sv_check::finding::Outranked::LogsOnlyIds { names }) => {
+                    result["properties"]["logsOnlyIds"] = json!(names);
+                }
                 None => {}
             }
             if !f.fingerprint.is_empty() {
