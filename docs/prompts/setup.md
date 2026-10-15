@@ -199,9 +199,12 @@ After your AI tool has loaded the new settings, in the same folder. If it is a n
 3 wrote, which it told you, where this prompt says.
 
 <!-- setup-step-4:start -->
-> Which `stackvet_` tools can you call? List their names. If you can call `stackvet_status`, call it and tell me in
-> plain words what it says is ready and what is not, and which folder it says it serves. If that is not this folder,
-> stop and tell me: a StackVet server started for an earlier app is still running. If you can't call any `stackvet_` tools, StackVet is not
+> Which `stackvet_` tools can you call? List their names. If you can call `stackvet_status`, call it with this
+> folder's full path (`pwd` prints it) and tell me in plain words what it says is ready and what is not, and which
+> folder it says it serves. If that is not this folder, or it says this folder is not inside the folder the server was
+> started for, a StackVet server started for an earlier app is still running: on a Mac or Linux, show me what
+> `docker ps` lists, stop the old StackVet container only after I say yes, and tell me to restart you. If you can't
+> call any `stackvet_` tools, StackVet is not
 > connected: say so, and check two things. First, the settings file prompt 3 wrote, which is
 > *(the file prompt 3 named, if you know it)*: read that one file, and don't search my computer for others. Second,
 > on a Mac or Linux, whether Docker is running, with `docker info`. Your own commands may be kept away from Docker
