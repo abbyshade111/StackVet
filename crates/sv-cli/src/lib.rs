@@ -1133,6 +1133,8 @@ pub mod report_folder;
 
 pub mod build_loop;
 
+pub mod report_again;
+
 pub mod report_seal;
 
 pub mod seen;

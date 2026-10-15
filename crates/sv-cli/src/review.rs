@@ -121,7 +121,7 @@ enum Waiting {
     NotOffered,
 }
 
-pub fn cmd_review(path: Option<PathBuf>) -> Result<()> {
+pub fn cmd_review(path: Option<PathBuf>, no_report: bool) -> Result<()> {
     if !std::io::stdin().is_terminal() || !std::io::stdout().is_terminal() {
         bail!(
             "`sv review` records your own decisions, so it runs only in a terminal you are typing \
@@ -135,13 +135,67 @@ pub fn cmd_review(path: Option<PathBuf>) -> Result<()> {
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
     let mut out = Visible(std::io::stdout());
-    review(
+    review_then_report(
         &path.unwrap_or_else(|| PathBuf::from(".")),
         Key::folder(),
         &mut input,
         &mut out,
         &mut hidden,
+        no_report,
+        &|| match sv_run::detect() {
+            Ok(_) => Ok(()),
+            Err(sv_run::CannotRun::NoBackend { checked, .. }) => Err(checked),
+            Err(other) => Err(format!("{other:?}")),
+        },
+        &mut |args| {
+            let status = std::process::Command::new(
+                std::env::current_exe().context("finding this sv to run `sv report`")?,
+            )
+            .arg("report")
+            .args(args)
+            .status()
+            .context("starting `sv report`")?;
+            Ok(status.code().unwrap_or(sv_cli::exit::FAILED))
+        },
     )
+}
+
+/// `review`, then, when it changed a file the report reads, the report written again with the options of the last one
+/// by `run` (`sv report` with these arguments), unless `no_report` (backlog 0578): what is recorded counts only in a
+/// report written after it, and written again by hand without `--run` it lost the running-app checks.
+fn review_then_report(
+    app_dir: &Path,
+    key_folder: Option<PathBuf>,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+    secret: Secret<'_>,
+    no_report: bool,
+    starts_containers: &dyn Fn() -> Result<(), String>,
+    run: &mut dyn FnMut(&[String]) -> Result<i32>,
+) -> Result<()> {
+    let before = what_the_report_reads(app_dir);
+    review(app_dir, key_folder, input, out, secret)?;
+    if what_the_report_reads(app_dir) == before {
+        return Ok(());
+    }
+    sv_cli::report_again::write_again(app_dir, no_report, out, starts_containers, run)
+}
+
+/// The files `sv review` writes, as they are now: the manifest and the two files whose sections say who wrote them.
+/// A file that cannot be read is `None`, as one not there.
+fn what_the_report_reads(app_dir: &Path) -> Vec<Option<Vec<u8>>> {
+    let manifest = sv_manifest::locate(app_dir)
+        .ok()
+        .flatten()
+        .map(|l| l.path)
+        .unwrap_or_else(|| app_dir.join(sv_frameworks::names::MANIFEST));
+    let mut paths = vec![manifest];
+    for catalog in [super::notes_path(), super::decisions_path()] {
+        if let Ok(catalog) = sv_check::notes::Catalog::load(&catalog) {
+            paths.push(app_dir.join(&catalog.file));
+        }
+    }
+    paths.iter().map(|p| std::fs::read(p).ok()).collect()
 }
 
 /// Reads one line from the terminal without showing what is typed: a passphrase. Where the terminal cannot
@@ -1893,6 +1947,9 @@ mod scope_tests;
 mod mine_tests;
 
 #[cfg(test)]
+mod report_again_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -1931,6 +1988,31 @@ mod tests {
                 &mut std::io::Cursor::new(typed.as_bytes().to_vec()),
                 &mut out,
                 &mut ask,
+            );
+            (result, String::from_utf8(out).unwrap())
+        }
+        /// `run`, then the report written again by `report` when a file the report reads changed (backlog 0578).
+        pub(super) fn run_then_report(
+            &self,
+            typed: &str,
+            no_report: bool,
+            report: &mut dyn FnMut(&[String]) -> Result<i32>,
+        ) -> (Result<()>, String) {
+            let first = !self
+                .keys()
+                .join(sv_check::signed::SIGNING_KEY_FILE)
+                .exists();
+            let typed = format!("{}{typed}", if first { "none\n" } else { "" });
+            let mut out = Vec::new();
+            let result = review_then_report(
+                &self.app(),
+                Some(self.keys()),
+                &mut std::io::Cursor::new(typed.as_bytes().to_vec()),
+                &mut out,
+                &mut ask,
+                no_report,
+                &|| Ok(()),
+                report,
             );
             (result, String::from_utf8(out).unwrap())
         }

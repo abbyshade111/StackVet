@@ -20,6 +20,7 @@ fn unfinished(day: &str, outcome: Outcome, code: i32) -> Run {
         securevibe_toml_sha256: String::new(),
         run_id: String::new(),
         inputs: None,
+        options: None,
     };
     Run::unfinished(&record, "0.1.0 (commit abc)".to_owned(), outcome, code)
 }

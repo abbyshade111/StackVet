@@ -1,6 +1,6 @@
 # After sv review, writing the report again without --run overwrites the report that had the running-app evidence
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -29,3 +29,17 @@ seeing the report that raises them.
 
 **Record.** A Later entry on the record that governs `sv review` and what it writes (ADR-026 or the review record;
 check), since `sv review` would start a run.
+
+**Done, 15 October 2026.** All three parts, as ADR-026's Later entry of today records:
+- `report.json` keeps the options it was written with (`run_record.options`), and `sv review` ends, when it recorded
+  something, by writing the report again with them (`crates/sv-cli/src/report_again.rs`), saying the command first;
+  `--no-report` skips it. It takes them only from a report `sv` can show it wrote, and only the seven options that
+  change what a report holds. Where the last report had `--run` and the app cannot be started here, as inside the
+  container, it writes nothing and says where to run the command, so the review never trades the running-app checks
+  for *not assessed*.
+- `sv report` without `--run` over a report that had it says so first, and goes on.
+- The setup page (after prompt 7) and the guide say the review writes the report again, in one sentence each.
+
+Tests: `crates/sv-cli/src/report_again_tests.rs`, `crates/sv-cli/src/review/report_again_tests.rs`, and
+`crates/sv-cli/tests/report_options_kept.rs`; nine guards broken in turn, each caught by its own test. Not verified: a
+whole `sv review` at a terminal followed by a real `sv report --run`, which needs Docker and a person typing.
