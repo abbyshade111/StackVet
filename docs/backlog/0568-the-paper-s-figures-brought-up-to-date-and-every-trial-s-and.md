@@ -62,3 +62,11 @@ are quality; the setup times and prompt adherence are usability). Two things the
 and should be listed in DATA.md as "not in the tables": the OWASP Top 10 for LLMs and Agents (sv checks AISVS and the
 Agentic Skills Top 10, not that list), and the first loop trial if its records are not complete enough for a table.
 The health-tracking app built for a friend stays anonymous in every cell.
+
+**The owner, 15 October 2026:** everything builds up to the three-tool trial; the earlier tests answered parts of the
+question and that trial answered it altogether, and it is the basis for most of the paper's conclusions. So its tables
+get the most care: every cell traceable to a record on the owner's drive (the chat step, turn, or line; the file and
+line in the app; the report field), the two readings' scripts that rendered the records and measured the apps
+committed under `tools/` (they read the drive's folders by path and write no private text into the repository), and
+a "Limits" block in DATA.md beside those tables: one run per tool, one owner, three different models, three apps built
+to one brief but not one app, and nothing after prompt 6. Those limits are the paper's to state, not to hide.
