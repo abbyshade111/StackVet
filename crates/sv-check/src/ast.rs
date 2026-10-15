@@ -31,6 +31,7 @@ use std::sync::OnceLock;
 use tree_sitter::{Language, Node, Parser, Query, QueryCapture, QueryCursor, StreamingIterator};
 
 mod fixed;
+mod followed;
 mod html;
 mod templates;
 pub(crate) use fixed::*;
@@ -127,6 +128,11 @@ pub struct AstRule {
     /// the whole would report every page built the safe way beside the one that is not.
     #[serde(default)]
     pub safe_argument_pieces_read: bool,
+    /// When true, a Python argument is also safe when the names in it are (backlog 0582): a name every value of which,
+    /// set in the same file, is fixed text, matches `safeArgumentPatterns`, or is made by `secrets.token_*` or
+    /// `uuid4`; or a parameter a narrow check before the call stops the function without (`ast/followed.rs`).
+    #[serde(default)]
+    pub safe_names_read: bool,
     /// Per language, what the `@kw` capture's text must match for the call to be reported: the name
     /// of a keyword argument the danger depends on.
     ///
@@ -1078,6 +1084,14 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                     Some(arg) => safe_in_every_branch(arg, source.as_bytes(), pattern, &fixed),
                     None => arg_text.is_some_and(|text| pattern.is_match(text)),
                 }
+            {
+                continue;
+            }
+            // The names in the argument followed to where the same file sets them (backlog 0582).
+            if compiled.rule.safe_names_read
+                && language == "python"
+                && let (Some(pattern), Some(arg)) = (compiled.safe_argument.get(language), arg_node)
+                && followed::safe_through_names(arg, source.as_bytes(), pattern, &fixed)
             {
                 continue;
             }
@@ -2452,6 +2466,10 @@ fn read_page(rules: &AstRules, relative: &str, source: &str, scan: &mut AstScan)
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+#[path = "ast/followed_tests.rs"]
+mod followed_tests;
 
 #[cfg(test)]
 mod callers_tests;
