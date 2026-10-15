@@ -44,6 +44,8 @@ mod build_loop_fingerprint_tests;
 mod build_loop_limit_tests;
 // `stackvet_explain` says what could settle a requirement (backlog 0426).
 #[cfg(test)]
+mod build_loop_first_calls_tests;
+#[cfg(test)]
 mod build_loop_names_tests;
 #[cfg(test)]
 mod build_loop_outcome_tests;
@@ -737,7 +739,12 @@ impl Server {
         let Some(app_dir) = app_dir else {
             return;
         };
-        if !matches!(sv_manifest::locate(&app_dir), Ok(Some(_))) {
+        // A folder with a `stackvet.toml` is an app; the folder the server serves is written down before it has one,
+        // so the AI tool's first calls (its status, the spec) are in the record and say there was none yet (backlog
+        // 0586, ADR-076). Any other folder without one is not this app's.
+        let has_manifest = matches!(sv_manifest::locate(&app_dir), Ok(Some(_)));
+        let at_root = sv_frameworks::paths::canonical(&app_dir).is_ok_and(|dir| dir == self.root);
+        if !has_manifest && !at_root {
             return;
         }
         let time = crate::bundle::utc_time(
@@ -796,6 +803,7 @@ impl Server {
                         .lock()
                         .unwrap_or_else(std::sync::PoisonError::into_inner),
                 ),
+                no_manifest: !has_manifest,
             },
         );
     }
