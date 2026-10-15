@@ -1876,7 +1876,7 @@ impl FakeApp {
                     self.held.insert(to.clone());
                 }
                 if !self.flaws.email_change_without_password
-                    && f.get("password").is_some()
+                    && f.contains_key("password")
                     && !self.password_matches(&stored.0, &password)
                 {
                     return Some(Self::respond(403, vec![], "wrong password"));
