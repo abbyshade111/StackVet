@@ -88,3 +88,9 @@ answer says where the first record went, that record is read back first, and a b
 there shows nothing either way. A limit shown on a 200 page or as a redirect elsewhere is not assessed, and says what
 was compared.
 
+**Sixth batch, built (sign-out, part of list item 7):** a sign-out answered with a page (200), or with a redirect
+straight back to a private page, after which the browser's own session still opens that page, is not judged: it may
+be a sign-out refused on a page of its own. A sign-out that sends the browser elsewhere, or takes its cookie away, is
+done, and the old session is asked again as before. Still open from item 7: the WebSocket after sign-out
+(`sessions.rs`), which reads its own sign-out the same old way.
+
