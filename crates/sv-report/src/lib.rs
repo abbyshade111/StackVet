@@ -2915,6 +2915,10 @@ mod checklist_tests;
 mod hook_tests;
 
 #[cfg(test)]
+#[path = "hook_claims_tests.rs"]
+mod hook_claims_tests;
+
+#[cfg(test)]
 #[path = "build_loop_tail_tests.rs"]
 mod build_loop_tail_tests;
 
