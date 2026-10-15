@@ -631,6 +631,20 @@ pub(super) fn archive_checks(
             ));
             continue;
         };
+        // The upload form shown again is no sign the archive was kept, and an archive is not fetched back
+        // (backlog 0560, ADR-119).
+        if super::uploads::shows_upload_form(&ordinary_answer) {
+            out.not_assessed.push((
+                "V5.2.3".to_owned(),
+                format!(
+                    "An ordinary small {f} sent to {} was answered {} with the upload form again, and \
+                     nothing showed it was kept, so nothing here can tell a {f} refused for unpacking \
+                     too far from one refused for being a {f} at all.",
+                    upload.path, ordinary_answer.status
+                ),
+            ));
+            continue;
+        }
         out.steps
             .push(format!("uploaded an ordinary small {f} to {}", upload.path));
         for archive in over {
@@ -1440,3 +1454,5 @@ mod tests {
 
 #[cfg(test)]
 mod beside_ordinary_tests;
+#[cfg(test)]
+mod first_archive_tests;

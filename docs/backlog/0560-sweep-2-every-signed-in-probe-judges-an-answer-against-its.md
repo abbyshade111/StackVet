@@ -80,7 +80,8 @@ by its name, the file is fetched back by its own name: there, it was kept; not f
 ordinary file's that nothing fetched back settles is not assessed and says what was compared. `refusal_stands` counts
 the GIF sent after a refusal as taken only when it was answered as the first ordinary GIF was, so a quota shown on a
 200 page no longer lets a refusal stand. Still open from item 2's note: the first ordinary GIF itself is taken on
-"under 400" (a 200 re-render of the form there would pass the gate), which a `serves-at` fetch could settle.
+"under 400" (a 200 re-render of the form there would pass the gate), which a `serves-at` fetch could settle. (Built
+in the fifteenth batch.)
 
 **Fourth batch, built (the burst, list item 3):** a burst's answers are read beside its first, and only one answered
 as the first was counts as going through; a 429, or 503 with `Retry-After`, is still read as the limit. Where its
@@ -143,3 +144,10 @@ uses is one function now (`signin::sign_out_may_be_refused`), and the WebSocket 
 answered with a page or sent straight back to a private page, after which the browser's own session still opens the
 first private page, leaves the socket opening afterwards not judged.
 
+**Fifteenth batch, built (the first ordinary upload, the rest of list item 2):** the ordinary GIF that every upload
+check rests on is no longer taken as kept on "under 400" when its answer is a 2xx carrying a file field (the upload
+form shown again) and fetching it back by `serves-at` did not find it: the upload questions (V5.2.1, V5.2.2, V5.3.1,
+V3.2.1) are not assessed, and the reason says that `serves-at` would settle it, or that it did not find the file. An
+app that keeps the file and shows the form again is judged as before once fetching the ordinary GIF back finds it. The
+ordinary archive of each format is read the same way (V5.2.3), without the fetch, since an archive is never fetched
+back.
