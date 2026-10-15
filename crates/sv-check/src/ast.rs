@@ -2468,7 +2468,6 @@ fn read_page(rules: &AstRules, relative: &str, source: &str, scan: &mut AstScan)
 mod tests;
 
 #[cfg(test)]
-#[path = "ast/followed_tests.rs"]
 mod followed_tests;
 
 #[cfg(test)]
