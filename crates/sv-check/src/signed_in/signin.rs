@@ -1003,6 +1003,36 @@ pub(super) fn logout_check(
         ));
         return;
     }
+    // A sign-out that changed nothing the browser holds, answered with a page (200) or sent straight back to a
+    // private page, may be a sign-out refused on a page of its own ("The CSRF token is missing.") rather than one
+    // done (backlog 0560, ADR-119): the session working afterwards would then be blamed on the app. A sign-out
+    // that sends the browser elsewhere, or takes its cookie away, was done, and the old session is asked as before.
+    let back_to_a_page = response.as_ref().is_some_and(|r| {
+        (300..400).contains(&r.status)
+            && r.header("location").is_some_and(|to| {
+                let to = super::admin::strip_origin(to);
+                let to = to.split(['?', '#']).next().unwrap_or(to);
+                users.private.iter().any(|p| p == to)
+            })
+    });
+    let answered_with_a_page = ok(&response) || back_to_a_page;
+    if answered_with_a_page && ok(&http.send(&get("after-logout-browser", &path, &session))) {
+        out.not_assessed.push((
+            "V7.4.1".to_owned(),
+            format!(
+                "Whether signing out ends the session: the sign-out was answered {}{}, and the \
+                 browser's own session still opened {path} after it, so the sign-out may have been \
+                 refused on a page of its own rather than done. Check `logout` in stackvet.toml.",
+                status(&response),
+                if back_to_a_page {
+                    " with a redirect back to a private page"
+                } else {
+                    " with a page"
+                }
+            ),
+        ));
+        return;
+    }
     // The copy kept from before logout, as somebody who had copied the cookie would use it.
     let replay = http.send(&get("after-logout", &path, &before));
     if ok(&replay) {
@@ -2065,3 +2095,6 @@ mod made_up_name_tests;
 
 #[cfg(test)]
 mod own_account_tests;
+
+#[cfg(test)]
+mod logout_refused_tests;
