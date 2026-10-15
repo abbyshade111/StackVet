@@ -32,6 +32,7 @@ pub mod interview;
 pub mod json;
 pub mod live;
 pub mod markdown;
+pub mod pages;
 pub mod pdf;
 pub mod sarif;
 pub mod seen;
@@ -2909,6 +2910,10 @@ mod next_step_tests;
 #[cfg(test)]
 #[path = "checklist_tests.rs"]
 mod checklist_tests;
+
+#[cfg(test)]
+#[path = "pages_tests.rs"]
+mod pages_tests;
 
 #[cfg(test)]
 #[path = "hook_tests.rs"]

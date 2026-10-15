@@ -68,7 +68,7 @@ fn the_apps_text_in_a_report_read_back_is_inside_the_fence() {
         );
     }
     assert_eq!(
-        fenced, 5,
-        "the page and the four Markdown files (the checklist before going live among them) are fenced"
+        fenced, 9,
+        "the page and the eight Markdown files (the checklist and the four short pages among them) are fenced"
     );
 }
