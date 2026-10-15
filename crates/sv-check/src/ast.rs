@@ -2472,3 +2472,6 @@ mod call_list_in_part_tests;
 mod one_walk_tests;
 #[cfg(test)]
 mod own_helper_tests;
+
+#[cfg(test)]
+mod fixed_functions_tests;
