@@ -369,6 +369,9 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
         "| Above this app's target level (ASVS level {}) | {} |\n\n",
         report.target_level, c.out_of_level
     ));
+    if let Some(line) = crate::resting_on_a_no(&report.excluded, &report.claims) {
+        out.push_str(&format!("{line}\n\n"));
+    }
 
     if !report.gaps.is_empty() {
         out.push_str("## What was not examined\n\n");
@@ -760,12 +763,15 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
 
     if !report.claims.is_empty() {
         out.push_str("## What the app says about itself\n\n");
-        out.push_str("| about | stackvet.toml | the code | what that means |\n|---|---|---|---|\n");
+        out.push_str(
+            "| about | stackvet.toml | who said it | the code | what that means |\n|---|---|---|---|---|\n",
+        );
         for claim in &report.claims {
             out.push_str(&format!(
-                "| {} | {} | {} | {} |\n",
+                "| {} | {} | {} | {} | {} |\n",
                 cell(&claim.name),
                 said(claim.claimed),
+                claim.who_said(),
                 said(claim.found_in_code),
                 cell(&claim.note)
             ));

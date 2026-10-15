@@ -187,8 +187,9 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                         "found_in_code": { "type": ["boolean", "null"] },
                         "state": string,
                         "note": string,
+                        "by": { "type": ["string", "null"] },
                     }),
-                    &["name", "claimed", "found_in_code", "state", "note"],
+                    &["name", "claimed", "found_in_code", "state", "note", "by"],
                 ) },
                 "undecided": { "type": "array", "items": object(
                     json!({ "id": string, "description": string, "chapter": string, "blocked_on": strings }),

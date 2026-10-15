@@ -504,6 +504,9 @@ pub fn page(report: &Report) -> String {
         "<tr><td>Above this app's target level (ASVS level {})</td><td class=\"n\">{}</td></tr>\n</table>\n",
         report.target_level, c.out_of_level
     ));
+    if let Some(line) = crate::resting_on_a_no(&report.excluded, &report.claims) {
+        b.push_str(&format!("<p>{}</p>\n", escape(&line)));
+    }
 
     if !report.gaps.is_empty() {
         b.push_str("<h2>What was not examined</h2>\n");
