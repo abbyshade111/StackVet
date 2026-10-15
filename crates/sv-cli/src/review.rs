@@ -1359,7 +1359,8 @@ fn notes_text(path: &Path) -> Result<Option<String>> {
     }
 }
 
-/// Asks the owner whether an answer given as theirs is theirs. The seal to write when it is.
+/// Asks the owner whether an answer given as theirs is theirs. The seal to write when it is. The tool can write
+/// `by = "owner"` too, so the person is told the words may be the tool's before being asked (backlog 0593).
 fn record_own(
     what: &str,
     fields: &[String],
@@ -1370,7 +1371,10 @@ fn record_own(
     writeln!(
         out,
         "{what}\n  It is given as yours, but it was not recorded through `sv review`, so for now it \
-         counts as your AI coding tool's word. If it is wrong, change it in the file first."
+         counts as your AI coding tool's word. Your AI coding tool can write `by = \"owner\"` as \
+         well as you can, so this answer, and any `how` beside it, may be the tool's words, not \
+         yours. Record it only if you gave the answer, or made the check, \
+         yourself. If it is wrong, change it in the file first."
     )?;
     loop {
         let Some(answer) = ask(
@@ -2004,6 +2008,9 @@ mod report_again_tests;
 
 #[cfg(test)]
 mod passphrase_prompts_tests;
+
+#[cfg(test)]
+mod owner_written_tests;
 
 #[cfg(test)]
 mod tests {

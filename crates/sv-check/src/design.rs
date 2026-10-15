@@ -254,10 +254,11 @@ pub fn evaluate(
                             "design.stated-by-ai",
                             &id,
                             format!(
-                                "stackvet.toml says you answered yes, and {named}, but {}, so it \
-                                 counts as your AI coding tool's word, not a check of the code. If \
-                                 it is your answer, run `sv review` in your own terminal to record \
-                                 it as yours.",
+                                "stackvet.toml says you answered yes, and {named}, but {}. Your AI \
+                                 coding tool can write `by = \"owner\"` as well as you can, so it \
+                                 counts as the tool's word, not yours and not a check of the code. \
+                                 If it is your answer, run `sv review` in your own terminal to \
+                                 record it as yours.",
                                 answer.recorded.as_ref().err().map_or("", String::as_str)
                             ),
                         ).resting_on(Tier::Stated)),
@@ -445,6 +446,10 @@ fn never_built(question: &Question, path: &str, who: &Who) -> Finding {
         ),
     })
 }
+
+#[cfg(test)]
+#[path = "design_owner_written_tests.rs"]
+mod owner_written_tests;
 
 #[cfg(test)]
 mod tests {
