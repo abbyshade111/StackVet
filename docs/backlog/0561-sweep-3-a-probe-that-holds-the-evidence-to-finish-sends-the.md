@@ -27,3 +27,8 @@ decision does not name.
 password is sent once, straight after, under a `guess-` id: signed in, it is the finding "After the limit, the right
 password still signs in" (high) and nothing is credited; refused, the credit stands in part and says so. A limit that
 only slows attempts is not asked. 0524 is built by this, and left for the board to close.
+
+**Second batch, built (the anonymous token, backlog 0537):** the sign-in page is asked for twice as two strangers,
+before signing in; the same anti-forgery token both times is the finding `probe.csrf-token-shared` (V3.5.1, medium,
+only ever a finding). The item's third request, once more within one session, is not sent: it would only matter to a
+credit, and different tokens credit nothing. 0537 is built by this, and left for the board to close.

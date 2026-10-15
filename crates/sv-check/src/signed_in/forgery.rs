@@ -246,6 +246,60 @@ fn control_for<'a>(
     Ok((control, found))
 }
 
+/// Whether two strangers are handed the same anti-forgery token on the sign-in page (backlog 0537, 0561,
+/// ADR-119): each visit with no cookies of its own, the token read as the sign-in itself reads it. The same
+/// token for both is one value for everybody, which another site can fetch and use. Different tokens credit
+/// nothing, since they do not show the app checks them; a page with no token says so in a step.
+pub(super) fn shared_token_check(http: &mut dyn Http, users: &UsersSection, out: &mut Outcome) {
+    let Some(login) = users.login.as_ref() else {
+        return;
+    };
+    let mut tokens = Vec::new();
+    for n in 1..=2 {
+        let mut session = Session::default();
+        let page = http.send(&get(&format!("csrf-stranger-{n}"), &login.path, &session));
+        let token = page.as_ref().and_then(|page| {
+            session.absorb(page);
+            csrf_token(page, &session)
+        });
+        tokens.push(token);
+    }
+    match (&tokens[0], &tokens[1]) {
+        (Some(first), Some(second)) if first == second => {
+            // Never the token itself: the first characters and the length, as for any secret.
+            let shown = crate::finding::Secret::redact(first);
+            out.steps.push(format!(
+                "asked for {} twice as two strangers: the same anti-forgery token both times",
+                login.path
+            ));
+            out.findings.push(finding_on(
+                vec!["csrf-stranger-1".to_owned(), "csrf-stranger-2".to_owned()],
+                &TOKEN_SHARED,
+                "The sign-in form's anti-forgery token is the same for everybody",
+                Severity::Medium,
+                format!(
+                    "{} was asked for twice, each time with no cookies, as two strangers would ask, \
+                     and both were handed the same anti-forgery token ({}, {} characters). A \
+                     token every visitor shares cannot show that a sign-in came from the app's own \
+                     page.",
+                    login.path,
+                    shown.as_str(),
+                    shown.length()
+                ),
+            ));
+        }
+        (Some(_), Some(_)) => out.steps.push(format!(
+            "asked for {} twice as two strangers: a different anti-forgery token each time",
+            login.path
+        )),
+        _ => out.steps.push(format!(
+            "asked for {} twice as two strangers: no anti-forgery token was found on it both times, \
+             so whether it is the same for everybody was not asked",
+            login.path
+        )),
+    }
+}
+
 pub(super) fn forgery_check(
     http: &mut dyn Http,
     users: &sv_manifest::UsersSection,
@@ -1379,3 +1433,6 @@ mod simple_request_tests;
 
 #[cfg(test)]
 mod read_back_tests;
+
+#[cfg(test)]
+mod shared_token_tests;

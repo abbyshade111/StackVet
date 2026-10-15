@@ -34,6 +34,8 @@ pub(super) struct FakeApp {
     expired: std::collections::BTreeSet<String>,
     /// Accounts that asked for a role, for `role_request_held_on_200`.
     held: std::collections::BTreeSet<String>,
+    /// The sign-in page's token for each visit, one per session it starts (backlog 0537).
+    session_tokens: std::collections::BTreeSet<String>,
     /// Seconds a signed-in session may last, when this app limits that at all.
     pub(super) lifetime_limit: Option<u64>,
     /// Per session: when it was first seen signed in, and when it was last used.
@@ -284,6 +286,9 @@ pub(super) struct Flaws {
     /// admin page with 200 "Your request for more access awaits review." Not a flaw: the role was not given
     /// (backlog 0560).
     pub(super) role_request_held_on_200: bool,
+    /// The sign-in page carries the one fixed token for every visitor, as the Antigravity app of the trial of 14
+    /// October 2026 does (one value per process), rather than one for each visit's session (backlog 0537).
+    pub(super) csrf_token_shared: bool,
     /// Keeps no upload at all, answering every one, the ordinary file too, with the upload form shown again
     /// with 200 and "Uploads are switched off." Not a flaw: nothing can be judged (backlog 0560).
     pub(super) uploads_off_on_200: bool,
@@ -1480,8 +1485,11 @@ impl FakeApp {
                 .and_then(|rest| rest.split("\r\n").next())
                 .map(str::to_owned)
         });
-        let token_ok =
-            given.as_deref() == Some(CSRF) || given.is_some_and(|t| self.issued_tokens.remove(&t));
+        let token_ok = given.as_deref() == Some(CSRF)
+            || given
+                .as_ref()
+                .is_some_and(|t| self.session_tokens.contains(t))
+            || given.is_some_and(|t| self.issued_tokens.remove(&t));
         let is_admin = user
             .as_ref()
             .is_some_and(|u| self.users.get(u).is_some_and(|(_, admin)| *admin));
@@ -1561,6 +1569,14 @@ impl FakeApp {
             ("GET", "/login") => {
                 let id = self.new_id();
                 self.sessions.insert(id.clone(), String::new());
+                // A token for this visit's session, or under `csrf_token_shared` the fixed one for everybody.
+                let token = if self.flaws.csrf_token_shared {
+                    CSRF.to_owned()
+                } else {
+                    let token = format!("{CSRF}.{id}");
+                    self.session_tokens.insert(token.clone());
+                    token
+                };
                 let attrs = self.cookie_attrs();
                 let mut headers = Vec::new();
                 if self.pre_login_cookie {
@@ -1574,7 +1590,7 @@ impl FakeApp {
                     200,
                     headers,
                     &format!(
-                        "{}<form><input type=\"hidden\" name=\"csrf_token\" value=\"{CSRF}\">{}</form>",
+                        "{}<form><input type=\"hidden\" name=\"csrf_token\" value=\"{token}\">{}</form>",
                         if self.flaws.non_ascii_heading {
                             concat!(
                                 "<h1>G\u{130}R\u{130}\u{15e}</h1><p>K\u{130}\u{15e}\u{130}SEL ",
