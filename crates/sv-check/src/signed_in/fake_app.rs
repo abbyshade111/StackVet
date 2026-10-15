@@ -110,6 +110,8 @@ pub(super) struct FakeApp {
     /// Files saved outside the upload folder by a name starting `../`, by the rest of the name.
     /// Served at `/{name}`, one folder above `/files/`.
     escaped: BTreeMap<String, String>,
+    /// Each user name signed up, with its account's address (backlog 0599).
+    usernames: BTreeMap<String, String>,
     /// When each file was taken, by the app's clock.
     upload_times: BTreeMap<String, u64>,
     /// The largest file body the app was sent, accepted or not. This is how the size cap's
@@ -588,6 +590,9 @@ pub(super) struct Flaws {
     pub(super) svg_as_attachment: bool,
     /// Refuses SVG uploads outright. Not a fault: an app that takes no SVG has nothing to clean.
     pub(super) refuses_svg: bool,
+    /// Keeps a user name apart from the address: sign-up takes a `username` of 3 to 30 characters beside the `email`,
+    /// and sign-in takes either (backlog 0599). Not a fault: an app's own rule, which a 38-character address breaks.
+    pub(super) usernames_up_to_30: bool,
     /// Serves an upload whose contents are a drawing (`<svg`) as `image/svg+xml`, whatever its name: an app that
     /// sets the type from what the file holds (backlog 0576). With `refuses_svg` and `unchecked_contents_ok`, an SVG
     /// refused by its name is taken named `.gif` and served as the drawing it is.
@@ -1255,6 +1260,42 @@ pub(super) fn pairs(text: &str) -> BTreeMap<String, String> {
         .collect()
 }
 
+impl FakeApp {
+    /// A sign-in sent with `username` and no `email`, as the same sign-in with that account's address: `None` for any
+    /// other request, or when the app keeps no user names.
+    fn signed_in_by_username(&self, r: &ProbeRequest) -> Option<ProbeRequest> {
+        if !self.flaws.usernames_up_to_30 || r.method != "POST" || !r.path.starts_with("/login") {
+            return None;
+        }
+        let mut f = form(r);
+        if f.contains_key("email") {
+            return None;
+        }
+        let name = f.remove("username")?;
+        let address = self.usernames.get(&name).cloned().unwrap_or(name);
+        f.insert("email".to_owned(), address);
+        let body: Vec<String> = f
+            .iter()
+            .map(|(k, v)| {
+                let encoded: String = v
+                    .bytes()
+                    .map(|b| match b {
+                        b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' => {
+                            (b as char).to_string()
+                        }
+                        _ => format!("%{b:02X}"),
+                    })
+                    .collect();
+                format!("{k}={encoded}")
+            })
+            .collect();
+        Some(ProbeRequest {
+            body: Some(body.join("&").into_bytes()),
+            ..r.clone()
+        })
+    }
+}
+
 pub(super) fn form(request: &ProbeRequest) -> BTreeMap<String, String> {
     pairs(&request.body_text())
 }
@@ -1484,6 +1525,15 @@ impl FakeApp {
         // Time passing as requests are answered, when a test asks for it.
         self.clock += self.seconds_per_request;
         self.clock_log.push((r.id.clone(), self.clock));
+        // A sign-in by user name is a sign-in by that account's address (backlog 0599).
+        let by_address;
+        let r = match self.signed_in_by_username(r) {
+            Some(rewritten) => {
+                by_address = rewritten;
+                &by_address
+            }
+            None => r,
+        };
         // A bearer token is a session id too, for the JSON sign-in below.
         let bearer = r
             .headers
@@ -2293,7 +2343,24 @@ impl FakeApp {
                     return Some(Self::respond(403, vec![], "refused"));
                 }
                 let f = form(r);
-                let (email, password) = (f.get("email")?.clone(), f.get("password")?.clone());
+                // An app that keeps user names takes the account's name from `username` when there is no `email`.
+                let named = f
+                    .get("email")
+                    .or_else(|| f.get("username").filter(|_| self.flaws.usernames_up_to_30));
+                let (email, password) = (named?.clone(), f.get("password")?.clone());
+                // The app's own rule for user names (backlog 0599).
+                if self.flaws.usernames_up_to_30
+                    && let Some(name) = f.get("username")
+                {
+                    if !(3..=30).contains(&name.chars().count()) {
+                        return Some(Self::respond(
+                            422,
+                            vec![("Content-Type", "text/html".into())],
+                            "<form><p class=error>Username must be between 3 and 30 characters</p></form>",
+                        ));
+                    }
+                    self.usernames.insert(name.clone(), email.clone());
+                }
                 // The form says maxlength=40. A correct app applies that again here.
                 if email.chars().count() > 40 && !self.flaws.validation_only_in_browser {
                     if self.flaws.signup_refused_alike {

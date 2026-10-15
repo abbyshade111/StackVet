@@ -16,3 +16,11 @@ rule: when the manifest's sign-up form names a `username` field, sv makes a shor
 characters) and keeps the address for the email field. Fake-app case: a sign-up that refuses long names.
 
 **Record.** None.
+
+**Built, 15 October 2026 (honesty):** when the sign-up form carries `{user}` in a `username` field and in another field
+(the address), every `username` field in the run is sent a short name made from the address (`sv` and twelve hex
+digits, fourteen letters and digits), and the address stays where it is. A `username` that is the form's only
+`{user}` is how the app knows the account, and keeps the address. The log checks find a line by the short name as by
+the address. When the first test user cannot open a private page, the gap now also says what the sign-up answered and
+quotes its page (the field names only, never a value, and nothing when the page repeats the password). Fake-app case:
+`usernames_up_to_30`. Tests in `crates/sv-check/src/signed_in/short_names_tests.rs`.

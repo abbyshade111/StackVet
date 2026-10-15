@@ -304,6 +304,16 @@ fn records_status(line: &str, status: u16) -> bool {
         })
 }
 
+/// The short user name a run sends in a `username` field (backlog 0599), and the account's address otherwise.
+fn short_name(user: &str) -> String {
+    crate::signed_in::short_name(user)
+}
+
+/// Whether `line` names the account `name`: by its address, or by the short user name the run may have sent for it.
+fn names(line: &str, name: &str) -> bool {
+    line.contains(name) || line.contains(&short_name(name))
+}
+
 /// Reads the container's output for the markers the probes planted.
 pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
     let mut out = LogOutcome::default();
@@ -324,7 +334,7 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
     // only way a line is known to say *who*.
     let by_name = |name: &Option<String>| {
         name.as_deref()
-            .and_then(|n| log.lines().find(|l| l.contains(n)))
+            .and_then(|n| log.lines().find(|l| names(l, n)))
             .map(|l| (l, true))
     };
     let by_window = |w: &Option<Window>, failed: bool| {
@@ -340,8 +350,10 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
     let by_name_saying = |name: &Option<String>, failed: bool| {
         name.as_deref()
             .and_then(|n| {
-                log.lines()
-                    .find(|l| l.contains(n) && says_failed(&l.replace(n, " ")) == failed)
+                log.lines().find(|l| {
+                    names(l, n)
+                        && says_failed(&l.replace(n, " ").replace(&short_name(n), " ")) == failed
+                })
             })
             .map(|l| (l, true))
     };

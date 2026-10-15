@@ -505,6 +505,64 @@ fn form_encode(text: &str) -> String {
     out
 }
 
+// A user name the app's own rule would take (backlog 0599). In the Cursor and Flash run of 15 October 2026 the app
+// limited user names to 3 to 30 characters, and every sign-up with a 38-character address in its `username` field was
+// refused. When the sign-up form keeps a `username` field apart from the field for the address (both `{user}`), every
+// `username` field in the run is sent a short name made from the address instead, and the address stays where it is.
+thread_local! {
+    static SHORT_NAMES: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Whether a field's name is a user name's: `username`, `user_name`, `userName`, or one inside brackets
+/// (`user[username]`).
+fn names_username(key: &str) -> bool {
+    let last = key.trim_end_matches(']').rsplit('[').next().unwrap_or(key);
+    last.to_ascii_lowercase().replace(['_', '-'], "") == "username"
+}
+
+/// Whether this sign-up keeps a user name apart from the address: a `username` field and another field both carry
+/// `{user}`.
+pub(crate) fn wants_short_names(signup: &RequestTemplate) -> bool {
+    let fields = || signup.form.iter().chain(signup.json.iter());
+    fields().any(|(k, v)| names_username(k) && v.contains("{user}"))
+        && fields().any(|(k, v)| !names_username(k) && v.contains("{user}"))
+}
+
+/// The short user name for `user`: `sv` and twelve hex digits of a hash of it, fourteen letters and digits that
+/// differ from one address to the next and that most user-name rules take.
+pub(crate) fn short_name(user: &str) -> String {
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    for byte in user.bytes() {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(0x0100_0000_01b3);
+    }
+    format!("sv{:012x}", hash >> 16)
+}
+
+/// Sets short user names for the run on this thread, and back when dropped.
+pub(crate) struct ShortNames(bool);
+
+impl ShortNames {
+    pub(crate) fn set(on: bool) -> ShortNames {
+        ShortNames(SHORT_NAMES.with(|c| c.replace(on)))
+    }
+}
+
+impl Drop for ShortNames {
+    fn drop(&mut self) {
+        SHORT_NAMES.with(|c| c.set(self.0));
+    }
+}
+
+/// A field's value: a `username` field's `{user}` is the short name when the run uses short names.
+fn fill_field(key: &str, text: &str, v: &Values) -> String {
+    if SHORT_NAMES.with(std::cell::Cell::get) && names_username(key) {
+        fill(&text.replace("{user}", &short_name(v.user)), v)
+    } else {
+        fill(text, v)
+    }
+}
+
 fn request(id: &str, t: &RequestTemplate, v: &Values, session: &Session) -> ProbeRequest {
     let mut headers = session.headers();
     let body = if !t.json.is_empty() {
@@ -512,7 +570,7 @@ fn request(id: &str, t: &RequestTemplate, v: &Values, session: &Session) -> Prob
         let map: serde_json::Map<String, serde_json::Value> = t
             .json
             .iter()
-            .map(|(k, val)| (k.clone(), serde_json::Value::String(fill(val, v))))
+            .map(|(k, val)| (k.clone(), serde_json::Value::String(fill_field(k, val, v))))
             .collect();
         Some(serde_json::Value::Object(map).to_string())
     } else if !t.form.is_empty() {
@@ -523,7 +581,7 @@ fn request(id: &str, t: &RequestTemplate, v: &Values, session: &Session) -> Prob
         let pairs: Vec<String> = t
             .form
             .iter()
-            .map(|(k, val)| format!("{}={}", form_encode(k), form_encode(&fill(val, v))))
+            .map(|(k, val)| format!("{}={}", form_encode(k), form_encode(&fill_field(k, val, v))))
             .collect();
         Some(pairs.join("&"))
     } else {
@@ -1130,6 +1188,8 @@ pub fn run_within(
     slow: bool,
     spent: &std::cell::Cell<u64>,
 ) -> Outcome {
+    // A user name apart from the address (backlog 0599): short names for the whole run, on this thread.
+    let _short = ShortNames::set(users.signup.as_ref().is_some_and(wants_short_names));
     let mut patient = Patient::within(http, spent);
     patient.login_path = users
         .login
@@ -1917,6 +1977,8 @@ fn run_checks(
             .to_owned(),
     ));
 
+    // What A's sign-up answered, for the reason when A then cannot open a private page (backlog 0599).
+    let mut signed_up_a: Option<String> = None;
     if !seeded && let Some(signup) = &users.signup {
         for (who, account) in [("a", &accounts.a), ("b", &accounts.b)] {
             let response = sign_up(http, users, signup, who, account);
@@ -1925,6 +1987,9 @@ fn run_checks(
                 who.to_uppercase(),
                 status(&response)
             ));
+            if who == "a" {
+                signed_up_a = Some(signed_up(signup, response.as_ref(), account));
+            }
         }
     }
 
@@ -2056,9 +2121,13 @@ fn run_checks(
             format!(
                 "Signing in as the first test user did not open {} — the sign-in request, the \
                  accounts, or the page is not what stackvet.toml says — so nothing here can say \
-                 what a signed-in user can do. To tell which: {}.",
+                 what a signed-in user can do. To tell which: {}{}.",
                 confirm_path.as_deref().unwrap_or(""),
-                a.answer
+                a.answer,
+                signed_up_a
+                    .as_deref()
+                    .map(|said| format!("; before that, {said}"))
+                    .unwrap_or_default()
             ),
         ));
         return out;
@@ -2626,6 +2695,23 @@ fn run_checks(
     out
 }
 
+/// What a sign-up answered, in a sentence for a reason given later (backlog 0599): its status, the fields sent (names
+/// only), and the words its page showed, unless the page repeats the password.
+fn signed_up(
+    signup: &RequestTemplate,
+    response: Option<&ProbeResponse>,
+    account: &Account,
+) -> String {
+    match response {
+        None => "the sign-up of the first test user got no answer".to_owned(),
+        Some(r) => format!(
+            "the sign-up of the first test user answered {}; {}",
+            r.status,
+            refused::sent_and_said(signup, r, refused::repeats_password(r, account))
+        ),
+    }
+}
+
 /// Signs an account up through the app's own form.
 /// Makes an account through `signup`, and — when the app activates accounts with an emailed code
 /// (`activation`) — activates it, so every account a check signs up can sign in as that check
@@ -2716,6 +2802,8 @@ mod page_cookie_tests;
 mod private_pages_opened_tests;
 #[cfg(test)]
 mod resignup_tests;
+#[cfg(test)]
+mod short_names_tests;
 #[cfg(test)]
 mod sign_in_limit_advice_tests;
 #[cfg(test)]
