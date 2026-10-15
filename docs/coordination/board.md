@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0560, 0561, 0564, 0539, 0232
-- wording — arm: full — holds: 0555 (since 2026-10-14) — next: 0556, 0557, 0533, 0530, 0534
-- documentation — arm: full — holds: 0527 (since 2026-10-14) — next: 0526, 0563, 0568
+- wording — arm: full — holds: 0557 (since 2026-10-14) — next: 0533, 0530, 0534
+- documentation — arm: full — holds: 0526 (since 2026-10-14) — next: 0563, 0568
 
 ## Queue
 
@@ -560,3 +560,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 22:21 — finished 0540 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1958; now holds 0527
 - 2026-10-14 22:44 — queued 0568, marked
 - 2026-10-14 22:44 — assigned 0568 to documentation (full) as next: the owner's ask of 14 October: the paper's figures and every trial's data as tables the owner can analyze; documentation's own files, after its lane
+- 2026-10-14 22:50 — finished 0555 by wording (full): https://github.com/abbyshade111/StackVet/pull/1961; now holds 0556
+- 2026-10-14 22:50 — finished 0556 by wording (full): https://github.com/abbyshade111/StackVet/pull/1964; now holds 0557
+- 2026-10-14 22:50 — finished 0527 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1960; now holds 0526
