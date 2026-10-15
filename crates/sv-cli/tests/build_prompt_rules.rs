@@ -45,6 +45,13 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "name the routes, so the running checks reach them",
             "Name the app's pages and routes",
         ),
+        // Backlog 0549: in the trial of 14 October 2026 both Cursor's and VS Code's apps gated sign-up on an invite
+        // code; Cursor left it out, so sv could not sign up, and VS Code hard-coded a test code without asking.
+        (
+            "say when sign-up needs a secret, and ask before seeding one",
+            "If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up on its \
+             own, and ask whether to seed a test code for the run, and where it would live.",
+        ),
         (
             "only the stackvet_ tools",
             "never run commands inside its container",

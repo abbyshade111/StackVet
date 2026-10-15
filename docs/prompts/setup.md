@@ -232,6 +232,8 @@ word.
 >    what it keeps about people (`[data] categories`):** they decide whether it is held to ASVS
 >    level 1 or the stricter level 2. Name the app's pages and routes in it, under
 >    `[stack.run.users]`, not only `/` and the health path, so the checks of the running app reach them.
+>    If signing up needs an invite code or another secret, tell me that StackVet's run cannot sign up
+>    on its own, and ask whether to seed a test code for the run, and where it would live.
 > 2. Call `stackvet_guidance` and follow the rules it gives while you write code. Call it again
 >    with a topic before work in that area: adding a package, a CI workflow, anything with keys.
 >    Use StackVet only through the `stackvet_` tools: never run commands inside its container.
