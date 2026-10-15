@@ -44,3 +44,5 @@ keep the figures at 4 October and add the work since beside them. Built meanwhil
   13 October, and the board's log (every line, and one row per item finished).
 - `figure-three-arms.html`, the one figure that gave no date, now names its data and date.
 Still to do, after the owner's answer: the figures' refresh, or a "since the cut-off" figure beside them.
+
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** neither (a) nor (b): the paper is not written yet, so the 4 October cut-off is arbitrary. Break the timeline at three milestones and build every table and figure per period, then combined tables for everything up to now: (1) version 1, up to the cut-over when v1 was tagged in GitHub (the tags v1-paper and v1-final; the promotion of sv to main on 26 September 2026); (2) version 2, from that cut-over to the renaming to StackVet; (3) StackVet, from the renaming to the day of the build. Take each boundary's date and commit from git (the tags, the promotion merge, the commit that renamed the project), name them in DATA.md, and say in every table which period a row is in. The paper's prose is the owner's to write against these.

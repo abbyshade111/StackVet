@@ -14,8 +14,7 @@ the text.
 
 **Record.** None.
 
-**The owner's answer, 15 October 2026: A.** Rename the finding, and also match what was recorded under the old title
-(accepted risks, reviews, and `--baseline`), held by a test.
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** A: rename the finding, and also match what was recorded under the old title (accepted risks, reviews, and --baseline), held by a test.
 
 **Done, 15 October 2026.** The pinning finding is now titled by what is missing (`title_for_unpinned` in
 `crates/sv-check/src/config.rs`): "No Python lockfile beside `requirements.txt`" when there is no lockfile, each

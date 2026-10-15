@@ -109,6 +109,82 @@
       }
     },
     {
+      "condition": "mtls",
+      "note": "Client certificates (mutual TLS) are asked for in the server's own TLS settings, in a front server's settings file, or by a proxy that forwards the certificate in a header the app reads. A front server's settings file (nginx, Apache, Caddy, Traefik) counts as the app possibly asking for one, so the requirement stays in; a certificate checked by a load balancer outside the repository cannot be seen here.",
+      "files": [
+        "**/nginx.conf",
+        "**/default.conf",
+        "*.nginx",
+        "**/httpd.conf",
+        "**/apache2.conf",
+        "**/Caddyfile",
+        "**/traefik.yml",
+        "**/traefik.yaml",
+        "**/traefik.toml"
+      ],
+      "source": {
+        "javascript": [
+          "requestCert",
+          "getPeerCertificate",
+          "x-ssl-client",
+          "x-client-cert",
+          "ssl-client-"
+        ],
+        "typescript": [
+          "requestCert",
+          "getPeerCertificate",
+          "x-ssl-client",
+          "x-client-cert",
+          "ssl-client-"
+        ],
+        "go": [
+          "ClientAuth",
+          "PeerCertificates",
+          "VerifiedChains"
+        ],
+        "python": [
+          "CERT_REQUIRED",
+          "CERT_OPTIONAL",
+          "cert_reqs",
+          "SSL_CLIENT_",
+          "x-ssl-client",
+          "x-client-cert"
+        ],
+        "java": [
+          "setNeedClientAuth",
+          "setWantClientAuth",
+          "clientAuth",
+          "client-auth"
+        ],
+        "kotlin": [
+          "setNeedClientAuth",
+          "setWantClientAuth",
+          "clientAuth",
+          "client-auth"
+        ],
+        "csharp": [
+          "ClientCertificateMode",
+          "ClientCertificate",
+          "AddCertificateForwarding"
+        ],
+        "ruby": [
+          "verify_mode",
+          "SSL_CLIENT_",
+          "client_cert"
+        ],
+        "php": [
+          "SSL_CLIENT_",
+          "client_cert"
+        ],
+        "rust": [
+          "client_auth",
+          "ClientCertVerifier",
+          "with_client_cert_verifier",
+          "AllowAnyAuthenticatedClient"
+        ]
+      }
+    },
+    {
       "condition": "xpath",
       "note": "XPath usually rides along with an XML library, and is in several standard libraries.",
       "packages": {
