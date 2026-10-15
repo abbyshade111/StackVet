@@ -36,6 +36,9 @@ program, such as `colima`, `cat`, or `echo`. Say no to that: it would let the to
 without asking again, which for some programs includes deleting things. For a command that only looks and changes
 nothing, such as `docker info`, allowing that one command again in the same chat is fine.
 
+Each prompt ends with a line in italics naming it, the day its words last changed, and a short fingerprint of
+them. Copy it with the rest: it tells anyone reading your chat later which version of the prompt your AI tool read.
+
 | Prompt | What it does | Changes anything? |
 |---|---|---|
 | 1. Look at my computer | Says what is ready and what is missing | No |
@@ -72,6 +75,8 @@ nothing, such as `docker info`, allowing that one command again in the same chat
 >
 > Then tell me, as a short list, what is ready and what is missing, and which of the next prompts I'll need. Don't
 > fix anything yet.
+>
+> *(StackVet setup prompt 1, text of 15 October 2026, fingerprint 6f32dbf4)*
 <!-- setup-step-1:end -->
 
 ## 2. Help me install what's missing
@@ -109,6 +114,8 @@ Skip this one if prompt 1 said nothing was missing.
 > `colima start`. StackVet needs Docker to run Linux containers: if I'm asked to choose, help me keep
 > that. If anything fails, stop and tell me plainly what happened. Don't go on to the
 > next thing until this one works.
+>
+> *(StackVet setup prompt 2, text of 15 October 2026, fingerprint 6f5a1441)*
 <!-- setup-step-2:end -->
 
 ## 3. Set up StackVet here
@@ -158,6 +165,8 @@ Use the version for your computer.
 >    restart, for others the new server has to be started or allowed. If you are not sure how this app does it, say
 >    so, rather than guessing. Then tell me to paste prompt 4, "Check that it's connected", from the setup page, and
 >    which settings file you wrote, since a new chat may not remember it.
+>
+> *(StackVet setup prompt 3 for a Mac or Linux, text of 15 October 2026, fingerprint b25b5b77)*
 <!-- setup-prompt:end -->
 
 ### On Windows
@@ -214,6 +223,8 @@ requirements only they reach, and a Mac or Linux computer, or a cloud runner, is
 > Step 11. Tell me that on Windows, StackVet's checks that start the app (`stackvet report --run`) have not been tried
 >    yet: the checks that read the code work here, and the report will say what the others would have reached. Don't
 >    promise me the full report on this computer.
+>
+> *(StackVet setup prompt 3 for Windows, text of 15 October 2026, fingerprint 5d12b1f4)*
 <!-- setup-windows:end -->
 
 ## 4. Check that it's connected
@@ -233,6 +244,8 @@ After your AI tool has loaded the new settings, in the same folder. If it is a n
 > on a Mac or Linux, whether Docker is running, with `docker info`. Your own commands may be kept away from Docker
 > even when it is running, so if `docker info` fails, tell me what it said and ask me, rather than telling me to
 > start Docker.
+>
+> *(StackVet setup prompt 4, text of 15 October 2026, fingerprint 8c973311)*
 <!-- setup-step-4:end -->
 
 **Already have StackVet installed** (for example with Homebrew)? Then its server can start your installed copy instead
@@ -295,6 +308,8 @@ word.
 >    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
 >    Write a `[checked-by-hand]` entry only for a check I made and described to you, with
 >    `by = "ai-tool"` and my words in `how`.
+>
+> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint 21439403)*
 <!-- setup-step-5:end -->
 
 What happens next:
@@ -366,6 +381,8 @@ computer itself; your AI tool can walk you through it. Paste this into the same 
 >
 > Step 7. Last, tell me that until I run `sv review` myself (prompt 7 on the setup page), every answer recorded so far
 >    counts as yours, not mine, and the report says so.
+>
+> *(StackVet setup prompt 6, text of 15 October 2026, fingerprint e05d380d)*
 <!-- setup-step-6:end -->
 
 **If you stop here,** every answer your AI tool recorded still counts as its word, not yours, and the report says so,
@@ -386,6 +403,8 @@ walk you to it. Not yet tried in any AI tool. Paste this into the same chat, in 
 > file to say an answer is mine: only I can do that, with `sv review`. Then tell me the one command to type in my
 > terminal (`sv review .`, or `stackvet review .` in PowerShell), say that you cannot run it for me, and wait. When I
 > say I am done, run stackvet_check again and tell me what changed.
+>
+> *(StackVet setup prompt 7, text of 15 October 2026, fingerprint 22377766)*
 <!-- setup-step-7:end -->
 
 When you record something, `sv review` then writes the report again itself, with the options of the last one,
