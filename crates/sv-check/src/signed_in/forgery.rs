@@ -330,6 +330,8 @@ pub(super) fn forgery_check(
     let (mut accepted_at, mut refused_at, mut answers) = (Vec::new(), Vec::new(), Vec::new());
     // Each create request that cannot be judged, by its path, and why.
     let mut unjudged: Vec<(String, String)> = Vec::new();
+    // The first create request's control and read-back, for the same request sent once more with `Origin: null`.
+    let mut first_refused = None;
     for (i, create) in creates.iter().enumerate() {
         let (id, template) = (&create.id, &create.template);
         let (control, read_back) =
@@ -365,13 +367,62 @@ pub(super) fn forgery_check(
             session,
         ) {
             Made::Yes(how) => accepted_at.push((id.clone(), template.path.clone(), how)),
-            Made::No => refused_at.push(template.path.clone()),
+            Made::No => {
+                refused_at.push(template.path.clone());
+                if i == 0 {
+                    first_refused = Some((control.clone(), read_back.clone()));
+                }
+            }
             Made::Unclear(why) => unjudged.push((
                 template.path.clone(),
                 format!(
                     "sent as another site would send it, it could not be told whether it was \
                      taken: {why}"
                 ),
+            )),
+        }
+    }
+    // The first create request refused from another site's Origin, sent once more as a sandboxed frame on any
+    // site sends it: `Origin: null`, no `Referer`, and no token (backlog 0561, ADR-119). An app whose only guard is
+    // an Origin allow-list that also takes `null`, for its own no-referrer forms, refuses the first and takes this.
+    let mut null_refused = None;
+    if let (Some((control, read_back)), Some(create)) = (&first_refused, creates.first())
+        && accepted_at.is_empty()
+    {
+        let id = format!("{}-null-origin", create.id);
+        let null_values = Values {
+            marker: "sv-probe-forged-null-4c7e",
+            csrf: Some(String::new()),
+            ..Default::default()
+        };
+        let mut forged = request(&id, &create.template, &null_values, &cross);
+        forged.headers.retain(|(n, _)| {
+            !n.to_lowercase().contains("csrf") && !n.to_lowercase().contains("xsrf")
+        });
+        forged
+            .headers
+            .push(("Origin".to_owned(), "null".to_owned()));
+        let response = http.send(&forged);
+        match judge_forged(
+            http,
+            read_back.as_ref(),
+            control,
+            &response,
+            &id,
+            null_values.marker,
+            session,
+        ) {
+            Made::Yes(how) => {
+                accepted_at.push((
+                    id,
+                    format!("{} with `Origin: null`", create.template.path),
+                    how,
+                ));
+            }
+            Made::No => null_refused = Some(true),
+            Made::Unclear(why) => out.steps.push(format!(
+                "sent the create request at {} again with `Origin: null` and no token: not judged, {why}",
+                create.template.path
             )),
         }
     }
@@ -399,8 +450,9 @@ pub(super) fn forgery_check(
                 Severity::High
             },
             format!(
-                "Creating a record was accepted at {} when sent with the signed-in user's cookies, \
-                 an Origin of {STRANGER} and no anti-forgery token.{}",
+                "Creating a record was accepted at {} when sent with the signed-in user's cookies \
+                 from another site (an Origin of {STRANGER}, or `null` where it says so) and no \
+                 anti-forgery token.{}",
                 accepted_at
                     .iter()
                     .map(|(_, path, how)| format!("{path} (it {how})"))
@@ -429,13 +481,19 @@ pub(super) fn forgery_check(
                 FORGERY.requirement_ids,
                 format!(
                     "{} sent with a signed-in user's cookies from another origin and without a \
-                     token, and refused at {}{}{}",
+                     token, and refused at {}{}{}{}",
                     if refused_at.len() == 1 {
                         "a request that creates a record,".to_owned()
                     } else {
                         format!("{} requests that create records, each", refused_at.len())
                     },
                     refused_at.join(", "),
+                    if null_refused == Some(true) {
+                        "; the first sent again with `Origin: null`, as a sandboxed frame sends it, \
+                         refused too"
+                    } else {
+                        ""
+                    },
                     if untried.is_empty() {
                         String::new()
                     } else {
@@ -1436,3 +1494,6 @@ mod read_back_tests;
 
 #[cfg(test)]
 mod shared_token_tests;
+
+#[cfg(test)]
+mod null_origin_tests;

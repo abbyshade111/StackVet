@@ -271,6 +271,9 @@ pub(super) struct Flaws {
     /// Refuses a note sent without its token with a redirect shaped like a made note's, to a note that does
     /// not exist. Not a flaw: only reading the record back tells the two apart (backlog 0560).
     pub(super) forgery_refused_alike: bool,
+    /// Guards a new note by its Origin alone, with no token: another site's Origin is refused, and `Origin: null`
+    /// is let through, as an allow-list that takes `null` for its own no-referrer forms does (backlog 0561).
+    pub(super) origin_list_takes_null: bool,
     /// The JSON API refuses with 200 and `{"error": ...}` instead of a 4xx. Not a flaw (backlog 0560).
     pub(super) api_refuses_with_200: bool,
     /// Refuses an upload (too large, not what its name says, or past the storage quota) with the upload
@@ -2782,7 +2785,10 @@ impl FakeApp {
                         Self::respond(status, vec![], "no")
                     }
                 };
-                if self.flaws.api_checks_origin && foreign {
+                // Any Origin but the app's own: another site's, and `null`, which a sandboxed frame on any site sends.
+                let not_own =
+                    foreign || r.headers.iter().any(|(k, v)| k == "Origin" && v == "null");
+                if self.flaws.api_checks_origin && not_own {
                     return Some(refuse(self, 403));
                 }
                 let content_type_is = |prefix: &str| {
@@ -2960,6 +2966,8 @@ impl FakeApp {
                 let Some(owner) = user else {
                     return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
                 };
+                let null_origin = r.headers.iter().any(|(k, v)| k == "Origin" && v == "null");
+                let token_ok = token_ok || (self.flaws.origin_list_takes_null && null_origin);
                 if !self.flaws.no_csrf_check && (foreign || !token_ok) {
                     if self.flaws.forgery_refused_on_200 {
                         return Some(Self::respond(
