@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0602, 0589, 0590
-- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0514, 0586, 0600
+- wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0589, 0590
+- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0586, 0600
 
 ## Queue
 
@@ -679,3 +679,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 13:50 — assigned 0590 to wording (full) as next: the owner's go of 15 October with the answers recorded: the report in short pages; sv-report, wording's; a Later entry on the reports record; after 0589
 - 2026-10-15 13:50 — assigned 0586 to documentation (full) as next: the build-loop record from the first MCP call; sv-cli's mcp, no file shared with the other lanes
 - 2026-10-15 13:50 — assigned 0600 to documentation (full) as next: the summary's count of requirements resting on a tool-answered false; sv-report's summary, no file shared with wording's two report items (check before building; if 0590 touches the same summary, take it after)
+- 2026-10-15 14:20 — finished 0534 by wording (full): https://github.com/abbyshade111/StackVet/pull/2060; now holds 0565
+- 2026-10-15 14:20 — finished 0602 by wording (full): https://github.com/abbyshade111/StackVet/pull/2057; from its lane, behind 0565
+- 2026-10-15 14:20 — finished 0514 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2059; from its lane, behind 0509
