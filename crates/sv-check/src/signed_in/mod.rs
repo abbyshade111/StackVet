@@ -2699,6 +2699,8 @@ mod in_turn_tests;
 #[cfg(test)]
 mod limit_tests;
 #[cfg(test)]
+mod no_signup_right_password_tests;
+#[cfg(test)]
 mod non_ascii_tests;
 #[cfg(test)]
 mod owner_field_tests;
