@@ -138,3 +138,8 @@ was not taken either, there is nothing to read it beside, and it is read as befo
 refusal answered 200 to be a status-only finding now holds it not judged, and a case answered alike keeps the
 status-only finding covered.
 
+**Fourteenth batch, built (the session timeouts, the rest of list item 11):** after the wait, a session's read of the
+private page counts as opening it only when it shows the page it opened at the start, so "your session has expired"
+served with 200 is the session ended, not the page opening; the session kept busy, read at the same moment, has to
+show the page still, which is the control.
+

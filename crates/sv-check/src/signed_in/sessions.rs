@@ -110,8 +110,22 @@ pub(super) fn session_timeout_checks(
         return false;
     }
 
-    let opens = |http: &mut dyn Http, session: &Session, label: &str| {
-        ok(&http.send(&get(&format!("timeout-{label}"), confirm, session)))
+    // The private page each session opened at the start: later, a page opens only when it shows that page
+    // (backlog 0560, ADR-119), so a "your session has expired" page served with 200 is the session ended, not
+    // the page opening. The session kept busy, read at the same moment, has to show it still.
+    let mut start: Option<ProbeResponse> = None;
+    let mut opens = |http: &mut dyn Http, session: &Session, label: &str| {
+        let answer = http
+            .send(&get(&format!("timeout-{label}"), confirm, session))
+            .filter(|r| (200..300).contains(&r.status));
+        match (answer, &start) {
+            (Some(page), Some(first)) => super::control::shows_page(first, &page),
+            (Some(page), None) => {
+                start = Some(page);
+                true
+            }
+            (None, _) => false,
+        }
     };
     let mut quiet = Vec::new();
     let (Some(left), Some(busy)) = (
@@ -3443,6 +3457,8 @@ mod identity_beside_tests;
 mod invented_beside_tests;
 #[cfg(test)]
 mod invented_pages_tests;
+#[cfg(test)]
+mod timeout_page_tests;
 
 #[cfg(test)]
 mod several_websockets_tests;
