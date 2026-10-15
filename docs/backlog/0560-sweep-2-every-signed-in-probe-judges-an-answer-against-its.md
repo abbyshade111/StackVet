@@ -130,3 +130,8 @@ as before; a 200 showing little of it ("unknown user", a sign-in form served wit
 refusal, and says so. Without the user's page, a 2xx is a finding as before. Still open from item 11: the idle and
 lifetime timeouts, read by status class beside the busy and fresh sessions.
 
+**Thirteenth batch, built (the WebSocket after sign-out, the rest of list item 7):** the reading the sign-out check
+uses is one function now (`signin::sign_out_may_be_refused`), and the WebSocket check uses it too: a sign-out
+answered with a page or sent straight back to a private page, after which the browser's own session still opens the
+first private page, leaves the socket opening afterwards not judged.
+
