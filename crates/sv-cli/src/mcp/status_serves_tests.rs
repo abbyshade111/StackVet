@@ -20,7 +20,7 @@ fn the_status_opens_with_the_folder_and_the_app_named_there() {
     let root = scratch_app("status-serves", "flask-booking");
     let server = Server::new(&root.join("app")).unwrap();
     let result = call(&server, "stackvet_status", json!({}));
-    let canonical = sv_frameworks::paths::canonical(&root.join("app")).unwrap();
+    let canonical = sv_frameworks::paths::canonical(root.join("app")).unwrap();
     std::fs::remove_dir_all(&root).ok();
     assert_eq!(result["isError"], false, "{result}");
     let said = text(&result);
