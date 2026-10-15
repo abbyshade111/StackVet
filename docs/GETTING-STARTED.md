@@ -35,8 +35,8 @@ short too.
 
 Did the setup prompts do this? Go to step 4.
 
-StackVet runs inside [Docker](GLOSSARY.md#docker), so there is nothing else to install. (Starting your app to check
-it while it runs, an optional later step, needs StackVet installed on the computer itself: section 6.)
+StackVet runs inside [Docker](GLOSSARY.md#docker), so there is nothing else to install. (Checking your app while it
+runs, a later step, needs StackVet installed on the computer itself: section 6.)
 
 - **On a Mac:** Docker Desktop (docker.com), or Colima if you prefer something smaller.
 - **On Linux:** Docker itself, or Docker Desktop. **On Windows,** skip Docker: see step 3.
@@ -52,8 +52,8 @@ docker pull ghcr.io/abbyshade111/stackvet-sv
 
 ## 2. Make a folder for the app, and put it in git
 
-Make an empty folder for the app, for example `~/code/my-app`. Then, in a terminal in that folder, start
-[git](GLOSSARY.md#git) there:
+Make an empty folder for the app, for example `~/code/my-app`, and in a terminal there start
+[git](GLOSSARY.md#git):
 
 ```bash
 git init
@@ -227,8 +227,10 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    of a check, with the check's words beside it. Ask me before you delete anything.
 > 5. Never tell me the app is secure. Tell me what was checked and what was not.
 > 6. When the first version works, call `stackvet_check` with section `questions` and ask me the
->    questions one at a time. When you tell me what the code does for one, quote the lines and say
->    it is your reading, not a check. Record my answers only with `stackvet_record_answer`, under the
+>    questions one at a time. I may let you answer some yourself: each answer you give counts as
+>    yours, not mine, until I record it with `sv review`, and the report says so. When you answer one,
+>    or tell me what the code does for one, quote the file and lines that show it beside the answer,
+>    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
 >    `security-notes.md`, outside its questions, is not read as an answer. Never mark a check by hand
 >    as done yourself, and never write `confirmed` or `by = "owner"`: only I can, with `sv review`.
@@ -255,8 +257,8 @@ None of these checks anything or counts toward the report.
 
 The tool will ask you things no program can know: how long someone may stay signed in, what the app
 should do with a file that is too big, who may see what. It offers what it found in the code as a
-tip. "I'm not sure" is a fine answer. If you ask the tool to answer for you, the report says so, and
-counts it for less than your own answer.
+tip. "I'm not sure" is a fine answer. An answer you let the tool give counts for less than yours, and
+the report says so.
 
 The tool writes your answers about the app's rules in `security-notes.md`, each marked `Written by: AI coding
 tool`, since `sv` cannot tell your words from the tool's. `sv review`, in your own terminal, shows each one and asks
@@ -289,7 +291,7 @@ With StackVet installed on the computer itself (section 6), this is just `sv rev
 It shows each answer that does not yet count as yours, asks your name or `owner`, and signs it with a key of its own,
 kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose
 one, or type `none`). Only then does the report count the answer as yours: a line saying `owner` that was never recorded
-this way still counts as the tool's word, because a tool trying to quiet a warning could write that line too. A real
+this way still counts as the tool's word, since a tool could write it too. A real
 finding is fixed in the code and checked again; recording it does not make it go away. `sv review` needs a terminal
 someone is typing in, so your AI tool cannot run it for you. [`docs/REVIEW.md`](REVIEW.md) is the whole of it, with a
 picture of how a signature is made and checked.
@@ -334,13 +336,13 @@ are on [Installing StackVet on your computer](INSTALL.md).
 If your app uses packages, which most do, starting it also needs the line `install = true` under `[stack.run]` in
 `stackvet.toml`. The app runs with no internet, so it cannot fetch its own packages; this line lets StackVet
 download them first, in a separate box that sees only the list of packages, never your code. That download is the
-one time StackVet uses the internet for your app, and the report says when it did. Without it, an app that needs
-packages does not start, and everything that needs it running is *not assessed*.
+one time StackVet uses the internet for your app, and the report says when it did. Without it, such an app does not
+start, and what needs it running is *not assessed*.
 
-**The full check is that one command.** `sv report --run` also runs the other security tools that are installed on
-your computer, such as Bandit and Semgrep, and puts what they find in the same report as what running the app found.
+**The full check is that one command.** `sv report --run` also runs the other security tools installed on your
+computer, such as Bandit and Semgrep, and puts their findings in the same report.
 Your AI coding tool's StackVet connection never runs them or starts the app, since each runs code, which stays your
-decision at a terminal; so its reports and checks leave both out, and say so. To leave the other tools out of a check of your own, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
+decision at a terminal; so its reports and checks leave both out, and say so. To leave them out, add `--no-tools`. CodeQL runs only if `stackvet.toml` has
 `[tools] codeql = true`, which its license allows only for an open-source app, research, or a paid GitHub license.
 
 **Where the report is.** When your AI tool writes the report (`stackvet_write_report`), or you run
