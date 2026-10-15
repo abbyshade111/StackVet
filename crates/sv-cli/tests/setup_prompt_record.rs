@@ -62,8 +62,10 @@ fn prompt_4_asks_about_this_folder_and_stops_an_old_container_only_with_a_yes() 
     for said in [
         "call it with this folder's full path (`pwd` prints it)",
         "If that is not this folder, or it says this folder is not inside the folder the server was started for, a \
-         StackVet server started for an earlier app is still running: on a Mac or Linux, show me what `docker ps` \
-         lists, stop the old StackVet container only after I say yes, and tell me to restart you.",
+         StackVet server started for an earlier app is still running.",
+        // Backlog 0592: not to read or use the earlier app's folder is held in `setup_prompt_four_folder.rs`.
+        "On a Mac or Linux, show me what `docker ps` lists, stop the old StackVet container only after I say yes, and \
+         tell me to restart you.",
     ] {
         assert!(check.contains(said), "{said}: {check}");
     }

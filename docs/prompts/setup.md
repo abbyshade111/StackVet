@@ -239,7 +239,8 @@ After your AI tool has loaded the new settings, in the same folder. If it is a n
 > Which `stackvet_` tools can you call? List their names. If you can call `stackvet_status`, call it with this
 > folder's full path (`pwd` prints it) and tell me in plain words what it says is ready and what is not, and which
 > folder it says it serves. If that is not this folder, or it says this folder is not inside the folder the server was
-> started for, a StackVet server started for an earlier app is still running: on a Mac or Linux, show me what
+> started for, a StackVet server started for an earlier app is still running. Then stop and tell me, and do not read
+> or use the folder it names: it holds an earlier app, not this one. On a Mac or Linux, show me what
 > `docker ps` lists, stop the old StackVet container only after I say yes, and tell me to restart you. If you can't
 > call any `stackvet_` tools, StackVet is not
 > connected: say so, and check two things. First, the settings file prompt 3 wrote, which is
@@ -248,7 +249,7 @@ After your AI tool has loaded the new settings, in the same folder. If it is a n
 > even when it is running, so if `docker info` fails, tell me what it said and ask me, rather than telling me to
 > start Docker.
 >
-> *(StackVet setup prompt 4, text of 15 October 2026, fingerprint 8c973311)*
+> *(StackVet setup prompt 4, text of 15 October 2026, fingerprint 274d6ffe)*
 <!-- setup-step-4:end -->
 
 **Already have StackVet installed** (for example with Homebrew)? Then its server can start your installed copy instead
