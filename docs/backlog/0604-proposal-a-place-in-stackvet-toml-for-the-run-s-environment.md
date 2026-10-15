@@ -1,6 +1,6 @@
 # Proposal: a place in stackvet.toml for the run's environment file and settings files, so loosened settings there are judged like the start command's
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -20,3 +20,5 @@ recommends (b) first, since it needs no decision about the manifest, and (a) lat
 in a file the start command does not name.
 
 **Record.** ADR-114 Later for (b); a Later entry on the manifest's record as well for (a).
+
+**The owner's answer, 15 October 2026:** (b): read only what the start command itself names (an --env-file, a sourced .env), with that file's format read first, and say in the report that other settings files are not read; no new manifest key. (a) later only if a real app's loosening hides in a file the start command does not name. ADR-114 Later.

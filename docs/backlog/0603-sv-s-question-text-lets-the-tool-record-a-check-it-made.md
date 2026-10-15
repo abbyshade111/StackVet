@@ -1,6 +1,6 @@
 # sv's question text lets the tool record a check it made itself by reading the code, which prompt 5 forbids
 
-**Status:** open
+**Status:** claimed by wording, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -20,3 +20,5 @@ person make it too. (B) Match sv to the prompt: drop the sentence from `intervie
 written down. (C) Leave both.
 
 **Record.** ADR-026 Later, either way.
+
+**The owner's answer, 15 October 2026:** (A): match the prompt to sv. The tool may record a check it made by reading the code with by = "ai-tool" (shown as the tool's word) and propose with confirmed that the person make it too; prompt 5 and the guide's step 4 say so. ADR-026 Later.
