@@ -1,6 +1,6 @@
 # The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7
 
-**Status:** open
+**Status:** claimed by wording, 14 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

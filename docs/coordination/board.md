@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0521 (since 2026-10-14) — next: 0560, 0561, 0564, 0539, 0232
-- wording — arm: full — holds: 0553 (since 2026-10-14) — next: 0554, 0555
-- documentation — arm: full — holds: 0544 (since 2026-10-14) — next: 0540, 0527, 0526, 0563
+- wording — arm: full — holds: 0555 (since 2026-10-14) — next: 0556, 0557, 0533, 0530, 0534
+- documentation — arm: full — holds: 0540 (since 2026-10-14) — next: 0527, 0526, 0563
 
 ## Queue
 
@@ -39,20 +39,15 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 25. 0525 `ast.sql-built-by-hand` flags `executescript(f())` where `f` returns a constant schema, a high finding under V1.2.4 — ready
 26. 0528 A 500 on a well-formed sign-up is set aside as "neither reported nor credited" and never named as a weakness — ready
 27. 0529 Test-only passwords under `tests/` are high findings for the secrets check while Bandit's hits on the same lines are test information — ready
-28. 0530 `config.versions-pinned` is titled "Python does not pin the versions it installs" when every version is pinned — ready
-29. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
-30. 0533 Without an `owned` record the forged-form and other-user checks do not run, and preflight does not say which checks a missing key costs — ready
-31. 0534 `.cursor/mcp.json` is listed as "not read" though `sv connect cursor` writes it and it has the shape `.mcp.json` has — ready
-32. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
-33. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
-34. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
-35. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
-36. 0556 The page says what the person loses by stopping at prompt 6, since no trial reached prompt 7 — ready
-37. 0557 Prompt 5: never commit stackvet-report/ or .stackvet/, and say so — ready
-38. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
-39. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
-40. 0565 Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show — ready
-41. 0566 Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report — ready
+28. 0531 A credential-like constant named `INVITE_*` or `*_CODE` is not one the secrets check knows — ready
+29. 0535 Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin — ready
+30. 0536 Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence — ready
+31. 0537 Proposal: an anonymous CSRF token that is one value for every visitor, caught by fetching the sign-in page twice as two strangers — ready
+32. 0538 Two claim contradictions rest on single words (`media_type`, `httpx`) and drove the only silencing seen in the trials — ready
+33. 0522 The failed-sign-ins probe reports "an account this check made for it" after its own sign-up was refused — hold: built as the first case of sweep 0559 (ADR-119)
+34. 0562 The pointer's "and N more places" counts a refusal's log line and its response line as two places — ready
+35. 0565 Proposal: read the AI tool's own session record, with the person's consent, and list where what it said differs from what the files show — ready
+36. 0566 Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report — ready
 
 ## Log
 
@@ -554,3 +549,11 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-14 21:50 — assigned 0527 to documentation (full) as next: sv-run, tools, and sv-cli items from the three-tool trial that share no file with the probes or the prompts
 - 2026-10-14 21:50 — assigned 0526 to documentation (full) as next: sv-run, tools, and sv-cli items from the three-tool trial that share no file with the probes or the prompts
 - 2026-10-14 21:50 — assigned 0563 to documentation (full) as next: sv-run, tools, and sv-cli items from the three-tool trial that share no file with the probes or the prompts
+- 2026-10-14 22:19 — finished 0553 by wording (full): https://github.com/abbyshade111/StackVet/pull/1957; now holds 0554
+- 2026-10-14 22:19 — finished 0554 by wording (full): https://github.com/abbyshade111/StackVet/pull/1959; now holds 0555
+- 2026-10-14 22:19 — finished 0544 by documentation (full): https://github.com/abbyshade111/StackVet/pull/1954; now holds 0540
+- 2026-10-14 22:19 — assigned 0556 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
+- 2026-10-14 22:19 — assigned 0557 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
+- 2026-10-14 22:19 — assigned 0533 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
+- 2026-10-14 22:19 — assigned 0530 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
+- 2026-10-14 22:19 — assigned 0534 to wording (full) as next: wording's next lane after the prompt items: the page's last two prompt changes, preflight's wording, a finding's title, and the Cursor settings file read like Claude's; no file shared with the probe sweeps
