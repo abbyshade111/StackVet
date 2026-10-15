@@ -804,6 +804,29 @@ pub(super) fn websocket_session_checks(
         );
         return;
     }
+    // A sign-out refused on a page of its own is under 400 too (backlog 0560, ADR-119): when the browser's own
+    // session still opens a private page after it, the WebSocket opening afterwards is not judged.
+    if let Some(page) = users.private.first()
+        && let Some(how) = super::signin::sign_out_may_be_refused(
+            http,
+            users,
+            &response,
+            &ending,
+            page,
+            "after-logout-websocket-browser",
+        )
+    {
+        say(
+            "V4.4.3",
+            format!(
+                "Whether signing out closes the private WebSocket: the sign-out was answered {how}, \
+                 and the browser's own session still opened {page} after it, so the sign-out may \
+                 have been refused on a page of its own rather than done."
+            ),
+            out,
+        );
+        return;
+    }
     for (k, path) in need_a_session {
         let sfx = suffix(k);
         let after = upgraded(http, &format!("after-sign-out{sfx}"), path, &before);
@@ -3458,6 +3481,7 @@ mod invented_beside_tests;
 #[cfg(test)]
 mod invented_pages_tests;
 #[cfg(test)]
+mod ws_sign_out_tests;
 mod timeout_page_tests;
 
 #[cfg(test)]
