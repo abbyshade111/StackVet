@@ -81,6 +81,9 @@ pub fn render(report: &Report) -> String {
                 Some(sv_check::finding::Outranked::NotHeldTo) => {
                     result["properties"]["notHeldTo"] = json!(true);
                 }
+                Some(sv_check::finding::Outranked::OtherFramework { framework }) => {
+                    result["properties"]["otherFramework"] = json!(framework);
+                }
                 None => {}
             }
             if !f.fingerprint.is_empty() {

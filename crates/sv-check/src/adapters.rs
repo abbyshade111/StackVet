@@ -241,6 +241,23 @@ pub struct MappedRule {
     /// The files it never reads, from its `paths.exclude`.
     #[serde(default)]
     pub skips: Vec<String>,
+    /// The web framework the rule is written for, when it is written for one: Semgrep's Django rule for a
+    /// form with no `{% csrf_token %}` fires on a Flask app's Jinja form that carries its token in a hidden
+    /// input (backlog 0521). A hit is listed apart when the app's package lists say it does not use it.
+    #[serde(default)]
+    pub framework: Option<RuleFramework>,
+}
+
+/// A framework a rule is written for, and how its use shows in an app's package lists.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RuleFramework {
+    /// Its name as a person says it ("Django").
+    pub name: String,
+    /// The package lists that would name it, by `sv_scan`'s name for them ("Python", "npm", "Ruby").
+    pub ecosystem: String,
+    /// The packages any one of which means the app uses it, compared without regard to case, `-` and `_`.
+    pub packages: Vec<String>,
 }
 
 impl MappedRule {
@@ -352,6 +369,17 @@ impl Adapters {
                 }
             }
             for (rule_id, rule) in &adapter.rules {
+                if let Some(f) = &rule.framework
+                    && (f.name.trim().is_empty()
+                        || f.ecosystem.trim().is_empty()
+                        || f.packages.is_empty())
+                {
+                    anyhow::bail!(
+                        "adapter `{}` rule `{rule_id}` names a framework without its name, its \
+                         package lists, or a package",
+                        adapter.id
+                    );
+                }
                 if let Some(both) = rule
                     .findings_against
                     .iter()
@@ -2203,6 +2231,49 @@ pub fn kept_help_uri(uri: &str) -> Option<String> {
             .all(|c| c.is_ascii_alphanumeric() || "-.:".contains(c))
         && uri.chars().all(plain))
     .then(|| uri.to_owned())
+}
+
+/// Lists apart each outside tool's finding from a rule written for a framework the app does not use (backlog
+/// 0521; ADR-111, Later): one the app's package lists in that framework's language were all read and none
+/// names. Nothing is set apart when no such list was read, or one could not be: then whether the app uses
+/// the framework is not known, and the finding counts as before. Nor when another tool found the same.
+pub fn set_apart_other_frameworks(
+    adapters: &Adapters,
+    findings: &mut [crate::Finding],
+    declared: &[sv_scan::deps::Declared],
+    unread: &[sv_scan::deps::Unread],
+) {
+    if !unread.is_empty() {
+        return;
+    }
+    let plain = |name: &str| name.to_lowercase().replace('_', "-");
+    for f in findings.iter_mut() {
+        if f.outranked.is_some() || !f.also_reported_by.is_empty() {
+            continue;
+        }
+        let framework = adapters.all().iter().find_map(|a| {
+            let rule = f.rule_id.strip_prefix(&format!("{}.", a.id))?;
+            a.rules.get(rule)?.framework.as_ref()
+        });
+        let Some(framework) = framework else {
+            continue;
+        };
+        let lists: Vec<&sv_scan::deps::Declared> = declared
+            .iter()
+            .filter(|d| d.ecosystem == framework.ecosystem)
+            .collect();
+        let named = lists.iter().any(|d| {
+            framework
+                .packages
+                .iter()
+                .any(|p| plain(p) == plain(&d.name))
+        });
+        if !lists.is_empty() && !named {
+            f.outranked = Some(crate::finding::Outranked::OtherFramework {
+                framework: framework.name.clone(),
+            });
+        }
+    }
 }
 
 /// Reads a SARIF 2.1.0 document into findings.

@@ -6,6 +6,7 @@ https://github.com/semgrep/semgrep-rules when semgrep's rules change:
 
     python3 tools/semgrep_rule_map.py /path/to/semgrep-rules
     python3 tools/semgrep_rule_map.py --targets /path/to/semgrep-rules   # only `targets` and `skips`
+    python3 tools/semgrep_rule_map.py --frameworks                       # only `framework`, from FRAMEWORKS
 
 A registry rule's id, and so the `ruleId` in semgrep's SARIF, is its file's path with dots for
 slashes, then its own id: `python/lang/security/audit/eval-detected.yaml` holding `eval-detected`
@@ -343,6 +344,45 @@ def read_rules(root):
     return out
 
 
+# The web frameworks a rule pack is written for, by the start of its rules' ids: the framework's name, the package
+# lists that would name it (`sv_scan`'s names for them), and the packages any one of which means the app uses it.
+# `sv` lists a rule's finding apart when the app's lists in that language were read and none names the framework
+# (backlog 0521; ADR-111, Later): Semgrep's Django rule for a form with no `{% csrf_token %}` fired on Flask and
+# FastAPI apps whose Jinja forms carry the token in a hidden input. A rule that reads only templates (`targets`)
+# is the template engine's rather than the framework's (Flask's are Jinja's, Express's EJS's and Pug's, Rails's
+# ERB's, each shared with other frameworks), so it keeps counting; Django's own template language is Django's.
+FRAMEWORKS = {
+    "python.django.": ("Django", "Python", ["django"], True),
+    "python.flask.": ("Flask", "Python", ["flask"], False),
+    "python.pyramid.": ("Pyramid", "Python", ["pyramid"], False),
+    "python.fastapi.": ("FastAPI", "Python", ["fastapi"], False),
+    "javascript.express.": ("Express", "npm", ["express"], False),
+    "typescript.nestjs.": ("NestJS", "npm", ["@nestjs/core"], False),
+    "ruby.rails.": ("Rails", "Ruby", ["rails", "railties", "actionpack"], False),
+    "php.laravel.": ("Laravel", "PHP", ["laravel/framework"], False),
+}
+
+
+def with_framework(entry, rule_id):
+    """`entry` with the framework its rule is written for, when `FRAMEWORKS` names one for it."""
+    entry.pop("framework", None)
+    for prefix, (name, ecosystem, packages, templates_too) in FRAMEWORKS.items():
+        if rule_id.startswith(prefix) and (templates_too or "targets" not in entry):
+            entry["framework"] = {"name": name, "ecosystem": ecosystem, "packages": packages}
+    return entry
+
+
+def frameworks_only(adapters_path):
+    """Writes `framework` onto the rules already mapped and changes nothing else."""
+    adapters = json.load(open(adapters_path, encoding="utf-8"))
+    entry = next(a for a in adapters["adapters"] if a["id"] == "semgrep")
+    for rule_id, mapped in entry["rules"].items():
+        with_framework(mapped, rule_id)
+    open(adapters_path, "w", encoding="utf-8", newline="\n").write(json.dumps(adapters, indent=2, ensure_ascii=False) + "\n")
+    named = sum(1 for m in entry["rules"].values() if "framework" in m)
+    print(f"{named} of {len(entry['rules'])} mapped rules are written for one web framework")
+
+
 def with_targets(entry, rule):
     """`entry` with the files `rule` reads, when its `paths` narrow them."""
     for key, name in (("include", "targets"), ("exclude", "skips")):
@@ -364,6 +404,7 @@ def targets_only(root, adapters_path):
             with_targets(mapped, by_id[rule_id])
         else:
             unknown.append(rule_id)
+        with_framework(mapped, rule_id)
     open(adapters_path, "w", encoding="utf-8", newline="\n").write(json.dumps(adapters, indent=2, ensure_ascii=False) + "\n")
     narrowed = sum(1 for m in entry["rules"].values() if "targets" in m or "skips" in m)
     print(f"{narrowed} of {len(entry['rules'])} mapped rules read only some files; "
@@ -375,6 +416,9 @@ def main():
     adapters_path = os.path.join(here, "..", "data", "adapters.json")
     if sys.argv[1] == "--targets":
         targets_only(sys.argv[2], adapters_path)
+        return
+    if sys.argv[1] == "--frameworks":
+        frameworks_only(adapters_path)
         return
     root = sys.argv[1]
     commit = subprocess.run(["git", "-C", root, "log", "-1", "--format=%h %cs"],
@@ -410,6 +454,8 @@ def main():
         sys.exit("AISVS families naming no rule:\n  " + "\n  ".join(sorted(families)))
     adapters = json.load(open(adapters_path, encoding="utf-8"))
     entry = next(a for a in adapters["adapters"] if a["id"] == "semgrep")
+    for rule_id, m in mapped.items():
+        with_framework(m, rule_id)
     entry["rules"] = mapped
     asvs = sum(1 for m in mapped.values() if m["requirements"])
     aisvs = sum(1 for i, m in mapped.items() if m.get("findings_against") and i.startswith("ai."))

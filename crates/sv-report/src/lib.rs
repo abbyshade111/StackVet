@@ -1669,8 +1669,14 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
     let not_held_to = apart
         .iter()
         .any(|f| f.outranked == Some(sv_check::finding::Outranked::NotHeldTo));
+    let other_framework = apart.iter().any(|f| {
+        matches!(
+            f.outranked,
+            Some(sv_check::finding::Outranked::OtherFramework { .. })
+        )
+    });
     let mut kinds: Vec<&str> = Vec::new();
-    if tests || !(libraries || look || not_held_to) {
+    if tests || !(libraries || look || not_held_to || other_framework) {
         kinds.push("in test or sample code");
     }
     if libraries {
@@ -1686,12 +1692,13 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
     if not_held_to {
         kinds.push("about requirements this app is not held to");
     }
+    if other_framework {
+        kinds.push("from rules written for a framework this app does not use");
+    }
     match kinds.as_slice() {
         [one] => (*one).to_owned(),
-        [first, second] => format!("{first}, or {second}"),
-        [first, second, third] => format!("{first}, {second}, or {third}"),
-        [first, second, third, fourth] => format!("{first}, {second}, {third}, or {fourth}"),
-        _ => unreachable!("one to four kinds"),
+        [first @ .., last] => format!("{}, or {last}", first.join(", ")),
+        [] => unreachable!("one kind at least"),
     }
 }
 
@@ -2153,6 +2160,11 @@ pub fn finding_notes(f: &sv_check::Finding) -> Vec<String> {
              if you mean to meet that requirement too."
                 .to_owned(),
         ),
+        Some(sv_check::finding::Outranked::OtherFramework { framework }) => notes.push(format!(
+            "From a rule written for {framework}, and this app's package lists do not name \
+             {framework}, so it is listed apart and decides nothing in the tables. If the app does use \
+             {framework}, add it to its package list and run `sv` again."
+        )),
         None => {}
     }
     if f.worth_a_look() {
@@ -3027,6 +3039,10 @@ pub fn mark_outranked(
 ) {
     use sv_check::finding::{Outranked, is_svs_own};
     for f in findings.iter_mut() {
+        // Set when the outside tools ran, from the app's package lists, which are not here to read again.
+        if matches!(f.outranked, Some(Outranked::OtherFramework { .. })) {
+            continue;
+        }
         f.outranked = None;
         let applies: Vec<&String> = f
             .requirement_ids
