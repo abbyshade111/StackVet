@@ -12,10 +12,9 @@ use std::path::Path;
 
 /// The options `sv review` may give `sv report`, each with whether a value follows it. Anything else in a report's
 /// record is refused, so the record can only ever ask for what the person could have typed for a report.
-const REPEATED: [(&str, bool); 7] = [
+const REPEATED: [(&str, bool); 6] = [
     ("--run", false),
     ("--slow", false),
-    ("--tools", false),
     ("--no-tools", false),
     ("--keep-tool-output", false),
     ("--advisories", true),
@@ -39,7 +38,10 @@ pub fn options_of(
             options.push("--slow".to_owned());
         }
     }
-    options.push(if run_tools { "--tools" } else { "--no-tools" }.to_owned());
+    // The outside tools run unless --no-tools (ADR-111), so only that is said.
+    if !run_tools {
+        options.push("--no-tools".to_owned());
+    }
     if keep_tool_output {
         options.push("--keep-tool-output".to_owned());
     }
@@ -194,17 +196,17 @@ pub fn write_again(
         )?;
         return Ok(());
     }
-    if options.iter().any(|o| o == "--run") {
-        if let Err(why) = starts_containers() {
-            writeln!(
-                out,
-                "\nWhat you recorded counts once the report is written again. The last one was written with --run, \
+    if options.iter().any(|o| o == "--run")
+        && let Err(why) = starts_containers()
+    {
+        writeln!(
+            out,
+            "\nWhat you recorded counts once the report is written again. The last one was written with --run, \
                  and the app cannot be started from here ({why}), so it is not written again here: a report written \
                  now would replace the running-app checks with *not assessed*. Run this where you wrote the last \
                  one: {command}"
-            )?;
-            return Ok(());
-        }
+        )?;
+        return Ok(());
     }
     writeln!(
         out,
@@ -224,7 +226,3 @@ pub fn write_again(
         ))),
     }
 }
-
-#[cfg(test)]
-#[path = "report_again_tests.rs"]
-mod tests;

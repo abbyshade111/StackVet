@@ -1,8 +1,8 @@
 //! The report written again after `sv review` with the options of the last one, and `sv report` saying so before it
 //! drops the running-app checks (backlog 0578).
 
-use super::*;
-use std::path::PathBuf;
+use crate::report_again::*;
+use std::path::{Path, PathBuf};
 use sv_check::test_support::scratch;
 
 /// A copy of the Flask example, with a report sealed in its default report folder whose run record keeps `options`
@@ -52,9 +52,10 @@ fn strings(words: &[&str]) -> Vec<String> {
 
 #[test]
 fn the_options_kept_are_those_that_change_the_report_with_paths_made_absolute() {
+    // The outside tools run unless --no-tools (ADR-111): nothing to say when they ran.
     assert_eq!(
         options_of(false, false, true, false, None, None),
-        strings(&["--tools"])
+        Vec::<String>::new()
     );
     // --slow means something only with --run.
     assert_eq!(
@@ -70,19 +71,13 @@ fn the_options_kept_are_those_that_change_the_report_with_paths_made_absolute() 
         Some(Path::new("codeql.sarif")),
     );
     assert_eq!(
-        kept[..5],
-        strings(&[
-            "--run",
-            "--slow",
-            "--tools",
-            "--keep-tool-output",
-            "--advisories"
-        ])[..]
+        kept[..4],
+        strings(&["--run", "--slow", "--keep-tool-output", "--advisories"])[..]
     );
-    assert!(Path::new(&kept[5]).is_absolute(), "{kept:?}");
-    assert!(kept[5].ends_with("advisories"), "{kept:?}");
-    assert_eq!(kept[6], "--codeql-results");
-    assert!(Path::new(&kept[7]).is_absolute(), "{kept:?}");
+    assert!(Path::new(&kept[4]).is_absolute(), "{kept:?}");
+    assert!(kept[4].ends_with("advisories"), "{kept:?}");
+    assert_eq!(kept[5], "--codeql-results");
+    assert!(Path::new(&kept[6]).is_absolute(), "{kept:?}");
 }
 
 #[test]
@@ -148,7 +143,7 @@ fn review_writes_the_report_again_with_the_options_of_the_last_one() {
         "{said}"
     );
     // Without --run in the last one, whether containers start does not matter.
-    let (plain, _) = app_with_report("again-plain", Some(strings(&["--tools"])));
+    let (plain, _) = app_with_report("again-plain", Some(Vec::new()));
     let mut ran = 0;
     write_again(
         &plain,
@@ -176,12 +171,12 @@ fn review_writes_the_report_again_with_the_options_of_the_last_one() {
 
 #[test]
 fn a_report_sv_cannot_show_it_wrote_is_not_run_from() {
-    let (app, folder) = app_with_report("changed", Some(strings(&["--run", "--tools"])));
+    let (app, folder) = app_with_report("changed", Some(strings(&["--run", "--no-tools"])));
     // Changed after its seal: what it asks for is not run, as the AI coding tool could have written it.
     let text = std::fs::read_to_string(folder.join("report.json")).unwrap();
     let mut report: serde_json::Value = serde_json::from_str(&text).unwrap();
     report["run_record"]["options"] =
-        serde_json::json!(["--run", "--tools", "--advisories", "/elsewhere"]);
+        serde_json::json!(["--run", "--no-tools", "--advisories", "/elsewhere"]);
     std::fs::write(folder.join("report.json"), report.to_string()).unwrap();
     assert!(last_options(&folder).is_err());
     let mut said = Vec::new();
@@ -228,7 +223,7 @@ fn a_report_without_run_over_one_with_it_is_said_and_never_refused() {
     // No report there yet: nothing to lose.
     assert_eq!(losing_the_run(&folder, false), None);
 
-    write(serde_json::json!({"run_record": {"options": ["--run", "--tools"]}}));
+    write(serde_json::json!({"run_record": {"options": ["--run", "--no-tools"]}}));
     let said = losing_the_run(&folder, false).expect("the running-app checks would be lost");
     assert!(said.contains("Add --run"), "{said}");
     assert!(said.contains("sv review"), "{said}");
@@ -238,7 +233,7 @@ fn a_report_without_run_over_one_with_it_is_said_and_never_refused() {
         "with --run nothing is lost"
     );
 
-    write(serde_json::json!({"run_record": {"options": ["--tools"]}}));
+    write(serde_json::json!({"run_record": {"options": []}}));
     assert_eq!(losing_the_run(&folder, false), None);
 
     // A report from before the options were kept: its run status says whether the app was asked to start.

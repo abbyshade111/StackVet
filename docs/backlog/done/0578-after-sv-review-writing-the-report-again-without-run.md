@@ -33,7 +33,7 @@ check), since `sv review` would start a run.
 **Done, 15 October 2026.** All three parts, as ADR-026's Later entry of today records:
 - `report.json` keeps the options it was written with (`run_record.options`), and `sv review` ends, when it recorded
   something, by writing the report again with them (`crates/sv-cli/src/report_again.rs`), saying the command first;
-  `--no-report` skips it. It takes them only from a report `sv` can show it wrote, and only the seven options that
+  `--no-report` skips it. It takes them only from a report `sv` can show it wrote, and only the six options that
   change what a report holds. Where the last report had `--run` and the app cannot be started here, as inside the
   container, it writes nothing and says where to run the command, so the review never trades the running-app checks
   for *not assessed*.

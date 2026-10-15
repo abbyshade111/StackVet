@@ -163,6 +163,7 @@ pub fn cmd_review(path: Option<PathBuf>, no_report: bool) -> Result<()> {
 /// `review`, then, when it changed a file the report reads, the report written again with the options of the last one
 /// by `run` (`sv report` with these arguments), unless `no_report` (backlog 0578): what is recorded counts only in a
 /// report written after it, and written again by hand without `--run` it lost the running-app checks.
+#[allow(clippy::too_many_arguments)]
 fn review_then_report(
     app_dir: &Path,
     key_folder: Option<PathBuf>,

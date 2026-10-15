@@ -914,7 +914,7 @@ pub struct RunRecord {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inputs: Option<RunInputs>,
     /// The options of `sv report` this report was written with that change what it holds (`--run`, `--slow`,
-    /// `--tools` or `--no-tools`, `--keep-tool-output`, `--advisories DIR`, `--codeql-results FILE`, each path made
+    /// `--no-tools`, `--keep-tool-output`, `--advisories DIR`, `--codeql-results FILE`, each path made
     /// absolute), so `sv review` can write it again the same way (backlog 0578). Left out of a report written another
     /// way (`sv bundle`, the MCP server) and of one made before it; empty for a report written with none of them.
     #[serde(skip_serializing_if = "Option::is_none")]

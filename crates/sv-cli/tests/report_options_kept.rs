@@ -43,7 +43,7 @@ fn a_report_keeps_its_options_and_says_when_it_drops_the_running_app_checks() {
     );
 
     // The last report had --run: this one is still written, and says what it drops first.
-    json["run_record"]["options"] = serde_json::json!(["--run", "--tools"]);
+    json["run_record"]["options"] = serde_json::json!(["--run", "--no-tools"]);
     std::fs::write(&path, json.to_string()).unwrap();
     let second = report();
     let stderr = String::from_utf8_lossy(&second.stderr).into_owned();
