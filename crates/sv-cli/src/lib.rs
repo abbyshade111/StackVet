@@ -1137,6 +1137,11 @@ pub mod report_again;
 
 pub mod before_live;
 
+pub mod hook_record;
+
+#[cfg(test)]
+mod hook_record_tests;
+
 #[cfg(test)]
 mod report_again_tests;
 

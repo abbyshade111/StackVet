@@ -37,3 +37,5 @@ stored"), and the Agent SDK treats the entries as opaque, so the first condition
 is built on 0566's hook instead, after it: the last thing the tool said each turn (`Stop`'s `last_assistant_message`)
 and each command it ran (`PostToolUse`'s `tool_input`), both documented hook fields. It covers only what happened after
 the person installed the hook.
+
+**0566 built, 15 October 2026 (wording):** the hook record is there (ADR-122); 0565 adds what it needs to it under a Later entry on that record. Decision 2 there keeps none of the tool's words; the owner's answer above already chose to read the last thing the tool said each turn, so 0565 keeps that, and the report still quotes none of it, only the mismatch.

@@ -1,6 +1,9 @@
 # Proposal: an independent action log from a hook the person installs, chained, with its tip sealed in the report
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026. `sv connect claude --hook` prints the hook (never writes it); `sv hook-record`
+keeps one chained line per command or file write, and per turn, outside the app's folder; `sv report --hook-record`
+reads it for that report alone, in a section that credits nothing, with the chain's end sealed in `report.json` and
+read against the last report's. ADR-122, accepted. 0565 is built on it next.
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
