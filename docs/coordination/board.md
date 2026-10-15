@@ -7,8 +7,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 ## Sessions
 
 - honesty — arm: full — holds: 0564 (since 2026-10-15) — next: 0579, 0598, 0495, 0571, 0232
-- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0588, 0580, 0581
-- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0574, 0585
+- wording — arm: full — holds: 0534 (since 2026-10-15) — next: 0565, 0566, 0580, 0581, 0592
+- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0585, 0594, 0595, 0596, 0601
 
 ## Queue
 
@@ -45,17 +45,12 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 31. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
 32. 0589 Proposal: a pre-deployment checklist as a report of its own, beside compliance.md and security.md — hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command)
 33. 0590 The report broken into short pages by what a person does with each, so things stop getting lost in one long file — hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints)
-34. 0592 The follow-up trial's protocol: the AI tool's MCP settings and the earlier app are part of the blank slate, and stackvet_status must name the new folder before prompt 5 — ready
-35. 0593 An unsealed `by = "owner"` entry is reported as the tool's word, but nothing tells the tool or the person that it was written by the tool — ready
-36. 0594 A contact address on a domain no mail reaches (`.local`, `.invalid`, `example.com`) clears the placeholder-contact check — ready
-37. 0595 A virtual environment inside the app folder makes three check families "partly" without saying that the cause is a venv — ready
-38. 0596 "Not a git repository" is said of a repository with no commits yet — ready
-39. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
-40. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
-41. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
-42. 0601 `ast.open-redirect` fires on `RedirectResponse(url="/")`: the literal-argument exemption does not see a keyword argument — ready
-43. 0602 Prompt 5's preview step installs packages and writes into the app's real database without a yes, and never opens the sign-in page — ready
-44. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
+34. 0593 An unsealed `by = "owner"` entry is reported as the tool's word, but nothing tells the tool or the person that it was written by the tool — ready
+35. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
+36. 0599 Every sv sign-up was refused by the app's own username rule, and the gap quotes nothing: nine requirements stopped — ready
+37. 0600 The count of requirements that rest on a capability the tool answered `false` is not shown, and this run had thirteen such answers — ready
+38. 0602 Prompt 5's preview step installs packages and writes into the app's real database without a yes, and never opens the sign-in page — ready
+39. 0572 The wrong-password check with no sign-up credits a push-back without trying the right password — ready
 
 ## Log
 
@@ -664,3 +659,10 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 11:50 — finished 0591 by wording (full): https://github.com/abbyshade111/StackVet/pull/2039; from its lane, behind 0534
 - 2026-10-15 11:50 — finished 0575 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2040; from its lane, behind 0509
 - 2026-10-15 11:50 — assigned 0581 to wording (full) into the lane after 0580: the owner's choice A of 15 October: sv connect --docker mounts the trusted list and the public key read-only; sv-cli, wording's; ADR-108 Later; back on the line now there is room
+- 2026-10-15 12:20 — finished 0588 by wording (full): https://github.com/abbyshade111/StackVet/pull/2042; from its lane, behind 0534
+- 2026-10-15 12:20 — finished 0574 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2043; from its lane, behind 0509
+- 2026-10-15 12:20 — assigned 0594 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites
+- 2026-10-15 12:20 — assigned 0595 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites
+- 2026-10-15 12:20 — assigned 0596 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites
+- 2026-10-15 12:20 — assigned 0601 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites
+- 2026-10-15 12:20 — assigned 0592 to wording (full) as next: the trial protocol's prompt 4 line (stop when stackvet_status names another folder); the prompt page, wording's

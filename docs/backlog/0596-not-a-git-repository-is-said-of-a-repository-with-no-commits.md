@@ -1,6 +1,6 @@
 # "Not a git repository" is said of a repository with no commits yet
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

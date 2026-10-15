@@ -1,6 +1,6 @@
 # A contact address on a domain no mail reaches (`.local`, `.invalid`, `example.com`) clears the placeholder-contact check
 
-**Status:** open
+**Status:** claimed by documentation, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

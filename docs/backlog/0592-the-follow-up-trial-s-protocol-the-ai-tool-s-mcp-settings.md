@@ -1,6 +1,6 @@
 # The follow-up trial's protocol: the AI tool's MCP settings and the earlier app are part of the blank slate, and stackvet_status must name the new folder before prompt 5
 
-**Status:** open
+**Status:** claimed by wording, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
