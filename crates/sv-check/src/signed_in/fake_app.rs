@@ -459,6 +459,8 @@ pub(super) struct Flaws {
     pub(super) recovery_change_without_password: bool,
     /// The phone, two-factor, and recovery changes answer as if they worked and change nothing.
     pub(super) account_change_does_nothing: bool,
+    /// The phone, two-factor, and recovery changes check the password only when it is sent (backlog 0561).
+    pub(super) account_change_password_only_if_given: bool,
     /// Booking reads how many seats are taken and writes the booking afterwards, so copies sent at
     /// the same instant all see the seat free (V2.3.4).
     pub(super) booking_races: bool,
@@ -1809,15 +1811,21 @@ impl FakeApp {
                 }
                 let kind = path.trim_start_matches("/account/").to_owned();
                 let f = form(r);
-                let (password, value) = (f.get("password")?.clone(), f.get("value")?.clone());
+                let value = f.get("value")?.clone();
                 let stored = self.users.get(&who)?.clone();
                 let unchecked = match kind.as_str() {
                     "phone" => self.flaws.phone_change_without_password,
                     "two-factor" => self.flaws.two_factor_change_without_password,
                     _ => self.flaws.recovery_change_without_password,
                 };
-                if !unchecked && !self.password_matches(&stored.0, &password) {
-                    return Some(Self::respond(403, vec![], "wrong password"));
+                match f.get("password") {
+                    None if !unchecked && !self.flaws.account_change_password_only_if_given => {
+                        return Some(Self::respond(400, vec![], "the password is needed"));
+                    }
+                    Some(password) if !unchecked && !self.password_matches(&stored.0, password) => {
+                        return Some(Self::respond(403, vec![], "wrong password"));
+                    }
+                    _ => {}
                 }
                 if !self.flaws.account_change_does_nothing {
                     self.account_details
