@@ -339,6 +339,12 @@
       "notApplicableReason": "No XML parser is used, so XML external entity (XXE) attacks are not possible."
     },
     {
+      "scope": "V12.1.3",
+      "condition": "mtls",
+      "source": "derived",
+      "notApplicableReason": "The app asks for no client certificate, so there is no certificate identity to validate before it is used."
+    },
+    {
       "scope": "V3.5.4",
       "condition": "shared-hostname",
       "source": "claim",

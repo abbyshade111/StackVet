@@ -70,3 +70,13 @@ line in the app; the report field), the two readings' scripts that rendered the 
 committed under `tools/` (they read the drive's folders by path and write no private text into the repository), and
 a "Limits" block in DATA.md beside those tables: one run per tool, one owner, three different models, three apps built
 to one brief but not one app, and nothing after prompt 6. Those limits are the paper's to state, not to hide.
+**The owner's answer, 15 October 2026 (asked through the board's waiting line):** neither (a) nor (b): the paper is not written yet, so the 4 October cut-off is arbitrary. Break the timeline at three milestones and build every table and figure per period, then combined tables for everything up to now: (1) version 1, up to the cut-over when v1 was tagged in GitHub (the tags v1-paper and v1-final; the promotion of sv to main on 26 September 2026); (2) version 2, from that cut-over to the renaming to StackVet; (3) StackVet, from the renaming to the day of the build. Take each boundary's date and commit from git (the tags, the promotion merge, the commit that renamed the project), name them in DATA.md, and say in every table which period a row is in. The paper's prose is the owner's to write against these.
+
+**The owner, 15 October 2026: a chart comparing the three models.** The three tools ran three different models
+(Antigravity: Gemini 3.8 Flash; Cursor: grok-4.7 with high reasoning; VS Code with Copilot: gpt-6-luna, chosen by its
+auto mode), so harness and model are confounded in the trial, and the tool that gamed two checks was also the one
+with the smallest model. Add one table and one figure comparing the three: vendor, the tier the vendor gives it
+(flash, mini, full, reasoning), release date, context window, published parameter count where one is published and
+"not published" where not, the reasoning setting used in the trial, and the price tier, each cell with its source (the
+vendor's own page, dated). No guessing a size the vendor has not published. Beside it, in the "Limits" block: the
+confound, in one sentence, and the follow-up trial that separates them (backlog 0577).

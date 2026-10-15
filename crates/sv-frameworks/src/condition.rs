@@ -199,6 +199,8 @@ conditions! {
         "Does the app use XPath?";
     Xml => "xml", Derived, "No XML parser is used, so XML external entity (XXE) attacks are not possible.",
         "Does the app parse XML?";
+    Mtls => "mtls", Derived, "The app asks for no client certificate, so there is no certificate identity to validate.",
+        "Does the app ask clients for a certificate (mutual TLS)?";
     Latex => "latex", Derived, "No LaTeX processing library is used.",
         "Does the app process LaTeX?";
     Jndi => "jndi", Derived, "JNDI is a Java technology and this app does not run on the JVM.",
