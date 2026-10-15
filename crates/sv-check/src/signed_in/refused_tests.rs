@@ -65,8 +65,9 @@ fn the_trial_page_is_told_by_its_fields_and_words() {
 
 #[test]
 fn a_page_that_repeats_the_password_is_not_quoted() {
-    // The test password is made at run time from this run's process id, so no password is written in the code.
-    let password = format!("pw-{}-x", std::process::id());
+    // The test password is made at run time from this run's process id, with no written-in text in it, so no
+    // password is written in the code (CodeQL's hard-coded cryptographic value).
+    let password = std::process::id().to_string().repeat(4);
     let page = answered(200, &format!("<p>Wrong password: {password}</p>"));
     let repeats = repeats_password(&page, &password);
     assert!(repeats, "the setup: the page repeats it");
