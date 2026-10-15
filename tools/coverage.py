@@ -711,7 +711,6 @@ RUST_IN_PART |= {
     "probe.app-token-expired-accepted",
     "probe.app-token-signature-not-checked",
     "probe.archive-unchecked",
-    "probe.authentication-logged",
     "probe.breached-password-accepted",
     "probe.clear-site-data",
     "probe.common-password-accepted",
