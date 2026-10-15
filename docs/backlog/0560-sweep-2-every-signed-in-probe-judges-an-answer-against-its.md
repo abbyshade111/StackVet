@@ -120,3 +120,9 @@ between tags, so two pages built from the same `<form>` and `<button>` are not t
 body, even an empty one, as the same page; the admin-page and private-page checks that use it are unchanged in their
 tests.
 
+**Eleventh batch, built (the identity header, part of list item 11):** each private page asked for with a header that
+names a user, and no session, is read beside the same page served to the signed-in user: the page shown is a finding
+as before; a 200 showing little of it ("unknown user", a sign-in form served with 200) is neither a finding nor a
+refusal, and says so. Without the user's page, a 2xx is a finding as before. Still open from item 11: the idle and
+lifetime timeouts, read by status class beside the busy and fresh sessions.
+
