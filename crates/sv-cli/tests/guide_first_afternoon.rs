@@ -2,7 +2,7 @@
 //! (steps 1 to 5, what you get, and where the report is) and links the rest: installing for `--run` and keeping up to
 //! date (`docs/INSTALL.md`), several apps over time (`docs/ALL-YOUR-APPS.md`), and the advisory downloads
 //! (`docs/KNOWN-VULNERABILITIES.md`). An install step that drifts back into the guide, a page it stops linking, or a
-//! guide grown back past its budget fails here.
+//! guide grown back past its budget (ADR-120) fails here.
 
 use std::path::Path;
 
@@ -40,7 +40,8 @@ fn the_guide_keeps_the_first_afternoon_and_links_the_later_days() {
     }
     let words = guide.split_whitespace().count();
     assert!(
-        words <= 4_200,
-        "the guide is {words} words; its first afternoon was under 4,000 when it was split"
+        words <= 4_500,
+        "the guide is {words} words; its first afternoon was under 4,000 when it was split, and the owner set the \
+         budget at 4,500 on 15 October 2026 (ADR-120)"
     );
 }
