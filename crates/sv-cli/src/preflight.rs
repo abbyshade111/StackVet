@@ -57,7 +57,7 @@ pub enum Part {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Item {
     /// What was looked at: `start`, `listen`, `port`, `seed`, `accounts`, `tables`, `path`, `field`, `users`,
-    /// `pages`.
+    /// `pages`, `install`, `build-install`, `test-runner`.
     pub topic: &'static str,
     pub answer: Answer,
     pub says: Vec<Part>,
@@ -683,6 +683,7 @@ pub fn of(app_dir: &Path) -> anyhow::Result<Found> {
     let mut items = preflight(&manifest, &source);
     items.extend(install(&manifest, app_dir));
     items.extend(build_installs(&manifest));
+    items.extend(test_runner::item(&manifest, app_dir));
     Ok((sorted(items), ahead(&manifest, &source), source.unread))
 }
 
@@ -827,6 +828,8 @@ fn installer_in(build: &str) -> Option<String> {
     }
     None
 }
+
+mod test_runner;
 
 #[cfg(test)]
 mod build_install_tests;
