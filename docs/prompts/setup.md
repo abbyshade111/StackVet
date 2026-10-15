@@ -388,7 +388,10 @@ walk you to it. Not yet tried in any AI tool. Paste this into the same chat, in 
 > say I am done, run stackvet_check again and tell me what changed.
 <!-- setup-step-7:end -->
 
-Then make the full report again (prompt 6), and the answers you recorded count as yours.
+When you record something, `sv review` then writes the report again itself, with the options of the last one,
+`--run` included, so the answers you recorded count as yours without a second run. Where it cannot do that (`--no-report`,
+a report it cannot show it wrote, or a computer that cannot start your app), it says so, and you make the full report
+again (prompt 6).
 
 Everything else StackVet can do, from answering its questions to keeping it up to date, is in
 [the guide](../GETTING-STARTED.md), from step 5.

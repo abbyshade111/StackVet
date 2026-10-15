@@ -302,7 +302,9 @@ It shows each answer that does not yet count as yours, asks your name or `owner`
 kept in your own settings folder; the first time, it asks for a passphrase to protect that key (press Enter to choose
 one, or type `none`). Only then does the report count the answer as yours: a line saying `owner` that was never recorded
 this way still counts as the tool's word, since a tool could write it too. A real
-finding is fixed in the code and checked again; recording it does not make it go away. `sv review` needs a terminal
+finding is fixed in the code and checked again; recording it does not make it go away. When you record something,
+`sv review` then writes the report again with the options of the last one, `--run` included, so your answers count
+without a second run; where it cannot, it says so and gives you the command. `sv review` needs a terminal
 someone is typing in, so your AI tool cannot run it for you. [`docs/REVIEW.md`](REVIEW.md) is the whole of it, with a
 picture of how a signature is made and checked.
 

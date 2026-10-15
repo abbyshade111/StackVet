@@ -215,7 +215,12 @@ fn run() -> Result<i32> {
         "dashboard" => finished(cmd_dashboard(rest)),
         "compare" => finished(sv_cli::compare::command(rest)),
         "history" => finished(history::command(rest)),
-        "review" => finished(review::cmd_review(rest.first().map(PathBuf::from))),
+        "review" => finished(review::cmd_review(
+            rest.iter()
+                .find(|a| !a.starts_with("--"))
+                .map(PathBuf::from),
+            rest.iter().any(|a| a == "--no-report"),
+        )),
         "bundle" => finished(cmd_bundle(rest)),
         "connect" => {
             print!("{}", sv_cli::connect::command(rest)?);
@@ -375,9 +380,9 @@ const COMMANDS: &[Command] = &[
     Command {
         name: "review",
         word: Some("PATH"),
-        flags: &[],
+        flags: &["--no-report"],
         valued: &[],
-        help: "  sv review [PATH]   record, in your own terminal, the findings you set aside, the answers\n                     you confirm, and your own answers and checks made by hand; only what\n                     you record here counts as yours\n",
+        help: "  sv review [PATH] [--no-report]\n                     record, in your own terminal, the findings you set aside, the answers\n                     you confirm, and your own answers and checks made by hand; only what\n                     you record here counts as yours\n                     when something was recorded, the report is written again with the\n                     options of the last one (--run included), unless --no-report\n",
     },
     Command {
         name: "bundle",
@@ -2779,6 +2784,20 @@ fn report_command(
         .collect::<Vec<_>>()
         .join(" ");
     let elsewhere = "give this run a folder of its own with --out";
+    // Said before the run, not instead of it: a report without the running-app checks over one that had them
+    // (backlog 0578).
+    if let Some(warning) = sv_cli::report_again::losing_the_run(&out_dir, run_the_app) {
+        eprintln!("{warning}\n");
+    }
+    // What this report is written with, for `sv review` to write it again the same way (backlog 0578).
+    let options = sv_cli::report_again::options_of(
+        run_the_app,
+        slow,
+        run_tools,
+        keep_tool_output,
+        advisories_dir.as_deref(),
+        codeql_results.as_deref(),
+    );
     let report_folder::ReportFolder {
         report, written, ..
     } = report_folder::write_report_folder(
@@ -2816,6 +2835,9 @@ fn report_command(
                 },
             )?;
             sv_cli::assemble::stage_finished(started.take());
+            if let Some(record) = report.run_record.as_mut() {
+                record.options = Some(options.clone());
+            }
             if let Some(b) = &baseline {
                 b.same_app(&report.app_name)?;
                 report.baseline = Some(b.note(&report.findings));

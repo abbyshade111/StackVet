@@ -52,6 +52,7 @@ pub fn run_record(started: SystemTime, manifest: &[u8]) -> sv_report::RunRecord 
         securevibe_toml_sha256: manifest_sha,
         run_id,
         inputs: None,
+        options: None,
     }
 }
 
@@ -715,6 +716,7 @@ mod tests {
             securevibe_toml_sha256: "a".repeat(64),
             run_id: String::new(),
             inputs: None,
+            options: None,
         };
         let newer = serde_json::json!({ "run_record": {
             "started": "then", "started_unix_ms": now - 30_000,
@@ -811,6 +813,7 @@ mod tests {
             securevibe_toml_sha256: "a".repeat(64),
             run_id: String::new(),
             inputs: None,
+            options: None,
         };
         let there = |start: u64| {
             std::fs::write(
