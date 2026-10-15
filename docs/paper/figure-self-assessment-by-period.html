@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Checks by Period</title>
+<style>
+:root { --ink: #1d1d1f; --muted: #5f6368; --rule: #d9d9de; --page: #fbfbfa; --tile: #f2f1ee;
+  --v1: #2a6fcf; --v2: #e8692f; --sv: #2f9e6e; --red: #d64545; --violet: #7a5bc4; --grey: #a3a19c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink: #ececf1; --muted: #a8adb4;
+  --rule: #3a3b40; --page: #17181b; --tile: #222327; --grey: #6e6c68; } }
+:root[data-theme="dark"] { --ink: #ececf1; --muted: #a8adb4; --rule: #3a3b40; --page: #17181b; --tile: #222327;
+  --grey: #6e6c68; }
+body { background: var(--page); color: var(--ink); font: 15px/1.55 system-ui, sans-serif; margin: 0 auto;
+  max-width: 980px; padding: 16px; }
+h1 { font-size: 22px; margin: 8px 0; } h2 { font-size: 17px; margin: 28px 0 6px; }
+p { margin: 6px 0 12px; } .muted, .note { color: var(--muted); } .note { font-size: 13px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 14px 0; }
+.tile { background: var(--tile); border-radius: 10px; padding: 12px 14px; }
+.tile b { display: block; font-size: 26px; line-height: 1.2; } .tile span { font-size: 13px; color: var(--muted); }
+.legend span { margin-right: 14px; font-size: 13px; } .legend i { display: inline-block; width: 10px; height: 10px;
+  margin-right: 5px; border-radius: 2px; vertical-align: -1px; }
+svg { width: 100%; height: auto; display: block; } svg text { fill: var(--muted); font-size: 11px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 8px 0; }
+td, th { border-bottom: 1px solid var(--rule); padding: 4px 6px; text-align: left; } td.n { text-align: right; }
+.scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>Each version checking itself, by period</h1>
+<p>The figure of the cut-off (<code>figure-self-assessment.html</code>) set three runs side by side: v1 on 20 September, <code>sv</code> on 27 September and on 4 October. Each is one dated record, placed here in its period. For v1, "left open" and "real" are the cut-off figure's; for <code>sv</code>, the open ones are the real ones.</p>
+<h2 style="border-left:6px solid var(--v1);padding-left:8px">version 1 <span class="muted" style="font-weight:normal;font-size:13px">2026-09-18 09:32 to 2026-09-26 20:46</span></h2><div class="scroll"><table aria-label="Self-checks in version 1"><tr><th>run</th><th>findings</th><th>false alarms</th><th>accepted, by design</th><th>left open</th><th>real</th></tr><tr><td>v1, 20 September</td><td class="n">195</td><td>160 (82%)</td><td class="n">21</td><td class="n">14</td><td class="n">2</td></tr></table></div><h2 style="border-left:6px solid var(--v2);padding-left:8px">version 2 <span class="muted" style="font-weight:normal;font-size:13px">2026-09-26 21:22 to 2026-10-08 20:30</span></h2><div class="scroll"><table aria-label="Self-checks in version 2"><tr><th>run</th><th>findings</th><th>false alarms</th><th>accepted, by design</th><th>left open</th><th>real</th></tr><tr><td>sv, 27 September, product code</td><td class="n">252</td><td>191 (76%)</td><td class="n">61</td><td class="n">0</td><td class="n">0</td></tr><tr><td>sv, 4 October, product code</td><td class="n">479</td><td>413 (86%)</td><td class="n">60</td><td class="n">6</td><td class="n">6</td></tr></table></div><h2 style="border-left:6px solid var(--sv);padding-left:8px">StackVet <span class="muted" style="font-weight:normal;font-size:13px">2026-10-08 20:59 to 2026-10-15 08:58</span></h2><p class="muted"><i>sv has not been run on itself, and triaged, in this period.</i></p>
+<p class="note">Sources: <code>self-assessment-v2/product-only/triage.json</code> and <code>self-assessment-v2/2026-10-04/product-only/triage.json</code>, counted here; v1's row is typed from the cut-off figure, whose source is v1's <code>artifacts/self-assessment/</code> at <code>v1-final</code>.</p>
+</body>
+</html>
