@@ -31,3 +31,22 @@ are exactly two: `requirements.txt` (with comment lines) and `stackvet.toml`; no
 lockfile, and nothing at depth 2 on the drive either. If `*.toml` is taken as a possible package list, `stackvet.toml`
 would be the one "that could not be read"; worth checking. The ten Django findings are in `findings`, V3.5.1
 "checked in part" from the forged-form probe, the app Flask 3.1.3.
+
+**Found, 15 October 2026 (honesty): the gate worked in the trial; the report's `findings` holds the findings listed
+apart too.** Driven end to end (`sv report --tools` on an app of this shape, `requirements.txt` with comments and
+`stackvet.toml` its only package files, with a stand-in Semgrep reporting the Django rule on its template), the Django
+finding is set apart: `report.json` marks it `"outranked": {"why": "other-framework", "framework": "Django"}`,
+`security.md` lists it under "from rules written for a framework this app does not use", and it decides nothing.
+`report.json`'s `findings` holds every finding, those listed apart included, each with its mark. The trial's own
+report says the same thing another way: V3.5.1 "checked in part". A finding there that counted would have made it
+"found a problem", since a finding beats every credit (`status_of`); only a finding listed apart
+(`Finding::withholds_credit`) leaves the credit standing. So the ten were set apart.
+
+Two things were corrected on the way, in the pull request that records this:
+- The gate held back when a package list in any language could not be read, though ADR-111 holds it back only for
+  one in the framework's language. Not this app's case (it has no unread list), but a real one: a Flask app with a
+  broken `package.json` in `static/` kept its Django findings counting. Tests:
+  `crates/sv-check/tests/other_framework_unread.rs`.
+- The orchestrator's second fault: the line on the bill of materials said "some of the app's package lists could not
+  be read" whenever the bill was not complete, and this app's was not complete only because it has no lockfile. It now
+  says which: lists unread, packages at the version asked for, or both.

@@ -1850,6 +1850,10 @@ pub struct SbomFile {
     pub components: usize,
     /// Whether every package manifest and lockfile was read.
     pub complete: bool,
+    /// The package lists that could not be read, and the packages listed at the version asked for rather than the
+    /// one installed, for want of a lockfile: why it is not complete, said as it is (backlog 0579).
+    pub unread_lists: usize,
+    pub at_asked_versions: usize,
 }
 
 /// Why `sbom.cdx.json` holds no packages when the report was made without a bill of materials, in the file and on the
@@ -1946,11 +1950,36 @@ pub fn sbom_line(report: &Report) -> String {
         s.components,
         if s.components == 1 { "" } else { "s" },
         if s.complete {
-            "from every package list and lockfile the app has"
+            "from every package list and lockfile the app has".to_owned()
         } else {
-            "not complete: some of the app's package lists could not be read, and the report says which"
+            incomplete_because(s)
         }
     )
+}
+
+/// Why the bill of materials is not complete, as it is: a list that could not be read, packages listed at the
+/// version asked for because no lockfile says which is installed, or both (backlog 0579). A lockfile missing is not
+/// a list unread, and the line said so for both until then.
+fn incomplete_because(s: &SbomFile) -> String {
+    let unread = (s.unread_lists > 0).then(|| {
+        format!(
+            "{} of the app's package lists could not be read, and the report says which",
+            if s.unread_lists == 1 { "one" } else { "some" }
+        )
+    });
+    let asked = (s.at_asked_versions > 0).then(|| {
+        format!(
+            "{} {} listed at the version asked for, since no lockfile says which version is installed",
+            s.at_asked_versions,
+            if s.at_asked_versions == 1 { "is" } else { "are" }
+        )
+    });
+    match (unread, asked) {
+        (Some(u), Some(a)) => format!("not complete: {u}, and {a}"),
+        (Some(u), None) => format!("not complete: {u}"),
+        (None, Some(a)) => format!("not complete: {a}"),
+        (None, None) => "not complete".to_owned(),
+    }
 }
 
 /// The lines of the app's code a finding is on, with the one before and after, as `sv` kept them redacted (backlog
@@ -2817,6 +2846,9 @@ mod build_loop_tail_tests;
 #[path = "outranked_in_part_tests.rs"]
 mod outranked_in_part_tests;
 
+#[cfg(test)]
+#[path = "sbom_incomplete_line_tests.rs"]
+mod sbom_incomplete_line_tests;
 #[cfg(test)]
 #[path = "sbom_not_made_tests.rs"]
 mod sbom_not_made_tests;

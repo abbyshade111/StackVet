@@ -2891,6 +2891,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         ))? + "\n",
         components: bill_of_materials.components.len(),
         complete: bill_of_materials.is_complete(),
+        unread_lists: bill_of_materials.unread.len(),
+        at_asked_versions: bill_of_materials.declared_count(),
     });
     // The lines each code finding is on, for "The code" under it (backlog 0378, part 2).
     report.code_lines = crate::code_lines::read(app_dir, &report.findings, secret_rules);
