@@ -1,6 +1,6 @@
 # The wrong-password check with no sign-up credits a push-back without trying the right password
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -19,3 +19,5 @@ the first private page). A refused: credited, and the credit says A was refused 
 finding, because a sound limit counting each name lets A in exactly as a limit refusing only wrong passwords does
 (ADR-119, Later). Tests: `crates/sv-check/src/signed_in/no_signup_right_password_tests.rs`. Left open for the board
 to close.
+
+**Closed by the board, 15 October 2026:** built by honesty and merged (PR 2018); honesty left the item open for the board to close.

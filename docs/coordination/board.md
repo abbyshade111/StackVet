@@ -6,9 +6,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0605, 0572, 0576, 0599, 0582
+- honesty — arm: full — holds: 0232 (since 2026-10-15) — next: 0490, 0605, 0576, 0599, 0582
 - wording — arm: full — holds: 0565 (since 2026-10-15) — next: 0566, 0589, 0590, 0603
-- documentation — arm: full — holds: 0509 (since 2026-10-15) — next: 0595, 0586, 0600
+- documentation — arm: full — holds: 0595 (since 2026-10-15) — next: 0586, 0600
 
 ## Queue
 
@@ -37,8 +37,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 23. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
 24. 0583 Semgrep's `logger-credential-leak` rule fires on lines that log only ids, and lands as findings — ready
 25. 0584 The run's test upload is not HTML, so an app that accepts only .html stops four upload requirements with no way to say what it accepts — ready
-26. 0539 The Docker image is built for amd64 only, so every start on an Apple Silicon Mac warns and runs under emulation — ready
-27. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
+26. 0597 Prompt 6's commit check clones the repository into a temporary folder without asking, and the design questions arrive with a "(Recommended)" answer pre-chosen — ready
+27. 0509 Whether CodeQL hides a result its lgtm or codeql comment marks, checked with a real run — hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
 
 ## Log
 
@@ -690,3 +690,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 14:38 — released 0605
 - 2026-10-15 14:39 — assigned 0603 to wording (full) as next: the owner's choice A of 15 October: prompt 5 and the guide match sv's question text on the tool's own hand checks; the prompt page and interview.rs, wording's
 - 2026-10-15 14:39 — assigned 0605 to honesty (full) into the lane after 0490: the owner's choice b of 15 October: the settings file the start command names is read for loosened settings; the rest of 0564, honesty's
+- 2026-10-15 14:45 — dropped 0539 from the queue
+- 2026-10-15 14:45 — withdrew 0509 from documentation (full), on hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)
+- 2026-10-15 14:45 — finished 0572 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2018; from its lane, behind 0232
