@@ -1,6 +1,6 @@
 # `sv review`'s key prompts led the owner to save the word "none" as the passphrase, and the unlock prompt gives no way out
 
-**Status:** claimed by wording, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -28,3 +28,18 @@ The owner's wish of 15 October: fix it.
 
 **Record.** ADR-043 (the signing key) Later: what the prompts say and that a passphrase cannot be one of the refusal
 words.
+
+**Done, 15 October 2026.** As the item asked, in `crates/sv-cli/src/review.rs`:
+- The first question is "Protect the key with a passphrase? (yes/no, Enter for yes)", with no word to type; an answer
+  that is neither yes nor no is asked again.
+- "Passphrase (anything but `none` or `no`)": `none`, `no`, `n`, or an empty line typed there brings "Did you mean no
+  passphrase? (yes/no)"; yes makes the key without one, and anything else asks for a passphrase again. None of them is
+  ever kept as a passphrase.
+- After one refused passphrase, the unlock prompt says, once, that a word typed when the key was made is the
+  passphrase, and how to move the key aside (the command, with the path) and make a new one without losing what was
+  recorded with the old.
+
+Tests: `crates/sv-cli/src/review/passphrase_prompts_tests.rs`, one per prompt path, the owner's own (`none` typed as the
+passphrase) among them; five breaks, each caught. ADR-043, a Later entry of today. The guide and `docs/REVIEW.md` say
+the new question. Not changed: a key already made with the passphrase `none` stays so; the unlock help says how to
+use it or replace it.
