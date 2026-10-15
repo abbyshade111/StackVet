@@ -11,7 +11,7 @@ const PRE_LOGIN_COOKIE: &str = "csrftoken";
 /// broken and to stay quiet when it is not.
 #[derive(Default)]
 pub(super) struct FakeApp {
-    flaws: Flaws,
+    pub(super) flaws: Flaws,
     /// Per account: its phone number, two-factor number, and recovery address, as
     /// `/account/details` shows them (ADR-105).
     account_details: BTreeMap<String, BTreeMap<String, String>>,
@@ -269,6 +269,9 @@ pub(super) struct Flaws {
     /// Refuses an upload with the same 201 "stored" a stored file gets, keeping nothing. Not a flaw: only
     /// fetching the file back tells the two apart (backlog 0560).
     pub(super) upload_refused_alike: bool,
+    /// Answers every note created with the redirect to its page, and keeps none. Not how a limit works:
+    /// here so the burst's first record is shown made before its answers are read (backlog 0560).
+    pub(super) notes_never_kept: bool,
     /// Not a flaw of the app's: the sign-in page has a Turkish heading and data-protection notice in
     /// capitals before its form, and each capital dotted `İ` grows from two bytes to three when
     /// lowered with `to_lowercase` (backlog 0278).
@@ -2793,6 +2796,10 @@ impl FakeApp {
                         ));
                     }
                     times.push(now);
+                }
+                if self.flaws.notes_never_kept {
+                    let next = format!("/notes/{}", self.notes.len() + 1);
+                    return Some(Self::respond(303, vec![("Location", next)], ""));
                 }
                 let owner = match form(r).get("user_id") {
                     Some(given) if self.flaws.owner_from_request => given.clone(),
