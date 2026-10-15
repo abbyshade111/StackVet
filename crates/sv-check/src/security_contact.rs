@@ -132,6 +132,14 @@ fn reserved(host: &str) -> Option<&'static str> {
         Some("that name is kept for examples and tests (RFC 2606) and reaches no one")
     } else if under("localhost") {
         Some("`localhost` is whichever computer reads it, not yours")
+    } else if under("local") {
+        // In the trial of 15 October 2026 an AI coding tool cleared the finding with an address on `.local`
+        // (backlog 0594).
+        Some(
+            "a `.local` name is found only on the network it is on (RFC 6762), so no mail from outside reaches it",
+        )
+    } else if host.starts_with("example.") {
+        Some("a name beginning `example.` is one made for examples, almost certainly a stand-in")
     } else if host.starts_with("your") {
         Some("it is a stand-in left to be filled in")
     } else {
@@ -142,3 +150,7 @@ fn reserved(host: &str) -> Option<&'static str> {
 #[cfg(test)]
 #[path = "security_contact_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "security_contact_unreachable_tests.rs"]
+mod unreachable_tests;
