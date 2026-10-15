@@ -19,3 +19,7 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   requirement off every ordinary app's "not verified" list honestly.
 
 **The owner's choice, 14 October 2026:** build it first of the three: the derived condition (does not apply, with the reason, for the app that asks for no client certificate) and the finding for a certificate accepted without a trust check. A Later line on the applicability record.
+
+**First part built, 15 October 2026 (honesty):** the derived condition `mtls`, gating V12.1.3 alone, with the reason
+"the app asks for no client certificate" (ADR-015, Later). Still to build: the finding for a client certificate
+accepted without a trust check (the ast rule for Go and Node, and nginx's `optional_no_ca`).
