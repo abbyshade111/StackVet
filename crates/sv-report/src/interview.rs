@@ -197,6 +197,34 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
     }
     out.push_str(&routes(item, fence));
     out.push_str(&pathways(item, fence));
+    out.push_str(&personal_fields(item, fence));
+    out
+}
+
+/// The fields the app's schema shows that look like personal data (backlog 0497), each piece of the app's text through
+/// `fence`, with the sentence that says they are where to look and not evidence.
+fn personal_fields(item: &Item, fence: &crate::fence::Fence) -> String {
+    let Some(found) = &item.personal_fields else {
+        return String::new();
+    };
+    let mut out = String::new();
+    if !found.fields.is_empty() {
+        out.push_str(&format!("   {}\n", sv_check::personal_fields::FIELDS_SAY));
+    }
+    for field in &found.fields {
+        out.push_str(&format!(
+            "     {} ({}, line {})\n",
+            fence.wrap(&field.name()),
+            fence.wrap(&field.file),
+            field.line
+        ));
+    }
+    if found.more > 0 {
+        out.push_str(&format!("     And {} more, not shown.\n", found.more));
+    }
+    if let Some(token) = &found.token {
+        out.push_str(&format!("   {}\n", fence.wrap(&token.said())));
+    }
     out
 }
 

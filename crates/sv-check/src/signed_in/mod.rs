@@ -234,6 +234,9 @@ pub struct Outcome {
     /// order run (backlog 0526): inside the suite, so counted in no total, and named so a slow check, or a limiter
     /// waited out, is told from a slow app.
     pub timings: Vec<(String, u64)>,
+    /// The field names in the readable part of the first account's sign-in token, when it is a JWT (backlog 0497).
+    /// Names only, never the values.
+    pub token_fields: Option<crate::personal_fields::TokenFields>,
 }
 
 /// An origin the app has certainly never heard of, for the forgery check.

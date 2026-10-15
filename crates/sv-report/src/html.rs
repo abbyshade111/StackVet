@@ -839,6 +839,7 @@ pub fn page(report: &Report) -> String {
                     + &in_the_packages(item)
                     + &routes(item)
                     + &pathways(item)
+                    + &personal_fields(item)
             ));
         }
         b.push_str("</table>\n");
@@ -1175,6 +1176,45 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
         ));
     }
     b.push_str("</ul>\n");
+}
+
+/// The fields the app's schema shows that look like personal data, beside a data-classification question (backlog
+/// 0497), with the sentence that says they are where to look and not evidence; empty when none was found.
+fn personal_fields(item: &sv_check::human::Item) -> String {
+    let Some(found) = &item.personal_fields else {
+        return String::new();
+    };
+    let mut b = String::new();
+    if !found.fields.is_empty() {
+        b.push_str(&format!(
+            "<br><span class=\"note\">{}</span>\n<ul>\n",
+            escape(sv_check::personal_fields::FIELDS_SAY)
+        ));
+    }
+    for field in &found.fields {
+        b.push_str(&format!(
+            "<li><code>{}</code> (<code>{}</code>, line {})</li>\n",
+            escape(&field.name()),
+            escape(&field.file),
+            field.line
+        ));
+    }
+    if !found.fields.is_empty() {
+        b.push_str("</ul>");
+    }
+    if found.more > 0 {
+        b.push_str(&format!(
+            "<span class=\"note\">And {} more, not shown.</span>",
+            found.more
+        ));
+    }
+    if let Some(token) = &found.token {
+        b.push_str(&format!(
+            "<br><span class=\"note\">{}</span>",
+            escape(&token.said())
+        ));
+    }
+    b
 }
 
 /// The ways into the app the code shows, beside a sign-in pathway question (backlog 0491), with the sentence that says

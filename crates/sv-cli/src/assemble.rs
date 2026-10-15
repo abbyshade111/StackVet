@@ -230,6 +230,8 @@ pub struct RunningApp {
     /// What the app answered, kept beside the report as `seen.json` (ADR-082). `None` when it
     /// was not asked anything.
     pub seen: Option<sv_report::seen::Seen>,
+    /// The field names in the first account's sign-in token, when it is a JWT (backlog 0497). Names only.
+    pub token_fields: Option<sv_check::personal_fields::TokenFields>,
     /// How long each suite of questions took, and the app's own tests (backlog 226, part 2, item
     /// 13). Empty when the app was not run.
     pub timings: Vec<(&'static str, u64)>,
@@ -420,6 +422,7 @@ pub fn assemble_report_saying(
                 probe_verified: Vec::new(),
                 test_verified: Vec::new(),
                 seen: None,
+                token_fields: None,
                 timings: Vec::new(),
                 request_timings: Vec::new(),
                 check_timings: Vec::new(),
@@ -1085,6 +1088,8 @@ fn running_app(
         sv_report::Examined::not_run("tests.", "the app's own tests run only with --run");
     let mut run_note = None;
     let mut seen = None;
+    // What the first account's sign-in token carries in plain sight, for the data-classification questions (backlog 0497).
+    let mut token_fields = None;
     let mut run_steps: Vec<String> = Vec::new();
     let mut suite_timings = Vec::new();
     let mut request_timings = Vec::new();
@@ -1146,6 +1151,10 @@ fn running_app(
                     &mut record,
                 );
                 crate::seen::signed_in(secret_rules, outcome.signed_in.as_ref(), &mut record);
+                token_fields = outcome
+                    .signed_in
+                    .as_ref()
+                    .and_then(|s| s.token_fields.clone());
                 // The AI suite's questions, with ids `ai-<kind>-<n>`, kept beside the signed-in suite's (backlog 0381).
                 crate::seen::signed_in(secret_rules, outcome.ai.as_ref(), &mut record);
                 crate::seen::liveness(secret_rules, &outcome.liveness, &mut record);
@@ -1487,6 +1496,7 @@ fn running_app(
         probe_verified,
         test_verified,
         seen,
+        token_fields,
         timings: suite_timings,
         request_timings,
         check_timings,
@@ -2649,6 +2659,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         test_output,
         tests_examined,
         seen,
+        token_fields,
         ..
     } = run;
     let PersonsWord {
@@ -2926,6 +2937,8 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     crate::code_lines::route_questions(listing, &mut report);
     // The ways into the app the code shows, beside the sign-in pathway questions (backlog 0491).
     crate::code_lines::pathway_questions(listing, &mut report);
+    // The fields that look like personal data, beside the data-classification questions (backlog 0497).
+    crate::code_lines::classification_questions(listing, token_fields, &mut report);
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped
     // here, so nothing past this point holds the app's code twice.
     if options.keep_tool_output {
