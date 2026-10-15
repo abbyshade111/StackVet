@@ -88,7 +88,7 @@ fn report() -> Report {
     ];
     report.before_going_live = crate::live::before_going_live(&report.requirements);
     report.undecided = vec![crate::UndecidedRequirement {
-        id: "V6.3.3".into(),
+        id: "V6.2.1".into(),
         description: "Multi-factor sign-in for every account".into(),
         chapter: "V6".into(),
         blocked_on: vec![
@@ -183,7 +183,7 @@ fn each_part_holds_what_the_report_found_for_it_in_the_order_of_a_deployment() {
             .contains("Does anyone sign in? Or: Is there an admin page?"),
         "{decide:?}"
     );
-    assert_eq!(decide[0].requirements, ["V6.3.3"]);
+    assert_eq!(decide[0].requirements, ["V6.2.1"]);
 
     let sign_off = of(&lines, Part::SignOff);
     // The key is in the first part, not here as well.
