@@ -1,6 +1,6 @@
 # The route table beside V8.1.1 reads Python decorators and Express calls only, and V8.1.2's field-level lists are not shown
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** claimed by orchestrator, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
