@@ -173,6 +173,7 @@
           "what": "a Jinja2 environment made with autoescape off, so values go into the HTML without output encoding",
           "requirements": [],
           "findings_against": [
+            "V1.1.2",
             "V1.2.1"
           ]
         },
@@ -180,6 +181,7 @@
           "what": "Mako templates, which put values into the HTML without output encoding unless each one is filtered",
           "requirements": [],
           "findings_against": [
+            "V1.1.2",
             "V1.2.1"
           ]
         },
@@ -187,6 +189,7 @@
           "what": "Django's mark_safe, which puts a value into the HTML without output encoding",
           "requirements": [],
           "findings_against": [
+            "V1.1.2",
             "V1.2.1"
           ]
         },
@@ -194,6 +197,7 @@
           "what": "markupsafe.Markup given text that is not fixed, which then goes into the HTML without output encoding",
           "requirements": [],
           "findings_against": [
+            "V1.1.2",
             "V1.2.1"
           ]
         },
@@ -3931,6 +3935,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "go"
           ]
@@ -5433,6 +5440,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "*"
           ],
@@ -5485,6 +5495,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "javascript",
             "typescript"
@@ -5501,6 +5514,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ],
           "languages": [
             "*"
@@ -5542,6 +5558,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ],
           "languages": [
             "*"
@@ -6076,6 +6095,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "javascript",
             "typescript"
@@ -6392,6 +6414,7 @@
             "*"
           ],
           "findings_against": [
+            "V1.1.2",
             "V3.2.2"
           ],
           "targets": [
@@ -7625,6 +7648,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "python"
           ],
@@ -7740,6 +7766,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "python"
           ],
@@ -7755,6 +7784,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ],
           "languages": [
             "python"
@@ -7788,6 +7820,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "python"
           ],
@@ -7819,6 +7854,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ],
           "languages": [
             "python"
@@ -7868,6 +7906,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "*"
           ],
@@ -7887,6 +7928,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "*"
           ],
@@ -7903,6 +7947,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "*"
           ],
@@ -7918,6 +7965,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ],
           "languages": [
             "*"
@@ -8677,6 +8727,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "python"
           ],
@@ -8725,6 +8778,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "python"
           ],
@@ -8741,6 +8797,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "*"
           ],
@@ -8752,6 +8811,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ],
           "languages": [
             "*"
@@ -8778,6 +8840,9 @@
           "requirements": [
             "V1.2.1"
           ],
+          "findings_against": [
+            "V1.1.2"
+          ],
           "languages": [
             "python"
           ]
@@ -8786,6 +8851,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ],
           "languages": [
             "python"
@@ -11181,6 +11249,7 @@
             "typescript"
           ],
           "findings_against": [
+            "V1.1.2",
             "V3.2.2"
           ]
         },
@@ -12080,6 +12149,9 @@
           "what": "HTML output built without output encoding for its context (cross-site scripting)",
           "requirements": [
             "V1.2.1"
+          ],
+          "findings_against": [
+            "V1.1.2"
           ]
         },
         "py/ldap-injection": {
