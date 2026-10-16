@@ -1144,6 +1144,8 @@ mod hook_record_tests;
 
 #[cfg(test)]
 mod hook_record_claims_tests;
+#[cfg(test)]
+mod hook_record_kinds_tests;
 
 #[cfg(test)]
 mod report_again_tests;

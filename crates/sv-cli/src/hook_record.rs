@@ -220,60 +220,199 @@ pub fn append(path: &Path, mut line: Value) -> Result<()> {
         .with_context(|| format!("writing {}", path.display()))
 }
 
-/// The kinds of claim `said` makes that the record can be read against (backlog 0565): today one, that the app's tests
-/// pass. A sentence claims it when it names tests and passing and says nothing of failing, of not passing, or of
-/// passing only some day or on some condition.
+/// The kinds of claim `said` makes (backlog 0565, 0607): that the app's tests pass, which the record is read against,
+/// and the claims about security in `sv_report::hook::CLAIM_KINDS`, which the report shows beside its own verdict for
+/// the requirements each speaks to. A sentence claims a kind when it names it, says it is done, and says nothing of not,
+/// of failing, or of doing it some day or on some condition. Only the kind is kept, never the words.
 pub fn claims_in(said: &str) -> Vec<&'static str> {
-    let claims_tests_pass = said
+    let mut out = Vec::new();
+    for sentence in said
         .split(['.', '!', '?', '\n', ';'])
         .map(str::to_lowercase)
-        .any(|sentence| {
-            let words: Vec<&str> = sentence
-                .split(|c: char| !c.is_alphanumeric() && c != '\'')
-                .filter(|w| !w.is_empty())
-                .collect();
-            let tests = words.iter().any(|w| w.starts_with("test"));
-            let pass = words
-                .iter()
-                .any(|w| matches!(*w, "pass" | "passes" | "passed" | "passing" | "green"));
-            let against = words.iter().any(|w| {
-                w.starts_with("fail")
-                    || matches!(
-                        *w,
-                        "not"
-                            | "no"
-                            | "don't"
-                            | "doesn't"
-                            | "didn't"
-                            | "won't"
-                            | "can't"
-                            | "couldn't"
-                            | "never"
-                            // An intention or a condition is not a claim that they do.
-                            | "will"
-                            | "i'll"
-                            | "should"
-                            | "would"
-                            | "could"
-                            | "might"
-                            | "need"
-                            | "needs"
-                            | "make"
-                            | "once"
-                            | "until"
-                            | "if"
-                            | "try"
-                            | "unless"
-                    )
-            });
-            tests && pass && !against
-        });
-    if claims_tests_pass {
-        vec![TESTS_PASS]
-    } else {
-        Vec::new()
+    {
+        let words: Vec<&str> = sentence
+            .split(|c: char| !c.is_alphanumeric() && c != '\'')
+            .filter(|w| !w.is_empty())
+            .collect();
+        if words.iter().any(|w| hedged(w)) {
+            continue;
+        }
+        let tests = words.iter().any(|w| w.starts_with("test"));
+        let pass = words
+            .iter()
+            .any(|w| matches!(*w, "pass" | "passes" | "passed" | "passing" | "green"));
+        if tests && pass && !out.contains(&TESTS_PASS) {
+            out.push(TESTS_PASS);
+        }
+        let done = words.iter().any(|w| DONE.contains(w)) || sentence.contains("in place");
+        if !done {
+            continue;
+        }
+        for (kind, phrases) in KIND_PHRASES {
+            if phrases.iter().any(|p| sentence.contains(p)) && !out.contains(kind) {
+                out.push(*kind);
+            }
+        }
     }
+    out
 }
+
+/// A word that keeps a sentence from claiming anything: a negation, a failure, an intention, or a condition.
+fn hedged(w: &str) -> bool {
+    w.starts_with("fail")
+        || matches!(
+            w,
+            "not"
+                | "no"
+                | "don't"
+                | "doesn't"
+                | "didn't"
+                | "won't"
+                | "can't"
+                | "couldn't"
+                | "never"
+                | "will"
+                | "i'll"
+                | "should"
+                | "would"
+                | "could"
+                | "might"
+                | "need"
+                | "needs"
+                | "make"
+                | "once"
+                | "until"
+                | "if"
+                | "try"
+                | "unless"
+                | "todo"
+                | "consider"
+        )
+}
+
+/// Words that say something is done.
+const DONE: &[&str] = &[
+    "added",
+    "adds",
+    "implemented",
+    "fixed",
+    "fixes",
+    "protected",
+    "protects",
+    "prevents",
+    "prevented",
+    "enabled",
+    "hashed",
+    "hashes",
+    "secured",
+    "guarded",
+    "validated",
+    "applied",
+    "configured",
+    "moved",
+    "escaped",
+    "escapes",
+    "parameterized",
+    "parameterised",
+    "sanitized",
+    "sanitised",
+    "uses",
+    "using",
+    "blocked",
+    "blocks",
+    "mitigated",
+    "handled",
+    "enforced",
+    "enforces",
+    "restricted",
+    "removed",
+];
+
+/// What names each kind of `sv_report::hook::CLAIM_KINDS`, lowercase, as a sentence may say it.
+const KIND_PHRASES: &[(&str, &[&str])] = &[
+    (
+        "rate-limiting",
+        &[
+            "rate limit",
+            "rate-limit",
+            "ratelimit",
+            "throttl",
+            "lockout",
+            "lock out",
+            "brute force",
+            "brute-force",
+        ],
+    ),
+    (
+        "cross-site-scripting",
+        &[
+            "xss",
+            "cross-site scripting",
+            "cross site scripting",
+            "html escap",
+            "output escap",
+            "output encod",
+        ],
+    ),
+    (
+        "forgery-token",
+        &["csrf", "xsrf", "forgery", "forged request"],
+    ),
+    (
+        "password-storage",
+        &[
+            "bcrypt",
+            "argon2",
+            "scrypt",
+            "pbkdf2",
+            "hashed password",
+            "hash password",
+            "password hash",
+            "hashes password",
+            "hashing password",
+            "passwords are hashed",
+        ],
+    ),
+    (
+        "sql-injection",
+        &[
+            "sql injection",
+            "sqli",
+            "parameterized quer",
+            "parameterised quer",
+            "prepared statement",
+        ],
+    ),
+    (
+        "command-injection",
+        &["command injection", "shell injection", "os injection"],
+    ),
+    (
+        "access-control",
+        &[
+            "access control",
+            "authorization check",
+            "authorisation check",
+            "permission check",
+            "role check",
+            "only admins",
+            "admin-only",
+            "admin only",
+        ],
+    ),
+    (
+        "secrets",
+        &[
+            "secret key",
+            "secrets",
+            "api key",
+            "hardcoded",
+            "hard-coded",
+            "environment variable",
+            ".env",
+        ],
+    ),
+];
 
 /// The claim that the app's tests pass.
 pub const TESTS_PASS: &str = "tests-pass";
@@ -369,6 +508,23 @@ pub fn read(path: &Path, earlier: Option<&sv_report::hook::Tip>) -> sv_report::h
             (Some("Stop"), _) => {
                 seen.turns += 1;
                 let claims = value["claims"].as_array().cloned().unwrap_or_default();
+                // The claims about security, counted by kind (backlog 0607); the report sets each beside its verdict.
+                for kind in claims
+                    .iter()
+                    .filter_map(|c| c.as_str())
+                    .filter(|c| *c != TESTS_PASS)
+                {
+                    if !sv_report::hook::CLAIM_KINDS.iter().any(|k| k.kind == kind) {
+                        continue;
+                    }
+                    match seen.said.iter_mut().find(|s| s.kind == kind) {
+                        Some(s) => s.turns += 1,
+                        None => seen.said.push(sv_report::hook::SaidKind {
+                            kind: kind.to_owned(),
+                            turns: 1,
+                        }),
+                    }
+                }
                 if claims.iter().any(|c| c == TESTS_PASS) {
                     seen.claims += 1;
                     let at = at.clone().unwrap_or_default();

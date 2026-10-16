@@ -18,7 +18,7 @@ fn each_claim_the_record_shows_otherwise_is_said_with_its_time_and_never_the_too
         ],
         ..Default::default()
     };
-    let (lines, _) = sentences(&seen);
+    let (lines, _) = sentences(&seen, &[]);
     let all = lines.join("\n");
     assert!(
         all.contains("The tool ended 3 turns saying the app's tests pass"),
@@ -45,10 +45,13 @@ fn each_claim_the_record_shows_otherwise_is_said_with_its_time_and_never_the_too
 
 #[test]
 fn claims_the_record_bears_out_are_counted_and_nothing_more() {
-    let (lines, _) = sentences(&HookSeen {
-        claims: 1,
-        ..Default::default()
-    });
+    let (lines, _) = sentences(
+        &HookSeen {
+            claims: 1,
+            ..Default::default()
+        },
+        &[],
+    );
     let all = lines.join("\n");
     assert!(all.contains("1 turn saying the app's tests pass"), "{all}");
     assert!(
@@ -56,6 +59,6 @@ fn claims_the_record_bears_out_are_counted_and_nothing_more() {
         "{all}"
     );
     assert!(!all.contains("At "), "{all}");
-    let (none, _) = sentences(&HookSeen::default());
+    let (none, _) = sentences(&HookSeen::default(), &[]);
     assert!(!none.join("\n").contains("tests pass"));
 }
