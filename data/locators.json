@@ -127,6 +127,19 @@
         "javascript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (string) @used)\n (arguments (template_string) @used)]",
         "typescript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (string) @used)\n (arguments (template_string) @used)]"
       }
+    },
+    {
+      "id": "locate.outside-addresses",
+      "questions": [
+        "V13.1.1"
+      ],
+      "finds": "web addresses written into the code: some are services the app connects to, and some are only links or the app's own address",
+      "names": "['\"`]https?://[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}\\b",
+      "queries": {
+        "python": "(string) @used",
+        "javascript": "[(string) @used\n (template_string) @used]",
+        "typescript": "[(string) @used\n (template_string) @used]"
+      }
     }
   ],
   "packages": [

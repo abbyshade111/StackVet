@@ -189,6 +189,82 @@ pub(crate) const DETAILS_SENT_ELSEWHERE: Rule = Rule {
           that means nothing outside the app, and say so in the privacy notice.",
 };
 
+pub(crate) const UNDECLARED_OUTSIDE_SERVICE: Rule = Rule {
+    rule_id: "probe.undeclared-outside-service",
+    requirement_ids: &["V13.1.1"],
+    cwe: &["CWE-1059"],
+    impact: "A page of the app reaches another site that the app's list of the services it talks to does not name, so \
+             that list is not the whole of what the app communicates with, and whatever the page sends there goes \
+             somewhere nobody wrote down.",
+    fix: "Add each of these sites to `external-apis` under `[stack]` in stackvet.toml, and say in the security notes \
+          what the app uses it for. If a site should not be reached at all, take out of the page whatever loads it.",
+};
+
+/// V13.1.1 (backlog 0496): the other sites the signed-in pages tried to reach, as the run saw them, compared with the
+/// sites `[stack] external-apis` names. A site named there counts for itself and for every site under it
+/// (`stripe.com` counts for `js.stripe.com`). Only ever a finding: the browser sees what the pages ask for, never what
+/// the server asks for, so a clean comparison says nothing about the whole list. Returns what was found and a line
+/// for the run's steps, which says why nothing was compared when nothing was; the line is `None` when the browser
+/// listed nothing to compare.
+pub fn undeclared_outside_services(
+    seen: Option<&[String]>,
+    declared: Option<&[String]>,
+) -> (Vec<crate::Finding>, Option<String>) {
+    let Some(seen) = seen.filter(|s| !s.is_empty()) else {
+        return (Vec::new(), None);
+    };
+    let Some(declared) = declared else {
+        return (
+            Vec::new(),
+            Some(format!(
+                "the signed-in pages tried to reach {}; not compared with the app's list of outside services, because \
+                 stackvet.toml's `external-apis` under `[stack]` is not filled in",
+                seen.join(", ")
+            )),
+        );
+    };
+    let named = |host: &str| {
+        let host = host.to_ascii_lowercase();
+        declared.iter().any(|d| {
+            let d = d.trim().trim_end_matches('.').to_ascii_lowercase();
+            !d.is_empty() && (host == d || host.ends_with(&format!(".{d}")))
+        })
+    };
+    let undeclared: Vec<&str> = seen
+        .iter()
+        .map(String::as_str)
+        .filter(|h| !named(h))
+        .collect();
+    if undeclared.is_empty() {
+        return (
+            Vec::new(),
+            Some(format!(
+                "every site the signed-in pages tried to reach is named in stackvet.toml's `external-apis`: {}",
+                seen.join(", ")
+            )),
+        );
+    }
+    let list = undeclared.join(", ");
+    let finding = finding(
+        &UNDECLARED_OUTSIDE_SERVICE,
+        "A page reaches a site the app's list of outside services does not name",
+        Severity::Low,
+        format!(
+            "In a real browser, signed in as the first test user, the app's pages tried to reach {list}, which \
+             stackvet.toml's `external-apis` under `[stack]` does not name. The fence stopped each request, so \
+             nothing reached it; the app as it runs elsewhere would."
+        ),
+    );
+    (
+        vec![finding],
+        Some(format!(
+            "the signed-in pages tried to reach {} site{} that stackvet.toml's `external-apis` does not name: {list}",
+            undeclared.len(),
+            if undeclared.len() == 1 { "" } else { "s" }
+        )),
+    )
+}
+
 /// The mark put in the typed text, so it can be found again: made from the run's own randomness,
 /// but not a piece of it, since pieces of that are the test accounts' passwords.
 pub(crate) fn token(spare: &str) -> String {
@@ -642,6 +718,7 @@ fn details_sent_elsewhere(
             hosts.push(host);
         }
     }
+    out.outside_hosts = Some(hosts.clone());
     if hosts.is_empty() {
         out.steps.push(
             "no signed-in page tried to reach another site from the browser; a server that sends \
@@ -2108,3 +2185,6 @@ mod tests {
         assert!(markup_question(&t).contains(&format!("\"{t}\"")));
     }
 }
+
+#[cfg(test)]
+mod outside_services_tests;

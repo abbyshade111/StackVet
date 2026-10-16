@@ -1,6 +1,6 @@
 # Outside services the code names and the run saw, beside the communication question, and an undeclared one reported
 
-**Status:** open
+**Status:** partly done: V13.2.5's pointer to outbound rules in the folder's infrastructure files (a Kubernetes NetworkPolicy with egress, a security group's outbound rules, a compose network marked internal) is not built: locators read code, not YAML or Terraform; the hand check already gives the route-5 reason
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

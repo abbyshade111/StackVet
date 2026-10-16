@@ -217,6 +217,7 @@ RUST_CHECKS = {
     "probe.text-rendered-as-markup": ("signed-in", ["V3.2.2"]),
     "probe.storage-kept-after-sign-out": ("signed-in", ["V14.3.1"]),
     "probe.account-details-sent-elsewhere": ("signed-in", ["V14.2.3"]),
+    "probe.undeclared-outside-service": ("signed-in", ["V13.1.1"]),
     "probe.preflight-skipped": ("signed-in", ["V3.5.2"]),
     "probe.session-id-weak": ("signed-in", ["V7.2.3"]),
     "probe.session-token-static": ("signed-in", ["V7.2.2"]),
@@ -331,6 +332,8 @@ RUST_FINDINGS_ONLY = {
     "probe.unused-method-accepted",
     "probe.version-disclosed",
     "probe.account-details-sent-elsewhere",
+    # Only what the pages ask for is seen, never what the server asks for (backlog 0496).
+    "probe.undeclared-outside-service",
     "probe.activation-code-guessable",
     "probe.activation-link-reusable",
     "probe.default-account",

@@ -33,8 +33,9 @@ fn all_found(dir: &Path) -> Vec<String> {
 fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
     let examples = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples");
     let expected: &[(&str, &[&str])] = &[
-        // 34 lines, no authorization code.
-        ("flask-booking", &[]),
+        // 34 lines, no authorization code; its payment's success link is an address written into the code (backlog
+        // 0496).
+        ("flask-booking", &["locate.outside-addresses app.py:32"]),
         // Inline checks: the admin page refused with a 403 and an `authorization-refused` event (209, 210), each note
         // read only with its owner (241). The other 403s refuse a forged form (`if self.forged(...)`) or a wrong
         // password (`hash_password(...)`), and are left out by `unless` (backlog 0518). 316 and 336 delete and move a

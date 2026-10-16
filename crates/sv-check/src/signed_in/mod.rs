@@ -245,6 +245,10 @@ pub struct Outcome {
     /// The field names in the readable part of the first account's sign-in token, when it is a JWT (backlog 0497).
     /// Names only, never the values.
     pub token_fields: Option<crate::personal_fields::TokenFields>,
+    /// The other sites the signed-in pages tried to reach in a real browser, which the fence stopped, by host name
+    /// (backlog 0496). `None` when the browser did not list them; compared with `[stack] external-apis` by
+    /// `crate::browser::undeclared_outside_services`.
+    pub outside_hosts: Option<Vec<String>>,
 }
 
 /// An origin the app has certainly never heard of, for the forgery check.
