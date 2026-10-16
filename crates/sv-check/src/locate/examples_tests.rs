@@ -66,6 +66,8 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
                 "locate.dangerous-places app.py:353",
                 "locate.dangerous-places app.py:360",
                 "locate.dangerous-places seed.py:16",
+                // Its password hashing, 200,000 rounds of PBKDF2 (backlog 0498).
+                "locate.heavy-work app.py:45",
                 "locate.owner-checks app.py:241",
                 "locate.owner-checks app.py:316",
                 "locate.owner-checks app.py:336",

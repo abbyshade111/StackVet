@@ -399,3 +399,6 @@ mod package_locator_tests;
 
 #[cfg(test)]
 mod encoding_tests;
+
+#[cfg(test)]
+mod availability_tests;
