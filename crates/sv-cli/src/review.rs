@@ -127,6 +127,9 @@ enum Waiting {
     /// The account changes `[stack.run.users] not-offered` lists, offered for the owner to confirm
     /// (ADR-105).
     NotOffered,
+    /// `[policy] fix-within-days`, offered for the owner to confirm as V15.1.1's documented time
+    /// frames (backlog 0498).
+    Policy,
 }
 
 pub fn cmd_review(path: Option<PathBuf>, no_report: bool) -> Result<()> {
@@ -592,6 +595,9 @@ fn review(
         .as_ref()
         .is_some_and(|u| !u.not_offered.is_empty())
         && !counts(&manifest, &Waiting::NotOffered, &checker);
+    // The time frames for fixing a known vulnerability, asked about last (backlog 0498).
+    let policy_waiting =
+        manifest.policy.fix_within_days.is_some() && !counts(&manifest, &Waiting::Policy, &checker);
     for (which, (catalog, path)) in files.iter().enumerate() {
         if let Some(text) = notes_text(path)? {
             let answers = sv_check::notes::read_answers(catalog, &text);
@@ -647,6 +653,18 @@ fn review(
         }
         if not_offered_waiting {
             confirm_not_offered(
+                &manifest,
+                &manifest_path,
+                &mut doc,
+                today,
+                &key,
+                &checker,
+                input,
+                out,
+            )?;
+        }
+        if policy_waiting {
+            confirm_policy(
                 &manifest,
                 &manifest_path,
                 &mut doc,
@@ -769,7 +787,7 @@ fn review(
                     None => None,
                 }
             }
-            Waiting::Scope | Waiting::NotOffered => {
+            Waiting::Scope | Waiting::NotOffered | Waiting::Policy => {
                 unreachable!("asked after the list, never in it")
             }
             Waiting::LeftOut(i) => {
@@ -897,6 +915,18 @@ fn review(
             out,
         )?;
     }
+    if policy_waiting {
+        confirm_policy(
+            &manifest,
+            &manifest_path,
+            &mut doc,
+            today,
+            &key,
+            &checker,
+            input,
+            out,
+        )?;
+    }
     // Last, the checklist before going live, line by line, from the last sealed report (backlog 0604).
     ticks::tick_checklist(
         app_dir,
@@ -1011,7 +1041,7 @@ fn sign_again(
                 set_seal(doc, "checked-by-hand", id, &seal)?;
                 in_manifest.push(which);
             }
-            Waiting::Scope | Waiting::NotOffered => {
+            Waiting::Scope | Waiting::NotOffered | Waiting::Policy => {
                 unreachable!("asked after the list, never in it")
             }
             Waiting::LeftOut(i) => {
@@ -1642,6 +1672,115 @@ fn record_not_offered(
     }
 }
 
+/// `[policy] fix-within-days`, asked about after the account changes, and saved when the owner confirms it as the
+/// documented time frames V15.1.1 asks for (backlog 0498).
+#[allow(clippy::too_many_arguments)]
+fn confirm_policy(
+    manifest: &sv_manifest::Manifest,
+    manifest_path: &Path,
+    doc: &mut toml_edit::DocumentMut,
+    today: Day,
+    key: &Signer,
+    checker: &Checker,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<()> {
+    writeln!(
+        out,
+        "\nOne more: how soon a known vulnerability in your app's packages is fixed."
+    )?;
+    if let Some(entry) = record_policy(manifest, today, key, input, out)? {
+        set_policy(doc, &entry);
+        save(manifest_path, doc, &|m| {
+            counts(m, &Waiting::Policy, checker)
+        })?;
+    }
+    Ok(())
+}
+
+/// `fix-within-days`, shown for the owner to confirm (backlog 0498): the entry to write, sealed, or `None` when they
+/// leave it unconfirmed.
+fn record_policy(
+    manifest: &sv_manifest::Manifest,
+    today: Day,
+    key: &Signer,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<Option<sv_manifest::PolicyReview>> {
+    let Some(days) = manifest.policy.fix_within_days.clone() else {
+        return Ok(None);
+    };
+    writeln!(
+        out,
+        "stackvet.toml says a known vulnerability in the app's packages is fixed: {}.\n  \
+         `[policy] fix-within-days`\nYour AI coding tool can write this as well as you can, so it counts as your \
+         documented time frames (ASVS V15.1.1) only once you confirm it. A severity left out has no \
+         time frame. Changed later, it is unconfirmed again.",
+        days.said()
+    )?;
+    loop {
+        let Some(answer) = ask(
+            input,
+            out,
+            "Type `owner` if these are the time frames you hold the app to, to confirm; or press \
+             Enter to leave them unconfirmed.\n> ",
+        )?
+        else {
+            return Ok(None);
+        };
+        if answer.is_empty() {
+            writeln!(out, "  Left unconfirmed.")?;
+            return Ok(None);
+        }
+        if !answer.eq_ignore_ascii_case(sv_check::design::OWNER) {
+            writeln!(
+                out,
+                "  Only the app's owner can say how soon its vulnerabilities are fixed. Type `owner` \
+                 if that is you."
+            )?;
+            continue;
+        }
+        let mut entry = sv_manifest::PolicyReview {
+            fix_within_days: days,
+            by: sv_check::design::OWNER.to_owned(),
+            on: today.show(),
+            seal: None,
+        };
+        entry.seal = Some(
+            key.seal(&sv_check::seal::as_strs(
+                &sv_check::seal::policy_review_fields(&entry),
+            ))
+            .map_err(anyhow::Error::msg)?,
+        );
+        writeln!(out, "  Confirmed as your answer.")?;
+        return Ok(Some(entry));
+    }
+}
+
+/// `[policy-review]`, written whole, in place of what was there.
+fn set_policy(doc: &mut toml_edit::DocumentMut, entry: &sv_manifest::PolicyReview) {
+    let mut days = toml_edit::InlineTable::new();
+    let f = &entry.fix_within_days;
+    for (name, value) in [
+        ("critical", f.critical),
+        ("high", f.high),
+        ("medium", f.medium),
+        ("low", f.low),
+    ] {
+        if let Some(d) = value {
+            days.insert(name, i64::from(d).into());
+        }
+    }
+    let mut table = toml_edit::Table::new();
+    table.insert("fix-within-days", toml_edit::value(days));
+    table.insert("by", toml_edit::value(&entry.by));
+    table.insert("on", toml_edit::value(&entry.on));
+    if let Some(seal) = &entry.seal {
+        table.insert("seal", toml_edit::value(seal));
+    }
+    doc.insert("policy-review", toml_edit::Item::Table(table));
+}
+
 /// `[account-changes-review]`, written whole, in place of what was there.
 fn set_not_offered(doc: &mut toml_edit::DocumentMut, entry: &sv_manifest::AccountChangesReview) {
     let mut table = toml_edit::Table::new();
@@ -1918,6 +2057,13 @@ fn counts(manifest: &sv_manifest::Manifest, which: &Waiting, checker: &Checker) 
         }),
         Waiting::Notes(..) | Waiting::NotesConfirm(..) => false,
         Waiting::LeftOut(i) => left_out_recorded(manifest, *i, checker).is_ok(),
+        Waiting::Policy => manifest.policy_review.as_ref().is_some_and(|entry| {
+            let fields = sv_check::seal::policy_review_fields(entry);
+            entry.still_holds_for(manifest)
+                && checker
+                    .check(entry.seal.as_deref(), &sv_check::seal::as_strs(&fields))
+                    .is_ok()
+        }),
         Waiting::NotOffered => manifest
             .account_changes_review
             .as_ref()
@@ -2031,6 +2177,9 @@ mod passphrase_tests;
 
 #[cfg(test)]
 mod scope_tests;
+
+#[cfg(test)]
+mod policy_tests;
 
 #[cfg(test)]
 mod mine_tests;
