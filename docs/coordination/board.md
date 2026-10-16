@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- orchestrator — arm: full — holds: 0488 (since 2026-10-15) — next: 0498, 0489, 0496, 0499, 0500, 0608
+(none yet: `session add <name> --arm full|none`)
 
 ## Queue
 
@@ -784,3 +784,17 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 22:24 — released 0608
 - 2026-10-15 22:24 — assigned 0608 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
 - 2026-10-15 22:24 — session honesty removed
+- 2026-10-15 23:20 — finished 0488 by orchestrator (full): 2108; now holds 0498
+- 2026-10-15 23:20 — withdrew 0498 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board
+- 2026-10-15 23:20 — withdrew 0489 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board
+- 2026-10-15 23:20 — withdrew 0496 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board
+- 2026-10-15 23:20 — withdrew 0499 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board
+- 2026-10-15 23:20 — withdrew 0500 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board
+- 2026-10-15 23:20 — withdrew 0608 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board
+- 2026-10-15 23:20 — session orchestrator removed
+- 2026-10-15 23:20 — dropped 0498 from the queue
+- 2026-10-15 23:20 — dropped 0489 from the queue
+- 2026-10-15 23:20 — dropped 0496 from the queue
+- 2026-10-15 23:20 — dropped 0499 from the queue
+- 2026-10-15 23:20 — dropped 0500 from the queue
+- 2026-10-15 23:20 — dropped 0608 from the queue
