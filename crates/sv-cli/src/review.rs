@@ -1712,8 +1712,8 @@ fn record_policy(
     };
     writeln!(
         out,
-        "stackvet.toml says a known vulnerability in the app's packages is fixed: {}.\n  [policy] \
-         fix-within-days\nYour AI coding tool can write this as well as you can, so it counts as your \
+        "stackvet.toml says a known vulnerability in the app's packages is fixed: {}.\n  \
+         `[policy] fix-within-days`\nYour AI coding tool can write this as well as you can, so it counts as your \
          documented time frames (ASVS V15.1.1) only once you confirm it. A severity left out has no \
          time frame. Changed later, it is unconfirmed again.",
         days.said()
