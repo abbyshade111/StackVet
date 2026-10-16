@@ -29,7 +29,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0370-the-made-up-session-on-every-listed-private-page-12-october.md`): the made-up session is tried on
    every listed private page, and its credit is whole only when two or more were tried and all refused.
-   **Part status:** partly done: the cookies, renewal, and fixed session of one sign-in, and the one sign-out, wait for the manifest to name each way of signing in
+   **Part status:** partly done: the cookies, renewal, and fixed session are now judged after the form's sign-in and after a sign-in through another service (ADR-053, Later, 16 October 2026); the one sign-out, and ways in a run cannot drive (an API key, a magic link), wait
 3. **C. Each form, flow, and connection.** Cross-site requests tried on each changing route the app answers, each
    step of a flow, and each WebSocket path, not one request.
    **Scope of this claim (12 October 2026):** the cross-site check (`probe.cross-site-request-accepted`, V3.5.1,
