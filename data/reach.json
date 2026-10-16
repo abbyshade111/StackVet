@@ -82,6 +82,9 @@
   "C12.4.2": [
    "running"
   ],
+  "V1.1.2": [
+   "tools"
+  ],
   "V1.2.1": [
    "tools",
    "opt-in"
@@ -519,6 +522,7 @@
   ]
  },
  "tools_languages": {
+  "V1.1.2": [],
   "V1.2.1": [
    "*",
    "go",
@@ -809,6 +813,12 @@
     "run": "Outside tools",
     "looks_for": "HTML output built without output encoding for its context (cross-site scripting); content rendered as HTML with innerHTML, document.write, dangerouslySetInnerHTML or v-html, rather than a safe rendering function",
     "finding_only": true
+   },
+   {
+    "id": "config.template-engine-escapes",
+    "run": "Outside tools",
+    "looks_for": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was re...",
+    "finding_only": false
    },
    {
     "id": "codeql-python",

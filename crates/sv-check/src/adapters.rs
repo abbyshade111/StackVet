@@ -609,6 +609,9 @@ pub struct AdapterRun {
     pub stood_in: Vec<(String, String)>,
     /// Each adapter asked, by id, with what its tool was and how its run went (`ToolRun`).
     pub tools: Vec<(String, ToolRun)>,
+    /// Each adapter that ran, by id, with the rules its report says ran, found or not: what a
+    /// credit resting on some of its rules reads (`template_escaping`, backlog 0613).
+    pub loaded: Vec<(String, BTreeSet<String>)>,
 }
 
 /// Whether the tool is here, and whether it works.
@@ -1768,6 +1771,7 @@ pub fn run_all_in(
                     }
                 }
                 run.findings.extend(findings);
+                run.loaded.push((adapter.id.clone(), loaded));
             }
             Outcome::NotRun { why, cause } => run.not_run.push((adapter.id.clone(), why, cause)),
         }

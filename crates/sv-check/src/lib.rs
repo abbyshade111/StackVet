@@ -70,6 +70,7 @@ pub mod signed_in;
 mod ssh_format;
 pub mod stand_in;
 pub mod suite;
+pub mod template_escaping;
 pub mod test_report;
 pub mod text;
 // Built always, not only for this crate's tests, so the tests of `sv-run` and `sv-cli` write their
