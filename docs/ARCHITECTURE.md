@@ -270,7 +270,7 @@ person downloads and points `sv` at; `sv` never fetches it. The MCP server opens
 outside tools.
 
 The fence is checked, not assumed: `sv run` asks Docker whether the network it made has a gateway and refuses to run
-if it does (`crates/sv-run/src/docker.rs`, ADR-019). A report that reached the internet any other way is a
+if it does (`crates/sv-run/src/docker/fence.rs`, ADR-019). A report that reached the internet any other way is a
 vulnerability in `sv` (`SECURITY.md`).
 
 ## Where to look
@@ -279,7 +279,7 @@ vulnerability in `sv` (`SECURITY.md`).
 |---|---|
 | Which requirements apply to an app | `data/applicability-v2.json`, `crates/sv-frameworks/src/applicability.rs` |
 | A rule that reads code | `data/ast-rules.json`, then `python3 tools/coverage.py` (a test holds `docs/COVERAGE.md` current) |
-| A check of the running app | `crates/sv-check/src/signed_in/`, against the fake app in its tests; the run's script in `crates/sv-run/src/docker.rs` |
+| A check of the running app | `crates/sv-check/src/signed_in/`, against the fake app in its tests; the run's script in `crates/sv-run/src/docker/probes.rs` |
 | What a report says | `crates/sv-report/src/` (`lib.rs` decides, `html.rs`, `markdown.rs`, `sarif.rs`, `json.rs` render) |
 | What the AI coding tool is told | `crates/sv-cli/src/mcp/catalog.rs` (tools and prompts), `check_text.rs` |
 | What a person can set aside or confirm | `crates/sv-check/src/review.rs`, `confirm.rs`, `seal.rs`; `sv review` in `crates/sv-cli/src/review.rs` |
