@@ -1,6 +1,6 @@
 # Proposal: a sign-up that needs a secret the manifest should not carry (an invite code), without weakening the fence
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -25,3 +25,5 @@ reviewing session recommends (a): the value never leaves the fence and the manif
 **Built, 16 October 2026 (honesty):** the owner's choice (a). The seed may print `NAME=value` lines; a request in
 `[stack.run.users]` cites one as `{seed:NAME}`; the value is filled into the requests that cite it and taken out of
 everything the run writes down. A manifest citing `{seed:…}` with no `seed` is refused. ADR-124.
+
+**Closed by the board, 16 October 2026:** built by honesty and merged (PR 2100, ADR-124); left open for the board to close.
