@@ -1367,6 +1367,12 @@
     "run": "Signed in",
     "looks_for": "A page somebody uploaded is shown by the browser as part of this app, so a script in it runs with the app's cookies and can do whatever the signed-in person can.",
     "finding_only": false
+   },
+   {
+    "id": "probe.saved-page-rendered",
+    "run": "Signed in",
+    "looks_for": "A page a member saved is shown by the browser as part of this app, so a script in it runs with the app's cookies and can do whatever the person viewing it can.",
+    "finding_only": false
    }
   ],
   "V3.2.2": [

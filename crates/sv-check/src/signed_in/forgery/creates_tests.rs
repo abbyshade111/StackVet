@@ -16,6 +16,7 @@ fn comments() -> sv_manifest::CreateTemplate {
         json: Default::default(),
         read: None,
         id_field: None,
+        page: false,
     }
 }
 

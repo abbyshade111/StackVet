@@ -94,6 +94,7 @@ fn a_read_back_that_could_not_find_the_controls_record_is_not_believed() {
         json: Default::default(),
         read: None,
         id_field: None,
+        page: false,
     }];
     let (out, _) = run_seeded(
         FakeApp::new(Flaws {

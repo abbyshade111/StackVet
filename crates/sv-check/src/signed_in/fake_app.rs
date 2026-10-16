@@ -95,6 +95,8 @@ pub(super) struct FakeApp {
     pub(super) notes: Vec<(String, String)>,            // (owner, text)
     /// Comments made through `POST /comments`, as (owner, text), read back at `/comments/{n}`.
     comments: Vec<(String, String)>,
+    /// Members' pages saved through `POST /pages`, as (owner, page), served at `/pages/{n}/frame` (backlog 0535).
+    pages: Vec<(String, String)>,
     /// The notes deleted, by number: read back as not there.
     deleted_notes: std::collections::BTreeSet<usize>,
     /// Announcements posted, newest last.
@@ -232,6 +234,10 @@ pub(super) const CONTEXT_WORD: &str = "acmenotes";
 
 #[derive(Default, Clone, Copy)]
 pub(super) struct Flaws {
+    /// A member's page is served at `/pages/{n}/frame` as a page of this app, with no sandbox policy (backlog 0535).
+    pub(super) pages_unsandboxed: bool,
+    /// A member's page is served with its `<` escaped, as text written into a page (backlog 0535).
+    pub(super) pages_escaped: bool,
     /// Not a flaw: the app is a single-page app. `/` and `/account` send everybody the same page
     /// shell, and what the account page shows comes from `/api/me`, guarded as `/account` is
     /// otherwise (and open under `private_open`).
@@ -3109,6 +3115,39 @@ impl FakeApp {
                     .push((owner, form(r).get("text").cloned().unwrap_or_default()));
                 let at = format!("/comments/{}", self.comments.len());
                 Self::respond(201, vec![("Location", at)], "posted")
+            }
+            // A member's own page, served on its own (backlog 0535): sandboxed, unless the flaw says otherwise.
+            ("POST", "/pages") => {
+                let Some(owner) = user else {
+                    return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
+                };
+                if foreign {
+                    return Some(Self::respond(403, vec![], "forged"));
+                }
+                self.pages
+                    .push((owner, form(r).get("html").cloned().unwrap_or_default()));
+                // The record's own address, as the trial's games were: the page itself is at `/frame` under it.
+                let at = format!("/pages/{}", self.pages.len());
+                Self::respond(303, vec![("Location", at)], "saved")
+            }
+            ("GET", p) if p.starts_with("/pages/") && p.ends_with("/frame") => {
+                let n: usize = p["/pages/".len()..p.len() - "/frame".len()].parse().ok()?;
+                let Some((owner, page)) = self.pages.get(n.checked_sub(1)?) else {
+                    return Some(Self::respond(404, vec![], "none"));
+                };
+                if user.as_ref() != Some(owner) {
+                    return Some(Self::respond(404, vec![], "none"));
+                }
+                let mut headers = vec![("Content-Type", "text/html; charset=utf-8".into())];
+                if !self.flaws.pages_unsandboxed {
+                    headers.push(("Content-Security-Policy", "sandbox allow-scripts".into()));
+                }
+                let body = if self.flaws.pages_escaped {
+                    page.replace('<', "&lt;")
+                } else {
+                    page.clone()
+                };
+                Self::respond(200, headers, &body)
             }
             ("GET", p) if p.starts_with("/comments/") => {
                 let n: usize = p["/comments/".len()..].parse().ok()?;

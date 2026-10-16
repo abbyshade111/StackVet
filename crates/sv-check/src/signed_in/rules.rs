@@ -300,6 +300,19 @@ pub(super) const UPLOAD_RENDERED: Rule = Rule {
           \u{2014} any one stops the browser treating the file as a page of this app.",
 };
 
+/// A member's own page, saved through a `creates` entry marked `page = true` and served for the browser to run as
+/// part of this app (V3.2.1, backlog 0535).
+pub(super) const PAGE_RENDERED: Rule = Rule {
+    rule_id: "probe.saved-page-rendered",
+    requirement_ids: &["V3.2.1"],
+    cwe: &["CWE-79"],
+    impact: "A page a member saved is shown by the browser as part of this app, so a script in it runs with the \
+             app's cookies and can do whatever the person viewing it can.",
+    fix: "Serve members' pages with a `Content-Security-Policy: sandbox` header (without `allow-same-origin`), or \
+          from a different hostname, or as an attachment \u{2014} any one stops the browser treating the page as \
+          part of this app.",
+};
+
 pub(super) const DOWNLOAD_UNNAMED: Rule = Rule {
     rule_id: "probe.download-unnamed",
     requirement_ids: &["V5.4.1"],

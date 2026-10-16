@@ -749,6 +749,7 @@ mod tests {
             json: BTreeMap::new(),
             read: None,
             id_field: None,
+            page: false,
         }
     }
 

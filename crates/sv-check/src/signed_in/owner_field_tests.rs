@@ -186,6 +186,7 @@ fn with_comments(read: Option<&str>) -> UsersSection {
         json: BTreeMap::new(),
         read: read.map(str::to_owned),
         id_field: None,
+        page: false,
     }];
     u
 }
