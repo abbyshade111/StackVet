@@ -485,6 +485,8 @@ MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.
             "V9.2.4",
             # The hand check on data protection and a part it lists beside it, with the report's verdict (0610).
             "V14.2.4", "V16.2.5",
+            # The hand check on availability defenses and the running checks it lists beside it (0498).
+            "V15.2.2",
             # The hook section names the requirements a claim speaks to, beside their verdict; never evidence (0607).
             "V1.2.5", "V11.4.2"}
 

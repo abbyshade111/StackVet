@@ -124,21 +124,35 @@ pub const MEASURED_SAY: &str = "Checks that measure parts of this, with what thi
      as the document says.";
 
 /// Each hand check whose requirement others' checks measure parts of, with those parts (backlog 0610).
-pub const MEASURED_PARTS: &[(&str, &[(&str, &str)])] = &[(
-    "V14.2.4",
-    &[
-        ("V14.2.1", "sensitive data kept out of web addresses"),
-        ("V14.3.2", "private pages not kept in a browser's cache"),
-        (
-            "V16.2.5",
-            "sensitive data kept out of the logs, or masked in them",
-        ),
-        (
-            "V14.3.1",
-            "what the browser kept for a signed-in person, cleared when they sign out",
-        ),
-    ],
-)];
+pub const MEASURED_PARTS: &[(&str, &[(&str, &str)])] = &[
+    (
+        "V14.2.4",
+        &[
+            ("V14.2.1", "sensitive data kept out of web addresses"),
+            ("V14.3.2", "private pages not kept in a browser's cache"),
+            (
+                "V16.2.5",
+                "sensitive data kept out of the logs, or masked in them",
+            ),
+            (
+                "V14.3.1",
+                "what the browser kept for a signed-in person, cleared when they sign out",
+            ),
+        ],
+    ),
+    // The availability defenses the running checks try (backlog 0498): creating records without limit, and a file
+    // larger than the app can handle.
+    (
+        "V15.2.2",
+        &[
+            (
+                "V2.4.1",
+                "how fast one person can make the app do work, limited",
+            ),
+            ("V5.2.1", "a file too large for the app to handle, refused"),
+        ],
+    ),
+];
 
 /// What the standard's own words are called where a question shows them under its plain words.
 pub const STANDARDS_WORDS: &str = "In the standard's words:";
