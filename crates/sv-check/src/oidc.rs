@@ -31,11 +31,14 @@ use crate::signed_in::{Http, Outcome, Rule, Session, finding, get, ok, send_fill
 use crate::stand_in::oidc as idp;
 use sv_manifest::OidcSection;
 
-const IDS: &str = "V10.1.2, V10.2.1, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2";
+const IDS: &str = "V10.1.2, V10.2.1, V7.6.2, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2, V10.3.1";
+
+mod tokens;
 
 const CROSS_SESSION: Rule = Rule {
     rule_id: "probe.oidc-sign-in-from-another-session",
-    requirement_ids: &["V10.1.2", "V10.2.1"],
+    // V7.6.2 too: the session is made without any action of the person whose browser it is in (ADR-127).
+    requirement_ids: &["V10.1.2", "V10.2.1", "V7.6.2"],
     cwe: &["CWE-352"],
     impact: "Somebody can finish their own sign-in in another person's browser, and that person is \
              then using the attacker's account without knowing — typing into it, uploading to it, \
@@ -606,11 +609,20 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
     crate::verified::unless_credited(MIX_UP.rule_id, &out.verified);
     if still_works {
         same_email_check(http, section, &mut out);
+        // Tokens the provider makes on request (backlog 0500, ADR-127).
+        tokens::access_token_audience(http, section, &mut out);
+        tokens::backchannel_logout(http, section, &mut out);
     } else {
         out.not_assessed.push((
             "V10.5.2".to_owned(),
             "An ordinary sign-in stopped working partway through, so whether the app tells apart \
              two people who share an email address was not asked."
+                .to_owned(),
+        ));
+        out.not_assessed.push((
+            "V10.3.1, V10.5.5".to_owned(),
+            "An ordinary sign-in stopped working partway through, so no token the provider makes on request was \
+             sent."
                 .to_owned(),
         ));
     }
@@ -959,6 +971,7 @@ mod tests {
             private: "/account".into(),
             create: None,
             shows: None,
+            backchannel_logout: None,
         }
     }
 

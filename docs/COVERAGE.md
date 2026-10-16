@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 183 (53%) | 124 (36%) | 10 | 152 |
+| OWASP ASVS 5.0 | 345 | 186 (54%) | 127 (37%) | 10 | 149 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -56,12 +56,12 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
-| L2 | 183 | 104 | 71 | 28 | 0 | 21 | 52 | 25 | 22 | 2 |
+| L2 | 183 | 107 | 74 | 28 | 0 | 21 | 55 | 25 | 22 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-59 of the 183 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+59 of the 186 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-53 of the 124 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+56 of the 127 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
 With nothing beyond plain `sv check`, 49 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
@@ -91,10 +91,10 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 6 |
 | V5 File Handling | 13 | 8 | 8 | 1 | 4 |
 | V6 Authentication | 47 | 25 | 16 | 2 | 20 |
-| V7 Session Management | 19 | 13 | 12 | 0 | 6 |
+| V7 Session Management | 19 | 14 | 13 | 0 | 5 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 8 |
 | V9 Self-contained Tokens | 7 | 5 | 3 | 0 | 2 |
-| V10 OAuth and OIDC | 36 | 8 | 6 | 0 | 28 |
+| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 26 |
 | V11 Cryptography | 24 | 12 | 7 | 0 | 12 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 1 |
 | V13 Configuration | 21 | 11 | 3 | 1 | 9 |
@@ -159,7 +159,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.3.7 | L2 | Reads the code: `ast.request-parameter-source-merged` (sv only ever as a finding: `ast.request-parameter-source-merged`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
-### Settled by asking the running app (121)
+### Settled by asking the running app (124)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -238,6 +238,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V7.4.5 | L2 | Signed in: `probe.admin-end-sessions-ignored` |
 | V7.5.1 | L2 | Signed in: `probe.email-change-without-password`, `probe.phone-change-without-password`, `probe.two-factor-change-without-password`, `probe.recovery-change-without-password` |
 | V7.5.2 | L2 | Signed in: `probe.sessions-ended-without-password`, `probe.other-sessions-not-ended` (sv only ever as a finding: `probe.other-sessions-not-ended`) |
+| V7.6.2 | L2 | Signed in: `probe.oidc-sign-in-from-another-session` |
 | V8.2.1 | L1 | Reads the code: `config.firebase-rules-open`, `config.supabase-table-without-rls`, `config.supabase-policy-allows-all`; Signed in: `probe.private-page-anonymous`, `probe.admin-page-ordinary-user`, `probe.admin-action-ordinary-user` (sv only ever as a finding: `config.firebase-rules-open`, `config.supabase-policy-allows-all`, `config.supabase-table-without-rls`) |
 | V8.2.2 | L1 | Reads the code: `config.firebase-rules-open`, `config.supabase-table-without-rls`, `config.supabase-policy-allows-all`; Signed in: `probe.owner-field-trusted`, `probe.other-users-data` (sv only ever as a finding: `config.firebase-rules-open`, `config.supabase-policy-allows-all`, `config.supabase-table-without-rls`, `probe.owner-field-trusted`) |
 | V8.2.3 | L2 | Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.record-returns-secret-fields` (sv only ever as a finding: `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.record-returns-secret-fields`, `probe.role-field-trusted`) |
@@ -250,10 +251,12 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V10.1.2 | L2 | Signed in: `probe.oidc-sign-in-from-another-session` |
 | V10.2.1 | L2 | Signed in: `probe.oidc-sign-in-from-another-session` |
 | V10.2.2 | L2 | Signed in: `probe.oidc-issuer-not-checked` |
+| V10.3.1 | L2 | Signed in: `probe.oidc-access-token-audience-not-checked` |
 | V10.4.4 | L1 | Reads the code: `config.retired-grant-enabled`; The running app: `probe.retired-grants-offered` (sv only ever as a finding: `config.retired-grant-enabled`, `probe.retired-grants-offered`) |
 | V10.5.1 | L2 | Signed in: `probe.oidc-nonce-not-checked` |
 | V10.5.2 | L2 | Reads the code: `ast.account-found-by-provider-email`; Signed in: `probe.oidc-user-keyed-on-email` (sv only ever as a finding: `ast.account-found-by-provider-email`) |
 | V10.5.4 | L2 | Signed in: `probe.oidc-audience-not-checked` |
+| V10.5.5 | L2 | Signed in: `probe.oidc-logout-token-not-checked` |
 | V13.1.1 | L2 | Signed in: `probe.undeclared-outside-service` (sv only ever as a finding: `probe.undeclared-outside-service`) |
 | V13.2.4 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V13.4.1 | L1 | The running app: `probe.source-control-exposed` |

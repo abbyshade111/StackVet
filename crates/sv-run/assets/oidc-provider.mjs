@@ -18,6 +18,13 @@
 //   wrong-token-iss  an ID token whose `iss` claim names another provider
 //   other-person     a different person (another `sub`) who has the same email address
 //   new-email        the same person (the same `sub`) after their email address changed
+//
+// Two more, which make a token on request rather than at the next sign-in (backlog 0500, ADR-127):
+//   `POST /_sv/access-token` with `aud=self` or `aud=other`: a signed access token for this app's client, or for a
+//                client that does not exist, as `{ "token": ... }`. `/userinfo` answers for either, as a real
+//                provider's does; `/introspect` says which client each was issued to.
+//   `POST /_sv/logout-token` with `variant=good`, `wrong-typ`, `no-events`, or `with-nonce`: a signed OIDC
+//                back-channel logout token for the test person, correct or wrong in that one way.
 import http from 'node:http';
 import crypto from 'node:crypto';
 
@@ -53,6 +60,11 @@ function idToken(claims, how) {
   if (how === 'unsigned') return `${input}.`;
   const signer = how === 'wrong-key' ? stranger.privateKey : key.privateKey;
   return `${input}.${b64url(crypto.sign('sha256', Buffer.from(input), signer))}`;
+}
+
+function signed(header, claims) {
+  const input = `${b64url(JSON.stringify(header))}.${b64url(JSON.stringify(claims))}`;
+  return `${input}.${b64url(crypto.sign('sha256', Buffer.from(input), key.privateKey))}`;
 }
 
 function clientFrom(req, form) {
@@ -92,6 +104,7 @@ http
         authorization_endpoint: `${ISSUER}/authorize`,
         token_endpoint: `${ISSUER}/token`,
         userinfo_endpoint: `${ISSUER}/userinfo`,
+        introspection_endpoint: `${ISSUER}/introspect`,
         jwks_uri: `${ISSUER}/jwks`,
         response_types_supported: ['code'],
         subject_types_supported: ['public'],
@@ -158,7 +171,7 @@ http
       if (grant.nonce !== null) claims.nonce = how === 'wrong-nonce' ? `not-${grant.nonce}` : grant.nonce;
       else if (how === 'wrong-nonce') claims.nonce = 'a-nonce-nobody-sent';
       const access = b64url(crypto.randomBytes(24));
-      tokens.set(access, { sub: claims.sub, email: claims.email });
+      tokens.set(access, { sub: claims.sub, email: claims.email, client: CLIENT_ID });
       return json(res, 200, {
         access_token: access,
         token_type: 'Bearer',
@@ -171,6 +184,47 @@ http
       const who = bearer && tokens.get(bearer[1]);
       if (!who) return json(res, 401, { error: 'invalid_token' });
       return json(res, 200, { sub: who.sub, email: who.email, email_verified: true });
+    }
+    if (req.method === 'POST' && path === '/introspect') {
+      const form = new URLSearchParams(await body(req));
+      const client = clientFrom(req, form);
+      if (client.id !== CLIENT_ID || (CLIENT_SECRET && client.secret !== CLIENT_SECRET)) {
+        return json(res, 401, { error: 'invalid_client' });
+      }
+      const who = tokens.get(form.get('token') || '');
+      if (!who) return json(res, 200, { active: false });
+      return json(res, 200, {
+        active: true, iss: ISSUER, sub: who.sub, client_id: who.client, aud: who.client, token_type: 'Bearer',
+      });
+    }
+    if (req.method === 'POST' && path === '/_sv/access-token') {
+      const aud = new URLSearchParams(await body(req)).get('aud');
+      if (aud !== 'self' && aud !== 'other') return json(res, 400, { error: 'aud is self or other' });
+      const client = aud === 'self' ? CLIENT_ID : 'some-other-service';
+      const now = Math.floor(Date.now() / 1000);
+      const token = signed(
+        { alg: 'RS256', typ: 'at+jwt', kid: KID },
+        {
+          iss: ISSUER, sub: 'sv-oidc-user', aud: client, client_id: client, scope: 'openid email profile',
+          iat: now, exp: now + 300, jti: b64url(crypto.randomBytes(12)),
+        },
+      );
+      tokens.set(token, { sub: 'sv-oidc-user', email: 'sv-oidc-user@example.test', client });
+      return json(res, 200, { token });
+    }
+    if (req.method === 'POST' && path === '/_sv/logout-token') {
+      const variant = new URLSearchParams(await body(req)).get('variant');
+      if (!['good', 'wrong-typ', 'no-events', 'with-nonce'].includes(variant)) {
+        return json(res, 400, { error: 'unknown variant' });
+      }
+      const now = Math.floor(Date.now() / 1000);
+      const claims = {
+        iss: ISSUER, aud: CLIENT_ID, sub: 'sv-oidc-user', iat: now, exp: now + 120, jti: b64url(crypto.randomBytes(12)),
+      };
+      if (variant !== 'no-events') claims.events = { 'http://schemas.openid.net/event/backchannel-logout': {} };
+      if (variant === 'with-nonce') claims.nonce = 'a-nonce-a-logout-token-must-not-carry';
+      const typ = variant === 'wrong-typ' ? 'JWT' : 'logout+jwt';
+      return json(res, 200, { token: signed({ alg: 'RS256', typ, kid: KID }, claims) });
     }
     if (req.method === 'POST' && path === '/_sv/mode') {
       const wanted = new URLSearchParams(await body(req)).get('mode');

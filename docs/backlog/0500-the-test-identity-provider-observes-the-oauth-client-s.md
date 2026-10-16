@@ -1,6 +1,6 @@
 # The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read
 
-**Status:** partly done: built so far: V5.1.1, V6.8.4, V13.2.1 and V13.2.2 pointers, the V6.8.4 design question, ast.database-as-superuser, and V6.8.1 on the provider-email rule. Left: the test identity provider's checks (V10.3.1, V10.3.3, V10.5.3, V10.5.5, V7.6.2) with their own record; the token checks for V9.2.2 and V9.2.4; the derived saml condition for V6.8.3; V10.3.2 and V10.3.4 have no question
+**Status:** partly done: built: the static part (#2113) and the test provider's checks for V10.3.1, V10.5.5, and V7.6.2 (ADR-127). Left: the token checks for V9.2.2 and V9.2.4; the derived saml condition for V6.8.3; V10.5.3, which needs a second start of the app; V10.3.3 is not cited (its text is about access tokens); V10.3.2 and V10.3.4 have no question
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
