@@ -89,6 +89,7 @@ TOOL_TIERS = ("tools", "opt-in")
 # Checks whose citations are written in Rust rather than in a data file.
 RUST_CHECKS = {
     "config.secrets-file-committed": ("static", ["V13.3.1"]),
+    "config.template-engine-escapes": ("static", ["V1.1.2"]),
     "config.development-server-started": ("static", ["V15.2.3"]),
     "config.mcp-server-unpinned": ("static", ["C10.1.1"]),
     "config.mcp-transport-unencrypted": ("static", ["C10.3.1"]),
@@ -568,6 +569,7 @@ def framework(path):
 # read it from: checks that only ever credit a requirement, and the configuration checks built
 # differently. Every other check's words are read from the code or data where the check is defined.
 DESCRIBED = {
+    "config.template-engine-escapes": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was read; in part, since HTML put together by hand and output to other interpreters are not seen",
     "ast.weak-key-generation": "A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3",
     "config.sign-in-pathway-not-listed": "A way into the app the code shows (a sign-in route, a Passport strategy, an API key read by header) that the list of sign-in pathways in stackvet.toml does not name",
     "config.certificate-checks-off": "A setting that switches off certificate checking for every connection the app makes",
@@ -726,6 +728,8 @@ RUST_IN_PART |= {
     "probe.admin-end-sessions-ignored",
     # One member's page, at the one address `read` names (backlog 0535).
     "probe.saved-page-rendered",
+    # The engine's own escaping, with hand-built HTML and other interpreters unseen (backlog 0613).
+    "config.template-engine-escapes",
     "config.gitignore-covers-env",
     "config.workflow-checkout-keeps-token",
     "config.secrets-file-committed",

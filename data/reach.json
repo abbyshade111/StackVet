@@ -82,6 +82,9 @@
   "C12.4.2": [
    "running"
   ],
+  "V1.1.2": [
+   "static"
+  ],
   "V1.2.1": [
    "tools",
    "opt-in"
@@ -798,6 +801,12 @@
  },
  "checks": {
   "V1.1.2": [
+   {
+    "id": "config.template-engine-escapes",
+    "run": "Reads the code",
+    "looks_for": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was re...",
+    "finding_only": false
+   },
    {
     "id": "bandit",
     "run": "Outside tools",

@@ -897,6 +897,36 @@ fn outside_tools(
             report_lock::let_go_of_all();
             exit::exit_with(exit::INTERRUPTED);
         }
+        // V1.1.2 in part: the template engine escapes by itself, and none of the tools' rules that
+        // read it switched off found anything (backlog 0613). Read before any of their findings is
+        // set apart as another framework's: a switch-off is one whoever's rule found it.
+        let packages: Vec<(String, String)> = scan_report
+            .declared
+            .iter()
+            .map(|d| (d.ecosystem.clone(), d.name.clone()))
+            .collect();
+        let unread_package_lists: Vec<String> = scan_report
+            .unread_manifests
+            .iter()
+            .map(|u| u.ecosystem.clone())
+            .collect();
+        let unread_code: Vec<String> = code
+            .unread_languages
+            .iter()
+            .chain(&code.unread_templates)
+            .cloned()
+            .collect();
+        let escaping = sv_check::template_escaping::credit(&sv_check::template_escaping::Seen {
+            adapters,
+            run: &outcome,
+            languages: &scan_report.languages,
+            files: &scan_report.all_paths,
+            packages: &packages,
+            unread_package_lists: &unread_package_lists,
+            unread_code: &unread_code,
+            earlier: findings,
+        })
+        .ok();
         examined.extend(adapters_examined(adapters, &languages, &outcome));
         let mut found = outcome.findings;
         sv_check::adapters::set_apart_other_frameworks(
@@ -908,6 +938,7 @@ fn outside_tools(
         sv_check::logged_ids::set_apart_logged_ids(app_dir, &mut found);
         findings.extend(found);
         tool_verified = outcome.verified;
+        tool_verified.extend(escaping);
         for (id, why, cause) in outcome.not_run {
             use sv_check::adapters::NotRunCause;
             tool_gaps.push(sv_report::Gap {

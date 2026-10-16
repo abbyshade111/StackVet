@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 187 (54%) | 127 (37%) | 10 | 148 |
+| OWASP ASVS 5.0 | 345 | 187 (54%) | 128 (37%) | 10 | 148 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -56,14 +56,14 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
-| L2 | 183 | 108 | 74 | 29 | 0 | 21 | 55 | 25 | 22 | 2 |
+| L2 | 183 | 108 | 75 | 30 | 0 | 21 | 55 | 25 | 22 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-60 of the 187 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+59 of the 187 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-56 of the 127 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+57 of the 128 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 50 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
+With nothing beyond plain `sv check`, 51 ASVS requirements can be settled. 25 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -85,7 +85,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 | Chapter | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| V1 Encoding and Sanitization | 30 | 21 | 16 | 0 | 9 |
+| V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 9 |
 | V2 Validation and Business Logic | 13 | 2 | 1 | 2 | 9 |
 | V3 Web Frontend Security | 31 | 23 | 19 | 0 | 8 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 6 |
@@ -105,10 +105,11 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 ## ASVS 5.0 requirement by requirement
 
-### Settled by reading the code (50)
+### Settled by reading the code (51)
 
 | Requirement | Level | Checks |
 |---|---|---|
+| V1.1.2 | L2 | Reads the code: `config.template-engine-escapes`; Outside tools: `bandit`, `semgrep`; Outside tools you turn on: `codeql-python` (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; codeql-python only ever as a finding: `py/jinja2/autoescape-false`; semgrep only ever as a finding: `avoid-mark-safe`, `avoid-v-html`, `class-extends-safestring`, `context-autoescape-off`, `detect-disable-mustache-escape`, `escape-function-overwrite`, `explicit-unescape-with-markup`, `filter-with-is-safe`, `global-autoescape-off`, `import-text-template`, `react-dangerouslysetinnerhtml`, `template-autoescape-off`, `template-blocktranslate-no-escape`, `template-explicit-unescape`, `template-translate-as-no-escape`, `template-unescaped-with-safe`, `template-var-unescaped-with-safeseq`, `unescaped-template-extension`) |
 | V1.2.1 | L1 | Reads the code: `ast.html-from-value`; The running app: `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`; Signed in: `probe.stored-unencoded`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; gosec only ever as a finding: `G203`; sv only ever as a finding: `ast.html-from-value`, `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`, `probe.stored-unencoded`) |
 | V1.2.4 | L1 | Reads the code: `ast.sql-built-by-hand`; Signed in: `probe.sql-injection`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B610`, `B611`; sv only ever as a finding: `probe.sql-injection`) |
 | V1.2.5 | L1 | Reads the code: `ast.shell-command`, `ast.shell-command-backticks`, `ast.shell-command-shell-true`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B601`; sv only ever as a finding: `ast.shell-command-shell-true`) |
@@ -295,11 +296,10 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 |---|---|---|
 | V15.2.1 | L1 | Known vulnerabilities: `advisories`; Outside tools: `brakeman` |
 
-### Settled only by an outside tool (26)
+### Settled only by an outside tool (25)
 
 | Requirement | Level | Checks |
 |---|---|---|
-| V1.1.2 | L2 | Outside tools: `bandit`, `semgrep`; Outside tools you turn on: `codeql-python` (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; codeql-python only ever as a finding: `py/jinja2/autoescape-false`; semgrep only ever as a finding: `avoid-mark-safe`, `avoid-v-html`, `class-extends-safestring`, `context-autoescape-off`, `detect-disable-mustache-escape`, `escape-function-overwrite`, `explicit-unescape-with-markup`, `filter-with-is-safe`, `global-autoescape-off`, `import-text-template`, `react-dangerouslysetinnerhtml`, `template-autoescape-off`, `template-blocktranslate-no-escape`, `template-explicit-unescape`, `template-translate-as-no-escape`, `template-unescaped-with-safe`, `template-var-unescaped-with-safeseq`, `unescaped-template-extension`) |
 | V1.2.2 | L1 | Outside tools you turn on: `codeql-javascript` (codeql-javascript only ever as a finding: `js/incomplete-url-scheme-check`) |
 | V1.2.6 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-python` |
 | V1.2.7 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
