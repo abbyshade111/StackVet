@@ -2987,7 +2987,12 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         &mut report,
     );
     // The packages each question is about, where a package locator speaks to it (backlog 0490).
-    crate::code_lines::point_to_packages(locators, &bill_of_materials.components, &mut report);
+    let ecosystems: Vec<String> = scan_report
+        .ecosystems
+        .iter()
+        .map(|e| e.name.clone())
+        .collect();
+    crate::code_lines::point_to_packages(locators, bill_of_materials, &ecosystems, &mut report);
     // The app's routes and what is written on each, beside the authorization questions (backlog 0493).
     crate::code_lines::route_questions(listing, &mut report);
     // The ways into the app the code shows, beside the sign-in pathway questions (backlog 0491).

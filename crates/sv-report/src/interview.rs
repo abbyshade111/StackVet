@@ -347,6 +347,14 @@ fn in_the_packages(item: &Item, fence: &crate::fence::Fence) -> String {
     let Some(found) = &item.in_the_packages else {
         return String::new();
     };
+    // None of them (backlog 0609): `says` is the locator's own sentence for that, and nothing was found by its name.
+    if found.packages.is_empty() {
+        return format!(
+            "   In the packages, {}: none. {}\n",
+            found.finds,
+            one_line(&found.says)
+        );
+    }
     let packages: Vec<String> = found.packages.iter().map(|p| fence.wrap(p)).collect();
     format!(
         "   In the packages, {}: {}. {} {}\n",
