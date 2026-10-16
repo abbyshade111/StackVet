@@ -63,6 +63,7 @@ pub mod script;
 pub mod seal;
 pub mod secrets;
 pub mod security_contact;
+pub mod session_settings;
 pub mod sign_in_paths;
 pub mod signed;
 pub mod signed_in;

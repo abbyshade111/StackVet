@@ -1,6 +1,6 @@
 # V7.1.1: the session timeout the code sets, read beside the policy's, and a disagreement reported (the rest of 0492)
 
-**Status:** open
+**Status:** done, 16 October 2026
 
 Split from backlog 0492 on 16 October 2026: 0492 built the two ways of ending sessions from the running app (V7.5.2,
 V7.4.5, and V7.1.2's observation, ADR-125); this is the part it left, which reads the code instead.

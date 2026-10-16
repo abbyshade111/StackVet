@@ -95,6 +95,7 @@ RUST_CHECKS = {
     "config.mcp-transport-unencrypted": ("static", ["C10.3.1"]),
     "config.rich-text-without-sanitizer": ("static", ["V1.3.1"]),
     "config.sign-in-pathway-not-listed": ("static", ["V6.3.4"]),
+    "config.session-timeout-differs-from-policy": ("static", ["V7.1.1"]),
     "ast.weak-key-generation": ("static", ["V11.6.1"]),
     "config.client-tech-unsupported": ("static", ["V3.7.1"]),
     "config.retired-grant-enabled": ("static", ["V10.4.4"]),
@@ -374,6 +375,8 @@ RUST_FINDINGS_ONLY = {
     "config.rich-text-without-sanitizer",
     # A list that names every way in found credits nothing: a way in may be one the reader does not find (ADR-123).
     "config.sign-in-pathway-not-listed",
+    # A lifetime set elsewhere (a hosting console, a library default) is not read (backlog 0612).
+    "config.session-timeout-differs-from-policy",
     # No weak key made in the code says nothing of keys made elsewhere, or of signing and seeding (backlog 0494).
     "ast.weak-key-generation",
     # A refusal of TLS 1.0 and 1.1 is half of V12.1.1; the other half, the newest version preferred,
@@ -571,6 +574,7 @@ def framework(path):
 DESCRIBED = {
     "config.template-engine-escapes": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was read; in part, since HTML put together by hand and output to other interpreters are not seen",
     "ast.weak-key-generation": "A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3",
+    "config.session-timeout-differs-from-policy": "A session lifetime the code sets (SESSION_COOKIE_AGE, PERMANENT_SESSION_LIFETIME, an Express session's maxAge) longer than the one stackvet.toml's policy states",
     "config.sign-in-pathway-not-listed": "A way into the app the code shows (a sign-in route, a Passport strategy, an API key read by header) that the list of sign-in pathways in stackvet.toml does not name",
     "config.certificate-checks-off": "A setting that switches off certificate checking for every connection the app makes",
     "config.firebase-rules-open": "A Firebase rules file that lets anybody in: an `allow` with no condition, `if true`, or test mode's date alone, or a Realtime Database `.read` or `.write` set to true",

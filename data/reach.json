@@ -2278,6 +2278,14 @@
     "finding_only": false
    }
   ],
+  "V7.1.1": [
+   {
+    "id": "config.session-timeout-differs-from-policy",
+    "run": "Reads the code",
+    "looks_for": "A session lifetime the code sets (SESSION_COOKIE_AGE, PERMANENT_SESSION_LIFETIME, an Express session's maxAge) longer than the one stackvet.toml's policy states",
+    "finding_only": true
+   }
+  ],
   "V7.2.1": [
    {
     "id": "probe.session-token-unverified",

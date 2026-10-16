@@ -374,6 +374,13 @@ pub fn assemble_report_saying(
             listed,
         ));
     }
+    // The session lifetime the code sets, beside the one the policy states (backlog 0612; ADR-123, Later).
+    if let Some(minutes) = manifest.policy.session_lifetime_minutes {
+        findings.extend(sv_check::session_settings::longer_than_policy(
+            &sv_check::session_settings::read_all(&static_scan.listing),
+            minutes,
+        ));
+    }
 
     stage(7);
     // A check that crashes costs itself, not the report (backlog 0234): its gap says where, and the rest is written.

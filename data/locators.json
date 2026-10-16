@@ -249,6 +249,19 @@
         "javascript": "[(string) @used\n (pair key: (property_identifier) @used)]",
         "typescript": "[(string) @used\n (pair key: (property_identifier) @used)]"
       }
+    },
+    {
+      "id": "locate.session-lifetime",
+      "questions": [
+        "V7.1.1"
+      ],
+      "finds": "where the code sets how long a session lasts: a session cookie's age, a session lifetime, or a sign-in token's expiry",
+      "names": "^(sessioncookieage|permanentsessionlifetime|maxage|expiresin|sessionexpireatbrowserclose|sessionsaveeveryrequest|rememberfor|expireafter|timeoutin)$|^['\"](sessioncookieage|permanentsessionlifetime)['\"]$",
+      "queries": {
+        "python": "[(assignment left: (identifier) @used)\n (assignment left: (attribute attribute: (identifier) @used))\n (subscript subscript: (string) @used)\n (keyword_argument name: (identifier) @used)]",
+        "javascript": "(pair key: (property_identifier) @used)",
+        "typescript": "(pair key: (property_identifier) @used)"
+      }
     }
   ],
   "packages": [
