@@ -1,6 +1,6 @@
 # The route table beside V8.1.1 reads Python decorators and Express calls only, and V8.1.2's field-level lists are not shown
 
-**Status:** open
+**Status:** partly done: built: checks on every route as rows, Django, and Go. Left: Rails' routes.rb with before_action, ASP.NET's [Authorize] and RequireAuthorization, Spring's mappings with @PreAuthorize, Laravel's Route::...->middleware, and the field-level lists for V8.1.2
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

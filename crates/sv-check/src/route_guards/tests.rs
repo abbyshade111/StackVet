@@ -44,6 +44,8 @@ def load_user():
                 &["login_required", "roles_required('admin')"]
             ),
             route(11, "POST", "/notes/<int:id>/delete", &[]),
+            // A hook run before every request is a row of its own (backlog 0608).
+            route(15, "EVERY ROUTE", "*", &["load_user"]),
         ]
     );
 }
