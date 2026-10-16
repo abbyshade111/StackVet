@@ -223,6 +223,9 @@ RUST_CHECKS = {
     "probe.password-altered": ("signed-in", ["V6.2.8"]),
     "probe.long-password-refused": ("signed-in", ["V6.2.9"]),
     "probe.crashed-on-ordinary-request": ("signed-in", ["V16.5.3"]),
+    "probe.sessions-ended-without-password": ("signed-in", ["V7.5.2"]),
+    "probe.other-sessions-not-ended": ("signed-in", ["V7.5.2"]),
+    "probe.admin-end-sessions-ignored": ("signed-in", ["V7.4.5"]),
     "probe.password-field-unmasked": ("signed-in", ["V6.2.6"]),
     "probe.password-paste-blocked": ("signed-in", ["V6.2.7"]),
     "probe.sign-out-on-get": ("signed-in", ["V3.5.3"]),
@@ -336,6 +339,8 @@ RUST_FINDINGS_ONLY = {
     "probe.password-paste-blocked",
     # A sign-up that did not crash shows nothing about every other request (backlog 0528).
     "probe.crashed-on-ordinary-request",
+    # The credit for ending sessions is the re-authentication rule's (backlog 0492).
+    "probe.other-sessions-not-ended",
     "probe.reset-code-guessable",
     "probe.reset-code-in-answer",
     "probe.reset-keeps-old-password",
@@ -702,6 +707,9 @@ RUST_IN_PART |= {"config.versions-pinned", "sbom"}
 # Until then they were printed as able to mark a requirement *checked*. `--credits` holds this list to the
 # suite: a check it saw credit only in part must be here, and one it saw credit whole once must not.
 RUST_IN_PART |= {
+    # One other session ended, viewing not tried; one user's one session ended by the admin (backlog 0492).
+    "probe.sessions-ended-without-password",
+    "probe.admin-end-sessions-ignored",
     "config.gitignore-covers-env",
     "config.workflow-checkout-keeps-token",
     "config.secrets-file-committed",

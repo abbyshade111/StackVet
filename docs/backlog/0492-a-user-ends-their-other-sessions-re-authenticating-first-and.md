@@ -36,3 +36,10 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   field left out, `probe.sessions-ended-without-password` is a finding citing V7.5.2, exactly as
   `probe.email-change-without-password` does for V7.5.1. Tier: `sv`'s own; *checked in part* when the view half could
   not be read.
+
+**Built, 16 October 2026 (honesty):** the running-app half. `end-other-sessions` and `admin-end-sessions` in
+`[stack.run.users]`: the first user signs in twice and ends the other session, first with a wrong password and then the
+right one (V7.5.2, credited in part: one other session, viewing not tried; findings for a wrong password taken and for
+sessions left working), and the admin ends the first user's sessions (V7.4.5, in part: one user's one session; a finding
+when they are left working). Two sessions staying valid is said as a step for V7.1.2's documentation. ADR-125. The
+code-read half, V7.1.1, is filed as backlog 0612.

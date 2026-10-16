@@ -702,6 +702,38 @@ pub(super) const ALTERED_PASSWORD: Rule = Rule {
           password, or use one without the limit, such as Argon2id.",
 };
 
+/// Ending one's other sessions without the password asked again (V7.5.2, backlog 0492).
+pub(super) const SESSIONS_END_WITHOUT_PASSWORD: Rule = Rule {
+    rule_id: "probe.sessions-ended-without-password",
+    requirement_ids: &["V7.5.2"],
+    cwe: &["CWE-306"],
+    impact: "Somebody using a session left open can sign the owner out of every other device, and the owner cannot \
+             cut them off in turn without the password being asked first.",
+    fix: "Ask for the password again before ending other sessions, and refuse the request when it is missing or \
+          wrong.",
+};
+
+/// A request to end the user's other sessions that leaves them working (V7.5.2, backlog 0492).
+pub(super) const OTHER_SESSIONS_NOT_ENDED: Rule = Rule {
+    rule_id: "probe.other-sessions-not-ended",
+    requirement_ids: &["V7.5.2"],
+    cwe: &["CWE-613"],
+    impact: "A person who ends their other sessions, after losing a phone or signing in somewhere public, is still \
+             signed in there.",
+    fix: "End the other sessions on the server: delete them from the session store, or record a time before which \
+          the user's tokens are refused.",
+};
+
+/// An admin's request to end a user's sessions that leaves them working (V7.4.5, backlog 0492).
+pub(super) const ADMIN_END_SESSIONS_IGNORED: Rule = Rule {
+    rule_id: "probe.admin-end-sessions-ignored",
+    requirement_ids: &["V7.4.5"],
+    cwe: &["CWE-613"],
+    impact: "An administrator who signs out an account that was taken over leaves the attacker signed in.",
+    fix: "End every session of the user on the server when an administrator asks: delete them from the session \
+          store, or record a time before which the user's tokens are refused.",
+};
+
 /// A server error on one of `sv`'s ordinary sign-ups (backlog 0528): the crash still credits and reports nothing it
 /// would have answered (ADR-021), and is itself the weakness. V16.5.3 asks that the app fail gracefully when an
 /// exception occurs; a 500 on a request a person could make is an exception the app did not handle.
