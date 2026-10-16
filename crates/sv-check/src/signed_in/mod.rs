@@ -3019,6 +3019,8 @@ mod in_turn_tests;
 #[cfg(test)]
 mod limit_tests;
 #[cfg(test)]
+mod log_bypass_tests;
+#[cfg(test)]
 mod log_codes_tests;
 #[cfg(test)]
 mod log_sign_ins_tests;

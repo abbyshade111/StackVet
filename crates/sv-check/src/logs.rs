@@ -90,6 +90,9 @@ pub struct Markers {
     /// the report says it ("a password change"). Any of them keeps V16.3.1's credit in part: the
     /// requirement asks for *all* authentication operations (backlog 0232, part 5).
     pub untried: Vec<String>,
+    /// The two marked requests around the first create request sent as another site would send it, which the app
+    /// refused, with the status it refused it with (backlog 0499, V16.3.3). `login_path` is that request's path.
+    pub bypass: Option<(Window, u16)>,
 }
 
 /// A way of signing in with a code, and the windows around a code it took and one it refused. A
@@ -321,6 +324,10 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
         for ids in ["V16.3.1", "V16.3.2", "V16.2.1", "V16.2.2", "V16.2.4"] {
             out.not_assessed
                 .push((ids.to_owned(), NO_OUTPUT.to_owned()));
+        }
+        if markers.bypass.is_some() {
+            out.not_assessed
+                .push(("V16.3.3".to_owned(), NO_OUTPUT.to_owned()));
         }
         return out;
     }
@@ -579,6 +586,13 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
         }
     }
 
+    // ---- V16.3.3: a refused bypass attempt (backlog 0499). Before V16.3.2, which returns early when no private page
+    // was refused, and independent of it.
+    bypass_logged(markers, log, &mut out);
+    if markers.bypass.is_some() {
+        crate::verified::unless_credited("probe.bypass-attempt-logged", &out.verified);
+    }
+
     // ---- V16.3.2: a refused request.
     if markers.refused_requests.is_empty() {
         out.not_assessed.push((
@@ -670,6 +684,68 @@ pub fn evaluate(markers: &Markers, log: &str) -> LogOutcome {
     }
     crate::verified::unless_credited("probe.authorization-failure-logged", &out.verified);
     out
+}
+
+/// V16.3.3 (backlog 0499): the app's own output after the run sent one of its forms as another site would send it,
+/// with no token and a stranger's `Origin`, and the app refused it. A line written between the two marked requests
+/// around that one request is its record when it names the event (a forgery token, a refused origin, a cross-site
+/// request) or carries the request's own path and the status it was refused with, as an access log writes it. A
+/// refusal answered with a 2xx (the form shown again) counts only by name: a 2xx in an access log is not a refusal.
+///
+/// Found is *checked in part*: one kind of bypass, read in the one place `sv` can read. Not found is not assessed,
+/// never a finding, for the reasons `elsewhere` gives: the app may log somewhere else, or not by path.
+fn bypass_logged(markers: &Markers, log: &str, out: &mut LogOutcome) {
+    let Some((w, status)) = &markers.bypass else {
+        return;
+    };
+    const READ_FOR: &str =
+        "the form sent as another site would send it, which the app refused (V16.3.3)";
+    let found = between(log, w).and_then(|lines| {
+        lines.into_iter().find(|line| {
+            names_bypass(line)
+                || (*status >= 300
+                    && line.contains(w.login_path.as_str())
+                    && records_status(line, *status))
+        })
+    });
+    let Some(line) = found else {
+        out.not_assessed.push((
+            "V16.3.3".to_owned(),
+            elsewhere(&format!(
+                "The run sent the create request at {} as another site would send it, and the app refused it with \
+                 {status}, but no line written while it was handled named the attempt.",
+                w.login_path
+            )),
+        ));
+        return;
+    };
+    out.lines.push(KeptLine::new(READ_FOR, line));
+    out.verified.push(
+        crate::Verified::new(
+            "probe.bypass-attempt-logged",
+            &["V16.3.3"],
+            format!(
+                "the create request at {} sent as another site would send it, with no token and a stranger's \
+                 Origin, which the app refused with {status}: its output recorded the attempt on a line written \
+                 while that request was handled",
+                w.login_path
+            ),
+        )
+        // One kind of bypass, and only what the app wrote to its own output (ADR-053).
+        .in_part(),
+    );
+}
+
+/// Whether a line names a forged or cross-site request, once the paths in it are taken out (a path such as
+/// `/csrf-demo` says nothing about what happened).
+fn names_bypass(line: &str) -> bool {
+    static EVENT: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(
+            r"(?i)\b(csrf|xsrf|forg(ed|ery)|cross[- ]site|origin (not allowed|refused|rejected|mismatch)|(bad|invalid|missing|mismatched) (csrf )?token|token (missing|invalid|mismatch))",
+        )
+        .expect("valid pattern")
+    });
+    EVENT.is_match(&without_paths(line))
 }
 
 /// Which common log format a line is written in, if any.
@@ -1598,3 +1674,7 @@ mod logs_kept_tests;
 #[cfg(test)]
 #[path = "logs_pages_tests.rs"]
 mod logs_pages_tests;
+
+#[cfg(test)]
+#[path = "logs/bypass_tests.rs"]
+mod bypass_tests;

@@ -1,6 +1,6 @@
 # A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown
 
-**Status:** open
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -26,3 +26,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
 - **V16.4.3** (L2), logs sent to a separate system. Design question exists. Route 4: the log-shipping SDK or
   transport found, with its line, beside the question; absence is nothing (a host-level agent ships logs with no trace
   in the code). Same as partial-checks. Tier: *attested by the owner*.
+
+**Done, 15 October 2026:** V16.1.1, V16.2.3, and V16.4.3 by `locate.log-destinations` and the logging services the run saw (ADR-022, Later); V16.3.3 by `probe.bypass-attempt-logged`, in part (ADR-082, Later). Not found is not assessed, not the finding proposed above: V16.3.2's absence is not a finding either, for the reason `logs.rs` gives.

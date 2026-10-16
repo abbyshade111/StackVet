@@ -265,6 +265,51 @@ pub fn undeclared_outside_services(
     )
 }
 
+/// Logging and error-reporting services, by the host names their browser libraries send to, for V16.2.3 (backlog 0499).
+const LOG_SERVICES: &[(&str, &str)] = &[
+    ("sentry.io", "Sentry"),
+    ("datadoghq.com", "Datadog"),
+    ("datadoghq.eu", "Datadog"),
+    ("browser-intake-datadoghq.com", "Datadog"),
+    ("browser-intake-datadoghq.eu", "Datadog"),
+    ("logtail.com", "Better Stack (Logtail)"),
+    ("betterstack.com", "Better Stack"),
+    ("papertrailapp.com", "Papertrail"),
+    ("loggly.com", "Loggly"),
+    ("logrocket.io", "LogRocket"),
+    ("logrocket.com", "LogRocket"),
+    ("bugsnag.com", "Bugsnag"),
+    ("rollbar.com", "Rollbar"),
+    ("newrelic.com", "New Relic"),
+    ("nr-data.net", "New Relic"),
+];
+
+/// V16.2.3 (backlog 0499): a line for the run's steps naming the logging services among the sites the signed-in pages
+/// tried to reach, or `None` when there were none. Shown, never judged: whether those services are in the log
+/// inventory is for the owner to say, since the notes are free text.
+pub fn log_services_seen(seen: Option<&[String]>) -> Option<String> {
+    let mut named: Vec<String> = Vec::new();
+    for host in seen.unwrap_or_default() {
+        let lower = host.to_ascii_lowercase();
+        if let Some((_, service)) = LOG_SERVICES
+            .iter()
+            .find(|(domain, _)| lower == *domain || lower.ends_with(&format!(".{domain}")))
+        {
+            let line = format!("{service} ({host})");
+            if !named.contains(&line) {
+                named.push(line);
+            }
+        }
+    }
+    (!named.is_empty()).then(|| {
+        format!(
+            "the signed-in pages tried to send to {}, which look like logging or error-reporting services; check they \
+             are in the app's log inventory (V16.2.3)",
+            named.join(", ")
+        )
+    })
+}
+
 /// The mark put in the typed text, so it can be found again: made from the run's own randomness,
 /// but not a piece of it, since pieces of that are the test accounts' passwords.
 pub(crate) fn token(spare: &str) -> String {
