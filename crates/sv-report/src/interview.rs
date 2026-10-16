@@ -199,6 +199,12 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
     out.push_str(&pathways(item, fence));
     out.push_str(&personal_fields(item, fence));
     out.push_str(&crypto(item, fence));
+    if let Some(token) = &item.token_audience {
+        out.push_str(&format!(
+            "   {}\n",
+            token.audience_said(|name| fence.wrap(name))
+        ));
+    }
     out.push_str(&measured(item));
     out
 }

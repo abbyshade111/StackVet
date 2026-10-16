@@ -481,6 +481,8 @@ MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.
             "V6.1.3", "V6.3.4", "V14.1.1", "V14.1.2", "V11.1.1", "V11.1.2",
             # The hand check on using a cryptography library, shown the draft inventory (0611).
             "V11.2.1",
+            # The hand check on one key for several audiences, shown the app's own token's `aud` (0500).
+            "V9.2.4",
             # The hand check on data protection and a part it lists beside it, with the report's verdict (0610).
             "V14.2.4", "V16.2.5",
             # The hook section names the requirements a claim speaks to, beside their verdict; never evidence (0607).

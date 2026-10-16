@@ -2998,6 +2998,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     // The ways into the app the code shows, beside the sign-in pathway questions (backlog 0491).
     crate::code_lines::pathway_questions(listing, &mut report);
     // The fields that look like personal data, beside the data-classification questions (backlog 0497).
+    crate::code_lines::audience_questions(token_fields.as_ref(), &mut report);
     crate::code_lines::classification_questions(listing, token_fields, &mut report);
     crate::code_lines::measured_parts(&mut report);
     // A first draft of the cryptographic inventory, beside the key-management questions (backlog 0494).
