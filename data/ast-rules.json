@@ -1894,8 +1894,7 @@
       "severity": "high",
       "confidence": "medium",
       "requirementIds": [
-        "V10.5.2",
-        "V6.8.1"
+        "V10.5.2"
       ],
       "cwe": [
         "CWE-287"

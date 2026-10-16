@@ -2244,14 +2244,6 @@
     "finding_only": false
    }
   ],
-  "V6.8.1": [
-   {
-    "id": "ast.account-found-by-provider-email",
-    "run": "Reads the code",
-    "looks_for": "An account is found, or a sign-in recorded, by the email address the sign-in provider sent",
-    "finding_only": true
-   }
-  ],
   "V6.8.2": [
    {
     "id": "probe.oidc-signature-not-checked",
