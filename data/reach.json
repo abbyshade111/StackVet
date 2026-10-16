@@ -2727,6 +2727,14 @@
     "finding_only": false
    }
   ],
+  "V11.2.1": [
+   {
+    "id": "ast.hand-rolled-cryptography",
+    "run": "Reads the code",
+    "looks_for": "A function named as encrypting does it by hand with XOR",
+    "finding_only": true
+   }
+  ],
   "V11.2.3": [
    {
     "id": "brakeman",

@@ -423,3 +423,6 @@ mod v6_tests;
 
 #[cfg(test)]
 mod v6_package_tests;
+
+#[cfg(test)]
+mod algorithm_tests;
