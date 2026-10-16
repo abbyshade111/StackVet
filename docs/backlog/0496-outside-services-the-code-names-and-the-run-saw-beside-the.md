@@ -1,6 +1,6 @@
 # Outside services the code names and the run saw, beside the communication question, and an undeclared one reported
 
-**Status:** claimed by orchestrator, 15 October 2026
+**Status:** open
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
