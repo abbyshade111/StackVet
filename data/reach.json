@@ -83,7 +83,7 @@
    "running"
   ],
   "V1.1.2": [
-   "static"
+   "tools"
   ],
   "V1.2.1": [
    "tools",
@@ -522,6 +522,7 @@
   ]
  },
  "tools_languages": {
+  "V1.1.2": [],
   "V1.2.1": [
    "*",
    "go",
@@ -802,12 +803,6 @@
  "checks": {
   "V1.1.2": [
    {
-    "id": "config.template-engine-escapes",
-    "run": "Reads the code",
-    "looks_for": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was re...",
-    "finding_only": false
-   },
-   {
     "id": "bandit",
     "run": "Outside tools",
     "looks_for": "Django's mark_safe, which puts a value into the HTML without output encoding; Mako templates, which put values into the HTML without output encoding unless each one is filtered; a Jinja2 environment made with autoescape off, so values go...",
@@ -818,6 +813,12 @@
     "run": "Outside tools",
     "looks_for": "HTML output built without output encoding for its context (cross-site scripting); content rendered as HTML with innerHTML, document.write, dangerouslySetInnerHTML or v-html, rather than a safe rendering function",
     "finding_only": true
+   },
+   {
+    "id": "config.template-engine-escapes",
+    "run": "Outside tools",
+    "looks_for": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was re...",
+    "finding_only": false
    },
    {
     "id": "codeql-python",

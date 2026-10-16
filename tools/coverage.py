@@ -86,10 +86,17 @@ TIERS = [
 # The tiers whose checks are outside tools: the ones that run by default, and those the owner turns on (ADR-115).
 TOOL_TIERS = ("tools", "opt-in")
 
+
+def is_tool(tier, check):
+    """Whether `check`, under `tier`, is an outside tool: one of `sv`'s own checks can sit in a tool
+    tier too, when it credits only after the tools ran (`config.template-engine-escapes`, backlog
+    0613), and is still `sv`'s own check, with its own words and its own credit."""
+    return tier in TOOL_TIERS and check not in RUST_CHECKS
+
 # Checks whose citations are written in Rust rather than in a data file.
 RUST_CHECKS = {
     "config.secrets-file-committed": ("static", ["V13.3.1"]),
-    "config.template-engine-escapes": ("static", ["V1.1.2"]),
+    "config.template-engine-escapes": ("tools", ["V1.1.2"]),  # only after the outside tools ran (backlog 0613)
     "config.development-server-started": ("static", ["V15.2.3"]),
     "config.mcp-server-unpinned": ("static", ["C10.1.1"]),
     "config.mcp-transport-unencrypted": ("static", ["C10.3.1"]),
@@ -1205,7 +1212,7 @@ def reach_json(asvs, aisvs, ev, tiers, settles, checks=None):
     requirement a check can settle. A check that is only ever a finding is left out: it can show a
     requirement failing, never met, so it is not what a run that did not happen would have added."""
     def credits(q, tier, check):
-        if tier in TOOL_TIERS:
+        if is_tool(tier, check):
             return check in CREDITED_BY_TOOL.get(q, set())
         return ("sv", check) not in FINDINGS_ONLY.get(q, set())
     reach = {}
@@ -1318,7 +1325,7 @@ def main():
         own that is not only ever a finding, or a tool with some rule a clean run credits to q."""
         sv_only = {r for tool, r in FINDINGS_ONLY.get(q, ()) if tool == "sv"}
         return settles(q) and any(
-            c in CREDITED_BY_TOOL[q] if tier in TOOL_TIERS else c not in sv_only
+            c in CREDITED_BY_TOOL[q] if is_tool(tier, c) else c not in sv_only
             for tier, checks in ev[q].items() for c in checks)
 
     def credited_whole(q):
@@ -1326,7 +1333,7 @@ def main():
         only ever in part, or a tool with a rule a clean run credits to q (backlog 0470)."""
         sv_only = {r for tool, r in FINDINGS_ONLY.get(q, ()) if tool == "sv"}
         return settles(q) and any(
-            c in CREDITED_BY_TOOL[q] if tier in TOOL_TIERS else (c not in sv_only and c not in IN_PART)
+            c in CREDITED_BY_TOOL[q] if is_tool(tier, c) else (c not in sv_only and c not in IN_PART)
             for tier, checks in ev[q].items() for c in checks)
 
     out = []
@@ -1683,7 +1690,7 @@ def requirement_rows(asvs, aisvs, ev, tiers, settles, supports_only, manual_only
             checks = []
             for t in tiers(q):
                 for c in ev[q][t]:
-                    if t in TOOL_TIERS:
+                    if is_tool(t, c):
                         # Each phrase once: one rule's words can join two with "; " that
                         # another rule says alone.
                         what = sorted({p.strip() for w in TOOL_RULES[q].get(c, [])
