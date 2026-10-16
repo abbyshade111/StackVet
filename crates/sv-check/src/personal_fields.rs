@@ -127,9 +127,31 @@ pub struct TokenFields {
     pub fields: Vec<String>,
     /// A session cookie that is JSON in base64, rather than a JWT (backlog 0610).
     pub cookie: bool,
+    /// For a JWT, the services its `aud` field names, empty when it has none (backlog 0500, V9.2.4); always empty for a
+    /// cookie, which has no such field. A service's name, not a person's data.
+    pub audience: Vec<String>,
 }
 
 impl TokenFields {
+    /// What the token says it is for, for the V9.2.4 question (backlog 0500), each name through `wrap`, since the app
+    /// wrote it: the services its `aud` field names, or that it names none. Where to look, not an answer: whether the
+    /// key that signs it signs for anything else is the owner's to say.
+    pub fn audience_said(&self, wrap: impl Fn(&str) -> String) -> String {
+        if self.audience.is_empty() {
+            return format!(
+                "When StackVet signed in, the app's own token, carried in {}, had no `aud` field: nothing in it says which \
+                 service it is for.",
+                self.carried
+            );
+        }
+        let names: Vec<String> = self.audience.iter().map(|n| wrap(n)).collect();
+        format!(
+            "When StackVet signed in, the app's own token, carried in {}, said in its `aud` field that it is for {}.",
+            self.carried,
+            names.join(", ")
+        )
+    }
+
     /// The sentence the reports show, with the fields that look like personal data marked.
     pub fn said(&self) -> String {
         let names: Vec<String> = self
@@ -183,6 +205,7 @@ pub fn cookie_fields(cookies: &[(String, String)]) -> Option<TokenFields> {
             carried: format!("the cookie `{name}`"),
             fields: object.keys().cloned().collect(),
             cookie: true,
+            audience: Vec::new(),
         })
     })
 }

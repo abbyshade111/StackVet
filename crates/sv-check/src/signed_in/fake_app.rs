@@ -196,6 +196,8 @@ pub(super) struct FakeApp {
     pub(super) session_as_base64_json: bool,
     /// The tokens carry no expiry time at all.
     pub(super) jwt_without_expiry: bool,
+    /// The tokens' `aud` field: a name, a list, or none at all, as `None` (backlog 0500, V9.2.4). Not a flaw either way.
+    pub(super) jwt_audience: Option<serde_json::Value>,
     /// Seconds past its expiry a token is still taken, as token libraries allow for clocks that
     /// disagree. Not a fault.
     pub(super) jwt_leeway: u64,
@@ -943,6 +945,9 @@ impl FakeApp {
         let mut claims = serde_json::json!({ "sub": who, "iat": self.clock, "jti": jti });
         if !self.jwt_without_expiry {
             claims["exp"] = (self.clock + lifetime).into();
+        }
+        if let Some(audience) = &self.jwt_audience {
+            claims["aud"] = audience.clone();
         }
         let payload = crate::encoding::token_part(claims.to_string().as_bytes());
         let signed = format!("{header}.{payload}");
