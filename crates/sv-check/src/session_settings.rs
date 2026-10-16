@@ -281,11 +281,11 @@ pub fn in_words(seconds: u64) -> String {
             format!("{n} {one}s")
         }
     };
-    if seconds % 86_400 == 0 {
+    if seconds.is_multiple_of(86_400) {
         plural(seconds / 86_400, "day")
-    } else if seconds % 3_600 == 0 {
+    } else if seconds.is_multiple_of(3_600) {
         plural(seconds / 3_600, "hour")
-    } else if seconds % 60 == 0 {
+    } else if seconds.is_multiple_of(60) {
         plural(seconds / 60, "minute")
     } else {
         plural(seconds, "second")
