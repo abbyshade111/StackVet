@@ -1216,7 +1216,7 @@ impl sv_check::script::Services for DockerRun<'_> {
         target: sv_check::script::Target,
         seed: &str,
         accounts: &sv_check::signed_in::Accounts,
-    ) -> Result<(), String> {
+    ) -> Result<std::collections::BTreeMap<String, String>, String> {
         let container = match target {
             sv_check::script::Target::App => self.app,
             sv_check::script::Target::SwitchedOff => self.switched_off,
@@ -1932,13 +1932,14 @@ impl DockerBackend {
         app: &str,
         seed: &str,
         accounts: &sv_check::signed_in::Accounts,
-    ) -> Result<(), String> {
+    ) -> Result<std::collections::BTreeMap<String, String>, String> {
         let env = seed_env(accounts);
         let names: Vec<&str> = env.iter().map(|(k, _)| *k).collect();
         let args = seed_args(app, seed, &names);
         let args: Vec<&str> = args.iter().map(String::as_str).collect();
         match self.docker_with_secrets(&args, &env) {
-            Ok((0, _)) => Ok(()),
+            // What it printed as `NAME=value` lines, for the manifest's `{seed:NAME}` (backlog 0536, ADR-124).
+            Ok((0, out)) => Ok(seed_values(&out)),
             Ok((code, out)) => Err(seed_failed(code, &out, accounts)),
             Err(e) => Err(format!("The seed command could not be started: {e}.")),
         }
@@ -2582,9 +2583,45 @@ pub(crate) fn test_secrets(accounts: &sv_check::signed_in::Accounts) -> Vec<Stri
     secrets
 }
 
+/// The `NAME=value` lines `seed` printed, each a value the manifest may cite as `{seed:NAME}` (backlog 0536, ADR-124):
+/// a name of letters, digits, and `_` not starting with a digit, an optional `export ` before it, and the rest of the
+/// line, quotes around it taken off. Any other line is the seed's own talk and is not read.
+pub(crate) fn seed_values(out: &str) -> std::collections::BTreeMap<String, String> {
+    let mut values = std::collections::BTreeMap::new();
+    for line in out.lines() {
+        let line = line.trim();
+        let line = line.strip_prefix("export ").map_or(line, str::trim_start);
+        let Some((name, value)) = line.split_once('=') else {
+            continue;
+        };
+        let named = name
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+            && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+        if !named {
+            continue;
+        }
+        let value = value.trim();
+        let value = value
+            .strip_prefix('"')
+            .and_then(|v| v.strip_suffix('"'))
+            .or_else(|| value.strip_prefix('\'').and_then(|v| v.strip_suffix('\'')))
+            .unwrap_or(value);
+        values.insert(name.to_owned(), value.to_owned());
+    }
+    values
+}
+
 fn seed_failed(code: i32, out: &str, accounts: &sv_check::signed_in::Accounts) -> String {
     let mut line = first_line(out);
-    let secrets = test_secrets(accounts);
+    let mut secrets = test_secrets(accounts);
+    // And any value it printed for `{seed:NAME}` before it failed (backlog 0536).
+    secrets.extend(
+        seed_values(out)
+            .into_values()
+            .filter(|v| v.chars().count() >= 4),
+    );
     // `sv`'s own test secrets first, by value, as a blank the redaction below leaves alone; then
     // every other credential the line carries, the app's own included (backlog 0226, part 1,
     // item 1): a seed that fails on its database prints the database's address, password and all.

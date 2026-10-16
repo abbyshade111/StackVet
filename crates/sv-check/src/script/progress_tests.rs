@@ -30,8 +30,13 @@ impl Services for Watched {
     fn app_log(&self) -> String {
         String::new()
     }
-    fn seed(&self, _target: Target, _seed: &str, _accounts: &Accounts) -> Result<(), String> {
-        Ok(())
+    fn seed(
+        &self,
+        _target: Target,
+        _seed: &str,
+        _accounts: &Accounts,
+    ) -> Result<std::collections::BTreeMap<String, String>, String> {
+        Ok(Default::default())
     }
     fn start_switched_off(&self, _setting: &str) -> bool {
         false
@@ -67,6 +72,7 @@ fn accounts() -> Accounts {
         spare: "0123456789abcdef0123456789abcdef".to_owned(),
         totp: None,
         admin_totp_secret: None,
+        seed_values: Default::default(),
     }
 }
 

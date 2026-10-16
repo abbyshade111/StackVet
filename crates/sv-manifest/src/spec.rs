@@ -126,6 +126,10 @@ health = "/"              # a path that returns 200 once the app is up
 #   and the seed must work on the fresh database of a new copy.
 # signup = { path = "/signup", form = { email = "{user}", password = "{password}", csrf_token = "{csrf}" } }
 #   Leave it out when the app has no sign-up page: like `login`, it is a request, never true or false.
+#   A sign-up that needs a value the manifest must not carry, such as an invite code: have `seed`
+#   print it as a `NAME=value` line (`echo "INVITE=$FAMILY_INVITE_CODE"`, or one the seed makes),
+#   and cite it in the form as `{seed:NAME}` (the invite field given `{seed:INVITE}`). Never write the
+#   value itself here: `sv` reads it inside the fence when the seed runs, and writes it nowhere.
 # login  = { path = "/login",  form = { email = "{user}", password = "{password}", csrf_token = "{csrf}" } }
 # logout = { path = "/logout", form = { csrf_token = "{csrf}" } }
 #   Every request in this table is a form POSTed to `path` unless it says otherwise: add

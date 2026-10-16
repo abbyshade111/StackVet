@@ -170,6 +170,7 @@ source files, and in two tests:
 | [ADR-121](ADR-121.md) | The checklist before going live, a report file of its own that credits nothing (accepted, 15 October 2026) |
 | [ADR-122](ADR-122.md) | The hook record, kept by a hook the person installs, read only with their consent (accepted, 15 October 2026) |
 | [ADR-123](ADR-123.md) | A way into the app the code shows that stackvet.toml's list of sign-in pathways does not name is a finding (accepted, 15 October 2026) |
+| [ADR-124](ADR-124.md) | A value the sign-up needs and the manifest must not carry is printed by the seed and cited as `{seed:NAME}` (accepted, 16 October 2026) |
 
 ## Names in the records
 
