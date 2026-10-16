@@ -18,3 +18,5 @@ directly as a signed-in user and read its headers: credit V3.2.1 (read its text 
 `sandbox` directive or comes from a different origin; otherwise report it with the header seen.
 
 **Record.** A new ADR or a Later entry: what counts as evidence for V3.2.1 changes.
+
+**The owner's answer, 16 October 2026 (asked through the board's waiting line):** (a). A `creates` entry may say `page = true`: sv saves a page with a marked script through it, fetches its read address, and judges it as an upload is. No new table. A page served from another origin counts only when its address is absolute and on another host, read from the manifest.
