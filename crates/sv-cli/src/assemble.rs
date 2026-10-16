@@ -2956,6 +2956,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     crate::code_lines::pathway_questions(listing, &mut report);
     // The fields that look like personal data, beside the data-classification questions (backlog 0497).
     crate::code_lines::classification_questions(listing, token_fields, &mut report);
+    crate::code_lines::measured_parts(&mut report);
     // A first draft of the cryptographic inventory, beside the key-management questions (backlog 0494).
     crate::code_lines::key_questions(listing, &mut report);
     // The checklist lines the owner ticked in `sv review`, those whose seal holds here (backlog 0604): shown as done in

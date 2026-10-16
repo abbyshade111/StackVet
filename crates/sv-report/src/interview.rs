@@ -199,11 +199,28 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
     out.push_str(&pathways(item, fence));
     out.push_str(&personal_fields(item, fence));
     out.push_str(&crypto(item, fence));
+    out.push_str(&measured(item));
     out
 }
 
 /// The draft cryptographic inventory (backlog 0494), each piece of the app's text through `fence`, with the sentence
 /// that says it is where to look and not evidence.
+/// The checks that measure parts of a hand check's requirement, with this report's verdict on each (backlog 0610).
+/// `sv`'s own words and the report's own verdicts, so nothing here goes through the fence.
+fn measured(item: &Item) -> String {
+    if item.measured_by.is_empty() {
+        return String::new();
+    }
+    let mut out = format!("   {}\n", sv_check::human::MEASURED_SAY);
+    for part in &item.measured_by {
+        out.push_str(&format!(
+            "     {}, {}: {}\n",
+            part.id, part.what, part.status
+        ));
+    }
+    out
+}
+
 fn crypto(item: &Item, fence: &crate::fence::Fence) -> String {
     let Some(found) = &item.crypto else {
         return String::new();
