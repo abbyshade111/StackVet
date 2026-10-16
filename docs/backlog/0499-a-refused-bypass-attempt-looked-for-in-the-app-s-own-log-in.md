@@ -1,6 +1,6 @@
 # A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown
 
-**Status:** open
+**Status:** claimed by honesty, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
