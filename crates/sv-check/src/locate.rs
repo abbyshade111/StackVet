@@ -75,6 +75,10 @@ pub struct PackageLocator {
     /// Per ecosystem, by the bill of materials' name for it (`Python`, `Ruby`), the package names that count, matched
     /// with case lowered and `_` read as `-`.
     pub names: BTreeMap<String, Vec<String>>,
+    /// What to say when the app has none of these packages (backlog 0609): said only when `says_none` holds, and
+    /// never as an answer, since what the packages would point to can be had without one. Left out, nothing is said.
+    #[serde(default)]
+    pub none: Option<String>,
 }
 
 impl PackageLocator {
@@ -101,6 +105,22 @@ impl PackageLocator {
         found.sort();
         found.dedup();
         found
+    }
+
+    /// Whether the app's packages can be said to hold none of these: it has packages, every package list was read, every
+    /// package list found (`ecosystems`, as the scan names them) and every package is of an ecosystem this locator names
+    /// (a Go module's second-factor library is in no list it reads, and a `go.mod` with no `go.sum` adds nothing to the
+    /// bill of materials), and none of them is one it names.
+    pub fn says_none(&self, sbom: &crate::sbom::Sbom, ecosystems: &[String]) -> bool {
+        self.none.is_some()
+            && !sbom.components.is_empty()
+            && sbom.unread.is_empty()
+            && ecosystems.iter().all(|e| self.names.contains_key(e))
+            && sbom
+                .components
+                .iter()
+                .all(|c| self.names.contains_key(&c.ecosystem))
+            && self.find(&sbom.components).is_empty()
     }
 }
 
@@ -426,6 +446,9 @@ mod v6_tests;
 
 #[cfg(test)]
 mod v6_package_tests;
+
+#[cfg(test)]
+mod says_none_tests;
 
 #[cfg(test)]
 mod algorithm_tests;

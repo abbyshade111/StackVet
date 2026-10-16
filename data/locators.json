@@ -326,6 +326,7 @@
       ],
       "finds": "the libraries among the app's packages for a second way of signing in: one-time codes from an app, passkeys, or security keys",
       "says": "A library in the list is not a second factor in use, nor one every account must pass; the signed-in run's checks of a two-factor code, when stackvet.toml names one, are reported under V6.5.",
+      "none": "None of the app's packages is a library for one-time codes, passkeys, or security keys, and every package list was read. That is not an answer: a second factor can come from a sign-in service set up outside the code (Auth0, Clerk, Firebase, Supabase, Cognito), or be written by hand.",
       "names": {
         "npm": [
           "speakeasy",

@@ -176,19 +176,25 @@ pub fn point_questions(
 }
 
 /// Gives each question a package locator speaks to the packages of the app's it names (backlog 0490), and each question
-/// the reason nothing can check it where its catalog gives one, on both of the report's lists of questions.
+/// the reason nothing can check it where its catalog gives one, on both of the report's lists of questions. With no package
+/// named, `says` is the locator's sentence for none (backlog 0609).
 pub fn point_to_packages(
     locators: &sv_check::locate::Locators,
-    components: &[sv_check::sbom::Component],
+    sbom: &sv_check::sbom::Sbom,
+    ecosystems: &[String],
     report: &mut sv_report::Report,
 ) {
     use sv_check::human::InThePackages;
     let mut by_question: BTreeMap<String, InThePackages> = BTreeMap::new();
     for locator in locators.packages() {
-        let packages = locator.find(components);
-        if packages.is_empty() {
-            continue;
-        }
+        let packages = locator.find(&sbom.components);
+        // None of them, said where the locator has words for it and every list was read (backlog 0609): with no
+        // package named, and its own sentence in place of `says`.
+        let says = match (&locator.none, packages.is_empty()) {
+            (_, false) => locator.says.clone(),
+            (Some(none), true) if locator.says_none(sbom, ecosystems) => none.clone(),
+            _ => continue,
+        };
         for id in &locator.questions {
             // The first package locator to speak to a question wins; two speaking to one would say two things.
             by_question
@@ -196,7 +202,7 @@ pub fn point_to_packages(
                 .or_insert_with(|| InThePackages {
                     finds: locator.finds.clone(),
                     packages: packages.clone(),
-                    says: locator.says.clone(),
+                    says: says.clone(),
                 });
         }
     }
