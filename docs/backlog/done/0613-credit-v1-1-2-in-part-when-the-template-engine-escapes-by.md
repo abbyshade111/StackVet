@@ -1,6 +1,6 @@
 # Credit V1.1.2 in part when the template engine escapes by itself and nothing read turns it off
 
-**Status:** open
+**Status:** done, 16 October 2026
 
 Split from backlog 0488 (V1.1.2), whose finding half is built: the rules that read a template engine's escaping switched
 off (`autoescape=False`, `mark_safe`, `Markup`, `|safe`, `{% autoescape off %}`, EJS `<%-`, Mustache and Pug's
