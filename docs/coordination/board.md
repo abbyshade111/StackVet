@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0488 (since 2026-10-15) — next: 0498, 0489, 0496, 0499, 0500, 0608
+- orchestrator — arm: full — holds: 0488 (since 2026-10-15) — next: 0498, 0489, 0496, 0499, 0500, 0608
 
 ## Queue
 
@@ -761,3 +761,26 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 21:50 — assigned 0499 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed
 - 2026-10-15 21:50 — assigned 0500 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed
 - 2026-10-15 21:50 — assigned 0608 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed
+- 2026-10-15 22:23 — session orchestrator added, arm full
+- 2026-10-15 22:23 — withdrew 0488 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)
+- 2026-10-15 22:23 — released 0488
+- 2026-10-15 22:24 — assigned 0488 to orchestrator (full): the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
+- 2026-10-15 22:24 — withdrew 0498 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)
+- 2026-10-15 22:24 — released 0498
+- 2026-10-15 22:24 — assigned 0498 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
+- 2026-10-15 22:24 — withdrew 0489 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)
+- 2026-10-15 22:24 — released 0489
+- 2026-10-15 22:24 — assigned 0489 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
+- 2026-10-15 22:24 — withdrew 0496 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)
+- 2026-10-15 22:24 — released 0496
+- 2026-10-15 22:24 — assigned 0496 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
+- 2026-10-15 22:24 — withdrew 0499 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)
+- 2026-10-15 22:24 — released 0499
+- 2026-10-15 22:24 — assigned 0499 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
+- 2026-10-15 22:24 — withdrew 0500 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)
+- 2026-10-15 22:24 — released 0500
+- 2026-10-15 22:24 — assigned 0500 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
+- 2026-10-15 22:24 — withdrew 0608 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)
+- 2026-10-15 22:24 — released 0608
+- 2026-10-15 22:24 — assigned 0608 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order
+- 2026-10-15 22:24 — session honesty removed
