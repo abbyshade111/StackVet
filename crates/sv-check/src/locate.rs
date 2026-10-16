@@ -402,3 +402,6 @@ mod encoding_tests;
 
 #[cfg(test)]
 mod availability_tests;
+
+#[cfg(test)]
+mod validation_tests;
