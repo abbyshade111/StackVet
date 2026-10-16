@@ -180,7 +180,7 @@ pub fn run_needs(manifest: &Manifest) -> Vec<RunNeed> {
              script, an SVG with a script in it, a name that climbs out of its folder; and, if it \
              unpacks compressed files, which formats and its limits (`unpacks-archives`, \
              `max-unpacked-bytes`, `max-files`), so `sv` can send one just over each",
-            users.is_some_and(|u| u.upload.is_some()),
+            users.is_some_and(|u| !u.upload.is_empty()),
         );
     }
     if maybe(caps.email) {

@@ -33,7 +33,7 @@ fn with_a_create_nothing_takes() -> sv_manifest::UsersSection {
     u.change_password = None;
     u.change_email = None;
     u.delete_account = None;
-    u.upload = None;
+    u.upload = Vec::new();
     u.once = None;
     if let Some(owned) = u.owned.as_mut() {
         owned.update = None;

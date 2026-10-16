@@ -765,9 +765,11 @@ pub struct UsersSection {
     /// Only ever used on an account made for it through `signup`, never on A or B.
     #[serde(default)]
     pub delete_account: Option<RequestTemplate>,
-    /// How the app takes a file, so the probes can send it ones it ought to refuse.
-    #[serde(default)]
-    pub upload: Option<UploadSection>,
+    /// How the app takes a file, so the probes can send it ones it ought to refuse: one `[stack.run.users.upload]`
+    /// table, or several as `[[stack.run.users.upload]]`, one for each way in (backlog 0232, part D, the owner's
+    /// choice of 16 October 2026). Every upload check runs on each, and is credited only when it holds on all.
+    #[serde(default, deserialize_with = "one_or_more_uploads")]
+    pub upload: Vec<UploadSection>,
     /// How a forgotten password is reset, so the probes can follow the link the app emails. Only
     /// used when the run has a mail sink for the app to send to.
     #[serde(default)]
@@ -910,6 +912,43 @@ pub struct FlowSection {
 /// The probes send three files an app ought to refuse — one too large, one whose contents do not
 /// match its extension, and one that is server-side code — and, when `serves-at` says where to
 /// fetch an upload back, read what the app does with it afterwards.
+/// The fields of `UploadSection`, as stackvet.toml spells them: what the section is said to take when a field there is
+/// misspelled. Held to the struct by `upload_fields_tests`.
+pub const UPLOAD_FIELDS: &[&str] = &[
+    "path",
+    "field",
+    "form",
+    "serves-at",
+    "max-bytes",
+    "accepts",
+    "unpacks-archives",
+    "max-unpacked-bytes",
+    "max-files",
+];
+
+/// `upload` as one table or a list of them (backlog 0232, part D): a file written with one keeps working. Asked for as
+/// a table, so the walk over the types that words the manifest's errors sees the upload section as before; TOML
+/// hands a list to the same request as one.
+fn one_or_more_uploads<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<UploadSection>, D::Error> {
+    struct OneOrMore;
+    impl<'de> serde::de::Visitor<'de> for OneOrMore {
+        type Value = Vec<UploadSection>;
+        fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            f.write_str("an upload table, or a list of them")
+        }
+        fn visit_map<A: serde::de::MapAccess<'de>>(self, map: A) -> Result<Self::Value, A::Error> {
+            UploadSection::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                .map(|one| vec![one])
+        }
+        fn visit_seq<A: serde::de::SeqAccess<'de>>(self, seq: A) -> Result<Self::Value, A::Error> {
+            Vec::<UploadSection>::deserialize(serde::de::value::SeqAccessDeserializer::new(seq))
+        }
+    }
+    deserializer.deserialize_struct("UploadSection", UPLOAD_FIELDS, OneOrMore)
+}
+
 #[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct UploadSection {
@@ -2941,6 +2980,10 @@ mod authorization_server_tests {
         assert_eq!(claim.effective, Some(false));
     }
 }
+
+#[cfg(test)]
+#[path = "upload_list_tests.rs"]
+mod upload_list_tests;
 
 #[cfg(test)]
 mod time_frame_tests {

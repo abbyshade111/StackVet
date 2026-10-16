@@ -34,7 +34,7 @@ fn not_forged(users: &sv_manifest::UsersSection) -> Vec<&'static str> {
         (users.change_password.is_some(), "the password change"),
         (users.change_email.is_some(), "the email change"),
         (users.delete_account.is_some(), "account deletion"),
-        (users.upload.is_some(), "the upload"),
+        (!users.upload.is_empty(), "the upload"),
         (users.once.is_some(), "the action done once"),
         (!users.admin_actions.is_empty(), "the admin actions"),
         (
