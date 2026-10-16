@@ -154,6 +154,12 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
             },
             // Why nothing StackVet does can check the requirement, where the catalog says (backlog 0490).
             "why_not_checked": { "type": ["string", "null"] },
+            // For a hand check, the requirements whose checks measure parts of it, with this report's verdict on
+            // each (backlog 0610); present only when there are any.
+            "measured_by": {
+                "type": "array",
+                "items": object(json!({ "id": string, "what": string, "status": string }), &["id", "what", "status"])
+            },
         }),
         &[
             "id",
