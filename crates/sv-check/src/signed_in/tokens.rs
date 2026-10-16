@@ -195,6 +195,8 @@ pub(super) fn app_token_checks(
 ) {
     const IDS: &str = "V9.1.1, V9.1.2, V9.1.3";
     let Some(jwt) = Jwt::find(&signed_in.session) else {
+        // No JWT: a session cookie that is JSON in base64 is read for its field names the same way (backlog 0610).
+        out.token_fields = crate::personal_fields::cookie_fields(signed_in.session.cookies());
         return;
     };
     // What the token carries where anyone holding it can read it, for the data-classification questions (backlog
@@ -205,6 +207,7 @@ pub(super) fn app_token_checks(
             Carried::Cookie(name) => format!("the cookie `{name}`"),
         },
         fields: jwt.payload.keys().cloned().collect(),
+        cookie: false,
     });
     placeholder_secret_check(&jwt, out);
     let Some(confirm) = confirm else {

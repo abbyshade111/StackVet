@@ -1,6 +1,6 @@
 # V14.2.4's measurable parts grouped under it, and a base64 session cookie read for personal fields as a JWT's payload is
 
-**Status:** open
+**Status:** done, 16 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 

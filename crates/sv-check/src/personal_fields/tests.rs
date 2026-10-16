@@ -149,6 +149,7 @@ fn the_token_sentence_names_the_fields_and_marks_the_personal_ones() {
     let token = TokenFields {
         carried: "the cookie `session`".to_owned(),
         fields: vec!["sub".to_owned(), "email".to_owned(), "role".to_owned()],
+        cookie: false,
     };
     let said = token.said();
     assert!(said.contains("carried in the cookie `session`"), "{said}");

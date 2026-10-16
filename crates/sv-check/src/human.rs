@@ -98,7 +98,43 @@ pub struct Item {
     /// look, never evidence; never in `report.json`.
     #[serde(skip)]
     pub crypto: Option<crate::crypto_inventory::CryptoInventory>,
+    /// For a hand check whose requirement other checks measure parts of, those parts with this report's verdict on each
+    /// (backlog 0610), so the owner reads them in one place. They answer the parts, never the question.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub measured_by: Vec<MeasuredBy>,
 }
+
+/// One requirement whose checks measure part of a hand check's requirement, with this report's verdict on it.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct MeasuredBy {
+    pub id: String,
+    /// What the part is, in plain words.
+    pub what: String,
+    /// This report's verdict, as the report says it ("needs attention", "not verified").
+    pub status: String,
+}
+
+/// What the parts are, and are not, shown above them.
+pub const MEASURED_SAY: &str = "Checks that measure parts of this, with what this report found for each. They are \
+     here so the parts can be read in one place; they do not answer the question, which asks whether every control is \
+     as the document says.";
+
+/// Each hand check whose requirement others' checks measure parts of, with those parts (backlog 0610).
+pub const MEASURED_PARTS: &[(&str, &[(&str, &str)])] = &[(
+    "V14.2.4",
+    &[
+        ("V14.2.1", "sensitive data kept out of web addresses"),
+        ("V14.3.2", "private pages not kept in a browser's cache"),
+        (
+            "V16.2.5",
+            "sensitive data kept out of the logs, or masked in them",
+        ),
+        (
+            "V14.3.1",
+            "what the browser kept for a signed-in person, cleared when they sign out",
+        ),
+    ],
+)];
 
 /// What the standard's own words are called where a question shows them under its plain words.
 pub const STANDARDS_WORDS: &str = "In the standard's words:";
@@ -214,6 +250,7 @@ pub fn checklist(
                 pathways: None,
                 personal_fields: None,
                 crypto: None,
+                measured_by: Vec::new(),
             });
         }
     }
@@ -234,6 +271,7 @@ pub fn checklist(
                 pathways: None,
                 personal_fields: None,
                 crypto: None,
+                measured_by: Vec::new(),
             });
         }
     }
@@ -254,6 +292,7 @@ pub fn checklist(
                 pathways: None,
                 personal_fields: None,
                 crypto: None,
+                measured_by: Vec::new(),
             });
         }
     }

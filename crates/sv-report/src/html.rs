@@ -841,6 +841,7 @@ pub fn page(report: &Report) -> String {
                     + &pathways(item)
                     + &personal_fields(item)
                     + &crypto(item)
+                    + &measured(item)
             ));
         }
         b.push_str("</table>\n");
@@ -1181,6 +1182,27 @@ fn low_lines(b: &mut String, low: &[crate::LowGroup]) {
 
 /// The draft cryptographic inventory, beside a key-management question (backlog 0494), with the sentence that says it
 /// is where to look and not evidence; empty when nothing was found.
+/// The checks that measure parts of a hand check's requirement, with this report's verdict on each (backlog 0610).
+fn measured(item: &sv_check::human::Item) -> String {
+    if item.measured_by.is_empty() {
+        return String::new();
+    }
+    let mut b = format!(
+        "<br><span class=\"note\">{}</span>\n<ul>\n",
+        escape(sv_check::human::MEASURED_SAY)
+    );
+    for part in &item.measured_by {
+        b.push_str(&format!(
+            "<li>{}, {}: {}</li>\n",
+            escape(&part.id),
+            escape(&part.what),
+            escape(&part.status)
+        ));
+    }
+    b.push_str("</ul>\n");
+    b
+}
+
 fn crypto(item: &sv_check::human::Item) -> String {
     let Some(found) = &item.crypto else {
         return String::new();

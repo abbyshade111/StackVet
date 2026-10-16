@@ -125,6 +125,8 @@ pub struct TokenFields {
     pub carried: String,
     /// The payload's field names, in order.
     pub fields: Vec<String>,
+    /// A session cookie that is JSON in base64, rather than a JWT (backlog 0610).
+    pub cookie: bool,
 }
 
 impl TokenFields {
@@ -141,6 +143,14 @@ impl TokenFields {
                 }
             })
             .collect();
+        if self.cookie {
+            return format!(
+                "When StackVet signed in, the app's session cookie, {}, was JSON in base64, which anyone holding the \
+                 cookie can read, and held these fields: {}. Field names only; the values are not shown.",
+                self.carried,
+                names.join(", ")
+            );
+        }
         format!(
             "When StackVet signed in, the app's sign-in token, carried in {}, held these fields where anyone \
              holding the token can read them: {}. Field names only; the values are not shown.",
@@ -148,6 +158,33 @@ impl TokenFields {
             names.join(", ")
         )
     }
+}
+
+/// The field names in a session cookie that is JSON in base64 (backlog 0610): Flask's session cookie
+/// (`payload.time.signature`, signed but not encrypted) and Express's cookie-session (`session`, with `session.sig`
+/// beside it). The first cookie whose value, or its part before the first `.`, decodes to a JSON object with fields.
+/// A compressed Flask cookie (starting with `.`) is not read. Names only, never the values.
+pub fn cookie_fields(cookies: &[(String, String)]) -> Option<TokenFields> {
+    use crate::encoding::{Alphabet, Padding, unbase64};
+    cookies.iter().find_map(|(name, value)| {
+        let value = value
+            .trim_matches('"')
+            .replace("%3D", "=")
+            .replace("%3d", "=");
+        if value.starts_with('.') || value.len() < 8 {
+            return None;
+        }
+        let part = value.split('.').next()?;
+        let bytes = unbase64(part, Alphabet::Web, Padding::Optional)
+            .or_else(|| unbase64(part, Alphabet::Standard, Padding::Optional))?;
+        let json: serde_json::Value = serde_json::from_slice(&bytes).ok()?;
+        let object = json.as_object().filter(|o| !o.is_empty())?;
+        Some(TokenFields {
+            carried: format!("the cookie `{name}`"),
+            fields: object.keys().cloned().collect(),
+            cookie: true,
+        })
+    })
 }
 
 /// Whether a field's name looks like personal data.
@@ -295,3 +332,6 @@ fn depth_change(line: &str) -> i32 {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod cookie_tests;
