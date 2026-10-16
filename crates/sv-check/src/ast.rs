@@ -2549,3 +2549,6 @@ mod source_merged_tests;
 
 #[cfg(test)]
 mod superuser_tests;
+
+#[cfg(test)]
+mod password_expiry_tests;

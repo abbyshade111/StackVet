@@ -2460,6 +2460,47 @@
         "swift": "A database connection address is not looked for in Swift: a Swift app usually reaches its data through a server, not a database account.",
         "shell": "Shell scripts are not read for connection addresses: one that starts a database is setting it up, not connecting the app to it."
       }
+    },
+    {
+      "id": "ast.password-expiry-enforced",
+      "title": "A setting makes passwords expire after a time",
+      "severity": "low",
+      "confidence": "low",
+      "requirementIds": [
+        "V6.2.10"
+      ],
+      "cwe": [
+        "CWE-521"
+      ],
+      "description": "A setting or field whose name says passwords expire after a time, or that a person is made to change theirs, is written into the code: `PASSWORD_EXPIRY_DAYS`, `password_max_age`, `passwordRotationDays`, `force_password_change`, and the like. The name is what was read; whether the app acts on it is not.",
+      "impact": "Making people change a password on a schedule leads them to pick weaker ones they can remember, or the same one with a number added, and does nothing against a password that was stolen yesterday.",
+      "fix": "Let a password stay valid until it is found to be compromised (checked against known breaches at sign-up and sign-in) or the person changes it. Take out the expiry, and ask for a change only when there is reason to think the password is known to someone else.",
+      "findingsOnly": true,
+      "queries": {
+        "python": "[(assignment left: (identifier) @fn) (assignment left: (attribute attribute: (identifier) @fn)) (keyword_argument name: (identifier) @fn)] @hit",
+        "javascript": "[(variable_declarator name: (identifier) @fn) (pair key: (property_identifier) @fn) (assignment_expression left: (member_expression property: (property_identifier) @fn))] @hit",
+        "typescript": "[(variable_declarator name: (identifier) @fn) (pair key: (property_identifier) @fn) (assignment_expression left: (member_expression property: (property_identifier) @fn))] @hit"
+      },
+      "functionPatterns": {
+        "python": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$",
+        "javascript": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$",
+        "typescript": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$"
+      },
+      "looksFor": "a setting or field written into the code whose name says passwords expire after a time or must be changed on a schedule (`PASSWORD_EXPIRY_DAYS`, `password_max_age`, `forcePasswordChange`); a policy set in a hosting console or an identity provider is not read, so finding none credits nothing",
+      "nothingToFind": {
+        "go": "A setting for passwords that expire is not looked for in Go yet.",
+        "csharp": "A setting for passwords that expire is not looked for in C# yet.",
+        "kotlin": "A setting for passwords that expire is not looked for in Kotlin yet.",
+        "rust": "A setting for passwords that expire is not looked for in Rust yet.",
+        "c": "A setting for passwords that expire is not looked for in C yet.",
+        "cpp": "A setting for passwords that expire is not looked for in C++ yet.",
+        "ruby": "A setting for passwords that expire is not looked for in Ruby yet.",
+        "php": "A setting for passwords that expire is not looked for in PHP yet.",
+        "java": "A setting for passwords that expire is not looked for in Java yet.",
+        "swift": "A setting for passwords that expire is not looked for in Swift yet.",
+        "dart": "A setting for passwords that expire is not looked for in Dart yet.",
+        "shell": "A setting for passwords that expire is not looked for in shell scripts yet."
+      }
     }
   ]
 }

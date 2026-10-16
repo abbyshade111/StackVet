@@ -2077,6 +2077,14 @@
     "finding_only": false
    }
   ],
+  "V6.2.10": [
+   {
+    "id": "ast.password-expiry-enforced",
+    "run": "Reads the code",
+    "looks_for": "A setting makes passwords expire after a time",
+    "finding_only": true
+   }
+  ],
   "V6.2.11": [
    {
     "id": "probe.context-word-password-accepted",

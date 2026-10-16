@@ -37,7 +37,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 127 can be checked, 58 can only be found failing, 10 where a check helps but a person decides, and 150 with no check.
+345 requirements: 127 can be checked, 59 can only be found failing, 10 where a check helps but a person decides, and 149 with no check.
 
 ### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
 
@@ -186,7 +186,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 74 can be checked, 32 can only be found failing)
+### Level 2 (183 requirements, 74 can be checked, 33 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -270,7 +270,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V6.1.2** Verify that a list of context-specific words is documented in order to prevent their use in passwords. The list could include permutations of organization names, product names, system identifiers, project codenames, department or role names, and similar. | No check | – |
 | **V6.1.3** Verify that, if the application includes multiple authentication pathways, these are all documented together with the security controls and authentication strength which must be consistently enforced across them. | No check | – |
 | **V6.2.9** Verify that passwords of at least 64 characters are permitted. | Can be checked | Signed in: `probe.long-password-refused`, if it fails: People who use a password manager or a long passphrase are told to choose something shorter, which is weaker. |
-| **V6.2.10** Verify that a user's password stays valid until it is discovered to be compromised or the user rotates it. The application must not require periodic credential rotation. | No check | – |
+| **V6.2.10** Verify that a user's password stays valid until it is discovered to be compromised or the user rotates it. The application must not require periodic credential rotation. | Can only be found failing | Reads the code: `ast.password-expiry-enforced`, looks for: A setting makes passwords expire after a time (found failing only) |
 | **V6.2.11** Verify that the documented list of context specific words is used to prevent easy to guess passwords being created. | Can be checked | Signed in: `probe.context-word-password-accepted`, if it fails: A password built from the app's own name, or the organization's, is one of the first things somebody who knows where they are will try. (only ever in part) |
 | **V6.2.12** Verify that passwords submitted during account registration or password changes are checked against a set of breached passwords. | A check helps; a person decides | Signed in: `probe.breached-password-accepted`, if it fails: A password other people have already used, and lost, is on the lists anybody trying to get in works through first — long after the top few thousand. (only ever in part) |
 | **V6.3.3** Verify that either a multi-factor authentication mechanism or a combination of single-factor authentication mechanisms, must be used in order to access the application. For L3, one of the factors must be a hardware-based authentication mechanism which provides compromise and impersonation resistance against phishing attacks while verifying the intent to authenticate by requiring a user-initiated action (such as a button press on a FIDO hardware key or a mobile phone). Relaxing any of the considerations in this requirement requires a fully documented rationale and a comprehensive set of mitigating controls. | No check | – |
