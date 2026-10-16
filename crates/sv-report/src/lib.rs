@@ -1217,6 +1217,10 @@ pub struct Report {
     /// (`sv report --hook-record`). Its own section, apart from every count; credits nothing.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hook_record: Option<hook::HookSeen>,
+    /// The checklist lines the owner ticked in `sv review` (backlog 0604, ADR-121), by each line's key, with the day,
+    /// for those whose seal holds here. Shown as done in the checklist; credits nothing.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub checklist_done: std::collections::BTreeMap<String, String>,
     /// What the AI coding tool's own files in the folder let it do (ADR-049). Not the app, so it
     /// credits nothing and finds nothing; the report says it apart from everything else.
     pub ai_tool: sv_check::ai_tool::AiToolFiles,
@@ -3811,6 +3815,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         before_going_live,
         on_the_internet: inputs.on_the_internet,
         hook_record: None,
+        checklist_done: std::collections::BTreeMap::new(),
         ai_tool: inputs.ai_tool,
         look_away: inputs.look_away,
         only_you_can_check,

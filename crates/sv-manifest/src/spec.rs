@@ -458,6 +458,13 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # holds, the report says the level rests on answers nobody has confirmed, and an answer changed
 # after it was confirmed is unconfirmed again. It never changes the level.
 # [scope-review]
+
+# Lines of the checklist before going live (before-going-live.md) that you ticked in `sv review`.
+# Written only by `sv review`, which offers each line not yet ticked; never write it yourself, and
+# never tick a line in the Markdown, which is written again with each report. A line about a
+# requirement `sv` accepts a check by hand for is recorded under [checked-by-hand] instead. Each one
+# here only marks the line done in the next checklist: it credits nothing.
+# [[checklist-done]]
 "#;
 
 pub const INSTRUCTIONS: &str = r#"Hand this to your AI coding tool, along with the starter file above.

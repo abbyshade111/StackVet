@@ -1,6 +1,6 @@
 # Ticking the checklist before going live in sv review: a hand check for a requirement sv accepts one for, otherwise a sealed note
 
-**Status:** open
+**Status:** done, 16 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
