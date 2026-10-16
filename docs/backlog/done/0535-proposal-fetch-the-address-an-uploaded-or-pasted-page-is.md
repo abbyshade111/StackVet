@@ -1,6 +1,6 @@
 # Proposal: fetch the address an uploaded or pasted page is served at, and credit V3.2.1 only when it is sandboxed or on another origin
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -27,3 +27,5 @@ something other than a page, V3.2.1 is credited in part. Served as a page of thi
 high finding, `probe.saved-page-rendered`. With the script taken out or escaped, it is neither. One change from the
 proposal: a `read` on a host of its own is not fetched and not credited, because the run cannot tell another origin from
 the app's own public name; it is said as a hand check. ADR-126.
+
+**Closed by the board, 16 October 2026:** built by honesty and merged (PR 2105, ADR-126); left open for the board to close.

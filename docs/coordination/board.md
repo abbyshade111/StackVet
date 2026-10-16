@@ -6,7 +6,7 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 
 ## Sessions
 
-- honesty — arm: full — holds: 0535 (since 2026-10-15) — next: 0488, 0498, 0489
+- honesty — arm: full — holds: 0488 (since 2026-10-15) — next: 0498, 0489, 0496, 0499, 0500, 0608
 
 ## Queue
 
@@ -16,20 +16,16 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 4. 0376 Build stackvet.dev from the settled words and direction C — hold: after 0433 settles which number the site reads, and the owner's go on the site
 5. 0373 A short walk-through of a setup, as a video or a click-through slide show — hold: the owner's: a video or a click-through of a setup
 6. 0375 `sv connect --docker` on Windows, so StackVet can run in Docker there too — hold: waits on a decision about StackVet in Docker on Windows (ADR-108, Later)
-7. 0496 Outside services the code names and the run saw, beside the communication question, and an undeclared one reported — ready
-8. 0499 A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown — ready
-9. 0500 The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read — ready
-10. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
-11. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
-12. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
-13. 0232 More samples for the checks that rest on one sample (groups A to H) — hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue
-14. 0604 Ticking the checklist before going live in sv review: a hand check for a requirement sv accepts one for, otherwise a sealed note — ready
-15. 0606 Who gave a capability answer in stackvet.toml cannot be recorded, and no person can confirm one in sv review — ready
-16. 0607 The hook record's claims about security, read against the requirements each speaks to (from 0565) — ready
-17. 0608 The route table beside V8.1.1 reads Python decorators and Express calls only, and V8.1.2's field-level lists are not shown — ready
-18. 0609 The other V6 pointers 0491's section proposes: rate-limit settings, the password validator, password expiry, a second-factor library, and backup codes — ready
-19. 0610 V14.2.4's measurable parts grouped under it, and a base64 session cookie read for personal fields as a JWT's payload is — ready
-20. 0611 The rest of 0494's section: the crypto libraries with a hand-rolled-crypto finding (V11.2.1), and the hard-coded algorithm names counted for crypto agility (V11.2.2) — ready
+7. 0507 Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are — hold: after the proposals 0488 to 0500 are built; a record of its own
+8. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
+9. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
+10. 0232 More samples for the checks that rest on one sample (groups A to H) — hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue
+11. 0604 Ticking the checklist before going live in sv review: a hand check for a requirement sv accepts one for, otherwise a sealed note — ready
+12. 0606 Who gave a capability answer in stackvet.toml cannot be recorded, and no person can confirm one in sv review — ready
+13. 0607 The hook record's claims about security, read against the requirements each speaks to (from 0565) — ready
+14. 0609 The other V6 pointers 0491's section proposes: rate-limit settings, the password validator, password expiry, a second-factor library, and backup codes — ready
+15. 0610 V14.2.4's measurable parts grouped under it, and a base64 session cookie read for personal fields as a JWT's payload is — ready
+16. 0611 The rest of 0494's section: the crypto libraries with a hand-rolled-crypto finding (V11.2.1), and the hard-coded algorithm names counted for crypto agility (V11.2.2) — ready
 
 ## Log
 
@@ -760,3 +756,8 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 19:20 — queued 0611, marked
 - 2026-10-15 20:50 — finished 0536 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2100; now holds 0535
 - 2026-10-15 21:20 — finished 0492 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2102; from its lane, behind 0535
+- 2026-10-15 21:50 — finished 0535 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2105; now holds 0488
+- 2026-10-15 21:50 — assigned 0496 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed
+- 2026-10-15 21:50 — assigned 0499 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed
+- 2026-10-15 21:50 — assigned 0500 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed
+- 2026-10-15 21:50 — assigned 0608 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed
