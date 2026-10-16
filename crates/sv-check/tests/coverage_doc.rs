@@ -93,11 +93,17 @@ fn the_census_of_credits_counts_only_what_a_check_gave() {
     let probes = "crates/sv-check/src/probes.rs";
     // A file whose tests are written in it, not only declared: a `#[cfg(test)] mod name;` before them
     // names a file of tests elsewhere and is not where this file's test code starts (backlog 0430).
-    let inline = "crates/sv-check/src/signed_in/mod.rs";
+    // `signed_in/mod.rs` was this file until its tests moved to files of their own (backlog 0324); `tokens.rs` declares
+    // two files of tests before the tests it keeps in it.
+    let inline = "crates/sv-check/src/signed_in/tokens.rs";
     let code = std::fs::read_to_string(root.join(inline)).unwrap();
     let block = code
         .find("#[cfg(test)]\nmod tests {")
-        .expect("the setup: signed_in/mod.rs keeps a test module in it");
+        .expect("the setup: signed_in/tokens.rs keeps a test module in it");
+    assert!(
+        code[..block].contains("#[cfg(test)]\nmod fields_tests;"),
+        "the setup: a file of tests is declared before the tests kept in it"
+    );
     let tests_start = code[..block].lines().count() + 5;
     // The control: from shipping code, the credit is counted, and is a fault for this check.
     let shipped = census(
