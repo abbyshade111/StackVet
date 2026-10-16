@@ -213,6 +213,9 @@ conditions! {
         "Does the app contain unmanaged (C or C++) code?";
     PostMessage => "postmessage", Derived, "This app's pages do not use the browser postMessage feature.",
         "Do the app's pages use the browser's postMessage feature?";
+    // V6.8.3 is about SAML assertions only; the oauth claim covers the rest of V6.8 (backlog 0500).
+    Saml => "saml", Derived, "No SAML library is used, so there are no SAML assertions to replay.",
+        "Does the app accept sign-ins through SAML?";
 }
 
 impl<'de> Deserialize<'de> for Condition {

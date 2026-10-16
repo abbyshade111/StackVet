@@ -446,6 +446,83 @@
       }
     },
     {
+      "condition": "saml",
+      "note": "SAML sign-in nearly always comes from a library that reads and checks the assertion. One written by hand on an XML parser is not seen here, and its V6.8.3 would be called not applicable; the xml condition still asks the XML parser's own requirements.",
+      "packages": {
+        "npm": [
+          "passport-saml",
+          "@node-saml/passport-saml",
+          "@node-saml/node-saml",
+          "saml2-js",
+          "samlify"
+        ],
+        "Python": [
+          "python3-saml",
+          "pysaml2",
+          "djangosaml2",
+          "django-saml2-auth"
+        ],
+        "Ruby": [
+          "ruby-saml",
+          "omniauth-saml"
+        ],
+        "PHP": [
+          "onelogin/php-saml",
+          "simplesamlphp/simplesamlphp",
+          "aacotroneo/laravel-saml2"
+        ],
+        "Go": [
+          "github.com/crewjam/saml"
+        ],
+        "Java (Maven)": [
+          "spring-security-saml2-service-provider",
+          "opensaml-saml-impl"
+        ],
+        "Java (Gradle)": [
+          "spring-security-saml2-service-provider",
+          "opensaml-saml-impl"
+        ]
+      },
+      "source": {
+        "python": [
+          "onelogin.saml2",
+          "from saml2",
+          "import saml2"
+        ],
+        "javascript": [
+          "passport-saml",
+          "node-saml",
+          "samlify",
+          "saml2-js"
+        ],
+        "typescript": [
+          "passport-saml",
+          "node-saml",
+          "samlify",
+          "saml2-js"
+        ],
+        "ruby": [
+          "OneLogin::RubySaml"
+        ],
+        "php": [
+          "OneLogin\\Saml2"
+        ],
+        "go": [
+          "crewjam/saml"
+        ],
+        "java": [
+          "Saml2"
+        ],
+        "kotlin": [
+          "Saml2"
+        ],
+        "csharp": [
+          "Sustainsys.Saml2",
+          "ITfoxtec.Identity.Saml2"
+        ]
+      }
+    },
+    {
       "condition": "websockets",
       "note": "Some frameworks ship WebSocket support in their standard library, so source is scanned too.",
       "packages": {
