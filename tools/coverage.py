@@ -218,6 +218,7 @@ RUST_CHECKS = {
     "probe.storage-kept-after-sign-out": ("signed-in", ["V14.3.1"]),
     "probe.account-details-sent-elsewhere": ("signed-in", ["V14.2.3"]),
     "probe.undeclared-outside-service": ("signed-in", ["V13.1.1"]),
+    "probe.bypass-attempt-logged": ("signed-in", ["V16.3.3"]),
     "probe.preflight-skipped": ("signed-in", ["V3.5.2"]),
     "probe.session-id-weak": ("signed-in", ["V7.2.3"]),
     "probe.session-token-static": ("signed-in", ["V7.2.2"]),
@@ -451,7 +452,7 @@ RUST_CREDITS_ONLY = {
 # per user and per session, not per feature or team (ADR-073); C12.1.2's detail is read on one kind of safety
 # decision, the injection screen (ADR-074); C12.4.2's audited action is one read-only tool call (ADR-075);
 # C11.4.2's flagged input is one textbook injection (ADR-079).
-RUST_IN_PART = {"probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-header-injected", "probe.ai-service-failure-logged", "probe.ai-token-use-attributed", "probe.ai-safety-decision-detailed", "probe.ai-tool-action-logged", "probe.ai-flag-not-gating", "probe.ai-kill-switch-ignored"}
+RUST_IN_PART = {"probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-header-injected", "probe.ai-service-failure-logged", "probe.ai-token-use-attributed", "probe.ai-safety-decision-detailed", "probe.ai-tool-action-logged", "probe.ai-flag-not-gating", "probe.ai-kill-switch-ignored", "probe.bypass-attempt-logged"}
 
 # Ids written into the code as strings that are not evidence: examples in comments on how ids are
 # parsed, a requirement named only to say it is not assessed, and the three ids `sv init` prints as
@@ -577,6 +578,7 @@ DESCRIBED = {
     "probe.ai-injection-logged": "Whether the app writes down that it caught the textbook prompt injection the run sent",
     "probe.authentication-logged": "Whether the app writes down a refused sign-in the run made",
     "probe.authorization-failure-logged": "Whether the app writes down a request it refused to someone not allowed to make it",
+    "probe.bypass-attempt-logged": "Whether the app writes down a form sent as another site would send it, which it refused",
     "probe.log-line-metadata": "Whether the line recording a security event says when, where from, and who",
     "probe.log-common-format": "Whether that line is written in a format log tools read without being taught",
     "probe.clear-site-data": "Whether signing out tells the browser to clear what the site stored in it",

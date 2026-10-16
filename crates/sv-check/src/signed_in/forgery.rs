@@ -395,7 +395,16 @@ pub(super) fn forgery_check(
         forged
             .headers
             .push(("Referer".to_owned(), format!("{STRANGER}/")));
+        // The first is bracketed by two marked requests, so a line the app writes while handling it can be told
+        // from every other (backlog 0499, V16.3.3); `logs.rs` reads it when the app refused it.
+        let around = (i == 0).then(|| super::signin::log_window(template, "bypass", "forged"));
+        if let Some(w) = &around {
+            super::signin::log_mark(http, &w.open);
+        }
         let response = http.send(&forged);
+        if let Some(w) = &around {
+            super::signin::log_mark(http, &w.close);
+        }
         answers.push(format!("{} ({})", template.path, status(&response)));
         // Accepted means the record was made, or the answer was the app's own request's (backlog 0560): a form
         // shown again with 200 and "CSRF token missing" is under 400 too. No answer, or a crash, is not a refusal
@@ -414,6 +423,9 @@ pub(super) fn forgery_check(
                 refused_at.push(template.path.clone());
                 if i == 0 {
                     first_refused = Some((control.clone(), read_back.clone()));
+                }
+                if let (Some(w), Some(r)) = (around, &response) {
+                    out.log_markers.bypass = Some((w, r.status));
                 }
             }
             Made::Unclear(why) => unjudged.push((

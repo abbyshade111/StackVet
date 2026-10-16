@@ -109,3 +109,24 @@ fn the_browser_check_keeps_the_hosts_the_pages_tried_once_each() {
     details_sent_elsewhere(&account, &[], &json!({}), &mut out);
     assert_eq!(out.outside_hosts, None);
 }
+
+#[test]
+fn logging_services_among_the_sites_seen_are_named_for_the_log_inventory() {
+    let seen = hosts(&[
+        "o123.ingest.sentry.io",
+        "cdn.example.net",
+        "browser-intake-datadoghq.com",
+        "notsentry.io",
+    ]);
+    let line = log_services_seen(Some(&seen)).expect("Sentry is a logging service");
+    assert!(line.contains("Sentry (o123.ingest.sentry.io)"), "{line}");
+    assert!(!line.contains("cdn.example.net"), "{line}");
+    assert!(
+        line.contains("Datadog (browser-intake-datadoghq.com)"),
+        "{line}"
+    );
+    // `notsentry.io` is not under `sentry.io`: only whole labels count.
+    assert!(!line.contains("notsentry.io"), "{line}");
+    assert!(log_services_seen(Some(&hosts(&["cdn.example.net"]))).is_none());
+    assert!(log_services_seen(None).is_none());
+}

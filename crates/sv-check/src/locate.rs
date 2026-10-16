@@ -408,3 +408,6 @@ mod validation_tests;
 
 #[cfg(test)]
 mod outside_tests;
+
+#[cfg(test)]
+mod logging_tests;

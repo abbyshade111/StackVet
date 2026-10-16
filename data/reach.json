@@ -493,6 +493,9 @@
   "V16.3.2": [
    "signed-in"
   ],
+  "V16.3.3": [
+   "signed-in"
+  ],
   "V16.3.4": [
    "running"
   ],
@@ -3638,6 +3641,14 @@
     "id": "probe.authorization-failure-logged",
     "run": "Signed in",
     "looks_for": "Whether the app writes down a request it refused to someone not allowed to make it",
+    "finding_only": false
+   }
+  ],
+  "V16.3.3": [
+   {
+    "id": "probe.bypass-attempt-logged",
+    "run": "Signed in",
+    "looks_for": "Whether the app writes down a form sent as another site would send it, which it refused",
     "finding_only": false
    }
   ],

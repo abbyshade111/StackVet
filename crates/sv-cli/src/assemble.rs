@@ -1195,6 +1195,13 @@ fn running_app(
                 );
                 findings.extend(undeclared);
                 run_steps.extend(compared);
+                // Those of them that look like logging services, for the log inventory (backlog 0499).
+                run_steps.extend(sv_check::browser::log_services_seen(
+                    outcome
+                        .signed_in
+                        .as_ref()
+                        .and_then(|s| s.outside_hosts.as_deref()),
+                ));
                 let signed_in_note = if signed_in_steps.is_empty() {
                     String::new()
                 } else {

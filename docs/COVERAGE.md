@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 180 (52%) | 123 (36%) | 10 | 155 |
+| OWASP ASVS 5.0 | 345 | 181 (52%) | 124 (36%) | 10 | 154 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -56,12 +56,12 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
-| L2 | 183 | 101 | 70 | 26 | 0 | 21 | 51 | 25 | 22 | 2 |
+| L2 | 183 | 102 | 71 | 26 | 0 | 21 | 52 | 25 | 22 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-57 of the 180 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+57 of the 181 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-52 of the 123 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+53 of the 124 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
 With nothing beyond plain `sv check`, 47 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
@@ -100,7 +100,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V13 Configuration | 21 | 10 | 3 | 1 | 10 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 7 |
 | V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 8 |
-| V16 Security Logging and Error Handling | 17 | 13 | 10 | 0 | 4 |
+| V16 Security Logging and Error Handling | 17 | 14 | 11 | 0 | 3 |
 | V17 WebRTC | 12 | 0 | 0 | 0 | 12 |
 
 ## ASVS 5.0 requirement by requirement
@@ -157,7 +157,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.3.7 | L2 | Reads the code: `ast.request-parameter-source-merged` (sv only ever as a finding: `ast.request-parameter-source-merged`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
-### Settled by asking the running app (120)
+### Settled by asking the running app (121)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -275,6 +275,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V16.2.4 | L2 | Signed in: `probe.log-common-format` |
 | V16.3.1 | L2 | Signed in: `probe.authentication-logged` |
 | V16.3.2 | L2 | Signed in: `probe.authorization-failure-logged` |
+| V16.3.3 | L2 | Signed in: `probe.bypass-attempt-logged` |
 | V16.3.4 | L2 | The running app: `probe.ai-service-failure-logged` |
 | V16.4.2 | L2 | The running app: `probe.log-file-served` (sv only ever as a finding: `probe.log-file-served`) |
 | V16.5.1 | L2 | The running app: `probe.error-detail-leak`, `probe.ai-service-error-shown` (sv only ever as a finding: `probe.ai-service-error-shown`) |

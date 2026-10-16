@@ -140,6 +140,21 @@
         "javascript": "[(string) @used\n (template_string) @used]",
         "typescript": "[(string) @used\n (template_string) @used]"
       }
+    },
+    {
+      "id": "locate.log-destinations",
+      "questions": [
+        "V16.1.1",
+        "V16.2.3",
+        "V16.4.3"
+      ],
+      "finds": "where the app's logs are set up, kept, or sent: logging settings, log files, the system log, and logging services",
+      "names": "(^|\\.)(basicconfig|dictconfig|fileconfig|filehandler|rotatingfilehandler|timedrotatingfilehandler|watchedfilehandler|sysloghandler|httphandler|sockethandler|smtphandler|queuehandler|cloudwatchloghandler|logtailhandler|datadogwinston|logtail|logtailtransport|lokitransport)$|\\b(sentrysdk|sentry)\\.init\\b|\\btransports\\.(file|http|stream|dailyrotatefile)\\b|\\bpino\\.(transport|destination)\\b",
+      "queries": {
+        "python": "(call function: [(identifier) (attribute)] @used)",
+        "javascript": "[(call_expression function: [(identifier) (member_expression)] @used)\n (new_expression constructor: [(identifier) (member_expression)] @used)]",
+        "typescript": "[(call_expression function: [(identifier) (member_expression)] @used)\n (new_expression constructor: [(identifier) (member_expression)] @used)]"
+      }
     }
   ],
   "packages": [
