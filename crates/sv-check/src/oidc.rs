@@ -612,6 +612,7 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
         same_email_check(http, section, &mut out);
         // Tokens the provider makes on request (backlog 0500, ADR-127).
         tokens::access_token_audience(http, section, &mut out);
+        tokens::id_token_as_access(http, section, &mut out);
         tokens::backchannel_logout(http, section, &mut out);
         // The session this way of signing in leaves, checked as the form's is (backlog 0232, part B).
         session::provider_session(http, section, &mut out);

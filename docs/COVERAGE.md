@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 188 (54%) | 128 (37%) | 10 | 147 |
+| OWASP ASVS 5.0 | 345 | 189 (55%) | 129 (37%) | 10 | 146 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -56,12 +56,12 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
-| L2 | 183 | 109 | 75 | 30 | 0 | 21 | 55 | 25 | 22 | 2 |
+| L2 | 183 | 110 | 76 | 30 | 0 | 21 | 56 | 25 | 22 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-60 of the 188 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+60 of the 189 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-57 of the 128 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+58 of the 129 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
 With nothing beyond plain `sv check`, 51 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
@@ -93,7 +93,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V6 Authentication | 47 | 25 | 16 | 2 | 20 |
 | V7 Session Management | 19 | 15 | 13 | 0 | 4 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 8 |
-| V9 Self-contained Tokens | 7 | 5 | 3 | 0 | 2 |
+| V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 |
 | V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 26 |
 | V11 Cryptography | 24 | 13 | 7 | 0 | 11 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 1 |
@@ -161,7 +161,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.3.7 | L2 | Reads the code: `ast.request-parameter-source-merged` (sv only ever as a finding: `ast.request-parameter-source-merged`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
-### Settled by asking the running app (124)
+### Settled by asking the running app (125)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -249,6 +249,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V9.1.2 | L1 | Reads the code: `ast.token-none-algorithm`; Signed in: `probe.app-token-alg-none`; Outside tools: `semgrep` (sv only ever as a finding: `ast.token-none-algorithm`) |
 | V9.1.3 | L1 | Reads the code: `ast.token-key-source-from-token`; Signed in: `probe.app-token-key-source-followed` (sv only ever as a finding: `ast.token-key-source-from-token`, `probe.app-token-key-source-followed`) |
 | V9.2.1 | L1 | Signed in: `probe.app-token-expired-accepted`; Outside tools: `semgrep` (semgrep only ever as a finding: `jwt-tokenvalidationparameters-no-expiry-validation`) |
+| V9.2.2 | L2 | Signed in: `probe.oidc-id-token-taken-as-access-token` |
 | V10.1.1 | L2 | Reads the code: `ast.token-in-browser-storage`; Signed in: `probe.token-in-browser-storage` (sv only ever as a finding: `ast.token-in-browser-storage`, `probe.token-in-browser-storage`) |
 | V10.1.2 | L2 | Signed in: `probe.oidc-sign-in-from-another-session` |
 | V10.2.1 | L2 | Signed in: `probe.oidc-sign-in-from-another-session` |

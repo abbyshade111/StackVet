@@ -12,6 +12,8 @@ struct App {
     takes_bearer: bool,
     /// ...and takes one issued for another service as well.
     takes_any_audience: bool,
+    /// ...and takes an ID token as one too (V9.2.2).
+    takes_id_token: bool,
     /// After refusing one bearer token, refuses every bearer token.
     bearer_breaks: bool,
     /// The back-channel logout address ends sessions for any token at all.
@@ -118,6 +120,7 @@ impl Http for Fake {
                     && match kind.as_deref() {
                         Some("self") => true,
                         Some("other") => self.app.takes_any_audience,
+                        Some("id") => self.app.takes_id_token,
                         _ => false,
                     };
                 if takes {
@@ -160,7 +163,7 @@ impl Http for Fake {
                     "",
                 )
             }
-            p if (p == idp::ACCESS_TOKEN || p == idp::LOGOUT_TOKEN)
+            p if (p == idp::ACCESS_TOKEN || p == idp::LOGOUT_TOKEN || p == idp::ID_TOKEN)
                 && !self.app.provider_mints_nothing =>
             {
                 let kind = form.split('=').nth(1).unwrap_or("").to_owned();
@@ -203,6 +206,19 @@ fn logout(app: App, backchannel: bool) -> Outcome {
             ..Default::default()
         },
         &section(backchannel),
+        &mut out,
+    );
+    out
+}
+
+fn id_token(app: App) -> Outcome {
+    let mut out = Outcome::default();
+    tokens::id_token_as_access(
+        &mut Fake {
+            app,
+            ..Default::default()
+        },
+        &section(false),
         &mut out,
     );
     out
@@ -371,4 +387,57 @@ fn no_logout_address_named_sends_nothing_and_says_why() {
 #[test]
 fn the_cross_session_probe_cites_v7_6_2() {
     assert!(CROSS_SESSION.requirement_ids.contains(&"V7.6.2"));
+}
+
+// V9.2.2 (backlog 0500): an ID token sent where an access token opens the page.
+
+#[test]
+fn an_id_token_that_opens_the_page_is_a_finding() {
+    let out = id_token(App {
+        takes_bearer: true,
+        takes_id_token: true,
+        ..Default::default()
+    });
+    assert!(found(&out, &tokens::ID_AS_ACCESS), "{:?}", out.findings);
+    assert!(!credited(&out, &tokens::ID_AS_ACCESS));
+}
+
+#[test]
+fn an_id_token_refused_where_an_access_token_opens_is_credited_in_part() {
+    let out = id_token(App {
+        takes_bearer: true,
+        ..Default::default()
+    });
+    assert!(
+        credited(&out, &tokens::ID_AS_ACCESS),
+        "{:?}",
+        out.not_assessed
+    );
+    assert!(!found(&out, &tokens::ID_AS_ACCESS));
+}
+
+#[test]
+fn an_app_that_takes_no_bearer_token_is_not_judged_on_its_kind() {
+    let out = id_token(App::default());
+    assert!(!found(&out, &tokens::ID_AS_ACCESS) && !credited(&out, &tokens::ID_AS_ACCESS));
+    assert!(
+        not_assessed(&out, "V9.2.2")
+            .unwrap()
+            .contains("does not take bearer tokens there")
+    );
+}
+
+#[test]
+fn an_id_token_refusal_followed_by_refusing_the_access_token_is_not_credited() {
+    let out = id_token(App {
+        takes_bearer: true,
+        bearer_breaks: true,
+        ..Default::default()
+    });
+    assert!(!credited(&out, &tokens::ID_AS_ACCESS));
+    assert!(
+        not_assessed(&out, "V9.2.2")
+            .unwrap()
+            .contains("refused its access token as well")
+    );
 }

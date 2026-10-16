@@ -3,6 +3,9 @@
 //! - **V10.3.1:** an access token the provider issued for another service, sent as a bearer token, must not open the
 //!   private page. Asked only when one issued to this app does: an app that takes only cookies is no resource server for
 //!   these tokens, and is not judged on them.
+//! - **V9.2.2:** an ID token the provider issued to this app, sent as a bearer token where an access token opens the
+//!   private page, must not open it: an ID token says who signed in, and is no permission to act. Asked, like V10.3.1,
+//!   only when an access token issued to this app opens the page.
 //! - **V10.5.5:** a back-channel logout token of the wrong type, without the logout `events` claim, or with a `nonce`,
 //!   must not end anybody's session. Asked only when stackvet.toml names the address the app takes them at, and
 //!   credited only when a correct one does end a session.
@@ -18,6 +21,18 @@ pub(super) const RESOURCE_AUD: Rule = Rule {
              or anyone who gets one of its tokens, can use the app as the person the token names.",
     fix: "Accept an access token only when it was issued for this app: check the token's `aud` (or, through the \
           provider's introspection, its `client_id`) against the app's own, and refuse every other.",
+};
+
+pub(super) const ID_AS_ACCESS: Rule = Rule {
+    rule_id: "probe.oidc-id-token-taken-as-access-token",
+    requirement_ids: &["V9.2.2"],
+    cwe: &["CWE-287"],
+    impact: "An ID token opens the app where an access token should be needed. An ID token only tells an app who signed \
+             in, and is often kept in the browser where scripts and logs can reach it, so whoever gets hold of one can \
+             use the app as that person.",
+    fix: "Accept only access tokens as bearer tokens: check the token's type (`typ` of `at+jwt`, RFC 9068) or ask the \
+          provider's introspection whether it is an active access token, and refuse an ID token however good its \
+          signature and audience.",
 };
 
 pub(super) const LOGOUT_TOKEN: Rule = Rule {
@@ -143,6 +158,82 @@ pub(super) fn access_token_audience(http: &mut dyn Http, section: &OidcSection, 
         );
     }
     crate::verified::unless_credited(RESOURCE_AUD.rule_id, &out.verified);
+}
+
+/// V9.2.2: an ID token issued to this app, sent where an access token issued to it opens the private page.
+pub(super) fn id_token_as_access(http: &mut dyn Http, section: &OidcSection, out: &mut Outcome) {
+    let not_assessed =
+        |out: &mut Outcome, why: String| out.not_assessed.push(("V9.2.2".to_owned(), why));
+    let Some(access) = mint(
+        http,
+        idp::ACCESS_TOKEN,
+        "aud=self",
+        "oidc-id-check-access-token",
+    ) else {
+        not_assessed(
+            out,
+            "The test provider did not hand over an access token, so nothing was sent as a bearer token.".to_owned(),
+        );
+        return;
+    };
+    if !opens_with_bearer(http, section, &access, "oidc-id-check-access-opens") {
+        not_assessed(
+            out,
+            format!(
+                "{} did not open for an access token the provider issued to this app, sent as a bearer token, so the \
+                 app does not take bearer tokens there, and whether it would take an ID token as one was not asked.",
+                section.private
+            ),
+        );
+        return;
+    }
+    let Some(id_token) = mint(http, idp::ID_TOKEN, "kind=id", "oidc-id-token") else {
+        not_assessed(
+            out,
+            "The test provider did not hand over an ID token.".to_owned(),
+        );
+        return;
+    };
+    let took = opens_with_bearer(http, section, &id_token, "oidc-bearer-id-token");
+    out.steps.push(format!(
+        "sent tokens issued to this app as bearer tokens to {}: an access token opened it; an ID token {}",
+        section.private,
+        if took { "opened it too" } else { "was refused" }
+    ));
+    if took {
+        out.findings.push(finding(
+            &ID_AS_ACCESS,
+            "An ID token is taken as an access token",
+            Severity::High,
+            format!(
+                "Sent as a bearer token with no cookie, an ID token the test provider issued to this app opened {}, as \
+                 an access token did. Its signature, issuer, and audience were all good: what was wrong is its kind.",
+                section.private
+            ),
+        ));
+    } else if opens_with_bearer(http, section, &access, "oidc-id-check-access-again") {
+        out.verified.push(
+            crate::Verified::new(
+                ID_AS_ACCESS.rule_id,
+                ID_AS_ACCESS.requirement_ids,
+                format!(
+                    "an ID token issued to this app, sent as a bearer token to {}, refused, where an access token \
+                     opened it before and after",
+                    section.private
+                ),
+            )
+            // One page, and one wrong kind of token: V9.2.2 asks about every token the app takes.
+            .in_part(),
+        );
+    } else {
+        not_assessed(
+            out,
+            "The app refused the ID token, but then refused its access token as well, so the refusal may not have \
+             been about the kind of token."
+                .to_owned(),
+        );
+    }
+    crate::verified::unless_credited(ID_AS_ACCESS.rule_id, &out.verified);
 }
 
 /// One fresh sign-in, a logout token of `variant` posted to `address`, and whether the session it made was then ended.
