@@ -85,6 +85,31 @@ pub struct Line {
     pub requirements: Vec<String>,
 }
 
+impl Line {
+    /// A key that is the same for the same line from one report to the next (backlog 0604), for `sv review` to tick it
+    /// by: a fixed hash (FNV-1a, 64 bits) over its part, its words, its command, and its place. Not its requirements:
+    /// a requirement a tick recorded as checked by hand leaves the line's list, and the line is still the one ticked.
+    pub fn key(&self) -> String {
+        let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+        let mut eat = |text: &str| {
+            for b in text.bytes().chain(std::iter::once(0)) {
+                h ^= u64::from(b);
+                h = h.wrapping_mul(0x0100_0000_01b3);
+            }
+        };
+        eat(self.part.heading());
+        eat(&self.what);
+        eat(self.command.as_deref().unwrap_or(""));
+        eat(self.place.as_deref().unwrap_or(""));
+        format!("{h:016x}")
+    }
+}
+
+/// What a line ticked in `sv review` says after it, with the day it was ticked.
+pub fn done_words(day: &str) -> String {
+    format!(" Ticked in `sv review` by the owner on {day}; it credits nothing.")
+}
+
 /// The checklist of `report`, in the order of a deployment.
 pub fn lines(report: &Report) -> Vec<Line> {
     let mut lines = Vec::new();
@@ -384,8 +409,9 @@ fn opening(report: &Report) -> String {
     let mut out = format!(
         "This is what to do or confirm before people use {} on the internet, in the order you would do it, drawn from \
          what this report found. It credits nothing: a line done here is not a check, and nothing on it counts toward \
-         any requirement. Ticking a box in this file records nothing; the file is written again with \
-         each report. `sv before-live` prints it again from the last report.",
+         any requirement. Tick a line in `sv review`, never in this file, which is written again with each \
+         report: a tick on a line `sv` accepts a check by hand for is recorded as that check, and any other as a \
+         note that the line is done. `sv before-live` prints it again from the last report.",
         report.app_name
     );
     if !report.on_the_internet {
@@ -426,7 +452,8 @@ pub fn render(report: &Report) -> String {
         out.push_str(&inert(part.about()));
         out.push_str("\n\n");
         for line in mine {
-            out.push_str("- [ ] ");
+            let done = report.checklist_done.get(&line.key());
+            out.push_str(if done.is_some() { "- [x] " } else { "- [ ] " });
             out.push_str(&inert(&line.what));
             if let Some(command) = &line.command {
                 out.push_str(&format!(" Run {}.", code(command)));
@@ -436,6 +463,9 @@ pub fn render(report: &Report) -> String {
             }
             if !line.requirements.is_empty() {
                 out.push_str(&format!(" ({})", line.requirements.join(", ")));
+            }
+            if let Some(day) = done {
+                out.push_str(&inert(&done_words(day)));
             }
             out.push('\n');
         }
@@ -502,7 +532,12 @@ pub fn html(report: &Report) -> String {
             continue;
         }
         for line in mine {
-            let mut li = format!("&#9744; {}", text(&line.what));
+            let done = report.checklist_done.get(&line.key());
+            let mut li = format!(
+                "{} {}",
+                if done.is_some() { "&#9745;" } else { "&#9744;" },
+                text(&line.what)
+            );
             if let Some(command) = &line.command {
                 li.push_str(&format!(" Run <code>{}</code>.", escape(command)));
             }
@@ -511,6 +546,9 @@ pub fn html(report: &Report) -> String {
             }
             if !line.requirements.is_empty() {
                 li.push_str(&format!(" ({})", escape(&line.requirements.join(", "))));
+            }
+            if let Some(day) = done {
+                li.push_str(&text(&done_words(day)));
             }
             b.push_str(&format!("<li>{li}</li>\n"));
         }

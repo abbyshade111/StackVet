@@ -191,6 +191,9 @@ pub(super) struct FakeApp {
     /// in place of a session id: in the cookie after the form's sign-in, in the JSON after
     /// `/api/login`. `None`, the default, hands out session ids.
     pub(super) jwt_lifetime: Option<u64>,
+    /// The session cookie is JSON in base64 followed by `.time.signature`, as Flask's is, rather than an opaque id
+    /// (backlog 0610). Not a flaw: Flask signs it, and anyone holding it can read it.
+    pub(super) session_as_base64_json: bool,
     /// The tokens carry no expiry time at all.
     pub(super) jwt_without_expiry: bool,
     /// Seconds past its expiry a token is still taken, as token libraries allow for clocks that
@@ -1533,6 +1536,14 @@ impl FakeApp {
     /// A new session id, or with `same_session_id` the one fixed id this user always gets, for a
     /// cookie or a token alike.
     fn session_id_for(&mut self, who: &str) -> String {
+        if self.session_as_base64_json {
+            let n = self.new_id();
+            let json = format!(r#"{{"user_id":"{n}","email":"{who}","_fresh":true}}"#);
+            return format!(
+                "{}.ZX1a2b.c2ln",
+                crate::encoding::base64(json.as_bytes(), crate::encoding::Alphabet::Web, false)
+            );
+        }
         if self.flaws.same_session_id {
             let n = who.bytes().fold(0xcbf2_9ce4_8422_2325_u64, |h, b| {
                 (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3)

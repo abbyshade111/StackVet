@@ -1572,6 +1572,27 @@ pub struct Manifest {
     /// (ADR-105). `None` until somebody has confirmed it.
     #[serde(default)]
     pub account_changes_review: Option<AccountChangesReview>,
+    /// Lines of the checklist before going live that the owner ticked in `sv review` and that `sv` accepts no check by
+    /// hand for (backlog 0604, ADR-121): each a sealed note that the line is done. They credit nothing.
+    #[serde(default)]
+    pub checklist_done: Vec<ChecklistDone>,
+}
+
+/// One checklist line ticked in `sv review`, as `[[checklist-done]]` in stackvet.toml (backlog 0604).
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ChecklistDone {
+    /// The line's key, as `report.json`'s checklist gives it.
+    pub key: String,
+    /// What the line said, kept so a person reading the file knows what was ticked.
+    pub what: String,
+    /// Who ticked it: `owner`, as `sv review` writes it.
+    pub by: String,
+    /// When, as YYYY-MM-DD.
+    pub on: String,
+    /// What `sv review` writes. Without one that holds, the line is not shown as done. See `sv-check::seal`.
+    #[serde(default)]
+    pub seal: Option<String>,
 }
 
 /// Which account changes the app does not offer, as the owner confirmed them through `sv review`,

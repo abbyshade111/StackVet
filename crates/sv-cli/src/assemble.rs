@@ -2963,8 +2963,25 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     crate::code_lines::pathway_questions(listing, &mut report);
     // The fields that look like personal data, beside the data-classification questions (backlog 0497).
     crate::code_lines::classification_questions(listing, token_fields, &mut report);
+    crate::code_lines::measured_parts(&mut report);
     // A first draft of the cryptographic inventory, beside the key-management questions (backlog 0494).
     crate::code_lines::key_questions(listing, &mut report);
+    // The checklist lines the owner ticked in `sv review`, those whose seal holds here (backlog 0604): shown as done in
+    // the checklist, crediting nothing. An entry not sealed, or changed since, is not.
+    report.checklist_done = manifest
+        .checklist_done
+        .iter()
+        .filter(|e| {
+            e.by.trim() == sv_check::design::OWNER
+                && sv_check::seal::owner_recorded(
+                    seals,
+                    e.seal.as_deref(),
+                    &sv_check::seal::checklist_done_fields(e),
+                )
+                .is_ok()
+        })
+        .map(|e| (e.key.clone(), e.on.clone()))
+        .collect();
     // Each tool's own report, kept only when asked (backlog 0229, part 4), and otherwise dropped
     // here, so nothing past this point holds the app's code twice.
     if options.keep_tool_output {

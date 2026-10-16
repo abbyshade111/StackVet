@@ -49,6 +49,20 @@ pub fn to_value(report: &Report) -> Value {
     only_you_by_id(&mut value);
     if let Value::Object(top) = &mut value {
         top.insert("report_format".to_owned(), Value::from(REPORT_FORMAT));
+        // The checklist before going live, each line with the key `sv review` ticks it by (backlog 0604), so the tick
+        // never reads the Markdown, which is written again with each report.
+        let lines: Vec<Value> = crate::checklist::lines(report)
+            .iter()
+            .map(|line| {
+                let mut entry = serde_json::to_value(line).expect("a line serializes");
+                entry["key"] = Value::from(line.key());
+                if let Some(day) = report.checklist_done.get(&line.key()) {
+                    entry["done_on"] = Value::from(day.as_str());
+                }
+                entry
+            })
+            .collect();
+        top.insert("checklist".to_owned(), Value::Array(lines));
     }
     value
 }

@@ -59,3 +59,26 @@ fn a_session_cookie_that_is_not_a_jwt_keeps_nothing() {
     let o = run_against(Flaws::default(), &users());
     assert_eq!(o.token_fields, None);
 }
+
+#[test]
+fn a_session_cookie_that_is_json_in_base64_keeps_its_field_names_and_no_value() {
+    // Backlog 0610: as Flask's session cookie is, signed and readable.
+    let mut app = FakeApp::new(Flaws::default());
+    app.session_as_base64_json = true;
+    let acc = accounts();
+    for account in [&acc.a, &acc.b] {
+        app.users
+            .insert(account.user.clone(), (account.password.clone(), false));
+    }
+    let o = run_with(&mut app, &users(), &acc, true, &Default::default(), false);
+    let token = o
+        .token_fields
+        .unwrap_or_else(|| panic!("no cookie fields kept: {:?}", o.steps));
+    assert!(token.cookie);
+    assert_eq!(token.carried, "the cookie `sid`");
+    assert_eq!(token.fields, ["_fresh", "email", "user_id"]);
+    assert!(
+        !format!("{token:?}").contains(&acc.a.user),
+        "a value was kept: {token:?}"
+    );
+}

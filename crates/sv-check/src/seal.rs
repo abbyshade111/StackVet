@@ -848,6 +848,17 @@ pub fn design_answer_fields(requirement: &str, a: &sv_manifest::DesignAnswer) ->
     ]
 }
 
+/// The fields a `[[checklist-done]]` entry is sealed over (backlog 0604): the line's key and words, who, and when.
+pub fn checklist_done_fields(entry: &sv_manifest::ChecklistDone) -> Vec<String> {
+    vec![
+        "checklist-done".to_owned(),
+        entry.key.trim().to_owned(),
+        entry.what.trim().to_owned(),
+        entry.by.trim().to_owned(),
+        entry.on.trim().to_owned(),
+    ]
+}
+
 /// The fields a result under `[checked-by-hand]` is sealed over.
 pub fn hand_check_fields(requirement: &str, h: &sv_manifest::HandCheck) -> Vec<String> {
     let field = |v: Option<&str>| v.unwrap_or("").trim().to_owned();

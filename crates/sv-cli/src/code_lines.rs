@@ -329,3 +329,42 @@ fn bounded(text: &str) -> String {
 
 #[cfg(test)]
 mod code_lines_tests;
+
+/// Gives each hand check whose requirement others' checks measure parts of those parts, with this report's verdict on
+/// each (backlog 0610). Read from the report itself, after every verdict is settled; it changes none of them.
+pub fn measured_parts(report: &mut sv_report::Report) {
+    let verdict = |id: &str| {
+        report
+            .requirements
+            .iter()
+            .find(|r| r.id == id)
+            .map_or("not one this app is held to".to_owned(), |r| {
+                r.status.label().to_owned()
+            })
+    };
+    let parts: BTreeMap<&str, Vec<sv_check::human::MeasuredBy>> = sv_check::human::MEASURED_PARTS
+        .iter()
+        .map(|(id, parts)| {
+            (
+                *id,
+                parts
+                    .iter()
+                    .map(|(part, what)| sv_check::human::MeasuredBy {
+                        id: (*part).to_owned(),
+                        what: (*what).to_owned(),
+                        status: verdict(part),
+                    })
+                    .collect(),
+            )
+        })
+        .collect();
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+    {
+        if let Some(found) = parts.get(item.id.as_str()) {
+            item.measured_by = found.clone();
+        }
+    }
+}

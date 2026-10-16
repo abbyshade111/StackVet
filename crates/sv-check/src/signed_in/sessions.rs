@@ -1560,8 +1560,12 @@ pub(super) fn session_checks(
     a: &SignedIn,
     signed_in_works: bool,
     carried: Option<bool>,
+    evidence: [&str; 2],
     out: &mut Outcome,
 ) {
+    // The requests a finding rests on: the page before signing in, and the sign-in itself (`login-page-a` and
+    // `login-a` for the form; the provider's own for a sign-in through another service, backlog 0232 part B).
+    let [page_id, login_id] = evidence;
     if a.session.bearer.is_some() && a.set_at_login.is_empty() {
         out.not_assessed.push((
             "V3.3.2, V3.3.4, V7.2.4".to_owned(),
@@ -1594,7 +1598,7 @@ pub(super) fn session_checks(
             // the signed-in session. That is session fixation, whatever else is true.
             let names: Vec<&str> = a.before_login.iter().map(|(n, _)| n.as_str()).collect();
             out.findings.push(finding_on(
-                vec!["login-page-a".to_owned(), "login-a".to_owned()],
+                vec![page_id.to_owned(), login_id.to_owned()],
                 &SESSION_RENEWAL,
                 "Signing in does not issue a new session",
                 Severity::High,
@@ -1617,7 +1621,7 @@ pub(super) fn session_checks(
         Some(false) => {
             let names: Vec<&str> = a.before_login.iter().map(|(n, _)| n.as_str()).collect();
             out.findings.push(finding_on(
-                vec!["login-page-a".to_owned(), "login-a".to_owned()],
+                vec![page_id.to_owned(), login_id.to_owned()],
                 &SESSION_RENEWAL,
                 "Signing in does not issue a new session",
                 Severity::High,
@@ -1679,7 +1683,7 @@ pub(super) fn session_checks(
         );
     } else {
         let mut found = finding_on(
-            vec!["login-a".to_owned()],
+            vec![login_id.to_owned()],
             &SESSION_COOKIE,
             "The session cookie is set without the attributes that protect it",
             Severity::High,
@@ -1712,7 +1716,7 @@ pub(super) fn session_checks(
         );
     } else {
         out.findings.push(finding_on(
-            vec!["login-page-a".to_owned(), "login-a".to_owned()],
+            vec![page_id.to_owned(), login_id.to_owned()],
             &SESSION_RENEWAL,
             "Signing in does not issue a new session",
             Severity::High,

@@ -60,6 +60,15 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
 
 /// How many findings the sealed report in `folder` lists, or why none is counted.
 fn counted_findings(folder: &Path) -> Result<usize, String> {
+    sealed_report(folder)?
+        .get("findings")
+        .and_then(|f| f.as_array().map(Vec::len))
+        .ok_or_else(|| "its report.json lists no findings sv can read".to_owned())
+}
+
+/// The `report.json` of the sealed report in `folder`, or why none is read: only a report `sv` can show it wrote, and
+/// only an ordinary file, no larger than the MCP server reads of any file.
+fn sealed_report(folder: &Path) -> Result<serde_json::Value, String> {
     sv_cli::report_seal::proven(folder)?;
     let path = folder.join("report.json");
     if !std::fs::symlink_metadata(&path).is_ok_and(|m| m.is_file()) {
@@ -77,10 +86,7 @@ fn counted_findings(folder: &Path) -> Result<usize, String> {
     if text.len() as u64 > sv_cli::mcp::MAX_RESOURCE_BYTES {
         return Err("its report.json is larger than sv reads of a report".to_owned());
     }
-    serde_json::from_str::<serde_json::Value>(&text)
-        .ok()
-        .and_then(|report| report.get("findings")?.as_array().map(Vec::len))
-        .ok_or_else(|| "its report.json lists no findings sv can read".to_owned())
+    serde_json::from_str(&text).map_err(|_| "its report.json is not JSON sv can read".to_owned())
 }
 
 #[cfg(test)]
@@ -93,6 +99,8 @@ mod left_out_tests;
 #[cfg(test)]
 #[path = "review_not_offered_tests.rs"]
 mod not_offered_tests;
+
+mod ticks;
 
 /// One entry waiting for a person.
 enum Waiting {
@@ -649,6 +657,18 @@ fn review(
                 out,
             )?;
         }
+        // The checklist before going live, whether or not anything else waited (backlog 0604).
+        ticks::tick_checklist(
+            app_dir,
+            &manifest,
+            &manifest_path,
+            &mut doc,
+            today,
+            &key,
+            &checker,
+            input,
+            out,
+        )?;
         return Ok(());
     }
     writeln!(
@@ -877,6 +897,18 @@ fn review(
             out,
         )?;
     }
+    // Last, the checklist before going live, line by line, from the last sealed report (backlog 0604).
+    ticks::tick_checklist(
+        app_dir,
+        &manifest,
+        &manifest_path,
+        &mut doc,
+        today,
+        &key,
+        &checker,
+        input,
+        out,
+    )?;
     Ok(())
 }
 

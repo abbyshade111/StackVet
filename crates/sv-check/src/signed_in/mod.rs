@@ -886,6 +886,34 @@ pub(crate) struct SignedIn {
     pub(crate) limited: bool,
 }
 
+/// The session checks (V3.3.2, V3.3.4, V7.2.4) of a sign-in made some other way than the form, through another service
+/// (backlog 0232, part B): `before_login` the cookies the app gave before it, `back` the answer that finished it, and
+/// `evidence` the two requests a finding rests on.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn provider_session_checks(
+    http: &mut dyn Http,
+    session: Session,
+    before_login: Vec<(String, String)>,
+    back: &ProbeResponse,
+    works: bool,
+    private: &str,
+    evidence: [&str; 2],
+    out: &mut Outcome,
+) {
+    let a = SignedIn {
+        session,
+        set_at_login: set_cookies(back),
+        before_login,
+        landed: String::new(),
+        answer: String::new(),
+        limited: false,
+    };
+    // Which cookie carries the session, shown as the form's run shows it: the private page asked without the cookies
+    // the sign-in set.
+    let carried = sign_in_cookies_carry_session(http, &a, works.then_some(private));
+    session_checks(&a, works, carried, evidence, out);
+}
+
 pub(crate) fn sign_in(
     http: &mut dyn Http,
     users: &UsersSection,
@@ -2485,6 +2513,7 @@ fn run_checks(
             &a,
             signed_in_works || owned_read.is_some(),
             carried,
+            ["login-page-a", "login-a"],
             &mut out
         )
     );
