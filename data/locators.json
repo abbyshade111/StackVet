@@ -190,7 +190,7 @@
         "V13.2.2"
       ],
       "finds": "where the app connects to its database, cache, or queue: connection addresses and the settings that hold them, each with the account it signs in as",
-      "names": "['\"`](postgres(ql)?|mysql|mariadb|mongodb(\\+srv)?|rediss?|amqps?|mssql|sqlserver)(\\+[a-z0-9]+)?://|^['\"`]\\w*(database|db|redis|mongo|amqp|broker|celerybroker|queue|cache)\\w*url['\"`]$",
+      "names": "['\"`](postgres(ql)?|mysql|mariadb|mongodb(\\+srv)?|rediss?|amqps?|mssql|sqlserver)(\\+[a-z0-9]+)?://|^['\"`]\\w*(database|db|redis|mongo|amqp|broker|celerybroker|queue|cache)\\w*url['\"`]$|^\\w*(database|db|redis|mongo|amqp|broker|celerybroker|queue|cache)\\w*url$",
       "queries": {
         "python": "(string) @used",
         "javascript": "[(string) @used\n (template_string) @used]",
@@ -235,6 +235,19 @@
         "python": "[(assignment left: (identifier) @used)\n (assignment left: (attribute attribute: (identifier) @used))\n (call function: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))\n (function_definition name: (identifier) @defined)\n (keyword_argument name: (identifier) @used)]",
         "javascript": "[(pair key: (property_identifier) @used)\n (assignment_expression left: (member_expression property: (property_identifier) @used))\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (function_declaration name: (identifier) @defined)]",
         "typescript": "[(pair key: (property_identifier) @used)\n (assignment_expression left: (member_expression property: (property_identifier) @used))\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (function_declaration name: (identifier) @defined)]"
+      }
+    },
+    {
+      "id": "locate.algorithm-names",
+      "questions": [
+        "V11.2.2"
+      ],
+      "finds": "algorithm names and key sizes written into the code, each a place that would have to change to swap the algorithm",
+      "names": "^['\"`](sha-?(1|224|256|384|512)|md5|aes-?(128|192|256)(-?(gcm|cbc|ctr|ecb|ofb|cfb))?|(hs|rs|es|ps)(256|384|512)|argon2(id|i|d)?|bcrypt|scrypt|pbkdf2(-?sha-?\\d+)?|chacha20(-poly1305)?|des(-ede3)?(-cbc)?|3des|rc4|blake2[bs]?(512|256)?|sha3-(256|384|512)|ed25519|x25519|p-?(256|384|521)|secp256[kr]1)['\"`]$|^(keysize|moduluslength|saltrounds|rounds|iterations|logrounds|digestsize)$|^(sha1|sha224|sha256|sha384|sha512|md5|aes|hs256|hs384|hs512|rs256|rs384|rs512|es256|es384|es512|ps256|argon2|argon2id|argon2i|bcrypt|scrypt|pbkdf2|chacha20|rc4|blake2b|blake2s|ed25519|x25519|secp256k1|secp256r1)$",
+      "queries": {
+        "python": "[(string) @used\n (keyword_argument name: (identifier) @used)]",
+        "javascript": "[(string) @used\n (pair key: (property_identifier) @used)]",
+        "typescript": "[(string) @used\n (pair key: (property_identifier) @used)]"
       }
     }
   ],

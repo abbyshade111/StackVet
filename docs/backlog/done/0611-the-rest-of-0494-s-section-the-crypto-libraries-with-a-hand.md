@@ -1,6 +1,6 @@
 # The rest of 0494's section: the crypto libraries with a hand-rolled-crypto finding (V11.2.1), and the hard-coded algorithm names counted for crypto agility (V11.2.2)
 
-**Status:** open
+**Status:** done, 16 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
