@@ -305,6 +305,11 @@
       "id": "C10.3.2",
       "title": "Local-only MCP connections stay on your own computer",
       "how": "List the MCP servers set up to run as a local program (the settings show a command to start, rather than an address). Check that each runs only on your own computer or in a controlled environment you set up, never on a shared server that other people or the internet can reach. Anything that needs to be shared should use an encrypted, signed-in connection instead."
+    },
+    {
+      "id": "V6.2.10",
+      "title": "A password does not expire on a schedule",
+      "how": "Look at what the app does with a password that has been in use a long time: whether it ever makes a person change it because a number of days has passed. A password should stay valid until it is found to be compromised or the person changes it; a forced change every 90 days, say, is what this asks the app not to do. Search the code and the settings for a password age, an expiry date, or a \"must change\" flag set by time. If there is none, write that down: it is the answer."
     }
   ]
 }

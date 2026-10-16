@@ -44,7 +44,7 @@ fn both_locators_speak_to_both_questions() {
         let mut questions = locator.questions.clone();
         questions.sort();
         let expected: &[&str] = if id == "locate.availability-brakes" {
-            &["V15.1.3", "V15.2.2", "V2.1.3"]
+            &["V15.1.3", "V15.2.2", "V2.1.3", "V6.1.1"]
         } else {
             &["V15.1.3", "V15.2.2"]
         };

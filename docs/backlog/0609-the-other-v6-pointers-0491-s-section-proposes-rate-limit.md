@@ -1,6 +1,6 @@
 # The other V6 pointers 0491's section proposes: rate-limit settings, the password validator, password expiry, a second-factor library, and backup codes
 
-**Status:** open
+**Status:** partly done: built: V6.1.1, V6.1.2, V6.3.3, and V6.5.2 pointers, the V6.2.10 hand check, and ast.password-expiry-enforced. Left: a finding for backup codes stored without hashing (V6.5.2), which the code alone does not show soundly, and saying when no second-factor library is among the packages (V6.3.3)
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
