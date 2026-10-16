@@ -1,6 +1,6 @@
 # A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation
 
-**Status:** partly done: part 1 (V15.1.1: whether a fix-within-days the owner recorded counts as documented by the owner) waits on the owner's decision; and V15.2.2's related running checks and the large-body observation are not built
+**Status:** partly done: part 1 (V15.1.1: whether a fix-within-days the owner recorded counts as documented by the owner) waits on the owner's decision; V15.2.2's related running checks are listed beside it (16 October 2026); the large-body observation (a 20 MB request body the run's copy accepted, shown as supporting) is not built
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
