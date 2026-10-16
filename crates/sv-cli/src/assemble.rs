@@ -2586,6 +2586,8 @@ fn the_owners_word(
     verified.extend(attested);
     verified.extend(by_hand);
     verified.extend(stated);
+    // `[policy] fix-within-days` as V15.1.1's documented time frames, on the owner's word once confirmed (backlog 0498).
+    verified.extend(sv_check::policy_word::fix_within_days(manifest, seals));
     Ok(PersonsWord {
         verified,
         notes_catalog,

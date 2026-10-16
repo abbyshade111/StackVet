@@ -459,6 +459,11 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # after it was confirmed is unconfirmed again. It never changes the level.
 # [scope-review]
 
+# [policy] fix-within-days as the owner confirmed it. Written only by `sv review`, which shows the time
+# frames and asks; never write it yourself. Confirmed, it is the documentation V15.1.1 asks for (how
+# soon a known vulnerability is fixed), on your word; changed afterwards, it is unconfirmed again.
+# [policy-review]
+
 # Lines of the checklist before going live (before-going-live.md) that you ticked in `sv review`.
 # Written only by `sv review`, which offers each line not yet ticked; never write it yourself, and
 # never tick a line in the Markdown, which is written again with each report. A line about a

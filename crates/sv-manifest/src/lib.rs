@@ -1572,6 +1572,10 @@ pub struct Manifest {
     /// (ADR-105). `None` until somebody has confirmed it.
     #[serde(default)]
     pub account_changes_review: Option<AccountChangesReview>,
+    /// The owner's word, through `sv review`, on `[policy] fix-within-days` (backlog 0498): confirmed, it is the
+    /// documentation V15.1.1 asks for. `None` until somebody has confirmed it.
+    #[serde(default)]
+    pub policy_review: Option<PolicyReview>,
     /// Lines of the checklist before going live that the owner ticked in `sv review` and that `sv` accepts no check by
     /// hand for (backlog 0604, ADR-121): each a sealed note that the line is done. They credit nothing.
     #[serde(default)]
@@ -1611,6 +1615,49 @@ pub struct AccountChangesReview {
     /// `sv-check::seal`.
     #[serde(default)]
     pub seal: Option<String>,
+}
+
+/// `[policy] fix-within-days` as the owner confirmed it through `sv review`, as `[policy-review]` in stackvet.toml
+/// (backlog 0498, the owner's choice of 16 October 2026): the documented time frames V15.1.1 asks for, on the owner's
+/// word, while `fix-within-days` still says the same.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct PolicyReview {
+    /// `fix-within-days` as it was when confirmed.
+    pub fix_within_days: FixWithinDays,
+    /// Who confirmed it: `owner`, as `sv review` writes it.
+    pub by: String,
+    /// When, as YYYY-MM-DD.
+    pub on: String,
+    /// What `sv review` writes. Without one that holds, the time frames are unconfirmed. See `sv-check::seal`.
+    #[serde(default)]
+    pub seal: Option<String>,
+}
+
+impl PolicyReview {
+    /// Whether `manifest` still gives the same time frames.
+    pub fn still_holds_for(&self, manifest: &Manifest) -> bool {
+        manifest.policy.fix_within_days.as_ref() == Some(&self.fix_within_days)
+    }
+}
+
+impl FixWithinDays {
+    /// The time frames in words, most serious first, leaving out a severity with none: "critical within 7 days,
+    /// high within 30 days".
+    pub fn said(&self) -> String {
+        [
+            ("critical", self.critical),
+            ("high", self.high),
+            ("medium", self.medium),
+            ("low", self.low),
+        ]
+        .iter()
+        .filter_map(|(name, days)| {
+            days.map(|d| format!("{name} within {d} day{}", if d == 1 { "" } else { "s" }))
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+    }
 }
 
 impl AccountChangesReview {
