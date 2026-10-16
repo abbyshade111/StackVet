@@ -259,7 +259,7 @@ jobs:
         # credits, and beside them the census of what checks withheld (`finding::found`), which
         # tools/coverage.py reads with them. They hold only check names, requirement ids, and places in
         # sv's own code, no answer the app gave.
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: credits-${{ matrix.part }}
           path: |
@@ -480,7 +480,7 @@ jobs:
 
       - name: Hand it to publish
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sv-image
           path: ${{ runner.temp }}/sv-image.tar.gz
@@ -559,7 +559,7 @@ jobs:
 
       - name: Hand it to publish
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sv-image-arm64
           path: ${{ runner.temp }}/sv-image-arm64.tar.gz
