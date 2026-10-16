@@ -1220,7 +1220,17 @@ fn rests_on(item: &sv_check::human::Item) -> String {
 /// The packages of the app's a question is about (backlog 0490), and why nothing can check it where that is said.
 fn in_the_packages(item: &sv_check::human::Item) -> String {
     let mut out = String::new();
-    if let Some(found) = &item.in_the_packages {
+    // None of them (backlog 0609): `says` is the locator's own sentence for that, and nothing was found by its name.
+    if let Some(found) = item
+        .in_the_packages
+        .as_ref()
+        .filter(|f| f.packages.is_empty())
+    {
+        out.push_str(&format!(
+            " **In the packages**, {}: none. {}",
+            found.finds, found.says
+        ));
+    } else if let Some(found) = &item.in_the_packages {
         out.push_str(&format!(
             " **In the packages**, {}: {}. {} {}",
             found.finds,
