@@ -391,39 +391,68 @@ pub fn resting_on_a_no(excluded: &[ExcludedRequirement], claims: &[ClaimLine]) -
     let answered_no = |name: &str| {
         claims
             .iter()
-            .any(|c| c.name == name && c.claimed == Some(false))
+            .find(|c| c.name == name && c.claimed == Some(false))
     };
-    let mut names: Vec<String> = Vec::new();
+    // The answers' names, the owner's confirmed ones apart: a confirmed "no" is labeled theirs and weighs the same in
+    // the count (backlog 0606).
+    let mut unrecorded: Vec<String> = Vec::new();
+    let mut confirmed: Vec<String> = Vec::new();
     let mut n = 0;
     for ex in excluded {
-        if ex.rests_on != "claim" || !answered_no(&ex.condition) {
+        if ex.rests_on != "claim" {
             continue;
         }
+        let Some(claim) = answered_no(&ex.condition) else {
+            continue;
+        };
         n += 1;
         let name = format!("`{}`", ex.condition);
-        if !names.contains(&name) {
-            names.push(name);
+        let list = if claim.confirmed_by_owner() {
+            &mut confirmed
+        } else {
+            &mut unrecorded
+        };
+        if !list.contains(&name) {
+            list.push(name);
         }
     }
     if n == 0 {
         return None;
     }
-    names.sort();
+    unrecorded.sort();
+    confirmed.sort();
+    let all: Vec<String> = confirmed.iter().chain(&unrecorded).cloned().collect();
+    let mut whose = Vec::new();
+    if !confirmed.is_empty() {
+        whose.push(format!(
+            "you confirmed {} through `sv review`",
+            list_and(&confirmed)
+        ));
+    }
+    if !unrecorded.is_empty() {
+        whose.push(format!(
+            "stackvet.toml does not record who gave {}, so {} read as your AI coding tool's word",
+            list_and(&unrecorded),
+            if unrecorded.len() == 1 {
+                "it is"
+            } else {
+                "each is"
+            },
+        ));
+    }
     Some(format!(
         "{n} requirement{} {} not apply only because stackvet.toml says no to {}. `sv` did not \
-         check {}: stackvet.toml does not record who gave {}, so {} read as your AI coding tool's word, and \
-         finding nothing in the code does not show that an app lacks something. If one is wrong, change it to \
-         `true` and run `sv` again.",
+         check {}: {}, and finding nothing in the code does not show that an app lacks something. If one \
+         is wrong, change it to `true` and run `sv` again.",
         if n == 1 { "" } else { "s" },
         if n == 1 { "does" } else { "do" },
-        list_and(&names),
-        if names.len() == 1 {
+        list_and(&all),
+        if all.len() == 1 {
             "that answer"
         } else {
             "those answers"
         },
-        if names.len() == 1 { "it" } else { "them" },
-        if names.len() == 1 { "it is" } else { "each is" },
+        whose.join("; "),
     ))
 }
 
@@ -445,19 +474,38 @@ pub struct ClaimLine {
     pub state: String,
     /// One sentence a person can act on.
     pub note: String,
-    /// Who gave the answer, as a design answer's `by` says it: `ai-tool` for every answer stackvet.toml
-    /// gives, since a capability line records nobody and an answer is never the owner's on nobody's say-so;
-    /// `None` when it gives none (backlog 0600).
+    /// Who gave the answer, as a design answer's `by` says it: `ai-tool` for an answer stackvet.toml gives, since a
+    /// capability line records nobody and an answer is never the owner's on nobody's say-so; `owner` once the owner
+    /// confirmed it through `sv review` (backlog 0606); `None` when it gives none (backlog 0600).
     pub by: Option<&'static str>,
+}
+
+/// `ClaimLine::by` for an answer the owner confirmed through `sv review` (backlog 0606).
+pub const CONFIRMED_BY_OWNER: &str = "owner";
+
+/// Marks each answer named in `confirmed` as the owner's, by its condition's name (backlog 0606). An answer nobody gave
+/// stays nobody's: a confirmation is of an answer, never of a silence.
+pub fn mark_confirmed(claims: &mut [ClaimLine], confirmed: &[String]) {
+    for claim in claims.iter_mut() {
+        if claim.by.is_some() && confirmed.contains(&claim.name) {
+            claim.by = Some(CONFIRMED_BY_OWNER);
+        }
+    }
 }
 
 impl ClaimLine {
     /// Who gave the answer, for a person.
     pub fn who_said(&self) -> &'static str {
         match self.by {
+            Some(CONFIRMED_BY_OWNER) => "yours, confirmed through `sv review`",
             Some(_) => "not recorded, so read as your AI coding tool's",
             None => "nobody",
         }
+    }
+
+    /// Whether the owner confirmed this answer through `sv review`.
+    pub fn confirmed_by_owner(&self) -> bool {
+        self.by == Some(CONFIRMED_BY_OWNER)
     }
 }
 
@@ -3948,6 +3996,9 @@ mod timing_tests;
 
 #[cfg(test)]
 mod resting_on_a_no_tests;
+
+#[cfg(test)]
+mod confirmed_claims_tests;
 #[cfg(test)]
 mod timing_inside_tests;
 #[cfg(test)]

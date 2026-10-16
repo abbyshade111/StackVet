@@ -16,6 +16,7 @@ pub mod ast;
 pub mod browser;
 pub mod browser_storage;
 pub mod bundled;
+pub mod capabilities_word;
 pub mod cert_checks;
 pub mod ci_codeql;
 pub mod client_tech;

@@ -464,6 +464,11 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # soon a known vulnerability is fixed), on your word; changed afterwards, it is unconfirmed again.
 # [policy-review]
 
+# The capability answers above as the owner confirmed them. Written only by `sv review`, which lists the
+# answers and asks; never write it yourself. A confirmed answer is shown as yours, not your AI coding
+# tool's; it switches no requirement on or off, and changed afterwards it is unconfirmed again.
+# [capabilities-review]
+
 # Lines of the checklist before going live (before-going-live.md) that you ticked in `sv review`.
 # Written only by `sv review`, which offers each line not yet ticked; never write it yourself, and
 # never tick a line in the Markdown, which is written again with each report. A line about a
