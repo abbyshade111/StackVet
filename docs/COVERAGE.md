@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 179 (52%) | 123 (36%) | 10 | 156 |
+| OWASP ASVS 5.0 | 345 | 180 (52%) | 123 (36%) | 10 | 155 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -56,10 +56,10 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
-| L2 | 183 | 100 | 70 | 26 | 0 | 21 | 50 | 25 | 22 | 2 |
+| L2 | 183 | 101 | 70 | 26 | 0 | 21 | 51 | 25 | 22 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-56 of the 179 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+57 of the 180 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 52 of the 123 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
@@ -97,7 +97,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V10 OAuth and OIDC | 36 | 8 | 6 | 0 | 28 |
 | V11 Cryptography | 24 | 12 | 7 | 0 | 12 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 1 |
-| V13 Configuration | 21 | 9 | 3 | 1 | 11 |
+| V13 Configuration | 21 | 10 | 3 | 1 | 10 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 7 |
 | V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 8 |
 | V16 Security Logging and Error Handling | 17 | 13 | 10 | 0 | 4 |
@@ -157,7 +157,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.3.7 | L2 | Reads the code: `ast.request-parameter-source-merged` (sv only ever as a finding: `ast.request-parameter-source-merged`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
-### Settled by asking the running app (119)
+### Settled by asking the running app (120)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -252,6 +252,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V10.5.1 | L2 | Signed in: `probe.oidc-nonce-not-checked` |
 | V10.5.2 | L2 | Reads the code: `ast.account-found-by-provider-email`; Signed in: `probe.oidc-user-keyed-on-email` (sv only ever as a finding: `ast.account-found-by-provider-email`) |
 | V10.5.4 | L2 | Signed in: `probe.oidc-audience-not-checked` |
+| V13.1.1 | L2 | Signed in: `probe.undeclared-outside-service` (sv only ever as a finding: `probe.undeclared-outside-service`) |
 | V13.2.4 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V13.4.1 | L1 | The running app: `probe.source-control-exposed` |
 | V13.4.2 | L2 | Reads the code: `ast.debug-mode-on`; The running app: `probe.error-detail-leak`, `probe.development-console-open`; Outside tools: `bandit`, `gosec`, `semgrep`; Outside tools you turn on: `codeql-python` (gosec only ever as a finding: `G108`; sv only ever as a finding: `ast.debug-mode-on`, `probe.development-console-open`) |

@@ -1185,6 +1185,16 @@ fn running_app(
                     .into_iter()
                     .flat_map(|(_, asked)| asked.steps.iter().cloned())
                     .collect();
+                // The sites the signed-in pages tried to reach, beside the ones the owner listed (backlog 0496).
+                let (undeclared, compared) = sv_check::browser::undeclared_outside_services(
+                    outcome
+                        .signed_in
+                        .as_ref()
+                        .and_then(|s| s.outside_hosts.as_deref()),
+                    manifest.capabilities.external_apis.as_deref(),
+                );
+                findings.extend(undeclared);
+                run_steps.extend(compared);
                 let signed_in_note = if signed_in_steps.is_empty() {
                     String::new()
                 } else {

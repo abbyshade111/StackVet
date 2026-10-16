@@ -405,3 +405,6 @@ mod availability_tests;
 
 #[cfg(test)]
 mod validation_tests;
+
+#[cfg(test)]
+mod outside_tests;

@@ -3035,6 +3035,14 @@
     "finding_only": true
    }
   ],
+  "V13.1.1": [
+   {
+    "id": "probe.undeclared-outside-service",
+    "run": "Signed in",
+    "looks_for": "A page of the app reaches another site that the app's list of the services it talks to does not name, so that list is not the whole of what the app communicates with, and whatever the page sends there goes somewhere nobody wrote down.",
+    "finding_only": true
+   }
+  ],
   "V13.2.4": [
    {
     "id": "ast.fetch-address-from-request",
