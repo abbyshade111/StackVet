@@ -2941,6 +2941,10 @@ mod hook_tests;
 mod hook_claims_tests;
 
 #[cfg(test)]
+#[path = "hook_kinds_tests.rs"]
+mod hook_kinds_tests;
+
+#[cfg(test)]
 #[path = "build_loop_tail_tests.rs"]
 mod build_loop_tail_tests;
 

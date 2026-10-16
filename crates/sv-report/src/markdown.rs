@@ -597,7 +597,7 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
     // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
     if let Some(seen) = &report.hook_record {
         out.push_str(&format!("## {}\n\n", crate::hook::HEADING));
-        let (lines, command) = crate::hook::sentences(seen);
+        let (lines, command) = crate::hook::sentences(seen, &report.requirements);
         for line in lines {
             let line = inert(&line).replace(crate::hook::COMMAND, &code(command.unwrap_or("")));
             out.push_str(&format!("{line}\n\n"));

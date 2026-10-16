@@ -20,12 +20,6 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 8. 0520 Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half — hold: a measurement that needs Linux with Podman, or the owner's Mac; adoption decided after it
 9. 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check — hold: the owner's own trial, started 15 October: the harness and the model swapped; a session reads the records when the owner says the runs are done
 10. 0232 More samples for the checks that rest on one sample (groups A to H) — hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue
-11. 0604 Ticking the checklist before going live in sv review: a hand check for a requirement sv accepts one for, otherwise a sealed note — ready
-12. 0606 Who gave a capability answer in stackvet.toml cannot be recorded, and no person can confirm one in sv review — ready
-13. 0607 The hook record's claims about security, read against the requirements each speaks to (from 0565) — ready
-14. 0609 The other V6 pointers 0491's section proposes: rate-limit settings, the password validator, password expiry, a second-factor library, and backup codes — ready
-15. 0610 V14.2.4's measurable parts grouped under it, and a base64 session cookie read for personal fields as a JWT's payload is — ready
-16. 0611 The rest of 0494's section: the crypto libraries with a hand-rolled-crypto finding (V11.2.1), and the hard-coded algorithm names counted for crypto agility (V11.2.2) — ready
 
 ## Log
 
@@ -798,3 +792,9 @@ a claim is still the record (`tools/backlog.py`), and this board only says who t
 - 2026-10-15 23:20 — dropped 0499 from the queue
 - 2026-10-15 23:20 — dropped 0500 from the queue
 - 2026-10-15 23:20 — dropped 0608 from the queue
+- 2026-10-16 01:17 — dropped 0604 from the queue
+- 2026-10-16 01:17 — dropped 0606 from the queue
+- 2026-10-16 01:17 — dropped 0607 from the queue
+- 2026-10-16 01:17 — dropped 0609 from the queue
+- 2026-10-16 01:17 — dropped 0610 from the queue
+- 2026-10-16 01:17 — dropped 0611 from the queue

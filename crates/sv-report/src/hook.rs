@@ -41,6 +41,10 @@ pub struct HookSeen {
     pub claims: usize,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub mismatches: Vec<Said>,
+    /// Turns the tool ended saying it had dealt with one of `CLAIM_KINDS` (backlog 0607), by kind. Only the kind is
+    /// kept, never the tool's words.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub said: Vec<SaidKind>,
     /// Lines whose chain checks out, and the line where it first does not, counting from 1.
     pub chained: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,6 +76,65 @@ pub enum Mismatch {
     WrittenSince { at: String, files: usize },
 }
 
+/// How many turns the tool ended saying it had dealt with one kind of thing.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct SaidKind {
+    pub kind: String,
+    pub turns: usize,
+}
+
+/// A kind of claim about security the hook record keeps (backlog 0607): its name in the record, what it is about in
+/// plain words, and the requirements it speaks to, each read from the requirement's own text. Beside each, the report
+/// shows what it found for those requirements. It credits nothing, and the tool's words are never kept.
+pub struct ClaimKind {
+    pub kind: &'static str,
+    pub topic: &'static str,
+    pub requirements: &'static [&'static str],
+}
+
+pub const CLAIM_KINDS: &[ClaimKind] = &[
+    ClaimKind {
+        kind: "rate-limiting",
+        topic: "limiting how often something can be tried (rate limiting, lockout)",
+        requirements: &["V2.4.1", "V6.3.1"],
+    },
+    ClaimKind {
+        kind: "cross-site-scripting",
+        topic: "cross-site scripting (escaping what the page shows)",
+        requirements: &["V1.2.1", "V3.2.2"],
+    },
+    ClaimKind {
+        kind: "forgery-token",
+        topic: "forged requests from other sites (an anti-forgery token)",
+        requirements: &["V3.5.1"],
+    },
+    ClaimKind {
+        kind: "password-storage",
+        topic: "how passwords are stored (hashing them)",
+        requirements: &["V11.4.2"],
+    },
+    ClaimKind {
+        kind: "sql-injection",
+        topic: "SQL injection (queries built safely)",
+        requirements: &["V1.2.4"],
+    },
+    ClaimKind {
+        kind: "command-injection",
+        topic: "command injection (shell commands built safely)",
+        requirements: &["V1.2.5"],
+    },
+    ClaimKind {
+        kind: "access-control",
+        topic: "who may do what (access control)",
+        requirements: &["V8.2.1"],
+    },
+    ClaimKind {
+        kind: "secrets",
+        topic: "keeping secrets and keys out of the code",
+        requirements: &["V13.3.1"],
+    },
+];
+
 /// Where a record's chain ended.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, serde::Deserialize)]
 pub struct Tip {
@@ -101,12 +164,15 @@ const WHAT_IT_IS: &str = "A hook you installed in your AI coding tool recorded e
 pub const COMMAND: &str = "\u{0}command\u{0}";
 
 /// The section's sentences, in order, plain text with `sv`'s own code spans, and the command `COMMAND` stands for.
-pub fn sentences(seen: &HookSeen) -> (Vec<String>, Option<&str>) {
-    let lines = said(seen);
+pub fn sentences<'a>(
+    seen: &'a HookSeen,
+    requirements: &[crate::RequirementLine],
+) -> (Vec<String>, Option<&'a str>) {
+    let lines = said(seen, requirements);
     (lines, seen.last_test.as_ref().map(|(_, c)| c.as_str()))
 }
 
-fn said(seen: &HookSeen) -> Vec<String> {
+fn said(seen: &HookSeen, requirements: &[crate::RequirementLine]) -> Vec<String> {
     let mut out = vec![WHAT_IT_IS.to_owned()];
     if let Some(why) = &seen.not_read {
         out.push(format!(
@@ -172,6 +238,29 @@ fn said(seen: &HookSeen) -> Vec<String> {
                 }
             ));
         }
+    }
+    // The other kinds of claim, each beside what this report shows for the requirements it speaks to (backlog 0607),
+    // in `sv`'s words: what the code and the checks show, never a word the tool could rewrite to change it.
+    for said in &seen.said {
+        let Some(kind) = CLAIM_KINDS.iter().find(|k| k.kind == said.kind) else {
+            continue;
+        };
+        let shows = kind
+            .requirements
+            .iter()
+            .map(|id| match requirements.iter().find(|r| r.id == *id) {
+                Some(r) => format!("{id}, {}", r.status.label()),
+                None => format!("{id}, not one this app is held to"),
+            })
+            .collect::<Vec<_>>()
+            .join("; ");
+        out.push(format!(
+            "The tool ended {} saying it had dealt with {} (only that is kept of what it said, never its words). For \
+             the requirements that speaks to, this report shows: {shows}. That is what the code and the checks show, \
+             whatever the tool said.",
+            count(said.turns, "turn", "turns"),
+            kind.topic
+        ));
     }
     out.push(match seen.broken_at {
         None => format!("The chain holds over all {} lines.", seen.chained),
