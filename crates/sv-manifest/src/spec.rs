@@ -57,6 +57,7 @@ health = "/"              # a path that returns 200 once the app is up
 # OIDC_ISSUER, OIDC_CLIENT_ID, and OIDC_CLIENT_SECRET from the environment when they are set.
 # start = "/login/google"   # the path that sends the browser to the provider to sign in
 # private = "/account"      # a page only a signed-in person sees
+# backchannel-logout = "/backchannel-logout"   # only if the provider can end sessions here (OIDC back-channel logout)
 
 # [stack.run.ai]
 # Only if the app has a feature that sends what people type to an AI model. For the run, the app is

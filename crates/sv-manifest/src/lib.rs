@@ -456,6 +456,10 @@ pub struct OidcSection {
     /// A page, for the signed-in person, where what `create` saved appears. Defaults to `private`.
     #[serde(default)]
     pub shows: Option<String>,
+    /// The address the provider posts OIDC back-channel logout tokens to, when the app takes them (V10.5.5,
+    /// ADR-127). Left out, no logout token is sent.
+    #[serde(default)]
+    pub backchannel_logout: Option<String>,
 }
 
 /// One request the probes make on the app's behalf: how to sign up, sign in, or create something.

@@ -56,6 +56,12 @@ pub fn marker(kind: &str, tag: &str) -> String {
 /// once (`oidc-provider.mjs` says what each does).
 pub mod oidc {
     pub const MODE: &str = "/_sv/mode";
+    /// Mints an access token, `aud=self` for this app or `aud=other` for another service (ADR-127).
+    pub const ACCESS_TOKEN: &str = "/_sv/access-token";
+    /// Mints a back-channel logout token, `variant=good`, `wrong-typ`, `no-events`, or `with-nonce` (ADR-127).
+    pub const LOGOUT_TOKEN: &str = "/_sv/logout-token";
+    /// The three wrong logout tokens, each wrong in the one way V10.5.5 names.
+    pub const LOGOUT_WRONG: [&str; 3] = ["wrong-typ", "no-events", "with-nonce"];
     pub const NORMAL: &str = "normal";
     pub const WRONG_NONCE: &str = "wrong-nonce";
     pub const WRONG_AUD: &str = "wrong-aud";

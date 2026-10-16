@@ -351,6 +351,9 @@
   "V7.5.2": [
    "signed-in"
   ],
+  "V7.6.2": [
+   "signed-in"
+  ],
   "V8.2.1": [
    "signed-in"
   ],
@@ -378,6 +381,9 @@
   "V10.2.2": [
    "signed-in"
   ],
+  "V10.3.1": [
+   "signed-in"
+  ],
   "V10.5.1": [
    "signed-in"
   ],
@@ -385,6 +391,9 @@
    "signed-in"
   ],
   "V10.5.4": [
+   "signed-in"
+  ],
+  "V10.5.5": [
    "signed-in"
   ],
   "V11.2.3": [
@@ -2386,6 +2395,14 @@
     "finding_only": true
    }
   ],
+  "V7.6.2": [
+   {
+    "id": "probe.oidc-sign-in-from-another-session",
+    "run": "Signed in",
+    "looks_for": "Somebody can finish their own sign-in in another person's browser, and that person is then using the attacker's account without knowing \u2014 typing into it, uploading to it, saving card details to it.",
+    "finding_only": false
+   }
+  ],
   "V8.2.1": [
    {
     "id": "config.firebase-rules-open",
@@ -2642,6 +2659,14 @@
     "finding_only": false
    }
   ],
+  "V10.3.1": [
+   {
+    "id": "probe.oidc-access-token-audience-not-checked",
+    "run": "Signed in",
+    "looks_for": "An access token the sign-in provider issued for any other service opens the app: whoever runs that service, or anyone who gets one of its tokens, can use the app as the person the token names.",
+    "finding_only": false
+   }
+  ],
   "V10.4.4": [
    {
     "id": "config.retired-grant-enabled",
@@ -2683,6 +2708,14 @@
     "id": "probe.oidc-audience-not-checked",
     "run": "Signed in",
     "looks_for": "An ID token issued to any other app that uses the same provider signs its holder in here \u2014 including an app an attacker wrote to collect them.",
+    "finding_only": false
+   }
+  ],
+  "V10.5.5": [
+   {
+    "id": "probe.oidc-logout-token-not-checked",
+    "run": "Signed in",
+    "looks_for": "A token that is not a proper logout token ends a person's session, so another kind of token from the same provider (an ID token, say) can be posted to the logout address to sign people out at will.",
     "finding_only": false
    }
   ],
