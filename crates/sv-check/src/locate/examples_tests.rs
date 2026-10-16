@@ -78,7 +78,17 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
         ),
         // Notes are kept by account (`notes.get(s.user)`), with no 403 and no owner compared: nothing to point at,
         // and never the provider's `authorization_endpoint` (server.js:69).
-        ("oidc-notes", &[]),
+        // Where it reads what the provider sent: the token's issuer checked, the ID token read, and `sub` (backlog
+        // 0500).
+        (
+            "oidc-notes",
+            &[
+                "locate.identity-claims server.js:51",
+                "locate.identity-claims server.js:113",
+                "locate.identity-claims server.js:118",
+                "locate.identity-claims server.js:120",
+            ],
+        ),
         // 25 lines each, no authorization code. Each has its search query, and the two its test sends to set up a
         // database: places a value goes to the database (backlog 0488).
         (

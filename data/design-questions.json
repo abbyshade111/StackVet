@@ -137,6 +137,14 @@
       "plain": "When one action changes several things at once (an order and the stock it takes, money leaving one account and arriving in another), is it set up so either all of the changes happen or none do, never half?",
       "whereMeans": "the file that groups the changes into one transaction",
       "howToFindOut": "Find the actions that change more than one record at once. For each, look for where the changes are grouped into one transaction (`with transaction.atomic()`, `db.transaction(...)`, `BEGIN` and `COMMIT`). Then ask what happens if the second change fails after the first succeeded: the first should be undone."
+    },
+    {
+      "id": "V6.8.4",
+      "title": "How strongly someone signed in is checked from what the provider said",
+      "asks": "If the application uses a separate identity provider and expects a specific authentication strength, method, or recentness for some functions, does it verify this using the information returned by the provider (for OIDC, the ID Token's 'acr', 'amr', and 'auth_time' claims), and if the provider does not return it, is there a documented fallback that assumes the minimum strength authentication mechanism was used?",
+      "plain": "When people sign in through another service (Google, Microsoft, and the like), does the app ever need to know how they signed in there, for example with a second factor or within the last few minutes? If so, does it check what that service said, and if the service says nothing, does it assume the weakest sign-in?",
+      "whereMeans": "the file that reads what the sign-in provider returned",
+      "howToFindOut": "Find where the app reads what the provider sent back after sign-in. If it uses only the person's identifier, email, and name, and no part of the app needs a stronger or more recent sign-in, write that down: it is the answer. If some part does, check that it looks at `acr`, `amr`, or `auth_time`, and what it does when they are missing."
     }
   ]
 }

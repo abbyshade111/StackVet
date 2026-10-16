@@ -8,7 +8,7 @@
 //!
 //! - **The security notes** (`security-notes.json`) — 19 requirements that ask for a written
 //!   decision. The question is the instruction: write the thing down.
-//! - **The design questions** (`design-questions.json`) — 17 that ask how the app is built. The
+//! - **The design questions** (`design-questions.json`) — 18 that ask how the app is built. The
 //!   question is the instruction: answer it, and say where in the code.
 //! - **`human-checks.json`** — the 20 ASVS requirements left over, each with a line saying what to
 //!   go and look at and what would count as the wrong answer.

@@ -2244,6 +2244,14 @@
     "finding_only": false
    }
   ],
+  "V6.8.1": [
+   {
+    "id": "ast.account-found-by-provider-email",
+    "run": "Reads the code",
+    "looks_for": "An account is found, or a sign-in recorded, by the email address the sign-in provider sent",
+    "finding_only": true
+   }
+  ],
   "V6.8.2": [
    {
     "id": "probe.oidc-signature-not-checked",
@@ -3043,6 +3051,14 @@
     "id": "probe.undeclared-outside-service",
     "run": "Signed in",
     "looks_for": "A page of the app reaches another site that the app's list of the services it talks to does not name, so that list is not the whole of what the app communicates with, and whatever the page sends there goes somewhere nobody wrote down.",
+    "finding_only": true
+   }
+  ],
+  "V13.2.2": [
+   {
+    "id": "ast.database-as-superuser",
+    "run": "Reads the code",
+    "looks_for": "The app connects to its database as the database's all-powerful account",
     "finding_only": true
    }
   ],

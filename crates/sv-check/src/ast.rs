@@ -2546,3 +2546,6 @@ mod keyword_destination_tests;
 
 #[cfg(test)]
 mod source_merged_tests;
+
+#[cfg(test)]
+mod superuser_tests;
