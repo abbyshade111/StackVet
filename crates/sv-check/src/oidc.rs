@@ -33,6 +33,7 @@ use sv_manifest::OidcSection;
 
 const IDS: &str = "V10.1.2, V10.2.1, V7.6.2, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2, V10.3.1";
 
+mod session;
 mod tokens;
 
 const CROSS_SESSION: Rule = Rule {
@@ -612,6 +613,8 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
         // Tokens the provider makes on request (backlog 0500, ADR-127).
         tokens::access_token_audience(http, section, &mut out);
         tokens::backchannel_logout(http, section, &mut out);
+        // The session this way of signing in leaves, checked as the form's is (backlog 0232, part B).
+        session::provider_session(http, section, &mut out);
     } else {
         out.not_assessed.push((
             "V10.5.2".to_owned(),
@@ -859,8 +862,21 @@ mod tests {
                         self.accounts.entry(key.to_owned()).or_insert_with(|| {
                             (token.sub.to_owned(), token.email.to_owned(), Vec::new())
                         });
-                        self.signed_in.insert(sid, key.to_owned());
-                        answer(302, vec![("location", "/account".into())])
+                        // A new session at sign-in, as a well-behaved app gives one (backlog 0232, part B): the
+                        // session the start page made is not the signed-in one.
+                        self.pending.remove(&sid);
+                        let new = self.id();
+                        self.signed_in.insert(new.clone(), key.to_owned());
+                        answer(
+                            302,
+                            vec![
+                                ("location", "/account".into()),
+                                (
+                                    "set-cookie",
+                                    format!("sid={new}; HttpOnly; SameSite=Lax; Path=/"),
+                                ),
+                            ],
+                        )
                     } else {
                         self.refused_once = true;
                         answer(401, vec![])
@@ -1347,8 +1363,15 @@ mod tests {
             "{:?}",
             o.not_assessed
         );
-        // The other three are still judged, and the issuer credit beside them.
-        assert_eq!(credited(&o).len(), 4, "{:?}", credited(&o));
+        // The other three are still judged, and the issuer credit beside them. The session checks of the provider's
+        // sign-in (backlog 0232, part B) are counted apart.
+        let own = |o: &Outcome| {
+            credited(o)
+                .into_iter()
+                .filter(|c| c.starts_with("probe.oidc-"))
+                .count()
+        };
+        assert_eq!(own(&o), 4, "{:?}", credited(&o));
     }
 
     #[test]
@@ -1381,8 +1404,13 @@ mod tests {
                 "{says}: {:?}",
                 o.not_assessed
             );
-            // The four that are findings are still judged, and credited here.
-            assert_eq!(credited(&o).len(), 4, "{says}: {:?}", credited(&o));
+            // The four that are findings are still judged, and credited here; the provider sign-in's session checks
+            // (backlog 0232, part B) are counted apart.
+            let own = credited(&o)
+                .into_iter()
+                .filter(|c| c.starts_with("probe.oidc-"))
+                .count();
+            assert_eq!(own, 4, "{says}: {:?}", credited(&o));
         }
     }
 
