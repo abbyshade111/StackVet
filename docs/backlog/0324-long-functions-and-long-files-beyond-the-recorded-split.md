@@ -1,6 +1,6 @@
 # Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150
 
-**Status:** open
+**Status:** partly done: built: docker.rs (5,919 lines to 2,157) and signed_in/mod.rs (5,487 to 2,115) split along their seams in six pull requests, behavior unchanged (16 October 2026). Left: the long functions (ai.rs run, signed_in run_checks, html.rs page, markdown.rs compliance, production.rs run, main.rs cmd_check, adapters.rs run_one_recorded), the other long files (sv-report lib.rs, ai.rs, main.rs, sessions.rs, sv-manifest lib.rs), and the parameter structs the ten too_many_arguments allowances mark; refactors, not moves
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: low. Verified against the code by the reviewing session before filing.
 
