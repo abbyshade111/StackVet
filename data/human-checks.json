@@ -310,6 +310,11 @@
       "id": "V6.2.10",
       "title": "A password does not expire on a schedule",
       "how": "Look at what the app does with a password that has been in use a long time: whether it ever makes a person change it because a number of days has passed. A password should stay valid until it is found to be compromised or the person changes it; a forced change every 90 days, say, is what this asks the app not to do. Search the code and the settings for a password age, an expiry date, or a \"must change\" flag set by time. If there is none, write that down: it is the answer."
+    },
+    {
+      "id": "V11.2.1",
+      "title": "Cryptography comes from a well-known library",
+      "how": "Look at every place the app encrypts, decrypts, signs, hashes, or makes a key, and check that each one calls a well-known, industry-validated library (such as the language's own crypto module, OpenSSL, libsodium, or the cryptography package) rather than code the app or its AI coding tool wrote itself. A function named encrypt that shuffles or XORs bytes by hand is the thing to look for. Write down the library each place uses."
     }
   ]
 }

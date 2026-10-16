@@ -37,7 +37,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 127 can be checked, 59 can only be found failing, 10 where a check helps but a person decides, and 149 with no check.
+345 requirements: 127 can be checked, 60 can only be found failing, 10 where a check helps but a person decides, and 148 with no check.
 
 ### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
 
@@ -186,7 +186,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 74 can be checked, 33 can only be found failing)
+### Level 2 (183 requirements, 74 can be checked, 34 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -358,7 +358,7 @@ decided per app, from its `stackvet.toml` and its code.
 |---|---|---|
 | **V11.1.1** Verify that there is a documented policy for management of cryptographic keys and a cryptographic key lifecycle that follows a key management standard such as NIST SP 800-57. This should include ensuring that keys are not overshared (for example, with more than two entities for shared secrets and more than one entity for private keys). | No check | – |
 | **V11.1.2** Verify that a cryptographic inventory is performed, maintained, regularly updated, and includes all cryptographic keys, algorithms, and certificates used by the application. It must also document where keys can and cannot be used in the system, and the types of data that can and cannot be protected using the keys. | No check | – |
-| **V11.2.1** Verify that industry-validated implementations (including libraries and hardware-accelerated implementations) are used for cryptographic operations. | No check | – |
+| **V11.2.1** Verify that industry-validated implementations (including libraries and hardware-accelerated implementations) are used for cryptographic operations. | Can only be found failing | Reads the code: `ast.hand-rolled-cryptography`, looks for: A function named as encrypting does it by hand with XOR (found failing only) |
 | **V11.2.2** Verify that the application is designed with crypto agility such that random number, authenticated encryption, MAC, or hashing algorithms, key lengths, rounds, ciphers and modes can be reconfigured, upgraded, or swapped at any time, to protect against cryptographic breaks. Similarly, it must also be possible to replace keys and passwords and re-encrypt data. This will allow for seamless upgrades to post-quantum cryptography (PQC), once high-assurance implementations of approved PQC schemes or standards are widely available. | No check | – |
 | **V11.2.3** Verify that all cryptographic primitives utilize a minimum of 128-bits of security based on the algorithm, key size, and configuration. For example, a 256-bit ECC key provides roughly 128 bits of security where RSA requires a 3072-bit key to achieve 128 bits of security. | Can be checked | Outside tools: brakeman, 1 rule, its rules look for: an RSA key size too small for 128 bits of security<br>Outside tools: semgrep, 10 rules, its rules look for: a key size below 128 bits of security, such as a small RSA or DSA key<br>Outside tools you turn on: codeql-javascript, 1 rule, its rules look for: a key size below 128 bits of security, such as a small RSA or DSA key<br>Outside tools you turn on: codeql-python, 1 rule, its rules look for: a key size below 128 bits of security, such as a small RSA or DSA key |
 | **V11.3.3** Verify that encrypted data is protected against unauthorized modification preferably by using an approved authenticated encryption method or by combining an approved encryption method with an approved MAC algorithm. | Can only be found failing | Reads the code: `ast.unauthenticated-encryption`, looks for: Data is encrypted in a way that does not show whether it was changed (found failing only) |

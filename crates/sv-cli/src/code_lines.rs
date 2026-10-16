@@ -276,9 +276,9 @@ pub fn classification_questions(
     }
 }
 
-/// The questions the draft cryptographic inventory is shown beside (backlog 0494): a key-management policy, and the
-/// inventory itself.
-pub const KEY_QUESTIONS: &[&str] = &["V11.1.1", "V11.1.2"];
+/// The questions the draft cryptographic inventory is shown beside (backlog 0494): a key-management policy, the
+/// inventory itself, and whether a well-known library does the work (backlog 0611).
+pub const KEY_QUESTIONS: &[&str] = &["V11.1.1", "V11.1.2", "V11.2.1"];
 
 /// Gives each key-management question the draft inventory, when anything was found (backlog 0494). Where to look, never
 /// evidence: nothing else reads it.

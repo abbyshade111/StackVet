@@ -43,6 +43,8 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
         (
             "notes-with-users",
             &[
+                // Its password hashing names its algorithm, `"sha256"` (backlog 0611).
+                "locate.algorithm-names app.py:45",
                 // Every query the app sends its database, for the hand check on cleaning input (backlog 0488).
                 "locate.dangerous-places app.py:34",
                 "locate.dangerous-places app.py:37",
@@ -83,6 +85,10 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
         (
             "oidc-notes",
             &[
+                // The algorithms it names: the ID token's `RS256`, and `sha256` for the signature and PKCE (backlog 0611).
+                "locate.algorithm-names server.js:45",
+                "locate.algorithm-names server.js:49",
+                "locate.algorithm-names server.js:79",
                 "locate.identity-claims server.js:51",
                 "locate.identity-claims server.js:113",
                 "locate.identity-claims server.js:118",

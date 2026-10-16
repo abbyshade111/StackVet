@@ -101,3 +101,15 @@ fn backend_connections_are_found_and_web_addresses_are_not() {
     );
     assert_eq!(javascript, ["db.js:1", "db.js:2"]);
 }
+
+#[test]
+fn a_file_whose_only_connection_is_a_setting_name_is_still_read() {
+    // The whole-file screen must not miss a setting named only in quotes (found 16 October 2026, backlog 0611).
+    let python = found(
+        "locate.backend-connections",
+        "db.py",
+        "import os\n\
+         engine = create_engine(os.environ['DATABASE_URL'])\n",
+    );
+    assert_eq!(python, ["db.py:2"]);
+}
