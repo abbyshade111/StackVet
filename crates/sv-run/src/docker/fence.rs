@@ -292,3 +292,129 @@ pub(super) fn version_below(version: &str, than: (u64, u64, u64)) -> bool {
         _ => false,
     }
 }
+
+impl DockerBackend {
+    /// Confirms with the daemon that the network really is internal. Fail secure: anything other
+    /// than a clear "true" stops the run.
+    pub fn verify_fenced(&self, network: &str) -> Result<(), CannotRun> {
+        match self.docker(&["network", "inspect", "-f", "{{.Internal}}", network]) {
+            Ok((0, out)) if out.trim() == "true" => Ok(()),
+            Ok((0, out)) => Err(CannotRun::BackendFailed {
+                detail: format!(
+                    "the network `{network}` is not internal (Docker reports Internal={}), so the \
+                     app would have been able to reach the internet while it ran",
+                    out.trim()
+                ),
+            }),
+            Ok((_, out)) => Err(CannotRun::BackendFailed {
+                detail: format!("could not confirm the fence: {}", first_line(&out)),
+            }),
+            Err(e) => Err(CannotRun::BackendFailed {
+                detail: format!("could not confirm the fence: {e}"),
+            }),
+        }
+    }
+
+    /// Makes the fenced network: internal, with no IPv6, and without a gateway address by the first of
+    /// `NO_GATEWAY`'s ways the daemon takes. Returns that way, or `None` when it took none and the
+    /// network was made with `--internal` alone, which the gateway check then never passes.
+    pub fn make_fenced_network(
+        &self,
+        network: &str,
+    ) -> Result<Option<&'static [&'static str]>, CannotRun> {
+        for options in NO_GATEWAY {
+            let args = network_create_args(options, network);
+            let args: Vec<&str> = args.iter().map(String::as_str).collect();
+            if self.docker(&args).is_ok_and(|(code, _)| code == 0) {
+                return Ok(Some(*options));
+            }
+        }
+        let args = network_create_args(&[], network);
+        let args: Vec<&str> = args.iter().map(String::as_str).collect();
+        match self.docker(&args) {
+            Ok((0, _)) => Ok(None),
+            Ok((_, out)) => Err(CannotRun::BackendFailed {
+                detail: first_line(&out),
+            }),
+            Err(e) => Err(CannotRun::BackendFailed { detail: e }),
+        }
+    }
+
+    /// Refuses the run when a container on the fenced network can reach the bridge's gateway, the
+    /// host (or the virtual machine Docker runs in). Knocked on from a throwaway container: an answer
+    /// of any kind, a connection or a refusal, is the host's stack answering. The control is the same
+    /// knock on the container's own loopback, which must read as refused, so an `nc` that cannot tell
+    /// one from the other stops the run rather than passing for a fence.
+    ///
+    /// A plain network, one whose bridge keeps its address on the host, never passes on silence: a host
+    /// firewall that drops what it does not allow, rather than refusing it, times the knock out while
+    /// other ports, SSH among them, stay open to the app (backlog 0301). Whether it is plain is read
+    /// from what Docker built as well as from how it was asked (`plain_reason`, backlog 0414).
+    pub fn verify_gateway_closed(
+        &self,
+        network: &str,
+        made_with: Option<&[&str]>,
+    ) -> Result<(), CannotRun> {
+        let fail = |detail: String| Err(CannotRun::BackendFailed { detail });
+        let config = match self.docker(&[
+            "network",
+            "inspect",
+            "-f",
+            "{{range .IPAM.Config}}{{.Gateway}}|{{.Subnet}} {{end}}",
+            network,
+        ]) {
+            Ok((0, out)) => out,
+            Ok((_, out)) => {
+                return fail(format!(
+                    "could not read the fence's gateway: {}",
+                    first_line(&out)
+                ));
+            }
+            Err(e) => return fail(format!("could not read the fence's gateway: {e}")),
+        };
+        // A network made without a gateway address may list none at all, so the address a gateway would
+        // have, the subnet's first, is knocked on as well as any Docker names.
+        let targets = gateway_targets(&config);
+        if targets.is_empty() {
+            return fail(format!(
+                "Docker names no gateway or subnet for the network `{network}` ({}), so whether the \
+                 app could reach this computer through it cannot be checked",
+                config.trim()
+            ));
+        }
+        let gateway = targets.join(", ");
+        let plain = plain_reason(made_with, &config);
+        let script = knock_script(&targets);
+        let out = match self.docker(&[
+            "run",
+            "--rm",
+            "--network",
+            network,
+            PROBE_IMAGE,
+            "sh",
+            "-c",
+            &script,
+        ]) {
+            Ok((_, out)) => out,
+            Err(e) => return fail(format!("could not check the fence's gateway: {e}")),
+        };
+        // Asked only when the network shows link-local IPv6 alone, which an older Docker gives every
+        // container (backlog 0450).
+        let version = || match self.docker(&["version", "--format", "{{.Server.Version}}"]) {
+            Ok((0, out)) => Some(out.trim().to_owned()),
+            _ => None,
+        };
+        match gateway_verdict(&out, plain.as_deref(), targets.len(), &version) {
+            GatewayVerdict::Closed => Ok(()),
+            GatewayVerdict::Reachable => fail(format!(
+                "a container on the fenced network reached its gateway, {gateway}, which is this \
+                 computer (or the virtual machine Docker runs in): the app could have reached anything \
+                 listening there, so it was not started"
+            )),
+            GatewayVerdict::Unknown(why) => fail(format!(
+                "could not tell whether the fence's gateway, {gateway}, is reachable ({why}), so the \
+                 app was not started"
+            )),
+        }
+    }
+}

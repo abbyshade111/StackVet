@@ -112,7 +112,7 @@ pub struct Install {
 
 impl Install {
     /// The arguments of the `docker run` that fills the volume. Hardened like every container
-    /// (read-only, no capabilities: `docker::HARDENING`, put on by `prepared` when it is sent), but
+    /// (read-only, no capabilities: `docker::containers::HARDENING`, put on by `prepared` when it is sent), but
     /// not fenced: this is the one container of a run that can reach the internet, and it is given
     /// nothing to send.
     pub fn args(&self, name: &str, image: &str) -> Vec<String> {
