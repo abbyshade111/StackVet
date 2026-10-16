@@ -203,6 +203,10 @@ pub struct Accounts {
     /// code is worked out from it. Held like the two-factor account's: never written anywhere but
     /// the app's container.
     pub admin_totp_secret: Option<Vec<u8>>,
+    /// What `seed` printed as `NAME=value` lines, for the manifest's `{seed:NAME}` (backlog 0536, ADR-124): a value the
+    /// app's own sign-up needs, such as an invite code, made inside the fence at run time. Held like the passwords:
+    /// filled into the requests that cite it and taken out of everything the run writes down.
+    pub seed_values: BTreeMap<String, String>,
 }
 
 /// An account `seed` enrolled in two-factor sign-in with a secret this run made.
@@ -475,8 +479,70 @@ struct Values<'a> {
     code: &'a str,
 }
 
+// The seed's values for this run (backlog 0536), set by `run_within` from the accounts, so every request filled on this
+// thread can cite them.
+thread_local! {
+    static SEED_VALUES: std::cell::RefCell<BTreeMap<String, String>> =
+        const { std::cell::RefCell::new(BTreeMap::new()) };
+}
+
+/// Sets the seed's values for the run on this thread, and back when dropped.
+pub(crate) struct SeedValues(BTreeMap<String, String>);
+
+impl SeedValues {
+    pub(crate) fn set(values: &BTreeMap<String, String>) -> SeedValues {
+        SeedValues(SEED_VALUES.with(|c| c.replace(values.clone())))
+    }
+}
+
+impl Drop for SeedValues {
+    fn drop(&mut self) {
+        SEED_VALUES.with(|c| *c.borrow_mut() = std::mem::take(&mut self.0));
+    }
+}
+
+/// `text` with each `{seed:NAME}` the seed printed put in its place. A name it did not print is left as written, so
+/// the app refuses it and the refusal is quoted (backlog 0599).
+fn fill_seed(text: &str) -> String {
+    if !text.contains("{seed:") {
+        return text.to_owned();
+    }
+    SEED_VALUES.with(|values| {
+        let values = values.borrow();
+        let mut out = text.to_owned();
+        for (name, value) in values.iter() {
+            out = out.replace(&format!("{{seed:{name}}}"), value);
+        }
+        out
+    })
+}
+
+/// The names `{seed:NAME}` cites in `template`, in order and once each.
+pub(crate) fn seed_names(template: &RequestTemplate) -> Vec<String> {
+    let mut names = Vec::new();
+    for text in template
+        .form
+        .values()
+        .chain(template.json.values())
+        .chain(std::iter::once(&template.path))
+    {
+        let mut rest = text.as_str();
+        while let Some(start) = rest.find("{seed:") {
+            rest = &rest[start + "{seed:".len()..];
+            let Some(end) = rest.find('}') else { break };
+            let name = rest[..end].to_owned();
+            if !names.contains(&name) {
+                names.push(name);
+            }
+            rest = &rest[end..];
+        }
+    }
+    names
+}
+
 fn fill(text: &str, v: &Values) -> String {
-    text.replace("{user}", v.user)
+    fill_seed(text)
+        .replace("{user}", v.user)
         .replace("{new_password}", v.new_password)
         .replace("{new_email}", v.new_email)
         .replace("{new_value}", v.new_value)
@@ -1193,6 +1259,8 @@ pub fn run_within(
 ) -> Outcome {
     // A user name apart from the address (backlog 0599): short names for the whole run, on this thread.
     let _short = ShortNames::set(users.signup.as_ref().is_some_and(wants_short_names));
+    // The seed's values (backlog 0536): cited as `{seed:NAME}`, filled on this thread only.
+    let _seed = SeedValues::set(&accounts.seed_values);
     let mut patient = Patient::within(http, spent);
     patient.login_path = users
         .login
@@ -2074,6 +2142,24 @@ fn run_checks(
             .to_owned(),
     ));
 
+    // A sign-up citing a value the seed did not print is sent as written, and says so (backlog 0536).
+    if let Some(signup) = &users.signup {
+        let missing: Vec<String> = seed_names(signup)
+            .into_iter()
+            .filter(|name| !accounts.seed_values.contains_key(name))
+            .collect();
+        if !missing.is_empty() {
+            out.steps.push(format!(
+                "the sign-up cites {}, which the seed did not print as a `NAME=value` line, so each sign-up is sent \
+                 with the placeholder as written",
+                missing
+                    .iter()
+                    .map(|n| format!("`{{seed:{n}}}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ));
+        }
+    }
     // What A's sign-up answered, for the reason when A then cannot open a private page (backlog 0599).
     let mut signed_up_a: Option<String> = None;
     if !seeded && let Some(signup) = &users.signup {
@@ -2901,6 +2987,8 @@ mod page_cookie_tests;
 mod private_pages_opened_tests;
 #[cfg(test)]
 mod resignup_tests;
+#[cfg(test)]
+mod seed_values_tests;
 #[cfg(test)]
 mod short_names_tests;
 #[cfg(test)]

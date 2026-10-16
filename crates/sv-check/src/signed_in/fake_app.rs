@@ -594,6 +594,9 @@ pub(super) struct Flaws {
     pub(super) svg_as_attachment: bool,
     /// Refuses SVG uploads outright. Not a fault: an app that takes no SVG has nothing to clean.
     pub(super) refuses_svg: bool,
+    /// Refuses (403) a sign-up whose `invite_code` is not [`invite_code`], as an app that reads its invite code from
+    /// its environment does (backlog 0536).
+    pub(super) signup_needs_invite: bool,
     /// Crashes (500) on a sign-up whose password is longer than 72 characters, as an app whose password-strength library
     /// refuses longer ones by raising does (backlog 0528).
     pub(super) crashes_on_long_password: bool,
@@ -2355,6 +2358,13 @@ impl FakeApp {
                     .get("email")
                     .or_else(|| f.get("username").filter(|_| self.flaws.usernames_up_to_30));
                 let (email, password) = (named?.clone(), f.get("password")?.clone());
+                if self.flaws.signup_needs_invite && f.get("invite_code") != Some(&invite_code()) {
+                    return Some(Self::respond(
+                        403,
+                        vec![],
+                        "<p class=error>A valid invite code is needed to sign up</p>",
+                    ));
+                }
                 if self.flaws.crashes_on_long_password && password.chars().count() > 72 {
                     return Some(Self::respond(500, vec![], "Internal Server Error"));
                 }
@@ -3592,6 +3602,11 @@ pub(super) fn users() -> UsersSection {
     }
 }
 
+/// The fake app's invite code (backlog 0536), made from pieces at run time so no file holds one.
+pub(super) fn invite_code() -> String {
+    ["inv", "7c41", "e09b"].join("-")
+}
+
 pub(super) fn accounts() -> Accounts {
     Accounts {
         a: Account {
@@ -3618,6 +3633,7 @@ pub(super) fn accounts() -> Accounts {
         // As `sv run` makes one whenever there is an admin, a `totp` entry and a `seed`. The fake
         // app enrolls the admin with it only when a test says so (`admin_needs_code`).
         admin_totp_secret: Some(admin_secret()),
+        seed_values: BTreeMap::new(),
     }
 }
 

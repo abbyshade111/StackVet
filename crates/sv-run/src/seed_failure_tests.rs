@@ -40,3 +40,25 @@ fn sv_s_own_test_secrets_are_still_named_as_left_out() {
         "{said}"
     );
 }
+
+/// Backlog 0536 (ADR-124): what `seed` printed as `NAME=value` lines is what the manifest's `{seed:NAME}` reads.
+#[test]
+fn the_seeds_name_value_lines_are_read_and_its_other_talk_is_not() {
+    let code = ["inv", "1d2e", "3f40"].join("-");
+    let printed = format!(
+        "Creating accounts...\nINVITE={code}\nexport TEAM=\"blue team\"\n2 users made\n9BAD=x\nwith spaces=no\n"
+    );
+    let values = seed_values(&printed);
+    assert_eq!(values.get("INVITE"), Some(&code));
+    assert_eq!(values.get("TEAM").map(String::as_str), Some("blue team"));
+    assert_eq!(values.len(), 2, "{:?}", values.keys().collect::<Vec<_>>());
+}
+
+/// A seed that printed a value and then failed: its words in the report leave the value out.
+#[test]
+fn a_failed_seed_leaves_out_a_value_it_printed() {
+    let accounts = crate::new_accounts(false, false);
+    let code = ["inv", "9a8b", "7c6d"].join("-");
+    let said = seed_failed(1, &format!("INVITE={code}"), &accounts);
+    assert!(!said.contains(&code), "the seed's value is in the report");
+}

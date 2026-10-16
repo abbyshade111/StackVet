@@ -78,8 +78,14 @@ pub trait Services {
     fn model_canary(&self) -> Option<String>;
     /// The app's log so far, read after the questions whose events it should hold.
     fn app_log(&self) -> String;
-    /// Runs the manifest's seed command in `target`, with the accounts in its environment.
-    fn seed(&self, target: Target, seed: &str, accounts: &Accounts) -> Result<(), String>;
+    /// Runs the manifest's seed command in `target`, with the accounts in its environment: what it printed as
+    /// `NAME=value` lines, for the manifest's `{seed:NAME}` (backlog 0536), or why it failed.
+    fn seed(
+        &self,
+        target: Target,
+        seed: &str,
+        accounts: &Accounts,
+    ) -> Result<std::collections::BTreeMap<String, String>, String>;
     /// Starts the second copy of the app with `setting` on, and waits until it answers.
     fn start_switched_off(&self, setting: &str) -> bool;
     /// Removes the second copy.
@@ -264,9 +270,17 @@ fn signed_in(
         // Nothing is run or asked; the suite says what is missing.
         return crate::signed_in::run(&mut http, users, accounts, true, plan.policy);
     }
-    let seeded = match &users.seed {
+    // What the seed printed for `{seed:NAME}` goes to the run on the accounts (backlog 0536).
+    let with_values;
+    let (seeded, accounts) = match &users.seed {
         Some(seed) => match services.seed(Target::App, seed, accounts) {
-            Ok(()) => true,
+            Ok(values) => {
+                with_values = Accounts {
+                    seed_values: values,
+                    ..accounts.clone()
+                };
+                (true, &with_values)
+            }
             Err(why) => {
                 return crate::signed_in::Outcome {
                     not_assessed: vec![(
@@ -277,7 +291,7 @@ fn signed_in(
                 };
             }
         },
-        None => false,
+        None => (false, accounts),
     };
     let mut out = crate::signed_in::run_within(
         &mut http,
@@ -301,7 +315,57 @@ fn signed_in(
     out.steps.extend(logged.steps);
     out.log_lines = logged.lines;
     out.log_tail = crate::logs::tail(&log);
+    keep_out(&accounts.seed_values, &mut out);
     out
+}
+
+/// What the run writes down: what it shows in place of a value the seed printed.
+pub const SEED_VALUE_SHOWN: &str = "[a value the seed printed]";
+
+/// Each value the seed printed taken out of everything the run writes down, as the passwords are (backlog 0536,
+/// ADR-124): an app may echo an invite code back in a page, and its log may name it. A value shorter than four
+/// characters is not looked for, since it would match ordinary text.
+pub fn keep_out(
+    values: &std::collections::BTreeMap<String, String>,
+    out: &mut crate::signed_in::Outcome,
+) {
+    let secrets: Vec<&str> = values
+        .values()
+        .map(String::as_str)
+        .filter(|v| v.chars().count() >= 4)
+        .collect();
+    if secrets.is_empty() {
+        return;
+    }
+    let clean = |text: &mut String| {
+        for secret in &secrets {
+            if text.contains(secret) {
+                *text = text.replace(secret, SEED_VALUE_SHOWN);
+            }
+        }
+    };
+    out.steps.iter_mut().for_each(clean);
+    out.log_tail.iter_mut().for_each(clean);
+    for (_, why) in &mut out.not_assessed {
+        clean(why);
+    }
+    for finding in &mut out.findings {
+        clean(&mut finding.title);
+        clean(&mut finding.description);
+    }
+    for credit in &mut out.verified {
+        clean(&mut credit.scope);
+    }
+    for exchange in &mut out.exchanges {
+        clean(&mut exchange.path);
+        clean(&mut exchange.body);
+        for (_, value) in &mut exchange.headers {
+            clean(value);
+        }
+    }
+    for kept in &mut out.log_lines {
+        clean(&mut kept.line);
+    }
 }
 
 /// The AI feature's suite, then what the app logged about it, then the kill switch on a second
@@ -369,6 +433,9 @@ fn ai(services: &dyn Services, plan: &Plan, section: &AiSection) -> crate::signe
 mod progress_tests;
 
 #[cfg(test)]
+mod seed_keep_out_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use std::cell::RefCell;
@@ -400,9 +467,14 @@ mod tests {
             self.calls.borrow_mut().push("app_log".to_owned());
             String::new()
         }
-        fn seed(&self, target: Target, _seed: &str, _accounts: &Accounts) -> Result<(), String> {
+        fn seed(
+            &self,
+            target: Target,
+            _seed: &str,
+            _accounts: &Accounts,
+        ) -> Result<std::collections::BTreeMap<String, String>, String> {
             self.calls.borrow_mut().push(format!("seed {target:?}"));
-            Ok(())
+            Ok(Default::default())
         }
         fn start_switched_off(&self, _setting: &str) -> bool {
             self.calls
@@ -440,6 +512,7 @@ mod tests {
             spare: "0123456789abcdef0123456789abcdef".to_owned(),
             totp: None,
             admin_totp_secret: None,
+            seed_values: Default::default(),
         }
     }
 
@@ -566,8 +639,13 @@ mod tests {
         fn app_log(&self) -> String {
             String::new()
         }
-        fn seed(&self, _: Target, _: &str, _: &Accounts) -> Result<(), String> {
-            Ok(())
+        fn seed(
+            &self,
+            _: Target,
+            _: &str,
+            _: &Accounts,
+        ) -> Result<std::collections::BTreeMap<String, String>, String> {
+            Ok(Default::default())
         }
         fn start_switched_off(&self, _: &str) -> bool {
             false

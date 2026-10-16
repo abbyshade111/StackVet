@@ -21,3 +21,7 @@ reviewing session recommends (a): the value never leaves the fence and the manif
 **Record.** A new ADR: what sv reads at run time and what the manifest may cite.
 
 **The owner's choice, 14 October 2026:** (a), the seed-made value: the manifest's seed command prints NAME=value lines and the sign-up form cites {seed:NAME}; the value is made inside the fence at run time and never written down. A new ADR in the pull request that builds it (what sv reads at run time and what the manifest may cite).
+
+**Built, 16 October 2026 (honesty):** the owner's choice (a). The seed may print `NAME=value` lines; a request in
+`[stack.run.users]` cites one as `{seed:NAME}`; the value is filled into the requests that cite it and taken out of
+everything the run writes down. A manifest citing `{seed:…}` with no `seed` is refused. ADR-124.

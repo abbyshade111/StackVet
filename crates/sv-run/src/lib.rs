@@ -860,6 +860,8 @@ pub fn new_accounts(with_admin: bool, with_totp: bool) -> sv_check::signed_in::A
         // The admin's own, for an app that asks admins for a code: given to `seed` as
         // SV_ADMIN_TOTP_SECRET, like the two-factor account's, and never written anywhere else.
         admin_totp_secret: (with_admin && with_totp).then(secret),
+        // Filled from what `seed` prints, once it has run (backlog 0536).
+        seed_values: Default::default(),
     }
 }
 

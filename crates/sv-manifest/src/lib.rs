@@ -1010,6 +1010,26 @@ impl UsersSection {
         if self.seed.is_none() && self.signup.is_none() {
             out.push("neither `seed` nor `signup` is set, so no accounts can be made".to_owned());
         }
+        // A value only the seed prints (backlog 0536, ADR-124): with no seed, nothing would put it in place.
+        if self.seed.is_none()
+            && let Some(cites) = [("signup", &self.signup), ("login", &self.login)]
+                .into_iter()
+                .find_map(|(what, t)| {
+                    t.as_ref()
+                        .is_some_and(|t| {
+                            t.path.contains("{seed:")
+                                || t.form
+                                    .values()
+                                    .chain(t.json.values())
+                                    .any(|v| v.contains("{seed:"))
+                        })
+                        .then_some(what)
+                })
+        {
+            out.push(format!(
+                "`{cites}` cites a `{{seed:NAME}}` value, but `seed` is not set, so nothing would print it"
+            ));
+        }
         if self.private.is_empty()
             && self.admin.is_empty()
             && self.admin_actions.is_empty()
@@ -3166,3 +3186,6 @@ mod rich_text_condition_tests;
 
 #[cfg(test)]
 mod upload_accepts_tests;
+
+#[cfg(test)]
+mod seed_value_tests;
