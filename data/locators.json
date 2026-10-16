@@ -88,7 +88,8 @@
       "id": "locate.availability-brakes",
       "questions": [
         "V15.2.2",
-        "V15.1.3"
+        "V15.1.3",
+        "V2.1.3"
       ],
       "finds": "the brakes the code shows: timeouts, limits on size, rate, or rows, and work handed to a queue",
       "names": "^(timeout|readtimeout|connecttimeout|limit|limits|maxcontentlength|datauploadmaxmemorysize|fileuploadmaxmemorysize|datauploadmaxnumberfields|maxfilesize|filesize|maxfiles|ratelimit|limiter|slowdown|throttle|throttleclasses|defaultthrottleclasses|defaultthrottlerates|applyasync|enqueue|sharedtask)$|^['\"](maxcontentlength|datauploadmaxmemorysize|fileuploadmaxmemorysize|defaultthrottlerates)['\"]$",
@@ -96,6 +97,35 @@
         "python": "[(keyword_argument name: (identifier) @used)\n (call function: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))\n (decorator (identifier) @used)\n (assignment left: (identifier) @used)\n (string) @used]",
         "javascript": "[(pair key: (property_identifier) @used)\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))]",
         "typescript": "[(pair key: (property_identifier) @used)\n (call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))]"
+      }
+    },
+    {
+      "id": "locate.validation-rules",
+      "questions": [
+        "V2.1.1",
+        "V2.1.2",
+        "V2.2.1",
+        "V2.2.2"
+      ],
+      "finds": "places the app says what a field must look like: validation schemas, forms, and the rules written on their fields",
+      "names": "^(basemodel|schema|serializer|modelserializer|hyperlinkedmodelserializer|form|modelform|flaskform|validator|fieldvalidator|modelvalidator|rootvalidator|validates|validatesschema|checkschema|isstring|isemail|isint|isnumber|isboolean|isdate|isenum|isuuid|isurl|isnotempty|length|minlength|maxlength|matches|isin|validatenested|arraymaxsize)$|^(z|yup|joi)\\.object$",
+      "queries": {
+        "python": "[(class_definition superclasses: (argument_list [(identifier) @used (attribute attribute: (identifier) @used)]))\n (decorator (call function: [(identifier) @used (attribute attribute: (identifier) @used)]))\n (decorator (identifier) @used)\n (decorator (attribute attribute: (identifier) @used))]",
+        "javascript": "[(call_expression function: (member_expression) @used)\n (call_expression function: (identifier) @used)\n (decorator (call_expression function: (identifier) @used))]",
+        "typescript": "[(call_expression function: (member_expression) @used)\n (call_expression function: (identifier) @used)\n (decorator (call_expression function: (identifier) @used))]"
+      }
+    },
+    {
+      "id": "locate.transactions",
+      "questions": [
+        "V2.3.3"
+      ],
+      "finds": "places the app groups changes so they all happen or none does: transactions begun, committed as one, or rolled back",
+      "names": "^(atomic|transaction|\\$transaction|begin|beginnested|starttransaction|savepoint|rollback)$|^['\"`](begin|start transaction|begin transaction|begin immediate|commit|rollback)\\s*;?['\"`]$",
+      "queries": {
+        "python": "[(call function: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))\n (decorator (attribute attribute: (identifier) @used))\n (decorator (identifier) @used)\n (argument_list (string) @used)]",
+        "javascript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (string) @used)\n (arguments (template_string) @used)]",
+        "typescript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (arguments (string) @used)\n (arguments (template_string) @used)]"
       }
     }
   ],

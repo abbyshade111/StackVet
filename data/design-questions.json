@@ -129,6 +129,14 @@
       "plain": "Are the app's logs sent to a separate place, so someone who took over the app could not quietly delete them?",
       "whereMeans": "the configuration that ships the logs",
       "howToFindOut": "Find where the logs end up. If the answer is a file on the same machine the app runs on, then somebody who takes over the app can edit them, and this is not done."
+    },
+    {
+      "id": "V2.3.3",
+      "title": "A change in several steps happens whole or not at all",
+      "asks": "When one business operation changes several records (an order and its stock, a transfer between two accounts, a booking and its payment), does the application use transactions so the operation either succeeds in its entirety or is rolled back to the previous correct state?",
+      "plain": "When one action changes several things at once (an order and the stock it takes, money leaving one account and arriving in another), is it set up so either all of the changes happen or none do, never half?",
+      "whereMeans": "the file that groups the changes into one transaction",
+      "howToFindOut": "Find the actions that change more than one record at once. For each, look for where the changes are grouped into one transaction (`with transaction.atomic()`, `db.transaction(...)`, `BEGIN` and `COMMIT`). Then ask what happens if the second change fails after the first succeeded: the first should be undone."
     }
   ]
 }

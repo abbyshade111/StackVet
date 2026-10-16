@@ -43,7 +43,12 @@ fn both_locators_speak_to_both_questions() {
             .unwrap_or_else(|| panic!("{id} is not shipped"));
         let mut questions = locator.questions.clone();
         questions.sort();
-        assert_eq!(questions, ["V15.1.3", "V15.2.2"], "{id}");
+        let expected: &[&str] = if id == "locate.availability-brakes" {
+            &["V15.1.3", "V15.2.2", "V2.1.3"]
+        } else {
+            &["V15.1.3", "V15.2.2"]
+        };
+        assert_eq!(questions, expected, "{id}");
     }
 }
 

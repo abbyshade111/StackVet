@@ -1558,8 +1558,24 @@ fn the_questions_are_asked_one_at_a_time_and_say_how_to_record_them() {
         json!({ "path": "flask-booking", "section": "questions" }),
     );
     assert_eq!(result["isError"], false, "{}", text(&result));
-    let t = text(&result);
+    let mut t = text(&result).to_owned();
     assert!(t.contains(sv_report::interview::HOW_TO_ASK), "{t}");
+    // The section runs to several pages, of which the first answer shows two; the rest are asked for by number,
+    // so a part on a later page is still asked (backlog 0489's design question moved the third part to page 3).
+    for page in 3..=10 {
+        if !t.contains(&format!("[part: questions, page {}", page - 1)) {
+            break;
+        }
+        let more = call(
+            &server,
+            "stackvet_check",
+            json!({ "path": "flask-booking", "section": "questions", "page": page }),
+        );
+        if more["isError"] != false {
+            break;
+        }
+        t.push_str(text(&more));
+    }
     for part in [
         "1. HOW THE APP IS BUILT",
         "2. WRITTEN DECISIONS",

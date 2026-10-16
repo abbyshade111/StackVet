@@ -1,6 +1,6 @@
 # The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over
 
-**Status:** open
+**Status:** partly done: the running checks for V2.2.1 and V2.3.2, and the count of handlers changing several tables with no transaction (with its payments finding), are not built
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
