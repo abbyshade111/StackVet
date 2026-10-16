@@ -27,6 +27,7 @@ fn with_a_create_nothing_takes() -> sv_manifest::UsersSection {
         json: Default::default(),
         read: None,
         id_field: None,
+        page: false,
     }];
     u.admin_actions = Vec::new();
     u.change_password = None;

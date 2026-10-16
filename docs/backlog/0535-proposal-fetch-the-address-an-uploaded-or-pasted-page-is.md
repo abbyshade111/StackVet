@@ -18,3 +18,14 @@ directly as a signed-in user and read its headers: credit V3.2.1 (read its text 
 `sandbox` directive or comes from a different origin; otherwise report it with the header seen.
 
 **Record.** A new ADR or a Later entry: what counts as evidence for V3.2.1 changes.
+
+**The owner's answer, 16 October 2026:** the upload half already existed (`probe.uploaded-file-rendered`). For the
+pasted page, of the three ways put to them, the owner chose (a): a `creates` entry may say `page = true`, saved and
+fetched at its `read` address, judged as an upload is.
+
+**Built, 16 October 2026 (honesty):** `page = true` on a `creates` entry. The first user saves a page holding a marked
+script, and it is fetched at `read` (or the save's `Location`). Served as an attachment, with a `sandbox` policy, or as
+something other than a page, V3.2.1 is credited in part. Served as a page of this app with the script as saved, it is a
+high finding, `probe.saved-page-rendered`. With the script taken out or escaped, it is neither. One change from the
+proposal: a `read` on a host of its own is not fetched and not credited, because the run cannot tell another origin from
+the app's own public name; it is said as a hand check. ADR-126.

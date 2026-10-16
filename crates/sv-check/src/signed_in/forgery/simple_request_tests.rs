@@ -13,6 +13,7 @@ fn json_create(path: &str) -> sv_manifest::CreateTemplate {
         json: [("text".to_owned(), "{marker}".to_owned())].into(),
         read: None,
         id_field: None,
+        page: false,
     }
 }
 

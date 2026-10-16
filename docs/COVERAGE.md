@@ -168,7 +168,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V1.3.11 | L2 | Signed in: `probe.mail-header-injected` |
 | V2.2.2 | L1 | Signed in: `probe.validation-only-in-the-browser` (sv only ever as a finding: `probe.validation-only-in-the-browser`) |
 | V2.4.1 | L2 | Signed in: `probe.create-rate-unlimited` |
-| V3.2.1 | L1 | Signed in: `probe.uploaded-file-rendered` |
+| V3.2.1 | L1 | Signed in: `probe.uploaded-file-rendered`, `probe.saved-page-rendered` |
 | V3.2.2 | L1 | Signed in: `probe.text-rendered-as-markup`; Outside tools: `semgrep` (semgrep only ever as a finding: `avoid-v-html`, `react-dangerouslysetinnerhtml`) |
 | V3.3.2 | L2 | The running app: `probe.cookie-attributes`; Signed in: `probe.session-cookie-attributes`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
 | V3.3.4 | L2 | The running app: `probe.cookie-attributes`; Signed in: `probe.session-cookie-attributes`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |

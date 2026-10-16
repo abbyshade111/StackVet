@@ -199,6 +199,10 @@ health = "/"              # a path that returns 200 once the app is up
 #   `owned`'s create is; `{marker}` where a value must differ from one record to the next.
 #   Add `read = "/comments/{id}"` (and `id-field` for a JSON answer) to an entry whose record can be read back:
 #   then the owner field is tried on it too, as on `owned`, and V15.3.3 is checked for that entry (ADR-087).
+#   Add `page = true` to an entry that saves a page of the member's own, served for the browser to show (a
+#   pasted page, a game): the first user saves a page holding a marked script through it and `sv` reads it back
+#   at `read`. Served as an attachment, with a `sandbox` policy, or as something other than a page, V3.2.1 is
+#   credited in part; served as a page of this app, it is a finding (ADR-126).
 # change-password = { path = "/password", form = { current = "{password}", new = "{new_password}", csrf_token = "{csrf}" } }
 # change-email = { path = "/account/email", form = { password = "{password}", email = "{new_email}", csrf_token = "{csrf}" } }
 #   Changing the signed-in user's email address, with `{password}` where the app asks for the

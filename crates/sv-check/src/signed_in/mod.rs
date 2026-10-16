@@ -77,6 +77,7 @@ mod redirects;
 mod refused;
 mod reset;
 mod rules;
+mod saved_page;
 mod sessions;
 mod sessions_end;
 mod signin;
@@ -100,6 +101,7 @@ use redirects::*;
 use reset::*;
 use rules::*;
 pub(crate) use rules::{Rule, finding, finding_on};
+use saved_page::*;
 use sessions::*;
 use sessions_end::*;
 use signin::*;
@@ -2586,6 +2588,18 @@ fn run_checks(
         upload_checks(http, users, &a, &mut out)
     );
 
+    // 6b'. A member's own page, saved through each `creates` entry marked `page = true` and fetched where it is read
+    //      back (backlog 0535, ADR-126): with A's session, which it only adds a record with.
+    if users.creates.iter().any(|c| c.page) {
+        asked!(
+            out,
+            http,
+            "saved_page_checks",
+            &["V3.2.1"],
+            saved_page_checks(http, users, &a, &mut out)
+        );
+    }
+
     // 6c. A flow of several steps, gone through in order with A's session and then skipped as B,
     //     signed in afresh. Neither disturbs A's session.
     asked!(
@@ -3016,6 +3030,8 @@ mod page_cookie_tests;
 mod private_pages_opened_tests;
 #[cfg(test)]
 mod resignup_tests;
+#[cfg(test)]
+mod saved_page_tests;
 #[cfg(test)]
 mod seed_values_tests;
 #[cfg(test)]
@@ -3604,6 +3620,24 @@ mod tests {
             csrf_token(&page("<input name=not_csrf_token value=x>"), &none),
             None
         );
+    }
+
+    /// `users` with a `creates` entry that saves a member's page, read back where the fake app serves it (backlog
+    /// 0535).
+    pub(super) fn with_page(mut users: UsersSection, read: Option<&str>) -> UsersSection {
+        users.creates.push(sv_manifest::CreateTemplate {
+            method: "POST".into(),
+            path: "/pages".into(),
+            form: [("html", "{marker}"), ("csrf_token", "{csrf}")]
+                .iter()
+                .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+                .collect(),
+            json: BTreeMap::new(),
+            read: read.map(str::to_owned),
+            id_field: None,
+            page: true,
+        });
+        users
     }
 
     /// `users` with both session-ending requests the fake app answers (backlog 0492).
@@ -4668,6 +4702,23 @@ mod crash_tests {
                 super::tests::with_end_sessions(users()),
                 true,
             ),
+            // A member's page, served sandboxed and then as part of the app (backlog 0535): a crash at the save or
+            // at the fetch must not read as the page served safely, or as served unsafely.
+            Scenario::new(
+                "a member's page served sandboxed",
+                Flaws::default(),
+                super::tests::with_page(users(), Some("/pages/{id}/frame")),
+                true,
+            ),
+            Scenario::new(
+                "a member's page served as part of the app",
+                Flaws {
+                    pages_unsandboxed: true,
+                    ..Default::default()
+                },
+                super::tests::with_page(users(), Some("/pages/{id}/frame")),
+                true,
+            ),
             // The phone, two-factor, and recovery changes, each made without the password (ADR-105):
             // a crash at a wrong-password change, or at the page that shows its value, must not
             // read as that change refused.
@@ -4699,6 +4750,7 @@ mod crash_tests {
                         json: Default::default(),
                         read: None,
                         id_field: None,
+                        page: false,
                     }];
                     u
                 },

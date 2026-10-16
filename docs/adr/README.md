@@ -172,6 +172,7 @@ source files, and in two tests:
 | [ADR-123](ADR-123.md) | A way into the app the code shows that stackvet.toml's list of sign-in pathways does not name is a finding (accepted, 15 October 2026) |
 | [ADR-124](ADR-124.md) | A value the sign-up needs and the manifest must not carry is printed by the seed and cited as `{seed:NAME}` (accepted, 16 October 2026) |
 | [ADR-125](ADR-125.md) | Ending sessions is tried from the manifest: a user ends their others, and an admin ends a user's (accepted, 16 October 2026) |
+| [ADR-126](ADR-126.md) | A member's own page is saved through a `creates` entry and fetched where it is served (accepted, 16 October 2026) |
 
 ## Names in the records
 

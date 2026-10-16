@@ -283,6 +283,7 @@ RUST_CHECKS = {
     "probe.file-contents-unchecked": ("signed-in", ["V5.2.2"]),
     "probe.uploaded-file-executed": ("signed-in", ["V5.3.1"]),
     "probe.uploaded-file-rendered": ("signed-in", ["V3.2.1"]),
+    "probe.saved-page-rendered": ("signed-in", ["V3.2.1"]),
     "probe.authentication-logged": ("signed-in", ["V16.3.1"]),
     "probe.authorization-failure-logged": ("signed-in", ["V16.3.2"]),
     "probe.log-line-metadata": ("signed-in", ["V16.2.1"]),
@@ -710,6 +711,8 @@ RUST_IN_PART |= {
     # One other session ended, viewing not tried; one user's one session ended by the admin (backlog 0492).
     "probe.sessions-ended-without-password",
     "probe.admin-end-sessions-ignored",
+    # One member's page, at the one address `read` names (backlog 0535).
+    "probe.saved-page-rendered",
     "config.gitignore-covers-env",
     "config.workflow-checkout-keeps-token",
     "config.secrets-file-committed",

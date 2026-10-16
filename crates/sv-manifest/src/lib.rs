@@ -539,6 +539,11 @@ pub struct CreateTemplate {
     /// The field of a JSON create answer holding the new id. Defaults to `id`.
     #[serde(default)]
     pub id_field: Option<String>,
+    /// The record is a page of the member's own, served for the browser to show (a pasted page, a
+    /// game, a profile's HTML): `sv` saves a page holding a marked script through it, reads it back
+    /// at `read`, and judges how it is served (V3.2.1, ADR-126).
+    #[serde(default)]
+    pub page: bool,
 }
 
 impl CreateTemplate {
