@@ -3046,6 +3046,14 @@
     "finding_only": true
    }
   ],
+  "V13.2.2": [
+   {
+    "id": "ast.database-as-superuser",
+    "run": "Reads the code",
+    "looks_for": "The app connects to its database as the database's all-powerful account",
+    "finding_only": true
+   }
+  ],
   "V13.2.4": [
    {
     "id": "ast.fetch-address-from-request",

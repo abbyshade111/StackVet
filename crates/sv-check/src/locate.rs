@@ -411,3 +411,6 @@ mod outside_tests;
 
 #[cfg(test)]
 mod logging_tests;
+
+#[cfg(test)]
+mod identity_tests;

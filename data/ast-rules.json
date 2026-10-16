@@ -2410,6 +2410,56 @@
         "dart": "Dart's common servers read the address and the body separately, so there is nothing to find.",
         "shell": "Shell scripts do not read web requests in any way this rule can speak to."
       }
+    },
+    {
+      "id": "ast.database-as-superuser",
+      "title": "The app connects to its database as the database's all-powerful account",
+      "severity": "medium",
+      "confidence": "medium",
+      "requirementIds": [
+        "V13.2.2"
+      ],
+      "cwe": [
+        "CWE-250"
+      ],
+      "description": "A connection address written into the code signs in to the database as its built-in administrator: `postgres` for PostgreSQL, `root` for MySQL and MariaDB, `sa` for SQL Server, or `admin` for MongoDB.",
+      "impact": "That account can do anything to every database on the server: read and change any table, drop them, make new accounts. A flaw that lets someone run a query through the app (SQL injection, say) then has all of that, not just what the app needs.",
+      "fix": "Make an account of the app's own on the database, give it only what the app needs (usually reading and writing its own tables), and put that account in the connection address, kept in a setting rather than in the code.",
+      "findingsOnly": true,
+      "queries": {
+        "python": "(string) @hit @arg",
+        "javascript": "[(string) (template_string)] @hit @arg",
+        "typescript": "[(string) (template_string)] @hit @arg",
+        "go": "[(interpreted_string_literal) (raw_string_literal)] @hit @arg",
+        "php": "[(string) (encapsed_string)] @hit @arg",
+        "ruby": "(string) @hit @arg",
+        "java": "(string_literal) @hit @arg",
+        "csharp": "[(string_literal) (verbatim_string_literal)] @hit @arg",
+        "kotlin": "(string_literal) @hit @arg",
+        "rust": "[(string_literal) (raw_string_literal)] @hit @arg",
+        "c": "(string_literal) @hit @arg",
+        "cpp": "(string_literal) @hit @arg"
+      },
+      "argumentPatterns": {
+        "python": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "javascript": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "typescript": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "go": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "php": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "ruby": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "java": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "csharp": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "kotlin": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "rust": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "c": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@",
+        "cpp": "^[A-Za-z@$]*[r#]*[\"\\'`]?(postgres(ql)?|mysql|mariadb|mssql|sqlserver|mongodb(\\+srv)?)(\\+[A-Za-z0-9]+)?://(postgres|root|sa|admin|administrator|rdsadmin)(:[^@\\s\"\\'`]*)?@"
+      },
+      "looksFor": "a connection address written into the code that signs in to PostgreSQL as `postgres`, to MySQL or MariaDB as `root`, to SQL Server as `sa`, or to MongoDB as `admin`; an address kept in a setting is not read, so finding none credits nothing",
+      "nothingToFind": {
+        "dart": "A database connection address is not looked for in Dart: a Dart app usually reaches its data through a server, not a database account.",
+        "swift": "A database connection address is not looked for in Swift: a Swift app usually reaches its data through a server, not a database account.",
+        "shell": "Shell scripts are not read for connection addresses: one that starts a database is setting it up, not connecting the app to it."
+      }
     }
   ]
 }

@@ -155,6 +155,46 @@
         "javascript": "[(call_expression function: [(identifier) (member_expression)] @used)\n (new_expression constructor: [(identifier) (member_expression)] @used)]",
         "typescript": "[(call_expression function: [(identifier) (member_expression)] @used)\n (new_expression constructor: [(identifier) (member_expression)] @used)]"
       }
+    },
+    {
+      "id": "locate.upload-limits",
+      "questions": [
+        "V5.1.1"
+      ],
+      "finds": "where the code says which files an upload takes and how large: allowed types and extensions, size limits, and file filters",
+      "names": "^(allowedextensions|allowedexts|allowedtypes|allowedmimetypes|allowedcontenttypes|allowedfile|uploadextensions|maxcontentlength|fileuploadmaxmemorysize|datauploadmaxmemorysize|maxuploadsize|filefilter|filesize|maxfilesize|maxfiles|limits|filetypes)$|^['\"](maxcontentlength|fileuploadmaxmemorysize|datauploadmaxmemorysize)['\"]$",
+      "queries": {
+        "python": "[(assignment left: (identifier) @used)\n (call function: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))\n (keyword_argument name: (identifier) @used)\n (subscript subscript: (string) @used)\n (function_definition name: (identifier) @defined)]",
+        "javascript": "[(variable_declarator name: (identifier) @used)\n (pair key: (property_identifier) @used)\n (call_expression function: (identifier) @used)\n (function_declaration name: (identifier) @defined)]",
+        "typescript": "[(variable_declarator name: (identifier) @used)\n (pair key: (property_identifier) @used)\n (call_expression function: (identifier) @used)\n (function_declaration name: (identifier) @defined)]"
+      }
+    },
+    {
+      "id": "locate.identity-claims",
+      "questions": [
+        "V6.8.4"
+      ],
+      "finds": "where the app reads what the sign-in provider said about the person: the ID token, the user information, and claims such as `sub`, `acr`, `amr`, and `auth_time`",
+      "names": "^['\"]?(acr|amr|authtime|sub|iss|emailverified|idtoken|userinfo)['\"]?$",
+      "queries": {
+        "python": "[(subscript subscript: (string) @used)\n (call function: (attribute) arguments: (argument_list . (string) @used))\n ((attribute object: (_) @object attribute: (identifier) @used)\n  (#not-match? @object \"^(re|regex)$\"))]",
+        "javascript": "[(member_expression property: (property_identifier) @used)\n (subscript_expression index: (string) @used)]",
+        "typescript": "[(member_expression property: (property_identifier) @used)\n (subscript_expression index: (string) @used)]"
+      }
+    },
+    {
+      "id": "locate.backend-connections",
+      "questions": [
+        "V13.2.1",
+        "V13.2.2"
+      ],
+      "finds": "where the app connects to its database, cache, or queue: connection addresses and the settings that hold them, each with the account it signs in as",
+      "names": "['\"`](postgres(ql)?|mysql|mariadb|mongodb(\\+srv)?|rediss?|amqps?|mssql|sqlserver)(\\+[a-z0-9]+)?://|^['\"`]\\w*(database|db|redis|mongo|amqp|broker|celerybroker|queue|cache)\\w*url['\"`]$",
+      "queries": {
+        "python": "(string) @used",
+        "javascript": "[(string) @used\n (template_string) @used]",
+        "typescript": "[(string) @used\n (template_string) @used]"
+      }
     }
   ],
   "packages": [

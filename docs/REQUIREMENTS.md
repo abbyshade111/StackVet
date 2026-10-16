@@ -37,7 +37,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 124 can be checked, 57 can only be found failing, 10 where a check helps but a person decides, and 154 with no check.
+345 requirements: 124 can be checked, 58 can only be found failing, 10 where a check helps but a person decides, and 153 with no check.
 
 ### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
 
@@ -186,7 +186,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 71 can be checked, 31 can only be found failing)
+### Level 2 (183 requirements, 71 can be checked, 32 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -385,7 +385,7 @@ decided per app, from its `stackvet.toml` and its code.
 |---|---|---|
 | **V13.1.1** Verify that all communication needs for the application are documented. This must include external services which the application relies upon and cases where an end user might be able to provide an external location to which the application will then connect. | Can only be found failing | Signed in: `probe.undeclared-outside-service`, if it fails: A page of the app reaches another site that the app's list of the services it talks to does not name, so that list is not the whole of what the app communicates with, and whatever the page sends there goes somewhere nobody wrote down. (found failing only) |
 | **V13.2.1** Verify that communications between backend application components that don't support the application's standard user session mechanism, including APIs, middleware, and data layers, are authenticated. Authentication must use individual service accounts, short-term tokens, or certificate-based authentication and not unchanging credentials such as passwords, API keys, or shared accounts with privileged access. | No check | – |
-| **V13.2.2** Verify that communications between backend application components, including local or operating system services, APIs, middleware, and data layers, are performed with accounts assigned the least necessary privileges. | No check | – |
+| **V13.2.2** Verify that communications between backend application components, including local or operating system services, APIs, middleware, and data layers, are performed with accounts assigned the least necessary privileges. | Can only be found failing | Reads the code: `ast.database-as-superuser`, looks for: The app connects to its database as the database's all-powerful account (found failing only) |
 | **V13.2.3** Verify that if a credential has to be used for service authentication, the credential being used by the consumer is not a default credential (e.g., root/root or admin/admin). | No check | – |
 | **V13.2.4** Verify that an allowlist is used to define the external resources or systems with which the application is permitted to communicate (e.g., for outbound requests, data loads, or file access). This allowlist can be implemented at the application layer, web server, firewall, or a combination of different layers. | Can only be found failing | Reads the code: `ast.fetch-address-from-request`, looks for: An outgoing request goes to an address taken from the incoming one (found failing only)<br>The running app: `probe.fetch-goes-anywhere`, if it fails: The feature fetches whatever address it is given, including one on the app's own private network that nobody listed. Somebody can use it to make the server reach places only the server can reach: internal services, a cloud provider's metadata address that hands out the server's credentials, or the app's own admin pages. (found failing only) |
 | **V13.2.5** Verify that the web or application server is configured with an allowlist of resources or systems to which the server can send requests or load data or files from. | No check | – |
