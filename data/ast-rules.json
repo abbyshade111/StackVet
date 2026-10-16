@@ -2359,6 +2359,57 @@
         "cpp": "Not looked for in C++ yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in C++ credits nothing either way.",
         "shell": "Shell scripts save no records this rule can speak to."
       }
+    },
+    {
+      "id": "ast.request-parameter-source-merged",
+      "title": "A request value is read without saying where it came from",
+      "severity": "low",
+      "confidence": "medium",
+      "requirementIds": [
+        "V15.3.7"
+      ],
+      "cwe": [
+        "CWE-235"
+      ],
+      "description": "This line reads a value from the request through a call that merges several sources, so the code does not say whether it came from the web address, the form, or a cookie: Flask's `request.values`, Django's old `request.REQUEST`, Express's `req.param()`, PHP's `$_REQUEST`, Go's `FormValue`, a Java servlet's `getParameter`, or classic ASP.NET's `Request[...]`.",
+      "impact": "When the same name arrives twice, once in the address and once in the form, the app may read one copy while a check elsewhere read the other (HTTP parameter pollution). Someone can then slip a value past a check, or change what an action does, by adding the name to a link.",
+      "fix": "Read each value from the one place it should come from: `request.args` or `request.form` in Flask, `req.query`, `req.body`, or `req.params` in Express, `$_GET` or `$_POST` in PHP, `r.URL.Query().Get` or `r.PostFormValue` in Go, and `Request.QueryString` or `Request.Form` in ASP.NET. Where a name may repeat, decide which copy counts and refuse the request when they differ.",
+      "findingsOnly": true,
+      "queries": {
+        "python": "(attribute object: (identifier) @mod attribute: (identifier) @fn) @hit",
+        "javascript": "(call_expression function: (member_expression object: (identifier) @mod property: (property_identifier) @fn)) @hit",
+        "typescript": "(call_expression function: (member_expression object: (identifier) @mod property: (property_identifier) @fn)) @hit",
+        "php": "(variable_name (name) @fn) @hit",
+        "go": "(call_expression function: (selector_expression field: (field_identifier) @fn)) @hit",
+        "java": "(method_invocation object: (identifier) @mod name: (identifier) @fn) @hit",
+        "csharp": "(element_access_expression expression: [(identifier) @fn (member_access_expression name: (identifier) @fn)]) @hit"
+      },
+      "functionPatterns": {
+        "python": "^(values|REQUEST)$",
+        "javascript": "^param$",
+        "typescript": "^param$",
+        "php": "^_REQUEST$",
+        "go": "^FormValue$",
+        "java": "^getParameter$",
+        "csharp": "^Request$"
+      },
+      "modulePatterns": {
+        "python": "^request$",
+        "javascript": "^(req|request)$",
+        "typescript": "^(req|request)$",
+        "java": "^(request|req|httpRequest|servletRequest)$"
+      },
+      "looksFor": "a request value read through a call that merges the address, the form, and sometimes cookies: Flask's `request.values`, Django's `request.REQUEST`, Express's `req.param()`, PHP's `$_REQUEST`, Go's `FormValue`, a Java servlet's `getParameter`, and classic ASP.NET's `Request[...]`; whether the app defends against a name sent twice is not something a clean result shows, so finding none credits nothing",
+      "nothingToFind": {
+        "ruby": "Rails' `params` always merges the address, the form, and the route, so every read would be listed; it is not looked for.",
+        "kotlin": "Spring's `@RequestParam` merges the address and the form, but no Kotlin read is looked for yet.",
+        "rust": "Rust's common web frameworks read the address and the form through separate extractors, so there is nothing to find.",
+        "c": "No common C web framework merges request sources in a way this rule can speak to.",
+        "cpp": "No common C++ web framework merges request sources in a way this rule can speak to.",
+        "swift": "Swift's Vapor reads the address and the body separately, so there is nothing to find.",
+        "dart": "Dart's common servers read the address and the body separately, so there is nothing to find.",
+        "shell": "Shell scripts do not read web requests in any way this rule can speak to."
+      }
     }
   ]
 }

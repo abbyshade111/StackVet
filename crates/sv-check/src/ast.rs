@@ -2543,3 +2543,6 @@ fn is_argument_label(node: tree_sitter::Node) -> bool {
 
 #[cfg(test)]
 mod keyword_destination_tests;
+
+#[cfg(test)]
+mod source_merged_tests;

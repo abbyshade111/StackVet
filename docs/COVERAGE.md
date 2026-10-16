@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 178 (52%) | 123 (36%) | 10 | 157 |
+| OWASP ASVS 5.0 | 345 | 179 (52%) | 123 (36%) | 10 | 156 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -56,14 +56,14 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
-| L2 | 183 | 99 | 70 | 25 | 0 | 21 | 50 | 25 | 22 | 2 |
+| L2 | 183 | 100 | 70 | 26 | 0 | 21 | 50 | 25 | 22 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-55 of the 178 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+56 of the 179 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 52 of the 123 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 46 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
+With nothing beyond plain `sv check`, 47 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -99,13 +99,13 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 1 |
 | V13 Configuration | 21 | 9 | 3 | 1 | 11 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 7 |
-| V15 Secure Coding and Architecture | 21 | 12 | 7 | 0 | 9 |
+| V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 8 |
 | V16 Security Logging and Error Handling | 17 | 13 | 10 | 0 | 4 |
 | V17 WebRTC | 12 | 0 | 0 | 0 | 12 |
 
 ## ASVS 5.0 requirement by requirement
 
-### Settled by reading the code (46)
+### Settled by reading the code (47)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -154,6 +154,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.2.3 | L2 | Reads the code: `config.development-server-started`; The running app: `probe.development-console-open` (sv only ever as a finding: `config.development-server-started`, `probe.development-console-open`) |
 | V15.2.4 | L3 | Reads the code: `ast.download-piped-to-shell` (sv only ever as a finding: `ast.download-piped-to-shell`) |
 | V15.3.3 | L2 | Reads the code: `ast.request-body-passed-whole`; Signed in: `probe.role-field-trusted`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-ruby` (sv only ever as a finding: `ast.request-body-passed-whole`, `probe.email-change-role-trusted`, `probe.owner-field-trusted`, `probe.role-field-trusted`) |
+| V15.3.7 | L2 | Reads the code: `ast.request-parameter-source-merged` (sv only ever as a finding: `ast.request-parameter-source-merged`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
 ### Settled by asking the running app (119)

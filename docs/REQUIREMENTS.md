@@ -37,7 +37,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 123 can be checked, 55 can only be found failing, 10 where a check helps but a person decides, and 157 with no check.
+345 requirements: 123 can be checked, 56 can only be found failing, 10 where a check helps but a person decides, and 156 with no check.
 
 ### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
 
@@ -186,7 +186,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 70 can be checked, 29 can only be found failing)
+### Level 2 (183 requirements, 70 can be checked, 30 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -421,7 +421,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.3.4** Verify that all proxying and middleware components transfer the user's original IP address correctly using trusted data fields that cannot be manipulated by the end user, and the application and web server use this correct value for logging and security decisions such as rate limiting, taking into account that even the original IP address may not be reliable due to dynamic IPs, VPNs, or corporate firewalls. | Can only be found failing | Signed in: `probe.forwarded-for-trusted`, if it fails: Anybody can step around the limit on guessing passwords by claiming a different address in each request, which costs them nothing. (found failing only) |
 | **V15.3.5** Verify that the application explicitly ensures that variables are of the correct type and performs strict equality and comparator operations. This is to avoid type juggling or type confusion vulnerabilities caused by the application code making an assumption about a variable type. | Can be checked | Outside tools you turn on: codeql-javascript, 1 rule, its rules look for: type confusion: a request parameter assumed to be a string can be sent as an array, and the code does not check its type |
 | **V15.3.6** Verify that JavaScript code is written in a way that prevents prototype pollution, for example, by using Set() or Map() instead of object literals. | Can be checked | Outside tools you turn on: codeql-javascript, 3 rules, its rules look for: prototype pollution: an object's prototype can be changed through property names taken from user input |
-| **V15.3.7** Verify that the application has defenses against HTTP parameter pollution attacks, particularly if the application framework makes no distinction about the source of request parameters (query string, body parameters, cookies, or header fields). | No check | – |
+| **V15.3.7** Verify that the application has defenses against HTTP parameter pollution attacks, particularly if the application framework makes no distinction about the source of request parameters (query string, body parameters, cookies, or header fields). | Can only be found failing | Reads the code: `ast.request-parameter-source-merged`, looks for: A request value is read without saying where it came from (found failing only) |
 
 #### V16 Security Logging and Error Handling
 

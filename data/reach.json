@@ -3531,6 +3531,14 @@
     "finding_only": false
    }
   ],
+  "V15.3.7": [
+   {
+    "id": "ast.request-parameter-source-merged",
+    "run": "Reads the code",
+    "looks_for": "A request value is read without saying where it came from",
+    "finding_only": true
+   }
+  ],
   "V15.4.2": [
    {
     "id": "bandit",
