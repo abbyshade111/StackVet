@@ -342,7 +342,13 @@
   "V7.4.4": [
    "signed-in"
   ],
+  "V7.4.5": [
+   "signed-in"
+  ],
   "V7.5.1": [
+   "signed-in"
+  ],
+  "V7.5.2": [
    "signed-in"
   ],
   "V8.2.1": [
@@ -2303,6 +2309,14 @@
     "finding_only": false
    }
   ],
+  "V7.4.5": [
+   {
+    "id": "probe.admin-end-sessions-ignored",
+    "run": "Signed in",
+    "looks_for": "An administrator who signs out an account that was taken over leaves the attacker signed in.",
+    "finding_only": false
+   }
+  ],
   "V7.5.1": [
    {
     "id": "probe.email-change-without-password",
@@ -2327,6 +2341,20 @@
     "run": "Signed in",
     "looks_for": "Anybody who gets hold of a signed-in session for a moment can make the account recoverable through an address of their own, then reset the password through it and keep the account.",
     "finding_only": false
+   }
+  ],
+  "V7.5.2": [
+   {
+    "id": "probe.sessions-ended-without-password",
+    "run": "Signed in",
+    "looks_for": "Somebody using a session left open can sign the owner out of every other device, and the owner cannot cut them off in turn without the password being asked first.",
+    "finding_only": false
+   },
+   {
+    "id": "probe.other-sessions-not-ended",
+    "run": "Signed in",
+    "looks_for": "A person who ends their other sessions, after losing a phone or signing in somewhere public, is still signed in there.",
+    "finding_only": true
    }
   ],
   "V8.2.1": [

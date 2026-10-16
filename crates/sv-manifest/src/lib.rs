@@ -726,6 +726,14 @@ pub struct UsersSection {
     /// `signup`, and only judged when sign-in is by email address (`{user}`).
     #[serde(default)]
     pub change_email: Option<RequestTemplate>,
+    /// Ends the signed-in user's other sessions, with `{password}` for the password asked again (V7.5.2, backlog 0492,
+    /// ADR-125). Sent as the first user, near the end of the run, from one of two sessions.
+    #[serde(default)]
+    pub end_other_sessions: Option<RequestTemplate>,
+    /// Ends a user's sessions as an admin, with `{user}` for the user's address (V7.4.5, backlog 0492, ADR-125). Sent
+    /// by the admin at the first user, near the end of the run. Needs `seed`, as `admin` does.
+    #[serde(default)]
+    pub admin_end_sessions: Option<RequestTemplate>,
     /// Changes the signed-in user's phone number (ADR-105). Only ever used on an account made for
     /// it through `signup`.
     #[serde(default)]

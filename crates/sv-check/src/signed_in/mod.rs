@@ -78,6 +78,7 @@ mod refused;
 mod reset;
 mod rules;
 mod sessions;
+mod sessions_end;
 mod signin;
 mod sql;
 mod stored_markup;
@@ -100,6 +101,7 @@ use reset::*;
 use rules::*;
 pub(crate) use rules::{Rule, finding, finding_on};
 use sessions::*;
+use sessions_end::*;
 use signin::*;
 use sql::*;
 use stored_markup::*;
@@ -1366,6 +1368,15 @@ fn settle_limited(patient: &mut Patient<'_>, out: &mut Outcome) {
 /// scenario there.
 const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     (PRIVATE_PAGE.rule_id, &["private-anonymous"]),
+    // Ending sessions (backlog 0492): the wrong password refused, and the ended session refused after.
+    (
+        SESSIONS_END_WITHOUT_PASSWORD.rule_id,
+        &["end-sessions-wrong", "private-end-2-after"],
+    ),
+    (
+        ADMIN_END_SESSIONS_IGNORED.rule_id,
+        &["private-end-target-after"],
+    ),
     (ADMIN_PAGE.rule_id, &["login-a", "admin-a-", "admin-admin-"]),
     (ROLE_FIELD.rule_id, &["role-admin-"]),
     (
@@ -1589,6 +1600,11 @@ const RESTS_ON_A_REFUSAL: &[(&str, &[&str])] = &[
 /// app, one at a time, and fails on any finding that appears, listed here or not.
 const RAISED_ON_A_REFUSAL: &[(&str, &[&str])] = &[
     (SIGN_OUT_ON_GET.rule_id, &["private-after-get-logout"]),
+    // The other session refused after a request without the right password (backlog 0492).
+    (
+        SESSIONS_END_WITHOUT_PASSWORD.rule_id,
+        &["private-end-2-after-wrong", "private-end-2-after"],
+    ),
     (
         COMPOSITION_RULES.rule_id,
         &["signup-lower", "login-lower", "private-lower"],
@@ -2636,7 +2652,10 @@ fn run_checks(
             http,
             users,
             &a,
-            confirm_path.filter(|_| signed_in_works).or(owned_read),
+            confirm_path
+                .clone()
+                .filter(|_| signed_in_works)
+                .or(owned_read),
             &mut out
         )
     );
@@ -2784,6 +2803,16 @@ fn run_checks(
         archives::archive_checks(http, users, accounts, confirm.as_deref(), &mut out)
     );
 
+    // 9h. Ending sessions (backlog 0492, ADR-125): each ends the first user's sessions, so after every check that uses
+    //     A's session; and before the password change below, which may change A's own password.
+    if signed_in_works && let Some(confirm) = &confirm_path {
+        quiet!(end_other_sessions_check(
+            http, users, accounts, confirm, &mut out
+        ));
+        quiet!(admin_end_sessions_check(
+            http, users, accounts, confirm, &mut out
+        ));
+    }
     // 10. Last of all, because it changes a password: with an account made for it when there is a
     //    sign-up, and with A's own when there is not.
     asked!(
@@ -2989,6 +3018,8 @@ mod private_pages_opened_tests;
 mod resignup_tests;
 #[cfg(test)]
 mod seed_values_tests;
+#[cfg(test)]
+mod sessions_end_tests;
 #[cfg(test)]
 mod short_names_tests;
 #[cfg(test)]
@@ -3573,6 +3604,29 @@ mod tests {
             csrf_token(&page("<input name=not_csrf_token value=x>"), &none),
             None
         );
+    }
+
+    /// `users` with both session-ending requests the fake app answers (backlog 0492).
+    pub(super) fn with_end_sessions(mut users: UsersSection) -> UsersSection {
+        let form = |fields: &[(&str, &str)]| {
+            fields
+                .iter()
+                .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+                .collect()
+        };
+        users.end_other_sessions = Some(RequestTemplate {
+            method: "POST".into(),
+            path: "/account/sessions/end".into(),
+            form: form(&[("password", "{password}"), ("csrf_token", "{csrf}")]),
+            json: BTreeMap::new(),
+        });
+        users.admin_end_sessions = Some(RequestTemplate {
+            method: "POST".into(),
+            path: "/admin/users/{user}/sessions/end".into(),
+            form: form(&[("csrf_token", "{csrf}")]),
+            json: BTreeMap::new(),
+        });
+        users
     }
 
     /// The suite with no `seed`: every account, the test passwords' included, goes through sign-up.
@@ -4592,6 +4646,26 @@ mod crash_tests {
                     u.seed = Some("seed".into());
                     u
                 },
+                true,
+            ),
+            // Ending sessions as asked (backlog 0492): a crash at an ended session's page must not read as it ended,
+            // so neither credit stands on one.
+            Scenario::new(
+                "sessions ended as asked",
+                Flaws::default(),
+                super::tests::with_end_sessions(users()),
+                true,
+            ),
+            // Ending sessions (backlog 0492): a crash at the other session's page after the wrong password, or at an
+            // ended session's page, must not read as the session ended.
+            Scenario::new(
+                "sessions ended without the password, and an admin's request ignored",
+                Flaws {
+                    end_sessions_without_password: true,
+                    admin_end_sessions_does_nothing: true,
+                    ..Default::default()
+                },
+                super::tests::with_end_sessions(users()),
                 true,
             ),
             // The phone, two-factor, and recovery changes, each made without the password (ADR-105):

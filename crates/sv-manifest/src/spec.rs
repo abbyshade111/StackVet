@@ -132,6 +132,12 @@ health = "/"              # a path that returns 200 once the app is up
 #   value itself here: `sv` reads it inside the fence when the seed runs, and writes it nowhere.
 # login  = { path = "/login",  form = { email = "{user}", password = "{password}", csrf_token = "{csrf}" } }
 # logout = { path = "/logout", form = { csrf_token = "{csrf}" } }
+# end-other-sessions = { path = "/account/sessions/end", form = { password = "{password}", csrf_token = "{csrf}" } }
+#   Where a signed-in person ends their other sessions, giving the password again (V7.5.2). Left out
+#   when the app has no such control. `sv` signs the first user in twice and ends the other session.
+# admin-end-sessions = { path = "/admin/users/{user}/sessions/end", form = { csrf_token = "{csrf}" } }
+#   Where an admin ends a user's sessions, `{user}` for the user's address (V7.4.5). Needs `seed` and
+#   `admin`. Both of these end the first user's sessions, and `sv` sends them near the end of its run.
 #   Every request in this table is a form POSTed to `path` unless it says otherwise: add
 #   `method = "PUT"` (or "PATCH", "DELETE", "GET") where the app's route takes another method, and
 #   give `json = { ... }` in place of `form` for an API that takes JSON (each value is text). A

@@ -594,6 +594,12 @@ pub(super) struct Flaws {
     pub(super) svg_as_attachment: bool,
     /// Refuses SVG uploads outright. Not a fault: an app that takes no SVG has nothing to clean.
     pub(super) refuses_svg: bool,
+    /// Ends the user's other sessions without checking the password sent with the request (V7.5.2, backlog 0492).
+    pub(super) end_sessions_without_password: bool,
+    /// Answers a request to end the user's other sessions and ends none (V7.5.2).
+    pub(super) end_sessions_does_nothing: bool,
+    /// Answers an admin's request to end a user's sessions and ends none (V7.4.5).
+    pub(super) admin_end_sessions_does_nothing: bool,
     /// Refuses (403) a sign-up whose `invite_code` is not [`invite_code`], as an app that reads its invite code from
     /// its environment does (backlog 0536).
     pub(super) signup_needs_invite: bool,
@@ -2612,6 +2618,38 @@ impl FakeApp {
                     Self::respond(403, vec![], "no")
                 }
             }
+            // A user ends their other sessions, giving their password again (V7.5.2, backlog 0492).
+            ("POST", "/account/sessions/end") => {
+                let Some(who) = user else {
+                    return Some(Self::respond(303, vec![("Location", "/login".into())], ""));
+                };
+                let stored = self.users.get(&who)?.0.clone();
+                let given = form(r).get("password").cloned();
+                if !self.flaws.end_sessions_without_password
+                    && !given.is_some_and(|p| self.password_matches(&stored, &p))
+                {
+                    return Some(Self::respond(403, vec![], "the password is needed"));
+                }
+                if !self.flaws.end_sessions_does_nothing {
+                    let current = sid.clone().unwrap_or_default();
+                    self.sessions.retain(|id, u| *u != who || *id == current);
+                }
+                Self::respond(303, vec![("Location", "/account".into())], "")
+            }
+            // An admin ends a user's sessions, the user named by address (V7.4.5).
+            ("POST", p) if p.starts_with("/admin/users/") && p.ends_with("/sessions/end") => {
+                if !is_admin {
+                    return Some(Self::respond(403, vec![], "admins only"));
+                }
+                let target = p
+                    .trim_start_matches("/admin/users/")
+                    .trim_end_matches("/sessions/end")
+                    .replace("%40", "@");
+                if !self.flaws.admin_end_sessions_does_nothing {
+                    self.sessions.retain(|_, u| *u != target);
+                }
+                Self::respond(303, vec![("Location", "/admin".into())], "")
+            }
             ("POST", "/admin/announce") => {
                 if user.is_some() && !self.flaws.no_csrf_check && (foreign || !token_ok) {
                     return Some(Self::respond(403, vec![], "forged"));
@@ -3485,6 +3523,9 @@ pub(super) fn users() -> UsersSection {
         json: BTreeMap::new(),
     };
     UsersSection {
+        // Not in the shared fixture: the session-ending checks end A's sessions, so their own tests add them.
+        end_other_sessions: None,
+        admin_end_sessions: None,
         activation: None,
         seed: Some("seed".into()),
         signup: None,
