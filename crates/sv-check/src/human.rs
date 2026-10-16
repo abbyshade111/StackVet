@@ -98,6 +98,10 @@ pub struct Item {
     /// look, never evidence; never in `report.json`.
     #[serde(skip)]
     pub crypto: Option<crate::crypto_inventory::CryptoInventory>,
+    /// The app's own token as a signed-in run saw it, for the audience question (backlog 0500, V9.2.4): where it travels
+    /// and the services its `aud` field names. Where to look, never evidence; never in `report.json`.
+    #[serde(skip)]
+    pub token_audience: Option<crate::personal_fields::TokenFields>,
     /// For a hand check whose requirement other checks measure parts of, those parts with this report's verdict on each
     /// (backlog 0610), so the owner reads them in one place. They answer the parts, never the question.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -250,6 +254,7 @@ pub fn checklist(
                 pathways: None,
                 personal_fields: None,
                 crypto: None,
+                token_audience: None,
                 measured_by: Vec::new(),
             });
         }
@@ -271,6 +276,7 @@ pub fn checklist(
                 pathways: None,
                 personal_fields: None,
                 crypto: None,
+                token_audience: None,
                 measured_by: Vec::new(),
             });
         }
@@ -292,6 +298,7 @@ pub fn checklist(
                 pathways: None,
                 personal_fields: None,
                 crypto: None,
+                token_audience: None,
                 measured_by: Vec::new(),
             });
         }

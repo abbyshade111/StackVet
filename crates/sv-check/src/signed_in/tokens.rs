@@ -208,6 +208,15 @@ pub(super) fn app_token_checks(
         },
         fields: jwt.payload.keys().cloned().collect(),
         cookie: false,
+        // Who the token says it is for, beside the V9.2.4 question (backlog 0500): one name, or several.
+        audience: match jwt.payload.get("aud") {
+            Some(serde_json::Value::String(one)) => vec![one.clone()],
+            Some(serde_json::Value::Array(many)) => many
+                .iter()
+                .filter_map(|v| v.as_str().map(str::to_owned))
+                .collect(),
+            _ => Vec::new(),
+        },
     });
     placeholder_secret_check(&jwt, out);
     let Some(confirm) = confirm else {
@@ -635,6 +644,9 @@ fn duration_text(seconds: u64) -> String {
 
 #[cfg(test)]
 mod fields_tests;
+
+#[cfg(test)]
+mod audience_tests;
 
 #[cfg(test)]
 mod tests {

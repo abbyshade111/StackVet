@@ -282,6 +282,28 @@ pub fn classification_questions(
     }
 }
 
+/// The question the app's own token's audience is shown beside (backlog 0500): one key, several audiences.
+pub const AUDIENCE_QUESTIONS: &[&str] = &["V9.2.4"];
+
+/// Gives the audience question the app's own token as a signed-in run saw it, when the run read a JWT (backlog 0500).
+/// Where to look, never evidence: nothing else reads it.
+pub fn audience_questions(
+    token: Option<&sv_check::personal_fields::TokenFields>,
+    report: &mut sv_report::Report,
+) {
+    let Some(token) = token.filter(|t| !t.cookie) else {
+        return;
+    };
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+        .filter(|item| AUDIENCE_QUESTIONS.contains(&item.id.as_str()))
+    {
+        item.token_audience = Some(token.clone());
+    }
+}
+
 /// The questions the draft cryptographic inventory is shown beside (backlog 0494): a key-management policy, the
 /// inventory itself, and whether a well-known library does the work (backlog 0611).
 pub const KEY_QUESTIONS: &[&str] = &["V11.1.1", "V11.1.2", "V11.2.1"];
@@ -335,6 +357,9 @@ fn bounded(text: &str) -> String {
 
 #[cfg(test)]
 mod code_lines_tests;
+
+#[cfg(test)]
+mod audience_question_tests;
 
 /// Gives each hand check whose requirement others' checks measure parts of those parts, with this report's verdict on
 /// each (backlog 0610). Read from the report itself, after every verdict is settled; it changes none of them.

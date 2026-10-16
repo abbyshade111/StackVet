@@ -2933,6 +2933,10 @@ mod next_step_tests;
 mod checklist_tests;
 
 #[cfg(test)]
+#[path = "token_audience_tests.rs"]
+mod token_audience_tests;
+
+#[cfg(test)]
 #[path = "pages_tests.rs"]
 mod pages_tests;
 

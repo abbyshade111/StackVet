@@ -7,6 +7,11 @@
       "how": "Take a flow with more than one step — checkout, sign-up with a confirmation, anything with a \"next\" button. Write down the address of the last step. Start the flow again, and go straight to that address without doing the steps before it. It should refuse. Then try the steps in the wrong order, and try the same step twice. Describing the flow in stackvet.toml as `flow` under `[stack.run.users]` lets `sv report --run` try two skips, one wrong order, and one repeated step for you; other orders, and the last step sent again after the flow finished, are still yours."
     },
     {
+      "id": "V9.2.4",
+      "title": "Each token names the service it is for, when one key signs for several",
+      "how": "Find out whether the key that signs this app's tokens (a JWT secret or private key, or the sign-in service's own key) also signs tokens for any other app or service. If it does, check that every token it signs carries an `aud` field naming the one service it is meant for, and that each service refuses a token whose `aud` names another. If the key signs for this app alone, write that down: the requirement then asks nothing more."
+    },
+    {
       "id": "V12.1.2",
       "title": "The live site offers only strong encryption settings",
       "how": "`sv` does not check this: it takes dozens of connections to the live site, and `sv probe` keeps to four (the owner's decision, 6 October 2026). Run a scanner made for it against your live address, such as testssl.sh (`testssl.sh https://your-address`) or SSL Labs' free online test. The cipher list should show only ones rated strong or good, with forward secrecy, and no rating of weak, insecure, or vulnerable."
