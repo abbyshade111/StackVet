@@ -1,6 +1,6 @@
 # A user ends their other sessions, re-authenticating first, and an admin ends a user's, tried from the manifest
 
-**Status:** claimed by honesty, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -43,3 +43,5 @@ right one (V7.5.2, credited in part: one other session, viewing not tried; findi
 sessions left working), and the admin ends the first user's sessions (V7.4.5, in part: one user's one session; a finding
 when they are left working). Two sessions staying valid is said as a step for V7.1.2's documentation. ADR-125. The
 code-read half, V7.1.1, is filed as backlog 0612.
+
+**Closed by the board, 16 October 2026:** built by honesty and merged (PR 2102, ADR-125; the branch was named for 0535); left open for the board to close.
