@@ -23,7 +23,7 @@ fn seen() -> HookSeen {
 #[test]
 fn the_section_says_what_the_record_is_before_what_it_saw() {
     let seen = seen();
-    let (lines, command) = sentences(&seen);
+    let (lines, command) = sentences(&seen, &[]);
     assert!(
         lines[0].contains("It credits nothing and counts toward nothing"),
         "{lines:?}"
@@ -55,10 +55,13 @@ fn the_section_says_what_the_record_is_before_what_it_saw() {
 
 #[test]
 fn nothing_read_is_said_with_how_to_install_the_hook() {
-    let (lines, _) = sentences(&HookSeen {
-        not_read: Some("there is no hook record".into()),
-        ..Default::default()
-    });
+    let (lines, _) = sentences(
+        &HookSeen {
+            not_read: Some("there is no hook record".into()),
+            ..Default::default()
+        },
+        &[],
+    );
     assert_eq!(lines.len(), 2, "{lines:?}");
     assert!(lines[1].contains("`sv connect claude --hook`"), "{lines:?}");
 }

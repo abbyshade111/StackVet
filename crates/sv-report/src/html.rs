@@ -873,7 +873,7 @@ pub fn page(report: &Report) -> String {
     // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
     if let Some(seen) = &report.hook_record {
         b.push_str(&format!("<h2>{}</h2>\n", escape(crate::hook::HEADING)));
-        let (lines, command) = crate::hook::sentences(seen);
+        let (lines, command) = crate::hook::sentences(seen, &report.requirements);
         for line in lines {
             let line = crate::checklist::text(&line).replace(
                 crate::hook::COMMAND,

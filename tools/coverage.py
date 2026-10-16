@@ -467,7 +467,9 @@ RUST_IN_PART = {"probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-he
 # V14.1.2 the ones the fields that look personal are shown beside (backlog 0497), and V11.1.1 and V11.1.2 the ones the
 # draft cryptographic inventory is shown beside (backlog 0494); none credits anything.
 MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.2.1", "V12.1.2", "V8.1.1", "V8.1.2",
-            "V6.1.3", "V6.3.4", "V14.1.1", "V14.1.2", "V11.1.1", "V11.1.2"}
+            "V6.1.3", "V6.3.4", "V14.1.1", "V14.1.2", "V11.1.1", "V11.1.2",
+            # The hook section names the requirements a claim speaks to, beside their verdict; never evidence (0607).
+            "V1.2.5", "V11.4.2"}
 
 ID = r"(?:V|C)\d+\.\d+\.\d+|AC\.\d+\.\d+|SBD-[A-Z]+-\d+"
 
