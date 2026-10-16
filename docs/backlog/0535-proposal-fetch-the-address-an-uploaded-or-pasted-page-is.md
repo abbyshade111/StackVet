@@ -19,9 +19,7 @@ directly as a signed-in user and read its headers: credit V3.2.1 (read its text 
 
 **Record.** A new ADR or a Later entry: what counts as evidence for V3.2.1 changes.
 
-**The owner's answer, 16 October 2026:** the upload half already existed (`probe.uploaded-file-rendered`). For the
-pasted page, of the three ways put to them, the owner chose (a): a `creates` entry may say `page = true`, saved and
-fetched at its `read` address, judged as an upload is.
+**The owner's answer, 16 October 2026 (asked through the board's waiting line):** (a). A `creates` entry may say `page = true`: sv saves a page with a marked script through it, fetches its read address, and judges it as an upload is. No new table. A page served from another origin counts only when its address is absolute and on another host, read from the manifest.
 
 **Built, 16 October 2026 (honesty):** `page = true` on a `creates` entry. The first user saves a page holding a marked
 script, and it is fetched at `read` (or the save's `Location`). Served as an attachment, with a `sandbox` policy, or as
