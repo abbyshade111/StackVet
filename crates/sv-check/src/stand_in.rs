@@ -58,6 +58,8 @@ pub mod oidc {
     pub const MODE: &str = "/_sv/mode";
     /// Mints an access token, `aud=self` for this app or `aud=other` for another service (ADR-127).
     pub const ACCESS_TOKEN: &str = "/_sv/access-token";
+    /// Mints an ID token for this app's client, as a sign-in hands it over (V9.2.2, backlog 0500).
+    pub const ID_TOKEN: &str = "/_sv/id-token";
     /// Mints a back-channel logout token, `variant=good`, `wrong-typ`, `no-events`, or `with-nonce` (ADR-127).
     pub const LOGOUT_TOKEN: &str = "/_sv/logout-token";
     /// The three wrong logout tokens, each wrong in the one way V10.5.5 names.

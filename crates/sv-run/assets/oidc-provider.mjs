@@ -25,6 +25,9 @@
 //                provider's does; `/introspect` says which client each was issued to.
 //   `POST /_sv/logout-token` with `variant=good`, `wrong-typ`, `no-events`, or `with-nonce`: a signed OIDC
 //                back-channel logout token for the test person, correct or wrong in that one way.
+//   `POST /_sv/id-token`: a signed ID token for the test person and this app's client, as `{ "token": ... }`, the
+//                kind a sign-in hands the app (V9.2.2, backlog 0500). Not an access token: `/userinfo` and
+//                `/introspect` do not know it.
 import http from 'node:http';
 import crypto from 'node:crypto';
 
@@ -210,6 +213,17 @@ http
         },
       );
       tokens.set(token, { sub: 'sv-oidc-user', email: 'sv-oidc-user@example.test', client });
+      return json(res, 200, { token });
+    }
+    if (req.method === 'POST' && path === '/_sv/id-token') {
+      const now = Math.floor(Date.now() / 1000);
+      const token = idToken(
+        {
+          iss: ISSUER, sub: 'sv-oidc-user', aud: CLIENT_ID, exp: now + 300, iat: now, auth_time: now,
+          email: 'sv-oidc-user@example.test', email_verified: true,
+        },
+        'normal',
+      );
       return json(res, 200, { token });
     }
     if (req.method === 'POST' && path === '/_sv/logout-token') {

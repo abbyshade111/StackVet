@@ -375,6 +375,9 @@
   "V9.2.1": [
    "signed-in"
   ],
+  "V9.2.2": [
+   "signed-in"
+  ],
   "V10.1.2": [
    "signed-in"
   ],
@@ -2637,6 +2640,14 @@
     "run": "Outside tools",
     "looks_for": "a token accepted without its validity time span (exp) being verified",
     "finding_only": true
+   }
+  ],
+  "V9.2.2": [
+   {
+    "id": "probe.oidc-id-token-taken-as-access-token",
+    "run": "Signed in",
+    "looks_for": "An ID token opens the app where an access token should be needed. An ID token only tells an app who signed in, and is often kept in the browser where scripts and logs can reach it, so whoever gets hold of one can use the app as that person.",
+    "finding_only": false
    }
   ],
   "V9.2.3": [
