@@ -42,6 +42,30 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
         (
             "notes-with-users",
             &[
+                // Every query the app sends its database, for the hand check on cleaning input (backlog 0488).
+                "locate.dangerous-places app.py:34",
+                "locate.dangerous-places app.py:37",
+                "locate.dangerous-places app.py:38",
+                "locate.dangerous-places app.py:58",
+                "locate.dangerous-places app.py:64",
+                "locate.dangerous-places app.py:207",
+                "locate.dangerous-places app.py:240",
+                "locate.dangerous-places app.py:258",
+                "locate.dangerous-places app.py:268",
+                "locate.dangerous-places app.py:284",
+                "locate.dangerous-places app.py:298",
+                "locate.dangerous-places app.py:310",
+                "locate.dangerous-places app.py:316",
+                "locate.dangerous-places app.py:317",
+                "locate.dangerous-places app.py:319",
+                "locate.dangerous-places app.py:325",
+                "locate.dangerous-places app.py:335",
+                "locate.dangerous-places app.py:336",
+                "locate.dangerous-places app.py:337",
+                "locate.dangerous-places app.py:343",
+                "locate.dangerous-places app.py:353",
+                "locate.dangerous-places app.py:360",
+                "locate.dangerous-places seed.py:16",
                 "locate.owner-checks app.py:241",
                 "locate.owner-checks app.py:316",
                 "locate.owner-checks app.py:336",
@@ -52,9 +76,24 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
         // Notes are kept by account (`notes.get(s.user)`), with no 403 and no owner compared: nothing to point at,
         // and never the provider's `authorization_endpoint` (server.js:69).
         ("oidc-notes", &[]),
-        // 25 lines each, no authorization code.
-        ("tested-notes", &[]),
-        ("partly-passing", &[]),
+        // 25 lines each, no authorization code. Each has its search query, and the two its test sends to set up a
+        // database: places a value goes to the database (backlog 0488).
+        (
+            "tested-notes",
+            &[
+                "locate.dangerous-places app.py:9",
+                "locate.dangerous-places tests/test_search.py:15",
+                "locate.dangerous-places tests/test_search.py:16",
+            ],
+        ),
+        (
+            "partly-passing",
+            &[
+                "locate.dangerous-places app.py:9",
+                "locate.dangerous-places tests/test_search.py:15",
+                "locate.dangerous-places tests/test_search.py:16",
+            ],
+        ),
     ];
     let mut read = 0;
     for (app, places) in expected {
@@ -152,6 +191,7 @@ fn a_records_owner_compared_or_queried_is_found() {
     assert_eq!(
         python,
         vec![
+            "locate.dangerous-places views.py:3",
             "locate.owner-checks views.py:1",
             "locate.owner-checks views.py:3",
             "locate.owner-checks views.py:4",
@@ -167,6 +207,7 @@ fn a_records_owner_compared_or_queried_is_found() {
     assert_eq!(
         javascript,
         vec![
+            "locate.dangerous-places server.js:2",
             "locate.owner-checks server.js:1",
             "locate.owner-checks server.js:2",
             "locate.owner-checks server.js:3",

@@ -43,6 +43,32 @@
         "javascript": "[(arguments (number) @used)\n (throw_statement (new_expression constructor: (identifier) @used))\n ((assignment_expression left: (member_expression property: (property_identifier) @field) right: (number) @used)\n  (#match? @field \"^(status|statusCode)$\"))]",
         "typescript": "[(arguments (number) @used)\n (throw_statement (new_expression constructor: (identifier) @used))\n ((assignment_expression left: (member_expression property: (property_identifier) @field) right: (number) @used)\n  (#match? @field \"^(status|statusCode)$\"))]"
       }
+    },
+    {
+      "id": "locate.decoding",
+      "questions": [
+        "V1.1.1"
+      ],
+      "finds": "calls that turn coded text back into plain text: web-address decoding, base64, and HTML unescaping",
+      "names": "^(unquote|unquoteplus|unquotetobytes|unescape|htmlunescape|b64decode|urlsafeb64decode|standardb64decode|b32decode|b16decode|a85decode|b85decode|decodebytes|decodeuricomponent|decodeuri|atob)$",
+      "queries": {
+        "python": "[(call function: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))]",
+        "javascript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))]",
+        "typescript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))]"
+      }
+    },
+    {
+      "id": "locate.dangerous-places",
+      "questions": [
+        "V1.3.3"
+      ],
+      "finds": "places the app hands a value to another program or format: a shell command, a database query, a file sent back, an email, or a spreadsheet row",
+      "names": "^exec$|(^|\\.)(system|popen|checkoutput|checkcall|execsync|execfile|execfilesync|spawn|spawnsync|execute|executemany|executescript|queryrawunsafe|executerawunsafe|sendfile|sendfromdirectory|fileresponse|download|sendmail|writerow|writerows|tocsv|toexcel)$|subprocess\\.(run|call)\\b|childprocess\\.exec\\b|(db|pool|client|conn|connection|sequelize|knex)\\.(query|raw)\\b",
+      "queries": {
+        "python": "[(call function: (identifier) @used)\n (call function: (attribute) @used)]",
+        "javascript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression) @used)]",
+        "typescript": "[(call_expression function: (identifier) @used)\n (call_expression function: (member_expression) @used)]"
+      }
     }
   ],
   "packages": [

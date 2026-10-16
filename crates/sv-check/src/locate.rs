@@ -396,3 +396,6 @@ mod examples_tests;
 
 #[cfg(test)]
 mod package_locator_tests;
+
+#[cfg(test)]
+mod encoding_tests;

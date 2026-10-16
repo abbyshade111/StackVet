@@ -1,6 +1,6 @@
 # Output escaping switched off, read from the template engine's own setting, and in part credited when it is on
 
-**Status:** claimed by orchestrator, 15 October 2026
+**Status:** done, 15 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -28,3 +28,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   pointer is the list of dangerous sinks the existing rules already locate (shell, SQL, HTML, path), shown as "the
   places StackVet looked for each context", so the hand check reads "for each of these, what cleans the value
   first?" No code to point at beyond that. Tier: *checked by hand*.
+
+**Done, 15 October 2026:** V1.1.1 and V1.3.3 by the locators `locate.decoding` and `locate.dangerous-places` (ADR-022, Later); V1.1.2 as a finding of the rules that switch escaping off (ADR-018, Later). The credit in part is split out as backlog 0613.

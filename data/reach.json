@@ -785,6 +785,26 @@
   ]
  },
  "checks": {
+  "V1.1.2": [
+   {
+    "id": "bandit",
+    "run": "Outside tools",
+    "looks_for": "Django's mark_safe, which puts a value into the HTML without output encoding; Mako templates, which put values into the HTML without output encoding unless each one is filtered; a Jinja2 environment made with autoescape off, so values go...",
+    "finding_only": true
+   },
+   {
+    "id": "semgrep",
+    "run": "Outside tools",
+    "looks_for": "HTML output built without output encoding for its context (cross-site scripting); content rendered as HTML with innerHTML, document.write, dangerouslySetInnerHTML or v-html, rather than a safe rendering function",
+    "finding_only": true
+   },
+   {
+    "id": "codeql-python",
+    "run": "Outside tools you turn on",
+    "looks_for": "HTML output built without output encoding for its context (cross-site scripting)",
+    "finding_only": true
+   }
+  ],
   "V1.2.1": [
    {
     "id": "ast.html-from-value",
