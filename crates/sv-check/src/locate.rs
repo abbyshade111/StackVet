@@ -414,3 +414,6 @@ mod logging_tests;
 
 #[cfg(test)]
 mod identity_tests;
+
+#[cfg(test)]
+mod field_lists_tests;

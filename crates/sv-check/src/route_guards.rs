@@ -20,6 +20,20 @@
 //!   decorators on it, and `Depends(...)` or `Security(...)` in its parameters or the decorator's `dependencies=`.
 //! - JavaScript and TypeScript: `app.get('/path', ...)` and the like on an object named as an app or a router, with
 //!   every argument between the path and the last as a guard.
+//! - Django: each `path(...)` in a `urls.py`, with the decorators, mixins, and `permission_classes` on its view
+//!   wherever the view is written, and any wrapper around it in `urls.py` (backlog 0608).
+//! - Go: `http.HandleFunc`, `mux.Handle`, and router calls such as chi's and gin's, with the wrappers around the
+//!   handler, or every handler but the last, as guards (backlog 0608).
+//! - Spring: a method's `@GetMapping` and the like, with its class's `@RequestMapping` prefix, and `@PreAuthorize`,
+//!   `@Secured`, and `@RolesAllowed` on the method or its class (backlog 0608).
+//! - ASP.NET: a controller method's `[HttpGet]` and the like, with its class's `[Route]`, and `[Authorize]` and
+//!   `[AllowAnonymous]` on either; and minimal API's `app.MapGet(...)` with `.RequireAuthorization(...)` (backlog 0608).
+//! - Laravel: `Route::get(...)` with `->middleware(...)` on it, and the middleware of any group it is written in
+//!   (backlog 0608).
+//! - Rails: each route in a `routes.rb`, with its controller's `before_action` lines and `ApplicationController`'s
+//!   (backlog 0608).
+//! - A check applied to every route at once, as its own row (`EVERY ROUTE`): `app.use(...)` and `r.Use(...)` when the
+//!   middleware's name says it is a check, and every `before_request` (backlog 0608).
 //!
 //! Test code is left out: a test's requests are not the app's routes.
 
@@ -35,9 +49,12 @@ const GUARD_CHARS: usize = 80;
 /// What the table is, and what it is not, shown above it.
 pub const ROUTES_SAY: &str = "The routes StackVet could read, and what is written on each to decide who may use it, as \
      the code says it. These are where to look, not evidence: a check written on a route may check nothing, and \
-     \"none found\" may be covered by a check applied to every route at once (`app.use`, `before_request`), one inside \
-     the handler, or a way of declaring routes StackVet does not read yet (it reads Python decorators, as Flask and \
-     FastAPI write them, and Express-style `app.get('/path', ...)`).";
+     \"none found\" may be covered by a check inside the handler, or by a way of declaring routes StackVet does not \
+     read yet. It reads Python decorators (Flask, FastAPI), Django's urls.py with its views' decorators and mixins, \
+     Express-style `app.get('/path', ...)`, Go's handlers, Spring's mappings, ASP.NET's attributes and minimal API, \
+     Laravel's `Route::` calls, and Rails' routes.rb with its controllers; a check applied to every route at once \
+     (`app.use(requireAuth)`, `before_request`, `r.Use(...)`) is its own row, EVERY ROUTE, when its name says it is \
+     one.";
 
 /// What a route with nothing written on it shows.
 pub const NONE_FOUND: &str = "none found in this file";
@@ -76,6 +93,8 @@ pub fn read(listing: &sv_scan::files::Listing) -> RouteTable {
 /// Every route in the app's own files, not counting test code, in file and line order.
 pub fn read_all(listing: &sv_scan::files::Listing) -> Vec<RouteLine> {
     let mut routes = Vec::new();
+    let mut python_files: Vec<(String, String)> = Vec::new();
+    let mut ruby_files: Vec<(String, String)> = Vec::new();
     for entry in listing.app_files() {
         let Some(language) = entry.language else {
             continue;
@@ -85,6 +104,11 @@ pub fn read_all(listing: &sv_scan::files::Listing) -> Vec<RouteLine> {
         }
         let key = match language {
             "python" => "python",
+            "go" => "go",
+            "java" => "java",
+            "csharp" => "csharp",
+            "php" => "php",
+            "ruby" => "ruby",
             "javascript" => "javascript",
             "typescript" if entry.relative.to_lowercase().ends_with(".tsx") => "tsx",
             "typescript" => "typescript",
@@ -93,11 +117,53 @@ pub fn read_all(listing: &sv_scan::files::Listing) -> Vec<RouteLine> {
         let Ok(source) = entry.read_text() else {
             continue;
         };
+        if key == "python" {
+            python_files.push((entry.relative.clone(), source.clone()));
+        }
+        if key == "ruby" {
+            ruby_files.push((entry.relative.clone(), source.clone()));
+            continue;
+        }
         // Most files declare no route, and are not parsed for one.
-        if !METHODS.iter().any(|m| source.contains(m)) && !source.contains("route") {
+        if !METHODS.iter().any(|m| source.contains(m))
+            && ![
+                "route", "Handle", "use(", "Use(", "before_", "Mapping", "Http", "Map", "Route::",
+            ]
+            .iter()
+            .any(|w| source.contains(w))
+        {
             continue;
         }
         routes.extend(in_source(key, &entry.relative, &source));
+    }
+    // Django: each `urls.py` route, with what is written on its view wherever the view is (backlog 0608).
+    let urls: Vec<&(String, String)> = python_files
+        .iter()
+        .filter(|(file, _)| file.rsplit('/').next() == Some("urls.py"))
+        .collect();
+    if !urls.is_empty() {
+        let mut views = std::collections::BTreeMap::new();
+        for (_, source) in &python_files {
+            for (name, guards) in wider::python_view_guards(source) {
+                views.entry(name).or_insert(guards);
+            }
+        }
+        for (file, source) in urls {
+            routes.extend(wider::django_routes(file, source, &views));
+        }
+        routes.sort_by(|a, b| a.file.cmp(&b.file).then(a.line.cmp(&b.line)));
+    }
+    // Rails: each `routes.rb` route, with what is written on its controller (backlog 0608).
+    let route_files: Vec<&(String, String)> = ruby_files
+        .iter()
+        .filter(|(file, _)| file.rsplit('/').next() == Some("routes.rb"))
+        .collect();
+    if !route_files.is_empty() {
+        let controllers = more::rails_controller_guards(&ruby_files);
+        for (file, source) in route_files {
+            routes.extend(more::rails_routes(file, source, &controllers));
+        }
+        routes.sort_by(|a, b| a.file.cmp(&b.file).then(a.line.cmp(&b.line)));
     }
     routes
 }
@@ -117,10 +183,15 @@ pub fn in_source(key: &str, file: &str, source: &str) -> Vec<RouteLine> {
     let mut out = Vec::new();
     let mut seen = BTreeSet::new();
     walk(tree.root_node(), &mut |node| {
-        let found = if key == "python" {
-            python_route(node, source)
-        } else {
-            script_route(node, source)
+        let found = match key {
+            "python" => {
+                python_route(node, source).or_else(|| wider::python_every_route(node, source))
+            }
+            "go" => wider::go_route(node, source),
+            "java" => more::spring_route(node, source),
+            "csharp" => more::aspnet_route(node, source),
+            "php" => more::laravel_route(node, source),
+            _ => script_route(node, source).or_else(|| wider::script_every_route(node, source)),
         };
         if let Some((line, method, path, guards)) = found
             && seen.insert((line, method.clone(), path.clone()))
@@ -325,5 +396,16 @@ fn is_app_or_router(name: &str) -> bool {
         || lower.ends_with("app")
 }
 
+mod more;
+mod wider;
+
+pub use wider::EVERY_ROUTE;
+
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod wider_tests;
+
+#[cfg(test)]
+mod more_tests;

@@ -1,6 +1,6 @@
 # The route table beside V8.1.1 reads Python decorators and Express calls only, and V8.1.2's field-level lists are not shown
 
-**Status:** open
+**Status:** done, 16 October 2026
 
 **Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
 
@@ -22,3 +22,5 @@ design question's `where`. And a check applied to every route at once (`app.use(
 named in the table's sentence but not shown as its own row.
 
 **Record.** ADR-022 Later, as 0493's.
+
+**Done, 16 October 2026:** checks on every route, Django, and Go (#2115); Spring, ASP.NET, Laravel, and Rails (#2116); and the field-level lists for V8.1.2 and V15.3.1 as `locate.field-lists` (ADR-022, Later, each).

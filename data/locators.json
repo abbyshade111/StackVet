@@ -195,6 +195,20 @@
         "javascript": "[(string) @used\n (template_string) @used]",
         "typescript": "[(string) @used\n (template_string) @used]"
       }
+    },
+    {
+      "id": "locate.field-lists",
+      "questions": [
+        "V8.1.2",
+        "V15.3.1"
+      ],
+      "finds": "places the code chooses which fields of a record are read, written, or sent: a serializer's field list, a query that selects some columns, and a model's own list of what it shows",
+      "names": "^(fields|exclude|readonlyfields|writeonlyfields|only|loadonly|dumponly|responsemodel|responsemodelinclude|responsemodelexclude|withentities|defer|select|attributes|projection|omit|pick|tojson)$",
+      "queries": {
+        "python": "[(class_definition body: (block (expression_statement (assignment left: (identifier) @used))))\n (keyword_argument name: (identifier) @used)\n (call function: (attribute attribute: (identifier) @used))]",
+        "javascript": "[(pair key: (property_identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (method_definition name: (property_identifier) @defined)]",
+        "typescript": "[(pair key: (property_identifier) @used)\n (call_expression function: (member_expression property: (property_identifier) @used))\n (method_definition name: (property_identifier) @defined)]"
+      }
     }
   ],
   "packages": [
