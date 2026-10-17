@@ -298,7 +298,7 @@ fn a_run_signs_in_no_more_often_than_the_spec_says() {
 /// The users with an upload form the app serves files back from, for the upload scenarios.
 fn upload_users() -> UsersSection {
     let mut u = users();
-    u.upload = Some(sv_manifest::UploadSection {
+    u.upload = vec![sv_manifest::UploadSection {
         path: "/upload".into(),
         field: "file".into(),
         form: [("csrf_token".to_owned(), "{csrf}".to_owned())].into(),
@@ -311,7 +311,7 @@ fn upload_users() -> UsersSection {
         max_unpacked_bytes: Some(ARCHIVE_UNPACK_LIMIT),
         max_files: Some(ARCHIVE_FILE_LIMIT),
         accepts: None,
-    });
+    }];
     u
 }
 
@@ -324,7 +324,7 @@ fn scenarios() -> Vec<Scenario> {
     let mut sockets_and_files = users();
     // Two private WebSocket paths, so each is held to the crash guard by its own ids (ADR-118).
     sockets_and_files.private_websockets = vec!["/ws".into(), "/chat".into()];
-    sockets_and_files.upload = Some(sv_manifest::UploadSection {
+    sockets_and_files.upload = vec![sv_manifest::UploadSection {
         path: "/upload".into(),
         field: "file".into(),
         form: [("csrf_token".to_owned(), "{csrf}".to_owned())].into(),
@@ -337,7 +337,7 @@ fn scenarios() -> Vec<Scenario> {
         max_unpacked_bytes: Some(ARCHIVE_UNPACK_LIMIT),
         max_files: Some(ARCHIVE_FILE_LIMIT),
         accepts: None,
-    });
+    }];
     vec![
         // ADR-055: a list that holds the first common word and not the other two.
         Scenario::new(
@@ -836,7 +836,7 @@ fn a_crash_on_a_correct_app_raises_no_finding() {
     let mut sockets_and_files = users();
     // Two private WebSocket paths, so each is held to the crash guard by its own ids (ADR-118).
     sockets_and_files.private_websockets = vec!["/ws".into(), "/chat".into()];
-    sockets_and_files.upload = Some(sv_manifest::UploadSection {
+    sockets_and_files.upload = vec![sv_manifest::UploadSection {
         path: "/upload".into(),
         field: "file".into(),
         form: [("csrf_token".to_owned(), "{csrf}".to_owned())].into(),
@@ -849,7 +849,7 @@ fn a_crash_on_a_correct_app_raises_no_finding() {
         max_unpacked_bytes: Some(ARCHIVE_UNPACK_LIMIT),
         max_files: Some(ARCHIVE_FILE_LIMIT),
         accepts: None,
-    });
+    }];
     let scenarios = [
         Scenario {
             policy: sv_manifest::PolicySection {

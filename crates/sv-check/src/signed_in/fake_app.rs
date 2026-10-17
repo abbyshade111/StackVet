@@ -3660,7 +3660,7 @@ pub(super) fn users() -> UsersSection {
             "/account/delete",
             &[("password", "{password}"), ("csrf_token", "{csrf}")],
         )),
-        upload: None,
+        upload: Vec::new(),
         reset: Some(sv_manifest::ResetSection {
             request: t("/forgot", &[("email", "{user}"), ("csrf_token", "{csrf}")]),
             use_code: t(

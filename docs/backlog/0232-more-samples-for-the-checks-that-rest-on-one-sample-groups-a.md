@@ -71,7 +71,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0372-the-served-file-checks-judge-three-files-each-12-october-2026.md`): the two served-file checks judge
    three files each, whole only when all three are safe.
-   **Part status:** partly done: more than one upload route (the manifest names one); the one-file checks and the archives
+   **Part status:** partly done: every upload route stackvet.toml names is now tried (16 October 2026); the one-file checks (the size, the antivirus test file, the SVG) and the archives still send one file each, on each route
 5. **E. Each kind of event.** Each event the requirement names made to happen and looked for in the log, not one
    line.
    **Scope of this claim (12 October 2026):** the authorization-failure log check (`probe.authorization-failure-logged`,

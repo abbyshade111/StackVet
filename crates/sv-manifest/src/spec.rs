@@ -221,7 +221,8 @@ health = "/"              # a path that returns 200 once the app is up
 # delete-account = { path = "/account/delete", form = { password = "{password}", csrf_token = "{csrf}" } }
 # upload = { path = "/upload", field = "file", form = { csrf_token = "{csrf}" }, serves-at = "/files/{name}", max-bytes = 1048576 }
 #   Declare every upload the app takes: an upload not declared here is never tried, and the report
-#   cannot tell it from one that is safe.
+#   cannot tell it from one that is safe. Several are a list, `upload = [{ path = "/avatar", ... }, { path = "/files", ... }]`:
+#   each is tried, and an upload check is credited only when it holds on every one.
 #   `field` is the form field the file goes in; `serves-at` is where an upload can be fetched back,
 #   with {name} standing for its file name — leave it out if uploads are never served over the web.
 #   `max-bytes` is the largest file you say the app accepts, which is what it is held to.

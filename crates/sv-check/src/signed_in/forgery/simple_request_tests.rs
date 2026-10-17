@@ -39,7 +39,7 @@ fn two_json_creates() -> sv_manifest::UsersSection {
     u.change_password = None;
     u.change_email = None;
     u.delete_account = None;
-    u.upload = None;
+    u.upload = Vec::new();
     u.once = None;
     u
 }

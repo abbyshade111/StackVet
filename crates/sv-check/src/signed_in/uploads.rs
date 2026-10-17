@@ -279,12 +279,10 @@ pub(super) fn took(
 pub(super) fn upload_checks(
     http: &mut dyn Http,
     users: &UsersSection,
+    upload: &sv_manifest::UploadSection,
     signed_in: &SignedIn,
     out: &mut Outcome,
 ) {
-    let Some(upload) = &users.upload else {
-        return;
-    };
     let session = &signed_in.session;
     let token = Token {
         page: users.private.first().map(String::as_str),
@@ -1933,7 +1931,7 @@ mod tests {
 
     pub(super) fn with_upload(serves_at: Option<&str>, max_bytes: Option<u64>) -> UsersSection {
         let mut u = users();
-        u.upload = Some(sv_manifest::UploadSection {
+        u.upload = vec![sv_manifest::UploadSection {
             path: "/upload".into(),
             field: "file".into(),
             form: [("csrf_token".to_owned(), "{csrf}".to_owned())]
@@ -1942,7 +1940,7 @@ mod tests {
             serves_at: serves_at.map(str::to_owned),
             max_bytes,
             ..Default::default()
-        });
+        }];
         u
     }
 
@@ -2243,7 +2241,7 @@ mod tests {
     /// leaves it.
     pub(super) fn upload_run_adjusted(flaws: Flaws, adjust: impl FnOnce(&mut FakeApp)) -> Outcome {
         let mut users = with_upload(Some("/files/{name}"), Some(UPLOAD_LIMIT as u64));
-        if let Some(upload) = &mut users.upload {
+        if let Some(upload) = users.upload.first_mut() {
             upload
                 .form
                 .insert("title".to_owned(), "{marker}".to_owned());

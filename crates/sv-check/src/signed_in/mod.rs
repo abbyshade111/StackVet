@@ -112,6 +112,7 @@ use totp::*;
 use uploads::*;
 
 mod cookies;
+mod each_upload;
 pub(crate) use cookies::Session;
 use cookies::*;
 
@@ -1620,7 +1621,12 @@ fn run_checks(
             "V1.3.4", "V3.2.1", "V5.2.1", "V5.2.2", "V5.3.1", "V5.3.2", "V5.4.1", "V5.4.2",
             "V5.4.3"
         ],
-        upload_checks(http, users, &a, &mut out)
+        each_upload::on_each_upload(
+            &users.upload,
+            |_| true,
+            &mut out,
+            |route, out| upload_checks(http, users, route, &a, out)
+        )
     );
 
     // 6b'. A member's own page, saved through each `creates` entry marked `page = true` and fetched where it is read
@@ -1849,7 +1855,18 @@ fn run_checks(
         http,
         "archive_checks",
         &["V5.2.3"],
-        archives::archive_checks(http, users, accounts, confirm.as_deref(), &mut out)
+        // A route that says it unpacks none is not one V5.2.3 is asked of.
+        each_upload::on_each_upload(
+            &users.upload,
+            |route| route
+                .unpacks_archives
+                .as_ref()
+                .is_none_or(|f| !f.is_empty()),
+            &mut out,
+            |route, out| {
+                archives::archive_checks(http, users, route, accounts, confirm.as_deref(), out)
+            }
+        )
     );
 
     // 9h. Ending sessions (backlog 0492, ADR-125): each ends the first user's sessions, so after every check that uses
