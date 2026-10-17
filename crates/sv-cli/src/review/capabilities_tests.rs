@@ -122,3 +122,19 @@ fn once_confirmed_they_are_not_asked_again() {
         "{out}"
     );
 }
+
+#[test]
+fn an_app_that_gives_no_capability_answer_is_asked_nothing() {
+    // What `[app]` and `[data]` imply (the internet, level 2) is `[scope-review]`'s, and `tls` has a default: none of
+    // them is offered, so an app with no `[capabilities]` is not asked, and a review run by a script is not kept waiting.
+    let s = Scratch::new("capabilities-none");
+    let app = APP.replace("[capabilities]\nauth = true\nuploads = false\n", "");
+    assert_ne!(app, APP, "the setup: the answers are taken out");
+    with_app(&s, &app);
+    assert!(sv_check::capabilities_word::answers(&manifest(&s)).is_empty());
+    let (_, out) = s.run(SKIP_SCOPE);
+    assert!(
+        !out.contains("what stackvet.toml says your app does"),
+        "{out}"
+    );
+}

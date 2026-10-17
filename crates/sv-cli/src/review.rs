@@ -1820,11 +1820,7 @@ fn record_capabilities(
     input: &mut dyn BufRead,
     out: &mut dyn Write,
 ) -> Result<Option<sv_manifest::CapabilitiesReview>> {
-    let answers: std::collections::BTreeMap<String, bool> = manifest
-        .claims()
-        .into_iter()
-        .filter_map(|(condition, said)| said.map(|s| (condition.name().to_owned(), s)))
-        .collect();
+    let answers = sv_check::capabilities_word::answers(manifest);
     if answers.is_empty() {
         return Ok(None);
     }
