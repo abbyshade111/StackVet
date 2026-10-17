@@ -1576,6 +1576,10 @@ pub struct Manifest {
     /// documentation V15.1.1 asks for. `None` until somebody has confirmed it.
     #[serde(default)]
     pub policy_review: Option<PolicyReview>,
+    /// The owner's word, through `sv review`, on the capability answers (backlog 0606): each one confirmed is shown as
+    /// the owner's rather than the AI coding tool's. It changes no requirement (the owner's choice of 16 October 2026).
+    #[serde(default)]
+    pub capabilities_review: Option<CapabilitiesReview>,
     /// Lines of the checklist before going live that the owner ticked in `sv review` and that `sv` accepts no check by
     /// hand for (backlog 0604, ADR-121): each a sealed note that the line is done. They credit nothing.
     #[serde(default)]
@@ -1632,6 +1636,36 @@ pub struct PolicyReview {
     /// What `sv review` writes. Without one that holds, the time frames are unconfirmed. See `sv-check::seal`.
     #[serde(default)]
     pub seal: Option<String>,
+}
+
+/// The capability answers as the owner confirmed them through `sv review`, as `[capabilities-review]` in stackvet.toml
+/// (backlog 0606, the owner's choice of 16 October 2026): by condition name, each answer as `Manifest::claims` read it.
+/// A confirmed answer is labeled the owner's while it still says the same; it switches no requirement on or off.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct CapabilitiesReview {
+    /// Each answer as it was when confirmed, by its condition's name (`auth`, `uploads`).
+    pub answers: std::collections::BTreeMap<String, bool>,
+    /// Who confirmed them: `owner`, as `sv review` writes it.
+    pub by: String,
+    /// When, as YYYY-MM-DD.
+    pub on: String,
+    /// What `sv review` writes. Without one that holds, no answer is confirmed. See `sv-check::seal`.
+    #[serde(default)]
+    pub seal: Option<String>,
+}
+
+impl CapabilitiesReview {
+    /// Whether the answer named `name` is still the one confirmed: `manifest` gives it, and gives the same.
+    pub fn holds_for(&self, manifest: &Manifest, name: &str) -> bool {
+        let Some(confirmed) = self.answers.get(name) else {
+            return false;
+        };
+        manifest
+            .claims()
+            .iter()
+            .any(|(condition, said)| condition.name() == name && *said == Some(*confirmed))
+    }
 }
 
 impl PolicyReview {

@@ -130,6 +130,9 @@ enum Waiting {
     /// `[policy] fix-within-days`, offered for the owner to confirm as V15.1.1's documented time
     /// frames (backlog 0498).
     Policy,
+    /// The capability answers, offered for the owner to confirm as theirs rather than the AI tool's
+    /// (backlog 0606).
+    Capabilities,
 }
 
 pub fn cmd_review(path: Option<PathBuf>, no_report: bool) -> Result<()> {
@@ -598,6 +601,8 @@ fn review(
     // The time frames for fixing a known vulnerability, asked about last (backlog 0498).
     let policy_waiting =
         manifest.policy.fix_within_days.is_some() && !counts(&manifest, &Waiting::Policy, &checker);
+    // The capability answers, asked about last of all (backlog 0606).
+    let capabilities_waiting = !counts(&manifest, &Waiting::Capabilities, &checker);
     for (which, (catalog, path)) in files.iter().enumerate() {
         if let Some(text) = notes_text(path)? {
             let answers = sv_check::notes::read_answers(catalog, &text);
@@ -665,6 +670,18 @@ fn review(
         }
         if policy_waiting {
             confirm_policy(
+                &manifest,
+                &manifest_path,
+                &mut doc,
+                today,
+                &key,
+                &checker,
+                input,
+                out,
+            )?;
+        }
+        if capabilities_waiting {
+            confirm_capabilities(
                 &manifest,
                 &manifest_path,
                 &mut doc,
@@ -787,7 +804,7 @@ fn review(
                     None => None,
                 }
             }
-            Waiting::Scope | Waiting::NotOffered | Waiting::Policy => {
+            Waiting::Scope | Waiting::NotOffered | Waiting::Policy | Waiting::Capabilities => {
                 unreachable!("asked after the list, never in it")
             }
             Waiting::LeftOut(i) => {
@@ -927,6 +944,18 @@ fn review(
             out,
         )?;
     }
+    if capabilities_waiting {
+        confirm_capabilities(
+            &manifest,
+            &manifest_path,
+            &mut doc,
+            today,
+            &key,
+            &checker,
+            input,
+            out,
+        )?;
+    }
     // Last, the checklist before going live, line by line, from the last sealed report (backlog 0604).
     ticks::tick_checklist(
         app_dir,
@@ -1041,7 +1070,7 @@ fn sign_again(
                 set_seal(doc, "checked-by-hand", id, &seal)?;
                 in_manifest.push(which);
             }
-            Waiting::Scope | Waiting::NotOffered | Waiting::Policy => {
+            Waiting::Scope | Waiting::NotOffered | Waiting::Policy | Waiting::Capabilities => {
                 unreachable!("asked after the list, never in it")
             }
             Waiting::LeftOut(i) => {
@@ -1757,6 +1786,115 @@ fn record_policy(
     }
 }
 
+/// The capability answers, asked about last, and saved when the owner confirms them as theirs (backlog 0606).
+#[allow(clippy::too_many_arguments)]
+fn confirm_capabilities(
+    manifest: &sv_manifest::Manifest,
+    manifest_path: &Path,
+    doc: &mut toml_edit::DocumentMut,
+    today: Day,
+    key: &Signer,
+    checker: &Checker,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<()> {
+    writeln!(
+        out,
+        "\nLast: what stackvet.toml says your app does and does not do."
+    )?;
+    if let Some(entry) = record_capabilities(manifest, today, key, input, out)? {
+        set_capabilities(doc, &entry);
+        save(manifest_path, doc, &|m| {
+            counts(m, &Waiting::Capabilities, checker)
+        })?;
+    }
+    Ok(())
+}
+
+/// Every capability answer stackvet.toml gives, shown for the owner to confirm all at once (backlog 0606): the entry
+/// to write, sealed, or `None` when they leave them unconfirmed.
+fn record_capabilities(
+    manifest: &sv_manifest::Manifest,
+    today: Day,
+    key: &Signer,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<Option<sv_manifest::CapabilitiesReview>> {
+    let answers = sv_check::capabilities_word::answers(manifest);
+    if answers.is_empty() {
+        return Ok(None);
+    }
+    writeln!(
+        out,
+        "stackvet.toml answers these about your app. Your AI coding tool usually writes them, and the \
+         report shows them as its word until you confirm them here. Confirming changes no requirement: \
+         it only says the answers are yours. If one is wrong, press Enter, change it in stackvet.toml, \
+         and run `sv review` again."
+    )?;
+    for (name, said) in &answers {
+        let question = sv_frameworks::Condition::from_name(name)
+            .map(sv_frameworks::Condition::question)
+            .unwrap_or_default();
+        writeln!(
+            out,
+            "  {name} = {said}   ({}: {question})",
+            if *said { "yes" } else { "no" }
+        )?;
+    }
+    loop {
+        let Some(answer) = ask(
+            input,
+            out,
+            "Type `owner` if this is your app and every answer above is right, to confirm them; or press \
+             Enter to leave them unconfirmed.\n> ",
+        )?
+        else {
+            return Ok(None);
+        };
+        if answer.is_empty() {
+            writeln!(out, "  Left unconfirmed.")?;
+            return Ok(None);
+        }
+        if !answer.eq_ignore_ascii_case(sv_check::design::OWNER) {
+            writeln!(
+                out,
+                "  Only the app's owner knows what it does. Type `owner` if that is you."
+            )?;
+            continue;
+        }
+        let mut entry = sv_manifest::CapabilitiesReview {
+            answers,
+            by: sv_check::design::OWNER.to_owned(),
+            on: today.show(),
+            seal: None,
+        };
+        entry.seal = Some(
+            key.seal(&sv_check::seal::as_strs(
+                &sv_check::seal::capabilities_review_fields(&entry),
+            ))
+            .map_err(anyhow::Error::msg)?,
+        );
+        writeln!(out, "  Confirmed as your answers.")?;
+        return Ok(Some(entry));
+    }
+}
+
+/// `[capabilities-review]`, written whole, in place of what was there.
+fn set_capabilities(doc: &mut toml_edit::DocumentMut, entry: &sv_manifest::CapabilitiesReview) {
+    let mut answers = toml_edit::InlineTable::new();
+    for (name, said) in &entry.answers {
+        answers.insert(name, (*said).into());
+    }
+    let mut table = toml_edit::Table::new();
+    table.insert("answers", toml_edit::value(answers));
+    table.insert("by", toml_edit::value(&entry.by));
+    table.insert("on", toml_edit::value(&entry.on));
+    if let Some(seal) = &entry.seal {
+        table.insert("seal", toml_edit::value(seal));
+    }
+    doc.insert("capabilities-review", toml_edit::Item::Table(table));
+}
+
 /// `[policy-review]`, written whole, in place of what was there.
 fn set_policy(doc: &mut toml_edit::DocumentMut, entry: &sv_manifest::PolicyReview) {
     let mut days = toml_edit::InlineTable::new();
@@ -2057,6 +2195,9 @@ fn counts(manifest: &sv_manifest::Manifest, which: &Waiting, checker: &Checker) 
         }),
         Waiting::Notes(..) | Waiting::NotesConfirm(..) => false,
         Waiting::LeftOut(i) => left_out_recorded(manifest, *i, checker).is_ok(),
+        Waiting::Capabilities => {
+            sv_check::capabilities_word::unconfirmed(manifest, checker).is_empty()
+        }
         Waiting::Policy => manifest.policy_review.as_ref().is_some_and(|entry| {
             let fields = sv_check::seal::policy_review_fields(entry);
             entry.still_holds_for(manifest)
@@ -2180,6 +2321,9 @@ mod scope_tests;
 
 #[cfg(test)]
 mod policy_tests;
+
+#[cfg(test)]
+mod capabilities_tests;
 
 #[cfg(test)]
 mod mine_tests;

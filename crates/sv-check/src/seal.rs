@@ -893,6 +893,23 @@ pub fn scope_review_fields(entry: &sv_manifest::ScopeReview) -> Vec<String> {
     fields
 }
 
+/// The fields `[capabilities-review]` is sealed over: who confirmed them and when, then each answer as `name=true` or
+/// `name=false`, in the order of their names, so the same answers always seal the same (backlog 0606).
+pub fn capabilities_review_fields(entry: &sv_manifest::CapabilitiesReview) -> Vec<String> {
+    let mut fields = vec![
+        "capabilities-review".to_owned(),
+        entry.by.trim().to_owned(),
+        entry.on.trim().to_owned(),
+    ];
+    fields.extend(
+        entry
+            .answers
+            .iter()
+            .map(|(name, said)| format!("{}={said}", name.trim())),
+    );
+    fields
+}
+
 /// The fields `[policy-review]` is sealed over: who confirmed it and when, then each severity's time frame in a fixed
 /// order, a severity with none as `none`, so a time frame left out never seals the same as one written (backlog 0498).
 pub fn policy_review_fields(entry: &sv_manifest::PolicyReview) -> Vec<String> {
