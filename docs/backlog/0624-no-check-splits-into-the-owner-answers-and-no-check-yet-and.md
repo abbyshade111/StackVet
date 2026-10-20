@@ -7,8 +7,9 @@ Filed at the owner's request, 20 October 2026, asked in a session. Severity: med
 
 **What is wrong.** `docs/REQUIREMENTS.md`, the coverage chart, the framework pages (ADR-129), and the workbooks
 exported from the same data say *No check* for every requirement no automated check speaks to, whatever else StackVet
-does for it. Of the 144 ASVS 5.0 requirements marked *No check*, 41 have a design question, a security-notes section,
-or a by-hand instruction, and 21 of those also have a locator that points the owner at the code (V1.1.1: a design
+does for it. Of the 144 ASVS 5.0 requirements marked *No check*, 39 have a design question, a security-notes section,
+or a by-hand instruction (41 when this was filed, from a count that took `security-notes.json`'s `elsewhere` list,
+which names requirements it does *not* ask, as asked), and 21 of those also have a locator that points the owner at the code (V1.1.1: a design
 question, and `locate.decoding` lists every decoding call). The status in `tools/coverage.py` (`STATUS`,
 `requirement_rows`) counts automated checks only. AISVS 1.0 has 145 more rows marked *No check*, read the same way.
 Beside it, the verification class reads *ai-assistable* for every requirement no rule classes, because that is
@@ -50,7 +51,7 @@ StackVet says nothing about (20 October 2026)"; the new checks and probes it lis
    `sv` holds every app to level 1 or 2 and false the day an app is held to level 3. Moved to backlog 0507, which
    replaces them, at the owner's word of 20 October 2026.
    **Part status:** done, 20 October 2026 (moved to 0507)
-5. **The data entries the design entry lists as quick wins.** Design questions (the ten at level 1 or 2 first), the
+5. **The data entries the design entry lists as quick wins.** Design questions (the twelve at level 1 or 2 first, V3.5.4 and V17.2.1 among them), the
    six by-hand instructions, the locators with their questions, the citation of V11.2.5 by
    `ast.check-passes-on-error`, and the cookie-size check on the running app (V3.3.5). Each passes its catalog's words
    test, and each credit is seen withheld (ADR-059).

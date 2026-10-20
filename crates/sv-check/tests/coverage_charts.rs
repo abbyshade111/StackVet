@@ -34,11 +34,12 @@ fn table(doc: &str, heading: &str) -> Vec<Vec<String>> {
         .collect()
 }
 
-/// What a bar's counts read as beside it: can be credited, can only be found failing, supporting only, no check.
-fn counts(credited: u32, settle: u32, supporting: u32, nothing: u32) -> String {
-    let total = settle + supporting + nothing;
+/// What a bar's counts read as beside it: can be credited, can only be found failing, supporting only, the owner
+/// answers, and no check yet (backlog 0624).
+fn counts(credited: u32, settle: u32, supporting: u32, owner: u32, nothing: u32) -> String {
+    let total = settle + supporting + owner + nothing;
     format!(
-        "{credited} · {} · {supporting} · {nothing}  of {total}",
+        "{credited} · {} · {supporting} · {owner} · {nothing}  of {total}",
         settle - credited
     )
 }
@@ -55,11 +56,16 @@ fn each_chapter_bar_is_its_row_in_the_table() {
     );
     for row in rows {
         let n: Vec<u32> = row[1..].iter().map(|c| c.parse().unwrap()).collect();
-        let (requirements, settle, credited, supporting, nothing) = (n[0], n[1], n[2], n[3], n[4]);
-        assert_eq!(settle + supporting + nothing, requirements, "{row:?}");
+        let (requirements, settle, credited, supporting, owner, nothing) =
+            (n[0], n[1], n[2], n[3], n[4], n[5]);
+        assert_eq!(
+            settle + supporting + owner + nothing,
+            requirements,
+            "{row:?}"
+        );
         let label = format!(">{}</text>", row[0].replace('&', "&amp;"));
         assert!(svg.contains(&label), "no bar for {}", row[0]);
-        let want = counts(credited, settle, supporting, nothing);
+        let want = counts(credited, settle, supporting, owner, nothing);
         assert!(
             svg.contains(&want),
             "{}: the chart does not say {want}",

@@ -77,8 +77,8 @@ fn count(page: &str, what: &str) -> usize {
 }
 
 /// `docs/COVERAGE.md`'s summary row for a framework: requirements, can settle, can be credited, supporting only,
-/// nothing.
-fn summary(name: &str) -> [usize; 5] {
+/// the owner answers, and no check yet (backlog 0624).
+fn summary(name: &str) -> [usize; 6] {
     let doc = std::fs::read_to_string(repo().join("docs/COVERAGE.md")).unwrap();
     let row = doc
         .lines()
@@ -150,45 +150,59 @@ fn every_requirement_is_on_its_page_and_the_counts_are_coverage_md_s() {
     // What StackVet does, held to docs/COVERAGE.md's summary: "can be credited" is confirm or fail, "can settle" less
     // that is only shows it missing.
     let asvs = read("asvs.html");
-    let [n, settle, credited, support, none] = summary("OWASP ASVS 5.0");
+    let [n, settle, credited, support, owner, none] = summary("OWASP ASVS 5.0");
     assert_eq!(
         [
             count(&asvs, "all"),
             count(&asvs, "settle"),
             count(&asvs, "found"),
             count(&asvs, "support"),
+            count(&asvs, "owner"),
             count(&asvs, "none")
         ],
-        [n, credited, settle - credited, support, none]
+        [n, credited, settle - credited, support, owner, none]
+    );
+    // The setup: ASVS has requirements of both kinds, so the two counts above are each held to something.
+    assert!(
+        owner > 0 && none > 0,
+        "{owner} the owner answers, {none} no check yet"
     );
     let aisvs = read("aisvs.html");
     let core = summary("OWASP AISVS 1.0");
     let appendix = summary("AISVS Appendix C");
-    let both: Vec<usize> = (0..5).map(|i| core[i] + appendix[i]).collect();
+    let both: Vec<usize> = (0..6).map(|i| core[i] + appendix[i]).collect();
     assert_eq!(
         [
             count(&aisvs, "all"),
             count(&aisvs, "settle"),
             count(&aisvs, "found"),
             count(&aisvs, "support"),
+            count(&aisvs, "owner"),
             count(&aisvs, "none")
         ],
-        [both[0], both[2], both[1] - both[2], both[3], both[4]]
+        [
+            both[0],
+            both[2],
+            both[1] - both[2],
+            both[3],
+            both[4],
+            both[5]
+        ]
     );
     let sbd = read("secure-by-design.html");
-    let [n, settle, credited, support, none] = summary("Secure by Design checklist 0.5.0");
+    let [n, settle, credited, support, owner, none] = summary("Secure by Design checklist 0.5.0");
     assert_eq!(
-        (settle, credited),
-        (0, 0),
-        "a checklist control is never settled by a check"
+        (settle, credited, none),
+        (0, 0, 0),
+        "a checklist control is never settled by a check, and is always the owner's to answer"
     );
     assert_eq!(
         [
             count(&sbd, "all"),
             count(&sbd, "support"),
-            count(&sbd, "none")
+            count(&sbd, "owner")
         ],
-        [n, support, none]
+        [n, support, owner]
     );
 
     // Self-contained: nothing is fetched, and the only links out are to the standards' sources.
