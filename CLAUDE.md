@@ -83,9 +83,6 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
 - **Urgent work with no item** (a red `main`, a check every pull request fails) still gets a claim others can see
   first: look at the open pull requests and the branches pushed in the last few hours, and if none is on it, open a
   draft pull request from an empty commit before writing the fix.
-- **When the coordination board is open** (`docs/coordination/board.md`, written only by the orchestrating session
-  through `tools/coordination.py`; `docs/COORDINATION.md`), a session named on it takes the item beside its name and
-  builds nothing else. The board is closed now and kept for bursts of independent findings.
 - Before a review or an assessment, read the day's write-ups in the backlog, so two sessions do not find the same thing.
 - Before deleting a branch, compare its files with `main` (`git diff --stat main..<branch>`); `git branch --merged`
   misses work that arrived by cherry-pick.
