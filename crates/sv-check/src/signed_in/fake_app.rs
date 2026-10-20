@@ -151,7 +151,8 @@ pub(super) struct FakeApp {
     tokens_handed_out: usize,
     /// Refuses with 409 a note whose text, or an upload whose `title`, it has had before.
     pub(super) refuses_repeats: bool,
-    /// Refuses a note whose text is longer than this many characters (V2.2.1, backlog 0489).
+    /// Refuses a note whose text is longer than this many characters (V2.2.1, backlog 0489): 10,000 from `new`, as a
+    /// correct app holds text to some length; `None` takes any.
     pub(super) longest_note: Option<usize>,
     /// Refuses a note whose `priority` is outside this range, both ends allowed (V2.2.1, backlog 0489).
     pub(super) priority_range: Option<(i64, i64)>,
@@ -920,6 +921,7 @@ impl FakeApp {
         let mut app = FakeApp {
             flaws,
             clock: 1_700_000_010,
+            longest_note: Some(10_000),
             ..Default::default()
         };
         if flaws.default_admin {

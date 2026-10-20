@@ -846,6 +846,12 @@ pub(super) fn owned_checks(
                 status(&created)
             ),
         ));
+        out.not_assessed.push((
+            "V2.2.1".to_owned(),
+            "Whether input no form should take is refused: it is saved through the `owned` record, which the first \
+             user could not create and read back."
+                .to_owned(),
+        ));
         return None;
     };
     let holds_marker =
@@ -859,6 +865,12 @@ pub(super) fn owned_checks(
                  so another user being refused it would prove nothing.",
                 status(&as_a)
             ),
+        ));
+        out.not_assessed.push((
+            "V2.2.1".to_owned(),
+            "Whether input no form should take is refused: it is saved through the `owned` record, which the first \
+             user could not create and read back."
+                .to_owned(),
         ));
         return None;
     }

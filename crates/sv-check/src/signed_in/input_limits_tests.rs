@@ -35,16 +35,16 @@ fn app() -> FakeApp {
 
 #[test]
 fn a_long_text_kept_whole_is_found_and_one_refused_is_credited_in_part() {
-    let (o, _) = run_seeded(app(), &users());
+    let mut any_length = app();
+    any_length.longest_note = None;
+    let (o, _) = run_seeded(any_length, &users());
     let f = found(&o, INPUT_LENGTH.rule_id).unwrap_or_else(|| panic!("{:?}", o.steps));
     assert_eq!(f.requirement_ids, ["V2.2.1"]);
     assert_eq!(f.severity, Severity::Low);
     assert_eq!(f.evidence, ["input-long-create", "input-long-read"]);
     assert!(!verified_ids(&o).contains(&INPUT_LENGTH.rule_id));
 
-    let mut careful = app();
-    careful.longest_note = Some(1000);
-    let (o, _) = run_seeded(careful, &users());
+    let (o, _) = run_seeded(app(), &users());
     assert!(
         found(&o, INPUT_LENGTH.rule_id).is_none(),
         "{:?}",
