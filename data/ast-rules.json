@@ -2584,6 +2584,20 @@
         "python": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|make_password|crypt\\(|digest)",
         "javascript": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)",
         "typescript": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)"
+      },
+      "nothingToFind": {
+        "c": "Backup codes saved straight from a random generator are not looked for in C yet.",
+        "cpp": "Backup codes saved straight from a random generator are not looked for in C++ yet.",
+        "csharp": "Backup codes saved straight from a random generator are not looked for in C# yet.",
+        "dart": "Backup codes saved straight from a random generator are not looked for in Dart yet.",
+        "go": "Backup codes saved straight from a random generator are not looked for in Go yet.",
+        "java": "Backup codes saved straight from a random generator are not looked for in Java yet.",
+        "kotlin": "Backup codes saved straight from a random generator are not looked for in Kotlin yet.",
+        "php": "Backup codes saved straight from a random generator are not looked for in PHP yet.",
+        "ruby": "Backup codes saved straight from a random generator are not looked for in Ruby yet.",
+        "rust": "Backup codes saved straight from a random generator are not looked for in Rust yet.",
+        "shell": "Shell scripts are not read for backup codes: a script does not keep an app's sign-in codes.",
+        "swift": "Backup codes saved straight from a random generator are not looked for in Swift yet."
       }
     }
   ]
