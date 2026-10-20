@@ -77,6 +77,11 @@
       "how": "Sign in and keep using the app past the maximum lifetime you wrote down. Staying active must not keep it alive forever — at the limit you should be asked to sign in again even mid-use."
     },
     {
+      "id": "V7.6.1",
+      "title": "Signing out of the sign-in service, or its time running out, is felt here too",
+      "how": "Sign in to the app through the outside service it uses, such as Google or Microsoft. Then, in another tab, sign out of that service, or wait past the longest time you wrote down that a sign-in there lasts, and reload a private page of the app. It should ask you to sign in again, or behave exactly as you wrote down it would. Staying signed in here for as long as you like, whatever happens at the service, is the wrong answer. A run cannot wait out a real service's time, which is why this is checked by hand."
+    },
+    {
       "id": "V13.3.1",
       "title": "Secrets live in something built to hold them",
       "how": "List where each password, key, and token the app needs actually comes from: a key vault or your host's secret store, an environment variable, or a file in the code. Say who can read each one, and how you would replace one if it leaked. A secret nobody can rotate is the answer to this one."
