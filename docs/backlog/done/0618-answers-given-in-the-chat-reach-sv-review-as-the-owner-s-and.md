@@ -44,3 +44,5 @@ answers given as the owner's together and records them at one `owner`, leaves ou
 goes one at a time at Enter (`crates/sv-cli/src/review/together.rs`, ADR-026, Later), each sealed over its own
 fields through the same `own_what` and `apply_own` the one-at-a-time path uses. The counts are gone from the starter
 `stackvet.toml`, `design.rs`, `hand.rs`, and the README rather than corrected, so they cannot go out of date again.
+Asked the same day whether the person is told where each question comes from, the owner chose to show, above each
+answer in `sv review`, its title, standard and level, and the plain question (`Asked` in `review.rs`).

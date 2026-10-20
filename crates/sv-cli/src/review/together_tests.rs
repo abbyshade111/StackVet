@@ -150,6 +150,93 @@ fn one_answer_alone_is_asked_about_as_before() {
     assert!(out.contains("Recorded 1 of 1"), "{out}");
 }
 
+/// The title and plain question StackVet gave each of the three, read from the data files, so the test holds what the
+/// person is shown to what they were asked, whatever the words are.
+fn asked_of(file: &str, list: &str, id: &str) -> (String, Option<String>) {
+    let data: serde_json::Value =
+        sv_frameworks::data::read_json(&sv_frameworks::data::file(file)).unwrap();
+    let entry = data[list]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|e| e["id"] == id)
+        .unwrap()
+        .clone();
+    let plain = entry["plain"]
+        .as_str()
+        .map(|p| p.split_whitespace().collect::<Vec<_>>().join(" "));
+    (entry["title"].as_str().unwrap().to_owned(), plain)
+}
+
+#[test]
+fn each_answer_says_what_its_requirement_is_and_what_was_asked() {
+    for typed in ["owner\n", "\nowner\nowner\nowner\n"] {
+        let s = three_of_the_owners("together-context");
+        let (result, out) = s.run(typed);
+        result.unwrap();
+        for (file, list, id, standard) in [
+            (
+                "design-questions.json",
+                "questions",
+                "V8.3.1",
+                "ASVS 5.0, level",
+            ),
+            (
+                "security-notes.json",
+                "sections",
+                "V6.1.1",
+                "ASVS 5.0, level",
+            ),
+            ("human-checks.json", "checks", "V12.2.2", "ASVS 5.0, level"),
+        ] {
+            let (title, plain) = asked_of(file, list, id);
+            assert!(
+                out.contains(&format!("{id} — {title} ({standard}")),
+                "{id} {title:?}, typed {typed:?}:\n{out}"
+            );
+            if let Some(plain) = plain {
+                assert!(
+                    out.contains(&format!("Asked: {plain}")),
+                    "{id}, typed {typed:?}:\n{out}"
+                );
+            }
+        }
+        // A check by hand shows its title, not its instructions, which run to several sentences.
+        let hand = out
+            .split("V12.2.2 — ")
+            .nth(1)
+            .unwrap()
+            .lines()
+            .nth(1)
+            .unwrap_or_default()
+            .to_owned();
+        assert!(!hand.contains("Asked:"), "{hand}");
+        // The answer itself is still worded as it always was.
+        assert!(
+            out.contains("Your answer to requirement V8.3.1, as stackvet.toml gives it: yes"),
+            "{out}"
+        );
+    }
+}
+
+#[test]
+fn the_standard_is_read_from_the_id() {
+    assert_eq!(standard_of("V6.2.1"), Some("ASVS 5.0"));
+    assert_eq!(standard_of("C7.1.1"), Some("AISVS 1.0"));
+    assert_eq!(standard_of("AC.3.1"), Some("AISVS 1.0, Appendix C"));
+    assert_eq!(
+        standard_of("SBD-MT-06"),
+        Some("Secure by Design checklist 0.5.0")
+    );
+    assert_eq!(standard_of("x"), None);
+    // A checklist control's level is StackVet's, and says so.
+    assert!(
+        Asked::load()
+            .about("SBD-MT-06", None)
+            .contains("as StackVet sets it")
+    );
+}
+
 #[test]
 fn numbers_are_read_only_when_every_one_is_still_in_the_list() {
     let left = [0, 1, 4];

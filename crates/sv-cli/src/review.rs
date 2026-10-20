@@ -729,11 +729,13 @@ fn review(
     let own: Vec<usize> = (0..waiting.len())
         .filter(|&i| is_own(&waiting[i]))
         .collect();
+    // What each requirement is and what was asked, shown above each answer given as the owner's.
+    let asked = Asked::load();
     if own.len() >= 2 {
         let mut whats = Vec::new();
         let mut fields = Vec::new();
         for &i in &own {
-            let (what, f) = own_what(&waiting[i], &manifest, &files)?;
+            let (what, f) = own_what(&waiting[i], &manifest, &files, &asked)?;
             whats.push(what);
             fields.push(f);
         }
@@ -817,7 +819,7 @@ fn review(
                 }
             }
             item @ (Waiting::DesignAnswer(_) | Waiting::HandAnswer(_) | Waiting::Notes(..)) => {
-                let (what, fields) = own_what(&item, &manifest, &files)?;
+                let (what, fields) = own_what(&item, &manifest, &files, &asked)?;
                 if let Some(seal) = record_own(&what, &fields, &key, input, out)? {
                     apply_own(&item, &seal, &manifest_path, &mut doc, &files, &checker)?;
                     recorded += 1;
@@ -1496,8 +1498,112 @@ fn is_own(item: &Waiting) -> bool {
     )
 }
 
-/// What an answer given as the owner's says, as `sv review` shows it, and the fields its seal is made over.
+/// What a requirement is, for the person recording an answer to it days after they gave it in the chat: its title,
+/// its standard and level, and the question as StackVet put it to them, in plain words (backlog 0618). Read once per
+/// review. A file that cannot be read leaves that part out, and the answer is still offered as it was before.
+struct Asked {
+    frameworks: Option<sv_frameworks::Frameworks>,
+    design: Option<sv_check::design::Questions>,
+    hand: Option<sv_check::human::HumanChecks>,
+}
+
+impl Asked {
+    fn load() -> Asked {
+        Asked {
+            frameworks: sv_cli::data_dir()
+                .and_then(|data| sv_cli::load_frameworks(&data))
+                .ok(),
+            design: sv_check::design::Questions::load(&sv_cli::design_questions_path()).ok(),
+            hand: sv_check::human::HumanChecks::load(&sv_frameworks::data::file(
+                "human-checks.json",
+            ))
+            .ok(),
+        }
+    }
+
+    /// The lines shown above an answer: `V12.2.2 — Its title (ASVS 5.0, level 2)`, then `Asked: ...` when the
+    /// question has plain words. `notes` is the catalog a notes or decisions section is read from.
+    fn about(&self, id: &str, notes: Option<&sv_check::notes::Catalog>) -> String {
+        let (title, asked) = if let Some(s) = notes.and_then(|c| c.section(id)) {
+            (
+                Some(s.title.clone()),
+                Some(s.plain.clone().unwrap_or_else(|| s.asks.clone())),
+            )
+        } else if let Some(q) = self.design.as_ref().and_then(|d| d.get(id)) {
+            (
+                Some(q.title.clone()),
+                Some(q.plain.clone().unwrap_or_else(|| q.asks.clone())),
+            )
+        } else {
+            // A check by hand's title says what is checked; its instructions run to several sentences.
+            let title = self
+                .hand
+                .as_ref()
+                .and_then(|h| h.checks.iter().find(|c| c.id == id))
+                .map(|c| c.title.clone());
+            (title, None)
+        };
+        let standard =
+            standard_of(id).map(
+                |name| match self.frameworks.as_ref().and_then(|f| f.get(id)) {
+                    Some(r) if r.level_basis.is_some() => {
+                        format!(" ({name}, level {} as StackVet sets it)", r.level)
+                    }
+                    Some(r) => format!(" ({name}, level {})", r.level),
+                    None => format!(" ({name})"),
+                },
+            );
+        let mut out = format!(
+            "{id}{}{}",
+            title
+                .map(|t| format!(" — {}", t.trim()))
+                .unwrap_or_default(),
+            standard.unwrap_or_default()
+        );
+        if let Some(asked) = asked {
+            out.push_str(&format!(
+                "\n   Asked: {}",
+                asked.split_whitespace().collect::<Vec<_>>().join(" ")
+            ));
+        }
+        out
+    }
+}
+
+/// The standard a requirement id belongs to, read from its form.
+fn standard_of(id: &str) -> Option<&'static str> {
+    if id.starts_with(sv_frameworks::load::SBD_PREFIX) {
+        Some("Secure by Design checklist 0.5.0")
+    } else if id.starts_with("AC.") {
+        Some("AISVS 1.0, Appendix C")
+    } else if id.starts_with('V') {
+        Some("ASVS 5.0")
+    } else if id.starts_with('C') {
+        Some("AISVS 1.0")
+    } else {
+        None
+    }
+}
+
+/// What an answer given as the owner's says, as `sv review` shows it, and the fields its seal is made over: what the
+/// requirement is and what was asked (`Asked::about`), then the answer as the file gives it.
 fn own_what(
+    item: &Waiting,
+    manifest: &sv_manifest::Manifest,
+    files: &[(sv_check::notes::Catalog, PathBuf)],
+    asked: &Asked,
+) -> Result<(String, Vec<String>)> {
+    let (what, fields) = own_answer(item, manifest, files)?;
+    let (id, notes) = match item {
+        Waiting::DesignAnswer(id) | Waiting::HandAnswer(id) => (id, None),
+        Waiting::Notes(which, id) => (id, Some(&files[*which].0)),
+        _ => unreachable!("only an answer given as the owner's"),
+    };
+    Ok((format!("{}\n   {what}", asked.about(id, notes)), fields))
+}
+
+/// The answer as the file gives it, worded as `sv review` always has, and the fields its seal is made over.
+fn own_answer(
     item: &Waiting,
     manifest: &sv_manifest::Manifest,
     files: &[(sv_check::notes::Catalog, PathBuf)],
