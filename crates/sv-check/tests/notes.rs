@@ -1,6 +1,6 @@
 //! The security notes catalog, held to the requirements it claims to ask about.
 //!
-//! `data/security-notes.json` is prose: nineteen questions written in plain words for somebody who
+//! `data/security-notes.json` is prose: twenty-eight questions written in plain words for somebody who
 //! is not a programmer. Prose drifts from what it paraphrases, and a question that has drifted is
 //! worse than no question, because the owner answers it, the report calls the requirement
 //! documented, and what was asked for was something else.
@@ -11,10 +11,12 @@
 //! 2. **The question shares words with the requirement** — the same weak overlap test the citations
 //!    use, for the same reason: it must catch a question pointing at a different subject, and it
 //!    must not be something anyone is tempted to route around.
-//! 3. **No documentation requirement is missing by accident.** Every ASVS requirement at level 1 or
-//!    2 whose own words say "document" is either a section here or named in `elsewhere` with why.
-//!    Without this, adding the nineteenth question and forgetting the twentieth looks exactly like
-//!    deciding there are nineteen.
+//! 3. **No documentation requirement is missing by accident.** Every ASVS requirement whose own
+//!    words say "document", at any level, is either a section here or named in `elsewhere` with why.
+//!    Level 3 joined on 20 October 2026 (backlog 0624, part 2): until then nine level-3 requirements
+//!    that ask for a document had no section, and nothing said so.
+//!    Without this, adding the twenty-eighth question and forgetting the twenty-ninth looks exactly like
+//!    deciding there are twenty-eight.
 
 use std::collections::BTreeSet;
 use std::path::PathBuf;
@@ -77,7 +79,7 @@ fn words(text: &str) -> BTreeSet<String> {
 fn every_question_matches_its_own_requirement_better_than_any_other() {
     // The blindness the citation guard admits to and cannot fix: two neighboring requirements share
     // vocabulary, so a question written for one, filed under the other, shares words with both and
-    // passes. Here it is fixable, because these nineteen are a small closed set that can be compared
+    // passes. Here it is fixable, because these twenty-eight are a small closed set that can be compared
     // against each other. Swapping V11.1.1 (the key policy) with V11.1.2 (the key inventory) passes
     // the overlap test above and fails this one.
     let frameworks = frameworks();
@@ -121,7 +123,7 @@ fn every_documentation_requirement_is_either_a_section_or_explained() {
 
     let mut unaccounted = Vec::new();
     for (id, info) in &frameworks.requirements {
-        if !id.starts_with('V') || info.level > 2 {
+        if !id.starts_with('V') {
             continue;
         }
         let text = info.description.to_lowercase();
