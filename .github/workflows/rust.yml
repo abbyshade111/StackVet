@@ -319,7 +319,7 @@ jobs:
 
       - name: The credits the four parts saw
         if: needs.scope.outputs.full != 'false'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: credits-*
           path: ${{ runner.temp }}/credits
@@ -612,7 +612,7 @@ jobs:
 
       - name: Fetch the images that were tested
         # `image`'s for amd64 and `image-arm64`'s for arm64, into one folder: their files have different names.
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: sv-image*
           merge-multiple: true
