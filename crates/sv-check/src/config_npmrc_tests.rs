@@ -69,8 +69,9 @@ fn a_credential_line_is_found_in_each_kind_of_settings_file_and_a_setting_is_not
         ),
         Some((1, "password".into()))
     );
-    // Not a credential: settings, a reference to the environment, an empty value, a comment.
-    for (name, text) in [
+    // Not a credential: settings, a reference to the environment, an empty value, a comment. A failure names the case by
+    // its place in the list, never its text or what was found in it, which may hold the test token (CodeQL, #2165).
+    for (case, (name, text)) in [
         (
             ".npmrc",
             "ignore-scripts=true\nmin-release-age=7\nfund=false\naudit=false\nupdate-notifier=false\n",
@@ -83,8 +84,12 @@ fn a_credential_line_is_found_in_each_kind_of_settings_file_and_a_setting_is_not
             "[pypi]\nusername = __token__\npassword = ${PYPI_TOKEN}\n",
         ),
         (".netrc", "machine example.com login me\n"),
-    ] {
-        assert_eq!(credential_line(name, text), None, "{name}: {text:?}");
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let said = credential_line(name, text).map(|(n, key, _)| (n, key));
+        assert_eq!(said, None, "case {case} ({name}) was read as a credential");
     }
 }
 
@@ -126,7 +131,11 @@ fn a_committed_npmrc_with_settings_alone_is_no_finding_and_one_with_a_token_is()
     // The value is cut short, never written out.
     let secret = f.secret.as_ref().expect("the value, masked");
     assert_eq!(secret.length(), t.chars().count());
-    assert!(!secret.as_str().contains(&t[4..]), "{}", secret.as_str());
+    // Said without the value: if the masking ever failed, printing it would print the token (CodeQL, #2165).
+    assert!(
+        !secret.as_str().contains(&t[4..]),
+        "the masked value holds more than its first characters"
+    );
     assert!(
         !format!("{f:?}").contains(&t),
         "the finding holds the token"
