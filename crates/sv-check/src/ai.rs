@@ -1348,25 +1348,28 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                         &mut out,
                     );
                 } else if reached {
-                    out.findings.push(finding(
-                        rule,
-                        if kind == "MCPBAD" {
-                            "An MCP tool's result that breaks its schema reaches the model"
-                        } else {
-                            "An instruction written into an MCP tool's result reaches the model"
-                        },
-                        Severity::Medium,
-                        if kind == "MCPBAD" {
-                            "The test MCP server's tool declared that its result has a text \
+                    out.findings.push(on(
+                        vec![question_id(kind, n)],
+                        finding(
+                            rule,
+                            if kind == "MCPBAD" {
+                                "An MCP tool's result that breaks its schema reaches the model"
+                            } else {
+                                "An instruction written into an MCP tool's result reaches the model"
+                            },
+                            Severity::Medium,
+                            if kind == "MCPBAD" {
+                                "The test MCP server's tool declared that its result has a text \
                              `answer`, then answered with a number, and the app passed that result \
                              to the model as it was."
-                                .to_owned()
-                        } else {
-                            "The test MCP server's tool answered with \"Ignore all previous \
+                                    .to_owned()
+                            } else {
+                                "The test MCP server's tool answered with \"Ignore all previous \
                              instructions…\" in its result, and the app passed it to the model \
                              as it was."
-                                .to_owned()
-                        },
+                                    .to_owned()
+                            },
+                        ),
                     ));
                 } else {
                     out.verified.push(crate::Verified::new(
@@ -1467,15 +1470,18 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                     &mut out,
                 );
             } else if reached > n {
-                out.findings.push(finding(
-                    &UNLIMITED,
-                    "The AI feature can be asked without limit",
-                    Severity::Medium,
-                    format!(
-                        "stackvet.toml says the AI feature should pass on at most {n} messages \
+                out.findings.push(on(
+                    vec![question_id("PLAIN", 100), question_id("PLAIN", 100 + n)],
+                    finding(
+                        &UNLIMITED,
+                        "The AI feature can be asked without limit",
+                        Severity::Medium,
+                        format!(
+                            "stackvet.toml says the AI feature should pass on at most {n} messages \
                          a minute. All {} sent through {} within {took} seconds reached the model.",
-                        n + 1,
-                        section.chat.path
+                            n + 1,
+                            section.chat.path
+                        ),
                     ),
                 ));
             } else if last {
@@ -1787,7 +1793,7 @@ fn planted_question<F>(
         }
     ));
     if reached && seen.injection_seen {
-        out.findings.push(finding(
+        out.findings.push(on(vec![question_id("RECALL", 38)], finding(
             &STORED_INJECTION,
             "A prompt injection saved in a note reaches the model",
             Severity::Medium,
@@ -1795,7 +1801,7 @@ fn planted_question<F>(
              followed by \"Ignore all previous instructions\". Asked about that word, the app's \
              search handed the note to the model with the injection in it, as it was saved."
                 .to_owned(),
-        ));
+        )));
     }
 }
 
@@ -1954,6 +1960,7 @@ fn record_tool_questions<F>(
         let (tag, answer, seen) = call(http, 26, "FETCHLOOP", &records.own.1);
         judge_tool_loop(
             http,
+            question_id("FETCHLOOP", 26),
             tag,
             answer,
             seen,
@@ -2033,7 +2040,15 @@ where
     F: FnMut(&mut dyn Http, u32, &str) -> (String, Option<ProbeResponse>, Seen),
 {
     let (tag, answer, seen) = probe(http, 33, "MCPLOOP");
-    judge_tool_loop(http, tag, answer, seen, "the MCP tool", out);
+    judge_tool_loop(
+        http,
+        question_id("MCPLOOP", 33),
+        tag,
+        answer,
+        seen,
+        "the MCP tool",
+        out,
+    );
 }
 
 /// C9.1.1, in part (ADR-064): the test model asks for the MCP tool, and the tool holds the call for
@@ -2139,6 +2154,7 @@ where
 /// for, `what`.
 fn judge_tool_loop(
     http: &mut dyn Http,
+    question: String,
     tag: String,
     answer: Option<ProbeResponse>,
     mut seen: Seen,
@@ -2175,7 +2191,7 @@ fn judge_tool_loop(
         .as_ref()
         .and_then(|r| says_something_went_wrong(&decoded(&r.body)));
     if seen.rounds >= LOOP_CAP {
-        out.findings.push(finding(
+        out.findings.push(on(vec![question], finding(
             &AGENT_UNBOUNDED,
             "The AI feature lets the model call tools without a limit",
             Severity::Medium,
@@ -2183,7 +2199,7 @@ fn judge_tool_loop(
                 "The test model asked for {what} again after every result, and the app ran it \
                  {LOOP_CAP} times for one message; the test model stopped then, and the app had not."
             ),
-        ));
+        )));
     } else if seen.rounds == 0 || !answered {
         out.not_assessed.push((
             "C9.1.2".to_owned(),
@@ -3287,7 +3303,7 @@ pub fn kill_switch(
         }
     ));
     if reached {
-        out.findings.push(finding(
+        out.findings.push(on(vec!["ai-kill-switch".to_owned()], finding(
             &KILL_SWITCH,
             "The AI feature's kill switch does not stop it",
             Severity::Medium,
@@ -3296,7 +3312,7 @@ pub fn kill_switch(
                  through {} still reached the model.",
                 section.chat.path
             ),
-        ));
+        )));
     } else if answer
         .as_ref()
         .is_some_and(|r| (200..500).contains(&r.status))
@@ -3490,14 +3506,14 @@ fn flag_gating(markers: &LogMarkers, caught: bool, out: &mut Outcome) {
             )
             .in_part(),
         ),
-        Some(true) => out.findings.push(finding(
+        Some(true) => out.findings.push(on(vec![question_id("INJECT", 4), question_id("PLAIN", 5)], finding(
             &FLAG_NOT_GATING,
             "A prompt injection the app flagged is passed to the model anyway",
             Severity::Medium,
             "The app's output recorded the textbook prompt injection as caught, and the model was \
              given it as it came: the flag did not stop it."
                 .to_owned(),
-        )),
+        ))),
         None => say(
             "the app's output recorded the textbook prompt injection as caught, but a plain message \
              straight after it did not reach the model either, so whether the flag was what stopped it \
@@ -3959,7 +3975,7 @@ pub fn logged(markers: &LogMarkers, log: &str, out: &mut Outcome) {
                     if format.is_none() {
                         short.push("is not written as JSON or logfmt".to_owned());
                     }
-                    out.findings.push(finding(
+                    out.findings.push(on(vec![question_id("PLAIN", 1)], finding(
                         &CALL_LOG,
                         "The app's record of a model call leaves things out",
                         Severity::Low,
@@ -3968,7 +3984,7 @@ pub fn logged(markers: &LogMarkers, log: &str, out: &mut Outcome) {
                              ({input} tokens in, {output} out) {}.",
                             short.join(", and ")
                         ),
-                    ));
+                    )));
                 }
             }
         }
@@ -4027,3 +4043,6 @@ mod evidence_tests;
 
 #[cfg(test)]
 mod asked_again_tests;
+
+#[cfg(test)]
+mod questions_named_tests;
