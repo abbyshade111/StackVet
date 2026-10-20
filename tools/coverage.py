@@ -649,10 +649,15 @@ def rust_code():
     test_only = set()
     for path in paths:
         folder = path.parent if path.name in ("mod.rs", "lib.rs", "main.rs") else path.with_suffix("")
-        for m in re.finditer(r"#\[cfg\(test\)\]\s*(?:pub(?:\([^)]*\))?\s+)?mod\s+(\w+)\s*;", path.read_text(encoding="utf-8")):
-            test_only.add(folder / f"{m.group(1)}.rs")
-            test_only.add(folder / m.group(1) / "mod.rs")
-    return [(p, shipped(p.read_text(encoding="utf-8"))) for p in paths if p not in test_only]
+        for m in re.finditer(r'#\[cfg\(test\)\]\s*(?:#\[path\s*=\s*"([^"]*)"\]\s*)?(?:pub(?:\([^)]*\))?\s+)?mod\s+(\w+)\s*;',
+                             path.read_text(encoding="utf-8")):
+            # `#[path = "..."]` names the file, from the folder of the file that declares it (backlog 0618).
+            if m.group(1):
+                test_only.add((path.parent / m.group(1)).resolve())
+                continue
+            test_only.add(folder / f"{m.group(2)}.rs")
+            test_only.add(folder / m.group(2) / "mod.rs")
+    return [(p, shipped(p.read_text(encoding="utf-8"))) for p in paths if p not in test_only and p.resolve() not in test_only]
 
 
 # `#[cfg(test)]` before a module of tests kept in a file of its own (`mod name;`, with or without

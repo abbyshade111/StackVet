@@ -312,16 +312,15 @@ word.
 >    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
 >    `security-notes.md`, outside its questions, is not read as an answer. Write `by = "owner"` only for
->    an answer I gave you myself: it counts as mine only once I record it with `sv review`, which only I
->    can run, and which shows me all of them together. When you suggest
+>    my own answers: they count once I record them with `sv review`. When you suggest
 >    how I could check an answer of yours or a check by hand, write it beside it as a proposal,
 >    `confirmed = { by = "ai-tool", how = "what to look at, and what it should show" }`: it counts
 >    only once I confirm it in `sv review`.
 >    Write a `[checked-by-hand]` entry, with `by = "ai-tool"`, for a check you made reading the code (its
->    lines in `how`; it counts as your word, not mine), and with `by = "owner"` for one I made and told
->    you of (my words in `how`).
+>    lines in `how`; it counts as your word, not mine), or one I made and told you of, with
+>    `by = "owner"` (my words in `how`).
 >
-> *(StackVet setup prompt 5, text of 20 October 2026, fingerprint 50031861)*
+> *(StackVet setup prompt 5, text of 20 October 2026, fingerprint 0190dea6)*
 <!-- setup-step-5:end -->
 
 What happens next:
