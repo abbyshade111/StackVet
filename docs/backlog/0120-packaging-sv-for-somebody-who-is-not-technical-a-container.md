@@ -1,6 +1,6 @@
 # Packaging `sv` for somebody who is not technical: a container now, a download later
 
-**Status:** partly done: winget is not built; the Scoop and Homebrew installs are tried only in CI, not yet by hand on a person's own computer; the Homebrew tap and the Homebrew README still build the latest main rather than the v0.1.0 release
+**Status:** partly done: Scoop not yet tried by hand on a Windows computer, nor Homebrew on Linux; the Homebrew formula is still head-only, until the owner tags a release newer than v0.1.0 and the formula is pinned to it
 
 **The
 owner's decision, 26 September 2026: build the container now, and keep the downloadable program
@@ -369,3 +369,5 @@ workflow (#1566) published `v0.1.0` on the owner's tag, with the Windows zip and
 for `Set-Variable`, so the program is installed as `stackvet` too, at the owner's choice. The guide's "Installing
 StackVet on your computer" now has its Windows section. Still open: winget; a try by hand on a Windows computer; and
 the Homebrew formula and its README, which still build the latest `main` and say Windows is untried.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): what is built is the root `Dockerfile` with `tools/image_smoke.py`, the image's publish job, the release workflow (tag `v0.1.0`, 12 October, Windows only, ADR-108), Scoop and Homebrew in `docs/INSTALL.md`, and the Windows CI. Two AI tools installed `sv` with Homebrew on the owner's Mac in the trial of 14 October (`docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`), so what is untried by hand is Scoop on Windows and Homebrew on Linux. **The owner's choices, 20 October 2026:** winget is dropped (ADR-108 chose against it, under "Alternatives considered"); and the owner tags a release newer than v0.1.0, which the formula is then pinned to (the tap is outside this repository). `docs/INSTALL.md` no longer says there is no numbered release. Stale paths above: `agnostic/Dockerfile` is now `Dockerfile`; `crates/sv-cli/src/mcp.rs` is now `crates/sv-cli/src/mcp/mod.rs`; and a built `sv` can be moved (ADR-036, `tools/install.sh`).

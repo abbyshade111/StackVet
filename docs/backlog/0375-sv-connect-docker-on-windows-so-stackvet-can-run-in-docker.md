@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 
 Found on 12 October 2026 while building the setup prompt library (backlog 0370). On Windows, the settings that start
@@ -23,3 +23,5 @@ paths in findings, to the `C:\...` form the AI tool on Windows can open, or ever
 that is not there. Tried only by someone with a Windows computer and Docker Desktop set to Linux containers, since
 GitHub's Windows runners have Windows containers alone. The `--run` checks are a separate question: they start the
 app's containers themselves, already give Docker the short `C:\` form of a path, and are untried on Windows by hand.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): still nothing built (`crates/sv-cli/src/connect.rs` refuses a `--docker` path that does not start with `/`). It waits on the owner's word to take it up (ADR-108, Later, 12 October 2026), and on a Windows computer with Docker Desktop to try it.

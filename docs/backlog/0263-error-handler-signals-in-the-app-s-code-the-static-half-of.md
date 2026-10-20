@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 From 0085, part 3, whose done note lists this as "not done from the proposals"; split out on 11 October 2026 when
 0085 was closed, so it stays visible. The running half of V16.5.4 is built: `probe.app-stopped-during-questions`
@@ -24,3 +24,5 @@ good news, and the section for findings above the app's level is for faults too.
 shape today: a stop is an ordinary finding, and a clean run's credit names no requirement. Build this when `sv` first
 holds an app to level 3, where the signs can sit beside the V16.5.4 line as supporting evidence
 (`RequirementLine.supported_by`), never a credit.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): still nothing built. It stays set aside, at the owner's choice of 12 October, until `sv` holds an app to level 3: backlog 0507 carries that, and 0263 is taken with it.

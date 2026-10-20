@@ -26,3 +26,5 @@ covers the address written into code in the languages it reads, so the first cou
 
 **Break it and watch:** a fixture with `ws://` in a JavaScript string must still give the finding; one with `ws://`
 in a Rust comment must not.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): **the owner's choice, 20 October 2026:** the first course. The rule gets the languages it was written for (`javascript`, `typescript`), and `sv` sets aside a match in a file of another language and says so; `sv`'s own `ast.plaintext-websocket-url` covers the address in the languages it reads. It changes what counts, so it is recorded when built, with the fixtures above and a line in `docs/research/SEMGREP-FALSE-ALARMS.md`.

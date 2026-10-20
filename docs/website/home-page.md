@@ -198,8 +198,8 @@ For the checks that start your app, install StackVet on your computer as well:
 
 Button: *Read the guide*.
 
-- The setup prompt library and the walk-through are *not yet made* (items 1 and 4). The site names only AI tools
-  the prompts have really been tried in.
+- The walk-through is *not yet made* (item 4); the setup prompt library is (item 1, done 14 October 2026). The site
+  names only AI tools the prompts have really been tried in.
 
 ## 8. Free, open, and new
 
@@ -265,9 +265,11 @@ StackVet is not made by or endorsed by OWASP, GitHub, Semgrep, MITRE, FIRST, or 
 
 The site does not go live while any of these is open:
 
-1. A setup prompt library for people new to building with AI, tried by the owner, with the tools it works in named.
+1. ~~A setup prompt library for people new to building with AI, tried by the owner, with the tools it works in named.~~
+   Done 14 October 2026 (backlog 0370).
 2. ~~The report, and the prompt that reads it, lead with the most important things to fix.~~ Done 13 October 2026
    (backlog 0371).
-3. Each requirement in the report stated in plain language, beside OWASP's wording, with checks named in words.
+3. ~~Each requirement in the report stated in plain language, beside OWASP's wording, with checks named in words.~~
+   Done 14 October 2026 (backlog 0372).
 4. A short walk-through of a setup, as a video or a click-through slide show.
-5. Every credited tool's and data source's license confirmed from its source.
+5. ~~Every credited tool's and data source's license confirmed from its source.~~ Done 14 October 2026 (backlog 0374).

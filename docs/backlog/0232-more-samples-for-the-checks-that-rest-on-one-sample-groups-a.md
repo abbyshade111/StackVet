@@ -1,8 +1,8 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: parts B, D, and F wait on the manifest (B can now use the sign-in pathways list); set aside on the board
+**Status:** partly done: part D's size, antivirus-test-file, and SVG checks and the archives still send one file each (buildable now, since `upload` is a list); parts B and F wait on a sign-out for each way of signing in, which the owner chose on 20 October 2026 to add to stackvet.toml
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 The owner's word, 10 October 2026, asked with the three other open decisions of that day: "go with your recommendation and add to the backlog to add more checks to each of these."
 
@@ -148,3 +148,5 @@ by speaking for what its requirement names. One part per group of the inventory 
 **Claim released, 14 October 2026** (the owner's word): session securevibe-trial-prep was archived after the coordination trial with no branch pushed for this item, so the claim was stale. Open again, queued on the board.
 
 **The board, 15 October 2026:** the parts left (B, D, F) wait on the manifest naming each way of signing in and more than one upload route. B can now use the sign-in pathways list 0491 added to stackvet.toml; D and F still wait. 0232 is set aside on the board until a session takes B with the pathways list, so honesty can work the one queue (the owner's choice of 15 October to run one session).
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): D's manifest change exists (`upload` as a list, df548673, 16 October), and B judges a sign-in through another service too (b8e89fe9). **The owner's choices, 20 October 2026:** stackvet.toml gains a sign-out for each way of signing in (under `[stack.run.oidc]` and each pathway), so the sign-out (V7.4.1) and storage-after-sign-out (V14.3.1, part F) checks run after every sign-in; a manifest change, recorded when built (ADR-053, ADR-097). An API key and a magic link cannot be driven by a run, and their credits stay *checked in part* for good. The board's note of 15 October above is overtaken.

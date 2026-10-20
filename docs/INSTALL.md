@@ -45,10 +45,11 @@ brew install --HEAD abbyshade111/stackvet/sv
 sv --version
 ```
 
-`--HEAD` means the latest StackVet, since it has no numbered release yet; `brew upgrade --fetch-HEAD sv` updates it.
+`--HEAD` means the latest StackVet, built from `main`, until the formula moves to a release newer than v0.1.0;
+`brew upgrade --fetch-HEAD sv` updates it.
 This is tried automatically on a Mac and on Linux every week and on every change to the formula
-([github.com/abbyshade111/homebrew-stackvet](https://github.com/abbyshade111/homebrew-stackvet)), but not yet by hand
-on a person's own computer. If it fails, the steps below do the same thing by hand.
+([github.com/abbyshade111/homebrew-stackvet](https://github.com/abbyshade111/homebrew-stackvet)), and two AI coding
+tools installed it this way on a Mac in the trial of 14 October 2026; it has not yet been tried by hand on Linux. If it fails, the steps below do the same thing by hand.
 
 **1. The basic tools.** On a Mac, in a terminal:
 

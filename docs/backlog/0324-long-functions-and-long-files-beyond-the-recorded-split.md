@@ -1,8 +1,8 @@
 # Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150
 
-**Status:** partly done: built: docker.rs (5,919 lines to 2,157) and signed_in/mod.rs (5,487 to 2,115) split along their seams in six pull requests, behavior unchanged (16 October 2026). Left: the long functions (ai.rs run, signed_in run_checks, html.rs page, markdown.rs compliance, production.rs run, main.rs cmd_check, adapters.rs run_one_recorded), the other long files (sv-report lib.rs, ai.rs, main.rs, sessions.rs, sv-manifest lib.rs), and the parameter structs the ten too_many_arguments allowances mark; refactors, not moves
+**Status:** partly done: built: docker.rs (5,919 lines to 2,154) and signed_in/mod.rs (5,487 to 2,129) split along their seams (#2131 to #2136, 16 October 2026). Left: about 93 non-test functions over 150 lines (longest html.rs page 841, signed_in run_checks 811, ai.rs run 730), the other long files (sv-report lib.rs 4,274, ai.rs 4,029, main.rs 3,730, sessions.rs 3,510, sv-manifest lib.rs 3,353), and the parameter structs the seventeen too_many_arguments allowances mark; refactors, not moves
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: low. Verified against the code by the reviewing session before filing.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: low. Verified against the code by the reviewing session before filing.
 
 **What is wrong.** The `ast.rs` and `sbom.rs` split (0187) is done; these are the next along natural seams: `docker.rs` holds the fence, the helpers (mail, OIDC, model, browser), the install step, and the probe script runner; `signed_in/mod.rs` holds the HTTP/cookie/page helpers and the suite runner.
 
@@ -17,3 +17,5 @@
 **Record.** ADR-019 and ADR-052 govern `docker.rs`: a Later line naming the new files' names, since their Governs lists change.
 
 **The owner's go, 14 October 2026 (evening):** once the assigned and ready work on the board is done, build this on its own, with nothing else in flight; the data-and-figures item 0568 follows it.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): every file still on the list has grown since it was written. The owner's go of 14 October waited for the board's work, which no longer exists; the refactor can be claimed the normal way.

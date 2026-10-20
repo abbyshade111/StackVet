@@ -1,6 +1,6 @@
 # Helping someone who is not technical start and keep using sv
 
-**Status:** partly done: part 4 is measured in the next paid prompt trial that runs anyway; part 8 (watching someone who is not technical set it up) is the owner's to arrange; nothing built here has yet been tried by someone who is not technical
+**Status:** partly done: part 4 not yet measured (the drafts trial and the second loop trial of 12 and 13 October ran without it), so it goes into the next paid trial; part 8 is the owner's to arrange; the report prompt (part 5) is untried in any AI tool; nothing has been tried by someone who is not technical
 
 Asked for by the owner on 8 October 2026: "consider the best way to help someone non-technical start and use sv.
 One thought is to turn the getting started guide into a prompt so the AI tool can walk the person through the
@@ -145,3 +145,5 @@ Windows: nothing above is tried there, and every part says so until the owner de
 **Part 3 done 10 October 2026 by session securevibe-e2**, on the command line (design entry "sv doctor: is everything ready?"): `sv doctor [PATH]` says in one line each whether the folder is in git, whether `stackvet.toml` reads and says how to start the app, and whether Docker can start it. The MCP status tool is left for a pull request of its own.
 
 **Part 3 finished 10 October 2026 by session securevibe-e2:** the MCP status tool, `stackvet_status`, listed first (ADR-066, Later, 10 October 2026). Every part the owner chose to build (1, 3, 5, 7) is built.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): the setup prompt and `sv connect` were tried in Cursor and VS Code on 14 October (`docs/prompts/setup.md`), so the text above saying they were never tried is out of date; Windows is supported since the owner's decision of 9 October (backlog 0120), built in CI and installed with Scoop. Parts 4 and 8 wait on a trial and on the owner, not on a session.

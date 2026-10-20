@@ -1,8 +1,8 @@
 # The test identity provider observes the OAuth client's checks (audience, issuer, back-channel logout), and the database account name is read
 
-**Status:** partly done: built: the static part (#2113), the test provider's checks for V10.3.1, V10.5.5, and V7.6.2 (ADR-127), the derived saml condition for V6.8.3 (ADR-015, Later), V9.2.4's hand check with the token's aud beside it (ADR-022, Later), and V9.2.2's ID token sent as an access token (ADR-127, Later, 16 October 2026). Left: V10.5.3, which needs a second start of the app; V10.3.3 is not cited (its text is about access tokens), nor V6.8.1 (it applies only with several providers); V10.3.2 and V10.3.4 have no question
+**Status:** done, 20 October 2026
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requirements no check speaks to for a typical web app with sign-in (`auth`, `tls`, `internet`, `email`; level 2). A proposal, not a fault: how these could be assessed, in the order of preference the owner set (a static read; the running app behind the fence; an outside tool already adapted; showing the person the lines of their own code with a plain question; a hand check with a reason), each at its honest tier (ADR-022, ADR-050). Written by a read-only reviewer and read, not built, by the reviewing session; a requirement's text must be read again before any citation is written (a citation is a claim). The cross-cutting item it assumes is "A question to the owner carries the lines it rests on".
 
@@ -48,3 +48,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   finding.
 
 **The owner's choice, 14 October 2026:** build it, after the three probe sweeps (0559 to 0561) land, so the provider's checks are written to ADR-119's rules; a record of its own, since it changes what sv runs inside the fence.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): all of it is built or decided but two pieces, now items of their own: V10.5.3, which needs a second start of the app, and V7.6.1's hand check, proposed here and never written. V10.3.3 and V6.8.1 are not cited, and V10.3.2 and V10.3.4 get no question, by decision (ADR-127, ADR-018, ADR-022), not as work left. The superuser rule was built as `ast.database-as-superuser`. Closed at the owner's choice of 20 October 2026.

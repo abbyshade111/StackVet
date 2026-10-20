@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 Split from backlog 0508 (done 14 October 2026, the owner's word): the one question that decides whether Podman can
 be a second backend for the fence (ADR-019). On the Podman measured in 0508, none of the options `sv` uses
@@ -16,3 +16,5 @@ does, with the answer written here. **Then the Mac half:** Podman on a Mac runs 
 (`podman machine`), whose gateway and network differ from Linux's, so the same knock there. Adoption is decided on
 these answers, with a record of its own if it is yes. **Held** until someone with Linux and Podman, or the owner on a
 Mac, can run it; the small fixes that do not wait are the sibling item.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): still nothing measured or built (`crates/sv-run/src/docker.rs` says `sv` does not run the app under Podman yet); its sibling 0519 is done. It waits for a Linux machine with Podman, or the owner's Mac with `podman machine`, to run the gateway knocks.
