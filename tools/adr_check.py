@@ -17,6 +17,10 @@ A pattern may name a part of a file, `path::NAME` (ADR-103): it matches only whe
 a line that contains NAME as a whole word (letters, digits and underscores on either side do not count), so a record can
 govern one table or constant in a large shared file without every change to the file owing a line.
 
+A Dependabot pull request whose every added or removed line is a pin (`PIN_LINES`: a step's commit fingerprint, a base
+image's digest, a requirement's version and hashes, a lock file) owes nothing (ADR-128): the diff is what qualifies it,
+so a commit pushed onto its branch that changes anything else makes the check ask as it does for anyone.
+
 Usage:
     python3 tools/adr_check.py --base origin/main --head HEAD --event "$GITHUB_EVENT_PATH"
     python3 tools/adr_check.py --base origin/main --head HEAD --body-file description.md
@@ -34,6 +38,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ADR_DIR = "docs/adr"
 UNCHANGED = re.compile(r"^\s*[-*]?\s*`?ADR-(\d{3})`?:\s*unchanged,\s*because\s+(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
+DEPENDABOT = "dependabot[bot]"
+# The lines Dependabot writes when it moves a pin, and nothing else (ADR-128). Each is matched against a whole line.
+PIN_LINES = [
+    # A workflow step or an Action's step, pinned to a commit with its version beside it.
+    re.compile(r"\s*(-\s+)?uses:\s+[\w.-]+/[\w./-]+@[0-9a-f]{40}\s+#\s+v?[\w.+-]+\s*"),
+    # A base or helper image, pinned to a digest, with or without a tag and a stage name.
+    re.compile(r"FROM\s+(--platform=\S+\s+)?[\w./-]+(:[\w.-]+)?@sha256:[0-9a-f]{64}(\s+AS\s+[\w-]+)?\s*", re.IGNORECASE),
+    # A hashed requirement: its name and version, and each hash line under it.
+    re.compile(r"[A-Za-z0-9][\w.-]*==[\w.+!-]+(\s*;[^\\]*)?\s*\\?\s*"),
+    re.compile(r"\s+--hash=sha256:[0-9a-f]{64}\s*\\?\s*"),
+]
 
 
 def governs(text):
@@ -71,6 +86,30 @@ def touches(changed, pattern, lines):
     if not name or lines is None:
         return reached
     return [f for f in reached if word_in(lines.get(f, ""), name)]
+
+
+def is_pin(path, line):
+    """Whether one line a change adds or removes in `path` is a pin Dependabot moves (ADR-128)."""
+    name = path.rsplit("/", 1)[-1]
+    if name == "Cargo.lock":
+        return True
+    # The requirements file's "# via" lines say which package pulled another in; a comment anywhere else asks.
+    if name.endswith("requirements.txt") and re.fullmatch(r"\s+# via [\w.\- ,]+\s*", line):
+        return True
+    return any(p.fullmatch(line) for p in PIN_LINES)
+
+
+def author(event):
+    """The pull request's author, from the GitHub event file, or None."""
+    return ((event.get("pull_request") or {}).get("user") or {}).get("login")
+
+
+def pin_only(lines):
+    """Whether a change's every added or removed line is a pin: `lines` maps a file to the text of those lines, as
+    `changed_lines` gives it. A change with no lines to read (a rename, a mode change) is not pin-only: the safe side."""
+    if not lines:
+        return False
+    return all(is_pin(path, line) for path, text in lines.items() for line in text.splitlines())
 
 
 def owed(changed, patterns_by_record, body, lines=None):
@@ -209,6 +248,28 @@ def self_test():
         assert word_in(got["big.rs"], "B") and not word_in(got["big.rs"], "A"), got
         assert word_in(got["gone.rs"], "GONE"), got
         assert "still" in got["big.rs"] and "-- not a header" in got["big.rs"], got
+    # A pin-only change (ADR-128), from lines Dependabot wrote in #2140, #2142 and #2145.
+    sha = "cf430e030ddbb5b0abf93d22962f4752f3646cd9"
+    digest = "7c1809255e25a77a464ed1c205c4ad0ce5d9f4f8c25e119afc11eaf7d41b3f1b"
+    step = f"        uses: actions/upload-artifact@{sha} # v7.0.2\n"
+    image = f"FROM docker.io/chromedp/headless-shell:156.0.8078.4@sha256:{digest} AS browser\n"
+    requirement = f"pycparser==3.11 ; implementation_name != 'PyPy' \\\n    --hash=sha256:{digest} \\\n    --hash=sha256:{digest}\n"
+    assert pin_only({".github/workflows/rust.yml": step, "action.yml": step.replace("upload", "download")})
+    assert pin_only({"crates/sv-run/images/Dockerfile": image, "Dockerfile": f"FROM debian:trixie-slim@sha256:{digest}\n"})
+    assert pin_only({"tools/py7zr-requirements.txt": requirement})
+    assert pin_only({"Cargo.lock": 'name = "tree-sitter-php"\nversion = "0.25.0"\n', "fuzz/Cargo.lock": 'checksum = "ab12"\n'})
+    # Anything else asks: a requirement in a manifest, a step's other lines, a tag with no digest, an unpinned step.
+    assert not pin_only({}), "nothing to read is not pin-only"
+    assert not pin_only({"Cargo.toml": 'tree-sitter-php = "0.25"\n', "Cargo.lock": 'version = "0.25.0"\n'})
+    assert not pin_only({".github/workflows/rust.yml": step + "        run: curl https://example.com | sh\n"})
+    assert not pin_only({"Dockerfile": "FROM debian:trixie-slim\n"})
+    assert not pin_only({".github/workflows/rust.yml": "        uses: actions/upload-artifact@v7\n"})
+    assert not pin_only({"tools/not_Cargo.lock.py": "x = 1\n"}), "a lock file's name inside another name is not a lock file"
+    assert pin_only({"tools/py7zr-requirements.txt": requirement + "    # via py7zr\n"})
+    assert not pin_only({".github/workflows/rust.yml": step + "        # via py7zr\n"}), "a comment elsewhere asks"
+    # Only Dependabot's pull requests are read this way.
+    assert author({"pull_request": {"user": {"login": DEPENDABOT}}}) == DEPENDABOT
+    assert author({"pull_request": {}}) is None and author({}) is None
     print("adr_check self-test: ok")
 
 
@@ -225,7 +286,7 @@ def main():
         return 0
     if not args.base:
         parser.error("--base is needed")
-    body = ""
+    body, event = "", {}
     if args.event:
         event = json.loads(Path(args.event).read_text(encoding="utf-8"))
         body = (event.get("pull_request") or {}).get("body") or ""
@@ -234,7 +295,12 @@ def main():
     patterns = records(Git(args.head))
     changed = changed_files(args.base, args.head)
     named = any("::" in p for ps in patterns.values() for p in ps)
-    missing = owed(changed, patterns, body, changed_lines(args.base, args.head) if named else None)
+    dependabot = author(event) == DEPENDABOT
+    lines = changed_lines(args.base, args.head) if named or dependabot else None
+    if dependabot and pin_only(lines):
+        print("Decision records: nothing owed; a Dependabot pull request whose every line is a pin (ADR-128).")
+        return 0
+    missing = owed(changed, patterns, body, lines)
     if missing:
         print(report(missing, patterns))
         return 1

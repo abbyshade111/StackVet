@@ -174,6 +174,7 @@ source files, and in two tests:
 | [ADR-125](ADR-125.md) | Ending sessions is tried from the manifest: a user ends their others, and an admin ends a user's (accepted, 16 October 2026) |
 | [ADR-126](ADR-126.md) | A member's own page is saved through a `creates` entry and fetched where it is served (accepted, 16 October 2026) |
 | [ADR-127](ADR-127.md) | The test sign-in provider mints access tokens and logout tokens, so the app's own checks of them are seen (accepted, 16 October 2026) |
+| [ADR-128](ADR-128.md) | A Dependabot pull request that only moves pins owes the decision records no line (accepted, 20 October 2026) |
 
 ## Names in the records
 
