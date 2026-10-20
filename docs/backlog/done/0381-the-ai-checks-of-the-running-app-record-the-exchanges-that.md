@@ -1,6 +1,6 @@
 # The AI checks of the running app record the exchanges that show what they found
 
-**Status:** partly done: the words sv sent are not kept, only the app's answer: recording.rs keeps no request body, since it can carry the test accounts' passwords and cookies; the prompt sv wrote itself, which holds no secret, could be kept from sv's side instead (a change to what ADR-082's records hold, so the owner's word first)
+**Status:** done, 20 October 2026
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report
@@ -24,3 +24,6 @@ switched copy (`ai-kill-switch`), a flagged injection passed on the injection an
 the test MCP server's two results their own questions (`ai-mcpbad-7`, `ai-mcpinject-8`). Held by
 `crates/sv-check/src/ai/questions_named_tests.rs` (seven tests, from the scenarios that already made each finding);
 with `on` made to drop its ids, all seven fail.
+
+**Done, 20 October 2026:** what was left, keeping the words `sv` sent, is an item of its own at the owner's choice:
+0623 (StackVet's own prompt, kept from its side, quoted escaped and labeled; never the request body).
