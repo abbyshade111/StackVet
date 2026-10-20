@@ -308,15 +308,14 @@ jobs:
 
       - name: The tests that read the backlog, for a pull request that changes only backlog items
         # ADR-104: the backlog's own tool checks, the board, the docs pages built from every item, the
-        # record numbers every document cites, the numbering tool that reads every item's number, and the
-        # coordination board, whose check fails on an item it queues that a done note has finished (0421).
+        # record numbers every document cites, and the numbering tool that reads every item's number. (The
+        # coordination board's test was here until the board was removed on 20 October 2026; ADR-104, Later.)
         # A new test that reads backlog items belongs here too. The whole suite runs again on main once
         # this merges (ADR-051).
         if: needs.scope.outputs.full == 'false'
         run: >-
           cargo test -p sv-cli --test backlog_board --test docs_page --test docs_page_tabs
           --test decision_records --test record_numbers --test ci_scope --test ci_shards
-          --test coordination
 
       - name: The credits the four parts saw
         if: needs.scope.outputs.full != 'false'
