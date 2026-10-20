@@ -1,6 +1,6 @@
 # No check splits into the owner answers and no check yet, and a class is shown only where one was set
 
-**Status:** open
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 Filed at the owner's request, 20 October 2026, asked in a session. Severity: medium (a coverage list that says
 *No check* where StackVet asks the owner, and a class nobody chose, mislead the reader about what StackVet does).
@@ -47,9 +47,9 @@ StackVet says nothing about (20 October 2026)"; the new checks and probes it lis
    decision record.
    **Part status:** open
 4. **V15.4's and C5.1's `never` rules.** Their reason, "level 3 only, above the level this app targets", is true while
-   `sv` holds every app to level 1 or 2 and false the day an app is held to level 3 (backlog 0507). Replace them with a
-   level condition when 0507 is built; until then, a note on 0507.
-   **Part status:** open
+   `sv` holds every app to level 1 or 2 and false the day an app is held to level 3. Moved to backlog 0507, which
+   replaces them, at the owner's word of 20 October 2026.
+   **Part status:** done, 20 October 2026 (moved to 0507)
 5. **The data entries the design entry lists as quick wins.** Design questions (the ten at level 1 or 2 first), the
    six by-hand instructions, the locators with their questions, the citation of V11.2.5 by
    `ast.check-passes-on-error`, and the cookie-size check on the running app (V3.3.5). Each passes its catalog's words

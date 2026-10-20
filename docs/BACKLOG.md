@@ -95,6 +95,8 @@ hand. `python3 tools/backlog.py show <number>` prints an item; `list --open` pri
 | 8 | Added 12 October | 0257 The build-loop trial the coordinating session follows | partly done (what remains is on the item) | the owner, 12 October 2026 |
 | 9 | Process, any time | 0192 Process: shorter CI, a merge queue decision, and a nightly routine | done, 12 October 2026 | 8 October 2026 |
 | 9 | Process, any time | 0193 One file per backlog item, with a status line | done, 8 October 2026 | the owner's decision, 8 October 2026 |
+| 10 | The owner's order of 20 October, after 0489's V2.2.1 | 0624 No check splits into the owner answers and no check yet | claimed by claude/backlog-work, 20 October 2026 | the owner, 20 October 2026 |
+| 10 | The owner's order of 20 October | 0507 Level 3 as an opt-in, when the owner asks for it | open | the owner, 20 October 2026 |
 <!-- roadmap:end -->
 
 Rows that name the same order number are one sub-item of the old roadmap, taken in the order listed. The phases' own
@@ -112,6 +114,8 @@ words, with which part of each item they meant, are in the history of this file 
 - 12 October 2026: a coordinating session for the parallel builds (0273), set up once the other sessions are on the
   build-loop trial (0257) and the website work (0224), and moved up the same day; the deep review's findings that
   follow it wait on the coordination board until the loop trials are done.
+- 20 October 2026: after 0489's V2.2.1 part, the split of *No check* (0624), then level 3 as an opt-in (0507), taken
+  then rather than held until every proposal from 0488 to 0500 is built; 0489's remaining parts follow.
 
 The status of each item as a read-only review found it on 11 October 2026 is a design entry of its own,
 "The roadmap's status checked against the code (11 October 2026)", under `docs/design/`.
