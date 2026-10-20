@@ -21,3 +21,6 @@ node_modules
 
 # sv writes its report of this repository here when it is run on itself
 stackvet-report/
+
+# Spreadsheets and other files built on request from this repository's data, for reading outside it
+/exports/
