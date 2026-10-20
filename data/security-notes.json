@@ -1,5 +1,5 @@
 {
-  "_comment": "The sections of security-notes.md: one for each ASVS requirement that asks for a document and nothing else. `sv notes` writes a section for each that applies, headed by its id, with the question in plain words and what `sv` found that bears on it; the owner writes the answer. A section with an answer makes its requirement *documented*, never *checked*: nothing here reads whether the answer is right, or whether the app does what it says. `title` and `asks` share words with the requirement (crates/sv-check/tests/notes.rs reads them against it), `plain` asks the same in one sentence a person who is not a programmer can answer, and is asked first (backlog 0427), `facts` names what `sv` fills in, and `elsewhere` lists every requirement at level 1 or 2 whose words mention documentation and that has no section here, with why, so a new one cannot be missed silently.",
+  "_comment": "The sections of security-notes.md: one for each ASVS requirement that asks for a document and nothing else. `sv notes` writes a section for each that applies, headed by its id, with the question in plain words and what `sv` found that bears on it; the owner writes the answer. A section with an answer makes its requirement *documented*, never *checked*: nothing here reads whether the answer is right, or whether the app does what it says. `title` and `asks` share words with the requirement (crates/sv-check/tests/notes.rs reads them against it), `plain` asks the same in one sentence a person who is not a programmer can answer, and is asked first (backlog 0427), `facts` names what `sv` fills in, and `elsewhere` lists every requirement, at any level, whose words mention documentation and that has no section here, with why, so a new one cannot be missed silently.",
   "file": "security-notes.md",
   "sections": [
     {
@@ -181,6 +181,92 @@
       "plain": "What does the app write in its logs, where are they kept, who can read them, what are they for, and how long are they kept?",
       "facts": [],
       "howToFindOut": "Find where the app's output actually goes — the console, a file, your host's logging, an outside service — and what it writes at each level. Then say who can read it and how long it is kept."
+    },
+    {
+      "id": "V3.1.1",
+      "title": "Which browser security features the app expects, and what it does without them",
+      "asks": "Write down the security features a browser must support to use the app safely (such as HTTPS, HTTP Strict Transport Security, and a Content Security Policy), and how the application behaves when a browser does not support one of them: does it warn the user, or block access?",
+      "plain": "Which safety features must a visitor's browser have to use the app (a secure connection, for one), and what does the app do when a browser lacks one: warn the person, or keep them out?",
+      "facts": [],
+      "howToFindOut": "List the security headers the app sends (an `sv report` run against the app lists them), then decide, for an old or unusual browser that ignores one, whether the app should carry on, show a warning, or refuse."
+    },
+    {
+      "id": "V8.1.3",
+      "title": "The time, place, address, or device the app looks at to decide",
+      "asks": "Write down the environmental and contextual attributes the application uses to make security decisions, such as the time of day, the user's location, their IP address, or their device, and which decisions each one is used in, including those about authentication and authorization.",
+      "plain": "Does the app ever decide something about safety from the time of day, where someone is, the internet address they come from, or the device they use, and if so, which of those does it look at, and for what?",
+      "facts": [
+        "sign-in"
+      ],
+      "howToFindOut": "Search the code for where it reads the time, the visitor's address, their location, or their browser, and note each place that changes what someone may do or whether they must sign in again."
+    },
+    {
+      "id": "V8.1.4",
+      "title": "How those factors change a sign-in or a permission: thresholds and actions",
+      "asks": "In the authentication and authorization documentation, write down how environmental and contextual factors are used in decision-making, beside the function-level, data-specific, and field-level rules: the attributes evaluated, the thresholds for risk, and the action taken at each (allow, challenge, deny, or step-up authentication).",
+      "plain": "When the app judges a sign-in or a request riskier than usual, what makes it riskier, how risky is too risky, and what happens then: let it through, ask again, refuse, or ask for a second proof of who they are?",
+      "facts": [
+        "sign-in"
+      ],
+      "howToFindOut": "Start from the list written for V8.1.3. For each factor, write the point at which it changes the outcome and what the app does then. If nothing changes the outcome, say that: it is an answer."
+    },
+    {
+      "id": "V11.1.4",
+      "title": "A plan for moving to new cryptographic standards",
+      "asks": "Keep the cryptographic inventory, and with it a documented plan for the migration path to new cryptographic standards, such as post-quantum cryptography, so the app can react to future threats: what would be replaced, in what order, and who decides when.",
+      "plain": "If the ways the app scrambles and signs data had to be swapped for newer ones (as quantum computers may one day require), is there a written plan for what would change, in what order, and who decides?",
+      "facts": [],
+      "howToFindOut": "Start from the list of cryptography written for V11.1.2. For each entry, note what would replace it and whether the library the app uses already offers the replacement."
+    },
+    {
+      "id": "V13.1.2",
+      "title": "How many connections to each service, and what happens at the limit",
+      "asks": "For each service the application uses, write down the maximum number of concurrent connections (for example, a database connection pool's limit), and how the application behaves when that limit is reached, including any fallback or recovery, so the limit does not become a denial of service.",
+      "plain": "For each service the app connects to (its database, for one), how many connections can be open at once, and what does the app do when they are all in use: wait, give up, or fall back to something else?",
+      "facts": [
+        "outside-services"
+      ],
+      "howToFindOut": "Look in the app's settings for a pool size or a connection limit for each service, often in the database settings or the code that connects. Where none is set, the library's default is the limit; write down which."
+    },
+    {
+      "id": "V13.1.3",
+      "title": "Timeouts, retries, and releasing what each outside system hands the app",
+      "asks": "Write down the resource-management strategy for every external system or service the app uses (databases, file handles, threads, HTTP connections): how each resource is released, the timeout settings, failure handling, and where retry logic exists, its retry limits, delays, and back-off. For a synchronous HTTP request, the timeout should be short, and retries off or strictly limited, so delays do not cascade.",
+      "plain": "For each outside system the app uses, how long does the app wait before giving up, does it try again and how many times, and does it always let go of what it opened (a file, a connection) when it is done or something fails?",
+      "facts": [
+        "outside-services"
+      ],
+      "howToFindOut": "Find each place the app calls a database, another website's API, or opens a file, and look for a timeout and a retry setting beside it. A call with no timeout waits for ever by default in many libraries; write that down too."
+    },
+    {
+      "id": "V13.1.4",
+      "title": "Which secrets matter most, and when each is rotated",
+      "asks": "Write down the secrets that are critical for the security of the application (keys, passwords to other services, signing secrets) and a schedule for rotating each, based on the organization's threat model and business requirements.",
+      "plain": "Which of the app's passwords and keys would do the most harm if someone else had them, and how often is each one replaced with a new one?",
+      "facts": [
+        "outside-services"
+      ],
+      "howToFindOut": "List what the app reads from its environment or its secrets store: the database password, other services' keys, the key that signs sign-in cookies. For each, write who can replace it, how, and how often."
+    },
+    {
+      "id": "V15.1.4",
+      "title": "The third-party libraries considered risky components",
+      "asks": "In the application documentation, highlight the third-party libraries considered to be \"risky components\": ones that are unmaintained, that run with more access than they need, that parse untrusted input, or that the app could not easily replace.",
+      "plain": "Of the add-on packages the app uses, which ones would you call risky (no longer looked after, handling what strangers send, or hard to replace), and why?",
+      "facts": [
+        "ecosystems"
+      ],
+      "howToFindOut": "Go through the dependency list (package.json, requirements.txt, or the like). For each package, look at when it last had a release and what it does with what visitors send. `sv report` lists the known vulnerabilities in each when given the advisory data."
+    },
+    {
+      "id": "V15.1.5",
+      "title": "The parts of the app with dangerous functionality",
+      "asks": "In the application documentation, highlight the parts of the application where \"dangerous functionality\" is used: running other programs, building database queries or file paths from what a user sends, reading uploaded files, or turning stored data back into objects.",
+      "plain": "Which parts of the app do something that could go badly wrong if misused (running another program, reading uploaded files, building a file path or a database query from what someone typed), and where are they?",
+      "facts": [
+        "uploads"
+      ],
+      "howToFindOut": "Search the code for where it runs a command, opens a file by a name that came from a request, builds a query by joining text, or loads stored data as objects. Each place you find is one to list."
     }
   ],
   "elsewhere": [
@@ -263,6 +349,42 @@
     {
       "id": "V17.2.1",
       "why": "asks for a DTLS key to be managed as documented: behavior, and only for WebRTC"
+    },
+    {
+      "id": "V3.2.3",
+      "why": "asks for client-side code written so page elements cannot overwrite its variables (DOM clobbering): a coding practice, not a document"
+    },
+    {
+      "id": "V3.4.8",
+      "why": "about a header on every page the browser renders; \"document\" here means the page, and `probe.opener-policy-missing` checks it"
+    },
+    {
+      "id": "V3.5.8",
+      "why": "about which signed-in resources another site can load or embed; \"documents\" here means files such as images and scripts"
+    },
+    {
+      "id": "V3.6.1",
+      "why": "asks for an integrity hash on scripts loaded from other sites, which semgrep looks for, and a written decision only where one cannot be used"
+    },
+    {
+      "id": "V3.7.5",
+      "why": "asks the app to behave as the V3.1.1 section says when a browser lacks a feature: behavior, checked by hand"
+    },
+    {
+      "id": "V8.2.4",
+      "why": "asks for the adaptive controls V8.1.3 and V8.1.4 describe to be built: behavior, not the document itself"
+    },
+    {
+      "id": "V13.2.6",
+      "why": "asks each connection to follow the limits the V13.1.2 and V13.1.3 sections set down: behavior, checked by hand"
+    },
+    {
+      "id": "V13.3.4",
+      "why": "asks for secrets to expire and be rotated as the V13.1.4 section's schedule says: behavior, not the schedule itself"
+    },
+    {
+      "id": "V15.2.5",
+      "why": "asks for extra protection around what the V15.1.4 and V15.1.5 sections name: behavior, not the list itself"
     }
   ]
 }

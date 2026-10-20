@@ -41,7 +41,7 @@ StackVet says nothing about (20 October 2026)"; the new checks and probes it lis
    list, which covers levels 1 and 2. A section each, with `facts` from locators `sv` already has. The other seven
    whose words mention documentation (V3.2.3, V3.5.8, V3.7.5, V8.2.4, V13.2.6, V13.3.4, V15.2.5) ask the app to
    behave as documented, so a notes section is the wrong tool; they take the design entry's proposal.
-   **Part status:** open
+   **Part status:** done, 20 October 2026
 3. **Applicability that asks apps for what they cannot have.** Gate V6.6.4 on `out-of-band-auth`, V12.3.5 and V8.3.3
    on `multiple-services`; a derived condition `cryptographic-authenticator` for section V6.7; claim conditions
    `several-identity-providers` (V6.8.1) and `resource-server` (V10.3). Each changes which requirements apply, so a
