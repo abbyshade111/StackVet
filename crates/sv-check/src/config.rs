@@ -14,7 +14,7 @@
 //! is not a check that passed. Asking git about a folder that is not a repository is the ordinary case for
 //! an app somebody uploaded, not an error.
 
-use crate::finding::{Confidence, Finding, Location, Severity};
+use crate::finding::{Confidence, Finding, Location, Secret, Severity};
 use crate::verified::Verified;
 use std::path::{Path, PathBuf};
 use sv_scan::ecosystems::Pinning;
@@ -164,6 +164,131 @@ fn is_secret_file(name: &str) -> bool {
             || (name.contains("-firebase-adminsdk-") && name.ends_with(".json")))
 }
 
+/// The files in `SECRET_FILES` whose job is not always a credential: npm's, the Python package index's, and the
+/// netrc's settings, which hold one only when a line says so (backlog 0614). Each is read before it is reported; the
+/// rest go by their name, since holding a credential is all they are for.
+const CREDENTIAL_WHEN_A_LINE_SAYS: &[&str] = &[".npmrc", ".pypirc", ".netrc"];
+
+/// What a committed file named like a secrets file holds, as far as `sv` read it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Held {
+    /// A file whose only job is a credential: its name is enough.
+    ByName,
+    /// A line that holds one: its number in the version that had it, the setting's name, and the value.
+    Line {
+        line: usize,
+        key: String,
+        value: String,
+    },
+    /// A version `sv` could not read, so whether it held one is not known.
+    NotRead,
+}
+
+/// The first line of a settings file named `name` that holds a credential: its number, the setting, and the value.
+/// A value that is only a reference to the environment (`${NPM_TOKEN}`) is not one: it names where the credential
+/// is kept, outside the file.
+fn credential_line(name: &str, text: &str) -> Option<(usize, String, String)> {
+    let real = |value: &str| {
+        let v = value.trim().trim_matches(['"', '\'']);
+        !v.is_empty()
+            && !(v.starts_with("${") && v.ends_with('}') && !v[2..v.len() - 1].contains('}'))
+    };
+    for (n, raw) in text.lines().enumerate() {
+        let line = raw.trim();
+        if line.starts_with(['#', ';']) {
+            continue;
+        }
+        let found = match name {
+            // `_authToken=…`, `//registry.example/:_authToken=…`, `_auth`, `_password`.
+            ".npmrc" => line.split_once('=').and_then(|(key, value)| {
+                let setting = key.trim().rsplit(':').next().unwrap_or("").trim();
+                ["_authtoken", "_auth", "_password"]
+                    .contains(&setting.to_ascii_lowercase().as_str())
+                    .then(|| (setting.to_owned(), value.trim().to_owned()))
+            }),
+            // `password = …` or `password: …` under a repository's section.
+            ".pypirc" => line.split_once(['=', ':']).and_then(|(key, value)| {
+                key.trim()
+                    .eq_ignore_ascii_case("password")
+                    .then(|| ("password".to_owned(), value.trim().to_owned()))
+            }),
+            // `machine host login name password value`, the words on one line or several.
+            ".netrc" => {
+                let words: Vec<&str> = line.split_whitespace().collect();
+                words
+                    .iter()
+                    .position(|w| *w == "password")
+                    .and_then(|i| words.get(i + 1))
+                    .map(|value| ("password".to_owned(), (*value).to_owned()))
+            }
+            _ => None,
+        };
+        if let Some((key, value)) = found.filter(|(_, value)| real(value)) {
+            return Some((n + 1, key, value));
+        }
+    }
+    None
+}
+
+/// Whether the file at `path` (named from `app_dir`) counts as a committed secrets file, and how `sv` knows: by its
+/// name, by a line it read in one of its committed versions, or as one it could not read. `None` when it does not:
+/// a settings file every committed version of which was read and none holds a credential.
+fn held(app_dir: &Path, path: &str) -> Option<Held> {
+    let name = path.rsplit('/').next().unwrap_or(path);
+    if !is_secret_file(name) {
+        return None;
+    }
+    if !CREDENTIAL_WHEN_A_LINE_SAYS.contains(&name) {
+        return Some(Held::ByName);
+    }
+    let Some(versions) = crate::git::every_version(app_dir, path) else {
+        return Some(Held::NotRead);
+    };
+    let mut unread = versions.is_empty();
+    for version in versions {
+        match version {
+            Some(bytes) => {
+                if let Some((line, key, value)) =
+                    credential_line(name, &String::from_utf8_lossy(&bytes))
+                {
+                    return Some(Held::Line { line, key, value });
+                }
+            }
+            None => unread = true,
+        }
+    }
+    unread.then_some(Held::NotRead)
+}
+
+/// The finding's words for what `held` found in `file`: the line, the location, the masked value, and how sure.
+fn held_words(file: &str, held: &Held) -> (String, Location, Option<Secret>, Confidence) {
+    let at = |line| Location {
+        file: file.to_owned(),
+        line,
+    };
+    match held {
+        Held::ByName => (
+            "files with that name hold credentials".to_owned(),
+            at(1),
+            None,
+            Confidence::High,
+        ),
+        Held::Line { line, key, value } => (
+            format!("its line {line} holds `{key}`, a credential"),
+            at(*line),
+            Some(Secret::redact(value)),
+            Confidence::High,
+        ),
+        Held::NotRead => (
+            "files with that name can hold credentials, and `sv` could not read what it held"
+                .to_owned(),
+            at(1),
+            None,
+            Confidence::Medium,
+        ),
+    }
+}
+
 /// The git pathspecs that reach every name `is_secret_file` accepts, at any depth, so reading
 /// the history compares only those paths in each commit. They may reach more (an `.env.example`),
 /// never less: the names git returns are still filtered by `is_secret_file`.
@@ -242,8 +367,17 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
         }
     };
 
-    let secret = |path: &&String| is_secret_file(path.rsplit('/').next().unwrap_or(path));
-    let committed: Vec<&String> = tracked.iter().filter(secret).collect();
+    // A settings file that may hold a credential is read first (backlog 0614); one every committed version of which
+    // holds none is not reported.
+    let named = |path: &&String| is_secret_file(path.rsplit('/').next().unwrap_or(path));
+    let held_ones = |paths: Vec<&String>| -> Vec<(String, Held)> {
+        paths
+            .into_iter()
+            .filter(named)
+            .filter_map(|p| Some((p.clone(), held(app_dir, p)?)))
+            .collect()
+    };
+    let committed = held_ones(tracked.iter().collect());
 
     // Not tracked now is not never committed: a file committed once and untracked since (what this
     // finding's own fix says to do) is still in every copy of the history. Until 7 October 2026 only
@@ -256,9 +390,9 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
                     .to_owned(),
             );
         };
-        let past: Vec<&String> = added.iter().filter(secret).collect();
-        if let Some(first) = past.first() {
-            return Outcome::Failed(Box::new(in_history_finding(first, past.len())));
+        let past = held_ones(added.iter().collect());
+        if let Some((first, how)) = past.first() {
+            return Outcome::Failed(Box::new(in_history_finding(first, how, past.len())));
         }
         if crate::git::is_shallow(app_dir) != Some(false) {
             return Outcome::NotAssessed(
@@ -272,7 +406,9 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
 
     match committed.first() {
         None => Outcome::Passed(&["V13.3.1"]),
-        Some(first) => Outcome::Failed(Box::new(crate::finding::found(Finding {
+        Some((first, how)) => {
+            let (said, location, secret, confidence) = held_words(first, how);
+            Outcome::Failed(Box::new(crate::finding::found(Finding {
             evidence: Vec::new(),
             also_reported_by: Vec::new(),
             fingerprint: String::new(),
@@ -285,16 +421,16 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
             rule_id: "config.secrets-file-committed".into(),
             title: format!("A file that holds credentials is in version control (`{first}`)"),
             severity: Severity::Critical,
-            confidence: Confidence::High,
-            location: Location { file: (*first).clone(), line: 1 },
-            secret: None,
+            confidence,
+            location,
+            secret,
             requirement_ids: vec!["V13.3.1".into()],
             cwe: vec!["CWE-540".into(), "CWE-538".into()],
             description: if committed.len() == 1 {
-                format!("`{first}` is tracked by git, and files with that name hold credentials.")
+                format!("`{first}` is tracked by git, and {said}.")
             } else {
                 format!(
-                    "`{first}` and {} other file(s) that hold credentials are tracked by git.",
+                    "`{first}` is tracked by git, and {said}; {} other file(s) that hold credentials are tracked too.",
                     committed.len() - 1
                 )
             },
@@ -306,7 +442,8 @@ fn secrets_file_committed(app_dir: &Path) -> Outcome {
                   you. Then stop tracking it (`git rm --cached`), add it to .gitignore, and keep a \
                   .env.example with the names and no values."
                 .into(),
-        }))),
+            })))
+        }
     }
 }
 
@@ -411,7 +548,8 @@ fn ai_commits_off_merge(app_dir: &Path, rules: &crate::secrets::SecretRules) -> 
 
 /// A file that holds credentials, committed in the past and no longer tracked: still in the history.
 #[track_caller]
-fn in_history_finding(first: &str, count: usize) -> Finding {
+fn in_history_finding(first: &str, how: &Held, count: usize) -> Finding {
+    let (said, location, secret, confidence) = held_words(first, how);
     crate::finding::found(Finding {
         evidence: Vec::new(),
         also_reported_by: Vec::new(),
@@ -427,23 +565,20 @@ fn in_history_finding(first: &str, count: usize) -> Finding {
             "A file that holds credentials was committed, and is still in the history (`{first}`)"
         ),
         severity: Severity::Critical,
-        confidence: Confidence::High,
-        location: Location {
-            file: first.to_owned(),
-            line: 1,
-        },
-        secret: None,
+        confidence,
+        location,
+        secret,
         requirement_ids: vec!["V13.3.1".into()],
         cwe: vec!["CWE-540".into(), "CWE-538".into()],
         description: if count == 1 {
             format!(
-                "`{first}` was committed to git at some point. It is not tracked now, but every \
-                 commit that held it still does, in this folder and in every copy of the repository."
+                "`{first}` was committed to git at some point, and {said}. It is not tracked now, but \
+                 every commit that held it still does, in this folder and in every copy of the repository."
             )
         } else {
             format!(
-                "`{first}` and {} other file(s) that hold credentials were committed to git at some \
-                 point. They are not tracked now, but the commits that held them still do.",
+                "`{first}` was committed to git at some point, and {said}; {} other file(s) that hold \
+                 credentials were too. They are not tracked now, but the commits that held them still do.",
                 count - 1
             )
         },
@@ -1014,6 +1149,10 @@ mod history_tests;
 #[cfg(test)]
 #[path = "config_pin_title_tests.rs"]
 mod pin_title_tests;
+
+#[cfg(test)]
+#[path = "config_npmrc_tests.rs"]
+mod npmrc_tests;
 
 #[cfg(test)]
 mod tests {
