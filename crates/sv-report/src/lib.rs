@@ -1808,8 +1808,15 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
             Some(sv_check::finding::Outranked::LogsOnlyIds { .. })
         )
     });
+    let other_language = apart.iter().any(|f| {
+        matches!(
+            f.outranked,
+            Some(sv_check::finding::Outranked::OtherLanguage { .. })
+        )
+    });
     let mut kinds: Vec<&str> = Vec::new();
-    if tests || !(libraries || look || not_held_to || other_framework || ids_only) {
+    if tests || !(libraries || look || not_held_to || other_framework || ids_only || other_language)
+    {
         kinds.push("in test or sample code");
     }
     if libraries {
@@ -1830,6 +1837,9 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
     }
     if ids_only {
         kinds.push("log lines that log only ids");
+    }
+    if other_language {
+        kinds.push("from rules written for another language than the file's");
     }
     match kinds.as_slice() {
         [one] => (*one).to_owned(),
@@ -2330,6 +2340,11 @@ pub fn finding_notes(f: &sv_check::Finding) -> Vec<String> {
              {framework}, so it is listed apart and decides nothing in the tables. If the app does use \
              {framework}, add it to its package list and run `sv` again."
         )),
+        Some(sv_check::finding::Outranked::OtherLanguage { languages }) => notes.push(format!(
+            "From a rule written for {}, in a file of another language, so it is listed apart and decides nothing \
+             in the tables. The rule matches its text wherever it is, a comment included.",
+            list_and(&languages.iter().map(|l| language_name(l)).collect::<Vec<_>>())
+        )),
         Some(sv_check::finding::Outranked::LogsOnlyIds { names }) => notes.push(format!(
             "The rule fires when a log message mentions a password, token, secret, or key, whatever is logged. \
              `sv` read the line: it logs only {}, which {} an id, and nothing named for a secret, so it is listed \
@@ -2536,6 +2551,20 @@ fn is_zero(n: &usize) -> bool {
 }
 
 /// "a", "a and b", "a, b, and c".
+/// A language as a person writes it, from `sv`'s name for it (`javascript` is JavaScript).
+fn language_name(language: &str) -> String {
+    match language {
+        "javascript" => "JavaScript",
+        "typescript" => "TypeScript",
+        "csharp" => "C#",
+        "cpp" => "C++",
+        "php" => "PHP",
+        "html" => "HTML",
+        other => return other[..1].to_uppercase() + &other[1..],
+    }
+    .to_owned()
+}
+
 fn list_and(items: &[String]) -> String {
     match items {
         [] => String::new(),
@@ -3242,7 +3271,11 @@ pub fn mark_outranked(
         // Set when the outside tools ran, from the app's package lists, which are not here to read again.
         if matches!(
             f.outranked,
-            Some(Outranked::OtherFramework { .. } | Outranked::LogsOnlyIds { .. })
+            Some(
+                Outranked::OtherFramework { .. }
+                    | Outranked::OtherLanguage { .. }
+                    | Outranked::LogsOnlyIds { .. }
+            )
         ) {
             continue;
         }

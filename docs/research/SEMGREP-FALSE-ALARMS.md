@@ -374,3 +374,14 @@ neither could be checked against those apps here:
   fewer.
 - Kotlin was not run; the C# clean app was partly unparsed (17 files).
 - Semgrep 1.179.0, not the 1.176.0 of the earlier runs.
+
+## Later, 20 October 2026: the insecure-WebSocket rule (backlog 0615)
+
+`javascript.lang.security.detect-insecure-websocket` is a text pattern: it matches `ws://` in any file, whatever its
+language, comments and strings alike. In `sv`'s own self-report of 16 October 2026 it made 27 findings, 23 in Rust
+files, 2 in Python, and 2 in HTML; the one outside test code was a doc comment in `crates/sv-check/src/ast.rs`, and it
+was the only finding behind V4.4.1 needing attention. None was a WebSocket connection. At the owner's choice of 20
+October 2026 the rule names the languages it was written for (`javascript`, `typescript`) in `data/adapters.json`, and
+a match in a file none of their parsers reads is listed apart and decides nothing
+(`adapters::set_apart_other_languages`); `sv`'s own `ast.plaintext-websocket-url` still finds the address written into
+code in the languages it reads.

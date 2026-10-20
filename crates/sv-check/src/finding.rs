@@ -222,6 +222,10 @@ pub enum Outranked {
     /// An outside tool's finding from a rule written for a web framework, named here, that the app's
     /// package lists say it does not use (backlog 0521; ADR-111, Later). It decides nothing.
     OtherFramework { framework: String },
+    /// An outside tool's finding from a rule written for the languages named here, in a file of another: Semgrep's
+    /// insecure-WebSocket rule is a text pattern that matched `ws://` in a Rust comment (backlog 0615; ADR-111, Later).
+    /// It decides nothing.
+    OtherLanguage { languages: Vec<String> },
     /// Semgrep's rule for credentials written to a log, on a logger call whose every logged value is an id, named
     /// here: its message mentions a secret, and the line logs none (backlog 0583; ADR-111, Later). It decides nothing.
     LogsOnlyIds { names: Vec<String> },
@@ -321,6 +325,7 @@ impl Finding {
             Some(
                 Outranked::CheckedWhileRunning { .. }
                     | Outranked::OtherFramework { .. }
+                    | Outranked::OtherLanguage { .. }
                     | Outranked::LogsOnlyIds { .. }
             )
         ) {

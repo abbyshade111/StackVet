@@ -2282,6 +2282,50 @@ pub fn set_apart_other_frameworks(
     }
 }
 
+/// Lists apart each outside tool's finding from a rule written for some languages, in a file none of their parsers
+/// reads (backlog 0615; ADR-111, Later): Semgrep's insecure-WebSocket rule is a text pattern, and matched `ws://` in
+/// Rust comments. Only a rule that names its languages and no files of its own (`targets`: Rails's template rules are
+/// Ruby rules that read `.erb` on purpose), and only when the file's extension is outside every one of them. Nor when
+/// another tool found the same.
+pub fn set_apart_other_languages(adapters: &Adapters, findings: &mut [crate::Finding]) {
+    for f in findings.iter_mut() {
+        if f.outranked.is_some() || !f.also_reported_by.is_empty() {
+            continue;
+        }
+        let rule = adapters.all().iter().find_map(|a| {
+            let rule = f.rule_id.strip_prefix(&format!("{}.", a.id))?;
+            a.rules.get(rule)
+        });
+        let Some(rule) = rule else {
+            continue;
+        };
+        if rule.languages.is_empty()
+            || rule.languages.iter().any(|l| l == "*")
+            || !rule.targets.is_empty()
+        {
+            continue;
+        }
+        let extension = f
+            .location
+            .file
+            .rsplit('/')
+            .next()
+            .and_then(|name| name.rsplit_once('.'))
+            .map(|(_, e)| e.to_ascii_lowercase())
+            .unwrap_or_default();
+        let read = rule.languages.iter().any(|l| {
+            SEMGREP_EXTENSIONS
+                .iter()
+                .any(|(name, exts)| name == l && exts.contains(&extension.as_str()))
+        });
+        if !read {
+            f.outranked = Some(crate::finding::Outranked::OtherLanguage {
+                languages: rule.languages.clone(),
+            });
+        }
+    }
+}
+
 /// Reads a SARIF 2.1.0 document into findings.
 pub fn parse_sarif(adapter: &Adapter, text: &str) -> Result<Vec<Finding>> {
     parse_sarif_relative_to(adapter, text, Path::new(""))
