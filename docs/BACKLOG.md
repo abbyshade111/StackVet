@@ -33,8 +33,7 @@ conflicts here once it merges `main`; the steps to mend it are at the top of the
 The order of work, written 8 October 2026 by session securevibe-review at the owner's asking, and changed since only by
 the owner's word, each change dated below. This section is the order, not its record: **a claim and a done note go on
 the item itself, never here**. A session with no word from the owner takes the first row below that is not done,
-claims it, and lands it before taking the next; when the coordination board is open, the board decides instead
-(`docs/COORDINATION.md`). Check an item against `main` before claiming it: some were overtaken by later work and want a
+claims it, and lands it before taking the next. Check an item against `main` before claiming it: some were overtaken by later work and want a
 done note rather than a build.
 
 The status column is read from each item's own status line by `python3 tools/backlog.py roadmap --write`, and by
