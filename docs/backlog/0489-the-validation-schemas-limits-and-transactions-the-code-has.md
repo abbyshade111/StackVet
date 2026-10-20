@@ -1,6 +1,6 @@
 # The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over
 
-**Status:** partly done: the running check for V2.2.1 (buildable now on `owned.create`), the one for V2.3.2 (needs a `[policy]` limit key), and the count of handlers changing several tables with no transaction are not built; its payments finding contradicts `docs/PARTIAL-CHECKS.md`'s V2.3.3 entry and is settled first
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 

@@ -1,6 +1,6 @@
 # The PDF word test fails on main: flask-booking's report.pdf is said to lack the word lt (20 October 2026)
 
-**Status:** open
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 Found by the fourth weekly review of the decision records (0616, 19 October 2026, in a Linux cloud container) and
 seen again on 20 October 2026 on the owner's Mac at `main` `15e3308e`. Severity: medium (a test of the report fails,

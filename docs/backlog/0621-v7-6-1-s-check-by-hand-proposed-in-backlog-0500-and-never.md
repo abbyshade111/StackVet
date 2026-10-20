@@ -1,6 +1,6 @@
 # V7.6.1's check by hand, proposed in backlog 0500 and never written (20 October 2026)
 
-**Status:** open
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 Split from backlog 0500 at the owner's choice of 20 October 2026: 0500 proposed V7.6.1 as a check by hand, with its
 reason, and it was never written. Severity: low.

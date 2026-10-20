@@ -1,6 +1,6 @@
 # The AI checks of the running app record the exchanges that show what they found
 
-**Status:** partly done: eight AI findings still name no question: the two that rest on the app's log, a burst of messages, the kill switch's second copy, a stored injection, an agent's loop, and the test MCP server's two tool results (C10.4.1, C10.4.2); and the words sv sent are not kept, only the app's answer (no request body is kept, by design)
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 From the owner's review of the report on 12 October 2026, after an inventory of what a run gathers against what
 the report shows (`docs/website/home-page.md` is the words; the inventory is the session's page "StackVet Report

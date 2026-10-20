@@ -1,6 +1,6 @@
 # config.secrets-file-committed calls an .npmrc critical by its name alone, though most hold only settings
 
-**Status:** open
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 Filed from `sv`'s self-report of 16 October 2026 (`sv report .` with the outside tools on, at `main` `28aae3a2`).
 Severity: medium (a false alarm at critical severity, high confidence).

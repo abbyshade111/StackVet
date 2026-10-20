@@ -29,7 +29,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0370-the-made-up-session-on-every-listed-private-page-12-october.md`): the made-up session is tried on
    every listed private page, and its credit is whole only when two or more were tried and all refused.
-   **Part status:** partly done: the cookies, renewal, and fixed session are now judged after the form's sign-in and after a sign-in through another service (ADR-053, Later, 16 October 2026); the one sign-out, and ways in a run cannot drive (an API key, a magic link), wait
+   **Part status:** claimed by claude/backlog-work, 20 October 2026
 3. **C. Each form, flow, and connection.** Cross-site requests tried on each changing route the app answers, each
    step of a flow, and each WebSocket path, not one request.
    **Scope of this claim (12 October 2026):** the cross-site check (`probe.cross-site-request-accepted`, V3.5.1,
@@ -71,7 +71,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0372-the-served-file-checks-judge-three-files-each-12-october-2026.md`): the two served-file checks judge
    three files each, whole only when all three are safe.
-   **Part status:** partly done: every upload route stackvet.toml names is now tried (16 October 2026); the one-file checks (the size, the antivirus test file, the SVG) and the archives still send one file each, on each route
+   **Part status:** claimed by claude/backlog-work, 20 October 2026
 5. **E. Each kind of event.** Each event the requirement names made to happen and looked for in the log, not one
    line.
    **Scope of this claim (12 October 2026):** the authorization-failure log check (`probe.authorization-failure-logged`,
@@ -119,7 +119,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-097; `docs/design/0375-the-typed-text-check-on-every-text-form-12-october-2026.md`):
    `browser.text-forms` names several text forms; each is typed into, and the credit is whole only when every one is
    shown as text.
-   **Part status:** partly done: the storage check after signing out (one sign-in, one sign-out)
+   **Part status:** claimed by claude/backlog-work, 20 October 2026
 7. **G. Each operation the requirement names.** Phone, two-factor, and recovery changes beside the email change
    (V7.5.1); password change beside sign-up for the password checks; both TOTP and an emailed code where both
    exist (V6.5.1, V6.5.5); one manifest key per operation.

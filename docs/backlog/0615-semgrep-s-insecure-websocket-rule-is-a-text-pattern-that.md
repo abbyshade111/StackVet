@@ -1,6 +1,6 @@
 # Semgrep's insecure-WebSocket rule is a text pattern that fires on any file, comments and Rust included
 
-**Status:** open
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 Filed from `sv`'s self-report of 16 October 2026 (`sv report .` with the outside tools on, at `main` `28aae3a2`).
 Severity: low (false alarms that mark a requirement as needing attention).

@@ -1,6 +1,6 @@
 # Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150
 
-**Status:** partly done: built: docker.rs (5,919 lines to 2,154) and signed_in/mod.rs (5,487 to 2,129) split along their seams (#2131 to #2136, 16 October 2026). Left: about 93 non-test functions over 150 lines (longest html.rs page 841, signed_in run_checks 811, ai.rs run 730), the other long files (sv-report lib.rs 4,274, ai.rs 4,029, main.rs 3,730, sessions.rs 3,510, sv-manifest lib.rs 3,353), and the parameter structs the seventeen too_many_arguments allowances mark; refactors, not moves
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: low. Verified against the code by the reviewing session before filing.
 

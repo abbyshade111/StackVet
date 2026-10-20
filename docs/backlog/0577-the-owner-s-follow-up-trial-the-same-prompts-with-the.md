@@ -1,6 +1,6 @@
 # The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check
 
-**Status:** partly done: both runs were run and read on 15 October 2026 (Run 2 again, cleanly), items 0579 to 0602 filed, and the research page's follow-up written; left: the rows in 0568's tables and the confound in a Limits block in `docs/paper/DATA.md` (0568 was closed without them); any further run is the owner's time
+**Status:** claimed by claude/backlog-work, 20 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
