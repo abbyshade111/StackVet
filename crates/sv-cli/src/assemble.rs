@@ -942,6 +942,7 @@ fn outside_tools(
             &scan_report.declared,
             &scan_report.unread_manifests,
         );
+        sv_check::adapters::set_apart_other_languages(adapters, &mut found);
         sv_check::logged_ids::set_apart_logged_ids(app_dir, &mut found);
         findings.extend(found);
         tool_verified = outcome.verified;

@@ -6119,7 +6119,8 @@
             "V12.3.1"
           ],
           "languages": [
-            "*"
+            "javascript",
+            "typescript"
           ],
           "findings_against": [
             "V4.4.1"
