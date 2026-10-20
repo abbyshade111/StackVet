@@ -503,16 +503,29 @@ ID = r"(?:V|C)\d+\.\d+\.\d+|AC\.\d+\.\d+|SBD-[A-Z]+-\d+"
 # with a palette validator for lightness, chroma, color-blind separation, and contrast on light and dark backgrounds;
 # "nothing" is drawn in the page's own gray, so what no check reaches looks like the background it is. The brand's
 # palette has not chosen status colors yet (docs/brand/README.md, "Not yet chosen"), so these are from its family.
+# "The owner answers" (backlog 0624) is no new hue, since none passed the validator beside these three on every pair:
+# it is the person's blue hatched over the gray, a person and no check, and its count is written beside it as every
+# part's is.
+OWNER_BLUE = "#5470C0"
 SEGMENTS = (
     ("can be credited", "#3A9470"),
     ("can only be found failing", "#D9692B"),
-    ("a check helps, a person decides", "#5470C0"),
-    ("no check", None),
+    ("a check helps, a person decides", OWNER_BLUE),
+    ("the owner answers", "hatch"),
+    ("no check yet", None),
 )
 
 
+def segment_fill(colour):
+    """The attribute that paints a chart part: the gray class for no check, the hatch for the owner's, else a hue."""
+    if colour is None:
+        return ' class="none"'
+    return ' fill="url(#owner)"' if colour == "hatch" else f' fill="{colour}"'
+
+
 def coverage_svg(title, rows):
-    """A stacked bar per row of (label, credited, found failing only, supporting only, nothing), each bar as long as
+    """A stacked bar per row of (label, credited, found failing only, supporting only, the owner answers, nothing),
+    each bar as long as
     the row's requirements, with every part's count written beside it, so no part is shown by color alone."""
     def esc(text):
         return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -532,14 +545,16 @@ def coverage_svg(title, rows):
         "<style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}"
         "@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}"
         ".none{fill:#182A23;stroke:#3B4842}}</style>",
+        f'<defs><pattern id="owner" width="6" height="6" patternUnits="userSpaceOnUse" '
+        f'patternTransform="rotate(45)"><rect class="none" width="6" height="6"/>'
+        f'<rect width="2.5" height="6" fill="{OWNER_BLUE}"/></pattern></defs>',
         f'<rect class="bg" width="{width}" height="{height}"/>',
         f'<text class="ink" x="12" y="28" font-size="18" font-weight="700">{esc(title)}</text>',
     ]
     # The key, one line, each part's swatch beside its words.
     x = 12
     for name, colour in SEGMENTS:
-        cls = ' class="none"' if colour is None else f' fill="{colour}"'
-        out.append(f'<rect{cls} x="{x}" y="46" width="14" height="14" rx="2"/>')
+        out.append(f'<rect{segment_fill(colour)} x="{x}" y="46" width="14" height="14" rx="2"/>')
         out.append(f'<text class="soft" x="{x + 20}" y="58" font-size="13">{esc(name)}</text>')
         x += 32 + 7 * len(name)
     out.append(f'<text class="soft" x="{label_w + bar_w + 12}" y="{top - 10}" font-size="12">'
@@ -552,8 +567,7 @@ def coverage_svg(title, rows):
             if not n:
                 continue
             w_ = bar_w * n / most
-            cls = ' class="none"' if colour is None else f' fill="{colour}"'
-            out.append(f'<rect{cls} x="{bx:.1f}" y="{y + 4}" width="{max(w_ - 2, 1):.1f}" height="{row_h - 8}" '
+            out.append(f'<rect{segment_fill(colour)} x="{bx:.1f}" y="{y + 4}" width="{max(w_ - 2, 1):.1f}" height="{row_h - 8}" '
                        f'rx="2"><title>{esc(label)}: {n} {esc(name)}</title></rect>')
             bx += w_
         counts = " · ".join(str(n) for n in parts)
@@ -567,6 +581,26 @@ def coverage_svg(title, rows):
 
 def load(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def owner_answers():
+    """What StackVet asks the owner for each requirement, and where `sv` points them in the code (backlog 0624):
+    {id: [how it is asked]} from the three catalogs `sv review` records answers from, and {id: [locator ids]} from
+    data/locators.json. An answer is never *checked*: a section is *documented*, a design question *attested*, and a
+    check by hand *checked by hand*. A Secure by Design control is the owner's by construction, so it is not listed."""
+    asked = defaultdict(list)
+    for section in load(ROOT / "data/security-notes.json")["sections"]:
+        asked[section["id"]].append("a section in the security notes")
+    for question in load(ROOT / "data/design-questions.json")["questions"]:
+        asked[question["id"]].append("a design question")
+    for check in load(ROOT / "data/human-checks.json")["checks"]:
+        asked[check["id"]].append("a check by hand")
+    located = defaultdict(list)
+    locators = load(ROOT / "data/locators.json")
+    for locator in locators["locators"] + locators["packages"]:
+        for q in locator.get("questions", []):
+            located[q].append(locator["id"])
+    return asked, located
 
 
 def framework(path):
@@ -1336,6 +1370,12 @@ def main():
     def supports_only(q):
         return bool(tiers(q)) and not settles(q)
 
+    asked, _ = owner_answers()
+
+    def owner_only(q):
+        """No check speaks to q, and the owner is asked it: a catalog entry, or a Secure by Design control."""
+        return not tiers(q) and (q in asked or q.startswith("SBD-"))
+
     def credited(q):
         """A check can mark q *checked*, not only *needs attention* (gap analysis 1.8): one of `sv`'s
         own that is not only ever a finding, or a tool with some rule a clean run credits to q."""
@@ -1373,8 +1413,11 @@ def main():
     w("- **Supporting only**: a check speaks to it, but the requirement asks something no check can")
     w("  answer, such as a documented policy or a design decision. The check is shown beside it and")
     w("  a person still has to answer it. No Secure by Design control is ever settled by a check: each")
-    w("  is answered by a person, and those no check speaks to at all are counted under *Nothing*.")
-    w("- **Nothing**: no check in `sv` names it. The app's own tests that name the requirement id in")
+    w("  is answered by a person, and those no check speaks to at all are counted under *The owner answers*.")
+    w("- **The owner answers**: no check speaks to it, and `sv review` asks the owner for it: a section in the")
+    w("  security notes (*documented*), a design question (*attested*), or a check by hand (*checked by hand*).")
+    w("  An answer is never *checked*. docs/REQUIREMENTS.md says which, and where `sv` shows the owner the code.")
+    w("- **No check yet**: nothing in `sv` speaks to it. The app's own tests that name the requirement id in")
     w("  code and pass, which is how `sv init` asks for tests to be written, give it a tier of their own,")
     w("  *tested by the app's own tests*, below *checked* (ADR-050); otherwise it stays *not verified*.")
     w("- Which requirements apply to a given app is decided separately; this counts every requirement.")
@@ -1395,13 +1438,14 @@ def main():
         s = sum(settles(q) for q in reqs)
         p = sum(supports_only(q) or (q.startswith("SBD-") and sbd_supported(q)) for q in reqs)
         c = sum(credited(q) for q in reqs)
+        o = sum(owner_only(q) and not (q.startswith("SBD-") and sbd_supported(q)) for q in reqs)
         pct = lambda k: f"{100 * k / n:.0f}%" if n else "–"
-        return f"| {name} | {n} | {s} ({pct(s)}) | {c} ({pct(c)}) | {p} | {n - s - p} |"
+        return f"| {name} | {n} | {s} ({pct(s)}) | {c} ({pct(c)}) | {p} | {o} | {n - s - p - o} |"
 
     sbd_ids = [f"SBD-{c['id']}" for d in sbd["checklistDomains"] for c in d["controls"]]
     w("## Summary\n")
-    w("| Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |")
-    w("|---|---|---|---|---|---|")
+    w("| Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |")
+    w("|---|---|---|---|---|---|---|")
     w(summary_row("OWASP ASVS 5.0", list(asvs)))
     w(summary_row("OWASP AISVS 1.0", list(aisvs)))
     w(summary_row("AISVS Appendix C", list(appendix)))
@@ -1488,8 +1532,8 @@ def main():
 
     # ---- ASVS by chapter
     w("## ASVS 5.0 by chapter\n")
-    w("| Chapter | Requirements | Can settle | Can be credited | Supporting only | Nothing |")
-    w("|---|---|---|---|---|---|")
+    w("| Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |")
+    w("|---|---|---|---|---|---|---|")
     chapters = defaultdict(list)
     chapter_rows = []
     for q, v in asvs.items():
@@ -1498,8 +1542,9 @@ def main():
         s = sum(settles(q) for q in reqs)
         c = sum(credited(q) for q in reqs)
         p = sum(supports_only(q) for q in reqs)
-        w(f"| {cid} {name} | {len(reqs)} | {s} | {c} | {p} | {len(reqs) - s - p} |")
-        chapter_rows.append((f"{cid} {name}", c, s - c, p, len(reqs) - s - p))
+        o = sum(owner_only(q) for q in reqs)
+        w(f"| {cid} {name} | {len(reqs)} | {s} | {c} | {p} | {o} | {len(reqs) - s - p - o} |")
+        chapter_rows.append((f"{cid} {name}", c, s - c, p, o, len(reqs) - s - p - o))
     w("")
 
     # ---- ASVS lists
@@ -1568,8 +1613,8 @@ def main():
     w("Whether these apply at all is decided from what the app says and what its code shows about AI;")
     w("most of AISVS is about how models are trained and run, which reading an application's code")
     w("does not reach.\n")
-    w("| Chapter | Requirements | Can settle | Can be credited | Supporting only | Nothing |")
-    w("|---|---|---|---|---|---|")
+    w("| Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |")
+    w("|---|---|---|---|---|---|---|")
     chapters = defaultdict(list)
     for q, v in aisvs.items():
         chapters[(v["chapter"], v["chapter_name"])].append(q)
@@ -1577,7 +1622,8 @@ def main():
         s = sum(settles(q) for q in reqs)
         c = sum(credited(q) for q in reqs)
         p = sum(supports_only(q) for q in reqs)
-        w(f"| {cid} {name} | {len(reqs)} | {s} | {c} | {p} | {len(reqs) - s - p} |")
+        o = sum(owner_only(q) for q in reqs)
+        w(f"| {cid} {name} | {len(reqs)} | {s} | {c} | {p} | {o} | {len(reqs) - s - p - o} |")
     w("")
     settled_ai = sorted((q for q in list(aisvs) + list(appendix) if settles(q)),
                         key=lambda q: [int(x) for x in re.findall(r"\d+", q)])
@@ -1664,8 +1710,8 @@ def main():
     level_rows = []
     for level in sorted({v["level"] for v in asvs.values()}):
         reqs = [q for q, v in asvs.items() if v["level"] == level]
-        s_, c_, p_ = (sum(f(q) for q in reqs) for f in (settles, credited, supports_only))
-        level_rows.append((f"Level {level}", c_, s_ - c_, p_, len(reqs) - s_ - p_))
+        s_, c_, p_, o_ = (sum(f(q) for q in reqs) for f in (settles, credited, supports_only, owner_only))
+        level_rows.append((f"Level {level}", c_, s_ - c_, p_, o_, len(reqs) - s_ - p_ - o_))
     charts = ((CHAPTER_SVG, coverage_svg("ASVS 5.0 by chapter: what a check can reach", chapter_rows)),
               (LEVEL_SVG, coverage_svg("ASVS 5.0 by level: what a check can reach", level_rows)))
     if check:
@@ -1689,7 +1735,8 @@ STATUS = {
     "settle": "Can be checked",
     "found": "Can only be found failing",
     "support": "A check helps; a person decides",
-    "none": "No check",
+    "owner": "The owner answers",
+    "none": "No check yet",
 }
 
 
@@ -1697,11 +1744,12 @@ def requirement_rows(asvs, aisvs, ev, tiers, settles, supports_only, manual_only
     """One row per ASVS and AISVS requirement: where it sits, what it asks, and what speaks to it."""
     words = check_words()
     tier_name = {t: n for t, n, _ in TIERS}
+    asked, located = owner_answers()
     rows = []
     for name, reqs in (("ASVS 5.0", asvs), ("AISVS 1.0", aisvs)):
         for q, v in reqs.items():
             status = ("settle" if credited(q) else "found") if settles(q) else \
-                "support" if supports_only(q) else "none"
+                "support" if supports_only(q) else "owner" if q in asked and not tiers(q) else "none"
             only = {r for _, r in FINDINGS_ONLY.get(q, ())}
             checks = []
             for t in tiers(q):
@@ -1733,6 +1781,7 @@ def requirement_rows(asvs, aisvs, ev, tiers, settles, supports_only, manual_only
                 "section": v["section"], "section_name": v["section_name"],
                 "text": v["text"], "status": status, "status_words": STATUS[status],
                 "person_decides": q in manual_only, "checks": checks,
+                "asked": asked.get(q, []), "located": located.get(q, []),
             })
     return rows
 
@@ -1754,7 +1803,11 @@ def requirements_markdown(rows):
     w("  it is, so it can be marked *needs attention* and never *checked*.")
     w(f"- **{STATUS['support']}**: a check speaks to it, but it asks for something no check can settle,")
     w("  such as a documented policy or a design decision.")
-    w(f"- **{STATUS['none']}**: nothing in `sv` checks it. A passing test of the app's own that names the")
+    w(f"- **{STATUS['owner']}**: no check speaks to it, and `sv review` asks the owner for it: a section in")
+    w("  the security notes (*documented*), a design question (*attested*), or a check by hand (*checked by")
+    w("  hand*). An answer is never *checked*. Where `sv` can find the code the answer is about, it shows the")
+    w("  owner where to look, and the row names the locator that does.")
+    w(f"- **{STATUS['none']}**: nothing in `sv` speaks to it. A passing test of the app's own that names the")
     w("  requirement's id in code gives it *tested by the app's own tests*, below *checked* (ADR-050);")
     w("  otherwise it stays *not verified*.")
     w("- *found failing only*: that check can show the requirement is not met, and finding nothing does")
@@ -1775,7 +1828,8 @@ def requirements_markdown(rows):
         counts = Counter(r["status"] for r in mine)
         w(f"{len(mine)} requirements: {counts['settle']} can be checked, {counts['found']} can only be found "
           f"failing, {counts['support']} where a check "
-          f"helps but a person decides, and {counts['none']} with no check.\n")
+          f"helps but a person decides, {counts['owner']} the owner answers, and {counts['none']} with no check "
+          "yet.\n")
         for level in sorted({r["level"] for r in mine}):
             at = [r for r in mine if r["level"] == level]
             c = Counter(r["status"] for r in at)
@@ -1807,6 +1861,10 @@ def requirements_markdown(rows):
                         elif ch["in_part"]:
                             desc += " (only ever in part)"
                         parts.append(desc.replace("|", "\\|"))
+                    if r["status"] == "owner":
+                        where = (f"; `sv` shows where to look ({', '.join(f'`{l}`' for l in r['located'])})"
+                                 if r["located"] else "")
+                        parts.append(f"Asked of the owner: {' and '.join(r['asked'])}{where}")
                     text = r["text"].replace("|", "\\|").replace("\n", " ")
                     checks = "<br>".join(parts) if parts else "–"
                     w(f"| **{r['id']}** {text} | {r['status_words']} | {checks} |")

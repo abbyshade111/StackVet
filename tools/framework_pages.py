@@ -48,7 +48,7 @@ MARK = ".stackvet-framework-pages"
 DEFAULT_OUT = ROOT / "exports" / "site"
 
 # What StackVet does about a requirement, in the site's words (docs/website/home-page.md, "What it checks"), for the
-# four kinds tools/coverage.py sorts every requirement into.
+# five kinds tools/coverage.py sorts every requirement into.
 COVERAGE = {
     "settle": ("StackVet can confirm or fail it",
                "A check can mark it checked, or find it needing attention. A clean result is one check satisfied, "
@@ -58,16 +58,19 @@ COVERAGE = {
     "support": ("A check helps; a person decides",
                 "A check gives supporting evidence, but the requirement asks for a decision or a document only a "
                 "person can give."),
-    "none": ("Not checked by StackVet",
-             "Nothing in StackVet checks it. A passing test of the app's own that names this requirement's ID is "
-             "shown as tested by the app's own tests; otherwise the report says not verified."),
+    "owner": ("The owner answers",
+              "No check speaks to it. StackVet asks the owner, and records the answer through sv review: as "
+              "documented, attested, or checked by hand, never as checked."),
+    "none": ("No check yet",
+             "Nothing in StackVet speaks to it yet. A passing test of the app's own that names this requirement's ID "
+             "is shown as tested by the app's own tests; otherwise the report says not verified."),
 }
 SBD_COVERAGE = {
     "support": ("A check helps; a person decides",
                 "A person answers it. Checks on the ASVS requirements that ask the same thing are shown beside it as "
                 "supporting evidence, never as checking it."),
-    "none": ("A person decides",
-             "A person answers it, and no check speaks to it."),
+    "owner": ("The owner answers",
+              "A person answers it, and no check speaks to it."),
 }
 
 PAGES = {
@@ -238,6 +241,7 @@ def entries():
             "section": r["section"], "section_name": r["section_name"], "level": int(r["level"]),
             "level_note": "", "text": r["text"], "plain": plain.get(q, ""), "status": r["status"],
             "checks": checks_of(r, tier_needs), "person": person(q, catalogs), "applies": applies(q, rules),
+            "located": r.get("located", []),
             "related": [("secure-by-design.html", c) for c in to_sbd.get(q, [])],
         })
     level = {r["id"]: int(r["level"]) for r in rows}
@@ -261,7 +265,7 @@ def entries():
                 "id": q, "part": "Secure by Design checklist 0.5.0", "family": domain["id"],
                 "family_name": domain["name"], "section": domain["id"], "section_name": domain["name"],
                 "level": lv, "level_note": note + " The checklist has no levels of its own; this one is StackVet's.",
-                "text": c["statement"], "plain": plain.get(q, ""), "status": "support" if supported else "none",
+                "text": c["statement"], "plain": plain.get(q, ""), "status": "support" if supported else "owner",
                 "checks": direct, "person": person(q, catalogs) or (
                     "Answered by a person reviewing the design. StackVet records no answer for it yet, so the report "
                     "says not verified.", None),
@@ -414,6 +418,9 @@ def entry(i, words, other_page):
         asked = f"<dt>A person</dt><dd>{code_words(how)}"
         if question:
             asked += f'<div class="asked">{code_words(question)}</div>'
+        if i.get("located"):
+            asked += (" StackVet shows where to look in the code: "
+                      + ", ".join(f"<span class=mono>{e(l)}</span>" for l in i["located"]) + " lists the places.")
         asked += "</dd>"
     related = ""
     if i["related"]:
@@ -441,7 +448,7 @@ def entry(i, words, other_page):
 def framework_page(key, items, commit):
     _file, short, long, what, url = PAGES[key]
     words = SBD_COVERAGE if key == "sbd" else COVERAGE
-    statuses = ["support", "none"] if key == "sbd" else ["settle", "found", "support", "none"]
+    statuses = ["support", "owner"] if key == "sbd" else ["settle", "found", "support", "owner", "none"]
     other = "ASVS requirements that ask the same" if key == "sbd" else "Secure by Design controls that ask the same"
     intro = {
         "asvs": "ASVS sorts its requirements into three levels. Level 1 is the baseline for any app, and level 2 is "

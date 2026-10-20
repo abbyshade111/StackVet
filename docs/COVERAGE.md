@@ -22,8 +22,11 @@ The ASVS tables by chapter and by level below, drawn as bars from the same count
 - **Supporting only**: a check speaks to it, but the requirement asks something no check can
   answer, such as a documented policy or a design decision. The check is shown beside it and
   a person still has to answer it. No Secure by Design control is ever settled by a check: each
-  is answered by a person, and those no check speaks to at all are counted under *Nothing*.
-- **Nothing**: no check in `sv` names it. The app's own tests that name the requirement id in
+  is answered by a person, and those no check speaks to at all are counted under *The owner answers*.
+- **The owner answers**: no check speaks to it, and `sv review` asks the owner for it: a section in the
+  security notes (*documented*), a design question (*attested*), or a check by hand (*checked by hand*).
+  An answer is never *checked*. docs/REQUIREMENTS.md says which, and where `sv` shows the owner the code.
+- **No check yet**: nothing in `sv` speaks to it. The app's own tests that name the requirement id in
   code and pass, which is how `sv init` asks for tests to be written, give it a tier of their own,
   *tested by the app's own tests*, below *checked* (ADR-050); otherwise it stays *not verified*.
 - Which requirements apply to a given app is decided separately; this counts every requirement.
@@ -42,12 +45,12 @@ What each kind of check needs before it can run:
 
 ## Summary
 
-| Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
-|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 144 |
-| OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
-| AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
-| Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
+| Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
+|---|---|---|---|---|---|---|
+| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 39 | 105 |
+| OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
+| AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 2 | 63 |
+| Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
 
 ## ASVS 5.0 by level
 
@@ -83,25 +86,25 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 ## ASVS 5.0 by chapter
 
-| Chapter | Requirements | Can settle | Can be credited | Supporting only | Nothing |
-|---|---|---|---|---|---|
-| V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 9 |
-| V2 Validation and Business Logic | 13 | 3 | 2 | 2 | 8 |
-| V3 Web Frontend Security | 31 | 23 | 19 | 0 | 8 |
-| V4 API and Web Service | 16 | 10 | 5 | 0 | 6 |
-| V5 File Handling | 13 | 8 | 8 | 1 | 4 |
-| V6 Authentication | 47 | 26 | 16 | 2 | 19 |
-| V7 Session Management | 19 | 15 | 13 | 0 | 4 |
-| V8 Authorization | 13 | 4 | 2 | 1 | 8 |
-| V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 |
-| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 26 |
-| V11 Cryptography | 24 | 13 | 7 | 0 | 11 |
-| V12 Secure Communication | 12 | 10 | 6 | 1 | 1 |
-| V13 Configuration | 21 | 11 | 3 | 1 | 9 |
-| V14 Data Protection | 13 | 4 | 2 | 2 | 7 |
-| V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 8 |
-| V16 Security Logging and Error Handling | 17 | 14 | 11 | 0 | 3 |
-| V17 WebRTC | 12 | 0 | 0 | 0 | 12 |
+| Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
+|---|---|---|---|---|---|---|
+| V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 4 | 5 |
+| V2 Validation and Business Logic | 13 | 3 | 2 | 2 | 6 | 2 |
+| V3 Web Frontend Security | 31 | 23 | 19 | 0 | 0 | 8 |
+| V4 API and Web Service | 16 | 10 | 5 | 0 | 1 | 5 |
+| V5 File Handling | 13 | 8 | 8 | 1 | 1 | 3 |
+| V6 Authentication | 47 | 26 | 16 | 2 | 6 | 13 |
+| V7 Session Management | 19 | 15 | 13 | 0 | 3 | 1 |
+| V8 Authorization | 13 | 4 | 2 | 1 | 3 | 5 |
+| V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 | 0 |
+| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 0 | 26 |
+| V11 Cryptography | 24 | 13 | 7 | 0 | 3 | 8 |
+| V12 Secure Communication | 12 | 10 | 6 | 1 | 0 | 1 |
+| V13 Configuration | 21 | 11 | 3 | 1 | 2 | 7 |
+| V14 Data Protection | 13 | 4 | 2 | 2 | 3 | 4 |
+| V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 3 | 5 |
+| V16 Security Logging and Error Handling | 17 | 14 | 11 | 0 | 3 | 0 |
+| V17 WebRTC | 12 | 0 | 0 | 0 | 0 | 12 |
 
 ## ASVS 5.0 requirement by requirement
 
@@ -359,20 +362,20 @@ Whether these apply at all is decided from what the app says and what its code s
 most of AISVS is about how models are trained and run, which reading an application's code
 does not reach.
 
-| Chapter | Requirements | Can settle | Can be credited | Supporting only | Nothing |
-|---|---|---|---|---|---|
-| C1 Training Data Integrity & Traceability | 13 | 0 | 0 | 0 | 13 |
-| C2 Input Validation | 12 | 7 | 2 | 0 | 5 |
-| C3 Model Lifecycle Management & Change Control | 15 | 1 | 0 | 0 | 14 |
-| C4 Infrastructure, Configuration & Deployment Security | 14 | 1 | 0 | 0 | 13 |
-| C5 Access Control & Identity for AI Components & Users | 11 | 2 | 0 | 0 | 9 |
-| C6 Supply Chain Security for Models | 7 | 1 | 0 | 0 | 6 |
-| C7 Model Behavior, Output Control & Safety Assurance | 13 | 6 | 5 | 0 | 7 |
-| C8 Memory, Embeddings & Vector Database Security | 11 | 1 | 0 | 0 | 10 |
-| C9 Orchestration & Agentic Security | 34 | 8 | 5 | 0 | 26 |
-| C10 Model Context Protocol (MCP) Security | 23 | 10 | 7 | 0 | 13 |
-| C11 Adversarial Robustness | 17 | 3 | 2 | 0 | 14 |
-| C12 Monitoring, Logging & Anomaly Detection | 21 | 6 | 6 | 0 | 15 |
+| Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
+|---|---|---|---|---|---|---|
+| C1 Training Data Integrity & Traceability | 13 | 0 | 0 | 0 | 0 | 13 |
+| C2 Input Validation | 12 | 7 | 2 | 0 | 1 | 4 |
+| C3 Model Lifecycle Management & Change Control | 15 | 1 | 0 | 0 | 0 | 14 |
+| C4 Infrastructure, Configuration & Deployment Security | 14 | 1 | 0 | 0 | 0 | 13 |
+| C5 Access Control & Identity for AI Components & Users | 11 | 2 | 0 | 0 | 0 | 9 |
+| C6 Supply Chain Security for Models | 7 | 1 | 0 | 0 | 0 | 6 |
+| C7 Model Behavior, Output Control & Safety Assurance | 13 | 6 | 5 | 0 | 4 | 3 |
+| C8 Memory, Embeddings & Vector Database Security | 11 | 1 | 0 | 0 | 0 | 10 |
+| C9 Orchestration & Agentic Security | 34 | 8 | 5 | 0 | 1 | 25 |
+| C10 Model Context Protocol (MCP) Security | 23 | 10 | 7 | 0 | 3 | 10 |
+| C11 Adversarial Robustness | 17 | 3 | 2 | 0 | 5 | 9 |
+| C12 Monitoring, Logging & Anomaly Detection | 21 | 6 | 6 | 0 | 2 | 13 |
 
 20 of these 49 can only ever be marked *needs attention*: a check can
 show the control missing, and finding nothing does not show it present, so a clean run credits
