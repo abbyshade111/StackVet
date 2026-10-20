@@ -100,6 +100,61 @@ pub fn ever_added(app_dir: &Path, only: &[String]) -> Option<Vec<String>> {
     Some(names)
 }
 
+/// The contents of every version of `path` (named from `app_dir`) ever committed, on any branch, each once:
+/// `None` when git could not list them, and `None` in the list for a version git could not read (backlog 0614).
+/// Listed with `git log --raw`, under the same overrides as `ever_added`, and read with `git cat-file blob`, which
+/// runs no driver a repository names.
+pub fn every_version(app_dir: &Path, path: &str) -> Option<Vec<Option<Vec<u8>>>> {
+    let out = git(app_dir)
+        .args(LOG_OVERRIDES)
+        .args([
+            "log",
+            "--all",
+            "--no-show-signature",
+            "--no-ext-diff",
+            "--no-textconv",
+            "--format=",
+            "--raw",
+            "--no-abbrev",
+            "--relative",
+            "--",
+            path,
+        ])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    // Each line `:100644 100644 <before> <after> M\t<path>`; the version a commit left is `<after>`, all zeros when the
+    // commit deleted the file.
+    let mut blobs: Vec<String> = String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .filter_map(|line| {
+            line.strip_prefix(':')?
+                .split_whitespace()
+                .nth(3)
+                .map(str::to_owned)
+        })
+        .filter(|blob| {
+            blob.bytes().all(|b| b.is_ascii_hexdigit()) && blob.bytes().any(|b| b != b'0')
+        })
+        .collect();
+    blobs.sort();
+    blobs.dedup();
+    Some(
+        blobs
+            .iter()
+            .map(|blob| {
+                let read = git(app_dir)
+                    .args(["cat-file", "blob", blob])
+                    .output()
+                    .ok()?;
+                read.status.success().then_some(read.stdout)
+            })
+            .collect(),
+    )
+}
+
 /// Whether the repository holds only its most recent commits (a shallow copy), so the history
 /// `ever_added` reads is not all of it: `None` when git could not say.
 pub fn is_shallow(app_dir: &Path) -> Option<bool> {
@@ -514,9 +569,15 @@ mod tests {
         let added = ever_added(&dir, &[]).expect("git answers");
         let tracked = ls_files(&dir).expect("git answers");
         let shallow = is_shallow(&dir);
+        // `every_version`'s `git log --raw` and `git cat-file blob`, in the same planted repository (backlog 0614).
+        let versions = every_version(&dir, ".env").expect("git answers");
         let ran = mark.exists();
         std::fs::remove_dir_all(&dir).ok();
         assert!(!ran, "git log ran the program the app's repository named");
+        assert!(
+            !versions.is_empty() && versions.iter().all(Option::is_some),
+            "{versions:?}"
+        );
         assert!(added.iter().any(|n| n == ".env"), "{added:?}");
         assert!(added.iter().any(|n| n == "app.py"), "{added:?}");
         // The point of reading history: the file is no longer tracked, and is still found.

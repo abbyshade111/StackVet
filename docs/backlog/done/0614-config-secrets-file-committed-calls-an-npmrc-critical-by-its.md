@@ -1,6 +1,6 @@
 # config.secrets-file-committed calls an .npmrc critical by its name alone, though most hold only settings
 
-**Status:** claimed by claude/backlog-work, 20 October 2026
+**Status:** done, 20 October 2026
 
 Filed from `sv`'s self-report of 16 October 2026 (`sv report .` with the outside tools on, at `main` `28aae3a2`).
 Severity: medium (a false alarm at critical severity, high confidence).
@@ -32,3 +32,15 @@ from the history stays a finding, said as one whose content was not read. Files 
 still fail after the change, and one that holds only `ignore-scripts=true` must not.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): still nothing built (`SECRET_FILES` and the name-only `is_secret_file` in `crates/sv-check/src/config.rs`). The six other files, read by their keys only: two `.npmrc` that hold settings alone, and four of v1's test fixture `.env` files, three with secret-named keys, which stay findings under the fix.
+
+**Built, 20 October 2026.** `.npmrc`, `.pypirc`, and `.netrc` (`CREDENTIAL_WHEN_A_LINE_SAYS`, `crates/sv-check/src/config.rs`)
+are read before they are reported: every version ever committed, on any branch (`git::every_version`: `git log --raw`
+under `ever_added`'s overrides, then `git cat-file blob`, which runs no driver the repository names, ADR-032). One is
+a finding only when a version has a credential line (`credential_line`: npm's `_authToken`, `_auth`, `_password`, a
+`.pypirc`'s `password`, a `.netrc`'s `password`; a value that only names an environment variable, `${NPM_TOKEN}`, is
+not one), and the finding names the line and the setting, with the value cut short by `Secret::redact`. A version git
+could not read stays a finding, at medium confidence, saying so. Every other secrets file still goes by its name. The
+credit is unchanged in kind: a pass is still *checked in part*, now over files `sv` read. On `sv`'s own repository the
+critical finding is no longer `v1`'s `.npmrc` but one of v1's test-fixture `.env` files, which stays a finding.
+Held by `crates/sv-check/src/config_npmrc_tests.rs` (four tests; broken on purpose two ways: by name alone, and no
+line found, each failing them).
