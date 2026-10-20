@@ -1273,6 +1273,7 @@ mod tests {
     pub(super) fn with_json_api() -> UsersSection {
         let mut u = users();
         u.owned = Some(sv_manifest::OwnedSection {
+            limits: Vec::new(),
             create: RequestTemplate {
                 method: "POST".into(),
                 path: "/api/notes".into(),

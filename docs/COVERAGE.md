@@ -44,7 +44,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 190 (55%) | 129 (37%) | 10 | 145 |
+| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 144 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 145 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 65 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 |
@@ -55,13 +55,13 @@ A requirement reached by more than one kind of check is counted under each.
 
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
-| L1 | 70 | 58 | 44 | 18 | 1 | 6 | 39 | 20 | 13 | 3 |
+| L1 | 70 | 59 | 45 | 18 | 1 | 6 | 40 | 20 | 13 | 3 |
 | L2 | 183 | 111 | 76 | 31 | 0 | 21 | 56 | 25 | 22 | 2 |
 | L3 | 92 | 21 | 9 | 3 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-61 of the 190 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+61 of the 191 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-58 of the 129 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+59 of the 130 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
 With nothing beyond plain `sv check`, 52 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
@@ -86,7 +86,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | Chapter | Requirements | Can settle | Can be credited | Supporting only | Nothing |
 |---|---|---|---|---|---|
 | V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 9 |
-| V2 Validation and Business Logic | 13 | 2 | 1 | 2 | 9 |
+| V2 Validation and Business Logic | 13 | 3 | 2 | 2 | 8 |
 | V3 Web Frontend Security | 31 | 23 | 19 | 0 | 8 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 6 |
 | V5 File Handling | 13 | 8 | 8 | 1 | 4 |
@@ -162,7 +162,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.3.7 | L2 | Reads the code: `ast.request-parameter-source-merged` (sv only ever as a finding: `ast.request-parameter-source-merged`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
-### Settled by asking the running app (125)
+### Settled by asking the running app (126)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -172,6 +172,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V1.3.4 | L2 | Signed in: `probe.uploaded-svg-keeps-script` |
 | V1.3.6 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere`; Outside tools: `gosec`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V1.3.11 | L2 | Signed in: `probe.mail-header-injected` |
+| V2.2.1 | L1 | Signed in: `probe.input-length-unlimited`, `probe.input-out-of-range-stored` |
 | V2.2.2 | L1 | Signed in: `probe.validation-only-in-the-browser` (sv only ever as a finding: `probe.validation-only-in-the-browser`) |
 | V2.4.1 | L2 | Signed in: `probe.create-rate-unlimited` |
 | V3.2.1 | L1 | Signed in: `probe.uploaded-file-rendered`, `probe.saved-page-rendered` |
@@ -344,11 +345,11 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V14.2.2 | L2 | Signed in: `probe.private-page-shared-cache` (sv only ever as a finding: `probe.private-page-shared-cache`) |
 | V14.2.3 | L2 | Signed in: `probe.account-details-sent-elsewhere` (sv only ever as a finding: `probe.account-details-sent-elsewhere`) |
 
-### Level 1 with no check at all (9)
+### Level 1 with no check at all (8)
 
 Where a new check would do the most good. Which of them apply to an app depends on what the app is (`data/knowledge/applicability.json`):
 
-- Every app (4): V2.1.1, V2.2.1, V8.1.1, V15.1.1
+- Every app (3): V2.1.1, V8.1.1, V15.1.1
 - Only where the answer to "Does the app have sign-in, with accounts, passwords, or sessions?" is yes (1): V6.1.1
 - Only where the answer to "Does the app run an OAuth authorization server or OpenID provider of its own?" is yes (4): V10.4.1, V10.4.2, V10.4.3, V10.4.5
 

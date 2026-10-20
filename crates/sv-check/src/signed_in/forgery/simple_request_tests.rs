@@ -22,6 +22,7 @@ fn json_create(path: &str) -> sv_manifest::CreateTemplate {
 fn two_json_creates() -> sv_manifest::UsersSection {
     let mut u = users();
     u.owned = Some(sv_manifest::OwnedSection {
+        limits: Vec::new(),
         create: sv_manifest::RequestTemplate {
             method: "POST".into(),
             path: "/api/notes".into(),

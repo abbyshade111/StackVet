@@ -195,6 +195,12 @@ health = "/"              # a path that returns 200 once the app is up
 #   or, for a JSON API: update = { method = "PUT", path = "/api/notes/{id}", json = { text = "{marker}" } },
 #   delete = { method = "DELETE", path = "/api/notes/{id}" }. A JSON create answer's id is read from
 #   `id-field` (default `id`); without `read`, the create answer's `Location` is followed.
+#   The first user also saves a record with 100,000 characters in the `{marker}` field: kept whole is
+#   a low finding (V2.2.1), refused is checked in part. Add `limits`, the range a field of `create`
+#   must stay in, and one value below it and one above are sent too; a record saved with either is a
+#   finding, and checked in part needs both refused and a value inside the range saved, so `create`'s
+#   own value for the field should be inside it. Inside the braces above, for example:
+#   limits = [{ field = "quantity", min = 1, max = 10 }]
 # creates = [{ path = "/comments", form = { text = "{marker}", csrf_token = "{csrf}" } }]
 #   Other requests that each create a record, held to `requests-per-minute` under [policy] as
 #   `owned`'s create is; `{marker}` where a value must differ from one record to the next.

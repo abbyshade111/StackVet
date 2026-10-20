@@ -800,6 +800,12 @@ pub(super) fn owned_checks(
             ));
         }
         out.not_assessed.push((
+            "V2.2.1".to_owned(),
+            "Whether input no form should take is refused: stackvet.toml lists no `owned` record under \
+             `[stack.run.users]` to save it through."
+                .to_owned(),
+        ));
+        out.not_assessed.push((
             "V8.2.2, V3.5.1, V3.5.2".to_owned(),
             "Another user's records, and requests from another site: stackvet.toml lists no \
              `owned` record under `[stack.run.users]`."
@@ -1201,6 +1207,8 @@ pub(super) fn owned_checks(
     }
     // Whether what a user saves is written back into a page unencoded (finding 13(b)).
     stored_markup_check(http, users, owned, &session, out);
+    // Whether input no form should take is refused, by length and by the ranges stackvet.toml declares (V2.2.1).
+    input_limits_check(http, users, owned, &session, out);
 
     if let Some(created) = &created {
         let control = OwnedControl {
@@ -1783,6 +1791,7 @@ mod tests {
             body: body.into(),
         };
         let owned = |read: Option<&str>| sv_manifest::OwnedSection {
+            limits: Vec::new(),
             create: RequestTemplate::default(),
             read: read.map(str::to_owned),
             id_field: None,

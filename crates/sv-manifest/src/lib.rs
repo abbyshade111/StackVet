@@ -673,6 +673,23 @@ pub struct OwnedSection {
     /// ADR-053).
     #[serde(default)]
     pub delete: Option<RequestTemplate>,
+    /// The fields of `create` whose values the app should hold to a range, with the range: `sv` sends the value
+    /// one below the least and one above the most, as the first user, and a record stored with either is a finding
+    /// (V2.2.1; backlog 0489, the owner's choice of 20 October 2026; ADR-053, Later).
+    #[serde(default)]
+    pub limits: Vec<FieldLimit>,
+}
+
+/// One field of an `owned` record's `create` and the range the app should hold it to, both ends allowed.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct FieldLimit {
+    /// The field's name in `create`'s `form` or `json`.
+    pub field: String,
+    /// The least value the app should take.
+    pub min: i64,
+    /// The most.
+    pub max: i64,
 }
 
 /// `[stack.run.users]`: how the probes get two ordinary users (and optionally an admin), sign in as
@@ -2984,6 +3001,10 @@ mod authorization_server_tests {
 #[cfg(test)]
 #[path = "upload_list_tests.rs"]
 mod upload_list_tests;
+
+#[cfg(test)]
+#[path = "owned_limits_tests.rs"]
+mod owned_limits_tests;
 
 #[cfg(test)]
 mod time_frame_tests {

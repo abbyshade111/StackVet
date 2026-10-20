@@ -68,6 +68,7 @@ mod cross_site;
 mod email_role;
 mod flows;
 mod forgery;
+mod input_limits;
 mod limit;
 mod once;
 mod owner_field;
@@ -94,6 +95,7 @@ use codes::*;
 use email_role::*;
 use flows::*;
 use forgery::*;
+use input_limits::*;
 use once::*;
 use owner_field::*;
 use passwords::*;
@@ -2098,6 +2100,9 @@ mod sign_in_limit_advice_tests;
 mod storage_check_tests;
 #[cfg(test)]
 mod stored_markup_tests;
+
+#[cfg(test)]
+mod input_limits_tests;
 #[cfg(test)]
 mod timings_tests;
 #[cfg(test)]
