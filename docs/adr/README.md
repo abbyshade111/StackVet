@@ -175,7 +175,7 @@ source files, and in two tests:
 | [ADR-126](ADR-126.md) | A member's own page is saved through a `creates` entry and fetched where it is served (accepted, 16 October 2026) |
 | [ADR-127](ADR-127.md) | The test sign-in provider mints access tokens and logout tokens, so the app's own checks of them are seen (accepted, 16 October 2026) |
 | [ADR-128](ADR-128.md) | A Dependabot pull request that only moves pins owes the decision records no line (accepted, 20 October 2026) |
-| [ADR-129](ADR-129.md) | stackvet.dev has a page for each framework, built from the data the checks keep, and never copied (proposed, 20 October 2026) |
+| [ADR-129](ADR-129.md) | stackvet.dev has a page for each framework, built from the data the checks keep, and never copied (accepted, 20 October 2026) |
 
 ## Names in the records
 
