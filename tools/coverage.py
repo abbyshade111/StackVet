@@ -477,8 +477,9 @@ RUST_IN_PART = {"probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-he
 # credits nothing. V8.1.1 and V8.1.2 are the questions the app's routes are shown beside (`crates/sv-cli/src/code_lines.rs`,
 # backlog 0493), V6.1.3 and V6.3.4 the ones the ways into the app are shown beside (backlog 0491), and V14.1.1 and
 # V14.1.2 the ones the fields that look personal are shown beside (backlog 0497), and V11.1.1 and V11.1.2 the ones the
-# draft cryptographic inventory is shown beside (backlog 0494); none credits anything.
-MENTIONS = {"AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.2.1", "V12.1.2", "V8.1.1", "V8.1.2",
+# draft cryptographic inventory is shown beside (backlog 0494), and V6.1.1 the question the wrong-password check is
+# shown beside (backlog 0609); none credits anything.
+MENTIONS = {"V6.1.1", "AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.2.1", "V12.1.2", "V8.1.1", "V8.1.2",
             "V6.1.3", "V6.3.4", "V14.1.1", "V14.1.2", "V11.1.1", "V11.1.2",
             # The hand check on using a cryptography library, shown the draft inventory (0611).
             "V11.2.1",

@@ -2228,6 +2228,14 @@
     "finding_only": false
    }
   ],
+  "V6.5.2": [
+   {
+    "id": "ast.backup-codes-stored-plain",
+    "run": "Reads the code",
+    "looks_for": "Backup codes are saved as they were made, without hashing",
+    "finding_only": true
+   }
+  ],
   "V6.5.3": [
    {
     "id": "ast.insecure-random-for-code",
