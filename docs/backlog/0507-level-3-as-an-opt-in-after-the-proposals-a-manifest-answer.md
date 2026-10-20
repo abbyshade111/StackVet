@@ -2,7 +2,7 @@
 
 **Status:** open
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 Filed 14 October 2026 at the owner's word, from the walk-through of the parked items. `sv` holds every app to level 1
 or 2, from two answers in `stackvet.toml`; level 3 is about ninety more ASVS requirements, nearly all documentation and
@@ -14,3 +14,5 @@ status like any other (never counted as a gap in the two-level figures the paper
 applicability data read for them (it already carries levels), and 0263 (the static half of V16.5.4, set aside because
 no report has a line for a level-3 requirement) taken with it. A decision record of its own: it changes what a report
 concludes and which requirements apply. **Held until the proposals are built**; kept beside 0263.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): still nothing built (`target_level` returns 1 or 2). Of the proposals it waits for, 0489 and 0496 are partly done; 0500 is done with this clean-up, its two leftovers filed apart. Then it waits on the owner's go and a decision record of its own, with 0263 taken with it.

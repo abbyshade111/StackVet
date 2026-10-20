@@ -1,8 +1,8 @@
 # The other V6 pointers 0491's section proposes: rate-limit settings, the password validator, password expiry, a second-factor library, and backup codes
 
-**Status:** partly done: built: V6.1.1, V6.1.2, V6.3.3, and V6.5.2 pointers, the V6.2.10 hand check, ast.password-expiry-enforced, and V6.3.3 saying when no second-factor library is among the packages (16 October 2026). Left: a finding for backup codes stored without hashing (V6.5.2), which the code alone does not show soundly: it waits on a way to tell a stored code from one only shown
+**Status:** partly done: built: V6.1.1 (code only), V6.1.2, V6.3.3, and V6.5.2 pointers, the V6.2.10 hand check, `ast.password-expiry-enforced`, and V6.3.3 saying when no second-factor library is among the packages (16 October 2026). Left: what the signed-in run saw of wrong passwords, shown beside the V6.1.1 question, and a finding for backup codes stored without hashing (V6.5.2), which waits on telling a stored code from one only shown
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 Filed by documentation finishing backlog 0491, 15 October 2026. Severity: low (coverage, not a fault).
 
@@ -19,3 +19,5 @@ Filed by documentation finishing backlog 0491, 15 October 2026. Severity: low (c
 - **V6.5.2:** the backup-code column and the line that saves it, and `ast.backup-codes-stored-plain`, finding-only.
 
 **Record.** ADR-022 Later for the pointers; a finding-only rule's record where it is built.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): the status line said V6.1.1 was built; its pointers into the code are, but showing the signed-in run's result for wrong passwords beside the question (0491) is not (`MEASURED_PARTS` in `crates/sv-check/src/human.rs` covers V14.2.4 and V15.2.2 only).

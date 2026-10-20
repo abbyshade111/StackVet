@@ -1,8 +1,8 @@
 # The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over
 
-**Status:** partly done: the running checks for V2.2.1 and V2.3.2, and the count of handlers changing several tables with no transaction (with its payments finding), are not built
+**Status:** partly done: the running check for V2.2.1 (buildable now on `owned.create`), the one for V2.3.2 (needs a `[policy]` limit key), and the count of handlers changing several tables with no transaction are not built; its payments finding contradicts `docs/PARTIAL-CHECKS.md`'s V2.3.3 entry and is settled first
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requirements no check speaks to for a typical web app with sign-in (`auth`, `tls`, `internet`, `email`; level 2). A proposal, not a fault: how these could be assessed, in the order of preference the owner set (a static read; the running app behind the fence; an outside tool already adapted; showing the person the lines of their own code with a plain question; a hand check with a reason), each at its honest tier (ADR-022, ADR-050). Written by a read-only reviewer and read, not built, by the reviewing session; a requirement's text must be read again before any citation is written (a citation is a claim). The cross-cutting item it assumes is "A question to the owner carries the lines it rests on".
 
@@ -41,3 +41,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   count of model-write calls in one function, which tree-sitter can do without flow analysis. Finding-only when the
   manifest claims `payments` and the code has no transaction anywhere. Tier: *attested by the owner*, with the pointer;
   `sv`'s own only for the finding.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): built: `locate.validation-rules`, `locate.transactions`, and V2.1.3 on the availability brakes (39d2c167, 15 October; ADR-022, Later). V2.2.3 is a hand check now (0506), and V2.3.3 has a design question, so both "No question today" lines above are out of date.

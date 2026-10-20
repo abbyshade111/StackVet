@@ -1,8 +1,8 @@
 # The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check
 
-**Status:** open
+**Status:** partly done: both runs were run and read on 15 October 2026 (Run 2 again, cleanly), items 0579 to 0602 filed, and the research page's follow-up written; left: the rows in 0568's tables and the confound in a Limits block in `docs/paper/DATA.md` (0568 was closed without them); any further run is the owner's time
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 The owner's trial, started 15 October 2026, after the three-tool trial (`docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`).
 The owner's own to run; a session reads the records afterwards, as 0502's were read.
@@ -87,3 +87,5 @@ whether another Flash run in Antigravity would have gamed without them. The repo
 attention, 4 checked, 10 in part, 7 app-tested, 8 the tool's word, 44 not verified, 47 findings (21 from one Semgrep
 rule, 13 open-redirect false positives: 0601), tests passed; the rerun with sv f3197a2c the same. Items from this run:
 0598 to 0602.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): the status line said open while the item records both runs done. `docs/paper/tables/three_tool_*.csv` has no row from 15 October, and `docs/paper/DATA.md` has no Limits block. The readers' full write-ups were in session scratchpads and are not in the repository.

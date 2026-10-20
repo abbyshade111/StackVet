@@ -1,6 +1,6 @@
 # The fourth weekly review of the decision records (week to 19 October 2026)
 
-**Status:** claimed by securevibe-weekly-adr-4, 19 October 2026
+**Status:** done, 20 October 2026
 
 The scheduled routine "Weekly decision-record review" (Monday 19 October 2026). Procedure: 0091 and `docs/adr/README.md`,
 "When a record is written, and how it stays true". The earlier reviews are listed under 0091, "Reviews"; the third is 0266.
@@ -89,3 +89,5 @@ lines, 4,196 passed, 3 failed. Two are this container: `each_stored_7z_unpacks_t
 (`crates/sv-cli/tests/report_pdf.rs:89`), reports `flask-booking: not in the PDF: ["lt"]` and may be a real fault on
 `main` (an escaped `<` read as the word "lt"); this review changed no code, so CI on this pull request shows whether it
 fails there. Not investigated here.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): the review merged on 19 October (#2149, the claim; #2150, the review, b7d770fc); its status line was never set, and 0091 already listed it as done. Question (3) for the owner is moot: the board, `docs/COORDINATION.md`, and `tools/coordination.py` were removed on 20 October 2026 (ADR-061, Later). The PDF test it saw fail is an item of its own.

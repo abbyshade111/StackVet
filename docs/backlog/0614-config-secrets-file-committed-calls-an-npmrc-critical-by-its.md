@@ -30,3 +30,5 @@ from the history stays a finding, said as one whose content was not read. Files 
 `in_part_if` near line 71, backlog 0331); reading contents must not make the credit claim more than it read.
 **Break it and watch:** a test with an `.npmrc` that holds an `_authToken` line built from pieces at run time must
 still fail after the change, and one that holds only `ignore-scripts=true` must not.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): still nothing built (`SECRET_FILES` and the name-only `is_secret_file` in `crates/sv-check/src/config.rs`). The six other files, read by their keys only: two `.npmrc` that hold settings alone, and four of v1's test fixture `.env` files, three with secret-named keys, which stay findings under the fix.

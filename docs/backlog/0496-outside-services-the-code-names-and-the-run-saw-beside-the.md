@@ -2,7 +2,7 @@
 
 **Status:** partly done: V13.2.5's pointer to outbound rules in the folder's infrastructure files (a Kubernetes NetworkPolicy with egress, a security group's outbound rules, a compose network marked internal) is not built: locators read code, not YAML or Terraform; the hand check already gives the route-5 reason
 
-**Queued on the coordination board** (`docs/coordination/board.md`, backlog 0273): taken only through the board's `assign`, never from the roadmap.
+**Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
 From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requirements no check speaks to for a typical web app with sign-in (`auth`, `tls`, `internet`, `email`; level 2). A proposal, not a fault: how these could be assessed, in the order of preference the owner set (a static read; the running app behind the fence; an outside tool already adapted; showing the person the lines of their own code with a plain question; a hand check with a reason), each at its honest tier (ADR-022, ADR-050). Written by a read-only reviewer and read, not built, by the reviewing session; a requirement's text must be read again before any citation is written (a citation is a claim). The cross-cutting item it assumes is "A question to the owner carries the lines it rests on".
 
@@ -25,3 +25,5 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   anywhere?"), with the reason "the server's outbound rules are set where it runs, not in the folder". The fence
   itself cannot help: it has no gateway by design, so the app reaching nothing shows the fence, not the app. Tier:
   *checked by hand*.
+
+**Checked against `main`, 20 October 2026** (the backlog clean-up): V13.1.1 is all built (813724f0; ADR-123). Only V13.2.5's pointer to outbound rules in infrastructure files is left, which needs a reader for YAML and Terraform; its hand check (0506, 14 October) gives the reason meanwhile, so "No question today" above is out of date.
