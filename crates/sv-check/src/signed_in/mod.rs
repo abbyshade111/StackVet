@@ -68,6 +68,7 @@ mod cross_site;
 mod email_role;
 mod flows;
 mod forgery;
+mod input_limits;
 mod limit;
 mod once;
 mod owner_field;
@@ -94,6 +95,7 @@ use codes::*;
 use email_role::*;
 use flows::*;
 use forgery::*;
+use input_limits::*;
 use once::*;
 use owner_field::*;
 use passwords::*;
@@ -469,7 +471,7 @@ pub const SIGN_INS_IN_A_RUN: usize = 62;
 
 /// The requirements whose checks need the first test user signed in.
 const NEEDS_A_SESSION: &str =
-    "V8.2.1, V8.2.2, V7.2.4, V7.4.1, V3.5.1, V3.3.2, V3.3.4, V14.3.2, V7.4.4";
+    "V8.2.1, V8.2.2, V7.2.4, V7.4.1, V3.5.1, V3.3.2, V3.3.4, V14.3.2, V7.4.4, V2.2.1";
 
 /// What the report says when the app's limit on sign-in attempts refused `sv`'s own sign-ins
 /// (`refused`, as request ids): the limit doing its job, not the app failing the checks it blocked,
@@ -2098,6 +2100,9 @@ mod sign_in_limit_advice_tests;
 mod storage_check_tests;
 #[cfg(test)]
 mod stored_markup_tests;
+
+#[cfg(test)]
+mod input_limits_tests;
 #[cfg(test)]
 mod timings_tests;
 #[cfg(test)]

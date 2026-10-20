@@ -37,9 +37,9 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 129 can be checked, 61 can only be found failing, 10 where a check helps but a person decides, and 145 with no check.
+345 requirements: 130 can be checked, 61 can only be found failing, 10 where a check helps but a person decides, and 144 with no check.
 
-### Level 1 (70 requirements, 44 can be checked, 14 can only be found failing)
+### Level 1 (70 requirements, 45 can be checked, 14 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -59,7 +59,7 @@ decided per app, from its `stackvet.toml` and its code.
 | Requirement | Coverage | Checks |
 |---|---|---|
 | **V2.1.1** Verify that the application's documentation defines input validation rules for how to check the validity of data items against an expected structure. This could be common data formats such as credit card numbers, email addresses, telephone numbers, or it could be an internal data format. | No check | – |
-| **V2.2.1** Verify that input is validated to enforce business or functional expectations for that input. This should either use positive validation against an allow list of values, patterns, and ranges, or be based on comparing the input to an expected structure and logical limits according to predefined rules. For L1, this can focus on input which is used to make specific business or security decisions. For L2 and up, this should apply to all input. | No check | – |
+| **V2.2.1** Verify that input is validated to enforce business or functional expectations for that input. This should either use positive validation against an allow list of values, patterns, and ranges, or be based on comparing the input to an expected structure and logical limits according to predefined rules. For L1, this can focus on input which is used to make specific business or security decisions. For L2 and up, this should apply to all input. | Can be checked | Signed in: `probe.input-length-unlimited`, if it fails: The app keeps whatever length of text it is sent. Text no form needs, saved by the thousand, fills the database and slows every page that shows it, and a limit nobody wrote down is one nobody can rely on. (only ever in part)<br>Signed in: `probe.input-out-of-range-stored`, if it fails: A value outside the range the app is meant to take is saved as it is: a quantity of minus one, or more than there is, goes on to whatever reads it next, where a total, a price, or a stock count comes out wrong. (only ever in part) |
 | **V2.2.2** Verify that the application is designed to enforce input validation at a trusted service layer. While client-side validation improves usability and should be encouraged, it must not be relied upon as a security control. | Can only be found failing | Signed in: `probe.validation-only-in-the-browser`, if it fails: The rule the form shows a person is not applied on the server, so anybody sending the request directly — which takes no special tools — can put in whatever they like. (found failing only) |
 | **V2.3.1** Verify that the application will only process business logic flows for the same user in the expected sequential step order and without skipping steps. | A check helps; a person decides | Signed in: `probe.flow-step-skipped`, if it fails: A step that can be skipped is a check that can be skipped: the payment before the order, the confirmation before the change, the approval before the release. |
 

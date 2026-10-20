@@ -1874,6 +1874,7 @@ pub(super) fn signed_run(flaws: Flaws, tool: bool, reads_owned: bool) -> Outcome
         }),
         private: vec!["/account".into()],
         owned: Some(sv_manifest::OwnedSection {
+            limits: Vec::new(),
             create: sv_manifest::RequestTemplate {
                 method: "POST".into(),
                 path: "/notes".into(),

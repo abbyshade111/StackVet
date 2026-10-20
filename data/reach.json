@@ -149,6 +149,9 @@
    "tools",
    "opt-in"
   ],
+  "V2.2.1": [
+   "signed-in"
+  ],
   "V2.4.1": [
    "signed-in"
   ],
@@ -1371,6 +1374,20 @@
     "id": "codeql-ruby",
     "run": "Outside tools you turn on",
     "looks_for": "deserialization of untrusted data into arbitrary objects",
+    "finding_only": false
+   }
+  ],
+  "V2.2.1": [
+   {
+    "id": "probe.input-length-unlimited",
+    "run": "Signed in",
+    "looks_for": "The app keeps whatever length of text it is sent. Text no form needs, saved by the thousand, fills the database and slows every page that shows it, and a limit nobody wrote down is one nobody can rely on.",
+    "finding_only": false
+   },
+   {
+    "id": "probe.input-out-of-range-stored",
+    "run": "Signed in",
+    "looks_for": "A value outside the range the app is meant to take is saved as it is: a quantity of minus one, or more than there is, goes on to whatever reads it next, where a total, a price, or a stock count comes out wrong.",
     "finding_only": false
    }
   ],

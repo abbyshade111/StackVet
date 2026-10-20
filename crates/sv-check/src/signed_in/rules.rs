@@ -138,6 +138,30 @@ pub(super) const OWNER_FIELD: Rule = Rule {
           owner field in the request; take only the fields the create action is meant to set.",
 };
 
+/// V2.2.1 (backlog 0489): a record saved with 100,000 characters in its text, stored whole.
+pub(super) const INPUT_LENGTH: Rule = Rule {
+    rule_id: "probe.input-length-unlimited",
+    requirement_ids: &["V2.2.1"],
+    cwe: &["CWE-1284"],
+    impact: "The app keeps whatever length of text it is sent. Text no form needs, saved by the thousand, fills the \
+             database and slows every page that shows it, and a limit nobody wrote down is one nobody can rely on.",
+    fix: "Decide how long each field may be, from what it is for (a title, a note, a comment), and refuse anything \
+          longer on the server, with a message saying so, before it is saved. A form's own `maxlength` helps people \
+          and holds nobody back.",
+};
+
+/// V2.2.1 (backlog 0489): a record saved with a value outside the range stackvet.toml's `limits` declares.
+pub(super) const INPUT_RANGE: Rule = Rule {
+    rule_id: "probe.input-out-of-range-stored",
+    requirement_ids: &["V2.2.1"],
+    cwe: &["CWE-1284"],
+    impact: "A value outside the range the app is meant to take is saved as it is: a quantity of minus one, or more \
+             than there is, goes on to whatever reads it next, where a total, a price, or a stock count comes out wrong.",
+    fix: "Check each value against its range on the server before saving it, and refuse one outside it with a \
+          message saying which field and why; the form's own `min` and `max` are no limit for a request sent \
+          straight to the server.",
+};
+
 pub(super) const STORED_HTML: Rule = Rule {
     rule_id: "probe.stored-unencoded",
     // V1.2.1 is output encoding for HTML, which a saved value written back into a page as it is

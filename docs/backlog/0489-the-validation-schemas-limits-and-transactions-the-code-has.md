@@ -43,3 +43,12 @@ From the deep review of 13 October 2026 (backlog 0417), area: coverage, the requ
   `sv`'s own only for the finding.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): built: `locate.validation-rules`, `locate.transactions`, and V2.1.3 on the availability brakes (39d2c167, 15 October; ADR-022, Later). V2.2.3 is a hand check now (0506), and V2.3.3 has a design question, so both "No question today" lines above are out of date.
+
+**The owner's choices, 20 October 2026, asked in a session.** V2.2.1: declared limits on the `owned` record, plus the
+long text, stored whole a low-severity finding. V2.3.2: a `[policy] limit` key, as `failed-sign-ins` is, built next.
+V2.3.3: a pointer only, no payments finding, as `docs/PARTIAL-CHECKS.md` says (single-statement writes and document
+databases need no transaction).
+
+**V2.2.1 built, 20 October 2026** (ADR-053, Later): `signed_in/input_limits.rs`, the 100,000-character text and the
+ranges `limits` declares, each credited in part only as ADR-053's entry says. Left: the V2.3.2 limit and the V2.3.3
+pointer to handlers changing several tables.

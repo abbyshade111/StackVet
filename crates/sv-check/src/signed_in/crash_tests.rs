@@ -593,6 +593,7 @@ fn scenarios() -> Vec<Scenario> {
             {
                 let mut u = users();
                 u.owned = Some(sv_manifest::OwnedSection {
+                    limits: Vec::new(),
                     create: RequestTemplate {
                         method: "POST".into(),
                         path: "/api/notes".into(),

@@ -151,6 +151,11 @@ pub(super) struct FakeApp {
     tokens_handed_out: usize,
     /// Refuses with 409 a note whose text, or an upload whose `title`, it has had before.
     pub(super) refuses_repeats: bool,
+    /// Refuses a note whose text is longer than this many characters (V2.2.1, backlog 0489): 10,000 from `new`, as a
+    /// correct app holds text to some length; `None` takes any.
+    pub(super) longest_note: Option<usize>,
+    /// Refuses a note whose `priority` is outside this range, both ends allowed (V2.2.1, backlog 0489).
+    pub(super) priority_range: Option<(i64, i64)>,
     /// The `title`s of the uploads so far.
     upload_titles: std::collections::BTreeSet<String>,
     /// Refuses every upload with 403 once it holds this many.
@@ -916,6 +921,7 @@ impl FakeApp {
         let mut app = FakeApp {
             flaws,
             clock: 1_700_000_010,
+            longest_note: Some(10_000),
             ..Default::default()
         };
         if flaws.default_admin {
@@ -3264,6 +3270,18 @@ impl FakeApp {
                     return Some(Self::respond(403, vec![], "no origin"));
                 }
                 let text = form(r).get("text").cloned().unwrap_or_default();
+                if self
+                    .longest_note
+                    .is_some_and(|most| text.chars().count() > most)
+                {
+                    return Some(Self::respond(422, vec![], "that note is too long"));
+                }
+                if let (Some((least, most)), Some(given)) =
+                    (self.priority_range, form(r).get("priority"))
+                    && given.parse::<i64>().map_or(true, |n| n < least || n > most)
+                {
+                    return Some(Self::respond(422, vec![], "priority out of range"));
+                }
                 if self.refuses_repeats && self.notes.iter().any(|(o, t)| *o == owner && *t == text)
                 {
                     return Some(Self::respond(409, vec![], "you already wrote that"));
@@ -3609,6 +3627,7 @@ pub(super) fn users() -> UsersSection {
             check: Some("/announcements".into()),
         }],
         owned: Some(sv_manifest::OwnedSection {
+            limits: Vec::new(),
             create: RequestTemplate {
                 method: "POST".into(),
                 path: "/notes".into(),
