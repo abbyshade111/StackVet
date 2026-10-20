@@ -21,9 +21,12 @@ updates:
       codeql-action:
         patterns: ['github/codeql-action*']
 
-  # The Rust packages `sv` is built from (Cargo.lock).
+  # The Rust packages `sv` is built from (Cargo.lock), and the fuzz crate's lock, which must keep the workspace's
+  # versions (ADR-077; crates/sv-cli/tests/fuzz_lock.rs): it is a crate of its own, so it is named here beside the root
+  # and the group below proposes both in one pull request (backlog 0617; ADR-128). Until 20 October 2026 a session
+  # moved the fuzz lock by hand after each bump (#1628).
   - package-ecosystem: cargo
-    directory: /
+    directories: ['/', '/fuzz']
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
@@ -35,6 +38,8 @@ updates:
     groups:
       all-packages:
         patterns: ['*']
+        # One pull request for an update across both directories, rather than one per directory.
+        group-by: dependency-name
 
   # The two base images in the Dockerfile (the Rust toolchain that builds `sv`, and the Debian it runs on), pinned
   # there to a fingerprint, which is what this moves: their names carry no version to bump. A new base image is how
@@ -61,8 +66,12 @@ updates:
     # Node's major version is the owner's choice, made from Node's release schedule: only the even-numbered majors get
     # long-term support, and Dependabot proposes whichever major is newest (#1634 offered Node 25, unsupported since
     # 1 June 2026). Fixes within the chosen major still arrive here as new fingerprints (ADR-019, Later, 13 October 2026).
+    # Dependabot has named it both ways: `node` in #1634, `library/node` in #2139, which the first name alone let
+    # through (backlog 0617).
     ignore:
       - dependency-name: node
+        update-types: ['version-update:semver-major']
+      - dependency-name: library/node
         update-types: ['version-update:semver-major']
 
   # py7zr, which only the CI steps that run the archive tests install (ADR-089), and each package it pulls in, pinned
