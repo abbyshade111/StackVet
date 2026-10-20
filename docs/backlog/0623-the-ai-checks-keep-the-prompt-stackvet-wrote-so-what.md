@@ -13,16 +13,16 @@ a reader can neither judge it nor try it again.
 
 **The owner's choice, 20 October 2026:**
 
-1. **Keep the prompt StackVet wrote, from StackVet's side, and nothing else.** The string the AI suite composes
+- **Keep the prompt StackVet wrote, from StackVet's side, and nothing else.** The string the AI suite composes
    (`ask`, `send_filled`'s prompt, before the form's own fields are filled in) is recorded beside the question's id,
    as an optional field the AI suite alone fills. Never the request's body or headers, and never the fields
    `send_filled` takes from the app's page, which can hold a session's token. The test accounts' passwords are in no
    prompt; the few prompts with test data use data `sv` made up for the run (a planted note's title).
-2. **Quoted word for word, escaped, and labeled.** "What StackVet saw" shows it under "StackVet sent", through the
+- **Quoted word for word, escaped, and labeled.** "What StackVet saw" shows it under "StackVet sent", through the
    same escaping the app's answers go through: several prompts carry invisible characters on purpose (the
    hidden-input checks) or a textbook injection, and they are shown as text, never acted on. The attack prompts are
    quoted as they were sent, not described.
-3. **Recorded:** a Later entry on ADR-082 saying the records now hold `sv`'s own prompt for an AI question, and still
+- **Recorded:** a Later entry on ADR-082 saying the records now hold `sv`'s own prompt for an AI question, and still
    no request body.
 
 **Break it and watch:** a test that records a question with a prompt and a form field holding a token must show the
