@@ -242,7 +242,7 @@ V6.3.1, one of the Level 1 requirements, and it is a real check rather than your
 only gives way after twenty attempts, when you said five, is reported. Say nothing and nothing is
 claimed either way.
 
-Sixteen more ask how the app is built rather than what is in it: is input checked on the server as
+Others ask how the app is built rather than what is in it: is input checked on the server as
 well as in the browser, do the app's own parts prove who they are to each other. You answer those in
 the `[design]` section of `stackvet.toml` with yes, no, or not sure, and where in the code it is
 done.

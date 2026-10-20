@@ -1,6 +1,6 @@
 # Answers given in the chat reach sv review as the owner's, and are recorded together (20 October 2026)
 
-**Status:** claimed by claude/review-handoff, 20 October 2026
+**Status:** done, 20 October 2026
 
 The owner asked, on 20 October 2026, how the questions only a person can answer can be served during the build and
 their answers taken in. Most of it is built: `stackvet_check`'s "questions" section hands the AI coding tool every
@@ -22,7 +22,7 @@ The owner's choices, 20 October 2026, asked in a session:
    tool wrote down (the tool now writes every section as its own, and the person makes it theirs with `mine`). It
    stays the tool's word until `sv review` records it, which is the path the owner kept on 14 October 2026 (backlog
    0511, option c); no `mine` is added for a `[design]` or `[checked-by-hand]` entry. Record: a Later entry on ADR-022.
-   **Part status:** open
+   **Part status:** done, 20 October 2026
 2. **`sv review` shows every answer given as the owner's, then records them at one `owner`.** The `[design]` answers
    and `[checked-by-hand]` results with `by = "owner"`, and the notes and design-decisions sections marked
    `Written by: owner`, are listed together, numbered, each with its requirement, the answer, and the file it points
@@ -31,8 +31,18 @@ The owner's choices, 20 October 2026, asked in a session:
    through them one at a time as now. Each is sealed over its own fields exactly as before, and saved only if it then
    counts. Findings, confirmations, left-out folders, and sections to confirm are still asked one at a time. Record: a
    Later entry on ADR-026.
-   **Part status:** open
+   **Part status:** done, 20 October 2026
 3. **Two counts that are out of date.** The starter `stackvet.toml` says there are "at most sixteen" design questions
    (`spec.rs`, line 397); there are 18. `crates/sv-check/src/hand.rs` says "Twenty ASVS requirements" are checked by
    hand; `human-checks.json` holds 64 (37 ASVS, 25 AISVS, and 2 of its Appendix C).
-   **Part status:** open
+   **Part status:** done, 20 October 2026
+
+**Built, 20 October 2026.** Prompt 5 and the guide's copy say to write `by = "owner"` only for an answer the person
+gave the tool themselves, and `by = "owner"` for a check by hand they made and told it of; the interview's rule no
+longer says "or confirmed", and its module text describes `mine` (ADR-022, Later). `sv review` lists two or more
+answers given as the owner's together and records them at one `owner`, leaves out the ones the person numbers, or
+goes one at a time at Enter (`crates/sv-cli/src/review/together.rs`, ADR-026, Later), each sealed over its own
+fields through the same `own_what` and `apply_own` the one-at-a-time path uses. The counts are gone from the starter
+`stackvet.toml`, `design.rs`, `hand.rs`, and the README rather than corrected, so they cannot go out of date again.
+Asked the same day whether the person is told where each question comes from, the owner chose to show, above each
+answer in `sv review`, its title, standard and level, and the plain question (`Asked` in `review.rs`).

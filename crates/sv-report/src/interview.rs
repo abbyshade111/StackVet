@@ -6,14 +6,15 @@
 //! 2026) for the tool to be given the questions and to interview them: one question at a time, with
 //! what the code says offered as a tip, and the answers recorded where `sv` reads them.
 //!
-//! Who answered is the part that has to stay honest. An answer the owner gave is recorded as theirs
-//! (`by = "owner"`) and reported as *attested by the owner*. When the owner asks the tool to answer,
-//! it answers from the code and records `by = "ai-tool"`, reported one tier lower as *stated by the
-//! AI coding tool*. The security notes work the same way, on a `Written by:` line at the top of each
-//! answer: `owner` for the person's decision, or one the tool wrote that they read and agree with;
-//! `AI coding tool` for what the tool wrote from the code and the person has not agreed to, which is
-//! reported as *stated by the AI coding tool* and asked again. A section without the line counts as
-//! the tool's, so the tool is told to write it every time.
+//! Who answered is the part that has to stay honest. An answer the owner gave the tool in the chat is
+//! written as theirs (`by = "owner"`), and counts as theirs, *attested by the owner*, only once they
+//! record it with `sv review`, which lists every such answer and records them together (backlog
+//! 0618). When the owner asks the tool to answer, it answers from the code and records
+//! `by = "ai-tool"`, reported one tier lower as *stated by the AI coding tool*. A security notes
+//! answer is always recorded as the tool's (`Written by: AI coding tool`, through
+//! `stackvet_record_answer`), since `sv` cannot tell whose words it holds: in `sv review` the owner
+//! makes it theirs (`mine`) or confirms it as the tool's reading. A section without the line counts as
+//! the tool's.
 //!
 //! Nothing here credits anything. This writes instructions; what the answers are worth is decided
 //! where they are read (`sv_check::design`, `sv_check::notes`).
@@ -37,10 +38,11 @@ How to ask them. These are for the person you are building this app with, not fo
 - Record the answer as the person gave it, as described in each part below. \"Not sure\" is a good
   answer, and is recorded as not-sure. A \"no\" is useful too: the report lists it as something to fix.
   Before there is code, a decision made now is recorded as planned, naming the file it will be in.
-- Write by = \"owner\" only for an answer the person gave or confirmed. It counts as theirs only once
-  they run `sv review` in their own terminal, which records it; never run it for them. If they ask you
-  to answer, say what the code does, answer from that, and write by = \"ai-tool\". The report shows
-  that as \"stated by the AI coding tool\", which is weaker than the person's own word, and says so.
+- Write by = \"owner\" only for an answer the person gave you themselves. It counts as theirs only
+  once they run `sv review` in their own terminal, which shows them every answer given as theirs and
+  records them together; never run it for them. If they ask you to answer, say what the code does,
+  answer from that, and write by = \"ai-tool\". The report shows that as \"stated by the AI coding
+  tool\", which is weaker than the person's own word, and says so.
 - The person can confirm what you answered, and then it counts as much as their own word. Suggest
   something they can look at or try themselves (a page to open, a thing to try), not a yes-or-no,
   and write it beside your answer as a proposal: confirmed = { by = \"ai-tool\", how = \"what to
@@ -422,7 +424,8 @@ mod tests {
             "one question at a time",
             "Quote the exact lines the tip rests on, with the file and line number",
             "your reading of the code, not a check",
-            "Write by = \"owner\" only for an answer the person gave or confirmed",
+            // Backlog 0618: the person's own answer, not one of the tool's they confirmed (that is `confirmed`).
+            "Write by = \"owner\" only for an answer the person gave you themselves",
             "write by = \"ai-tool\"",
             "Never answer yes to make the report look better",
             "\"Not sure\" is a good answer",

@@ -394,7 +394,7 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # An answer without `by` counts as the AI tool's: write by = "owner" only for an answer the
 # owner gave. It counts as the owner's only once they run `sv review` in their own terminal, which
 # records it with a `seal`; until then it counts as the AI tool's. Run `sv report` to see the
-# questions that apply to this app; there are at most sixteen.
+# questions that apply to this app.
 #
 # A person can confirm what the AI tool answered, after looking for themselves, and it then counts as
 # much as their own word, shown as "stated by the AI coding tool, confirmed through sv review". The AI

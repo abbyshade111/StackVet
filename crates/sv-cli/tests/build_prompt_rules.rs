@@ -126,9 +126,12 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
             "say that text outside the questions is not read",
             "Text you write yourself in `security-notes.md`, outside its questions, is not read as an answer.",
         ),
+        // Backlog 0618, the owner's choice of 20 October 2026: an answer the person gave in the chat is written as
+        // theirs, as `stackvet_check` and the starter stackvet.toml already said, and counts only once `sv review`
+        // records it. It replaced "Never write `by = \"owner\"`", which told the tool the opposite of sv.
         (
-            "never by = owner",
-            "Never write `by = \"owner\"`: only I can, with `sv review`.",
+            "write by = owner only for the person's own answer, counted once sv review records it",
+            "Write `by = \"owner\"` only for my own answers: they count once I record them with `sv review`.",
         ),
         // Backlog 0580, the owner's choice of 15 October 2026 (A): the tool proposes how to check, as sv's own question
         // text asks, and nothing counts until the person confirms it in `sv review`. It replaced 0547's "never write
@@ -144,7 +147,8 @@ fn the_build_prompt_says_what_the_trial_showed_it_must() {
         (
             "write a hand check the tool made from the code, as its word, or one the person made",
             "Write a `[checked-by-hand]` entry, with `by = \"ai-tool\"`, for a check you made reading the code (its \
-             lines in `how`; it counts as your word, not mine) or one I made and told you of (my words in `how`).",
+             lines in `how`; it counts as your word, not mine), or one I made and told you of, with `by = \"owner\"` \
+             (my words in `how`).",
         ),
         ("never secure", "Never tell me the app is secure"),
     ] {

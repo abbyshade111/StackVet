@@ -248,15 +248,16 @@ Open the app's folder in your AI tool and paste this, with your app described at
 >    or tell me what the code does for one, quote the file and lines that show it beside the answer,
 >    and say it is your reading, not a check: an answer with no lines is a guess. Record my answers only with `stackvet_record_answer`, under the
 >    question ids it gives you, and only what I actually answer as mine. Text you write yourself in
->    `security-notes.md`, outside its questions, is not read as an answer. Never write `by = "owner"`:
->    only I can, with `sv review`. When you suggest
+>    `security-notes.md`, outside its questions, is not read as an answer. Write `by = "owner"` only for
+>    my own answers: they count once I record them with `sv review`. When you suggest
 >    how I could check an answer of yours or a check by hand, write it beside it as a proposal,
 >    `confirmed = { by = "ai-tool", how = "what to look at, and what it should show" }`: it counts
 >    only once I confirm it in `sv review`.
 >    Write a `[checked-by-hand]` entry, with `by = "ai-tool"`, for a check you made reading the code (its
->    lines in `how`; it counts as your word, not mine) or one I made and told you of (my words in `how`).
+>    lines in `how`; it counts as your word, not mine), or one I made and told you of, with
+>    `by = "owner"` (my words in `how`).
 >
-> *(StackVet setup prompt 5, text of 15 October 2026, fingerprint 0d976f0b)*
+> *(StackVet setup prompt 5, text of 20 October 2026, fingerprint 0190dea6)*
 
 Why a line left out is better than a guess: [how StackVet decides what applies](ARCHITECTURE.md#how-sv-decides-what-applies).
 
@@ -281,12 +282,11 @@ should do with a file that is too big, who may see what. It offers what it found
 tip. "I'm not sure" is a fine answer. An answer you let the tool give counts for less than yours, and
 the report says so.
 
-The tool writes your answers about the app's rules in `security-notes.md`, each marked `Written by: AI coding
-tool`, since `sv` cannot tell your words from the tool's. `sv review`, in your own terminal, shows each one and asks
-whose it is: type `mine` where it says what you decided; your name where the tool worked it out from the code and
-you checked it, which the report shows as the tool's words a person confirmed; or Enter to leave it. An answer the
-tool wrote in `stackvet.toml` (`by = "ai-tool"`) is confirmed, not owned; `by = "owner"` by hand is for the rare
-one that is truly your own decision. Run it:
+The tool writes your answers about the app's rules in `security-notes.md`, marked `Written by: AI coding tool`,
+since `sv` cannot tell your words from the tool's, and your other answers in `stackvet.toml` as `by = "owner"`.
+None counts as yours until `sv review`, in your own terminal, records it. It lists your answers together (type
+`owner`, or the numbers of any to leave out), then shows each section the tool wrote: type `mine` where it says what
+you decided, your name where the tool worked it out and you checked it, or Enter to leave it. Run it:
 
 ```bash
 sv review ~/code/my-app
