@@ -34,7 +34,16 @@ fn the_browser_version_is_still_read_from_its_tag_and_not_its_digest() {
         .rsplit(':')
         .next()
         .unwrap();
-    assert_eq!(tag, "155.0.8059.26");
+    // A dotted version, which a digest's hex never is: the test holds how the version is read, not which one it is,
+    // so a new browser tag needs no edit here (backlog 0617).
+    let parts: Vec<&str> = tag.split('.').collect();
+    assert!(
+        parts.len() >= 3
+            && parts
+                .iter()
+                .all(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit())),
+        "{BROWSER_IMAGE}: its tag {tag:?} is not a dotted version"
+    );
 }
 
 #[test]
