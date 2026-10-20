@@ -2554,4 +2554,7 @@ mod superuser_tests;
 mod password_expiry_tests;
 
 #[cfg(test)]
+mod backup_codes_tests;
+
+#[cfg(test)]
 mod hand_rolled_tests;

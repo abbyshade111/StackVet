@@ -140,6 +140,16 @@ pub const MEASURED_PARTS: &[(&str, &[(&str, &str)])] = &[
             ),
         ],
     ),
+    // The written defenses against guessed and reused passwords (backlog 0609, from 0491): the signed-in run tries
+    // more wrong passwords in a row than stackvet.toml's `failed-sign-ins` allows, and judges whether the app pushes
+    // back (`probe.failed-sign-ins-unlimited`, V6.3.1).
+    (
+        "V6.1.1",
+        &[(
+            "V6.3.1",
+            "wrong passwords in a row, pushed back on at the number stackvet.toml states",
+        )],
+    ),
     // The availability defenses the running checks try (backlog 0498): creating records without limit, and a file
     // larger than the app can handle.
     (

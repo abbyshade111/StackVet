@@ -2547,6 +2547,44 @@
         "dart": "Hand-rolled encryption is not looked for in Dart yet.",
         "shell": "Hand-rolled encryption is not looked for in shell scripts yet."
       }
+    },
+    {
+      "id": "ast.backup-codes-stored-plain",
+      "title": "Backup codes are saved as they were made, without hashing",
+      "severity": "medium",
+      "confidence": "medium",
+      "requirementIds": [
+        "V6.5.2"
+      ],
+      "cwe": [
+        "CWE-256",
+        "CWE-312"
+      ],
+      "description": "A field named for the one-time backup or recovery codes (`backup_codes`, `recoveryCodes`, and the like) is given the codes straight from a random generator (`secrets.token_hex`, `crypto.randomBytes`, `uuid4`), with no hashing call in the same line. What was read is the line that saves them into a field of an object or a record; a plain variable is where codes are made before they are hashed, and is not read; codes made in one line and hashed in another, before they are saved, are not seen here.",
+      "impact": "Backup codes are a second way in that skips the second factor. Kept as they were made, anyone who reads the database, a backup of it, or a log of its queries can sign in as each person with one of them.",
+      "fix": "Show the codes to the person once, when they are made, and save only a hash of each, made with a password-hashing algorithm (bcrypt, Argon2, scrypt, or PBKDF2), as a password is. To check one later, hash what was typed and compare, then mark that code used.",
+      "findingsOnly": true,
+      "looksFor": "backup or recovery codes saved straight from a random generator, with no hashing in the same line",
+      "queries": {
+        "python": "[(assignment left: (attribute attribute: (identifier) @fn) right: (_) @arg) (keyword_argument name: (identifier) @fn value: (_) @arg)] @hit",
+        "javascript": "[(assignment_expression left: (member_expression property: (property_identifier) @fn) right: (_) @arg) (pair key: (property_identifier) @fn value: (_) @arg)] @hit",
+        "typescript": "[(assignment_expression left: (member_expression property: (property_identifier) @fn) right: (_) @arg) (pair key: (property_identifier) @fn value: (_) @arg)] @hit"
+      },
+      "functionPatterns": {
+        "python": "(?i)^(backup|recovery|lookup)_?(codes?|secrets?)$",
+        "javascript": "(?i)^(backup|recovery|lookup)(codes?|secrets?)$",
+        "typescript": "(?i)^(backup|recovery|lookup)(codes?|secrets?)$"
+      },
+      "argumentPatterns": {
+        "python": "(secrets\\.(token_hex|token_urlsafe|token_bytes|choice|randbelow)|random\\.(choice|choices|randint|random|sample)|uuid\\.?uuid4|uuid4\\(|os\\.urandom)",
+        "javascript": "(crypto\\.(randomBytes|randomUUID|getRandomValues|randomInt)|randomBytes\\(|randomUUID\\(|nanoid\\(|Math\\.random)",
+        "typescript": "(crypto\\.(randomBytes|randomUUID|getRandomValues|randomInt)|randomBytes\\(|randomUUID\\(|nanoid\\(|Math\\.random)"
+      },
+      "safeArgumentPatterns": {
+        "python": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|make_password|crypt\\(|digest)",
+        "javascript": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)",
+        "typescript": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)"
+      }
     }
   ]
 }
