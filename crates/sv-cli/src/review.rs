@@ -102,6 +102,8 @@ mod not_offered_tests;
 
 mod ticks;
 
+mod together;
+
 /// One entry waiting for a person.
 enum Waiting {
     Finding(usize),
@@ -721,8 +723,55 @@ fn review(
 
     let mut recorded = 0;
     let total = waiting.len();
+    // The answers given as the owner's, shown together and recorded at one `owner` (backlog 0618): an answer the
+    // person gave in the chat arrives here, and one at a time they were handed back to the tool. Each is sealed over
+    // its own fields, as one recorded alone is. Enter goes through them one at a time instead, as before.
+    let own: Vec<usize> = (0..waiting.len())
+        .filter(|&i| is_own(&waiting[i]))
+        .collect();
+    if own.len() >= 2 {
+        let mut whats = Vec::new();
+        let mut fields = Vec::new();
+        for &i in &own {
+            let (what, f) = own_what(&waiting[i], &manifest, &files)?;
+            whats.push(what);
+            fields.push(f);
+        }
+        if let together::Together::Record(chosen) = together::ask(&whats, input, out)? {
+            for &c in &chosen {
+                let seal = key
+                    .seal(&sv_check::seal::as_strs(&fields[c]))
+                    .map_err(anyhow::Error::msg)?;
+                apply_own(
+                    &waiting[own[c]],
+                    &seal,
+                    &manifest_path,
+                    &mut doc,
+                    &files,
+                    &checker,
+                )?;
+                recorded += 1;
+            }
+            if !chosen.is_empty() {
+                writeln!(
+                    out,
+                    "  Recorded {} as your own answer{}.",
+                    chosen.len(),
+                    if chosen.len() == 1 { "" } else { "s" }
+                )?;
+            }
+            // Those left out stay as they are, given as the owner's and not yet recorded.
+            let mut i = 0;
+            waiting.retain(|_| {
+                let keep = !own.contains(&i);
+                i += 1;
+                keep
+            });
+        }
+    }
+    let left = waiting.len();
     for (n, item) in waiting.into_iter().enumerate() {
-        writeln!(out, "\n[{} of {total}]", n + 1)?;
+        writeln!(out, "\n[{} of {left}]", n + 1)?;
         let done = match item {
             Waiting::Finding(i) => {
                 let entry = &manifest.finding_review[i];
@@ -767,42 +816,13 @@ fn review(
                     None => None,
                 }
             }
-            Waiting::DesignAnswer(id) => {
-                let a = &manifest.design[&id];
-                let what = format!(
-                    "Your answer to requirement {id}, as stackvet.toml gives it: {}{}.",
-                    a.answer,
-                    a.r#where
-                        .as_deref()
-                        .map(|w| format!(", pointing at {w}"))
-                        .unwrap_or_default()
-                );
-                let fields = sv_check::seal::design_answer_fields(&id, a);
-                match record_own(&what, &fields, &key, input, out)? {
-                    Some(seal) => {
-                        set_seal(&mut doc, "design", &id, &seal)?;
-                        Some(Waiting::DesignAnswer(id))
-                    }
-                    None => None,
+            item @ (Waiting::DesignAnswer(_) | Waiting::HandAnswer(_) | Waiting::Notes(..)) => {
+                let (what, fields) = own_what(&item, &manifest, &files)?;
+                if let Some(seal) = record_own(&what, &fields, &key, input, out)? {
+                    apply_own(&item, &seal, &manifest_path, &mut doc, &files, &checker)?;
+                    recorded += 1;
                 }
-            }
-            Waiting::HandAnswer(id) => {
-                let h = &manifest.checked_by_hand[&id];
-                let what = format!(
-                    "Your check made by hand for requirement {id}, as stackvet.toml gives it: {}, \
-                     on {}: \"{}\"",
-                    h.result,
-                    h.on.as_deref().unwrap_or("no date"),
-                    h.how.as_deref().unwrap_or("nothing written").trim()
-                );
-                let fields = sv_check::seal::hand_check_fields(&id, h);
-                match record_own(&what, &fields, &key, input, out)? {
-                    Some(seal) => {
-                        set_seal(&mut doc, "checked-by-hand", &id, &seal)?;
-                        Some(Waiting::HandAnswer(id))
-                    }
-                    None => None,
-                }
+                None
             }
             Waiting::Scope | Waiting::NotOffered | Waiting::Policy | Waiting::Capabilities => {
                 unreachable!("asked after the list, never in it")
@@ -815,36 +835,6 @@ fn review(
                     }
                     None => None,
                 }
-            }
-            Waiting::Notes(which, id) => {
-                let (catalog, path) = &files[which];
-                let text =
-                    notes_text(path)?.with_context(|| format!("{} is gone", catalog.file))?;
-                let answers = sv_check::notes::read_answers(catalog, &text);
-                let prose = answers.prose_of(&id).unwrap_or_default();
-                let what = format!(
-                    "Your answer to requirement {id} in {}, marked `Written by: owner`:\n\n{}\n",
-                    catalog.file,
-                    prose
-                        .lines()
-                        .map(|l| format!("    {l}"))
-                        .collect::<Vec<_>>()
-                        .join("\n")
-                );
-                let fields = sv_check::seal::notes_fields(&id, &prose);
-                if let Some(seal) = record_own(&what, &fields, &key, input, out)? {
-                    let sealed = sv_check::notes::with_seal_in(catalog, &text, &id, &seal)
-                        .context("the section is not where it was")?;
-                    save_text(path, &sealed, &|| {
-                        notes_text(path).ok().flatten().is_some_and(|t| {
-                            sv_check::notes::read_answers(catalog, &t)
-                                .recorded(&id, &checker)
-                                .is_ok()
-                        })
-                    })?;
-                    recorded += 1;
-                }
-                None
             }
             Waiting::NotesConfirm(which, id) => {
                 let (catalog, path) = &files[which];
@@ -1494,6 +1484,109 @@ fn record_own(
             key.seal(&sv_check::seal::as_strs(fields))
                 .map_err(anyhow::Error::msg)?,
         ));
+    }
+}
+
+/// Whether an entry is an answer given as the owner's: offered with the others like it, together, before the rest
+/// (backlog 0618).
+fn is_own(item: &Waiting) -> bool {
+    matches!(
+        item,
+        Waiting::DesignAnswer(_) | Waiting::HandAnswer(_) | Waiting::Notes(..)
+    )
+}
+
+/// What an answer given as the owner's says, as `sv review` shows it, and the fields its seal is made over.
+fn own_what(
+    item: &Waiting,
+    manifest: &sv_manifest::Manifest,
+    files: &[(sv_check::notes::Catalog, PathBuf)],
+) -> Result<(String, Vec<String>)> {
+    Ok(match item {
+        Waiting::DesignAnswer(id) => {
+            let a = &manifest.design[id];
+            (
+                format!(
+                    "Your answer to requirement {id}, as stackvet.toml gives it: {}{}.",
+                    a.answer,
+                    a.r#where
+                        .as_deref()
+                        .map(|w| format!(", pointing at {w}"))
+                        .unwrap_or_default()
+                ),
+                sv_check::seal::design_answer_fields(id, a),
+            )
+        }
+        Waiting::HandAnswer(id) => {
+            let h = &manifest.checked_by_hand[id];
+            (
+                format!(
+                    "Your check made by hand for requirement {id}, as stackvet.toml gives it: {}, \
+                     on {}: \"{}\"",
+                    h.result,
+                    h.on.as_deref().unwrap_or("no date"),
+                    h.how.as_deref().unwrap_or("nothing written").trim()
+                ),
+                sv_check::seal::hand_check_fields(id, h),
+            )
+        }
+        Waiting::Notes(which, id) => {
+            let (catalog, path) = &files[*which];
+            let text = notes_text(path)?.with_context(|| format!("{} is gone", catalog.file))?;
+            let prose = sv_check::notes::read_answers(catalog, &text)
+                .prose_of(id)
+                .unwrap_or_default();
+            (
+                format!(
+                    "Your answer to requirement {id} in {}, marked `Written by: owner`:\n\n{}\n",
+                    catalog.file,
+                    prose
+                        .lines()
+                        .map(|l| format!("    {l}"))
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                ),
+                sv_check::seal::notes_fields(id, &prose),
+            )
+        }
+        _ => unreachable!("only an answer given as the owner's"),
+    })
+}
+
+/// Writes `seal` beside an answer given as the owner's, and saves it only if it then counts as their recorded answer.
+fn apply_own(
+    item: &Waiting,
+    seal: &str,
+    manifest_path: &Path,
+    doc: &mut toml_edit::DocumentMut,
+    files: &[(sv_check::notes::Catalog, PathBuf)],
+    checker: &Checker,
+) -> Result<()> {
+    match item {
+        Waiting::DesignAnswer(id) | Waiting::HandAnswer(id) => {
+            let section = if matches!(item, Waiting::DesignAnswer(_)) {
+                "design"
+            } else {
+                "checked-by-hand"
+            };
+            set_seal(doc, section, id, seal)?;
+            save(manifest_path, doc, &|m| counts(m, item, checker))
+        }
+        Waiting::Notes(which, id) => {
+            let (catalog, path) = &files[*which];
+            // Read again: another answer recorded just before may have changed the file.
+            let text = notes_text(path)?.with_context(|| format!("{} is gone", catalog.file))?;
+            let sealed = sv_check::notes::with_seal_in(catalog, &text, id, seal)
+                .context("the section is not where it was")?;
+            save_text(path, &sealed, &|| {
+                notes_text(path).ok().flatten().is_some_and(|t| {
+                    sv_check::notes::read_answers(catalog, &t)
+                        .recorded(id, checker)
+                        .is_ok()
+                })
+            })
+        }
+        _ => unreachable!("only an answer given as the owner's"),
     }
 }
 
@@ -2902,8 +2995,9 @@ mod tests {
                      0000000000000000000000000000000000000000000000000000000000000000\n\nNames are at \
                      most eighty letters, and dates are never in the future.\n";
         std::fs::write(s.app().join("security-notes.md"), notes).unwrap();
-        // The owner's four, and the tool's notes section between them left as the tool's word.
-        let (result, out) = s.run("owner\nSam Lee\nowner\nowner\n\nowner\n");
+        // The owner's four, and the tool's notes section between them left as the tool's word. Enter first goes
+        // through them one at a time rather than together (backlog 0618; together_tests.rs holds that path).
+        let (result, out) = s.run("\nowner\nSam Lee\nowner\nowner\n\nowner\n");
         result.unwrap();
         // The tool's own answers are not offered as the owner's; its notes section is offered only
         // for a person to confirm (ADR-022, Later).

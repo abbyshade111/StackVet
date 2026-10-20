@@ -1,7 +1,7 @@
 //! The design questions: how the app is built, answered by the only person who knows.
 //!
-//! Sixteen requirements at level 1 and 2 ask for a property of the design rather than a fact in the
-//! code — is validation enforced on the server, are the app's own services authenticated to each
+//! Some requirements at level 1 and 2 (`data/design-questions.json`) ask for a property of the design
+//! rather than a fact in the code — is validation enforced on the server, are the app's own services authenticated to each
 //! other, can a load balancer's headers be faked by a browser. A scanner can sometimes see a
 //! fragment of one and never the whole, so they sat in the report as *not verified* beside the
 //! requirements nobody had looked at.

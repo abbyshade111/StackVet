@@ -1,6 +1,6 @@
 //! The checks made by hand: a person looked at the app, and says what they saw.
 //!
-//! Twenty ASVS requirements are left over once the security notes and the design questions have had
+//! The ASVS and AISVS requirements left over once the security notes and the design questions have had
 //! theirs (`human-checks.json`): the certificate on the live site, whether being away signs you out,
 //! whether two people can book the same slot. No check here can make them, so the AI coding tool
 //! walks the owner through them (`sv questions`). Until 26 September 2026 what the owner saw was then
