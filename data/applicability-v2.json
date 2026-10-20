@@ -345,6 +345,30 @@
       "notApplicableReason": "The app asks for no client certificate, so there is no certificate identity to validate before it is used."
     },
     {
+      "scope": "V8.3.3",
+      "condition": "multiple-services",
+      "source": "claim",
+      "notApplicableReason": "This app runs as one service, offers no API keys to other programs, and its AI cannot act, so no service or program asks for a record on a person's behalf."
+    },
+    {
+      "scope": "V8.3.3",
+      "condition": "public-api",
+      "source": "claim",
+      "notApplicableReason": "This app runs as one service, offers no API keys to other programs, and its AI cannot act, so no service or program asks for a record on a person's behalf."
+    },
+    {
+      "scope": "V8.3.3",
+      "condition": "ai-actions",
+      "source": "claim",
+      "notApplicableReason": "This app runs as one service, offers no API keys to other programs, and its AI cannot act, so no service or program asks for a record on a person's behalf."
+    },
+    {
+      "scope": "V12.3.5",
+      "condition": "multiple-services",
+      "source": "claim",
+      "notApplicableReason": "This app runs as one service, so there is no traffic between its own services to authenticate."
+    },
+    {
       "scope": "V3.5.4",
       "condition": "shared-hostname",
       "source": "claim",
@@ -403,6 +427,12 @@
       "condition": "out-of-band-or-email-code",
       "source": "claim",
       "notApplicableReason": "This app does not send sign-in codes by phone, SMS, push notification, or email."
+    },
+    {
+      "scope": "V6.6.4",
+      "condition": "out-of-band-auth",
+      "source": "claim",
+      "notApplicableReason": "This app sends no push notification asking a person to approve signing in, so there are no such prompts to flood."
     },
     {
       "scope": "V6.8",
