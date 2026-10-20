@@ -536,13 +536,11 @@ fn over_limits(format: ArchiveFormat, upload: &UploadSection) -> (Vec<OverLimit>
 pub(super) fn archive_checks(
     http: &mut dyn Http,
     users: &UsersSection,
+    upload: &sv_manifest::UploadSection,
     accounts: &Accounts,
     confirm: Option<&str>,
     out: &mut Outcome,
 ) {
-    let Some(upload) = &users.upload else {
-        return;
-    };
     let Some(formats) = &upload.unpacks_archives else {
         out.not_assessed.push((
             "V5.2.3".to_owned(),
@@ -811,7 +809,7 @@ mod tests {
         max_bytes: Option<u64>,
     ) -> UsersSection {
         let mut u = users();
-        u.upload = Some(UploadSection {
+        u.upload = vec![UploadSection {
             path: "/upload".into(),
             field: "file".into(),
             form: [("csrf_token".to_owned(), "{csrf}".to_owned())].into(),
@@ -821,7 +819,7 @@ mod tests {
             max_unpacked_bytes: unpacked,
             max_files: files,
             accepts: None,
-        });
+        }];
         u
     }
 

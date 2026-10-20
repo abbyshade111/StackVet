@@ -221,7 +221,8 @@ health = "/"              # a path that returns 200 once the app is up
 # delete-account = { path = "/account/delete", form = { password = "{password}", csrf_token = "{csrf}" } }
 # upload = { path = "/upload", field = "file", form = { csrf_token = "{csrf}" }, serves-at = "/files/{name}", max-bytes = 1048576 }
 #   Declare every upload the app takes: an upload not declared here is never tried, and the report
-#   cannot tell it from one that is safe.
+#   cannot tell it from one that is safe. Several are a list, `upload = [{ path = "/avatar", ... }, { path = "/files", ... }]`:
+#   each is tried, and an upload check is credited only when it holds on every one.
 #   `field` is the form field the file goes in; `serves-at` is where an upload can be fetched back,
 #   with {name} standing for its file name — leave it out if uploads are never served over the web.
 #   `max-bytes` is the largest file you say the app accepts, which is what it is held to.
@@ -458,6 +459,16 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # holds, the report says the level rests on answers nobody has confirmed, and an answer changed
 # after it was confirmed is unconfirmed again. It never changes the level.
 # [scope-review]
+
+# [policy] fix-within-days as the owner confirmed it. Written only by `sv review`, which shows the time
+# frames and asks; never write it yourself. Confirmed, it is the documentation V15.1.1 asks for (how
+# soon a known vulnerability is fixed), on your word; changed afterwards, it is unconfirmed again.
+# [policy-review]
+
+# The capability answers above as the owner confirmed them. Written only by `sv review`, which lists the
+# answers and asks; never write it yourself. A confirmed answer is shown as yours, not your AI coding
+# tool's; it switches no requirement on or off, and changed afterwards it is unconfirmed again.
+# [capabilities-review]
 
 # Lines of the checklist before going live (before-going-live.md) that you ticked in `sv review`.
 # Written only by `sv review`, which offers each line not yet ticked; never write it yourself, and

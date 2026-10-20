@@ -52,8 +52,10 @@ fn found(rule: &str, lines: &[usize]) -> Vec<sv_check::Finding> {
     findings
 }
 
-fn app() -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("sv-logged-ids-{}", std::process::id()));
+/// `app.py` in a folder of its own for each test: cargo runs tests in parallel, and a shared folder let one test remove
+/// it while the other was still reading it (a failure of 16 October 2026).
+fn app(name: &str) -> PathBuf {
+    let dir = std::env::temp_dir().join(format!("sv-logged-ids-{name}-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();
     std::fs::write(dir.join("app.py"), APP).unwrap();
     dir
@@ -61,7 +63,7 @@ fn app() -> PathBuf {
 
 #[test]
 fn a_line_logging_only_an_id_is_listed_apart_and_one_logging_a_password_is_not() {
-    let dir = app();
+    let dir = app("listed-apart");
     let mut findings = found(RULE, &[5, 6]);
     set_apart_logged_ids(&dir, &mut findings);
     std::fs::remove_dir_all(&dir).ok();
@@ -80,7 +82,7 @@ fn a_line_logging_only_an_id_is_listed_apart_and_one_logging_a_password_is_not()
 
 #[test]
 fn another_rule_or_a_second_tool_is_left_as_it_was() {
-    let dir = app();
+    let dir = app("left-as-it-was");
     let mut other = found(
         "semgrep.python.lang.security.audit.formatted-sql-query.formatted-sql-query",
         &[5],

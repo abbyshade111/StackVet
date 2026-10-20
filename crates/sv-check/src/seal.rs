@@ -893,6 +893,39 @@ pub fn scope_review_fields(entry: &sv_manifest::ScopeReview) -> Vec<String> {
     fields
 }
 
+/// The fields `[capabilities-review]` is sealed over: who confirmed them and when, then each answer as `name=true` or
+/// `name=false`, in the order of their names, so the same answers always seal the same (backlog 0606).
+pub fn capabilities_review_fields(entry: &sv_manifest::CapabilitiesReview) -> Vec<String> {
+    let mut fields = vec![
+        "capabilities-review".to_owned(),
+        entry.by.trim().to_owned(),
+        entry.on.trim().to_owned(),
+    ];
+    fields.extend(
+        entry
+            .answers
+            .iter()
+            .map(|(name, said)| format!("{}={said}", name.trim())),
+    );
+    fields
+}
+
+/// The fields `[policy-review]` is sealed over: who confirmed it and when, then each severity's time frame in a fixed
+/// order, a severity with none as `none`, so a time frame left out never seals the same as one written (backlog 0498).
+pub fn policy_review_fields(entry: &sv_manifest::PolicyReview) -> Vec<String> {
+    let days = |d: Option<u32>| d.map_or_else(|| "none".to_owned(), |d| d.to_string());
+    let f = &entry.fix_within_days;
+    vec![
+        "policy-review".to_owned(),
+        entry.by.trim().to_owned(),
+        entry.on.trim().to_owned(),
+        format!("critical={}", days(f.critical)),
+        format!("high={}", days(f.high)),
+        format!("medium={}", days(f.medium)),
+        format!("low={}", days(f.low)),
+    ]
+}
+
 /// The fields `[account-changes-review]` is sealed over: who confirmed it and when, and the changes
 /// it says the app does not offer, in a fixed order (ADR-105).
 pub fn account_changes_review_fields(entry: &sv_manifest::AccountChangesReview) -> Vec<String> {

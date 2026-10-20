@@ -6,14 +6,14 @@ use super::*;
 
 fn with_upload() -> UsersSection {
     let mut u = users();
-    u.upload = Some(UploadSection {
+    u.upload = vec![UploadSection {
         path: "/upload".into(),
         field: "file".into(),
         form: [("csrf_token".to_owned(), "{csrf}".to_owned())].into(),
         serves_at: Some("/files/{name}".into()),
         max_bytes: Some(UPLOAD_LIMIT as u64),
         ..Default::default()
-    });
+    }];
     u
 }
 

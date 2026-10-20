@@ -4,11 +4,10 @@
 Until 12 October 2026 the required `test` check ran the whole suite, about a quarter of an hour, on every pull
 request. A claim, one changed line in one backlog item, waited as long as a build, and the build waited on the claim.
 A pull request that changes nothing but backlog items (Markdown files directly in `docs/backlog/` or
-`docs/backlog/done/`) now runs only the tests that read them, and since 14 October 2026 the coordination board and its
-waiting files count as backlog items too (`docs/coordination/board.md`, a kept `board-closed-<date>.md`, and
-`docs/coordination/waiting/<number>.md`), since the only test that reads them, `coordination.rs`, is on the short path
-and a hand-out of the board otherwise waited the whole suite (ADR-104, Later). Anything else, an empty list included,
-runs everything.
+`docs/backlog/done/`) now runs only the tests that read them. From 14 October 2026 the coordination board and its
+waiting files counted as backlog items too; the board and its test, `coordination.rs`, were removed on 20 October 2026,
+and with nothing on the short path reading them, a change under `docs/coordination/` runs everything again (ADR-104,
+Later). Anything else, an empty list included, runs everything.
 The whole suite still runs on every commit to `main` (ADR-051), so anything the short path misses shows up there.
 
 It reads the changed paths, one per line, on standard input, and prints `true` when the whole suite must run and
@@ -22,11 +21,8 @@ or no paths at all print `true`.
 import re
 import sys
 
-# A backlog item, open or done, and nothing deeper: a folder inside either is not one the tools read. The board, a
-# board kept at its close, and a builder's waiting file are read by the same short path (`coordination.rs`).
-BACKLOG_ITEM = re.compile(r"docs/backlog/(done/)?[^/]+\.md"
-                          r"|docs/coordination/board(-closed-\d{4}-\d{2}-\d{2}(-\d+)?)?\.md"
-                          r"|docs/coordination/waiting/\d{4}\.md")
+# A backlog item, open or done, and nothing deeper: a folder inside either is not one the tools read.
+BACKLOG_ITEM = re.compile(r"docs/backlog/(done/)?[^/]+\.md")
 
 
 def needs_everything(paths):
@@ -51,15 +47,9 @@ def self_test():
         (["docs/backlogs/0001-a.md"], True),
         (["xdocs/backlog/0001-a.md"], True),
         (["docs/backlog/0001-a.md.bak"], True),
-        (["docs/coordination/board.md"], False),
-        (["docs/backlog/0001-a.md", "docs/coordination/board.md"], False),
-        (["docs/coordination/board-closed-2026-10-13.md"], False),
-        (["docs/coordination/board-closed-2026-10-13-2.md"], False),
-        (["docs/coordination/waiting/0466.md"], False),
-        (["docs/coordination/board.md", "tools/coordination.py"], True),
-        (["docs/coordination/waiting/notes.md"], True),
-        (["docs/coordination/handouts/0466.md"], True),
-        (["docs/COORDINATION.md"], True),
+        # The board's files were on the short path until the board was removed (ADR-104, Later, 20 October 2026).
+        (["docs/coordination/board-closed-2026-10-13.md"], True),
+        (["docs/backlog/0001-a.md", "docs/coordination/waiting/0466.md"], True),
         (["docs/adr/ADR-104.md"], True),
         (["CLAUDE.md"], True),
     ]

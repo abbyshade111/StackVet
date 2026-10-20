@@ -765,9 +765,11 @@ pub struct UsersSection {
     /// Only ever used on an account made for it through `signup`, never on A or B.
     #[serde(default)]
     pub delete_account: Option<RequestTemplate>,
-    /// How the app takes a file, so the probes can send it ones it ought to refuse.
-    #[serde(default)]
-    pub upload: Option<UploadSection>,
+    /// How the app takes a file, so the probes can send it ones it ought to refuse: one `[stack.run.users.upload]`
+    /// table, or several as `[[stack.run.users.upload]]`, one for each way in (backlog 0232, part D, the owner's
+    /// choice of 16 October 2026). Every upload check runs on each, and is credited only when it holds on all.
+    #[serde(default, deserialize_with = "one_or_more_uploads")]
+    pub upload: Vec<UploadSection>,
     /// How a forgotten password is reset, so the probes can follow the link the app emails. Only
     /// used when the run has a mail sink for the app to send to.
     #[serde(default)]
@@ -910,6 +912,43 @@ pub struct FlowSection {
 /// The probes send three files an app ought to refuse — one too large, one whose contents do not
 /// match its extension, and one that is server-side code — and, when `serves-at` says where to
 /// fetch an upload back, read what the app does with it afterwards.
+/// The fields of `UploadSection`, as stackvet.toml spells them: what the section is said to take when a field there is
+/// misspelled. Held to the struct by `upload_fields_tests`.
+pub const UPLOAD_FIELDS: &[&str] = &[
+    "path",
+    "field",
+    "form",
+    "serves-at",
+    "max-bytes",
+    "accepts",
+    "unpacks-archives",
+    "max-unpacked-bytes",
+    "max-files",
+];
+
+/// `upload` as one table or a list of them (backlog 0232, part D): a file written with one keeps working. Asked for as
+/// a table, so the walk over the types that words the manifest's errors sees the upload section as before; TOML
+/// hands a list to the same request as one.
+fn one_or_more_uploads<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<UploadSection>, D::Error> {
+    struct OneOrMore;
+    impl<'de> serde::de::Visitor<'de> for OneOrMore {
+        type Value = Vec<UploadSection>;
+        fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            f.write_str("an upload table, or a list of them")
+        }
+        fn visit_map<A: serde::de::MapAccess<'de>>(self, map: A) -> Result<Self::Value, A::Error> {
+            UploadSection::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                .map(|one| vec![one])
+        }
+        fn visit_seq<A: serde::de::SeqAccess<'de>>(self, seq: A) -> Result<Self::Value, A::Error> {
+            Vec::<UploadSection>::deserialize(serde::de::value::SeqAccessDeserializer::new(seq))
+        }
+    }
+    deserializer.deserialize_struct("UploadSection", UPLOAD_FIELDS, OneOrMore)
+}
+
 #[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct UploadSection {
@@ -1572,6 +1611,14 @@ pub struct Manifest {
     /// (ADR-105). `None` until somebody has confirmed it.
     #[serde(default)]
     pub account_changes_review: Option<AccountChangesReview>,
+    /// The owner's word, through `sv review`, on `[policy] fix-within-days` (backlog 0498): confirmed, it is the
+    /// documentation V15.1.1 asks for. `None` until somebody has confirmed it.
+    #[serde(default)]
+    pub policy_review: Option<PolicyReview>,
+    /// The owner's word, through `sv review`, on the capability answers (backlog 0606): each one confirmed is shown as
+    /// the owner's rather than the AI coding tool's. It changes no requirement (the owner's choice of 16 October 2026).
+    #[serde(default)]
+    pub capabilities_review: Option<CapabilitiesReview>,
     /// Lines of the checklist before going live that the owner ticked in `sv review` and that `sv` accepts no check by
     /// hand for (backlog 0604, ADR-121): each a sealed note that the line is done. They credit nothing.
     #[serde(default)]
@@ -1611,6 +1658,79 @@ pub struct AccountChangesReview {
     /// `sv-check::seal`.
     #[serde(default)]
     pub seal: Option<String>,
+}
+
+/// `[policy] fix-within-days` as the owner confirmed it through `sv review`, as `[policy-review]` in stackvet.toml
+/// (backlog 0498, the owner's choice of 16 October 2026): the documented time frames V15.1.1 asks for, on the owner's
+/// word, while `fix-within-days` still says the same.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct PolicyReview {
+    /// `fix-within-days` as it was when confirmed.
+    pub fix_within_days: FixWithinDays,
+    /// Who confirmed it: `owner`, as `sv review` writes it.
+    pub by: String,
+    /// When, as YYYY-MM-DD.
+    pub on: String,
+    /// What `sv review` writes. Without one that holds, the time frames are unconfirmed. See `sv-check::seal`.
+    #[serde(default)]
+    pub seal: Option<String>,
+}
+
+/// The capability answers as the owner confirmed them through `sv review`, as `[capabilities-review]` in stackvet.toml
+/// (backlog 0606, the owner's choice of 16 October 2026): by condition name, each answer as `Manifest::claims` read it.
+/// A confirmed answer is labeled the owner's while it still says the same; it switches no requirement on or off.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct CapabilitiesReview {
+    /// Each answer as it was when confirmed, by its condition's name (`auth`, `uploads`).
+    pub answers: std::collections::BTreeMap<String, bool>,
+    /// Who confirmed them: `owner`, as `sv review` writes it.
+    pub by: String,
+    /// When, as YYYY-MM-DD.
+    pub on: String,
+    /// What `sv review` writes. Without one that holds, no answer is confirmed. See `sv-check::seal`.
+    #[serde(default)]
+    pub seal: Option<String>,
+}
+
+impl CapabilitiesReview {
+    /// Whether the answer named `name` is still the one confirmed: `manifest` gives it, and gives the same.
+    pub fn holds_for(&self, manifest: &Manifest, name: &str) -> bool {
+        let Some(confirmed) = self.answers.get(name) else {
+            return false;
+        };
+        manifest
+            .claims()
+            .iter()
+            .any(|(condition, said)| condition.name() == name && *said == Some(*confirmed))
+    }
+}
+
+impl PolicyReview {
+    /// Whether `manifest` still gives the same time frames.
+    pub fn still_holds_for(&self, manifest: &Manifest) -> bool {
+        manifest.policy.fix_within_days.as_ref() == Some(&self.fix_within_days)
+    }
+}
+
+impl FixWithinDays {
+    /// The time frames in words, most serious first, leaving out a severity with none: "critical within 7 days,
+    /// high within 30 days".
+    pub fn said(&self) -> String {
+        [
+            ("critical", self.critical),
+            ("high", self.high),
+            ("medium", self.medium),
+            ("low", self.low),
+        ]
+        .iter()
+        .filter_map(|(name, days)| {
+            days.map(|d| format!("{name} within {d} day{}", if d == 1 { "" } else { "s" }))
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+    }
 }
 
 impl AccountChangesReview {
@@ -2860,6 +2980,10 @@ mod authorization_server_tests {
         assert_eq!(claim.effective, Some(false));
     }
 }
+
+#[cfg(test)]
+#[path = "upload_list_tests.rs"]
+mod upload_list_tests;
 
 #[cfg(test)]
 mod time_frame_tests {

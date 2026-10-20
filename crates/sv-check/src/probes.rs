@@ -1339,7 +1339,7 @@ pub fn named_routes(users: &sv_manifest::UsersSection, health_path: &str) -> Vec
         .map(|t| t.path.clone())
         .chain(users.private.iter().cloned())
         .chain(users.admin.iter().cloned())
-        .chain(users.upload.as_ref().map(|u| u.path.clone()))
+        .chain(users.upload.iter().map(|u| u.path.clone()))
         .chain(users.owned.as_ref().map(|o| o.create.path.clone()));
     for path in candidates {
         let path = path.split('?').next().unwrap_or_default().to_owned();

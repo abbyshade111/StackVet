@@ -18,7 +18,7 @@ fn html_only(more: Flaws) -> Flaws {
 
 fn accepting(accepts: &[&str]) -> UsersSection {
     let mut u = with_upload(Some("/files/{name}"), Some(UPLOAD_LIMIT as u64));
-    u.upload.as_mut().unwrap().accepts = Some(accepts.iter().map(|a| (*a).to_owned()).collect());
+    u.upload.first_mut().unwrap().accepts = Some(accepts.iter().map(|a| (*a).to_owned()).collect());
     u
 }
 

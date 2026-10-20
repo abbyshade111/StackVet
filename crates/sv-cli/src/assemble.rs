@@ -2586,6 +2586,8 @@ fn the_owners_word(
     verified.extend(attested);
     verified.extend(by_hand);
     verified.extend(stated);
+    // `[policy] fix-within-days` as V15.1.1's documented time frames, on the owner's word once confirmed (backlog 0498).
+    verified.extend(sv_check::policy_word::fix_within_days(manifest, seals));
     Ok(PersonsWord {
         verified,
         notes_catalog,
@@ -3001,6 +3003,12 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     crate::code_lines::audience_questions(token_fields.as_ref(), &mut report);
     crate::code_lines::classification_questions(listing, token_fields, &mut report);
     crate::code_lines::measured_parts(&mut report);
+    // The capability answers the owner confirmed through `sv review` are shown as theirs; nothing else changes
+    // (backlog 0606, the owner's choice of 16 October 2026).
+    sv_report::mark_confirmed(
+        &mut report.claims,
+        &sv_check::capabilities_word::confirmed(manifest, seals),
+    );
     // A first draft of the cryptographic inventory, beside the key-management questions (backlog 0494).
     crate::code_lines::key_questions(listing, &mut report);
     // The checklist lines the owner ticked in `sv review`, those whose seal holds here (backlog 0604): shown as done in
