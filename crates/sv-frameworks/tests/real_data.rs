@@ -451,7 +451,9 @@ fn the_conditions_that_gate_nothing_are_exactly_the_ones_we_think() {
 
     // `generates-media` joined on 27 September 2026, deliberately: the one requirement it decides,
     // C7.4.4 (watermarking media the AI makes), is level 3, so it decides nothing at the levels
-    // counted here and matters only to an app held to level 3.
+    // counted here and matters only to an app held to level 3. `cryptographic-authenticator` joined on 20 October 2026
+    // for the same reason: section V6.7, the one it decides, is level 3 (backlog 0624, part 3). `public-api` gained a
+    // rule the same day, at V8.3.3, which is level 3 too, so it stays.
     assert_eq!(
         inert,
         vec![
@@ -461,6 +463,7 @@ fn the_conditions_that_gate_nothing_are_exactly_the_ones_we_think() {
             "level2",
             "generates-media",
             "self-assessment",
+            "cryptographic-authenticator",
         ],
         "the set of conditions that decide nothing has changed"
     );
