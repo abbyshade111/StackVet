@@ -39,9 +39,21 @@ fn reports() -> Vec<(String, sv_report::Report)> {
 }
 
 /// The ordinary words of a Markdown report: runs of two or more letters, leaving out the HTML tags that fold a list
-/// on GitHub and the addresses links go to, which a PDF holds as links rather than as text.
+/// on GitHub and the addresses links go to, which a PDF holds as links rather than as text. The entities
+/// `markdown::inert` writes are read as the characters they stand for, as the PDF prints them: `&lt;` is a `<`, not
+/// the word "lt" (backlog 0622).
 fn words(markdown: &str) -> BTreeSet<String> {
     let mut text = markdown.to_owned();
+    // `&amp;` last, so an escaped `&lt;` (`&amp;lt;`) comes out as the text `&lt;`, as it is printed.
+    for (entity, character) in [
+        ("&lt;", "<"),
+        ("&gt;", ">"),
+        ("&quot;", "\""),
+        ("&#39;", "'"),
+        ("&amp;", "&"),
+    ] {
+        text = text.replace(entity, character);
+    }
     for tag in [
         "<details>",
         "</details>",
@@ -90,6 +102,36 @@ fn every_ordinary_word_of_the_security_and_compliance_reports_is_in_the_pdf() {
         // The setup: a report of some length, with a finding written out in full.
         assert!(read.pages.len() > 10, "{name}: {} pages", read.pages.len());
     }
+}
+
+/// Backlog 0622: the test above failed on any full clone with `["lt"]`, since the example's report lists commits that
+/// reached the branch directly, each ending `<noreply@anthropic.com>`, and `inert` writes the `<` as `&lt;`. CI checks
+/// out two commits and never saw that line, so this puts a `<` and a `&` in every report on purpose, through the app's
+/// name, which all three Markdown reports and the PDF print.
+#[test]
+fn an_angle_bracket_and_an_ampersand_in_the_apps_own_text_reach_the_pdf_as_themselves() {
+    let (name, mut report) = reports().into_iter().next().unwrap();
+    report.app_name = "Notes <beta> & Co".into();
+    let security = sv_report::markdown::security(&report);
+    // The setup: the Markdown holds the escaped form, or this proves nothing about it.
+    assert!(
+        security.contains("Notes &lt;beta> & Co"),
+        "{name}: the app's name is no longer escaped where this looked"
+    );
+    let read = back::read(&pdf::render(&report)).unwrap();
+    let text = read.text();
+    assert!(text.contains("Notes <beta> & Co"), "{name}: {text:.400}");
+    assert!(!text.contains("&lt;"), "{name}: the PDF prints an entity");
+    // The lines security.md has and the PDF does not, as in the test above.
+    let security = security
+        .replace(&sv_report::pdf_line(&report), "")
+        .replace(&format!("in `{}`", sv_report::LOW_FINDINGS_FILE), "")
+        .replace(&sv_report::folder::markdown_line("security.md"), "");
+    let missing: Vec<String> = words(&security)
+        .difference(&words(&text))
+        .cloned()
+        .collect();
+    assert!(missing.is_empty(), "{name}: not in the PDF: {missing:?}");
 }
 
 #[test]
