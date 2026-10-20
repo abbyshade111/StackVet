@@ -99,7 +99,7 @@ pub(super) struct Flaws {
     /// With the switch on, the copy answers with a server error, as a crashed copy would.
     switch_crashes: bool,
     /// The kill switch is read once and cached before the setting, so it changes nothing.
-    ignores_kill_switch: bool,
+    pub(super) ignores_kill_switch: bool,
     /// With the switch on, the chat gives no answer at all.
     silent_when_off: bool,
     /// Signing in needs an account made through sign-up first.
@@ -111,9 +111,9 @@ pub(super) struct Flaws {
     /// The app calls the tool and never passes its result back to the model.
     mcp_drops_results: bool,
     /// Tool results go to the model whether or not they match the tool's declared schema.
-    mcp_unvalidated: bool,
+    pub(super) mcp_unvalidated: bool,
     /// Tool results go to the model without being screened for injected instructions.
-    mcp_unscreened: bool,
+    pub(super) mcp_unscreened: bool,
     /// The app calls the MCP tool once, and answers from what it kept after that.
     mcp_calls_once: bool,
     /// Its injection screen knows English only: the same attack translated or in base64 passes.
@@ -145,7 +145,7 @@ pub(super) struct Flaws {
     /// Its own time limit runs out, and it answers with the library's traceback.
     trace_on_timeout: bool,
     /// It runs the model's tool calls for as long as the model asks.
-    unbounded_tool_loop: bool,
+    pub(super) unbounded_tool_loop: bool,
     /// It sets no time limit on its tools: a message whose tool call is never answered is never
     /// answered (C9.1.1).
     waits_on_tool: bool,
@@ -207,7 +207,7 @@ pub(super) struct Flaws {
     /// It asks for a shape and uses the answer as it came, fitting or not.
     uses_bad_shape: bool,
     /// Not the app's behavior but its settings: the record tool is marked `read-only = true`.
-    tool_marked_read_only: bool,
+    pub(super) tool_marked_read_only: bool,
     /// It asks for a shape and fails, 500, on an answer that does not fit.
     crashes_on_bad_shape: bool,
     /// It asks for a shape, asks the model again when an answer does not fit, and runs into its
@@ -217,7 +217,7 @@ pub(super) struct Flaws {
 
 /// How the fake app writes its model calls and the injection to its output.
 #[derive(Default, Clone, Copy, PartialEq)]
-enum Logs {
+pub(super) enum Logs {
     /// Nothing at all.
     #[default]
     Nothing,
@@ -1225,7 +1225,7 @@ fn context<'a>(
 }
 
 /// The same, then its log read as the run reads the app's output.
-fn ask_and_read(flaws: Flaws, logs: Logs) -> Outcome {
+pub(super) fn ask_and_read(flaws: Flaws, logs: Logs) -> Outcome {
     let mut app = FakeChat {
         flaws,
         logs,
@@ -1770,7 +1770,7 @@ fn a_model_call_logged_with_the_signed_in_user_is_credited_with_its_session() {
     );
 }
 
-fn record_run(flaws: Flaws, tool: bool) -> Outcome {
+pub(super) fn record_run(flaws: Flaws, tool: bool) -> Outcome {
     signed_run(flaws, tool, false)
 }
 
@@ -3007,7 +3007,7 @@ fn counts_must_stand_as_numbers_of_their_own() {
 
 // Second witnesses, each of a different shape from the first.
 
-fn call_markers() -> LogMarkers {
+pub(super) fn call_markers() -> LogMarkers {
     LogMarkers {
         call: Some(Call {
             model: MODEL.into(),
@@ -3161,7 +3161,7 @@ fn per_minute(n: u32) -> sv_manifest::PolicySection {
     }
 }
 
-fn ask_limited(flaws: Flaws, stated: u32) -> Outcome {
+pub(super) fn ask_limited(flaws: Flaws, stated: u32) -> Outcome {
     let mut app = FakeChat {
         flaws,
         ..Default::default()
@@ -3824,7 +3824,7 @@ fn mcp_section() -> AiSection {
     s
 }
 
-fn ask_mcp(flaws: Flaws) -> Outcome {
+pub(super) fn ask_mcp(flaws: Flaws) -> Outcome {
     let mut app = FakeChat {
         flaws,
         ..Default::default()
