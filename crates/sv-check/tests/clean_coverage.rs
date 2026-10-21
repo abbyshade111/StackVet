@@ -991,10 +991,14 @@ fn an_app_that_never_answers_the_cors_question_is_not_credited_with_checking_ori
 
 #[test]
 fn an_app_that_gets_it_wrong_is_not_also_credited() {
+    // No security header, and a cookie with no attributes: nothing it gets wrong is credited. Its cookie is 11 bytes,
+    // inside the 4096 a browser keeps, which is the one thing on the page it gets right (V3.3.5, backlog 0507), so
+    // that credit, and only that one, is earned. Until 21 October 2026 no check read anything this page passes, and
+    // this said nothing at all was credited.
     let bare = response("home", 200, &[("Set-Cookie", "session=abc")], "hi");
     let verified = probes::verified(&[bare]);
     let ids = verified_ids(&verified);
-    assert!(ids.is_empty(), "{ids:?}");
+    assert_eq!(ids, ["probe.cookie-too-large"], "{ids:?}");
 }
 
 // ---- the rule that holds across all of them ----
