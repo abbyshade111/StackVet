@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import periods as P  # noqa: E402  (the three periods and their boundaries)
+import periods as P  # noqa: E402  (the two periods and their boundaries)
 
 ROOT = P.ROOT
 PAPER = ROOT / "docs" / "paper"

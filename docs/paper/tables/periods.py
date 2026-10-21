@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-"""Splits the paper's data into its three periods (backlog 0568, part 2), as the owner answered on 15 October 2026:
-the paper is not written yet, so its 4 October cut-off is arbitrary; break the timeline at three milestones, build
-every table per period, and combined tables for everything up to the day of the build.
+"""Splits the paper's data into its two periods (backlog 0568, part 2), as the owner answered on 15 October 2026 and
+narrowed on 21 October 2026: the paper is not written yet, so its 4 October cut-off is arbitrary; break the timeline
+where `sv` replaced v1, compare version 1 with StackVet as it is today, build every table per period, and combined
+tables for everything up to the day of the build.
 
     python3 docs/paper/tables/periods.py            # writes the tables, the splits, and figure-periods.html
     python3 docs/paper/tables/periods.py --check    # says which of them differ from what is committed
 
-The three periods, each boundary read from git, never typed:
-  1. version 1: from the first commit of this history (18 September 2026; the history before it was destroyed,
-     CORRECTIONS.md) to the tag `v1-final`, the last commit of v1 on main;
-  2. version 2: from the merge that promoted `sv` to the top of the repository (the first commit on main to hold
-     "Promote sv to the top of the repository; v1 moves to the v1 branch") to the rename;
-  3. StackVet: from the merge that finished the rename (the first commit on main to hold "StackVet step 3: ...",
-     ADR-062) to the commit the tables are built at.
+The two periods, each boundary read from git, never typed:
+  1. version 1 (SecureVibe): from the first commit of this history (18 September 2026; the history before it was
+     destroyed, CORRECTIONS.md) to the tag `v1-final`, the last commit of v1 on main;
+  2. StackVet: from the merge that promoted `sv` to the top of the repository (the first commit on main to hold
+     "Promote sv to the top of the repository; v1 moves to the v1 branch") to the commit the tables are built at.
+     The rename to StackVet (the first commit on main to hold "StackVet step 3: ...", ADR-062, 8 October) is inside
+     it; until 21 October 2026 it began a third period, and the owner chose to fold the two together.
 
 A row's period is the one its date (Eastern time) falls in; a day the boundary falls in counts from the boundary's
 own time. Reads git and the repository's own files, with Python's standard library; writes under docs/paper/ only.
@@ -38,7 +39,6 @@ PROMOTION = "Promote sv to the top of the repository; v1 moves to the v1 branch"
 RENAME = "StackVet step 3: "
 NAMES = {
     "v1": "version 1",
-    "v2": "version 2",
     "stackvet": "StackVet",
 }
 
@@ -104,7 +104,7 @@ def first_on_main(sha, main):
 
 
 def boundaries(until):
-    """Main's own line, oldest first, and the three periods as (key, first commit, its time, last commit, its time)."""
+    """Main's own line, oldest first, and the two periods as (key, first commit, its time, last commit, its time)."""
     main = []
     for line in git("log", "--first-parent", "--format=%H\t%cI\t%s", until).splitlines():
         sha, iso, subject = line.split("\t", 2)
@@ -113,13 +113,9 @@ def boundaries(until):
     v1_end = git("rev-parse", "v1-final^{commit}").strip()
     v1_end_at = when(git("log", "-1", "--format=%cI", v1_end))
     promotion = first_on_main(commit_of(PROMOTION, until), main)
-    rename = first_on_main(commit_of(RENAME, until), main)
-    before = {sha: i for i, (sha, _, _) in enumerate(main)}
-    last_before_rename = main[before[rename[0]] - 1]
     return main, [
         ("v1", main[0][0], main[0][1], v1_end, v1_end_at),
-        ("v2", promotion[0], promotion[1], last_before_rename[0], last_before_rename[1]),
-        ("stackvet", rename[0], rename[1], main[-1][0], main[-1][1]),
+        ("stackvet", promotion[0], promotion[1], main[-1][0], main[-1][1]),
     ]
 
 
@@ -267,13 +263,13 @@ def periods_table(main, periods, days_rows, adrs, until):
         mine = [r for r in days_rows if key == "all" or r[1] == key]
         how = {
             "v1": "from the first commit of this history to the tag v1-final",
-            "v2": f"from the merge that holds \"{PROMOTION}\" to the commit before the rename",
-            "stackvet": f"from the merge that holds \"{RENAME.strip()} ...\" (ADR-062) to the build",
+            "stackvet": f"from the merge that holds \"{PROMOTION}\" to the build; the rename to StackVet "
+            f"(\"{RENAME.strip()} ...\", ADR-062) is inside it",
             "all": "every period",
         }[key]
         end = mine[-1] if mine else None
         rows.append([
-            key, NAMES.get(key, "all three"), short(first), stamp(first_at), short(last), stamp(last_at),
+            key, NAMES.get(key, "both"), short(first), stamp(first_at), short(last), stamp(last_at),
             len({r[0] for r in mine}), sum(r[2] for r in mine), sum(r[3] for r in mine), sum(r[4] for r in mine),
             end[5] if end else "", end[6] if end else "",
             sum(1 for a in adrs if a[4] == key) if key != "all" else len(adrs),
@@ -321,10 +317,10 @@ def generated_dates():
     }
 
 
-# --- The figure: the three periods side by side, and all of them. -------------------------------------------------
+# --- The figure: the two periods side by side, and both together. -------------------------------------------------
 
 
-COLORS = {"v1": "#7a5195", "v2": "#ef5675", "stackvet": "#2f7ed8"}
+COLORS = {"v1": "#7a5195", "stackvet": "#2f7ed8"}
 
 
 def tests_said(rust, typescript):
@@ -359,14 +355,14 @@ def figure(days_rows, periods_rows, until):
         for r in periods_rows
     )
     legend = " ".join(
-        f'<span><i style="background:{COLORS[k]}"></i>{NAMES[k]}</span>' for k in ("v1", "v2", "stackvet")
+        f'<span><i style="background:{COLORS[k]}"></i>{NAMES[k]}</span>' for k in ("v1", "stackvet")
     )
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The three periods</title>
+<title>The two periods</title>
 <style>
 :root {{ --ink: #1d1d1f; --muted: #5f6368; --rule: #d9d9de; --page: #ffffff; }}
 @media (prefers-color-scheme: dark) {{ :root {{ --ink: #ececf1; --muted: #a8adb4; --rule: #3a3b40; --page: #17181b; }} }}
@@ -378,7 +374,7 @@ table {{ border-collapse: collapse; width: 100%; font-size: 13px; }} td, th {{ b
 </style>
 </head>
 <body>
-<h1>The three periods</h1>
+<h1>The two periods</h1>
 <p class="legend">{legend} <span>— the line: tests in the tree (Rust and TypeScript) at each day's end</span></p>
 <svg viewBox="0 0 {width} {height}" role="img" aria-label="Commits per day, colored by period, with the tests in the tree as a line">
 {''.join(bars)}

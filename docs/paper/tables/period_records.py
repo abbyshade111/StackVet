@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Redraws, per period, the thirteen hand-drawn figures that `period_figures.py` does not (backlog 0568, part 4), as the
-owner answered on 15 October 2026: each of the paper's 19 figures with a panel per period (version 1, version 2,
-StackVet) and the combined view where it has one. The figures of the 4 October cut-off stay as they were; each one
+owner answered on 15 October 2026: each of the paper's 19 figures with a panel per period (version 1 and StackVet, the
+owner's two of 21 October 2026, StackVet from the promotion of 26 September) and the combined view where it has one. The figures of the 4 October cut-off stay as they were; each one
 redrawn here is a file of its own beside it, `figure-<name>-by-period.html`.
 
     python3 docs/paper/tables/period_records.py            # writes the tables it reads from git, then the figures
@@ -399,8 +399,8 @@ def top10(rows_, faults):
         "The figure of the cut-off (<code>figure-top10.html</code>) placed each weakness in StackVet's own code, and "
         "each verdict that failed open, through a CWE on the category's 2025 list, to 4 October. Here those same rows, "
         "each placed in the period its record dates it to. Nothing found since the cut-off has been placed through a "
-        "CWE: the faults ledger since has a kind for each fault, not a CWE, so the StackVet period, and version 2 "
-        "after 4 October, are counts of the ledger's <code>security</code> and <code>fail-open</code> faults, without "
+        "CWE: the faults ledger since has a kind for each fault, not a CWE, so the StackVet period after 4 October is "
+        "a count of the ledger's <code>security</code> and <code>fail-open</code> faults, without "
         "a category. Placing them is a reading of each fault, not done here. " + PERIOD_NOT_VERSION,
         "<h2>1. Weaknesses in the project's own code, to the cut-off</h2>" + period_legend()
         + grouped_table(cats, counts, "Own-code weaknesses by category and period") + undated_note(undated, "weaknesses")
@@ -527,12 +527,13 @@ def how_found(rows_, faults, tests):
                            (str(len(v1)), "found by a person trying to use it: "
                             + ", ".join(f"{esc(b)} {n}" for b, n in who.most_common()))])
                     + '<p class="note">v1\'s record of 18 to 20 September, unchanged.</p>')
-        if k == "v2":
-            return none_here("The cut-off's record of problems found by use in version 2 is the usability figure's "
-                             "(<code>figure-usability-by-period.html</code>). From the cut-off on, the faults ledger:") \
-                + simple_table(["found by", "faults since the cut-off"],
-                               [[g, since[g]["v2"]] for g in since], "Faults in version 2 since the cut-off")
-        return simple_table(["found by", "faults"], [[g, since[g][k]] for g in since], f"Faults in {NAMES[k]}") \
+        # StackVet runs from the promotion of 26 September: its record of problems found by use before the 4 October
+        # cut-off is the usability figure's, and the faults ledger counts from the cut-off on, the whole period's.
+        return none_here("Before the 4 October cut-off, this period's record of problems found by use is the usability "
+                         "figure's (<code>figure-usability-by-period.html</code>). From the cut-off on, the faults "
+                         "ledger:") \
+            + simple_table(["found by", "faults since the cut-off"], [[g, since[g][k]] for g in since],
+                           f"Faults in {NAMES[k]} since the cut-off") \
             + f'<p class="note">{int(end[k]["tests_rust_at_end"]):,} Rust tests in the tree at the end.</p>'
 
     return page(
@@ -612,7 +613,8 @@ def trials(all_trials):
     return page(
         "Prompt Trials by Period", "The prompt and loop trials, by period",
         "The figure of the cut-off (<code>figure-trials.html</code>, made by <code>trials/make_figure.py</code>) drew "
-        "the eleven trials of 5 to 8 October, all in version 2. Here they are with the trials since, each placed by "
+        "the eleven trials of 5 to 8 October, all in the StackVet period, before the rename. Here they are with the "
+        "trials since, each placed by "
         "its date. The pasted-prompt comparisons of the cut-off figure stay there: no trial since has one that reached "
         "a reading.",
         period_panels(panel),
@@ -641,7 +643,7 @@ def cost(all_trials):
     return page(
         "Cost by Period", "What the AI cost, by period",
         "The figure of the cut-off (<code>figure-cost.html</code>) is mostly v1's record: what its runs cost, where "
-        "the money went, and what made the work faster. From version 2 on, <code>sv</code> makes no AI calls of its "
+        "the money went, and what made the work faster. From the StackVet period on, <code>sv</code> makes no AI calls of its "
         "own; the money spent is the AI coding tool's, building apps in the trials. The speed-ups of the cut-off "
         "figure have no record since and are not split.",
         period_panels(panel),
@@ -706,19 +708,20 @@ def study(study_rows, three):
         if k == "v1":
             return none_here("No study in this period: v1's comparison of 20 September is "
                              "<code>figure-three-arms-by-period.html</code>.")
-        if k == "v2":
-            return ("<p>The comparison study, run 11, 3 October: five AI-built apps under one <code>sv</code>.</p>"
-                    + simple_table(["", *apps], [[esc(m), *[esc(cell.get((a, m), "")) for a in apps]]
-                                                 for m in measures], "Where the findings are"))
-        return three_tool_panel(three, "No re-run of the study. The nearest record is a different experiment: the "
-                                       "three-tool trial of 14 October, three apps built from one prompt in three "
-                                       "AI coding tools, each checked by <code>sv</code>.")
+        # The study of 3 October, before the rename, and the one record since of apps checked by `sv`.
+        return ("<p>The comparison study, run 11, 3 October, before the rename: five AI-built apps under one "
+                "<code>sv</code>.</p>"
+                + simple_table(["", *apps], [[esc(m), *[esc(cell.get((a, m), "")) for a in apps]]
+                                             for m in measures], "Where the findings are")
+                + three_tool_panel(three, "No re-run of the study. The nearest record since is a different "
+                                          "experiment: the three-tool trial of 14 October, three apps built from one "
+                                          "prompt in three AI coding tools, each checked by <code>sv</code>."))
 
     return page(
         "Five Apps Compared, by Period", "Apps checked by sv, by period",
-        "The figure of the cut-off (<code>figure-study.html</code>) is one study, run 11 of 3 October, in version 2. "
-        "It stays one study; the StackVet panel shows the one record since of apps checked by <code>sv</code>, named "
-        "as the different experiment it is.",
+        "The figure of the cut-off (<code>figure-study.html</code>) is one study, run 11 of 3 October, early in the "
+        "StackVet period. It stays one study; the StackVet panel shows it, then the one record since of apps checked "
+        "by <code>sv</code>, named as the different experiment it is.",
         period_panels(panel),
         "Sources: <code>study.csv</code> (run 11, the lens of where the findings are) and "
         "<code>tables/three_tool_reports.csv</code>.")
@@ -737,23 +740,22 @@ def three_arms(req, study_rows, three):
                     "status.</p>" + simple_table(["arm", *statuses, "all"],
                                                  [[esc(a), *[c[s] for s in statuses], sum(c.values())]
                                                   for a, c in arms.items()], "The three arms"))
-        if k == "v2":
-            req_rows = [r for r in study_rows if r["run"] == "run-11" and r["lens"] == "requirements"
-                        and r["measure"] in STUDY_STATUSES]
-            apps = list(dict.fromkeys(r["app"] for r in req_rows))
-            ms = list(dict.fromkeys(r["measure"] for r in req_rows))
-            cell = {(r["app"], r["measure"]): r["value"] for r in req_rows}
-            return ("<p>No three-arm comparison. The nearest record: the study's requirement statuses, five apps "
-                    "under <code>sv</code>'s blank manifest, 3 October.</p>"
-                    + simple_table(["", *apps], [[esc(m), *[esc(cell.get((a, m), "")) for a in apps]] for m in ms],
-                                   "The study's requirement statuses"))
-        return three_tool_panel(three, "No three-arm comparison. The nearest record: the three-tool trial's reports, "
-                                       "like for like, 14 October.")
+        # The study's statuses of 3 October, before the rename, then the three-tool trial's reports since.
+        req_rows = [r for r in study_rows if r["run"] == "run-11" and r["lens"] == "requirements"
+                    and r["measure"] in STUDY_STATUSES]
+        apps = list(dict.fromkeys(r["app"] for r in req_rows))
+        ms = list(dict.fromkeys(r["measure"] for r in req_rows))
+        cell = {(r["app"], r["measure"]): r["value"] for r in req_rows}
+        return ("<p>No three-arm comparison. The nearest records: the study's requirement statuses, five apps "
+                "under <code>sv</code>'s blank manifest, 3 October, before the rename,</p>"
+                + simple_table(["", *apps], [[esc(m), *[esc(cell.get((a, m), "")) for a in apps]] for m in ms],
+                               "The study's requirement statuses")
+                + three_tool_panel(three, "and the three-tool trial's reports, like for like, 14 October."))
 
     return page(
         "Three Arms, by Period", "What each check could verify, by period",
         "The figure of the cut-off (<code>figure-three-arms.html</code>) is v1's comparison of 20 September. It is "
-        "kept whole in its period; the later panels show the nearest records of requirements by status, each a "
+        "kept whole in its period; the StackVet panel shows the nearest records of requirements by status, each a "
         "different experiment and named as one.",
         period_panels(panel),
         "Sources: <code>requirements.csv</code>, <code>study.csv</code>, and <code>tables/three_tool_reports.csv</code>.")
