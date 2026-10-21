@@ -152,6 +152,9 @@
   "V2.2.1": [
    "signed-in"
   ],
+  "V2.3.2": [
+   "signed-in"
+  ],
   "V2.4.1": [
    "signed-in"
   ],
@@ -1407,6 +1410,14 @@
     "id": "probe.flow-step-skipped",
     "run": "Signed in",
     "looks_for": "A step that can be skipped is a check that can be skipped: the payment before the order, the confirmation before the change, the approval before the release.",
+    "finding_only": false
+   }
+  ],
+  "V2.3.2": [
+   {
+    "id": "probe.business-limit-not-held",
+    "run": "Signed in",
+    "looks_for": "A limit the app's own documentation states is not held: one person can do more than the rules allow, whatever the limit is there to protect (a free plan's allowance, stock, a fair share).",
     "finding_only": false
    }
   ],

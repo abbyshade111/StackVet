@@ -52,3 +52,8 @@ databases need no transaction).
 **V2.2.1 built, 20 October 2026** (ADR-053, Later): `signed_in/input_limits.rs`, the 100,000-character text and the
 ranges `limits` declares, each credited in part only as ADR-053's entry says. Left: the V2.3.2 limit and the V2.3.3
 pointer to handlers changing several tables.
+
+**V2.3.2 built, 21 October 2026** (ADR-053, Later): `[policy] limit`, tried one past `at-most` as the first user, the
+first `at-most` its control; held is *checked in part*, not held a finding, and a rate limiter's answer never read as
+the limit. Left: the V2.3.3 pointer to handlers changing several tables.
+

@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 131 can be checked, 61 can only be found failing, 11 where a check helps but a person decides, 100 the owner answers, and 42 with no check yet.
+345 requirements: 132 can be checked, 61 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 42 with no check yet.
 
 ### Level 1 (70 requirements, 45 can be checked, 14 can only be found failing)
 
@@ -190,7 +190,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 76 can be checked, 35 can only be found failing)
+### Level 2 (183 requirements, 77 can be checked, 35 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -223,7 +223,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V2.1.2** Verify that the application's documentation defines how to validate the logical and contextual consistency of combined data items, such as checking that suburb and ZIP code match. | The owner answers | Asked of the owner: a section in the security notes; `sv` shows where to look (`locate.validation-rules`) |
 | **V2.1.3** Verify that expectations for business logic limits and validations are documented, including both per-user and globally across the application. | The owner answers | Asked of the owner: a section in the security notes; `sv` shows where to look (`locate.availability-brakes`) |
 | **V2.2.3** Verify that the application ensures that combinations of related data items are reasonable according to the pre-defined rules. | The owner answers | Asked of the owner: a check by hand |
-| **V2.3.2** Verify that business logic limits are implemented per the application's documentation to avoid business logic flaws being exploited. | The owner answers | Asked of the owner: a check by hand |
+| **V2.3.2** Verify that business logic limits are implemented per the application's documentation to avoid business logic flaws being exploited. | Can be checked | Signed in: `probe.business-limit-not-held`, if it fails: A limit the app's own documentation states is not held: one person can do more than the rules allow, whatever the limit is there to protect (a free plan's allowance, stock, a fair share). (only ever in part) |
 | **V2.3.3** Verify that transactions are being used at the business logic level such that either a business logic operation succeeds in its entirety or it is rolled back to the previous correct state. | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.transactions`) |
 | **V2.3.4** Verify that business logic level locking mechanisms are used to ensure that limited quantity resources (such as theater seats or delivery slots) cannot be double-booked by manipulating the application's logic. | A check helps; a person decides | Signed in: `probe.action-done-twice`, if it fails: Two requests arriving together can both take the one thing there was: the last seat is booked twice, a one-time code pays out twice. Anybody can do it on purpose by sending the same request several times at once. (only ever in part) |
 | **V2.4.1** Verify that anti-automation controls are in place to protect against excessive calls to application functions that could lead to data exfiltration, garbage-data creation, quota exhaustion, rate-limit breaches, denial-of-service, or overuse of costly resources. | Can be checked | Signed in: `probe.create-rate-unlimited`, if it fails: One person, or a script, can create records as fast as it can send them: the app fills with junk, its storage and any per-record costs run up, and others are slowed down. (only ever in part) |

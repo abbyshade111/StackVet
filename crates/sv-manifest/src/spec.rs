@@ -384,6 +384,9 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # product or project name. The sign-up probe tries a password made of the first one of at least
 # four letters, and the app should refuse it.
 # context-words = ["myapp", "myorganization"]
+# limit = { name = "projects per account", at-most = 3, path = "/projects", form = { title = "{marker}" } }
+#   A business limit your documentation states (V2.3.2): the signed-in run makes `at-most` of them, then one more.
+#   The extra one going through is a finding; it refused (not a 429 from a rate limiter) is the limit seen held.
 
 # How the app is built. These are the questions no tool can settle, so a person has to answer them.
 # Each one is "yes", "no", "not-sure", or "planned", `where` names the file that does it, and `by` says who

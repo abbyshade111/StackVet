@@ -156,6 +156,12 @@ pub(super) struct FakeApp {
     pub(super) longest_note: Option<usize>,
     /// Refuses a note whose `priority` is outside this range, both ends allowed (V2.2.1, backlog 0489).
     pub(super) priority_range: Option<(i64, i64)>,
+    /// Refuses with 409 a project past this many of one user's own (V2.3.2, backlog 0489); `None` takes any number.
+    pub(super) most_projects: Option<usize>,
+    /// The status the projects limit refuses with: 409 when `None`.
+    pub(super) projects_limit_status: Option<u16>,
+    /// The projects made so far, by owner: a resource of their own, which no other check makes.
+    projects: Vec<String>,
     /// The `title`s of the uploads so far.
     upload_titles: std::collections::BTreeSet<String>,
     /// Refuses every upload with 403 once it holds this many.
@@ -3243,6 +3249,26 @@ impl FakeApp {
                     self.deleted_notes.insert(n);
                 }
                 Self::respond(303, vec![("Location", format!("/notes/{n}"))], "")
+            }
+            ("POST", "/projects") => {
+                let Some(owner) = user else {
+                    return Some(Self::respond(302, vec![("Location", "/login".into())], ""));
+                };
+                if !self.flaws.no_csrf_check && (foreign || !token_ok) {
+                    return Some(Self::respond(403, vec![], "forged"));
+                }
+                if self.most_projects.is_some_and(|most| {
+                    self.projects.iter().filter(|o| **o == owner).count() >= most
+                }) {
+                    return Some(Self::respond(
+                        self.projects_limit_status.unwrap_or(409),
+                        vec![],
+                        "you have as many projects as your plan allows",
+                    ));
+                }
+                self.projects.push(owner);
+                let next = format!("/projects/{}", self.projects.len());
+                Self::respond(303, vec![("Location", next)], "")
             }
             ("POST", "/notes") => {
                 let Some(owner) = user else {
