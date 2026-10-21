@@ -60,6 +60,7 @@ health = "/"              # a path that returns 200 once the app is up
 # start = "/login/google"   # the path that sends the browser to the provider to sign in
 # private = "/account"      # a page only a signed-in person sees
 # backchannel-logout = "/backchannel-logout"   # only if the provider can end sessions here (OIDC back-channel logout)
+# logout = { path = "/logout", form = { csrf_token = "{csrf}" } }   # signs out of a sign-in through the provider (V7.4.1)
 
 # [stack.run.ai]
 # Only if the app has a feature that sends what people type to an AI model. For the run, the app is

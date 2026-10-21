@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: parts B and F wait on a sign-out for each way of signing in, which the owner chose on 20 October 2026 to add to stackvet.toml
+**Status:** done, 21 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -29,7 +29,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0370-the-made-up-session-on-every-listed-private-page-12-october.md`): the made-up session is tried on
    every listed private page, and its credit is whole only when two or more were tried and all refused.
-   **Part status:** claimed by claude/backlog-work, 20 October 2026
+   **Part status:** done, 21 October 2026
 3. **C. Each form, flow, and connection.** Cross-site requests tried on each changing route the app answers, each
    step of a flow, and each WebSocket path, not one request.
    **Scope of this claim (12 October 2026):** the cross-site check (`probe.cross-site-request-accepted`, V3.5.1,
@@ -119,7 +119,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-097; `docs/design/0375-the-typed-text-check-on-every-text-form-12-october-2026.md`):
    `browser.text-forms` names several text forms; each is typed into, and the credit is whole only when every one is
    shown as text.
-   **Part status:** claimed by claude/backlog-work, 20 October 2026
+   **Part status:** done, 21 October 2026 (its last step, storage seen cleared after a sign-in through the provider, moved to backlog 0629, at the owner's word)
 7. **G. Each operation the requirement names.** Phone, two-factor, and recovery changes beside the email change
    (V7.5.1); password change beside sign-up for the password checks; both TOTP and an emailed code where both
    exist (V6.5.1, V6.5.5); one manifest key per operation.
@@ -150,3 +150,8 @@ by speaking for what its requirement names. One part per group of the inventory 
 **The board, 15 October 2026:** the parts left (B, D, F) wait on the manifest naming each way of signing in and more than one upload route. B can now use the sign-in pathways list 0491 added to stackvet.toml; D and F still wait. 0232 is set aside on the board until a session takes B with the pathways list, so honesty can work the one queue (the owner's choice of 15 October to run one session).
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): D's manifest change exists (`upload` as a list, df548673, 16 October), and B judges a sign-in through another service too (b8e89fe9). **The owner's choices, 20 October 2026:** stackvet.toml gains a sign-out for each way of signing in (under `[stack.run.oidc]` and each pathway), so the sign-out (V7.4.1) and storage-after-sign-out (V14.3.1, part F) checks run after every sign-in; a manifest change, recorded when built (ADR-053, ADR-097). An API key and a magic link cannot be driven by a run, and their credits stay *checked in part* for good. The board's note of 15 October above is overtaken.
+
+**Parts B and D done, 21 October 2026** (ADR-053, Later). B: `[stack.run.oidc] logout`, and the sign-out check
+(V7.4.1) after a sign-in through the provider, credited in part. D: the uploaded SVG carries four ways of running code.
+F's last step needs the browser to sign in through the provider, and is backlog 0629.
+
