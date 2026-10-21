@@ -3856,6 +3856,12 @@
   ],
   "V16.5.4": [
    {
+    "id": "config.last-resort-error-handler",
+    "run": "Reads the code",
+    "looks_for": "A last-resort error handler defined in the app's code (Node's `process.on('uncaughtException')`, Express's four-argument error middleware, a handler for every `Exception` in Flask or FastAPI, Django's `handler500`, `rescue_from StandardE...",
+    "finding_only": false
+   },
+   {
     "id": "probe.app-stopped-during-questions",
     "run": "The running app",
     "looks_for": "Anyone who sends the same request can stop the app for everyone, as often as they like, and the error that did it may never reach the logs.",

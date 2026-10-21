@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 131 can be checked, 62 can only be found failing, 10 where a check helps but a person decides, 100 the owner answers, and 42 with no check yet.
+345 requirements: 131 can be checked, 61 can only be found failing, 11 where a check helps but a person decides, 100 the owner answers, and 42 with no check yet.
 
 ### Level 1 (70 requirements, 45 can be checked, 14 can only be found failing)
 
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 10 can be checked, 13 can only be found failing)
+### Level 3 (92 requirements, 10 can be checked, 12 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -622,7 +622,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 | Requirement | Coverage | Checks |
 |---|---|---|
-| **V16.5.4** Verify that a "last resort" error handler is defined which will catch all unhandled exceptions. This is both to avoid losing error details that must go to log files and to ensure that an error does not take down the entire application process, leading to a loss of availability. | Can only be found failing | The running app: `probe.app-stopped-during-questions`, if it fails: Anyone who sends the same request can stop the app for everyone, as often as they like, and the error that did it may never reach the logs. (found failing only) |
+| **V16.5.4** Verify that a "last resort" error handler is defined which will catch all unhandled exceptions. This is both to avoid losing error details that must go to log files and to ensure that an error does not take down the entire application process, leading to a loss of availability. | A check helps; a person decides | Reads the code: `config.last-resort-error-handler`, looks for: A last-resort error handler defined in the app's code (Node's `process.on('uncaughtException')`, Express's four-argument error middleware, a handler for every `Exception` in Flask or FastAPI, Django's `handler500`, `rescue_from StandardError`, `@ControllerAdvice`, `UseExceptionHandler`, Go's `recover()`), shown as supporting evidence; that it catches every unhandled exception is not something files show<br>The running app: `probe.app-stopped-during-questions`, if it fails: Anyone who sends the same request can stop the app for everyone, as often as they like, and the error that did it may never reach the logs. (found failing only) |
 
 #### V17 WebRTC
 

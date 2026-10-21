@@ -625,6 +625,7 @@ def framework(path):
 # read it from: checks that only ever credit a requirement, and the configuration checks built
 # differently. Every other check's words are read from the code or data where the check is defined.
 DESCRIBED = {
+    "config.last-resort-error-handler": "A last-resort error handler defined in the app's code (Node's `process.on('uncaughtException')`, Express's four-argument error middleware, a handler for every `Exception` in Flask or FastAPI, Django's `handler500`, `rescue_from StandardError`, `@ControllerAdvice`, `UseExceptionHandler`, Go's `recover()`), shown as supporting evidence; that it catches every unhandled exception is not something files show",
     "config.template-engine-escapes": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was read; in part, since HTML put together by hand and output to other interpreters are not seen",
     "ast.weak-key-generation": "A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3",
     "config.session-timeout-differs-from-policy": "A session lifetime the code sets (SESSION_COOKIE_AGE, PERMANENT_SESSION_LIFETIME, an Express session's maxAge) longer than the one stackvet.toml's policy states",
