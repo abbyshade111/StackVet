@@ -180,6 +180,9 @@
    "tools",
    "opt-in"
   ],
+  "V3.3.5": [
+   "running"
+  ],
   "V3.4.1": [
    "production"
   ],
@@ -1549,6 +1552,14 @@
     "finding_only": false
    }
   ],
+  "V3.3.5": [
+   {
+    "id": "probe.cookie-too-large",
+    "run": "The running app",
+    "looks_for": "A browser keeps no cookie longer than 4096 bytes, name and value together: it drops it without a word, and whatever the app keeps in it (a session, a cart, a choice) is gone on the next page, for that person only.",
+    "finding_only": false
+   }
+  ],
   "V3.4.1": [
    {
     "id": "probe.no-hsts",
@@ -2820,6 +2831,14 @@
     "id": "ast.digest-compared-with-equals",
     "run": "Reads the code",
     "looks_for": "A signature is compared in a way that leaks how much of it was right",
+    "finding_only": true
+   }
+  ],
+  "V11.2.5": [
+   {
+    "id": "ast.check-passes-on-error",
+    "run": "Reads the code",
+    "looks_for": "A check answers \"yes\" when it fails",
     "finding_only": true
    }
   ],

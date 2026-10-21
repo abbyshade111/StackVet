@@ -38,6 +38,21 @@ pub(crate) use fixed::*;
 pub use html::*;
 use templates::*;
 
+/// A requirement a rule's finding cites too, only where the code its error handler guards matches (backlog 0507).
+///
+/// `except: return True` in a function that checks something is V16.5.3 wherever it is; it is V11.2.5 (a cryptographic
+/// module failing securely) only where what the `try` guards is a signature check, a MAC check, or a decryption. A
+/// citation is a claim, so the second is made only on that narrower match, and never credited by a clean run.
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AlsoCite {
+    pub requirement_ids: Vec<String>,
+    /// Why the narrower match is this requirement, in a sentence.
+    pub why: String,
+    /// Per language, what the body of the nearest `try` around the match must contain for the citation to be made.
+    pub guarded_patterns: BTreeMap<String, String>,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AstRule {
@@ -46,6 +61,9 @@ pub struct AstRule {
     pub severity: Severity,
     pub confidence: Confidence,
     pub requirement_ids: Vec<String>,
+    /// Requirements a finding cites as well, each on a narrower match (`AlsoCite`).
+    #[serde(default)]
+    pub also_cites: Vec<AlsoCite>,
     pub cwe: Vec<String>,
     pub description: String,
     pub impact: String,
@@ -304,6 +322,8 @@ struct Compiled {
     positions: BTreeMap<String, Vec<(regex::Regex, usize)>>,
     common_names: BTreeMap<String, Vec<(regex::Regex, regex::Regex)>>,
     by_hash: BTreeMap<String, Vec<(regex::Regex, regex::Regex)>>,
+    /// `also_cites`, each with its guarded patterns compiled.
+    also: Vec<(Vec<String>, BTreeMap<String, regex::Regex>)>,
 }
 
 pub struct AstRules {
@@ -530,6 +550,38 @@ impl AstRules {
                     );
                 }
             }
+            let mut also = Vec::new();
+            for cite in &rule.also_cites {
+                anyhow::ensure!(
+                    !cite.why.trim().is_empty() && !cite.requirement_ids.is_empty(),
+                    "rule {} cites more on a narrower match without saying what, or why",
+                    rule.id
+                );
+                if let Some(id) = cite
+                    .requirement_ids
+                    .iter()
+                    .find(|id| rule.requirement_ids.contains(id))
+                {
+                    anyhow::bail!(
+                        "rule {} cites {id} always and on a narrower match too",
+                        rule.id
+                    );
+                }
+                if let Some(language) = cite
+                    .guarded_patterns
+                    .keys()
+                    .find(|l| !queries.contains_key(*l))
+                {
+                    anyhow::bail!(
+                        "rule {} has a guardedPattern for {language} but no {language} query",
+                        rule.id
+                    );
+                }
+                also.push((
+                    cite.requirement_ids.clone(),
+                    compile_patterns(&cite.guarded_patterns, "guardedPattern")?,
+                ));
+            }
             for language in rule.looks_for_in.keys() {
                 anyhow::ensure!(
                     rule.queries.contains_key(language),
@@ -598,6 +650,7 @@ impl AstRules {
                 value_name,
                 argument,
                 safe_argument,
+                also,
                 keyword,
                 positions,
                 common_names,
@@ -1175,7 +1228,21 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                     line: node.start_position().row + 1,
                 },
                 secret: None,
-                requirement_ids: compiled.rule.requirement_ids.clone(),
+                requirement_ids: {
+                    let mut ids = compiled.rule.requirement_ids.clone();
+                    // The narrower citations, where what the nearest `try` guards matches (`AlsoCite`).
+                    if let Some(guarded) = guarded_text(node, source.as_bytes()) {
+                        for (more, patterns) in &compiled.also {
+                            if patterns
+                                .get(language)
+                                .is_some_and(|re| re.is_match(&guarded))
+                            {
+                                ids.extend(more.iter().cloned());
+                            }
+                        }
+                    }
+                    ids
+                },
                 cwe: compiled.rule.cwe.clone(),
                 description: if bound_parameters {
                     format!(
@@ -1258,6 +1325,25 @@ const FUNCTIONS: &[&str] = &[
     "function_item",
     "closure_expression",
 ];
+
+/// The code the nearest `try` around `node` guards: its body, without its handlers, so a call made in the `except` or
+/// `catch` is not read as one the handler answers for (`AlsoCite`). `None` outside a `try`.
+fn guarded_text(node: tree_sitter::Node, source: &[u8]) -> Option<String> {
+    let mut current = node.parent();
+    while let Some(n) = current {
+        if n.kind() == "try_statement" {
+            return n
+                .child_by_field_name("body")
+                .and_then(|body| body.utf8_text(source).ok())
+                .map(str::to_owned);
+        }
+        if FUNCTIONS.contains(&n.kind()) {
+            return None;
+        }
+        current = n.parent();
+    }
+    None
+}
 
 /// The name of the nearest function around `node` that has one: its own (`def verify_token`,
 /// `bool VerifyToken(…)`, C++'s `Auth::check` as `check`, Dart's through its signature), or, for
@@ -2558,3 +2644,6 @@ mod backup_codes_tests;
 
 #[cfg(test)]
 mod hand_rolled_tests;
+
+#[cfg(test)]
+mod also_cites_tests;

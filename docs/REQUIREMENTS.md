@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 130 can be checked, 61 can only be found failing, 10 where a check helps but a person decides, 100 the owner answers, and 44 with no check yet.
+345 requirements: 131 can be checked, 62 can only be found failing, 10 where a check helps but a person decides, 100 the owner answers, and 42 with no check yet.
 
 ### Level 1 (70 requirements, 45 can be checked, 14 can only be found failing)
 
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 9 can be checked, 12 can only be found failing)
+### Level 3 (92 requirements, 10 can be checked, 13 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -483,7 +483,7 @@ decided per app, from its `stackvet.toml` and its code.
 |---|---|---|
 | **V3.1.1** Verify that application documentation states the expected security features that browsers using the application must support (such as HTTPS, HTTP Strict Transport Security (HSTS), Content Security Policy (CSP), and other relevant HTTP security mechanisms). It must also define how the application must behave when some of these features are not available (such as warning the user or blocking access). | The owner answers | Asked of the owner: a section in the security notes |
 | **V3.2.3** Verify that the application avoids DOM clobbering when using client-side JavaScript by employing explicit variable declarations, performing strict type checking, avoiding storing global variables on the document object, and implementing namespace isolation. | No check yet | – |
-| **V3.3.5** Verify that when the application writes a cookie, the cookie name and value length combined are not over 4096 bytes. Overly large cookies will not be stored by the browser and therefore not sent with requests, preventing the user from using application functionality which relies on that cookie. | No check yet | – |
+| **V3.3.5** Verify that when the application writes a cookie, the cookie name and value length combined are not over 4096 bytes. Overly large cookies will not be stored by the browser and therefore not sent with requests, preventing the user from using application functionality which relies on that cookie. | Can be checked | The running app: `probe.cookie-too-large`, if it fails: A browser keeps no cookie longer than 4096 bytes, name and value together: it drops it without a word, and whatever the app keeps in it (a session, a cart, a choice) is gone on the next page, for that person only. (only ever in part) |
 | **V3.4.7** Verify that the Content-Security-Policy header field specifies a location to report violations. | Can be checked | The running app: `probe.csp-no-report`, if it fails: A Content-Security-Policy with nowhere to report blocks an attack silently: nobody learns it was tried, or that the policy is breaking a real page. |
 | **V3.4.8** Verify that all HTTP responses that initiate a document rendering (such as responses with Content-Type text/html), include the Cross‑Origin‑Opener‑Policy header field with the same-origin directive or the same-origin-allow-popups directive as required. This prevents attacks that abuse shared access to Window objects, such as tabnabbing and frame counting. | Can be checked | The running app: `probe.opener-policy-missing`, if it fails: Without it, a page the app's page opens — or one that opened it — keeps a handle to its window, which cross-window attacks use to steer it or to learn about it. |
 | **V3.5.6** Verify that JSONP functionality is not enabled anywhere across the application to avoid Cross-Site Script Inclusion (XSSI) attacks. | Can only be found failing | The running app: `probe.jsonp-enabled`, if it fails: JSONP wraps data in a call to a function the asker names, which any other site can load with a script tag — and with the visitor's cookies, so it reads what they can read. (found failing only) |
@@ -567,7 +567,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V11.1.3** Verify that cryptographic discovery mechanisms are employed to identify all instances of cryptography in the system, including encryption, hashing, and signing operations. | The owner answers | Asked of the owner: a design question |
 | **V11.1.4** Verify that a cryptographic inventory is maintained. This must include a documented plan that outlines the migration path to new cryptographic standards, such as post-quantum cryptography, in order to react to future threats. | The owner answers | Asked of the owner: a section in the security notes |
 | **V11.2.4** Verify that all cryptographic operations are constant-time, with no 'short-circuit' operations in comparisons, calculations, or returns, to avoid leaking information. | Can only be found failing | Reads the code: `ast.digest-compared-with-equals`, looks for: A signature is compared in a way that leaks how much of it was right (found failing only) |
-| **V11.2.5** Verify that all cryptographic modules fail securely, and errors are handled in a way that does not enable vulnerabilities, such as Padding Oracle attacks. | No check yet | – |
+| **V11.2.5** Verify that all cryptographic modules fail securely, and errors are handled in a way that does not enable vulnerabilities, such as Padding Oracle attacks. | Can only be found failing | Reads the code: `ast.check-passes-on-error`, looks for: A check answers "yes" when it fails (found failing only) |
 | **V11.3.4** Verify that nonces, initialization vectors, and other single-use numbers are not used for more than one encryption key and data-element pair. The method of generation must be appropriate for the algorithm being used. | Can only be found failing | Outside tools: gosec, 1 rule, its rules look for: an encryption IV or nonce fixed in the code, so it is reused (found failing only)<br>Outside tools: semgrep, 2 rules, its rules look for: an AES-GCM encryption nonce fixed in the code, so it is reused for every message; an encryption IV fixed in the code, so it is reused for every message (found failing only) |
 | **V11.3.5** Verify that any combination of an encryption algorithm and a MAC algorithm is operating in encrypt-then-MAC mode. | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.hmac`) |
 | **V11.5.2** Verify that the random number generation mechanism in use is designed to work securely, even under heavy demand. | No check yet | – |

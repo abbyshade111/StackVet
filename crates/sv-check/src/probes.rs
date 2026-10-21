@@ -490,6 +490,7 @@ pub fn evaluate(responses: &[ProbeResponse]) -> Vec<Finding> {
     let judged = pages(responses);
     out.extend(security_headers(&judged));
     out.extend(cookie_attributes(&judged));
+    out.extend(cookie_size(&judged));
     if let Some(cors) = find("cors") {
         out.extend(reflected_origin(cors));
     }
@@ -572,6 +573,7 @@ pub fn verified_with_routes(
             let more = match credit.check_id.as_str() {
                 id if id == SECURITY_HEADERS.rule_id
                     || id == COOKIE_ATTRIBUTES.rule_id
+                    || id == COOKIE_SIZE.rule_id
                     || id == CONTENT_TYPE.rule_id
                     || id == OPENER_POLICY.rule_id =>
                 {
@@ -597,6 +599,7 @@ fn name_credits(credits: Vec<crate::Verified>) -> Vec<crate::Verified> {
             let ids: Vec<String> = match credit.check_id.as_str() {
                 id if id == SECURITY_HEADERS.rule_id
                     || id == COOKIE_ATTRIBUTES.rule_id
+                    || id == COOKIE_SIZE.rule_id
                     || id == CONTENT_TYPE.rule_id
                     || id == OPENER_POLICY.rule_id =>
                 {
@@ -679,6 +682,21 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
             // The cookies of one or two pages a stranger sees, unless every named route was asked
             // too (ADR-053, Later; ADR-096).
             .in_part_if(!every_route),
+        );
+    }
+    // V3.3.5: in part always. The cookies a stranger's few pages set are not every cookie the app writes, and a
+    // cookie that grows with what is stored in it is long only once it holds enough (backlog 0507).
+    if home_judged && sets_a_cookie && cookie_size(&judged).is_none() {
+        out.push(
+            crate::Verified::new(
+                COOKIE_SIZE.rule_id,
+                COOKIE_SIZE.requirement_ids,
+                format!(
+                    "every cookie the app set on {names}{and_routes} is {COOKIE_MOST} bytes or fewer, \
+                     name and value together"
+                ),
+            )
+            .in_part(),
         );
     }
     if let Some(cors) = find("cors") {
@@ -1591,6 +1609,60 @@ fn cookie_attributes(pages: &[&ProbeResponse]) -> Option<Finding> {
     );
     found.requirement_ids = only_failing(COOKIE_ATTRIBUTES.requirement_ids, &failing);
     Some(found)
+}
+
+const COOKIE_SIZE: Rule = Rule {
+    rule_id: "probe.cookie-too-large",
+    confidence: Confidence::High,
+    // V3.3.5: a cookie's name and value together are not over 4096 bytes. No CWE names a cookie a browser drops.
+    requirement_ids: &["V3.3.5"],
+    cwe: &[],
+    impact: "A browser keeps no cookie longer than 4096 bytes, name and value together: it drops it without a word, and \
+             whatever the app keeps in it (a session, a cart, a choice) is gone on the next page, for that person only.",
+    fix: "Keep a short id in the cookie and the rest on the server, or split what it holds; never let a cookie grow \
+          with what a person adds.",
+};
+
+/// The most a browser keeps of one cookie, its name and value together (V3.3.5).
+const COOKIE_MOST: usize = 4096;
+
+/// A cookie longer than a browser keeps, name and value together (V3.3.5, backlog 0507).
+fn cookie_size(pages: &[&ProbeResponse]) -> Option<Finding> {
+    let mut problems = Vec::new();
+    let mut named: Vec<String> = Vec::new();
+    for page in pages {
+        let before = problems.len();
+        for (k, cookie) in &page.headers {
+            if k != "set-cookie" {
+                continue;
+            }
+            // The name and value are what comes before the first `;`; the attributes after it do not count.
+            let pair = cookie.split(';').next().unwrap_or("");
+            let (name, value) = pair.split_once('=').unwrap_or((pair, ""));
+            let (name, value) = (name.trim(), value.trim());
+            let length = name.len() + value.len();
+            if length > COOKIE_MOST {
+                problems.push(format!(
+                    "`{name}`, set by {}, is {length} bytes, name and value together, over the {COOKIE_MOST} a \
+                     browser keeps",
+                    page_name(page)
+                ));
+            }
+        }
+        if problems.len() > before {
+            named.push(page.id.clone());
+        }
+    }
+    if problems.is_empty() {
+        return None;
+    }
+    Some(finding_on(
+        named,
+        &COOKIE_SIZE,
+        "A cookie is longer than a browser keeps",
+        Severity::Low,
+        problems.join("; "),
+    ))
 }
 
 const CORS_ANY_ORIGIN: Rule = Rule {
@@ -2581,6 +2653,9 @@ fn csp_reporting(answers: &[&ProbeResponse]) -> Option<Finding> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod cookie_size_tests;
 
 #[cfg(test)]
 mod read_head_tests;
