@@ -435,6 +435,18 @@
       "notApplicableReason": "This app sends no push notification asking a person to approve signing in, so there are no such prompts to flood."
     },
     {
+      "scope": "V6.7",
+      "condition": "cryptographic-authenticator",
+      "source": "derived",
+      "notApplicableReason": "No passkey, security-key, or FIDO library is used, and the app asks for no client certificate, so the app checks no cryptographic sign-in itself; a sign-in service that offers passkeys checks them on its own side."
+    },
+    {
+      "scope": "V6.7",
+      "condition": "mtls",
+      "source": "derived",
+      "notApplicableReason": "No passkey, security-key, or FIDO library is used, and the app asks for no client certificate, so the app checks no cryptographic sign-in itself; a sign-in service that offers passkeys checks them on its own side."
+    },
+    {
       "scope": "V6.8",
       "condition": "oauth",
       "source": "claim",

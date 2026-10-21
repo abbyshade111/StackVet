@@ -216,6 +216,10 @@ conditions! {
     // V6.8.3 is about SAML assertions only; the oauth claim covers the rest of V6.8 (backlog 0500).
     Saml => "saml", Derived, "No SAML library is used, so there are no SAML assertions to replay.",
         "Does the app accept sign-ins through SAML?";
+    // Section V6.7 is about passkeys, security keys, and certificates the app checks itself; it applied to every app
+    // with sign-in (backlog 0624, part 3). A client certificate is the `mtls` condition, OR-ed with this at V6.7.
+    CryptographicAuthenticator => "cryptographic-authenticator", Derived, "No passkey, security-key, or FIDO library is used, and the app asks for no client certificate, so the app checks no cryptographic sign-in itself; a sign-in service that offers passkeys checks them on its own side.",
+        "Does the app check passkeys or security keys (WebAuthn or FIDO) itself?";
 }
 
 impl<'de> Deserialize<'de> for Condition {

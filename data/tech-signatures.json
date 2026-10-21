@@ -523,6 +523,82 @@
       }
     },
     {
+      "condition": "cryptographic-authenticator",
+      "note": "Checking a passkey or a security key's answer is nearly always a library's work, on the server. One written by hand on a cryptography library is not seen here, and V6.7 would be called not applicable; a sign-in service that offers passkeys (Auth0, Clerk, Firebase, Cognito, and the like) checks them on its own side, which is not this app's code. Client certificates are the mtls condition, OR-ed with this one at V6.7.",
+      "packages": {
+        "npm": [
+          "@simplewebauthn/server",
+          "fido2-lib",
+          "@passwordless-id/webauthn",
+          "@webauthn/server"
+        ],
+        "Python": [
+          "webauthn",
+          "py-webauthn",
+          "fido2",
+          "django-otp-webauthn"
+        ],
+        "Ruby": [
+          "webauthn"
+        ],
+        "PHP": [
+          "web-auth/webauthn-lib",
+          "web-auth/webauthn-framework",
+          "lbuchs/webauthn"
+        ],
+        "Go": [
+          "github.com/go-webauthn/webauthn",
+          "github.com/duo-labs/webauthn"
+        ],
+        "Java (Maven)": [
+          "webauthn-server-core",
+          "webauthn4j-core"
+        ],
+        "Java (Gradle)": [
+          "webauthn-server-core",
+          "webauthn4j-core"
+        ]
+      },
+      "source": {
+        "python": [
+          "import webauthn",
+          "from webauthn",
+          "from fido2"
+        ],
+        "javascript": [
+          "@simplewebauthn/server",
+          "fido2-lib",
+          "@passwordless-id/webauthn"
+        ],
+        "typescript": [
+          "@simplewebauthn/server",
+          "fido2-lib",
+          "@passwordless-id/webauthn"
+        ],
+        "ruby": [
+          "WebAuthn::"
+        ],
+        "php": [
+          "Webauthn\\"
+        ],
+        "go": [
+          "go-webauthn/webauthn",
+          "duo-labs/webauthn"
+        ],
+        "java": [
+          "com.yubico.webauthn",
+          "webauthn4j"
+        ],
+        "kotlin": [
+          "com.yubico.webauthn",
+          "webauthn4j"
+        ],
+        "csharp": [
+          "Fido2NetLib"
+        ]
+      }
+    },
+    {
       "condition": "websockets",
       "note": "Some frameworks ship WebSocket support in their standard library, so source is scanned too.",
       "packages": {
