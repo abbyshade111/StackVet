@@ -38,6 +38,7 @@ pub mod hand;
 pub mod hosted_rules;
 pub mod human;
 pub mod junit;
+pub mod last_resort;
 pub mod launch;
 pub mod level_hints;
 pub mod live_tls;
