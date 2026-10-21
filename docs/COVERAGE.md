@@ -47,7 +47,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 48 | 96 |
+| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 64 | 80 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 2 | 63 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -90,21 +90,21 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 |---|---|---|---|---|---|---|
 | V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 4 | 5 |
 | V2 Validation and Business Logic | 13 | 3 | 2 | 2 | 6 | 2 |
-| V3 Web Frontend Security | 31 | 23 | 19 | 0 | 1 | 7 |
+| V3 Web Frontend Security | 31 | 23 | 19 | 0 | 2 | 6 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 1 | 5 |
 | V5 File Handling | 13 | 8 | 8 | 1 | 1 | 3 |
-| V6 Authentication | 47 | 26 | 16 | 2 | 6 | 13 |
+| V6 Authentication | 47 | 26 | 16 | 2 | 9 | 10 |
 | V7 Session Management | 19 | 15 | 13 | 0 | 3 | 1 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 5 | 3 |
 | V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 | 0 |
-| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 0 | 26 |
+| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 7 | 19 |
 | V11 Cryptography | 24 | 13 | 7 | 0 | 4 | 7 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 0 | 1 |
 | V13 Configuration | 21 | 11 | 3 | 1 | 5 | 4 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 3 | 4 |
 | V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 5 | 3 |
 | V16 Security Logging and Error Handling | 17 | 14 | 11 | 0 | 3 | 0 |
-| V17 WebRTC | 12 | 0 | 0 | 0 | 0 | 12 |
+| V17 WebRTC | 12 | 0 | 0 | 0 | 5 | 7 |
 
 ## ASVS 5.0 requirement by requirement
 
