@@ -345,6 +345,21 @@
       "id": "V10.7.3",
       "title": "People can review, change, and revoke what they consented to",
       "how": "Sign in to the authorization server as a test user who has allowed a client app. Look for the page that lists the apps you allowed. Check you can see each one, change what it may do, and remove it; then check the removed app is asked for consent again."
+    },
+    {
+      "id": "V3.7.5",
+      "title": "The app behaves as written when a browser lacks a security feature",
+      "how": "Open what the security notes say for V3.1.1: the browser features the app expects, and what it does without one. Then try each: open the app in an old browser, or with JavaScript or cookies turned off, and check it warns or blocks just as written."
+    },
+    {
+      "id": "V13.2.6",
+      "title": "Each connection follows the settings written for it",
+      "how": "Put the security notes for V13.1.2 and V13.1.3 (connection limits, timeouts, and retries for each service) beside the app's connection settings: its database pool, and its timeout and retry settings for each outside call. Check each one matches what was written down."
+    },
+    {
+      "id": "AC.1.4",
+      "title": "Metrics compare AI-written code with a human-only baseline",
+      "how": "List the metrics the team collects on code an AI tool wrote or helped with: defects found later, vulnerabilities per thousand lines, how long problems take to find. Check each is compared with the same metric for code people wrote alone. If none are collected, write that down."
     }
   ]
 }

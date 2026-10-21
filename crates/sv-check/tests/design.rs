@@ -105,21 +105,8 @@ fn no_question_is_asked_twice() {
     assert!(repeated.is_empty(), "asked twice: {repeated:?}");
 }
 
-#[test]
-fn every_question_is_at_level_one_or_two() {
-    // Above level 2 the owner is not being asked about the requirement at all, so a question about
-    // it would be answered and then counted against nothing.
-    let frameworks = frameworks();
-    let too_high: Vec<String> = questions()
-        .questions
-        .iter()
-        .filter_map(|q| {
-            let r = frameworks.requirements.get(&q.id)?;
-            (r.level > 2).then(|| format!("{} is level {}", q.id, r.level))
-        })
-        .collect();
-    assert!(too_high.is_empty(), "{too_high:?}");
-}
+// A question at level 3 was refused here until an app could be held to level 3 (ADR-130); that a question reaches only
+// an app held to its level is now `human_checks.rs`'s `a_level_three_entry_reaches_only_an_app_held_to_level_three`.
 
 #[test]
 fn every_question_says_what_where_should_name() {

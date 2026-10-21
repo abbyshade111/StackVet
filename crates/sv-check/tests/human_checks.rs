@@ -8,7 +8,7 @@
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 use sv_check::design::Questions;
-use sv_check::human::HumanChecks;
+use sv_check::human::{HumanChecks, checklist};
 use sv_check::notes::Catalog;
 use sv_check::suite::shares_no_words;
 use sv_frameworks::Frameworks;
@@ -132,18 +132,57 @@ fn no_check_is_listed_twice() {
     assert!(repeated.is_empty(), "listed twice: {repeated:?}");
 }
 
+/// The catalogs took levels 1 and 2 only until an app could be held to level 3 (ADR-130); above its level, an app is not
+/// asked about a requirement at all, so an entry there would be answered and counted against nothing. What keeps that
+/// so now is applicability: the checklist is built from the requirements that apply, which leave out every one above
+/// the app's level. This builds it at level 2 and at level 3 from the same answers, and holds both.
 #[test]
-fn every_check_is_at_level_one_or_two() {
+fn a_level_three_entry_reaches_only_an_app_held_to_level_three() {
+    use sv_frameworks::applicability::{ApplicabilityConfig, ConditionContext, bucket};
+    use sv_frameworks::{Condition, Source};
     let f = frameworks();
-    let high: Vec<String> = human()
-        .checks
+    let config = ApplicabilityConfig::load_v2(
+        &PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../data/knowledge"),
+        &data("applicability-v2.json"),
+    )
+    .unwrap();
+    let mut ctx = ConditionContext::default();
+    for c in Condition::ALL
         .iter()
-        .filter_map(|c| {
-            let r = f.requirements.get(&c.id)?;
-            (r.level > 2).then(|| format!("{} is level {}", c.id, r.level))
-        })
+        .filter(|c| c.source() == Source::Claim)
+    {
+        ctx.set(*c, true);
+    }
+    let (notes, design, human) = (notes(), design(), human());
+    let listed = |level: u8| -> Vec<(String, u8)> {
+        let wanted: BTreeSet<String> = bucket(&f, &config, &ctx, level)
+            .applicable
+            .into_iter()
+            .collect();
+        checklist(&notes, &design, &human, &wanted)
+            .into_iter()
+            .map(|item| {
+                let level = f.requirements.get(&item.id).map_or(0, |r| r.level);
+                (item.id, level)
+            })
+            .collect()
+    };
+    let at_two = listed(2);
+    let at_three = listed(3);
+    // The setup: every catalog has a level-3 entry, so the level-2 list leaving them out is the level's doing.
+    for id in ["V2.3.5", "V3.7.5", "V13.1.4"] {
+        assert!(
+            at_three.iter().any(|(i, _)| i == id),
+            "{id} is not on the level-3 checklist"
+        );
+    }
+    let above: Vec<&String> = at_two
+        .iter()
+        .filter(|(_, l)| *l > 2)
+        .map(|(i, _)| i)
         .collect();
-    assert!(high.is_empty(), "{high:?}");
+    assert!(above.is_empty(), "on a level-2 app's checklist: {above:?}");
+    assert!(at_three.len() > at_two.len());
 }
 
 #[test]
@@ -193,11 +232,9 @@ fn every_question_on_the_checklist_says_where_to_look() {
         if human.contains(&id) || has {
             continue;
         }
-        // Only the ones that can reach the checklist: level 1 and 2, and an ASVS requirement.
-        if let Some(r) = f.requirements.get(&id)
-            && r.level <= 2
-            && id.starts_with('V')
-        {
+        // Only the ones that can reach the checklist: an ASVS requirement, at any level since level 3 is an opt-in
+        // (ADR-130).
+        if f.requirements.contains_key(&id) && id.starts_with('V') {
             silent.push(id);
         }
     }
@@ -255,7 +292,7 @@ fn a_where_to_look_line_says_where_rather_than_repeating_the_question() {
 /// requirements a tool can never settle, so a person is the only way any of them gets an answer, and
 /// a person needs to be told how. Ten were in no catalog when this was found (26 September 2026),
 /// nine of them AISVS: the framework grew and the catalogs did not follow. This names the next one as
-/// it is added. Level 3 is left out, as the checklist leaves it out (`every_check_is_at_level_one_or_two`).
+/// it is added. Level 3 joined on 21 October 2026, once an app could be held to it (ADR-130).
 #[test]
 fn every_requirement_only_a_person_can_settle_is_explained_somewhere() {
     let path =
@@ -279,7 +316,7 @@ fn every_requirement_only_a_person_can_settle_is_explained_somewhere() {
     let f = frameworks();
     let unexplained: Vec<String> = manual
         .iter()
-        .filter(|id| f.requirements.get(*id).is_some_and(|r| r.level <= 2))
+        .filter(|id| f.requirements.contains_key(*id))
         .filter(|id| !explained.contains(*id))
         .cloned()
         .collect();
