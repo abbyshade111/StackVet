@@ -314,6 +314,23 @@
         "javascript": "(program [(lexical_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)])) (variable_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)]))])",
         "typescript": "(program [(lexical_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)])) (variable_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)]))])"
       }
+    },
+    {
+      "id": "locate.several-writes",
+      "questions": [
+        "V2.3.3"
+      ],
+      "finds": "functions that write to the database twice or more with no transaction around them (two saves, a create and a delete): the places a change can be left half made if the second write fails. Whether the two writes are to different tables, or a setting outside the code (Django's ATOMIC_REQUESTS) makes the whole request one transaction, is for a person to read",
+      "names": "^(save|create|createmany|bulkcreate|getorcreate|updateorcreate|insert|insertone|insertmany|update|updateone|updatemany|upsert|replaceone|deleteone|deletemany|delete|destroy|add|addall|merge)$",
+      "queries": {
+        "python": "((call function: (attribute attribute: (identifier) @used)) (#match? @used \"^(save|create|bulk_create|get_or_create|update_or_create|insert_one|insert_many|update_one|update_many|replace_one|delete_one|delete_many|delete)$\"))\n((call function: (attribute object: [(identifier) (attribute)] @owner attribute: (identifier) @used)) (#match? @owner \"session$\") (#match? @used \"^(add|add_all|merge)$\"))",
+        "javascript": "((call_expression function: (member_expression property: (property_identifier) @used)) (#match? @used \"^(create|createMany|save|insert|insertOne|insertMany|update|updateOne|updateMany|updateMany|upsert|replaceOne|deleteOne|deleteMany|destroy|bulkCreate)$\"))",
+        "typescript": "((call_expression function: (member_expression property: (property_identifier) @used)) (#match? @used \"^(create|createMany|save|insert|insertOne|insertMany|update|updateOne|updateMany|updateMany|upsert|replaceOne|deleteOne|deleteMany|destroy|bulkCreate)$\"))"
+      },
+      "perFunction": {
+        "atLeast": 2,
+        "unlessNamed": "^(atomic|transaction|transactional|starttransaction|begintransaction|savepoint|rollback|commit|begin)$"
+      }
     }
   ],
   "packages": [
