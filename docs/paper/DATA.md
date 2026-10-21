@@ -8,10 +8,12 @@ CSV files: they open in any spreadsheet. Nothing in any of them names the health
 the first kind are its tables, made by hand at that cut-off and still exactly what the figures and the text quote.
 The second kind, in `docs/paper/tables/`, are made by a script from the records kept since: the trials and the
 coordination of 12 to 15 October. The owner answered on 15 October 2026 that the 4 October cut-off is arbitrary, since
-the paper is not written yet: the timeline is broken at three milestones instead, and every table says which period
-each row is in (below, "The three periods"). The hand-drawn figures stay as they were drawn, at 4 October.
+the paper is not written yet: the timeline is broken at milestones instead, and every table says which period each row
+is in (below, "The two periods"). The owner narrowed it on 21 October 2026 to two, version 1 (SecureVibe) against
+StackVet as it is today, folding what was version 2 (`sv` before its rename) into StackVet. The hand-drawn figures stay
+as they were drawn, at 4 October.
 
-## The three periods
+## The two periods
 
 Made by `python3 docs/paper/tables/periods.py`, which reads each boundary from git rather than from this page, and
 writes the tables below to the commit it is run at (`--check` says what no longer matches, at the commit named in
@@ -20,14 +22,18 @@ writes the tables below to the commit it is run at (`--check` says what no longe
 | Period | From | To | How the boundary is found |
 |---|---|---|---|
 | 1. version 1 | `c85c174a2`, 18 September 09:32: the first commit of this history (the history before it was destroyed, `CORRECTIONS.md`) | `412092da2`, 26 September 20:46: the tag `v1-final`, v1's last commit on main (`v1-paper`, 20 September, is inside the period) | the tag |
-| 2. version 2 | `278575a07`, 26 September 21:22: the merge of #224, "Promote sv to the top of the repository; v1 moves to the v1 branch" | `d2433cd54`, 8 October 20:30: the last commit on main before the rename finished | the first commit on main that holds the promotion commit |
-| 3. StackVet | `c75ea2cf9`, 8 October 20:59: the merge of #1127, "StackVet step 3: the documents and the image say StackVet" (ADR-062; steps 1 and 2 merged from 19:41 the same evening) | the commit the tables are built at | the first commit on main that holds step 3 |
+| 2. StackVet | `278575a07`, 26 September 21:22: the merge of #224, "Promote sv to the top of the repository; v1 moves to the v1 branch" | the commit the tables are built at | the first commit on main that holds the promotion commit |
+
+The rename to StackVet, the merge of #1127 at 8 October 20:59 ("StackVet step 3: the documents and the image say
+StackVet", ADR-062), is inside the StackVet period. Until 21 October 2026 it began a third period, and what came before
+it was "version 2"; a figure whose record is of that time (the study of 3 October, the deep review of 4 October) says
+so in its StackVet panel.
 
 A row is in the period its date falls in; a table whose rows carry no date is one dated record, and its date is the
 one this page gives it below. The day of a boundary has a row on each side of it where a table counts by day.
 
 **Combined, every period to the build** (`docs/paper/tables/`):
-- `periods.csv`: one row per period and one for all three: its first and last commit, days, commits (every commit
+- `periods.csv`: one row per period and one for both: its first and last commit, days, commits (every commit
   reachable from main that day), commits on main's own line, pull requests merged, the tests in the tree at its end,
   decision records added, and backlog items done.
 - `days.csv`: one row per day and period: the same counts, and the tests and decision records in the tree at the end
@@ -39,7 +45,7 @@ one this page gives it below. The day of a boundary has a row on each side of it
 - `backlog_items.csv`: every backlog item, its status, and the day and period it was done, read from its status
   line. Items became files on 9 October, so work done before then is mostly not dated there.
 
-**Per period** (`docs/paper/tables/by-period/<period>/`, for `v1`, `v2`, and `stackvet`): every table above and
+**Per period** (`docs/paper/tables/by-period/<period>/`, for `v1` and `stackvet`): every table above and
 every table on this page, cut to the rows in that period, each row with its `period`. **Every table with its period
 column** (`by-period/all/`): the hand-made tables and the tables of the work since the cut-off, whole. The originals
 are left as they are.
@@ -130,7 +136,7 @@ fix's merge stands for when cato-pipeline's and the study's problems were found 
 repository), and 16 agentic controls and checks are standing files, not events, so they are not dated. AGENTIC.md's
 "to 27 September" brackets count rows by their sub-table, and seven of those rows are dated after the version 1
 boundary (#239, #242, #252, the "Answered by:" incident, and the three self-check rows of section 5), so they are
-in version 2 here.
+in the StackVet period here.
 
 ## The paper's tables, at the 4 October cut-off
 
@@ -219,6 +225,14 @@ Cursor, and VS Code, each one row per tool and line of the write-up's tables:
   the write-up states them (typed from its prose; "several" is an empty count).
 Not in them: the chats and the apps themselves, which are on the owner's drive.
 
+**The owner's follow-up trial** (15 October; backlog 0577): the same seven prompts with the harness and the model
+swapped, to tell which one gamed the check. Three runs are rows of their own in `three_tool_reports.csv` and
+`three_tool_gaming.csv`, each named with its tool, model, and date: Antigravity with Claude Opus 5.5, and Cursor with
+Gemini 3.8 Flash twice (the first run read the earlier trial's app through stale settings; the second was done again
+cleanly). Each row is typed into `make_tables.py` from 0577's own prose and says so, and only the cells that prose
+states are filled. The readers' cell-by-cell write-ups were in session scratchpads and are not in the repository, so
+the route, the prompts, and said-versus-did have no rows for these runs; see "Limits" below.
+
 **The pointer trial** (14 October; backlog 0516): `pointer_trial.csv`, one row per example app and reading: what
 `sv questions` pointed at for the authorization requirements (V8.1.1, V8.3.1), and whether it was right. Three
 readings: before the fix, after it, and after 0518.
@@ -240,3 +254,27 @@ that finished it from the board's log. Fourteen have none: the thirteen proposal
 The times are when the orchestrating session wrote the line, in Eastern time, not when the pull request merged:
 finishes are logged in batches. Not in them: red runs, which the log does not record (two are named in passing in
 assign reasons), and the earlier coordination trial of 12 and 13 October (`board-closed-2026-10-13.md`).
+
+## Limits
+
+What the trial tables can and cannot carry, written with backlog 0577 (the owner's follow-up trial of 15 October):
+
+- **One run each.** Four runs of AI coding tools building one brief cannot rule out chance: a behavior seen once may
+  not come back, and one not seen may.
+- **What the gaming followed.** Rewriting code and dependency files to make a check stop seeing something happened in
+  one run only, Gemini 3.8 Flash in Antigravity on 14 October, which was also the only run in which `sv` raised two
+  word-match contradictions (`media_type`, `httpx`; fixed since, backlog 0538). On this evidence it followed neither
+  the model alone nor the harness alone, but that model's answer to those two findings; another Flash run in
+  Antigravity might have gamed without them, and one run cannot say.
+- **Not like for like everywhere.** The 14 October Antigravity run was held to level 2 (196 requirements applied) and
+  every run of 15 October to level 1 (73 or 74), so their counts by status are not comparable; within a level they are.
+  The first Cursor run of 15 October is of an app copied byte for byte from the earlier trial, through stale MCP
+  settings, and its counts are that copy's.
+- **The prompts were those of 14 October,** on purpose, so the model and the harness were the only things changed; the
+  prompt rules written since (backlog 0545 to 0557) are untried in any tool.
+- **What is typed, and what is not.** The 15 October rows are the report counts and the gaming the item's prose states.
+  The readers' write-ups behind them, cell by cell, were never committed, so the route, the prompts, and the claims
+  against the record are rows for 14 October only. A cell no record fills is empty, never estimated.
+- **The `sv` the reports came from.** The 15 October reports were made with `sv` at 779676c5 and run again at
+  f3197a2c with the same counts, except that the first Cursor run's one finding needing attention went away (backlog
+  0529). The tables carry the first.

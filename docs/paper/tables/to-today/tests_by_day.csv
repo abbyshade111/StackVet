@@ -12,20 +12,20 @@ date,version,tests_level,tests_level_measure,tests_level_first_parent,tests_adde
 2026-09-24,sv,326,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",320,165,dff9445d,181b7983,,12,7,2,5,7,5,11021,3731,,v1,at the cut-off
 2026-09-25,v1,1219,"v1 it()/test() calls in *.test.ts, static",,42,306431a3,,,3,0,0,3,1,2,2595,962,,v1,at the cut-off
 2026-09-25,sv,687,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",687,361,306431a3,ea5cc3bd,,15,0,0,15,15,0,29677,6945,,v1,at the cut-off
-2026-09-26,v1,1223,"v1 it()/test() calls in *.test.ts, static",,4,164dfd6,,,2,0,0,2,2,0,229,49,,v2,at the cut-off
-2026-09-26,sv,1132,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1126,445,19572c7,e4054fe,,17,2,1,15,15,2,36231,10732,,v2,at the cut-off
-2026-09-27,sv,1306,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1306,174,400bdae,400bdae,,17,4,2,13,13,4,13829,3697,,v2,at the cut-off
-2026-09-28,sv,1417,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1417,111,70dba73,70dba73,,24,7,7,17,19,5,11379,2612,,v2,at the cut-off
-2026-09-29,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,74,34ca633,34ca633,,12,2,1,10,10,2,6217,156,,v2,at the cut-off
-2026-09-30,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,0,34ca633,34ca633,,0,0,0,0,0,0,0,0,,v2,at the cut-off
-2026-10-01,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,0,34ca633,34ca633,,0,0,0,0,0,0,0,0,,v2,at the cut-off
-2026-10-02,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,0,34ca633,34ca633,,0,0,0,0,0,0,0,0,,v2,at the cut-off
-2026-10-03,sv,1645,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1645,154,fb1c625,fb1c625,,19,0,0,19,18,1,15115,797,,v2,at the cut-off
-2026-10-04,sv,1655,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1655,10,157ddc3,157ddc3,,57,0,0,57,57,0,787,207,,v2,at the cut-off
-2026-10-04 (after 11:37),sv,1910,#[test] lines at the last commit that day on main's own line,1910,255,f3415eb,f3415eb,,16,2,,14,15,1,18163,3377,6024,v2,since the cut-off
-2026-10-05,sv,2131,#[test] lines at the last commit that day on main's own line,2131,221,6643a30,6643a30,,56,0,,56,56,0,17722,3843,5248,v2,since the cut-off
-2026-10-06,sv,2252,#[test] lines at the last commit that day on main's own line,2252,121,ee1fa37,ee1fa37,,13,0,,13,13,0,10783,1479,3208,v2,since the cut-off
-2026-10-07,sv,2351,#[test] lines at the last commit that day on main's own line,2351,99,1b8a818,1b8a818,,26,0,,26,24,2,9785,1777,686,v2,since the cut-off
+2026-09-26,v1,1223,"v1 it()/test() calls in *.test.ts, static",,4,164dfd6,,,2,0,0,2,2,0,229,49,,stackvet,at the cut-off
+2026-09-26,sv,1132,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1126,445,19572c7,e4054fe,,17,2,1,15,15,2,36231,10732,,stackvet,at the cut-off
+2026-09-27,sv,1306,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1306,174,400bdae,400bdae,,17,4,2,13,13,4,13829,3697,,stackvet,at the cut-off
+2026-09-28,sv,1417,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1417,111,70dba73,70dba73,,24,7,7,17,19,5,11379,2612,,stackvet,at the cut-off
+2026-09-29,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,74,34ca633,34ca633,,12,2,1,10,10,2,6217,156,,stackvet,at the cut-off
+2026-09-30,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,0,34ca633,34ca633,,0,0,0,0,0,0,0,0,,stackvet,at the cut-off
+2026-10-01,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,0,34ca633,34ca633,,0,0,0,0,0,0,0,0,,stackvet,at the cut-off
+2026-10-02,sv,1491,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1491,0,34ca633,34ca633,,0,0,0,0,0,0,0,0,,stackvet,at the cut-off
+2026-10-03,sv,1645,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1645,154,fb1c625,fb1c625,,19,0,0,19,18,1,15115,797,,stackvet,at the cut-off
+2026-10-04,sv,1655,"#[test] lines at the last commit that day (any branch merged into main, by commit date)",1655,10,157ddc3,157ddc3,,57,0,0,57,57,0,787,207,,stackvet,at the cut-off
+2026-10-04 (after 11:37),sv,1910,#[test] lines at the last commit that day on main's own line,1910,255,f3415eb,f3415eb,,16,2,,14,15,1,18163,3377,6024,stackvet,since the cut-off
+2026-10-05,sv,2131,#[test] lines at the last commit that day on main's own line,2131,221,6643a30,6643a30,,56,0,,56,56,0,17722,3843,5248,stackvet,since the cut-off
+2026-10-06,sv,2252,#[test] lines at the last commit that day on main's own line,2252,121,ee1fa37,ee1fa37,,13,0,,13,13,0,10783,1479,3208,stackvet,since the cut-off
+2026-10-07,sv,2351,#[test] lines at the last commit that day on main's own line,2351,99,1b8a818,1b8a818,,26,0,,26,24,2,9785,1777,686,stackvet,since the cut-off
 2026-10-08,sv,2570,#[test] lines at the last commit that day on main's own line,2570,219,bd3b278,bd3b278,,42,2,,40,38,4,18929,7042,60543,stackvet,since the cut-off
 2026-10-09,sv,2914,#[test] lines at the last commit that day on main's own line,2914,344,2ae9a11,2ae9a11,,33,2,,31,31,2,18339,10036,10356,stackvet,since the cut-off
 2026-10-10,sv,3037,#[test] lines at the last commit that day on main's own line,3037,123,65b4722,65b4722,,2,0,,2,1,1,7759,3435,2327,stackvet,since the cut-off
@@ -33,4 +33,8 @@ date,version,tests_level,tests_level_measure,tests_level_first_parent,tests_adde
 2026-10-12,sv,3286,#[test] lines at the last commit that day on main's own line,3286,165,a91df1d,a91df1d,,50,1,,49,47,3,9858,4216,3604,stackvet,since the cut-off
 2026-10-13,sv,3412,#[test] lines at the last commit that day on main's own line,3412,126,0575848,0575848,,65,2,,63,57,8,7742,4167,1980,stackvet,since the cut-off
 2026-10-14,sv,3739,#[test] lines at the last commit that day on main's own line,3739,327,15b1951,15b1951,,44,0,,44,43,1,17053,8432,7978,stackvet,since the cut-off
-2026-10-15,sv,3833,#[test] lines at the last commit that day on main's own line,3833,94,e2cf8c3,e2cf8c3,,13,0,,13,13,0,4238,2244,1401,stackvet,since the cut-off
+2026-10-15,sv,4080,#[test] lines at the last commit that day on main's own line,4080,341,7f72501,7f72501,,13,0,,13,13,0,16276,7735,6977,stackvet,since the cut-off
+2026-10-16,sv,4204,#[test] lines at the last commit that day on main's own line,4204,124,b8b4094,b8b4094,,0,0,,0,0,0,6173,2673,17086,stackvet,since the cut-off
+2026-10-19,sv,4204,#[test] lines at the last commit that day on main's own line,4204,0,83b5492,83b5492,,0,0,,0,0,0,0,0,0,stackvet,since the cut-off
+2026-10-20,sv,4251,#[test] lines at the last commit that day on main's own line,4251,47,1eb7c5e,1eb7c5e,,0,0,,0,0,0,4201,1449,1142,stackvet,since the cut-off
+2026-10-21,sv,4283,#[test] lines at the last commit that day on main's own line,4283,32,3c7c534,3c7c534,,0,0,,0,0,0,1809,1015,223,stackvet,since the cut-off

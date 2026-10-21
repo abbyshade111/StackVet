@@ -97,7 +97,7 @@ hand. `python3 tools/backlog.py show <number>` prints an item; `list --open` pri
 | 9 | Process, any time | 0193 One file per backlog item, with a status line | done, 8 October 2026 | the owner's decision, 8 October 2026 |
 | 10 | The owner's order of 20 October, after 0489's V2.2.1 | 0624 No check splits into the owner answers and no check yet | done, 20 October 2026 | the owner, 20 October 2026 |
 | 10 | The owner's order of 20 October | 0507 Level 3 as an opt-in, when the owner asks for it | done, 21 October 2026 | the owner, 20 October 2026 |
-| 11 | The owner's order of 21 October | 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped | claimed by claude/backlog-work, 20 October 2026 | the owner, 21 October 2026 |
+| 11 | The owner's order of 21 October | 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped | done, 21 October 2026 | the owner, 21 October 2026 |
 | 11 | The owner's order of 21 October | 0630 What the AI coding tool did that is worth a look | claimed by claude/0630 (desktop session), 21 October 2026 | the owner, 21 October 2026 |
 <!-- roadmap:end -->
 
