@@ -325,6 +325,26 @@
       "id": "V11.2.1",
       "title": "Cryptography comes from a well-known library",
       "how": "Look at every place the app encrypts, decrypts, signs, hashes, or makes a key, and check that each one calls a well-known, industry-validated library (such as the language's own crypto module, OpenSSL, libsodium, or the cryptography package) rather than code the app or its AI coding tool wrote itself. A function named encrypt that shuffles or XORs bytes by hand is the thing to look for. Write down the library each place uses."
+    },
+    {
+      "id": "V10.4.11",
+      "title": "Each OAuth client is given only the scopes it needs",
+      "how": "Open the authorization server's settings and list each OAuth client it knows, with the scopes the configuration assigns to it. Compare each list with what that client actually uses; a scope a client is allowed and never asks for is one to take away."
+    },
+    {
+      "id": "V10.7.1",
+      "title": "People are asked to consent to each authorization request",
+      "how": "Sign in to a client app as a test user, and start a sign-in through the authorization server. Check a consent screen appears before access is granted. Then try it with a client the server cannot be sure of (one that registered itself, or has no secret): it must ask every time, not remember an earlier yes."
+    },
+    {
+      "id": "V10.7.2",
+      "title": "The consent screen says clearly what is being agreed to",
+      "how": "Start a sign-in from a client app as a test user, and look at the consent screen. Check it names the application asking, what it will be able to see or do (each scope, in words), and for how long. A screen that only says \"allow\" with the app's name fails."
+    },
+    {
+      "id": "V10.7.3",
+      "title": "People can review, change, and revoke what they consented to",
+      "how": "Sign in to the authorization server as a test user who has allowed a client app. Look for the page that lists the apps you allowed. Check you can see each one, change what it may do, and remove it; then check the removed app is asked for consent again."
     }
   ]
 }

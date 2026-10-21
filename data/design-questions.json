@@ -145,6 +145,102 @@
       "plain": "When people sign in through another service (Google, Microsoft, and the like), does the app ever need to know how they signed in there, for example with a second factor or within the last few minutes? If so, does it check what that service said, and if the service says nothing, does it assume the weakest sign-in?",
       "whereMeans": "the file that reads what the sign-in provider returned",
       "howToFindOut": "Find where the app reads what the provider sent back after sign-in. If it uses only the person's identifier, email, and name, and no part of the app needs a stronger or more recent sign-in, write that down: it is the answer. If some part does, check that it looks at `acr`, `amr`, or `auth_time`, and what it does when they are missing."
+    },
+    {
+      "id": "V6.6.1",
+      "title": "Codes by phone or SMS go only to a confirmed number, beside a stronger way",
+      "asks": "If the app sends one-time passwords by phone call or SMS, is the phone number validated first, is a stronger method (such as an authenticator app's time-based codes) also offered, and are people told the security risks of phone and SMS codes?",
+      "plain": "If the app texts or phones people a sign-in code, does it check the number is really theirs first, does it also offer a safer way (an authenticator app), and does it tell people why text messages are the weaker choice?",
+      "whereMeans": "the file that sends sign-in codes by phone or SMS",
+      "howToFindOut": "Find where the app sends a text or makes a call (a Twilio, Vonage, or similar package, or the provider's settings). Then look at the sign-up or settings page where a phone number is added: is a code sent to it before it can be used?"
+    },
+    {
+      "id": "V6.8.1",
+      "title": "A second identity provider cannot sign someone in as another person",
+      "asks": "If the application supports multiple identity providers, is each user registered and identified by the identity provider's id together with the user's id at that provider, so the same user identifier from another supported provider cannot be used to spoof them?",
+      "plain": "If people can sign in through more than one service (Google and Microsoft, say), does the app remember which service each person came from, so someone with the same name or email at another service cannot sign in as them?",
+      "whereMeans": "the file that matches a provider's sign-in to a user record",
+      "howToFindOut": "Find the code that runs when a sign-in comes back from the provider, and see what it looks the user up by. If it is the email, or the provider's user id alone, without which provider it was, that is the problem this asks about. If the app has only one provider, write that down."
+    },
+    {
+      "id": "V6.8.3",
+      "title": "Each SAML assertion is used only once",
+      "asks": "Does the application process each SAML assertion uniquely and use it only once within its validity period, refusing the same assertion a second time, to prevent replay attacks?",
+      "plain": "When someone signs in through SAML (common with company sign-in), does the app refuse the same sign-in message if it is sent to it a second time?",
+      "whereMeans": "the file or setting that records which SAML assertions were already used",
+      "howToFindOut": "Find where the app's SAML library is set up, and look in its settings or documentation for remembering assertion ids (often called replay protection or a message cache). Some libraries do it only when given somewhere to store them."
+    },
+    {
+      "id": "V10.3.4",
+      "title": "A token proves the sign-in was strong or recent enough when that matters",
+      "asks": "Where the resource server requires a specific authentication strength, method, or recentness for an action, does it verify that the presented access token satisfies these constraints, for example using the OIDC acr, amr, and auth_time claims?",
+      "plain": "For an action that should need a recent sign-in, or a second step such as a code, does the app check the sign-in token says that really happened, rather than accepting any valid token?",
+      "whereMeans": "the file that checks the token's sign-in strength or time",
+      "howToFindOut": "List the actions that should need a fresh or stronger sign-in (changing a password, moving money). Then find the code that checks the token for those routes, and look for `acr`, `amr`, or `auth_time`. If nothing reads them, the token's age and strength are not checked."
+    },
+    {
+      "id": "V10.4.7",
+      "title": "Clients that register themselves are checked, and people are warned",
+      "asks": "If the authorization server supports unauthenticated dynamic client registration, does it validate each new client's metadata, such as its registered addresses, make sure the user consents, and warn the user before an authorization request from an untrusted client application?",
+      "plain": "If any program can sign itself up as a client of the app's sign-in server without asking first, does the server check what it says about itself, and warn people before they approve one it does not know?",
+      "whereMeans": "the file or setting that controls client registration on the authorization server",
+      "howToFindOut": "Look in the authorization server's settings for dynamic client registration (often a `registration_endpoint` in its published metadata). If it is off, write that down; if it is on, check what the server does with a new client's addresses and what the person sees before approving it."
+    },
+    {
+      "id": "V10.4.9",
+      "title": "People can revoke refresh tokens from the sign-in server's own pages",
+      "asks": "Can an authorized user revoke refresh tokens and reference access tokens through the authorization server's user interface, so a malicious client or a stolen token can be cut off?",
+      "plain": "Can a signed-in person, on the sign-in server's own pages, see what is still signed in on their behalf and switch it off, so a stolen token stops working?",
+      "whereMeans": "the page or file where a user revokes their tokens",
+      "howToFindOut": "Sign in as a test user and look through the account pages of the authorization server for a list of apps or sessions with a way to remove one. Then check that removing one really stops its token being accepted."
+    },
+    {
+      "id": "V17.2.1",
+      "title": "The DTLS certificate's key is kept as the key policy says",
+      "asks": "Is the key for the media's Datagram Transport Layer Security (DTLS) certificate managed and protected as the documented policy for cryptographic keys says: where it is kept, who can read it, and when it is replaced?",
+      "plain": "For live audio or video, the connection is protected with a certificate whose secret key the app or its media server keeps: where is that key stored, who can read it, and is it handled the way the app's other keys are?",
+      "whereMeans": "the file or setting where the media server's DTLS key is made or kept",
+      "howToFindOut": "Find the media server's settings (mediasoup, LiveKit, Janus, or similar), or the hosted service's, and look for where the DTLS certificate and key come from. Many make a new one at each start, which is worth writing down; a fixed one is a file to protect like any other key."
+    },
+    {
+      "id": "V17.2.2",
+      "title": "The media server uses approved DTLS cipher suites and SRTP profile",
+      "asks": "Is the media server configured to use and support only approved Datagram Transport Layer Security (DTLS) cipher suites, and a secure protection profile for DTLS-SRTP, the extension that sets up keys for the Secure Real-time Transport Protocol?",
+      "plain": "Is the media server for live audio and video set to use only the encryption choices that are currently approved, and not older weak ones kept for compatibility?",
+      "whereMeans": "the media server's setting that lists its DTLS cipher suites and SRTP profiles",
+      "howToFindOut": "Open the media server's configuration and look for its DTLS or SRTP settings: cipher suites, and SRTP protection profiles. Where none are set, the server's default list is the answer; write down which version and defaults it is."
+    },
+    {
+      "id": "V17.2.3",
+      "title": "The media server checks SRTP authentication on every packet",
+      "asks": "Does the media server check Secure Real-time Transport Protocol (SRTP) authentication, so that injected Real-time Transport Protocol packets cannot cause a denial of service or insert audio or video into a media stream?",
+      "plain": "Does the media server throw away any audio or video packet that fails its authentication check, so nobody can slip their own sound or picture into a call?",
+      "whereMeans": "the media server setting that turns SRTP authentication on or off",
+      "howToFindOut": "Look in the media server's configuration for anything that turns off SRTP authentication or allows unencrypted media for testing. Most servers check it unless told not to, so the thing to find is a setting that weakens it."
+    },
+    {
+      "id": "V17.2.4",
+      "title": "Malformed SRTP packets do not stop the media server",
+      "asks": "Is the media server able to continue processing incoming media traffic when it encounters malformed Secure Real-time Transport Protocol (SRTP) packets?",
+      "plain": "If the media server receives broken or garbled audio or video packets, does it drop them and carry on with everyone else's call, rather than stopping or crashing?",
+      "whereMeans": "the media server's version and its notes on malformed packets",
+      "howToFindOut": "Find which media server and version the app uses, then search its release notes and the advisory data for crashes on malformed packets. Running `sv report` with `--advisories` lists the known flaws in a version it can read."
+    },
+    {
+      "id": "V17.3.1",
+      "title": "The signaling server keeps working during a flood, with rate limits",
+      "asks": "Is the signaling server able to continue processing legitimate incoming signaling messages during a flood attack, by rate limiting at the signaling level?",
+      "plain": "If someone floods the part of the app that sets up calls with messages, does it limit how many each sender can send, so real people can still start and join calls?",
+      "whereMeans": "the file that limits how many signaling messages each sender can send",
+      "howToFindOut": "Find the code that receives signaling messages (often a WebSocket handler for offers, answers, and candidates), and look for a limit on how many one connection or address may send. A rate-limit package on the web pages alone does not cover a WebSocket."
+    },
+    {
+      "id": "V3.5.4",
+      "title": "Separate applications are on separate hostnames",
+      "asks": "Are separate applications hosted on different hostnames, so the same-origin policy keeps them apart: how documents or scripts loaded by one origin can interact with another's resources, and which cookies each can read?",
+      "plain": "If you run more than one application, does each have an address of its own (app.example.com and admin.example.com), rather than sharing one address in different folders, so a browser keeps their pages and cookies apart?",
+      "whereMeans": "the address each application is reached at",
+      "howToFindOut": "List every application you run on the same domain, and the address each is reached at. Two that share an address and differ only by path (example.com/app and example.com/blog) are what this asks about."
     }
   ]
 }
