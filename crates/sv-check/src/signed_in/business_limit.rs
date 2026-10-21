@@ -46,7 +46,7 @@ pub(super) fn business_limit_check(
         out.not_assessed.push((
             IDS.to_owned(),
             format!(
-                "Whether \"{name}\" is held: [policy] limit says at most {}; this check sends between 2 and {} \
+                "Whether \"{name}\" is held: `[policy] limit` says at most {}; this check sends between 2 and {} \
                  requests, so it cannot hold the app to that number.",
                 limit.at_most,
                 MOST_TRIED + 1
