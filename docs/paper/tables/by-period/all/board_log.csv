@@ -555,3 +555,222 @@ date,time_eastern,verb,item,session,pr,line,source,period
 2026-10-15,08:20,assigned,0573,documentation,,"assigned 0573 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119",docs/coordination/board.md,stackvet
 2026-10-15,08:20,assigned,0574,documentation,,"assigned 0574 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119",docs/coordination/board.md,stackvet
 2026-10-15,08:20,assigned,0575,documentation,,"assigned 0575 to documentation (full) as next: documentation's lane while 0568 is built: the sweep's smaller cases in probe files honesty's 0571 and 0572 do not touch (the missing not-assessed lines; the burst, once, and forgery checks), under ADR-119",docs/coordination/board.md,stackvet
+2026-10-15,09:18,queued,0578,,,"queued 0578, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:18,assigned,0578,wording,,"assigned 0578 to wording (full) into the lane after 0534: the owner's find of 15 October from prompt 7: sv review's second report wipes the --run evidence; sv-cli, wording's; first on its line",docs/coordination/board.md,stackvet
+2026-10-15,09:20,finished,0569,documentation,2019,"finished 0569 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2019; from its lane, behind 0568",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0579,,,"queued 0579, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0582,,,"queued 0582, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0583,,,"queued 0583, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0584,,,"queued 0584, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0585,,,"queued 0585, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0586,,,"queued 0586, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0588,,,"queued 0588, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0580,,,"queued 0580, on hold: the owner's choice: sv's confirmed proposals against prompt 5's ban, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0581,,,"queued 0581, on hold: the owner's choice: how the container gets the trusted-keys list, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,queued,0587,,,"queued 0587, on hold: the owner's choice: a seal bound to the folder or to the app, marked",docs/coordination/board.md,stackvet
+2026-10-15,09:44,withdrew,0539,honesty,,"withdrew 0539 from honesty (full), on hold: honesty's line is full with the Django gate that did not apply (0579) put first; the image build comes back when the line has room",docs/coordination/board.md,stackvet
+2026-10-15,09:44,released,0539,,,released 0539,docs/coordination/board.md,stackvet
+2026-10-15,09:44,assigned,0579,honesty,,assigned 0579 to honesty (full) into the lane after 0564: 0521's gate did not apply on the Opus app: ten wrong findings on a Flask app in both builds; honesty built the gate,docs/coordination/board.md,stackvet
+2026-10-15,09:44,assigned,0588,wording,,"assigned 0588 to wording (full) as next: the prompt page's version line, from the Opus reading; wording's file",docs/coordination/board.md,stackvet
+2026-10-15,09:44,assigned,0585,documentation,,"assigned 0585 to documentation (full) as next: the browser-form gap's quoted refusal, the family of 0527 which documentation built",docs/coordination/board.md,stackvet
+2026-10-15,09:58,dropped,0587,,,dropped 0587 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,09:58,released,0580,,,released 0580,docs/coordination/board.md,stackvet
+2026-10-15,09:58,released,0581,,,released 0581,docs/coordination/board.md,stackvet
+2026-10-15,09:58,assigned,0580,wording,,"assigned 0580 to wording (full) into the lane after 0588: the owner's choice: keep sv's confirmed proposals, change prompt 5 back and drop 0543's warning; interview.rs, the prompt page, and 0543's warning are wording's",docs/coordination/board.md,stackvet
+2026-10-15,09:58,assigned,0581,wording,,"assigned 0581 to wording (full) into the lane after 0580: the owner's choice: sv connect --docker mounts the trusted list and the public key read-only; sv-cli, wording's; ADR-108 Later",docs/coordination/board.md,stackvet
+2026-10-15,09:58,queued,0589,,,"queued 0589, on hold: a proposal with two questions for the owner before it is built (ticks as hand checks or notes; a file or a command), marked",docs/coordination/board.md,stackvet
+2026-10-15,09:58,queued,0590,,,"queued 0590, on hold: a proposal with two questions for the owner before it is built (security.md split too; which path sv report prints), marked",docs/coordination/board.md,stackvet
+2026-10-15,10:00,queued,0591,,,"queued 0591, marked",docs/coordination/board.md,stackvet
+2026-10-15,10:00,withdrew,0581,wording,,"withdrew 0581 from wording (full), on hold: wording's line is full; back after the passphrase fault the owner wants fixed first",docs/coordination/board.md,stackvet
+2026-10-15,10:00,released,0581,,,released 0581,docs/coordination/board.md,stackvet
+2026-10-15,10:00,assigned,0591,wording,,"assigned 0591 to wording (full) into the lane after 0534: the owner's find of 15 October, to fix first: the key prompts saved the word none as the passphrase and the unlock prompt gives no way out; sv-cli review.rs, wording's",docs/coordination/board.md,stackvet
+2026-10-15,10:23,queued,0592,,,"queued 0592, marked",docs/coordination/board.md,stackvet
+2026-10-15,10:23,queued,0593,,,"queued 0593, marked",docs/coordination/board.md,stackvet
+2026-10-15,10:23,queued,0594,,,"queued 0594, marked",docs/coordination/board.md,stackvet
+2026-10-15,10:23,queued,0595,,,"queued 0595, marked",docs/coordination/board.md,stackvet
+2026-10-15,10:23,queued,0596,,,"queued 0596, marked",docs/coordination/board.md,stackvet
+2026-10-15,10:23,queued,0597,,,"queued 0597, marked",docs/coordination/board.md,stackvet
+2026-10-15,11:23,queued,0598,,,"queued 0598, marked",docs/coordination/board.md,stackvet
+2026-10-15,11:23,queued,0599,,,"queued 0599, marked",docs/coordination/board.md,stackvet
+2026-10-15,11:23,queued,0600,,,"queued 0600, marked",docs/coordination/board.md,stackvet
+2026-10-15,11:23,queued,0601,,,"queued 0601, marked",docs/coordination/board.md,stackvet
+2026-10-15,11:23,queued,0602,,,"queued 0602, marked",docs/coordination/board.md,stackvet
+2026-10-15,11:23,withdrew,0572,honesty,,"withdrew 0572 from honesty (full), on hold: honesty's line is full; back after the empty-body answer (0598), which outranks it",docs/coordination/board.md,stackvet
+2026-10-15,11:23,released,0572,,,released 0572,docs/coordination/board.md,stackvet
+2026-10-15,11:23,assigned,0598,honesty,,"assigned 0598 to honesty (full) into the lane after 0579: from the clean Cursor run: pages answering 200 with an empty body counted as answered; the run's reading of an answer, ADR-021 Later; honesty's probe files",docs/coordination/board.md,stackvet
+2026-10-15,11:25,finished,0578,wording,2035,"finished 0578 by wording (full): https://github.com/abbyshade111/StackVet/pull/2035; from its lane, behind 0534",docs/coordination/board.md,stackvet
+2026-10-15,11:25,finished,0568,documentation,2032,finished 0568 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2032; now holds 0509,docs/coordination/board.md,stackvet
+2026-10-15,11:25,finished,0573,documentation,2036,"finished 0573 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2036; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,11:50,finished,0591,wording,2039,"finished 0591 by wording (full): https://github.com/abbyshade111/StackVet/pull/2039; from its lane, behind 0534",docs/coordination/board.md,stackvet
+2026-10-15,11:50,finished,0575,documentation,2040,"finished 0575 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2040; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,11:50,assigned,0581,wording,,"assigned 0581 to wording (full) into the lane after 0580: the owner's choice A of 15 October: sv connect --docker mounts the trusted list and the public key read-only; sv-cli, wording's; ADR-108 Later; back on the line now there is room",docs/coordination/board.md,stackvet
+2026-10-15,12:20,finished,0588,wording,2042,"finished 0588 by wording (full): https://github.com/abbyshade111/StackVet/pull/2042; from its lane, behind 0534",docs/coordination/board.md,stackvet
+2026-10-15,12:20,finished,0574,documentation,2043,"finished 0574 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2043; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,12:20,assigned,0594,documentation,,"assigned 0594 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites",docs/coordination/board.md,stackvet
+2026-10-15,12:20,assigned,0595,documentation,,"assigned 0595 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites",docs/coordination/board.md,stackvet
+2026-10-15,12:20,assigned,0596,documentation,,"assigned 0596 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites",docs/coordination/board.md,stackvet
+2026-10-15,12:20,assigned,0601,documentation,,"assigned 0601 to documentation (full) as next: documentation's next lane: small wording and rule items from the model trials (the placeholder-address domains, the venv named in a partly line, a repository with no commits, the open-redirect keyword case); none in the probe files honesty rewrites",docs/coordination/board.md,stackvet
+2026-10-15,12:20,assigned,0592,wording,,"assigned 0592 to wording (full) as next: the trial protocol's prompt 4 line (stop when stackvet_status names another folder); the prompt page, wording's",docs/coordination/board.md,stackvet
+2026-10-15,12:50,finished,0580,wording,2045,"finished 0580 by wording (full): https://github.com/abbyshade111/StackVet/pull/2045; from its lane, behind 0534",docs/coordination/board.md,stackvet
+2026-10-15,12:50,finished,0581,wording,2048,"finished 0581 by wording (full): https://github.com/abbyshade111/StackVet/pull/2048; from its lane, behind 0534",docs/coordination/board.md,stackvet
+2026-10-15,12:50,finished,0585,documentation,2047,"finished 0585 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2047; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,12:50,assigned,0593,wording,,"assigned 0593 to wording (full) as next: from the Cursor runs: an unsealed by = owner line named as the tool's in stackvet_check and before sv review asks; sv-cli, wording's",docs/coordination/board.md,stackvet
+2026-10-15,12:50,assigned,0602,wording,,"assigned 0602 to wording (full) as next: prompt 5's preview step (ask before installing; tests use their own database; open the page over the server); the prompt page, wording's",docs/coordination/board.md,stackvet
+2026-10-15,13:04,released,0514,,,released 0514,docs/coordination/board.md,stackvet
+2026-10-15,13:04,assigned,0514,documentation,,assigned 0514 to documentation (full) as next: the owner's drawings are in the repository now (15 October); check each cell against the frameworks' text and put the two diagrams on the reports page; documentation's files,docs/coordination/board.md,stackvet
+2026-10-15,13:20,released,0589,,,released 0589,docs/coordination/board.md,stackvet
+2026-10-15,13:20,released,0590,,,released 0590,docs/coordination/board.md,stackvet
+2026-10-15,13:20,finished,0592,wording,2050,"finished 0592 by wording (full): https://github.com/abbyshade111/StackVet/pull/2050; from its lane, behind 0534",docs/coordination/board.md,stackvet
+2026-10-15,13:20,finished,0594,documentation,2051,"finished 0594 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2051; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,13:20,queued,0603,,,"queued 0603, marked",docs/coordination/board.md,stackvet
+2026-10-15,13:50,finished,0593,wording,2055,"finished 0593 by wording (full): https://github.com/abbyshade111/StackVet/pull/2055; from its lane, behind 0534",docs/coordination/board.md,stackvet
+2026-10-15,13:50,finished,0596,documentation,2056,"finished 0596 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2056; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,13:50,finished,0601,documentation,2054,"finished 0601 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2054; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,13:50,assigned,0589,wording,,"assigned 0589 to wording (full) as next: the owner's go of 15 October with the answers recorded: the pre-deployment checklist report; sv-report, wording's; a new ADR",docs/coordination/board.md,stackvet
+2026-10-15,13:50,assigned,0590,wording,,"assigned 0590 to wording (full) as next: the owner's go of 15 October with the answers recorded: the report in short pages; sv-report, wording's; a Later entry on the reports record; after 0589",docs/coordination/board.md,stackvet
+2026-10-15,13:50,assigned,0586,documentation,,"assigned 0586 to documentation (full) as next: the build-loop record from the first MCP call; sv-cli's mcp, no file shared with the other lanes",docs/coordination/board.md,stackvet
+2026-10-15,13:50,assigned,0600,documentation,,"assigned 0600 to documentation (full) as next: the summary's count of requirements resting on a tool-answered false; sv-report's summary, no file shared with wording's two report items (check before building; if 0590 touches the same summary, take it after)",docs/coordination/board.md,stackvet
+2026-10-15,14:20,finished,0534,wording,2060,finished 0534 by wording (full): https://github.com/abbyshade111/StackVet/pull/2060; now holds 0565,docs/coordination/board.md,stackvet
+2026-10-15,14:20,finished,0602,wording,2057,"finished 0602 by wording (full): https://github.com/abbyshade111/StackVet/pull/2057; from its lane, behind 0565",docs/coordination/board.md,stackvet
+2026-10-15,14:20,finished,0514,documentation,2059,"finished 0514 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2059; from its lane, behind 0509",docs/coordination/board.md,stackvet
+2026-10-15,14:34,finished,0564,honesty,2007,finished 0564 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2007; now holds 0579,docs/coordination/board.md,stackvet
+2026-10-15,14:34,finished,0579,honesty,2034,finished 0579 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2034; now holds 0598,docs/coordination/board.md,stackvet
+2026-10-15,14:34,finished,0598,honesty,2044,finished 0598 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2044; now holds 0495,docs/coordination/board.md,stackvet
+2026-10-15,14:34,finished,0495,honesty,2013,finished 0495 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2013; now holds 0571,docs/coordination/board.md,stackvet
+2026-10-15,14:34,finished,0571,honesty,2015,finished 0571 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2015; now holds 0232,docs/coordination/board.md,stackvet
+2026-10-15,14:34,queued,0605,,,"queued 0605, on hold: the owner's choice: where the manifest names the run's environment and settings files, marked",docs/coordination/board.md,stackvet
+2026-10-15,14:34,assigned,0490,honesty,,"assigned 0490 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files",docs/coordination/board.md,stackvet
+2026-10-15,14:34,assigned,0572,honesty,,"assigned 0572 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files",docs/coordination/board.md,stackvet
+2026-10-15,14:34,assigned,0576,honesty,,"assigned 0576 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files",docs/coordination/board.md,stackvet
+2026-10-15,14:34,assigned,0599,honesty,,"assigned 0599 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files",docs/coordination/board.md,stackvet
+2026-10-15,14:34,assigned,0582,honesty,,"assigned 0582 to honesty (full) as next: honesty's next lane: 0490 next in the owner's order of the pointer proposals, then the sweeps' remaining cases and the trial's probe and rule items; honesty's files",docs/coordination/board.md,stackvet
+2026-10-15,14:38,released,0605,,,released 0605,docs/coordination/board.md,stackvet
+2026-10-15,14:39,assigned,0603,wording,,"assigned 0603 to wording (full) as next: the owner's choice A of 15 October: prompt 5 and the guide match sv's question text on the tool's own hand checks; the prompt page and interview.rs, wording's",docs/coordination/board.md,stackvet
+2026-10-15,14:39,assigned,0605,honesty,,"assigned 0605 to honesty (full) into the lane after 0490: the owner's choice b of 15 October: the settings file the start command names is read for loosened settings; the rest of 0564, honesty's",docs/coordination/board.md,stackvet
+2026-10-15,14:45,dropped,0539,,,dropped 0539 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,14:45,withdrew,0509,documentation,,"withdrew 0509 from documentation (full), on hold: needs a session with CodeQL installed, which no cloud session has; held until one does (the owner's word of 15 October)",docs/coordination/board.md,stackvet
+2026-10-15,14:45,finished,0572,honesty,2018,"finished 0572 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2018; from its lane, behind 0232",docs/coordination/board.md,stackvet
+2026-10-15,14:50,finished,0589,wording,2063,"finished 0589 by wording (full): https://github.com/abbyshade111/StackVet/pull/2063; from its lane, behind 0565",docs/coordination/board.md,stackvet
+2026-10-15,14:50,finished,0595,documentation,2061,finished 0595 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2061; now holds 0586,docs/coordination/board.md,stackvet
+2026-10-15,14:50,assigned,0583,documentation,,"assigned 0583 to documentation (full) as next: the Semgrep logger rule on id-only lines, with its row in docs/research/SEMGREP-FALSE-ALARMS.md; no file shared with honesty's next five (pointer, settings file, SVG upload, sign-up names, path rule)",docs/coordination/board.md,stackvet
+2026-10-15,14:50,assigned,0597,wording,,"assigned 0597 to wording (full) as next: prompt 6's commit check and prompt 5's unrecommended questions; the prompt page, wording's",docs/coordination/board.md,stackvet
+2026-10-15,15:01,dropped,0509,,,dropped 0509 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,15:20,finished,0586,documentation,2065,finished 0586 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2065; now holds 0600,docs/coordination/board.md,stackvet
+2026-10-15,15:20,finished,0600,documentation,2068,finished 0600 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2068; now holds 0583,docs/coordination/board.md,stackvet
+2026-10-15,15:36,withdrew,0490,honesty,,"withdrew 0490 from honesty (full), on hold: moved to documentation's new lane: the pointer proposals as one lane, in the owner's order, apart from honesty's probe items",docs/coordination/board.md,stackvet
+2026-10-15,15:36,released,0490,,,released 0490,docs/coordination/board.md,stackvet
+2026-10-15,15:36,assigned,0490,documentation,,"assigned 0490 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files",docs/coordination/board.md,stackvet
+2026-10-15,15:36,assigned,0493,documentation,,"assigned 0493 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files",docs/coordination/board.md,stackvet
+2026-10-15,15:36,assigned,0491,documentation,,"assigned 0491 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files",docs/coordination/board.md,stackvet
+2026-10-15,15:36,assigned,0497,documentation,,"assigned 0497 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files",docs/coordination/board.md,stackvet
+2026-10-15,15:36,assigned,0489,documentation,,"assigned 0489 to documentation (full) as next: the pointer proposals as a lane of their own (locate.rs, data/locators.json, the questions), in the owner's order: 0490 first; none of honesty's next items touches these files",docs/coordination/board.md,stackvet
+2026-10-15,15:36,withdrew,0489,documentation,,"withdrew 0489 from documentation (full), on hold: its second half tries a stated limit on the running app, in honesty's probe files; it stays in the queue for honesty",docs/coordination/board.md,stackvet
+2026-10-15,15:36,released,0489,,,released 0489,docs/coordination/board.md,stackvet
+2026-10-15,15:36,assigned,0494,documentation,,"assigned 0494 to documentation (full) into the lane after 0497: the cryptographic inventory read from the code, a static pointer proposal; locate and the questions",docs/coordination/board.md,stackvet
+2026-10-15,15:50,finished,0565,wording,2073,finished 0565 by wording (full): https://github.com/abbyshade111/StackVet/pull/2073; now holds 0566,docs/coordination/board.md,stackvet
+2026-10-15,15:50,finished,0566,wording,2070,finished 0566 by wording (full): https://github.com/abbyshade111/StackVet/pull/2070; now holds 0590,docs/coordination/board.md,stackvet
+2026-10-15,16:20,finished,0590,wording,2076,finished 0590 by wording (full): https://github.com/abbyshade111/StackVet/pull/2076; now holds 0603,docs/coordination/board.md,stackvet
+2026-10-15,16:20,finished,0583,documentation,2077,finished 0583 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2077; now holds 0490,docs/coordination/board.md,stackvet
+2026-10-15,16:20,finished,0605,honesty,2078,"finished 0605 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2078; from its lane, behind 0232",docs/coordination/board.md,stackvet
+2026-10-15,16:20,withdrew,0490,documentation,,"withdrew 0490 from documentation (full), on hold: honesty built it whole on claude/honesty-0490-server before the move landed; it goes back to honesty to open the pull request from that branch",docs/coordination/board.md,stackvet
+2026-10-15,16:20,released,0490,,,released 0490,docs/coordination/board.md,stackvet
+2026-10-15,16:20,assigned,0490,honesty,,"assigned 0490 to honesty (full) into the lane after 0232: back to honesty, whose branch claude/honesty-0490-server holds the whole build, tested; open the pull request from it",docs/coordination/board.md,stackvet
+2026-10-15,16:50,finished,0597,wording,2080,"finished 0597 by wording (full): https://github.com/abbyshade111/StackVet/pull/2080; from its lane, behind 0603",docs/coordination/board.md,stackvet
+2026-10-15,17:20,finished,0490,honesty,2081,"finished 0490 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2081; from its lane, behind 0232",docs/coordination/board.md,stackvet
+2026-10-15,17:20,finished,0576,honesty,2085,"finished 0576 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2085; from its lane, behind 0232",docs/coordination/board.md,stackvet
+2026-10-15,17:20,assigned,0584,wording,,"assigned 0584 to wording (full) as next: the upload's accepted kinds, a manifest field and the run's control upload; free of honesty's files now that 0576 (uploads) has landed and honesty's next items are sign-up and an AST rule",docs/coordination/board.md,stackvet
+2026-10-15,17:20,assigned,0528,honesty,,"assigned 0528 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files",docs/coordination/board.md,stackvet
+2026-10-15,17:20,assigned,0536,honesty,,"assigned 0536 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files",docs/coordination/board.md,stackvet
+2026-10-15,17:21,assigned,0535,honesty,,"assigned 0535 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files",docs/coordination/board.md,stackvet
+2026-10-15,17:21,assigned,0492,honesty,,"assigned 0492 to honesty (full) as next: honesty's next lane from the trials and the pointer proposals that try the running app: the crash on a valid sign-up, the sign-up secret (the owner's choice a), the served-page check, ending sessions; all in honesty's probe files",docs/coordination/board.md,stackvet
+2026-10-15,17:50,finished,0603,wording,2082,finished 0603 by wording (full): https://github.com/abbyshade111/StackVet/pull/2082; now holds 0584,docs/coordination/board.md,stackvet
+2026-10-15,17:50,finished,0493,documentation,2084,finished 0493 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2084; now holds 0491,docs/coordination/board.md,stackvet
+2026-10-15,17:50,finished,0599,honesty,2087,"finished 0599 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2087; from its lane, behind 0232",docs/coordination/board.md,stackvet
+2026-10-15,17:50,assigned,0488,documentation,,"assigned 0488 to documentation (full) as next: pointer proposals that read the code (locators and their questions), in documentation's pointer lane after 0494",docs/coordination/board.md,stackvet
+2026-10-15,17:50,assigned,0498,documentation,,"assigned 0498 to documentation (full) as next: pointer proposals that read the code (locators and their questions), in documentation's pointer lane after 0494",docs/coordination/board.md,stackvet
+2026-10-15,18:40,finished,0584,wording,2089,finished 0584 by wording (full): https://github.com/abbyshade111/StackVet/pull/2089,docs/coordination/board.md,stackvet
+2026-10-15,18:40,finished,0491,documentation,2092,finished 0491 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2092; now holds 0497,docs/coordination/board.md,stackvet
+2026-10-15,18:40,finished,0582,honesty,2093,"finished 0582 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2093; from its lane, behind 0232",docs/coordination/board.md,stackvet
+2026-10-15,18:43,withdrew,0528,honesty,,"withdrew 0528 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session",docs/coordination/board.md,stackvet
+2026-10-15,18:43,released,0528,,,released 0528,docs/coordination/board.md,stackvet
+2026-10-15,18:43,withdrew,0536,honesty,,"withdrew 0536 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session",docs/coordination/board.md,stackvet
+2026-10-15,18:43,released,0536,,,released 0536,docs/coordination/board.md,stackvet
+2026-10-15,18:43,withdrew,0535,honesty,,"withdrew 0535 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session",docs/coordination/board.md,stackvet
+2026-10-15,18:43,released,0535,,,released 0535,docs/coordination/board.md,stackvet
+2026-10-15,18:43,withdrew,0492,honesty,,"withdrew 0492 from honesty (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session",docs/coordination/board.md,stackvet
+2026-10-15,18:43,released,0492,,,released 0492,docs/coordination/board.md,stackvet
+2026-10-15,18:43,withdrew,0494,documentation,,"withdrew 0494 from documentation (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session",docs/coordination/board.md,stackvet
+2026-10-15,18:43,released,0494,,,released 0494,docs/coordination/board.md,stackvet
+2026-10-15,18:43,withdrew,0488,documentation,,"withdrew 0488 from documentation (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session",docs/coordination/board.md,stackvet
+2026-10-15,18:43,released,0488,,,released 0488,docs/coordination/board.md,stackvet
+2026-10-15,18:43,withdrew,0498,documentation,,"withdrew 0498 from documentation (full), on hold: the owner's choice of 15 October: too many sessions for the cost; each finishes what it holds and stops, and what is left is one queue for one session",docs/coordination/board.md,stackvet
+2026-10-15,18:43,released,0498,,,released 0498,docs/coordination/board.md,stackvet
+2026-10-15,18:43,session,,,,session wording removed,docs/coordination/board.md,stackvet
+2026-10-15,19:13,finished,0497,documentation,2095,finished 0497 by documentation (full): https://github.com/abbyshade111/StackVet/pull/2095,docs/coordination/board.md,stackvet
+2026-10-15,19:13,withdrew,0232,honesty,,"withdrew 0232 from honesty (full), on hold: its open parts wait on the manifest; B can now use 0491's pathways list; set aside so honesty works the one queue",docs/coordination/board.md,stackvet
+2026-10-15,19:13,assigned,0536,honesty,,"assigned 0536 to honesty (full): the one queue for one session (the owner's choice of 15 October), in order",docs/coordination/board.md,stackvet
+2026-10-15,19:13,assigned,0535,honesty,,"assigned 0535 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order",docs/coordination/board.md,stackvet
+2026-10-15,19:13,assigned,0492,honesty,,"assigned 0492 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order",docs/coordination/board.md,stackvet
+2026-10-15,19:13,assigned,0488,honesty,,"assigned 0488 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order",docs/coordination/board.md,stackvet
+2026-10-15,19:13,assigned,0498,honesty,,"assigned 0498 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order",docs/coordination/board.md,stackvet
+2026-10-15,19:14,assigned,0489,honesty,,"assigned 0489 to honesty (full) as next: the one queue for one session (the owner's choice of 15 October), in order",docs/coordination/board.md,stackvet
+2026-10-15,19:14,dropped,0528,,,dropped 0528 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,19:20,dropped,0494,,,dropped 0494 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,19:20,session,,,,session documentation removed,docs/coordination/board.md,stackvet
+2026-10-15,19:20,queued,0604,,,"queued 0604, marked",docs/coordination/board.md,stackvet
+2026-10-15,19:20,queued,0606,,,"queued 0606, marked",docs/coordination/board.md,stackvet
+2026-10-15,19:20,queued,0607,,,"queued 0607, marked",docs/coordination/board.md,stackvet
+2026-10-15,19:20,queued,0608,,,"queued 0608, marked",docs/coordination/board.md,stackvet
+2026-10-15,19:20,queued,0609,,,"queued 0609, marked",docs/coordination/board.md,stackvet
+2026-10-15,19:20,queued,0610,,,"queued 0610, marked",docs/coordination/board.md,stackvet
+2026-10-15,19:20,queued,0611,,,"queued 0611, marked",docs/coordination/board.md,stackvet
+2026-10-15,20:50,finished,0536,honesty,2100,finished 0536 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2100; now holds 0535,docs/coordination/board.md,stackvet
+2026-10-15,21:20,finished,0492,honesty,2102,"finished 0492 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2102; from its lane, behind 0535",docs/coordination/board.md,stackvet
+2026-10-15,21:50,finished,0535,honesty,2105,finished 0535 by honesty (full): https://github.com/abbyshade111/StackVet/pull/2105; now holds 0488,docs/coordination/board.md,stackvet
+2026-10-15,21:50,assigned,0496,honesty,,"assigned 0496 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed",docs/coordination/board.md,stackvet
+2026-10-15,21:50,assigned,0499,honesty,,"assigned 0499 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed",docs/coordination/board.md,stackvet
+2026-10-15,21:50,assigned,0500,honesty,,"assigned 0500 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed",docs/coordination/board.md,stackvet
+2026-10-15,21:50,assigned,0608,honesty,,"assigned 0608 to honesty (full) as next: the one queue (the owner's choice of 15 October), in order: the pointer proposals left (0500 after the probe sweeps, the owner's go of 14 October), then the follow-ups the sessions filed",docs/coordination/board.md,stackvet
+2026-10-15,22:23,session,,,,"session orchestrator added, arm full",docs/coordination/board.md,stackvet
+2026-10-15,22:23,withdrew,0488,honesty,,"withdrew 0488 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)",docs/coordination/board.md,stackvet
+2026-10-15,22:23,released,0488,,,released 0488,docs/coordination/board.md,stackvet
+2026-10-15,22:24,assigned,0488,orchestrator,,"assigned 0488 to orchestrator (full): the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order",docs/coordination/board.md,stackvet
+2026-10-15,22:24,withdrew,0498,honesty,,"withdrew 0498 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)",docs/coordination/board.md,stackvet
+2026-10-15,22:24,released,0498,,,released 0498,docs/coordination/board.md,stackvet
+2026-10-15,22:24,assigned,0498,orchestrator,,"assigned 0498 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order",docs/coordination/board.md,stackvet
+2026-10-15,22:24,withdrew,0489,honesty,,"withdrew 0489 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)",docs/coordination/board.md,stackvet
+2026-10-15,22:24,released,0489,,,released 0489,docs/coordination/board.md,stackvet
+2026-10-15,22:24,assigned,0489,orchestrator,,"assigned 0489 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order",docs/coordination/board.md,stackvet
+2026-10-15,22:24,withdrew,0496,honesty,,"withdrew 0496 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)",docs/coordination/board.md,stackvet
+2026-10-15,22:24,released,0496,,,released 0496,docs/coordination/board.md,stackvet
+2026-10-15,22:24,assigned,0496,orchestrator,,"assigned 0496 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order",docs/coordination/board.md,stackvet
+2026-10-15,22:24,withdrew,0499,honesty,,"withdrew 0499 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)",docs/coordination/board.md,stackvet
+2026-10-15,22:24,released,0499,,,released 0499,docs/coordination/board.md,stackvet
+2026-10-15,22:24,assigned,0499,orchestrator,,"assigned 0499 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order",docs/coordination/board.md,stackvet
+2026-10-15,22:24,withdrew,0500,honesty,,"withdrew 0500 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)",docs/coordination/board.md,stackvet
+2026-10-15,22:24,released,0500,,,released 0500,docs/coordination/board.md,stackvet
+2026-10-15,22:24,assigned,0500,orchestrator,,"assigned 0500 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order",docs/coordination/board.md,stackvet
+2026-10-15,22:24,withdrew,0608,honesty,,"withdrew 0608 from honesty (full), on hold: honesty stopped; the owner asked the orchestrating session to take the rest of the queue (16 October)",docs/coordination/board.md,stackvet
+2026-10-15,22:24,released,0608,,,released 0608,docs/coordination/board.md,stackvet
+2026-10-15,22:24,assigned,0608,orchestrator,,"assigned 0608 to orchestrator (full) as next: the owner's word of 16 October: the orchestrating session builds the rest of the one queue, in order",docs/coordination/board.md,stackvet
+2026-10-15,22:24,session,,,,session honesty removed,docs/coordination/board.md,stackvet
+2026-10-15,23:20,finished,0488,orchestrator,,finished 0488 by orchestrator (full): 2108; now holds 0498,docs/coordination/board.md,stackvet
+2026-10-15,23:20,withdrew,0498,orchestrator,,"withdrew 0498 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board",docs/coordination/board.md,stackvet
+2026-10-15,23:20,withdrew,0489,orchestrator,,"withdrew 0489 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board",docs/coordination/board.md,stackvet
+2026-10-15,23:20,withdrew,0496,orchestrator,,"withdrew 0496 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board",docs/coordination/board.md,stackvet
+2026-10-15,23:20,withdrew,0499,orchestrator,,"withdrew 0499 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board",docs/coordination/board.md,stackvet
+2026-10-15,23:20,withdrew,0500,orchestrator,,"withdrew 0500 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board",docs/coordination/board.md,stackvet
+2026-10-15,23:20,withdrew,0608,orchestrator,,"withdrew 0608 from orchestrator (full), on hold: the owner's word of 16 October: one session builds the rest in order, without the board",docs/coordination/board.md,stackvet
+2026-10-15,23:20,session,,,,session orchestrator removed,docs/coordination/board.md,stackvet
+2026-10-15,23:20,dropped,0498,,,dropped 0498 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,23:20,dropped,0489,,,dropped 0489 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,23:20,dropped,0496,,,dropped 0496 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,23:20,dropped,0499,,,dropped 0499 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,23:20,dropped,0500,,,dropped 0500 from the queue,docs/coordination/board.md,stackvet
+2026-10-15,23:20,dropped,0608,,,dropped 0608 from the queue,docs/coordination/board.md,stackvet
+2026-10-16,01:17,dropped,0604,,,dropped 0604 from the queue,docs/coordination/board.md,stackvet
+2026-10-16,01:17,dropped,0606,,,dropped 0606 from the queue,docs/coordination/board.md,stackvet
+2026-10-16,01:17,dropped,0607,,,dropped 0607 from the queue,docs/coordination/board.md,stackvet
+2026-10-16,01:17,dropped,0609,,,dropped 0609 from the queue,docs/coordination/board.md,stackvet
+2026-10-16,01:17,dropped,0610,,,dropped 0610 from the queue,docs/coordination/board.md,stackvet
+2026-10-16,01:17,dropped,0611,,,dropped 0611 from the queue,docs/coordination/board.md,stackvet

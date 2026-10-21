@@ -20,9 +20,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PAPER = HERE.parent
 TODAY = HERE / "to-today"
-KEYS = ["v1", "v2", "stackvet"]
-NAMES = {"v1": "version 1", "v2": "version 2", "stackvet": "StackVet", "all": "all three"}
-COLORS = {"v1": "var(--v1)", "v2": "var(--v2)", "stackvet": "var(--sv)"}
+KEYS = ["v1", "stackvet"]
+NAMES = {"v1": "version 1", "stackvet": "StackVet", "all": "both"}
+COLORS = {"v1": "var(--v1)", "stackvet": "var(--sv)"}
 
 
 def rows(path):
@@ -117,9 +117,9 @@ def day_bars(days, series, label, height=220):
 
 
 def grouped_table(categories, counts, label):
-    """A table: one row per category, one column per period and one for all three, each cell a count and a bar."""
+    """A table: one row per category, one column per period and one for both, each cell a count and a bar."""
     top = max((counts[c][k] for c in categories for k in KEYS), default=0) or 1
-    head = "".join(f"<th>{esc(NAMES[k])}</th>" for k in KEYS) + "<th>all three</th>"
+    head = "".join(f"<th>{esc(NAMES[k])}</th>" for k in KEYS) + "<th>both</th>"
     body = []
     for c in categories:
         cells = []
@@ -235,7 +235,7 @@ def tests_faults(faults, tests):
         "<code>tables/ledgers.py</code>). Rows to 11:37 on 4 October are the ledgers as published; rows since were "
         "compiled on 15 October 2026 by Claude Code sessions reading each backlog item and merge, each row with its "
         "source and how sure the reading was. A period is the one a row's date falls in (<code>DATA.md</code>, \"The "
-        "three periods\"), so `sv`'s faults before the cut-over of 26 September are in version 1's period. Tests are the "
+        "two periods\"), so `sv`'s faults before the cut-over of 26 September are in version 1's period. Tests are the "
         "<code>#[test]</code> lines on main at each day's last commit; v1's are the counts its commits state.")
 
 
@@ -379,7 +379,7 @@ def reviews_figure(review, deep, open_fixed):
         "Deep Reviews by Period", "The deep reviews, and what became of their findings, to today",
         "The figure of the 4 October cut-off (<code>figure-review.html</code>) showed the first deep review as it stood "
         "at 11:37 that day, with 1 of its 58 findings fixed. Here it is to today, beside the deep review of 13 October.",
-        "<h2>1. The deep review of 4 October (version 2), 58 findings</h2>"
+        "<h2>1. The deep review of 4 October (StackVet period, before the rename), 58 findings</h2>"
         + table(first, ["fixed by the cut-off", "fixed since", "still open"], "The 4 October review")
         + "<h2>2. The deep review of 13 October (StackVet), 83 items</h2>"
         + table(second, ["done", "still open"], "The 13 October review"),

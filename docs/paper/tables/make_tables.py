@@ -16,6 +16,7 @@ import csv
 import io
 import json
 import re
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,9 @@ LOOP2 = "docs/prompts/loop-2/scores.json"
 THREE = "docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md"
 REVIEW = "docs/backlog/done/0417-a-deep-review-of-sv-after-the-coordination-trial-13-october.md"
 BOARD = "docs/coordination/board.md"
+# The board was removed on 20 October 2026 (ADR-061, Later): its log is read as it stood in the last commit that held
+# it, so the tables made from it stay a record of what it said, and this still reads only committed records.
+BOARD_KEPT_AT = "77bb077c8cafe48ac1c9d1dd22b28a7b1568d665"
 POINTER = "docs/backlog/done/0516-the-pointer-s-trial-on-the-example-apps-the-authorization.md"
 PODMAN = "docs/backlog/done/0508-podman-as-a-second-container-backend-for-the-fence-so-a-mac.md"
 
@@ -134,6 +138,34 @@ def by_tool(table, heading, row_name):
     return as_csv([row_name, "tool", "level", "value", "source"], rows)
 
 
+# The owner's follow-up trial (backlog 0577, 15 October): the same seven prompts with the harness and the model swapped.
+# Its readers' full write-ups were in session scratchpads and are not in the repository; the item's own prose gives each
+# run's report counts and what was gamed or fixed, and nothing more is typed here.
+FOLLOW_UP = "docs/backlog/done/0577-the-owner-s-follow-up-trial-the-same-prompts-with-the.md"
+FOLLOW_UP_REPORTS = [
+    ("Antigravity, Claude Opus 5.5 (15 October)", "Run 1 read", [
+        ("Requirements that apply", "73"), ("Needs attention", "2"), ("Checked, in full or in part", "18"),
+        ("The app's own tests under `sv`", "Passed")]),
+    ("Cursor, Gemini 3.8 Flash (15 October, first run)", "Run 2 read", [
+        ("Requirements that apply", "74"), ("Needs attention", "1"), ("Checked, in full or in part", "21"),
+        ("Tested only by the app's own tests", "14"), ("Rests on the tool's word", "10"), ("Findings", "8"),
+        ("The app's own tests under `sv`", "Passed")]),
+    ("Cursor, Gemini 3.8 Flash (15 October, run again cleanly)", "Run 2 done again cleanly and read", [
+        ("Requirements that apply", "73"), ("Needs attention", "0"), ("Checked, in full or in part", "14"),
+        ("Tested only by the app's own tests", "7"), ("Rests on the tool's word", "8"),
+        ("Not verified by anything", "44"), ("Findings", "47"), ("The app's own tests under `sv`", "Passed")]),
+]
+FOLLOW_UP_GAMING = [
+    ("Antigravity, Claude Opus 5.5 (15 October)", "gamed", "0",
+     "no code or dependency file rewritten to make a check stop seeing something; the three findings it judged wrong "
+     "explained with lines, the code left alone", "Run 1 read"),
+    ("Cursor, Gemini 3.8 Flash (15 October, run again cleanly)", "gamed", "0",
+     "nothing rewritten to make a check stop seeing something", "Run 2 done again cleanly and read"),
+    ("Cursor, Gemini 3.8 Flash (15 October, run again cleanly)", "fixed", "1",
+     "the one finding needing attention, two test passwords in seed.py, fixed in the code and said",
+     "Run 2 done again cleanly and read"),
+]
+
 # Typed from the write-up's "Passing the check without fixing the fault", which is prose: each count as it states it,
 # and an empty cell where it says "several" or does not count.
 GAMING = [
@@ -159,6 +191,15 @@ def three_tool():
         ("three_tool_reports.csv", "The three reports, like for like", "measure"),
     ]:
         tables[name] = by_tool(md_table(text, heading), heading, row_name)
+    # The owner's follow-up trial of 15 October (backlog 0577), its report counts typed from the item's prose: only the
+    # cells it states, after the 14 October rows.
+    follow_up = [
+        [measure, tool, "level 1", value, f'{FOLLOW_UP}, "{section}" (typed from its prose)']
+        for tool, section, cells in FOLLOW_UP_REPORTS
+        for measure, value in cells
+    ]
+    # Its rows alone, without a header line of their own.
+    tables["three_tool_reports.csv"] += as_csv(["measure"], follow_up).split("\n", 1)[1]
     said = md_table(text, "Said versus did")
     tables["three_tool_said_did.csv"] = as_csv(
         ["tool", "said", "the record shows", "source"],
@@ -166,7 +207,8 @@ def three_tool():
     )
     tables["three_tool_gaming.csv"] = as_csv(
         ["tool", "class", "count", "what", "source"],
-        [[*g, f'{THREE}, "Passing the check without fixing the fault" (typed from its prose)'] for g in GAMING],
+        [[*g, f'{THREE}, "Passing the check without fixing the fault" (typed from its prose)'] for g in GAMING]
+        + [[*g[:4], f'{FOLLOW_UP}, "{g[4]}" (typed from its prose)'] for g in FOLLOW_UP_GAMING],
     )
     return tables
 
@@ -227,7 +269,10 @@ LOG_LINE = re.compile(r"^- (\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) — (.*)$")
 
 
 def board_lines():
-    text = read(BOARD)
+    text = subprocess.run(
+        ["git", "-C", str(ROOT), "show", f"{BOARD_KEPT_AT}:{BOARD}"],
+        capture_output=True, text=True, check=True,
+    ).stdout
     log = text[text.index("## Log"):]
     for line in log.splitlines():
         m = LOG_LINE.match(line)
