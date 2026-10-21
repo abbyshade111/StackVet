@@ -108,6 +108,8 @@ pub(crate) fn found(listing: &Listing) -> Vec<(&'static str, String)> {
 pub fn check(listing: &Listing, report: &mut ConfigReport) {
     let places = found(listing);
     if places.is_empty() {
+        // Run, and withheld: no handler found is no credit, and said nowhere (ADR-059's census sees it here).
+        crate::verified::unless_credited(LAST_RESORT, &report.passed);
         return;
     }
     // Each kind once, in the order first found.
