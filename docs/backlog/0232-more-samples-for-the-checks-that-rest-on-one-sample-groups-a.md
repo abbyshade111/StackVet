@@ -1,6 +1,6 @@
 # More samples for the checks that rest on one sample (groups A to H)
 
-**Status:** partly done: part D's size, antivirus-test-file, and SVG checks and the archives still send one file each (buildable now, since `upload` is a list); parts B and F wait on a sign-out for each way of signing in, which the owner chose on 20 October 2026 to add to stackvet.toml
+**Status:** partly done: parts B and F wait on a sign-out for each way of signing in, which the owner chose on 20 October 2026 to add to stackvet.toml
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -71,7 +71,7 @@ by speaking for what its requirement names. One part per group of the inventory 
    **Built 12 October 2026** (ADR-053, "Later, 12 October 2026";
    `docs/design/0372-the-served-file-checks-judge-three-files-each-12-october-2026.md`): the two served-file checks judge
    three files each, whole only when all three are safe.
-   **Part status:** claimed by claude/backlog-work, 20 October 2026
+   **Part status:** done, 21 October 2026
 5. **E. Each kind of event.** Each event the requirement names made to happen and looked for in the log, not one
    line.
    **Scope of this claim (12 October 2026):** the authorization-failure log check (`probe.authorization-failure-logged`,

@@ -745,10 +745,13 @@ fn svg_check(
     let svg = Upload {
         id: "upload-svg",
         name: "sv-probe.svg",
+        // Four ways an SVG runs code, so a cleaner that strips tags and keeps attributes is told from one that does not
+        // (backlog 0232, part D): a `<script>`, a `<foreignObject>`, an `onload` handler, and a `javascript:` link.
         contents: format!(
-            "<svg xmlns=\"http://www.w3.org/2000/svg\"><script>/*{MARKER}*/</script>\
-             <foreignObject><div>{MARKER}</div></foreignObject><circle id=\"{SHAPE}\" \
-             r=\"1\"/></svg>"
+            "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" \
+             onload=\"/*{MARKER}*/\"><script>/*{MARKER}*/</script>\
+             <foreignObject><div>{MARKER}</div></foreignObject><a xlink:href=\"javascript:/*{MARKER}*/\">\
+             <circle id=\"{SHAPE}\" r=\"1\"/></a></svg>"
         )
         .into_bytes(),
     };
@@ -823,14 +826,19 @@ fn svg_check(
         return;
     }
     let body = fetched.body.to_lowercase();
-    let kept: Vec<&str> = [
+    let handler = regex::Regex::new(r"\son[a-z]+\s*=").expect("compiles");
+    let mut kept: Vec<&str> = [
         ("<script", "its `<script>`"),
         ("<foreignobject", "its `<foreignObject>`"),
+        ("javascript:", "its `javascript:` link"),
     ]
     .iter()
     .filter(|(tag, _)| body.contains(tag))
     .map(|(_, what)| *what)
     .collect();
+    if handler.is_match(&body) {
+        kept.push("its `onload` handler");
+    }
     if !kept.is_empty() {
         let disposition = fetched
             .header("content-disposition")
@@ -874,12 +882,12 @@ fn svg_check(
             UPLOAD_SVG_SCRIPT.rule_id,
             UPLOAD_SVG_SCRIPT.requirement_ids,
             format!(
-                "an SVG image uploaded with a `<script>` and a `<foreignObject>`, fetched back from \
-                 {path} with both removed and its drawing kept (these two, not every dangerous SVG \
-                 feature)"
+                "an SVG image uploaded with a `<script>`, a `<foreignObject>`, an `onload` handler, and a \
+                 `javascript:` link, fetched back from {path} with all four removed and its drawing kept (these \
+                 four, not every dangerous SVG feature)"
             ),
         )
-        // Two dangerous parts of one SVG, not every one there is (ADR-053, Later).
+        // Four dangerous parts of one SVG, not every one there is (ADR-053, Later).
         .in_part());
     } else {
         out.not_assessed.push((
@@ -2625,13 +2633,17 @@ mod tests {
             .iter()
             .find(|v| v.check_id == UPLOAD_SVG_SCRIPT.rule_id)
             .unwrap_or_else(|| panic!("{:?}", o.steps));
-        assert!(credit.scope.contains("both removed"), "{}", credit.scope);
+        assert!(
+            credit.scope.contains("all four removed"),
+            "{}",
+            credit.scope
+        );
         assert!(
             credit.scope.contains("not every dangerous SVG feature"),
             "{}",
             credit.scope
         );
-        assert!(credit.in_part, "two parts of one SVG are credited in part");
+        assert!(credit.in_part, "four parts of one SVG are credited in part");
     }
 
     #[test]
@@ -3106,6 +3118,9 @@ mod served_set_tests;
 
 #[cfg(test)]
 mod against_control_tests;
+
+#[cfg(test)]
+mod svg_handlers_tests;
 
 #[cfg(test)]
 mod beside_ordinary_tests;
