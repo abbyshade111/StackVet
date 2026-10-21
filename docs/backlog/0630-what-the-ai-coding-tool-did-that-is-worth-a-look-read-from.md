@@ -1,6 +1,8 @@
 # What the AI coding tool did that is worth a look, read from git and the hook record, as information in the report
 
-**Status:** open
+**Status:** claimed by claude/0630 (desktop session), 21 October 2026
+
+**Record:** ADR-131, proposed with this claim.
 
 Filed 21 October 2026 at the owner's request, asked in a session: "Is there a way to include information in the report
 to flag (as informational) for the user any potentially risky behavior on the part of the AI coding tool?" To be built
