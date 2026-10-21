@@ -61,8 +61,7 @@ fn three_raises_the_level_and_says_so() {
 #[test]
 fn a_level_below_the_answers_is_refused_with_the_answers_named() {
     let refused = parse("customers", NOTHING, Some("1"))
-        .err()
-        .expect("level 1 on a level-2 app is refused")
+        .expect_err("level 1 on a level-2 app is refused")
         .to_string();
     assert!(
         refused.contains("level 1") && refused.contains("level 2"),
