@@ -104,7 +104,7 @@ use passwords::*;
 use redirects::*;
 use reset::*;
 use rules::*;
-pub(crate) use rules::{Rule, finding, finding_on};
+pub(crate) use rules::{LOGOUT, Rule, finding, finding_on};
 use saved_page::*;
 use sessions::*;
 use sessions_end::*;

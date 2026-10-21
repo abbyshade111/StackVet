@@ -431,7 +431,7 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
         Ok(mut begun) => {
             let back = begun.back.clone();
             let opened = finish(http, section, &mut begun.session, &back, "control");
-            (opened, begun.nonce_sent)
+            (opened, begun.nonce_sent, begun.session)
         }
         Err(why) => {
             not_assessed(
@@ -441,7 +441,8 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
             return out;
         }
     };
-    let (opened, nonce_sent) = control;
+    // The session the ordinary sign-in opened is kept, to be signed out once every other question is asked.
+    let (opened, nonce_sent, mut signed_in) = control;
     if !opened {
         not_assessed(
             &mut out,
@@ -630,7 +631,87 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
                 .to_owned(),
         ));
     }
+    signed_out(http, section, &mut signed_in, &mut out);
     out
+}
+
+/// Whether signing out ends a sign-in through the provider (V7.4.1; backlog 0232, part B): the session the ordinary
+/// sign-in opened, copied, signed out with `logout`, and the copy sent to the private page again. The copy still let in
+/// is a finding, as for the password sign-in; refused is credited in part, one session after one sign-out. The session
+/// has to open the page just before, or a refusal after shows nothing about signing out.
+fn signed_out(
+    http: &mut dyn Http,
+    section: &OidcSection,
+    session: &mut Session,
+    out: &mut Outcome,
+) {
+    let say = |out: &mut Outcome, why: String| {
+        out.not_assessed.push((
+            "V7.4.1".to_owned(),
+            format!("Whether signing out ends a sign-in through another service: {why}"),
+        ))
+    };
+    let Some(logout) = &section.logout else {
+        say(
+            out,
+            "`[stack.run.oidc]` has no `logout`. Add the request that signs out, as `[stack.run.users]` has, and this \
+             will try it."
+                .to_owned(),
+        );
+        return;
+    };
+    let private = &section.private;
+    if !ok(&http.send(&get("oidc-before-logout", private, session))) {
+        say(
+            out,
+            format!(
+                "the session the sign-in opened no longer opened {private} before signing out."
+            ),
+        );
+        return;
+    }
+    let copied = session.clone();
+    let answer = send_filled(http, "oidc-logout", logout, session, &[private.clone()]);
+    if crate::signed_in::answer_of(answer.as_ref()).is_crash_or_silence() {
+        say(
+            out,
+            format!("the `logout` request was answered {}.", status(&answer)),
+        );
+        return;
+    }
+    let after = http.send(&get("oidc-after-logout", private, &copied));
+    if ok(&after) {
+        out.steps.push(format!(
+            "signed out of a sign-in through the test provider: {private} still opened"
+        ));
+        out.findings.push(finding(
+            &crate::signed_in::LOGOUT,
+            "Signing out does not end a sign-in through another service",
+            Severity::High,
+            format!(
+                "Signed in through the test provider and then out with {} {}, the session from before still opened \
+                 {private}.",
+                logout.method, logout.path
+            ),
+        ));
+    } else {
+        out.steps.push(format!(
+            "signed out of a sign-in through the test provider: {private} refused the old session"
+        ));
+        out.verified.push(
+            crate::Verified::new(
+                crate::signed_in::LOGOUT.rule_id,
+                crate::signed_in::LOGOUT.requirement_ids,
+                format!(
+                    "a sign-in through the test provider, signed out with {} {}: the session from before, sent again \
+                     to {private}, refused",
+                    logout.method, logout.path
+                ),
+            )
+            // One session through the provider, sent again to one page, after one sign-out (ADR-053, Later).
+            .in_part(),
+        );
+    }
 }
 
 fn word(result: Option<bool>) -> &'static str {
@@ -718,6 +799,8 @@ mod tests {
         refuses_shared_email: bool,
         /// What is saved is not shown anywhere.
         saves_nothing: bool,
+        /// `/logout` answers, and the session it was sent with stays signed in.
+        logout_keeps_session: bool,
     }
 
     /// A token as the fake provider issues it: what it says, and how it was signed.
@@ -806,6 +889,14 @@ mod tests {
             let path = r.path.split('?').next().unwrap_or("").to_owned();
             let sid = cookie(r);
             Some(match path.as_str() {
+                "/logout" => {
+                    if !self.flaws.logout_keeps_session
+                        && let Some(sid) = &sid
+                    {
+                        self.signed_in.remove(sid);
+                    }
+                    answer(303, vec![("location", "/".to_owned())])
+                }
                 "/login/oidc" => {
                     let sid = self.id();
                     let state = self.id();
@@ -989,6 +1080,7 @@ mod tests {
             create: None,
             shows: None,
             backchannel_logout: None,
+            logout: None,
         }
     }
 
@@ -1437,4 +1529,6 @@ mod tests {
         assert_eq!(path_of("http://app:8080"), "/");
         assert_eq!(path_of("/callback?code=x"), "/callback?code=x");
     }
+
+    mod sign_out_tests;
 }
