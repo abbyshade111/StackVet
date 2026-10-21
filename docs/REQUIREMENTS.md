@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 130 can be checked, 61 can only be found failing, 10 where a check helps but a person decides, 79 the owner answers, and 65 with no check yet.
+345 requirements: 130 can be checked, 61 can only be found failing, 10 where a check helps but a person decides, 94 the owner answers, and 50 with no check yet.
 
 ### Level 1 (70 requirements, 45 can be checked, 14 can only be found failing)
 
@@ -553,18 +553,18 @@ decided per app, from its `stackvet.toml` and its code.
 | Requirement | Coverage | Checks |
 |---|---|---|
 | **V10.2.3** Verify that the OAuth client only requests the required scopes (or other authorization parameters) in requests to the authorization server. | No check yet | – |
-| **V10.3.5** Verify that the resource server prevents the use of stolen access tokens or replay of access tokens (from unauthorized parties) by requiring sender-constrained access tokens, either Mutual TLS for OAuth 2 or OAuth 2 Demonstration of Proof of Possession (DPoP). | No check yet | – |
+| **V10.3.5** Verify that the resource server prevents the use of stolen access tokens or replay of access tokens (from unauthorized parties) by requiring sender-constrained access tokens, either Mutual TLS for OAuth 2 or OAuth 2 Demonstration of Proof of Possession (DPoP). | The owner answers | Asked of the owner: a design question |
 | **V10.4.12** Verify that for a given client, the authorization server only allows the 'response_mode' value that this client needs to use. For example, by having the authorization server validate this value against the expected values or by using pushed authorization request (PAR) or JWT-secured Authorization Request (JAR). | No check yet | – |
 | **V10.4.13** Verify that grant type 'code' is always used together with pushed authorization requests (PAR). | No check yet | – |
-| **V10.4.14** Verify that the authorization server issues only sender-constrained (Proof-of-Possession) access tokens, either with certificate-bound access tokens using mutual TLS (mTLS) or DPoP-bound access tokens (Demonstration of Proof of Possession). | No check yet | – |
-| **V10.4.15** Verify that, for a server-side client (which is not executed on the end-user device), the authorization server ensures that the 'authorization_details' parameter value is from the client backend and that the user has not tampered with it. For example, by requiring the usage of pushed authorization request (PAR) or JWT-secured Authorization Request (JAR). | No check yet | – |
+| **V10.4.14** Verify that the authorization server issues only sender-constrained (Proof-of-Possession) access tokens, either with certificate-bound access tokens using mutual TLS (mTLS) or DPoP-bound access tokens (Demonstration of Proof of Possession). | The owner answers | Asked of the owner: a design question |
+| **V10.4.15** Verify that, for a server-side client (which is not executed on the end-user device), the authorization server ensures that the 'authorization_details' parameter value is from the client backend and that the user has not tampered with it. For example, by requiring the usage of pushed authorization request (PAR) or JWT-secured Authorization Request (JAR). | The owner answers | Asked of the owner: a design question |
 | **V10.4.16** Verify that the client is confidential and the authorization server requires the use of strong client authentication methods (based on public-key cryptography and resistant to replay attacks), such as mutual TLS ('tls_client_auth', 'self_signed_tls_client_auth') or private key JWT ('private_key_jwt'). | No check yet | – |
 
 #### V11 Cryptography
 
 | Requirement | Coverage | Checks |
 |---|---|---|
-| **V11.1.3** Verify that cryptographic discovery mechanisms are employed to identify all instances of cryptography in the system, including encryption, hashing, and signing operations. | No check yet | – |
+| **V11.1.3** Verify that cryptographic discovery mechanisms are employed to identify all instances of cryptography in the system, including encryption, hashing, and signing operations. | The owner answers | Asked of the owner: a design question |
 | **V11.1.4** Verify that a cryptographic inventory is maintained. This must include a documented plan that outlines the migration path to new cryptographic standards, such as post-quantum cryptography, in order to react to future threats. | The owner answers | Asked of the owner: a section in the security notes |
 | **V11.2.4** Verify that all cryptographic operations are constant-time, with no 'short-circuit' operations in comparisons, calculations, or returns, to avoid leaking information. | Can only be found failing | Reads the code: `ast.digest-compared-with-equals`, looks for: A signature is compared in a way that leaks how much of it was right (found failing only) |
 | **V11.2.5** Verify that all cryptographic modules fail securely, and errors are handled in a way that does not enable vulnerabilities, such as Padding Oracle attacks. | No check yet | – |
@@ -572,8 +572,8 @@ decided per app, from its `stackvet.toml` and its code.
 | **V11.3.5** Verify that any combination of an encryption algorithm and a MAC algorithm is operating in encrypt-then-MAC mode. | No check yet | – |
 | **V11.5.2** Verify that the random number generation mechanism in use is designed to work securely, even under heavy demand. | No check yet | – |
 | **V11.6.2** Verify that approved cryptographic algorithms are used for key exchange (such as Diffie-Hellman) with a focus on ensuring that key exchange mechanisms use secure parameters. This will prevent attacks on the key establishment process which could lead to adversary-in-the-middle attacks or cryptographic breaks. | No check yet | – |
-| **V11.7.1** Verify that full memory encryption is in use that protects sensitive data while it is in use, preventing access by unauthorized users or processes. | No check yet | – |
-| **V11.7.2** Verify that data minimization ensures the minimal amount of data is exposed during processing, and ensure that data is encrypted immediately after use or as soon as feasible. | No check yet | – |
+| **V11.7.1** Verify that full memory encryption is in use that protects sensitive data while it is in use, preventing access by unauthorized users or processes. | The owner answers | Asked of the owner: a design question |
+| **V11.7.2** Verify that data minimization ensures the minimal amount of data is exposed during processing, and ensure that data is encrypted immediately after use or as soon as feasible. | The owner answers | Asked of the owner: a design question |
 
 #### V12 Secure Communication
 
@@ -591,8 +591,8 @@ decided per app, from its `stackvet.toml` and its code.
 | **V13.1.3** Verify that the application documentation defines resource‑management strategies for every external system or service it uses (e.g., databases, file handles, threads, HTTP connections). This should include resource‑release procedures, timeout settings, failure handling, and where retry logic is implemented, specifying retry limits, delays, and back‑off algorithms. For synchronous HTTP request–response operations it should mandate short timeouts and either disable retries or strictly limit retries to prevent cascading delays and resource exhaustion. | The owner answers | Asked of the owner: a section in the security notes |
 | **V13.1.4** Verify that the application's documentation defines the secrets that are critical for the security of the application and a schedule for rotating them, based on the organization's threat model and business requirements. | The owner answers | Asked of the owner: a section in the security notes |
 | **V13.2.6** Verify that where the application connects to separate services, it follows the documented configuration for each connection, such as maximum parallel connections, behavior when maximum allowed connections is reached, connection timeouts, and retry strategies. | The owner answers | Asked of the owner: a check by hand |
-| **V13.3.3** Verify that all cryptographic operations are performed using an isolated security module (such as a vault or hardware security module) to securely manage and protect key material from exposure outside of the security module. | No check yet | – |
-| **V13.3.4** Verify that secrets are configured to expire and be rotated based on the application's documentation. | No check yet | – |
+| **V13.3.3** Verify that all cryptographic operations are performed using an isolated security module (such as a vault or hardware security module) to securely manage and protect key material from exposure outside of the security module. | The owner answers | Asked of the owner: a design question |
+| **V13.3.4** Verify that secrets are configured to expire and be rotated based on the application's documentation. | The owner answers | Asked of the owner: a design question |
 | **V13.4.6** Verify that the application does not expose detailed version information of backend components. | Can only be found failing | The running app: `probe.version-disclosed`, if it fails: A version number tells an attacker which published weaknesses to try first, without having to guess. (found failing only) |
 | **V13.4.7** Verify that the web tier is configured to only serve files with specific file extensions to prevent unintentional information, configuration, and source code leakage. | Can only be found failing | Reads the code: `ast.static-files-from-app-folder`, looks for: The app serves files from the folder its own code is in (found failing only)<br>The running app: `probe.private-files-served`, if it fails: Anyone can download them. A settings file or key hands over the passwords and keys in it; server code shows exactly where to look for weaknesses; a dump or backup can hold every user's data. (found failing only) |
 
@@ -601,8 +601,8 @@ decided per app, from its `stackvet.toml` and its code.
 | Requirement | Coverage | Checks |
 |---|---|---|
 | **V14.2.5** Verify that caching mechanisms are configured to only cache responses which have the expected content type for that resource and do not contain sensitive, dynamic content. The web server should return a 404 or 302 response when a non-existent file is accessed rather than returning a different, valid file. This should prevent Web Cache Deception attacks. | No check yet | – |
-| **V14.2.6** Verify that the application only returns the minimum required sensitive data for the application's functionality. For example, only returning some of the digits of a credit card number and not the full number. If the complete data is required, it should be masked in the user interface unless the user specifically views it. | No check yet | – |
-| **V14.2.7** Verify that sensitive information is subject to data retention classification, ensuring that outdated or unnecessary data is deleted automatically, on a defined schedule, or as the situation requires. | No check yet | – |
+| **V14.2.6** Verify that the application only returns the minimum required sensitive data for the application's functionality. For example, only returning some of the digits of a credit card number and not the full number. If the complete data is required, it should be masked in the user interface unless the user specifically views it. | The owner answers | Asked of the owner: a design question |
+| **V14.2.7** Verify that sensitive information is subject to data retention classification, ensuring that outdated or unnecessary data is deleted automatically, on a defined schedule, or as the situation requires. | The owner answers | Asked of the owner: a design question |
 | **V14.2.8** Verify that sensitive information is removed from the metadata of user-submitted files unless storage is consented to by the user. | No check yet | – |
 
 #### V15 Secure Coding and Architecture
@@ -612,11 +612,11 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.1.4** Verify that application documentation highlights third-party libraries which are considered to be "risky components". | The owner answers | Asked of the owner: a section in the security notes |
 | **V15.1.5** Verify that application documentation highlights parts of the application where "dangerous functionality" is being used. | The owner answers | Asked of the owner: a section in the security notes |
 | **V15.2.4** Verify that third-party components and all of their transitive dependencies are included from the expected repository, whether internally owned or an external source, and that there is no risk of a dependency confusion attack. | Can only be found failing | Reads the code: `ast.download-piped-to-shell`, looks for: Code downloaded from the network is run straight away (found failing only) |
-| **V15.2.5** Verify that the application implements additional protections around parts of the application which are documented as containing "dangerous functionality" or using third-party libraries considered to be "risky components". This could include techniques such as sandboxing, encapsulation, containerization or network level isolation to delay and deter attackers who compromise one part of an application from pivoting elsewhere in the application. | No check yet | – |
+| **V15.2.5** Verify that the application implements additional protections around parts of the application which are documented as containing "dangerous functionality" or using third-party libraries considered to be "risky components". This could include techniques such as sandboxing, encapsulation, containerization or network level isolation to delay and deter attackers who compromise one part of an application from pivoting elsewhere in the application. | The owner answers | Asked of the owner: a design question |
 | **V15.4.1** Verify that shared objects in multi-threaded code (such as caches, files, or in-memory objects accessed by multiple threads) are accessed safely by using thread-safe types and synchronization mechanisms like locks or semaphores to avoid race conditions and data corruption. | No check yet | – |
 | **V15.4.2** Verify that checks on a resource's state, such as its existence or permissions, and the actions that depend on them are performed as a single atomic operation to prevent time-of-check to time-of-use (TOCTOU) race conditions. For example, checking if a file exists before opening it, or verifying a user’s access before granting it. | Can be checked | Outside tools: bandit, 1 rule, its rules look for: a temporary file name made with tempfile.mktemp, which another process can take before the file is created (found failing only)<br>Outside tools you turn on: codeql-javascript, 1 rule, its rules look for: a file's state checked separately before the file is used, which another process can change in between<br>Outside tools you turn on: codeql-python, 1 rule, its rules look for: a temporary file name made with tempfile.mktemp, which another process can take before the file is created (found failing only) |
 | **V15.4.3** Verify that locks are used consistently to avoid threads getting stuck, whether by waiting on each other or retrying endlessly, and that locking logic stays within the code responsible for managing the resource to ensure locks cannot be inadvertently or maliciously modified by external classes or code. | Can only be found failing | Outside tools: semgrep, 1 rule, its rules look for: a lock taken and not released on every way out of the function (found failing only) |
-| **V15.4.4** Verify that resource allocation policies prevent thread starvation by ensuring fair access to resources, such as by leveraging thread pools, allowing lower-priority threads to proceed within a reasonable timeframe. | No check yet | – |
+| **V15.4.4** Verify that resource allocation policies prevent thread starvation by ensuring fair access to resources, such as by leveraging thread pools, allowing lower-priority threads to proceed within a reasonable timeframe. | The owner answers | Asked of the owner: a design question |
 
 #### V16 Security Logging and Error Handling
 
@@ -629,10 +629,10 @@ decided per app, from its `stackvet.toml` and its code.
 | Requirement | Coverage | Checks |
 |---|---|---|
 | **V17.1.2** Verify that the Traversal Using Relays around NAT (TURN) service is not susceptible to resource exhaustion when legitimate users attempt to open a large number of ports on the TURN server. | No check yet | – |
-| **V17.2.5** Verify that the media server is able to continue processing incoming media traffic during a flood of Secure Real-time Transport Protocol (SRTP) packets from legitimate users. | No check yet | – |
+| **V17.2.5** Verify that the media server is able to continue processing incoming media traffic during a flood of Secure Real-time Transport Protocol (SRTP) packets from legitimate users. | The owner answers | Asked of the owner: a design question |
 | **V17.2.6** Verify that the media server is not susceptible to the "ClientHello" Race Condition vulnerability in Datagram Transport Layer Security (DTLS) by checking if the media server is publicly known to be vulnerable or by performing the race condition test. | No check yet | – |
-| **V17.2.7** Verify that any audio or video recording mechanisms associated with the media server are able to continue processing incoming media traffic during a flood of Secure Real-time Transport Protocol (SRTP) packets from legitimate users. | No check yet | – |
-| **V17.2.8** Verify that the Datagram Transport Layer Security (DTLS) certificate is checked against the Session Description Protocol (SDP) fingerprint attribute, terminating the media stream if the check fails, to ensure the authenticity of the media stream. | No check yet | – |
+| **V17.2.7** Verify that any audio or video recording mechanisms associated with the media server are able to continue processing incoming media traffic during a flood of Secure Real-time Transport Protocol (SRTP) packets from legitimate users. | The owner answers | Asked of the owner: a design question |
+| **V17.2.8** Verify that the Datagram Transport Layer Security (DTLS) certificate is checked against the Session Description Protocol (SDP) fingerprint attribute, terminating the media stream if the check fails, to ensure the authenticity of the media stream. | The owner answers | Asked of the owner: a design question |
 
 ## OWASP AISVS 1.0
 

@@ -1,6 +1,6 @@
 # Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are
 
-**Status:** partly done: the 15 level-3 design questions for V10 to V17 the design entry lists; the level-3 locators (V10.2.3, V11.3.5, V15.4.1, the web server's for V4.2.3 and V4.2.4, and the media server's for V17.2.6), each with its question; V11.2.5 cited by `ast.check-passes-on-error`; the cookie-size check (V3.3.5); and 0263, the static half of V16.5.4
+**Status:** partly done: the level-3 locators (V10.2.3, V11.3.5, V15.4.1, the web server's for V4.2.3 and V4.2.4, and the media server's for V17.2.6), each with its question; V11.2.5 cited by `ast.check-passes-on-error`; the cookie-size check (V3.3.5); and 0263, the static half of V16.5.4
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
