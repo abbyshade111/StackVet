@@ -249,6 +249,102 @@
       "plain": "Where the app saves things in memcache (a fast store for temporary data), does it clean what people send before using it as a name or a value there, so they cannot sneak in a command of their own?",
       "whereMeans": "the file that builds memcache keys from what people send",
       "howToFindOut": "Start from the files StackVet lists as bringing in a memcache client. In each, look at what the keys are made from: a key built from a username, a search, or anything else a visitor typed should be hashed or have spaces and line breaks taken out first."
+    },
+    {
+      "id": "V1.5.3",
+      "title": "Two parsers of the same kind of data read it the same way",
+      "asks": "Where different parsers in the application read the same data type (two JSON parsers, an XML parser in front of another, two URL parsers), do they parse it in a consistent way and with the same character encoding, so a value one reads one way cannot be read another way by the next?",
+      "plain": "Where two parts of the app (or the app and something in front of it) both read the same kind of data, a web address or a JSON message, do they always read it the same way, so a trick that fools one cannot slip past the other?",
+      "whereMeans": "the files where the same kind of data is parsed twice",
+      "howToFindOut": "Search the code for more than one library or function reading the same kind of data: two URL parsers, a JSON library and a hand-written reader, or a proxy's parsing in front of the app's. For each pair, write down which reads first and whether they were set up to agree, the character encoding included."
+    },
+    {
+      "id": "V2.3.5",
+      "title": "High-value actions need a second person's approval",
+      "asks": "Do high-value business logic flows (large monetary transfers, contract approvals, access to classified information, safety overrides) require approval by more than one user before they happen, to prevent unauthorized or accidental actions?",
+      "plain": "For the actions in the app that would do the most harm if done by mistake or by the wrong person (a large payment, signing a contract), does a second person have to approve before it happens?",
+      "whereMeans": "the file that asks for a second approval before a high-value action",
+      "howToFindOut": "List the actions in the app that move money, sign something, or open restricted information. For each, try it as one test user and see whether it waits for another to approve. If the app has none of these, write that down."
+    },
+    {
+      "id": "V3.7.3",
+      "title": "People are told before being sent to a site the app does not control",
+      "asks": "When the application redirects a user to a URL outside of its control, does it show a notification first, with an option to cancel the navigation?",
+      "plain": "When the app sends someone to another website, does it first show a page saying where they are going, with a way to go back instead?",
+      "whereMeans": "the file that redirects to an address outside the app",
+      "howToFindOut": "Search the code for redirects to full addresses (`redirect(`, `res.redirect(`, `Location:` with `https://`). For each one that can lead off the app's own site, check whether a page saying so comes first."
+    },
+    {
+      "id": "V4.1.5",
+      "title": "The most sensitive requests carry a signature of their own",
+      "asks": "Are per-message digital signatures used, on top of transport protections such as HTTPS, for requests or transactions which are highly sensitive or which traverse a number of systems?",
+      "plain": "For the most sensitive messages the app sends or receives (a payment instruction, or one that passes through several systems), is each one signed on its own, so it is protected even if the secure connection is not the whole way?",
+      "whereMeans": "the file that signs or checks the signature on each message",
+      "howToFindOut": "List the requests that are most sensitive or that pass through more than one system, then search the code that sends and receives them for a signature (HMAC, JWS, a signed payload). HTTPS alone does not count here."
+    },
+    {
+      "id": "V4.2.5",
+      "title": "Outgoing addresses and headers are kept short enough to be accepted",
+      "asks": "Where the application builds and sends requests, does it validate or otherwise limit what goes into the URI and HTTP header fields (such as Authorization or Cookie), so it never creates one too long to be accepted by the receiving component and so always answered with an error?",
+      "plain": "When the app builds a request to send somewhere (an address with things added to it, or a cookie), does it make sure it never gets too long for the other side to accept, so one long value cannot break every request after it?",
+      "whereMeans": "the file that builds outgoing requests from stored or typed values",
+      "howToFindOut": "Find where the app calls other services or sets cookies from values it stores or people type. Look for a limit on how long those values may be before they are put into an address or a header."
+    },
+    {
+      "id": "V5.2.4",
+      "title": "Each person's uploads are held to a file count and a size quota",
+      "asks": "Is a file size quota and a maximum number of files per user enforced, so a single user cannot fill up the storage with too many files or excessively large files?",
+      "plain": "Is there a limit on how many files each person can upload, and on how much space their files may take altogether, so one person cannot fill up the app's storage?",
+      "whereMeans": "the file or setting that limits each person's number of files and total size",
+      "howToFindOut": "Look where uploads are saved for a check of how many files that person already has, or how much space they use. A limit on one file's size is not this; it is the total per person that matters."
+    },
+    {
+      "id": "V6.4.5",
+      "title": "People are reminded in time to renew a way of signing in that expires",
+      "asks": "Where an authentication mechanism expires (a client certificate, a hardware token, a password with a fixed lifetime), are renewal instructions sent with enough time to be carried out before the old one expires, with automated reminders where needed?",
+      "plain": "If a way of signing in to the app runs out after a while (a certificate, or a key that must be renewed), does the app remind people early enough that they can renew it before it stops working?",
+      "whereMeans": "the file or job that sends renewal reminders",
+      "howToFindOut": "List each way of signing in that expires. For each, find out whether anything warns the person before it does (an email, a notice on sign-in) and how long before. If nothing expires, write that down."
+    },
+    {
+      "id": "V6.4.6",
+      "title": "An administrator can start a reset without choosing or knowing the password",
+      "asks": "Can administrative users initiate the password reset process for a user without being able to change or choose that user's password, so an administrator never knows another user's password?",
+      "plain": "When someone asks an administrator for help with a forgotten password, can the administrator send them a reset link without ever choosing or seeing the new password themselves?",
+      "whereMeans": "the admin page or file that starts a password reset for another user",
+      "howToFindOut": "Sign in as an administrator and look at what you can do for another user's account. A button that sends that person a reset email is right; a field where you type their new password is what this asks about."
+    },
+    {
+      "id": "V6.5.6",
+      "title": "Any way of signing in can be revoked when it is lost or stolen",
+      "asks": "Can any authentication factor (an authenticator app, a passkey, a physical security key, backup codes) be revoked in case of theft or other loss, by the person or by support, and replaced?",
+      "plain": "If someone loses their phone or a security key they use to sign in, can it be switched off so it no longer works, and a new one set up in its place?",
+      "whereMeans": "the file or page where a sign-in factor is removed",
+      "howToFindOut": "Sign in as a test user who has set up a second factor, and look in the account settings for a way to remove it. Then find out what support does for someone who has lost the device and cannot sign in at all."
+    },
+    {
+      "id": "V6.5.7",
+      "title": "A fingerprint or face is only ever a second factor",
+      "asks": "Are biometric authentication mechanisms (a fingerprint, a face) only used as secondary factors, together with either something you have or something you know?",
+      "plain": "Where the app lets people sign in with a fingerprint or their face, is that always together with something else (their own device, or a password), never on its own?",
+      "whereMeans": "the file that accepts a biometric sign-in",
+      "howToFindOut": "Find where the app takes a fingerprint or face sign-in. A passkey unlocked by a fingerprint on the person's own device is the fingerprint plus the device, which is what this asks for; a face matched on a server with nothing else is not."
+    },
+    {
+      "id": "V8.2.4",
+      "title": "The adaptive controls the documentation describes are built, at sign-in and during a session",
+      "asks": "Are the adaptive security controls based on a consumer's environmental and contextual attributes (time of day, location, IP address, device) implemented for authentication and authorization decisions as the application's documentation defines them, both when a new session starts and during an existing session?",
+      "plain": "If the app's notes say it treats a sign-in differently by time, place, address, or device, does the code really do that, both when someone signs in and later while they are still signed in?",
+      "whereMeans": "the file that applies the time, place, address, or device rules",
+      "howToFindOut": "Start from what the security notes say for V8.1.3 and V8.1.4. For each rule written there, find the code that applies it at sign-in, and check it is applied again during a session, not only once."
+    },
+    {
+      "id": "V8.3.3",
+      "title": "A service asked on a person's behalf decides on that person's permissions",
+      "asks": "Is access to an object based on the originating subject's permissions, not on those of any intermediary or service acting on their behalf: when one service requests data from another for a consumer, does the second decide using the consumer's token, rather than a machine-to-machine token from the first?",
+      "plain": "When one part of the app, another program, or an AI asks for a record on someone's behalf, does the part holding the record check what that person may see, and not just trust the one asking?",
+      "whereMeans": "the file where a service checks whose permissions to use",
+      "howToFindOut": "Find each place a request reaches the app through something acting for a person: another of its services, a program with an API key, or the app's AI. Check whether the person's own token or id travels with it, and whether that is what decides access."
     }
   ]
 }

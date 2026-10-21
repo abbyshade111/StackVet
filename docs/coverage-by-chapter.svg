@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 934 574" width="934" height="574" role="img" aria-labelledby="t d" font-family="Atkinson Hyperlegible, -apple-system, Segoe UI, sans-serif">
 <title id="t">ASVS 5.0 by chapter: what a check can reach</title>
-<desc id="d">V1 Encoding and Sanitization: 30 requirements, 17 can be credited, 4 can only be found failing, 0 a check helps, a person decides, 5 the owner answers, 4 no check yet; V2 Validation and Business Logic: 13 requirements, 2 can be credited, 1 can only be found failing, 2 a check helps, a person decides, 6 the owner answers, 2 no check yet; V3 Web Frontend Security: 31 requirements, 19 can be credited, 4 can only be found failing, 0 a check helps, a person decides, 2 the owner answers, 6 no check yet; V4 API and Web Service: 16 requirements, 5 can be credited, 5 can only be found failing, 0 a check helps, a person decides, 1 the owner answers, 5 no check yet; V5 File Handling: 13 requirements, 8 can be credited, 0 can only be found failing, 1 a check helps, a person decides, 1 the owner answers, 3 no check yet; V6 Authentication: 47 requirements, 16 can be credited, 10 can only be found failing, 2 a check helps, a person decides, 9 the owner answers, 10 no check yet; V7 Session Management: 19 requirements, 13 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 3 the owner answers, 1 no check yet; V8 Authorization: 13 requirements, 2 can be credited, 2 can only be found failing, 1 a check helps, a person decides, 5 the owner answers, 3 no check yet; V9 Self-contained Tokens: 7 requirements, 4 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 1 the owner answers, 0 no check yet; V10 OAuth and OIDC: 36 requirements, 8 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 7 the owner answers, 19 no check yet; V11 Cryptography: 24 requirements, 7 can be credited, 6 can only be found failing, 0 a check helps, a person decides, 4 the owner answers, 7 no check yet; V12 Secure Communication: 12 requirements, 6 can be credited, 4 can only be found failing, 1 a check helps, a person decides, 0 the owner answers, 1 no check yet; V13 Configuration: 21 requirements, 3 can be credited, 8 can only be found failing, 1 a check helps, a person decides, 5 the owner answers, 4 no check yet; V14 Data Protection: 13 requirements, 2 can be credited, 2 can only be found failing, 2 a check helps, a person decides, 3 the owner answers, 4 no check yet; V15 Secure Coding and Architecture: 21 requirements, 7 can be credited, 6 can only be found failing, 0 a check helps, a person decides, 5 the owner answers, 3 no check yet; V16 Security Logging and Error Handling: 17 requirements, 11 can be credited, 3 can only be found failing, 0 a check helps, a person decides, 3 the owner answers, 0 no check yet; V17 WebRTC: 12 requirements, 0 can be credited, 0 can only be found failing, 0 a check helps, a person decides, 5 the owner answers, 7 no check yet. The same counts are the table in docs/COVERAGE.md.</desc>
+<desc id="d">V1 Encoding and Sanitization: 30 requirements, 17 can be credited, 4 can only be found failing, 0 a check helps, a person decides, 6 the owner answers, 3 no check yet; V2 Validation and Business Logic: 13 requirements, 2 can be credited, 1 can only be found failing, 2 a check helps, a person decides, 7 the owner answers, 1 no check yet; V3 Web Frontend Security: 31 requirements, 19 can be credited, 4 can only be found failing, 0 a check helps, a person decides, 4 the owner answers, 4 no check yet; V4 API and Web Service: 16 requirements, 5 can be credited, 5 can only be found failing, 0 a check helps, a person decides, 3 the owner answers, 3 no check yet; V5 File Handling: 13 requirements, 8 can be credited, 0 can only be found failing, 1 a check helps, a person decides, 2 the owner answers, 2 no check yet; V6 Authentication: 47 requirements, 16 can be credited, 10 can only be found failing, 2 a check helps, a person decides, 13 the owner answers, 6 no check yet; V7 Session Management: 19 requirements, 13 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 3 the owner answers, 1 no check yet; V8 Authorization: 13 requirements, 2 can be credited, 2 can only be found failing, 1 a check helps, a person decides, 7 the owner answers, 1 no check yet; V9 Self-contained Tokens: 7 requirements, 4 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 1 the owner answers, 0 no check yet; V10 OAuth and OIDC: 36 requirements, 8 can be credited, 2 can only be found failing, 0 a check helps, a person decides, 7 the owner answers, 19 no check yet; V11 Cryptography: 24 requirements, 7 can be credited, 6 can only be found failing, 0 a check helps, a person decides, 4 the owner answers, 7 no check yet; V12 Secure Communication: 12 requirements, 6 can be credited, 4 can only be found failing, 1 a check helps, a person decides, 0 the owner answers, 1 no check yet; V13 Configuration: 21 requirements, 3 can be credited, 8 can only be found failing, 1 a check helps, a person decides, 6 the owner answers, 3 no check yet; V14 Data Protection: 13 requirements, 2 can be credited, 2 can only be found failing, 2 a check helps, a person decides, 3 the owner answers, 4 no check yet; V15 Secure Coding and Architecture: 21 requirements, 7 can be credited, 6 can only be found failing, 0 a check helps, a person decides, 5 the owner answers, 3 no check yet; V16 Security Logging and Error Handling: 17 requirements, 11 can be credited, 3 can only be found failing, 0 a check helps, a person decides, 3 the owner answers, 0 no check yet; V17 WebRTC: 12 requirements, 0 can be credited, 0 can only be found failing, 0 a check helps, a person decides, 5 the owner answers, 7 no check yet. The same counts are the table in docs/COVERAGE.md.</desc>
 <style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}.none{fill:#182A23;stroke:#3B4842}}</style>
 <defs><pattern id="owner" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="none" width="6" height="6"/><rect width="2.5" height="6" fill="#5470C0"/></pattern></defs>
 <rect class="bg" width="934" height="574"/>
@@ -19,41 +19,41 @@
 <text class="ink" x="12" y="109" font-size="13">V1 Encoding and Sanitization</text>
 <rect fill="#3A9470" x="300.0" y="96" width="135.4" height="18" rx="2"><title>V1 Encoding and Sanitization: 17 can be credited</title></rect>
 <rect fill="#D9692B" x="437.4" y="96" width="30.3" height="18" rx="2"><title>V1 Encoding and Sanitization: 4 can only be found failing</title></rect>
-<rect fill="url(#owner)" x="469.8" y="96" width="38.4" height="18" rx="2"><title>V1 Encoding and Sanitization: 5 the owner answers</title></rect>
-<rect class="none" x="510.2" y="96" width="30.3" height="18" rx="2"><title>V1 Encoding and Sanitization: 4 no check yet</title></rect>
-<text class="soft" x="692" y="109" font-size="13">17 · 4 · 0 · 5 · 4  of 30</text>
+<rect fill="url(#owner)" x="469.8" y="96" width="46.5" height="18" rx="2"><title>V1 Encoding and Sanitization: 6 the owner answers</title></rect>
+<rect class="none" x="518.3" y="96" width="22.3" height="18" rx="2"><title>V1 Encoding and Sanitization: 3 no check yet</title></rect>
+<text class="soft" x="692" y="109" font-size="13">17 · 4 · 0 · 6 · 3  of 30</text>
 <text class="ink" x="12" y="135" font-size="13">V2 Validation and Business Logic</text>
 <rect fill="#3A9470" x="300.0" y="122" width="14.2" height="18" rx="2"><title>V2 Validation and Business Logic: 2 can be credited</title></rect>
 <rect fill="#D9692B" x="316.2" y="122" width="6.1" height="18" rx="2"><title>V2 Validation and Business Logic: 1 can only be found failing</title></rect>
 <rect fill="#5470C0" x="324.3" y="122" width="14.2" height="18" rx="2"><title>V2 Validation and Business Logic: 2 a check helps, a person decides</title></rect>
-<rect fill="url(#owner)" x="340.4" y="122" width="46.5" height="18" rx="2"><title>V2 Validation and Business Logic: 6 the owner answers</title></rect>
-<rect class="none" x="388.9" y="122" width="14.2" height="18" rx="2"><title>V2 Validation and Business Logic: 2 no check yet</title></rect>
-<text class="soft" x="692" y="135" font-size="13">2 · 1 · 2 · 6 · 2  of 13</text>
+<rect fill="url(#owner)" x="340.4" y="122" width="54.6" height="18" rx="2"><title>V2 Validation and Business Logic: 7 the owner answers</title></rect>
+<rect class="none" x="397.0" y="122" width="6.1" height="18" rx="2"><title>V2 Validation and Business Logic: 1 no check yet</title></rect>
+<text class="soft" x="692" y="135" font-size="13">2 · 1 · 2 · 7 · 1  of 13</text>
 <text class="ink" x="12" y="161" font-size="13">V3 Web Frontend Security</text>
 <rect fill="#3A9470" x="300.0" y="148" width="151.6" height="18" rx="2"><title>V3 Web Frontend Security: 19 can be credited</title></rect>
 <rect fill="#D9692B" x="453.6" y="148" width="30.3" height="18" rx="2"><title>V3 Web Frontend Security: 4 can only be found failing</title></rect>
-<rect fill="url(#owner)" x="486.0" y="148" width="14.2" height="18" rx="2"><title>V3 Web Frontend Security: 2 the owner answers</title></rect>
-<rect class="none" x="502.1" y="148" width="46.5" height="18" rx="2"><title>V3 Web Frontend Security: 6 no check yet</title></rect>
-<text class="soft" x="692" y="161" font-size="13">19 · 4 · 0 · 2 · 6  of 31</text>
+<rect fill="url(#owner)" x="486.0" y="148" width="30.3" height="18" rx="2"><title>V3 Web Frontend Security: 4 the owner answers</title></rect>
+<rect class="none" x="518.3" y="148" width="30.3" height="18" rx="2"><title>V3 Web Frontend Security: 4 no check yet</title></rect>
+<text class="soft" x="692" y="161" font-size="13">19 · 4 · 0 · 4 · 4  of 31</text>
 <text class="ink" x="12" y="187" font-size="13">V4 API and Web Service</text>
 <rect fill="#3A9470" x="300.0" y="174" width="38.4" height="18" rx="2"><title>V4 API and Web Service: 5 can be credited</title></rect>
 <rect fill="#D9692B" x="340.4" y="174" width="38.4" height="18" rx="2"><title>V4 API and Web Service: 5 can only be found failing</title></rect>
-<rect fill="url(#owner)" x="380.9" y="174" width="6.1" height="18" rx="2"><title>V4 API and Web Service: 1 the owner answers</title></rect>
-<rect class="none" x="388.9" y="174" width="38.4" height="18" rx="2"><title>V4 API and Web Service: 5 no check yet</title></rect>
-<text class="soft" x="692" y="187" font-size="13">5 · 5 · 0 · 1 · 5  of 16</text>
+<rect fill="url(#owner)" x="380.9" y="174" width="22.3" height="18" rx="2"><title>V4 API and Web Service: 3 the owner answers</title></rect>
+<rect class="none" x="405.1" y="174" width="22.3" height="18" rx="2"><title>V4 API and Web Service: 3 no check yet</title></rect>
+<text class="soft" x="692" y="187" font-size="13">5 · 5 · 0 · 3 · 3  of 16</text>
 <text class="ink" x="12" y="213" font-size="13">V5 File Handling</text>
 <rect fill="#3A9470" x="300.0" y="200" width="62.7" height="18" rx="2"><title>V5 File Handling: 8 can be credited</title></rect>
 <rect fill="#5470C0" x="364.7" y="200" width="6.1" height="18" rx="2"><title>V5 File Handling: 1 a check helps, a person decides</title></rect>
-<rect fill="url(#owner)" x="372.8" y="200" width="6.1" height="18" rx="2"><title>V5 File Handling: 1 the owner answers</title></rect>
-<rect class="none" x="380.9" y="200" width="22.3" height="18" rx="2"><title>V5 File Handling: 3 no check yet</title></rect>
-<text class="soft" x="692" y="213" font-size="13">8 · 0 · 1 · 1 · 3  of 13</text>
+<rect fill="url(#owner)" x="372.8" y="200" width="14.2" height="18" rx="2"><title>V5 File Handling: 2 the owner answers</title></rect>
+<rect class="none" x="388.9" y="200" width="14.2" height="18" rx="2"><title>V5 File Handling: 2 no check yet</title></rect>
+<text class="soft" x="692" y="213" font-size="13">8 · 0 · 1 · 2 · 2  of 13</text>
 <text class="ink" x="12" y="239" font-size="13">V6 Authentication</text>
 <rect fill="#3A9470" x="300.0" y="226" width="127.4" height="18" rx="2"><title>V6 Authentication: 16 can be credited</title></rect>
 <rect fill="#D9692B" x="429.4" y="226" width="78.9" height="18" rx="2"><title>V6 Authentication: 10 can only be found failing</title></rect>
 <rect fill="#5470C0" x="510.2" y="226" width="14.2" height="18" rx="2"><title>V6 Authentication: 2 a check helps, a person decides</title></rect>
-<rect fill="url(#owner)" x="526.4" y="226" width="70.8" height="18" rx="2"><title>V6 Authentication: 9 the owner answers</title></rect>
-<rect class="none" x="599.1" y="226" width="78.9" height="18" rx="2"><title>V6 Authentication: 10 no check yet</title></rect>
-<text class="soft" x="692" y="239" font-size="13">16 · 10 · 2 · 9 · 10  of 47</text>
+<rect fill="url(#owner)" x="526.4" y="226" width="103.1" height="18" rx="2"><title>V6 Authentication: 13 the owner answers</title></rect>
+<rect class="none" x="631.5" y="226" width="46.5" height="18" rx="2"><title>V6 Authentication: 6 no check yet</title></rect>
+<text class="soft" x="692" y="239" font-size="13">16 · 10 · 2 · 13 · 6  of 47</text>
 <text class="ink" x="12" y="265" font-size="13">V7 Session Management</text>
 <rect fill="#3A9470" x="300.0" y="252" width="103.1" height="18" rx="2"><title>V7 Session Management: 13 can be credited</title></rect>
 <rect fill="#D9692B" x="405.1" y="252" width="14.2" height="18" rx="2"><title>V7 Session Management: 2 can only be found failing</title></rect>
@@ -64,9 +64,9 @@
 <rect fill="#3A9470" x="300.0" y="278" width="14.2" height="18" rx="2"><title>V8 Authorization: 2 can be credited</title></rect>
 <rect fill="#D9692B" x="316.2" y="278" width="14.2" height="18" rx="2"><title>V8 Authorization: 2 can only be found failing</title></rect>
 <rect fill="#5470C0" x="332.3" y="278" width="6.1" height="18" rx="2"><title>V8 Authorization: 1 a check helps, a person decides</title></rect>
-<rect fill="url(#owner)" x="340.4" y="278" width="38.4" height="18" rx="2"><title>V8 Authorization: 5 the owner answers</title></rect>
-<rect class="none" x="380.9" y="278" width="22.3" height="18" rx="2"><title>V8 Authorization: 3 no check yet</title></rect>
-<text class="soft" x="692" y="291" font-size="13">2 · 2 · 1 · 5 · 3  of 13</text>
+<rect fill="url(#owner)" x="340.4" y="278" width="54.6" height="18" rx="2"><title>V8 Authorization: 7 the owner answers</title></rect>
+<rect class="none" x="397.0" y="278" width="6.1" height="18" rx="2"><title>V8 Authorization: 1 no check yet</title></rect>
+<text class="soft" x="692" y="291" font-size="13">2 · 2 · 1 · 7 · 1  of 13</text>
 <text class="ink" x="12" y="317" font-size="13">V9 Self-contained Tokens</text>
 <rect fill="#3A9470" x="300.0" y="304" width="30.3" height="18" rx="2"><title>V9 Self-contained Tokens: 4 can be credited</title></rect>
 <rect fill="#D9692B" x="332.3" y="304" width="14.2" height="18" rx="2"><title>V9 Self-contained Tokens: 2 can only be found failing</title></rect>
@@ -94,9 +94,9 @@
 <rect fill="#3A9470" x="300.0" y="408" width="22.3" height="18" rx="2"><title>V13 Configuration: 3 can be credited</title></rect>
 <rect fill="#D9692B" x="324.3" y="408" width="62.7" height="18" rx="2"><title>V13 Configuration: 8 can only be found failing</title></rect>
 <rect fill="#5470C0" x="388.9" y="408" width="6.1" height="18" rx="2"><title>V13 Configuration: 1 a check helps, a person decides</title></rect>
-<rect fill="url(#owner)" x="397.0" y="408" width="38.4" height="18" rx="2"><title>V13 Configuration: 5 the owner answers</title></rect>
-<rect class="none" x="437.4" y="408" width="30.3" height="18" rx="2"><title>V13 Configuration: 4 no check yet</title></rect>
-<text class="soft" x="692" y="421" font-size="13">3 · 8 · 1 · 5 · 4  of 21</text>
+<rect fill="url(#owner)" x="397.0" y="408" width="46.5" height="18" rx="2"><title>V13 Configuration: 6 the owner answers</title></rect>
+<rect class="none" x="445.5" y="408" width="22.3" height="18" rx="2"><title>V13 Configuration: 3 no check yet</title></rect>
+<text class="soft" x="692" y="421" font-size="13">3 · 8 · 1 · 6 · 3  of 21</text>
 <text class="ink" x="12" y="447" font-size="13">V14 Data Protection</text>
 <rect fill="#3A9470" x="300.0" y="434" width="14.2" height="18" rx="2"><title>V14 Data Protection: 2 can be credited</title></rect>
 <rect fill="#D9692B" x="316.2" y="434" width="14.2" height="18" rx="2"><title>V14 Data Protection: 2 can only be found failing</title></rect>
