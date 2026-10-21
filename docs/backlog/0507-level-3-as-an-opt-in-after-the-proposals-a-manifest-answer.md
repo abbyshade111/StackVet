@@ -1,6 +1,6 @@
 # Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are
 
-**Status:** claimed by claude/backlog-work, 20 October 2026
+**Status:** partly done: what moved here from 0624: the catalogs opened to level 3 with their entries (the 27 level-3 design questions and the checks by hand for V3.7.5 and V13.2.6), the level-3 locators, V11.2.5 cited by `ast.check-passes-on-error`, and the cookie-size check (V3.3.5); and 0263, the static half of V16.5.4
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -50,8 +50,7 @@ itself:
 - **The cookie-size check (V3.3.5):** each `Set-Cookie` the run receives whose name and value together pass 4096 bytes
   is a finding; all under is checked in part, for the cookies the run saw.
 
-**Proposed decision** (Status: proposed, 20 October 2026, with this claim; accepted as a new ADR in the pull request that
-builds it):
+**The decision** (proposed with the claim, 20 October 2026; accepted as ADR-130 in the pull request that built it):
 
 - **The answer:** `level = 3` under `[app]`. Left out, the level is what it is today, from `[app] audience` and
   `[data] categories` (ADR-024). It only ever raises the level: under ADR-015, what the owner says adds requirements and

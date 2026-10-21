@@ -222,8 +222,9 @@ fn the_overlay_leaves_almost_no_inherited_never_rules() {
     // vendor (Anthropic)". For an app `sv` did not write, those are not reasons — they are wrong
     // statements in a report, which is what v1's ADR-012 exists to prevent.
     //
-    // The overlay replaces 37 of them. The two left are V15.4 and C5.1, whose reasons say the
-    // requirements are ASVS level 3 — honest, and nothing to do with v1.
+    // The overlay replaces all 39 of them. The last two, V15.4 and C5.1, said their requirements are
+    // level 3 only, which was honest while no app could be held to level 3; `[app] level = 3` made it
+    // false, and the overlay replaced them on 20 October 2026 (ADR-130).
     let base = ApplicabilityConfig::load(&data_dir().join("knowledge")).unwrap();
     let before = base
         .rules
@@ -239,7 +240,7 @@ fn the_overlay_leaves_almost_no_inherited_never_rules() {
         before > 30,
         "expected the v1 rules to still carry their `never` rules"
     );
-    assert_eq!(after, 2, "only the two level-3 rules may keep `never`");
+    assert_eq!(after, 0, "no rule the overlay leaves is `never`");
 }
 
 #[test]

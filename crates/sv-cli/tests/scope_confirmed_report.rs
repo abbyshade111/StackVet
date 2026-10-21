@@ -42,6 +42,7 @@ impl Scratch {
             let mut entry = sv_manifest::ScopeReview {
                 audience: audience.to_owned(),
                 categories: Some(vec![categories.to_owned()]),
+                level: None,
                 by: "owner".to_owned(),
                 on: "2026-10-09".to_owned(),
                 seal: None,
@@ -247,6 +248,7 @@ fn entry(audience: &str, categories: Option<&[&str]>) -> sv_manifest::ScopeRevie
     sv_manifest::ScopeReview {
         audience: audience.to_owned(),
         categories: categories.map(|l| l.iter().map(|c| (*c).to_owned()).collect()),
+        level: None,
         by: "owner".to_owned(),
         on: "2026-10-09".to_owned(),
         seal: None,

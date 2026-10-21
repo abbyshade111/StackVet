@@ -1,7 +1,7 @@
 //! The security notes: the questions only the owner can answer, and what `sv` knows that bears on
 //! each.
 //!
-//! Nineteen ASVS requirements at level 1 and 2 ask for a document and nothing else — the validation
+//! Nineteen ASVS requirements at level 1 and 2, and nine more at level 3, ask for a document and nothing else — the validation
 //! rules, who may do what, how long a session lasts, how soon a vulnerable library is updated. No
 //! scanner will ever settle one of them, because there is nothing in the code to read: the thing
 //! being asked for is a written decision. Today they sit in the report as *not verified*, beside the

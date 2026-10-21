@@ -2147,11 +2147,16 @@ fn record_scope(
         Some(listed) if listed.is_empty() => "[] (nothing about people)".to_owned(),
         Some(listed) => format!("[{}]", listed.join(", ")),
     };
+    // `[app] level`, when it is there, is a third answer that decides the level, and is confirmed with the two (ADR-130).
+    let (answers, level) = match manifest.app.level {
+        Some(asked) => ("These answers", format!("\n  [app] level = {asked}")),
+        None => ("These two answers", String::new()),
+    };
     writeln!(
         out,
-        "The app is held to ASVS level {} because {}. These two answers in stackvet.toml decide \
+        "The app is held to ASVS level {} because {}. {answers} in stackvet.toml decide \
          it, and your AI coding tool usually writes them:\n  [app] audience = \"{}\"\n  [data] \
-         categories = {categories}\nIf either is wrong, change it in the file first: an answer \
+         categories = {categories}{level}\nIf any is wrong, change it in the file first: an answer \
          confirmed here and changed later is unconfirmed again.",
         manifest.target_level(),
         manifest.level_because(),
@@ -2182,6 +2187,7 @@ fn record_scope(
         let mut entry = sv_manifest::ScopeReview {
             audience: manifest.app.audience.name().to_owned(),
             categories: manifest.data.categories.clone(),
+            level: manifest.app.level,
             by: sv_check::design::OWNER.to_owned(),
             on: today.show(),
             seal: None,
@@ -2206,6 +2212,9 @@ fn set_scope(doc: &mut toml_edit::DocumentMut, entry: &sv_manifest::ScopeReview)
             "categories",
             toml_edit::value(listed.iter().collect::<toml_edit::Array>()),
         );
+    }
+    if let Some(level) = entry.level {
+        table.insert("level", toml_edit::value(i64::from(level)));
     }
     table.insert("by", toml_edit::value(&entry.by));
     table.insert("on", toml_edit::value(&entry.on));

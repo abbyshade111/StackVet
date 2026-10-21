@@ -875,7 +875,9 @@ pub fn hand_check_fields(requirement: &str, h: &sv_manifest::HandCheck) -> Vec<S
 /// The fields `[scope-review]` is sealed over: who and when first, then the audience, then whether
 /// the data list was answered and each category as written (ADR-024, Later, 9 October 2026). The
 /// list's length varies, so it comes last, after a field saying whether it is there: no category
-/// can be read as `by` or `on`, and an unanswered list never seals the same as an empty one.
+/// can be read as `by` or `on`, and an unanswered list never seals the same as an empty one. `[app] level`, when it
+/// was asked for, follows the audience as `level=N`; left out, nothing is added, so a confirmation sealed before the
+/// field existed still holds (ADR-130).
 pub fn scope_review_fields(entry: &sv_manifest::ScopeReview) -> Vec<String> {
     let mut fields = vec![
         "scope-review".to_owned(),
@@ -883,6 +885,9 @@ pub fn scope_review_fields(entry: &sv_manifest::ScopeReview) -> Vec<String> {
         entry.on.trim().to_owned(),
         entry.audience.trim().to_owned(),
     ];
+    if let Some(level) = entry.level {
+        fields.push(format!("level={level}"));
+    }
     match &entry.categories {
         None => fields.push("unanswered".to_owned()),
         Some(listed) => {

@@ -16,6 +16,8 @@ audience = "customers"    # just-me | my-team | customers | public
 deployment = "internet"   # local-only | local-network | internet
 # build-loop-record = false  # the person's choice only: stops sv writing down each check made while building
 # report-paper = "a4"       # the paper report.pdf is laid out on; US Letter when left out
+# level = 3                 # hold the app to ASVS and AISVS level 3; only ever raises the level `audience` and
+#                           # [data] categories set, and `sv review` asks you to confirm it with them
 
 [stack]
 languages = []            # e.g. ["python", "typescript"]
@@ -355,7 +357,7 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # moderation = ?
 # rag = ?                     # does it search documents of the app's own: a document store, search index, or vector database?
 # web-search = ?              # does it search the web or read web pages? (a web search is this, not rag)
-# generates-media = ?        # does it make images, audio, or video? (matters only at level 3, which `sv` does not yet hold any app to)
+# generates-media = ?        # does it make images, audio, or video? (matters only at level 3: `level = 3` under [app])
 # mcp = ?                     # does it reach tools over the Model Context Protocol?
 # training = ?                # does this app train or fine-tune a model?
 # self-hosted = ?             # does it host or deploy model files itself, rather than calling a vendor's API?
@@ -460,8 +462,8 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 # why = "The next= value is looked up in a fixed list of our own paths on the line above."
 # by = "ai-tool"
 
-# The two answers that set the level, [app] audience and [data] categories, as the owner confirmed
-# them. Written only by `sv review`, which shows both and asks; never write it yourself. Until it
+# The answers that set the level, [app] audience and [data] categories (and [app] level when it is
+# there), as the owner confirmed them. Written only by `sv review`, which shows them and asks; never write it yourself. Until it
 # holds, the report says the level rests on answers nobody has confirmed, and an answer changed
 # after it was confirmed is unconfirmed again. It never changes the level.
 # [scope-review]

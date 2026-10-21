@@ -93,11 +93,13 @@ pub fn check(manifest: &Manifest, resolved: &[ResolvedClaim]) -> Vec<Inconsisten
         if *condition == Condition::Payments && categories.iter().any(|c| c == "payment-card") {
             continue;
         }
-        // Saying the level would change when it is already 2 would be untrue.
-        let consequence = if *raises_level && manifest.target_level() == 2 {
-            "This app is already assessed at level 2, so adding it changes no requirement — but \
-             the categories should still describe what the app holds."
-                .to_owned()
+        // Saying the level would change when it is already 2 or more would be untrue (3 since ADR-130).
+        let consequence = if *raises_level && manifest.target_level() >= 2 {
+            format!(
+                "This app is already assessed at level {}, so adding it changes no requirement — \
+                 but the categories should still describe what the app holds.",
+                manifest.target_level()
+            )
         } else {
             (*consequence).to_owned()
         };
