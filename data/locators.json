@@ -262,6 +262,19 @@
         "javascript": "(pair key: (property_identifier) @used)",
         "typescript": "(pair key: (property_identifier) @used)"
       }
+    },
+    {
+      "id": "locate.memcache",
+      "questions": [
+        "V1.3.9"
+      ],
+      "finds": "the files that bring in a memcache client (pymemcache, python-memcached, pylibmc, memjs, memcached): the places to read what keys and values the app hands it",
+      "names": "^(pymemcache(\\.[a-z_.]+)?|memcache|pylibmc|bmemcached|aiomcache|emcache)$|^['\"`]?(memcached|memjs|memcache-client|@google-cloud/memcache)['\"`]?$",
+      "queries": {
+        "python": "[(import_statement name: (dotted_name) @used)\n (import_statement name: (aliased_import name: (dotted_name) @used))\n (import_from_statement module_name: (dotted_name) @used)]",
+        "javascript": "[(import_statement source: (string) @used)\n ((call_expression function: (identifier) @fn arguments: (arguments (string) @used)) (#eq? @fn \"require\"))]",
+        "typescript": "[(import_statement source: (string) @used)\n ((call_expression function: (identifier) @fn arguments: (arguments (string) @used)) (#eq? @fn \"require\"))]"
+      }
     }
   ],
   "packages": [
@@ -353,6 +366,40 @@
           "pragmarx/google2fa",
           "laravel/fortify",
           "web-auth/webauthn-lib"
+        ]
+      }
+    },
+    {
+      "id": "locate.media-server",
+      "questions": [
+        "V17.2.1",
+        "V17.2.2",
+        "V17.2.3",
+        "V17.2.4"
+      ],
+      "finds": "the media server packages among the app's packages, which carry live audio and video and keep the DTLS and SRTP settings these questions ask about",
+      "says": "A known flaw in the version found is listed as something to fix when the advisory data has been downloaded and StackVet is run with --advisories. A hosted media service (LiveKit Cloud, Twilio, Daily, Agora) is not a package here, and its settings are the service's.",
+      "none": "None of the app's packages is a media server, and every package list was read. That is not an answer: calls can run on a hosted service, or on a media server deployed apart from this code (Janus, Jitsi, or a LiveKit server).",
+      "names": {
+        "npm": [
+          "mediasoup",
+          "livekit-server-sdk",
+          "@livekit/rtc-node",
+          "wrtc",
+          "@roamhq/wrtc",
+          "werift"
+        ],
+        "Python": [
+          "aiortc",
+          "livekit",
+          "livekit-api",
+          "pyjanus"
+        ],
+        "Go": [
+          "github.com/pion/webrtc/v3",
+          "github.com/pion/webrtc/v4",
+          "github.com/livekit/server-sdk-go",
+          "github.com/livekit/protocol"
         ]
       }
     }

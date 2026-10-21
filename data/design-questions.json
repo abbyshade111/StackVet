@@ -241,6 +241,14 @@
       "plain": "If you run more than one application, does each have an address of its own (app.example.com and admin.example.com), rather than sharing one address in different folders, so a browser keeps their pages and cookies apart?",
       "whereMeans": "the address each application is reached at",
       "howToFindOut": "List every application you run on the same domain, and the address each is reached at. Two that share an address and differ only by path (example.com/app and example.com/blog) are what this asks about."
+    },
+    {
+      "id": "V1.3.9",
+      "title": "Content sent to memcache is cleaned first",
+      "asks": "Does the application clean content before it is sent to memcache, so that a key or value cannot carry spaces, line breaks, or control characters that would inject a second memcache command, and keys are kept under memcache's 250-byte limit?",
+      "plain": "Where the app saves things in memcache (a fast store for temporary data), does it clean what people send before using it as a name or a value there, so they cannot sneak in a command of their own?",
+      "whereMeans": "the file that builds memcache keys from what people send",
+      "howToFindOut": "Start from the files StackVet lists as bringing in a memcache client. In each, look at what the keys are made from: a key built from a username, a search, or anything else a visitor typed should be hashed or have spaces and line breaks taken out first."
     }
   ]
 }

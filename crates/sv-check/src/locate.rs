@@ -452,3 +452,6 @@ mod says_none_tests;
 
 #[cfg(test)]
 mod algorithm_tests;
+
+#[cfg(test)]
+mod memcache_media_tests;

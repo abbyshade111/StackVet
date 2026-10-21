@@ -47,7 +47,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 64 | 80 |
+| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 65 | 79 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 2 | 63 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -88,7 +88,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 | Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 4 | 5 |
+| V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 5 | 4 |
 | V2 Validation and Business Logic | 13 | 3 | 2 | 2 | 6 | 2 |
 | V3 Web Frontend Security | 31 | 23 | 19 | 0 | 2 | 6 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 1 | 5 |

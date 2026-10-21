@@ -56,4 +56,4 @@ StackVet says nothing about (20 October 2026)"; the new checks and probes it lis
    six by-hand instructions, the locators with their questions, the citation of V11.2.5 by
    `ast.check-passes-on-error`, and the cookie-size check on the running app (V3.3.5). Each passes its catalog's words
    test, and each credit is seen withheld (ADR-059).
-   **Part status:** partly done: the locators with their questions; the citation of V11.2.5 by `ast.check-passes-on-error`; the cookie-size check (V3.3.5); and, with backlog 0507, the level-3 design questions and the by-hand instructions for V3.7.5 and V13.2.6, since both catalogs take levels 1 and 2 only
+   **Part status:** partly done: the citation of V11.2.5 by `ast.check-passes-on-error`; the cookie-size check (V3.3.5); and, with backlog 0507, the level-3 design questions, the by-hand instructions for V3.7.5 and V13.2.6, and the level-3 locators (V10.2.3, V11.3.5, V15.4.1, the web server's for V4.2.3 and V4.2.4, and the media server's for V17.2.6), since the catalogs take levels 1 and 2 only
