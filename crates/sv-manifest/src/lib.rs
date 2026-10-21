@@ -464,6 +464,11 @@ pub struct OidcSection {
     /// ADR-127). Left out, no logout token is sent.
     #[serde(default)]
     pub backchannel_logout: Option<String>,
+    /// The request that signs a person who signed in through the provider out of the app, as `[stack.run.users]`'s
+    /// `logout` does for the password sign-in (V7.4.1; backlog 0232, part B, the owner's choice of 20 October 2026).
+    /// Left out, whether signing out ends this way in is not assessed.
+    #[serde(default)]
+    pub logout: Option<RequestTemplate>,
 }
 
 /// One request the probes make on the app's behalf: how to sign up, sign in, or create something.

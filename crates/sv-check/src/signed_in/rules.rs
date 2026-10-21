@@ -518,7 +518,7 @@ pub(super) const SESSION_RENEWAL: Rule = Rule {
           call for this (regenerate, rotate or cycle the session).",
 };
 
-pub(super) const LOGOUT: Rule = Rule {
+pub(crate) const LOGOUT: Rule = Rule {
     rule_id: "probe.logout-keeps-session",
     requirement_ids: &["V7.4.1"],
     cwe: &["CWE-613"],
