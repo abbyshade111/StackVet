@@ -136,7 +136,7 @@
       "asks": "When one business operation changes several records (an order and its stock, a transfer between two accounts, a booking and its payment), does the application use transactions so the operation either succeeds in its entirety or is rolled back to the previous correct state?",
       "plain": "When one action changes several things at once (an order and the stock it takes, money leaving one account and arriving in another), is it set up so either all of the changes happen or none do, never half?",
       "whereMeans": "the file that groups the changes into one transaction",
-      "howToFindOut": "Find the actions that change more than one record at once. For each, look for where the changes are grouped into one transaction (`with transaction.atomic()`, `db.transaction(...)`, `BEGIN` and `COMMIT`). Then ask what happens if the second change fails after the first succeeded: the first should be undone."
+      "howToFindOut": "Start from the functions StackVet lists as writing twice or more with no transaction around them, then the places it lists as grouping changes (`with transaction.atomic()`, `db.transaction(...)`, `BEGIN` and `COMMIT`). For each of the first, ask what happens if the second write fails after the first succeeded: the first should be undone. A setting outside the code, such as Django's ATOMIC_REQUESTS, can make every request one transaction; check for it too."
     },
     {
       "id": "V6.8.4",

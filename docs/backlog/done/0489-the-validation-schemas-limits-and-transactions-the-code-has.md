@@ -1,6 +1,6 @@
 # The validation schemas, limits, and transactions the code has, shown beside the V2 questions, and a stated limit tried once over
 
-**Status:** claimed by claude/backlog-work, 20 October 2026
+**Status:** done, 21 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -56,4 +56,8 @@ pointer to handlers changing several tables.
 **V2.3.2 built, 21 October 2026** (ADR-053, Later): `[policy] limit`, tried one past `at-most` as the first user, the
 first `at-most` its control; held is *checked in part*, not held a finding, and a rate limiter's answer never read as
 the limit. Left: the V2.3.3 pointer to handlers changing several tables.
+
+**V2.3.3 built, 21 October 2026** (ADR-022, Later): `locate.several-writes`, the functions that write twice or more
+with no transaction around them, beside `locate.transactions` under V2.3.3's question; a pointer only, as chosen.
+Every part of this item is built.
 
