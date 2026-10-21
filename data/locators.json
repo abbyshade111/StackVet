@@ -275,13 +275,54 @@
         "javascript": "[(import_statement source: (string) @used)\n ((call_expression function: (identifier) @fn arguments: (arguments (string) @used)) (#eq? @fn \"require\"))]",
         "typescript": "[(import_statement source: (string) @used)\n ((call_expression function: (identifier) @fn arguments: (arguments (string) @used)) (#eq? @fn \"require\"))]"
       }
+    },
+    {
+      "id": "locate.oauth-scopes",
+      "questions": [
+        "V10.2.3"
+      ],
+      "finds": "where the app names the scopes it asks the sign-in provider for: a `scope` argument, or a `scope` or `scopes` setting, the list to check each entry of",
+      "names": "^['\"`]?scopes?['\"`]?$",
+      "queries": {
+        "python": "[(keyword_argument name: (identifier) @used)\n (pair key: (string) @used)]",
+        "javascript": "[(pair key: (property_identifier) @used)\n (pair key: (string) @used)]",
+        "typescript": "[(pair key: (property_identifier) @used)\n (pair key: (string) @used)]"
+      }
+    },
+    {
+      "id": "locate.hmac",
+      "questions": [
+        "V11.3.5"
+      ],
+      "finds": "where the app computes an HMAC (Python's `hmac.new` and `hmac.HMAC`, the cryptography package's `HMAC`, Node's `createHmac`): the places to check whether it is taken over the encrypted bytes",
+      "names": "^(new|hmac|createhmac)$",
+      "queries": {
+        "python": "[((call function: (attribute object: (identifier) @module attribute: (identifier) @used)) (#match? @module \"^(hmac|_hmac)$\"))\n (call function: (identifier) @used)]",
+        "javascript": "(call_expression function: (member_expression property: (property_identifier) @used))",
+        "typescript": "(call_expression function: (member_expression property: (property_identifier) @used))"
+      }
+    },
+    {
+      "id": "locate.shared-state",
+      "questions": [
+        "V15.4.1"
+      ],
+      "finds": "dictionaries, lists, sets, and maps made at the top of a file under a name that says it holds state (cache, store, registry, sessions, counters, and the like): objects every request handler, and every thread, can reach",
+      "names": "^_*(\\w*(cache|store|registry|sessions|counter|counts|seen|pending|queue|pool|state|buffer|memo|inflight|locks?)\\w*)$",
+      "queries": {
+        "python": "(module (expression_statement (assignment left: (identifier) @defined right: [(dictionary) (list) (set) (call function: (identifier) @kind)])))",
+        "javascript": "(program [(lexical_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)])) (variable_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)]))])",
+        "typescript": "(program [(lexical_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)])) (variable_declaration (variable_declarator name: (identifier) @defined value: [(object) (array) (new_expression)]))])"
+      }
     }
   ],
   "packages": [
     {
       "id": "locate.web-server",
       "questions": [
-        "V4.2.1"
+        "V4.2.1",
+        "V4.2.3",
+        "V4.2.4"
       ],
       "finds": "the web server package inside the app, which reads each request after whatever is in front of the app has passed it on",
       "says": "A known flaw in this version, request smuggling among them, is listed as something to fix when the advisory data has been downloaded and StackVet is run with --advisories; the machines in front of the app are not in the list of packages, and nothing here says what they run.",
@@ -375,7 +416,8 @@
         "V17.2.1",
         "V17.2.2",
         "V17.2.3",
-        "V17.2.4"
+        "V17.2.4",
+        "V17.2.6"
       ],
       "finds": "the media server packages among the app's packages, which carry live audio and video and keep the DTLS and SRTP settings these questions ask about",
       "says": "A known flaw in the version found is listed as something to fix when the advisory data has been downloaded and StackVet is run with --advisories. A hosted media service (LiveKit Cloud, Twilio, Daily, Agora) is not a package here, and its settings are the service's.",

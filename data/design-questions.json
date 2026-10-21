@@ -465,6 +465,54 @@
       "plain": "When a call starts, does the media server check that the other side's encryption certificate matches the one announced when the call was set up, and hang up if it does not?",
       "whereMeans": "the media server setting that checks the certificate's fingerprint",
       "howToFindOut": "Media libraries check this unless told not to, so look in the media server's settings for anything that turns the fingerprint check off or ignores a mismatch, often an option meant for testing."
+    },
+    {
+      "id": "V10.2.3",
+      "title": "The app asks the sign-in provider only for the scopes it needs",
+      "asks": "Does the OAuth client only request the required scopes, or other authorization parameters, in its requests to the authorization server?",
+      "plain": "When the app sends people to sign in through another service, does it ask that service only for what it really uses (an email address, say), and not for more access than it needs?",
+      "whereMeans": "the file that lists the scopes the app asks for",
+      "howToFindOut": "Start from the places StackVet lists as naming scopes. For each scope there (`openid`, `email`, `profile`, or a service's own), find where the app uses what it gives. A scope nothing uses is one to take out."
+    },
+    {
+      "id": "V11.3.5",
+      "title": "Encryption and its MAC are combined as encrypt-then-MAC",
+      "asks": "Is any combination of an encryption algorithm and a MAC algorithm in the application operating in encrypt-then-MAC mode: the MAC computed over the encrypted bytes, and checked before anything is decrypted?",
+      "plain": "Where the app scrambles data and also adds a tamper-proof seal to it, is the seal made over the scrambled data, and checked before unscrambling, rather than the other way round?",
+      "whereMeans": "the file that encrypts and computes a MAC together",
+      "howToFindOut": "Start from the places StackVet lists as computing an HMAC. For each, find the encryption beside it and check the order: encrypt, then compute the MAC over the result; and on reading, check the MAC before decrypting. An app that only uses AES-GCM, ChaCha20-Poly1305, or Fernet does this already."
+    },
+    {
+      "id": "V15.4.1",
+      "title": "Objects shared across threads are reached safely",
+      "asks": "Are shared objects in multi-threaded code (caches, files, or in-memory objects accessed by multiple threads) accessed safely, by using thread-safe types and synchronization mechanisms such as locks or semaphores, to avoid race conditions and data corruption?",
+      "plain": "Where many requests at once can change the same thing the app keeps in memory (a cache, a list of signed-in people, a counter), is it protected so two changes at the same moment cannot spoil it?",
+      "whereMeans": "the file that guards an object shared between threads",
+      "howToFindOut": "Start from the objects StackVet lists as made at the top of a file and named like a cache or a store. For each one a request changes, check whether the app runs with threads (a threaded server, `threading`, `worker_threads`) and, if so, whether a lock or a thread-safe type guards it."
+    },
+    {
+      "id": "V4.2.3",
+      "title": "HTTP/2 and HTTP/3 messages carry no connection-specific header fields",
+      "asks": "Does the application refuse, and never send, HTTP/2 or HTTP/3 messages with connection-specific header fields such as Transfer-Encoding, to prevent response splitting and header injection attacks?",
+      "plain": "When the app talks the newer kinds of web connection (HTTP/2 or HTTP/3), does it, or the server in front of it, refuse messages carrying the old-style connection headers that those kinds forbid?",
+      "whereMeans": "the web server or proxy setting that handles HTTP/2 and HTTP/3",
+      "howToFindOut": "Find out what accepts HTTP/2 or HTTP/3 for the app: the web server StackVet lists, or a proxy or host in front of it. Most refuse these headers by design; check its version and the advisory data for a known flaw, which `sv report --advisories` lists."
+    },
+    {
+      "id": "V4.2.4",
+      "title": "HTTP/2 and HTTP/3 header values carry no line breaks",
+      "asks": "Does the application only accept HTTP/2 and HTTP/3 requests whose header fields and values contain no CR, LF, or CRLF sequences, to prevent header injection attacks?",
+      "plain": "When a request arrives over HTTP/2 or HTTP/3, does the app or the server in front refuse one whose headers have a hidden line break in them, which could sneak in a header of its own?",
+      "whereMeans": "the web server or proxy that reads HTTP/2 and HTTP/3 headers",
+      "howToFindOut": "Find which component turns HTTP/2 or HTTP/3 into requests the app sees (the web server StackVet lists, or a proxy), and look up its version in the advisory data: a flaw here is a known bug in that component, not in the app's code."
+    },
+    {
+      "id": "V17.2.6",
+      "title": "The media server is not open to the DTLS ClientHello race",
+      "asks": "Is the media server free of the DTLS ClientHello race condition vulnerability, either by checking whether it is publicly known to be vulnerable or by performing the race condition test?",
+      "plain": "Is the version of the media server the app uses free of a known flaw where a stranger can race a caller to set up the encrypted connection first?",
+      "whereMeans": "the media server package and version",
+      "howToFindOut": "Start from the media server StackVet lists with its version, and look it up in the advisory data (`sv report --advisories`) and in its release notes for the ClientHello race. For a hosted media service, ask the provider."
     }
   ]
 }

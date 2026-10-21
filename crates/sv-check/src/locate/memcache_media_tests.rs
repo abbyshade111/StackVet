@@ -83,7 +83,10 @@ fn component(ecosystem: &str, name: &str, version: &str) -> Component {
 #[test]
 fn the_media_server_speaks_to_the_four_media_questions_and_names_its_package() {
     let l = media_server();
-    assert_eq!(l.questions, ["V17.2.1", "V17.2.2", "V17.2.3", "V17.2.4"]);
+    assert_eq!(
+        l.questions,
+        ["V17.2.1", "V17.2.2", "V17.2.3", "V17.2.4", "V17.2.6"]
+    );
     let found = l.find(&[
         component("npm", "express", "4.19.2"),
         component("npm", "mediasoup", "3.14.6"),

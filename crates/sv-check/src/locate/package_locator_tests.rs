@@ -32,7 +32,7 @@ fn component(ecosystem: &str, name: &str, version: &str, source: VersionSource) 
 
 #[test]
 fn the_web_server_speaks_to_the_smuggling_question() {
-    assert_eq!(web_server().questions, ["V4.2.1"]);
+    assert_eq!(web_server().questions, ["V4.2.1", "V4.2.3", "V4.2.4"]);
 }
 
 #[test]

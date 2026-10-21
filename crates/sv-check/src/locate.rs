@@ -455,3 +455,6 @@ mod algorithm_tests;
 
 #[cfg(test)]
 mod memcache_media_tests;
+
+#[cfg(test)]
+mod level_three_tests;
