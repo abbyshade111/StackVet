@@ -847,6 +847,16 @@ pub(super) const CREATE_UNLIMITED: Rule = Rule {
           have a package for it.",
 };
 
+pub(super) const BUSINESS_LIMIT: Rule = Rule {
+    rule_id: "probe.business-limit-not-held",
+    requirement_ids: &["V2.3.2"],
+    cwe: &["CWE-770"],
+    impact: "A limit the app's own documentation states is not held: one person can do more than the rules allow, \
+             whatever the limit is there to protect (a free plan's allowance, stock, a fair share).",
+    fix: "Count what the user already has on the server, before doing one more, and refuse the request that would go \
+          past the limit with a clear error (409 or 422 is usual). A limit kept only in the page is not kept.",
+};
+
 pub(super) const DONE_TWICE: Rule = Rule {
     rule_id: "probe.action-done-twice",
     requirement_ids: &["V2.3.4"],

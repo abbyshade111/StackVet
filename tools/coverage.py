@@ -130,6 +130,7 @@ RUST_CHECKS = {
     "probe.security-headers": ("running", ["V3.4.3", "V3.4.4", "V3.4.5", "V3.4.6"]),
     "probe.cookie-attributes": ("running", ["V3.3.2", "V3.3.4"]),
     "probe.cookie-too-large": ("running", ["V3.3.5"]),
+    "probe.business-limit-not-held": ("signed-in", ["V2.3.2"]),
     "config.last-resort-error-handler": ("static", ["V16.5.4"]),
     "probe.cors-any-origin": ("running", ["V3.4.2"]),
     "probe.error-detail-leak": ("running", ["V13.4.2", "V16.5.1"]),
@@ -470,7 +471,7 @@ RUST_CREDITS_ONLY = {
 # per user and per session, not per feature or team (ADR-073); C12.1.2's detail is read on one kind of safety
 # decision, the injection screen (ADR-074); C12.4.2's audited action is one read-only tool call (ADR-075);
 # C11.4.2's flagged input is one textbook injection (ADR-079).
-RUST_IN_PART = {"probe.cookie-too-large", "probe.input-length-unlimited", "probe.input-out-of-range-stored", "probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-header-injected", "probe.ai-service-failure-logged", "probe.ai-token-use-attributed", "probe.ai-safety-decision-detailed", "probe.ai-tool-action-logged", "probe.ai-flag-not-gating", "probe.ai-kill-switch-ignored", "probe.bypass-attempt-logged"}
+RUST_IN_PART = {"probe.business-limit-not-held", "probe.cookie-too-large", "probe.input-length-unlimited", "probe.input-out-of-range-stored", "probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-header-injected", "probe.ai-service-failure-logged", "probe.ai-token-use-attributed", "probe.ai-safety-decision-detailed", "probe.ai-tool-action-logged", "probe.ai-flag-not-gating", "probe.ai-kill-switch-ignored", "probe.bypass-attempt-logged"}
 
 # Ids written into the code as strings that are not evidence: examples in comments on how ids are
 # parsed, a requirement named only to say it is not assessed, and the three ids `sv init` prints as

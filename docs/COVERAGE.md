@@ -47,7 +47,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 192 (56%) | 131 (38%) | 11 | 100 | 42 |
+| OWASP ASVS 5.0 | 345 | 193 (56%) | 132 (38%) | 11 | 99 | 42 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -59,12 +59,12 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 59 | 45 | 18 | 1 | 6 | 40 | 20 | 13 | 3 |
-| L2 | 183 | 111 | 76 | 31 | 0 | 21 | 56 | 25 | 22 | 2 |
+| L2 | 183 | 112 | 77 | 31 | 0 | 21 | 57 | 25 | 22 | 2 |
 | L3 | 92 | 22 | 10 | 4 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-61 of the 192 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+61 of the 193 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-60 of the 131 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+61 of the 132 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
 With nothing beyond plain `sv check`, 53 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
@@ -89,7 +89,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
 | V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 6 | 3 |
-| V2 Validation and Business Logic | 13 | 3 | 2 | 2 | 7 | 1 |
+| V2 Validation and Business Logic | 13 | 4 | 3 | 2 | 6 | 1 |
 | V3 Web Frontend Security | 31 | 24 | 20 | 0 | 4 | 3 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 5 | 1 |
 | V5 File Handling | 13 | 8 | 8 | 1 | 2 | 2 |
@@ -166,7 +166,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V15.3.7 | L2 | Reads the code: `ast.request-parameter-source-merged` (sv only ever as a finding: `ast.request-parameter-source-merged`) |
 | V16.5.3 | L2 | Reads the code: `ast.check-passes-on-error`; Signed in: `probe.crashed-on-ordinary-request` (sv only ever as a finding: `ast.check-passes-on-error`, `probe.crashed-on-ordinary-request`) |
 
-### Settled by asking the running app (126)
+### Settled by asking the running app (127)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -178,6 +178,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V1.3.11 | L2 | Signed in: `probe.mail-header-injected` |
 | V2.2.1 | L1 | Signed in: `probe.input-length-unlimited`, `probe.input-out-of-range-stored` |
 | V2.2.2 | L1 | Signed in: `probe.validation-only-in-the-browser` (sv only ever as a finding: `probe.validation-only-in-the-browser`) |
+| V2.3.2 | L2 | Signed in: `probe.business-limit-not-held` |
 | V2.4.1 | L2 | Signed in: `probe.create-rate-unlimited` |
 | V3.2.1 | L1 | Signed in: `probe.uploaded-file-rendered`, `probe.saved-page-rendered` |
 | V3.2.2 | L1 | Signed in: `probe.text-rendered-as-markup`; Outside tools: `semgrep` (semgrep only ever as a finding: `avoid-v-html`, `react-dangerouslysetinnerhtml`) |

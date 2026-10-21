@@ -62,6 +62,7 @@ mod activation;
 mod admin;
 mod archives;
 mod burst;
+mod business_limit;
 mod codes;
 mod control;
 mod cross_site;
@@ -91,6 +92,7 @@ mod uploads;
 use activation::*;
 use admin::*;
 use burst::*;
+use business_limit::*;
 use codes::*;
 use email_role::*;
 use flows::*;
@@ -471,7 +473,7 @@ pub const SIGN_INS_IN_A_RUN: usize = 62;
 
 /// The requirements whose checks need the first test user signed in.
 const NEEDS_A_SESSION: &str =
-    "V8.2.1, V8.2.2, V7.2.4, V7.4.1, V3.5.1, V3.3.2, V3.3.4, V14.3.2, V7.4.4, V2.2.1";
+    "V8.2.1, V8.2.2, V7.2.4, V7.4.1, V3.5.1, V3.3.2, V3.3.4, V14.3.2, V7.4.4, V2.2.1, V2.3.2";
 
 /// What the report says when the app's limit on sign-in attempts refused `sv`'s own sign-ins
 /// (`refused`, as request ids): the limit doing its job, not the app failing the checks it blocked,
@@ -1849,6 +1851,15 @@ fn run_checks(
         &["V2.4.1"],
         burst_check(http, users, &accounts.b, policy, &mut out)
     );
+    // 9f'. A business limit the documentation states, held on the server (V2.3.2): after the burst, which waits its
+    //     minute out, and as A, whose records the burst did not make.
+    asked!(
+        out,
+        http,
+        "business_limit_check",
+        &["V2.3.2"],
+        business_limit_check(http, users, &accounts.a, policy, &mut out)
+    );
     // 9g. Compressed files past the stated limits, with a sign-in of A's own: after every other
     //     upload, since an app that unpacks one may fall over; before the password changes below,
     //     which can change A's.
@@ -2101,6 +2112,8 @@ mod storage_check_tests;
 #[cfg(test)]
 mod stored_markup_tests;
 
+#[cfg(test)]
+mod business_limit_tests;
 #[cfg(test)]
 mod input_limits_tests;
 #[cfg(test)]

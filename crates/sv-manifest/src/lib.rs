@@ -1477,6 +1477,41 @@ pub struct PolicySection {
     /// probe can try one of.
     #[serde(default)]
     pub context_words: Vec<String>,
+    /// A business limit the app's documentation states, for V2.3.2: what it is called, the most a user may do, and
+    /// the request that does one (backlog 0489). The signed-in suite sends it one more time than `at-most`.
+    #[serde(default)]
+    pub limit: Option<BusinessLimit>,
+}
+
+/// `[policy] limit`: one business limit, as the app's documentation states it, and the request that uses it up
+/// (V2.3.2; backlog 0489, the owner's choice of 20 October 2026). `{marker}` in a field's value is a value of `sv`'s own,
+/// different at every send, so no attempt is refused for repeating one.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct BusinessLimit {
+    /// What the limit is called, as the documentation says it: "projects per account".
+    pub name: String,
+    /// The most one user may do.
+    pub at_most: u32,
+    #[serde(default = "post")]
+    pub method: String,
+    pub path: String,
+    #[serde(default)]
+    pub form: std::collections::BTreeMap<String, String>,
+    #[serde(default)]
+    pub json: std::collections::BTreeMap<String, String>,
+}
+
+impl BusinessLimit {
+    /// The request that does one, as the signed-in suite sends any request.
+    pub fn request(&self) -> RequestTemplate {
+        RequestTemplate {
+            method: self.method.clone(),
+            path: self.path.clone(),
+            form: self.form.clone(),
+            json: self.json.clone(),
+        }
+    }
 }
 
 /// The remediation time frames, one per severity. A severity left out has no time frame, and a
