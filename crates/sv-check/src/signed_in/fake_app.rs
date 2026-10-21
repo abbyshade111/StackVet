@@ -607,6 +607,9 @@ pub(super) struct Flaws {
     pub(super) upload_broken: bool,
     /// Keeps an uploaded SVG's `<script>` and `<foreignObject>` rather than removing them (V1.3.4).
     pub(super) svg_scripts_kept: bool,
+    /// Removes an uploaded SVG's `<script>` and `<foreignObject>` and keeps its event attributes (`onload=`) and
+    /// `javascript:` links: the cleaner that strips tags alone (backlog 0232, part D).
+    pub(super) svg_handlers_kept: bool,
     /// Turns an uploaded SVG into a GIF, as an app that makes a picture of each image does.
     pub(super) svg_converted: bool,
     /// Keeps the antivirus test file with the virus taken out, as a scanner that cleans files
@@ -2875,6 +2878,13 @@ impl FakeApp {
                                 .map_or(clean.len(), |e| start + e + close.len());
                             clean.replace_range(start..end, "");
                         }
+                    }
+                    // And its event attributes and `javascript:` addresses, as a sanitizer that is not only a tag filter does.
+                    if !self.flaws.svg_handlers_kept {
+                        let handlers =
+                            regex::Regex::new(r#"\s+on[a-zA-Z]+\s*=\s*"[^"]*""#).expect("compiles");
+                        clean = handlers.replace_all(&clean, "").into_owned();
+                        clean = clean.replace("javascript:", "#");
                     }
                     clean
                 } else {
