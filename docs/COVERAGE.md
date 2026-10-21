@@ -47,7 +47,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 94 | 50 |
+| OWASP ASVS 5.0 | 345 | 191 (55%) | 130 (38%) | 10 | 100 | 44 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -91,20 +91,20 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 6 | 3 |
 | V2 Validation and Business Logic | 13 | 3 | 2 | 2 | 7 | 1 |
 | V3 Web Frontend Security | 31 | 23 | 19 | 0 | 4 | 4 |
-| V4 API and Web Service | 16 | 10 | 5 | 0 | 3 | 3 |
+| V4 API and Web Service | 16 | 10 | 5 | 0 | 5 | 1 |
 | V5 File Handling | 13 | 8 | 8 | 1 | 2 | 2 |
 | V6 Authentication | 47 | 26 | 16 | 2 | 13 | 6 |
 | V7 Session Management | 19 | 15 | 13 | 0 | 3 | 1 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 7 | 1 |
 | V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 | 0 |
-| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 10 | 16 |
-| V11 Cryptography | 24 | 13 | 7 | 0 | 7 | 4 |
+| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 11 | 15 |
+| V11 Cryptography | 24 | 13 | 7 | 0 | 8 | 3 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 0 | 1 |
 | V13 Configuration | 21 | 11 | 3 | 1 | 8 | 1 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 5 | 2 |
-| V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 7 | 1 |
+| V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 8 | 0 |
 | V16 Security Logging and Error Handling | 17 | 14 | 11 | 0 | 3 | 0 |
-| V17 WebRTC | 12 | 0 | 0 | 0 | 8 | 4 |
+| V17 WebRTC | 12 | 0 | 0 | 0 | 9 | 3 |
 
 ## ASVS 5.0 requirement by requirement
 

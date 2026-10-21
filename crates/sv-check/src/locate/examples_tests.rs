@@ -93,6 +93,11 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
                 "locate.identity-claims server.js:113",
                 "locate.identity-claims server.js:118",
                 "locate.identity-claims server.js:120",
+                // The scopes it asks the provider for, `scope: 'openid email'` (V10.2.3), and the one shared object named
+                // as state, `sessions` (V15.4.1); `notes` beside it is not, its name saying nothing about state (backlog
+                // 0507).
+                "locate.oauth-scopes server.js:74",
+                "locate.shared-state server.js:16",
             ],
         ),
         // 25 lines each, no authorization code. Each has its search query, and the two its test sends to set up a
