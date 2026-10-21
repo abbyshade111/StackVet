@@ -671,7 +671,7 @@ fn signed_out(
         return;
     }
     let copied = session.clone();
-    let answer = send_filled(http, "oidc-logout", logout, session, &[private.clone()]);
+    let answer = send_filled(http, "oidc-logout", logout, session, std::slice::from_ref(private));
     if crate::signed_in::answer_of(answer.as_ref()).is_crash_or_silence() {
         say(
             out,
