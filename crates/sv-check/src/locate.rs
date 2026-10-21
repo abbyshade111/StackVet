@@ -46,6 +46,21 @@ pub struct Locator {
     /// Per language, a tree-sitter query whose `@defined` captures the name of a function being
     /// written and `@used` the name of one being called or passed.
     pub queries: BTreeMap<String, String>,
+    /// Where set, the places are functions rather than lines: each function holding at least `atLeast` matches is
+    /// kept once, at its first line, unless its own words match `unlessNamed` (backlog 0489, V2.3.3: a handler that
+    /// writes twice or more with no transaction around it).
+    #[serde(default)]
+    pub per_function: Option<PerFunction>,
+}
+
+/// `perFunction` on a locator: how many matches one function must hold to be kept, and the words that leave it out.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PerFunction {
+    pub at_least: usize,
+    /// A function any of whose words, made plain as `names` is, matches this is not kept.
+    #[serde(default)]
+    pub unless_named: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -134,6 +149,8 @@ struct Compiled {
     names: Regex,
     unless: Option<Regex>,
     queries: BTreeMap<String, Query>,
+    /// `perFunction`'s `atLeast`, and its `unlessNamed` compiled.
+    per_function: Option<(usize, Option<Regex>)>,
 }
 
 pub struct Locators {
@@ -214,11 +231,37 @@ impl Locators {
                     queries.insert(key.to_owned(), query);
                 }
             }
+            let per_function = match &locator.per_function {
+                None => None,
+                Some(p) => {
+                    anyhow::ensure!(
+                        p.at_least >= 2,
+                        "{}: {} keeps functions with at least {} match, which is every place it finds; use 2 or more",
+                        path.display(),
+                        locator.id,
+                        p.at_least
+                    );
+                    let unless = p
+                        .unless_named
+                        .as_deref()
+                        .map(Regex::new)
+                        .transpose()
+                        .map_err(|e| {
+                            anyhow::anyhow!(
+                                "{}: the unlessNamed of {}: {e}",
+                                path.display(),
+                                locator.id
+                            )
+                        })?;
+                    Some((p.at_least, unless))
+                }
+            };
             compiled.push(Compiled {
                 locator,
                 names,
                 unless,
                 queries,
+                per_function,
             });
         }
         for locator in &file.packages {
@@ -354,6 +397,8 @@ fn places(c: &Compiled, key: &str, relative: &str, source: &str) -> Vec<Located>
     };
     let names = query.capture_names();
     let mut by_line: BTreeMap<usize, bool> = BTreeMap::new();
+    // `perFunction`: the matches each function holds, by the function's node, with its first line and its node.
+    let mut by_function: BTreeMap<usize, (usize, usize, tree_sitter::Node)> = BTreeMap::new();
     let mut cursor = QueryCursor::new();
     let mut matches = cursor.matches(query, tree.root_node(), source.as_bytes());
     while let Some(m) = matches.next() {
@@ -375,9 +420,36 @@ fn places(c: &Compiled, key: &str, relative: &str, source: &str) -> Vec<Located>
             {
                 continue;
             }
+            if c.per_function.is_some() {
+                if let Some(function) = enclosing_function(capture.node) {
+                    let held = by_function.entry(function.id()).or_insert((
+                        function.start_position().row + 1,
+                        0,
+                        function,
+                    ));
+                    held.1 += 1;
+                }
+                continue;
+            }
             let line = capture.node.start_position().row + 1;
             let was = by_line.entry(line).or_insert(defined);
             *was = *was || defined;
+        }
+    }
+    if let Some((at_least, unless)) = &c.per_function {
+        for (line, held, function) in by_function.into_values() {
+            // A Python function's decorators are outside its own node, and `@transaction.atomic` is one of them.
+            let whole = function
+                .parent()
+                .filter(|p| p.kind() == "decorated_definition")
+                .unwrap_or(function);
+            let words = whole.utf8_text(source.as_bytes()).map(word_names);
+            let left_out = unless
+                .as_ref()
+                .is_some_and(|re| words.is_ok_and(|mut w| w.any(|w| re.is_match(&w))));
+            if held >= *at_least && !left_out {
+                by_line.insert(line, true);
+            }
         }
     }
     by_line
@@ -388,6 +460,28 @@ fn places(c: &Compiled, key: &str, relative: &str, source: &str) -> Vec<Located>
             defined,
         })
         .collect()
+}
+
+/// The nearest function around a node, in the languages locators read: a Python `def`, or a JavaScript or TypeScript
+/// function, method, or arrow function.
+fn enclosing_function(node: tree_sitter::Node) -> Option<tree_sitter::Node> {
+    let mut current = node.parent();
+    while let Some(n) = current {
+        if matches!(
+            n.kind(),
+            "function_definition"
+                | "function_declaration"
+                | "function_expression"
+                | "function"
+                | "arrow_function"
+                | "method_definition"
+                | "generator_function_declaration"
+        ) {
+            return Some(n);
+        }
+        current = n.parent();
+    }
+    None
 }
 
 /// The condition of the nearest `if` (or `elif`) a node sits under, not counting one whose condition
@@ -458,3 +552,6 @@ mod memcache_media_tests;
 
 #[cfg(test)]
 mod level_three_tests;
+
+#[cfg(test)]
+mod several_writes_tests;
