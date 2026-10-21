@@ -85,6 +85,9 @@ Every rule has these:
 - `description`, `impact`, `fix` (text): what the finding means, what it allows, and how to put it right.
 - `queries` (per language, text): one tree-sitter query per language. A language with no query is one the rule says
   nothing about.
+- `alsoCites` (list, optional): requirements a finding cites as well, each only on a narrower match: its
+  `requirementIds`, `why`, and `guardedPatterns` (per language, what the body of the nearest `try` around the match must
+  contain; the handlers are not part of it). Never credited by a clean run; ADR-018, Later, 21 October 2026.
 
 What a match must look like to be reported, each optional (per language unless it says otherwise):
 

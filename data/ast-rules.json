@@ -1954,6 +1954,19 @@
       "requirementIds": [
         "V16.5.3"
       ],
+      "alsoCites": [
+        {
+          "requirementIds": [
+            "V11.2.5"
+          ],
+          "why": "A check that answers yes when a signature check, a MAC check, or a decryption throws is a cryptographic module that fails open: the padding-oracle and forged-token cases V11.2.5 names.",
+          "guardedPatterns": {
+            "python": "\\b(jwt\\.decode|verify_signature|verify_mac)\\s*\\(|\\.(verify|decrypt|unsign)\\s*\\(|\\bcompare_digest\\s*\\(|\\bFernet\\s*\\(",
+            "javascript": "\\b(jwtVerify|timingSafeEqual|createDecipheriv)\\s*\\(|\\.(verify|decrypt)\\s*\\(",
+            "typescript": "\\b(jwtVerify|timingSafeEqual|createDecipheriv)\\s*\\(|\\.(verify|decrypt)\\s*\\("
+          }
+        }
+      ],
       "cwe": [
         "CWE-636"
       ],

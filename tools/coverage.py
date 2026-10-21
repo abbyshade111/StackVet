@@ -129,6 +129,7 @@ RUST_CHECKS = {
     "advisories": ("advisories", ["V15.2.1"]),
     "probe.security-headers": ("running", ["V3.4.3", "V3.4.4", "V3.4.5", "V3.4.6"]),
     "probe.cookie-attributes": ("running", ["V3.3.2", "V3.3.4"]),
+    "probe.cookie-too-large": ("running", ["V3.3.5"]),
     "probe.cors-any-origin": ("running", ["V3.4.2"]),
     "probe.error-detail-leak": ("running", ["V13.4.2", "V16.5.1"]),
     "probe.trace-enabled": ("running", ["V13.4.4"]),
@@ -468,7 +469,7 @@ RUST_CREDITS_ONLY = {
 # per user and per session, not per feature or team (ADR-073); C12.1.2's detail is read on one kind of safety
 # decision, the injection screen (ADR-074); C12.4.2's audited action is one read-only tool call (ADR-075);
 # C11.4.2's flagged input is one textbook injection (ADR-079).
-RUST_IN_PART = {"probe.input-length-unlimited", "probe.input-out-of-range-stored", "probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-header-injected", "probe.ai-service-failure-logged", "probe.ai-token-use-attributed", "probe.ai-safety-decision-detailed", "probe.ai-tool-action-logged", "probe.ai-flag-not-gating", "probe.ai-kill-switch-ignored", "probe.bypass-attempt-logged"}
+RUST_IN_PART = {"probe.cookie-too-large", "probe.input-length-unlimited", "probe.input-out-of-range-stored", "probe.ai-tool-timeout", "probe.ai-hidden-input", "probe.mail-header-injected", "probe.ai-service-failure-logged", "probe.ai-token-use-attributed", "probe.ai-safety-decision-detailed", "probe.ai-tool-action-logged", "probe.ai-flag-not-gating", "probe.ai-kill-switch-ignored", "probe.bypass-attempt-logged"}
 
 # Ids written into the code as strings that are not evidence: examples in comments on how ids are
 # parsed, a requirement named only to say it is not assessed, and the three ids `sv init` prints as
@@ -955,6 +956,11 @@ def evidence():
             ev[q]["static"].append(rule["id"])
             if rule.get("findingsOnly") or q in rule.get("findingsOnlyFor", []):
                 FINDINGS_ONLY[q].add(("sv", rule["id"]))
+        # A requirement cited only on a narrower match (`alsoCites`) is never credited by a clean run (backlog 0507).
+        for cite in rule.get("alsoCites", []):
+            for q in cite["requirementIds"]:
+                ev[q]["static"].append(rule["id"])
+                FINDINGS_ONLY[q].add(("sv", rule["id"]))
         if rule.get("inPart"):
             IN_PART.add(rule["id"])
     for rule in load(ROOT / "data/secret-rules.json")["rules"]:
@@ -1025,7 +1031,8 @@ def check_prompts(known_requirements, sbd_controls):
     cites = {}
     for name in ("ast-rules.json", "secret-rules.json"):
         for rule in load(ROOT / "data" / name)["rules"]:
-            cites[rule["id"]] = set(rule["requirementIds"])
+            cites[rule["id"]] = set(rule["requirementIds"]).union(
+                *(c["requirementIds"] for c in rule.get("alsoCites", [])))
     for check, (_, ids) in RUST_CHECKS.items():
         cites[check] = set(ids)
     faults = []
