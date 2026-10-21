@@ -1,6 +1,6 @@
 # Level 3 as an opt-in, after the proposals: a manifest answer that holds an app to ASVS level 3, with its requirements shown as what they are
 
-**Status:** partly done: 0263, the static half of V16.5.4
+**Status:** done, 21 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 

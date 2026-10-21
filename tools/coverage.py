@@ -130,6 +130,7 @@ RUST_CHECKS = {
     "probe.security-headers": ("running", ["V3.4.3", "V3.4.4", "V3.4.5", "V3.4.6"]),
     "probe.cookie-attributes": ("running", ["V3.3.2", "V3.3.4"]),
     "probe.cookie-too-large": ("running", ["V3.3.5"]),
+    "config.last-resort-error-handler": ("static", ["V16.5.4"]),
     "probe.cors-any-origin": ("running", ["V3.4.2"]),
     "probe.error-detail-leak": ("running", ["V13.4.2", "V16.5.1"]),
     "probe.trace-enabled": ("running", ["V13.4.4"]),

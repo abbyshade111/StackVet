@@ -1,6 +1,6 @@
 # Error-handler signals in the app's code, the static half of V16.5.4
 
-**Status:** claimed by claude/backlog-work, 21 October 2026
+**Status:** done, 21 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 

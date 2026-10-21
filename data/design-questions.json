@@ -513,6 +513,14 @@
       "plain": "Is the version of the media server the app uses free of a known flaw where a stranger can race a caller to set up the encrypted connection first?",
       "whereMeans": "the media server package and version",
       "howToFindOut": "Start from the media server StackVet lists with its version, and look it up in the advisory data (`sv report --advisories`) and in its release notes for the ClientHello race. For a hosted media service, ask the provider."
+    },
+    {
+      "id": "V16.5.4",
+      "title": "A last-resort error handler catches every unhandled exception",
+      "asks": "Is a last resort error handler defined which will catch all unhandled exceptions, so error details that must go to the log files are not lost, and an error does not take down the entire application process?",
+      "plain": "If something goes wrong in the app that nothing else was ready for, is there a final safety net that writes down what happened and keeps the app running for everyone else?",
+      "whereMeans": "the file that sets up the last-resort error handler",
+      "howToFindOut": "Start from the handlers StackVet lists beside this requirement, if it found any. Check each one logs the error and answers the request, and then look for the places it does not reach: background workers, scheduled jobs, and anything started outside a request. If StackVet found none, check whether the framework installs one by default."
     }
   ]
 }
