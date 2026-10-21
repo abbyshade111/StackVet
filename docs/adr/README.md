@@ -176,6 +176,7 @@ source files, and in two tests:
 | [ADR-127](ADR-127.md) | The test sign-in provider mints access tokens and logout tokens, so the app's own checks of them are seen (accepted, 16 October 2026) |
 | [ADR-128](ADR-128.md) | A Dependabot pull request that only moves pins owes the decision records no line (accepted, 20 October 2026) |
 | [ADR-129](ADR-129.md) | stackvet.dev has a page for each framework, built from the data the checks keep, and never copied (accepted, 20 October 2026) |
+| [ADR-130](ADR-130.md) | Level 3 is the owner's opt-in, `[app] level = 3`, and it only ever raises the level (accepted, 20 October 2026) |
 
 ## Names in the records
 

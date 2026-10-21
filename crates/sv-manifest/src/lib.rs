@@ -109,6 +109,10 @@ pub struct AppSection {
     /// The paper `report.pdf` is laid out on: `"a4"`, or US Letter when it is left out (ADR-116).
     #[serde(default)]
     pub report_paper: Option<String>,
+    /// The ASVS and AISVS level the owner asks for, which only ever raises the one `audience` and `[data] categories`
+    /// set: `3` holds the app to level 3 (ADR-130). A level below theirs is refused when the file is read.
+    #[serde(default)]
+    pub level: Option<u8>,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -1780,6 +1784,9 @@ pub struct ScopeReview {
     /// The data categories as they were when confirmed; left out when the list was unanswered.
     #[serde(default)]
     pub categories: Option<Vec<String>>,
+    /// `[app] level` as it was when confirmed; left out when it was (ADR-130).
+    #[serde(default)]
+    pub level: Option<u8>,
     /// Who confirmed them: `owner`, as `sv review` writes it.
     pub by: String,
     /// When, as YYYY-MM-DD.
@@ -1805,6 +1812,7 @@ impl ScopeReview {
         };
         self.audience == manifest.app.audience.name()
             && names(&self.categories) == names(&manifest.data.categories)
+            && self.level == manifest.app.level
     }
 }
 
@@ -2044,15 +2052,38 @@ impl Manifest {
              `websockets`, and leave out `websocket`",
             path.display(),
         );
+        if let Some(asked) = manifest.app.level {
+            anyhow::ensure!(
+                (1..=3).contains(&asked),
+                "{} asks for level {asked} under `[app]`: ASVS and AISVS have levels 1, 2, and 3",
+                path.display(),
+            );
+            // The owner's word adds requirements and never removes one (ADR-015), so a lower level is refused
+            // rather than taken: the two answers that set the level are what to change (ADR-130).
+            let answered = manifest.answers_level();
+            anyhow::ensure!(
+                asked >= answered,
+                "{} asks for level {asked} under `[app]`, and its answers hold the app to level {answered}, because \
+                 {}. `level` only ever raises the level: to change it, change those answers, or leave `level` out.",
+                path.display(),
+                manifest.level_because(),
+            );
+        }
         Ok(manifest)
     }
 
-    /// The ASVS target level. Sensitive data or a public audience means level 2, as in v1.
+    /// The level the app is held to: the higher of what its two answers set (`answers_level`) and the level
+    /// `[app] level` asks for (ADR-130).
+    pub fn target_level(&self) -> u8 {
+        self.answers_level().max(self.app.level.unwrap_or(1))
+    }
+
+    /// The ASVS target level its two answers set. Sensitive data or a public audience means level 2, as in v1.
     ///
     /// So does not saying what data the app holds: level 1 is a claim that nothing sensitive is
     /// held, and a list nobody filled in makes no claim. The starter file once wrote `categories =
     /// []`, and an owner who never looked at it got level 1 as a quiet "no".
-    pub fn target_level(&self) -> u8 {
+    pub fn answers_level(&self) -> u8 {
         let sensitive = match &self.data.categories {
             None => true,
             Some(listed) => listed.iter().map(|c| category_name(c)).any(|c| {
@@ -2069,6 +2100,13 @@ impl Manifest {
     /// it". Both answers are in `stackvet.toml`, which the AI coding tool usually writes, and
     /// nothing confirms them, so the report says so beside it.
     pub fn level_because(&self) -> String {
+        if self.target_level() > self.answers_level() {
+            return format!(
+                "stackvet.toml asks for level {} (`[app] level`), above the level {} its other answers set",
+                self.target_level(),
+                self.answers_level()
+            );
+        }
         let audience = match self.app.audience {
             Audience::JustMe => "only you use it",
             Audience::MyTeam => "only your own team uses it",
@@ -2119,7 +2157,9 @@ impl Manifest {
     /// `None` when the level rests on an answer.
     pub fn level_from_unanswered_data(&self) -> Option<&'static str> {
         let exposed = matches!(self.app.audience, Audience::Customers | Audience::Public);
-        (self.data.categories.is_none() && !exposed).then_some(
+        // An app that asked for a higher level is held to it whatever the data list says.
+        let asked_higher = self.target_level() > self.answers_level();
+        (self.data.categories.is_none() && !exposed && !asked_higher).then_some(
             "stackvet.toml does not say what information the app holds about people (`[data] \
              categories`), so the app is held to ASVS level 2, the level for apps that hold \
              sensitive information such as health or financial details. List what it holds, or \
@@ -2234,7 +2274,8 @@ impl Manifest {
             (Condition::GeneratesMedia, about_ai(c.ai.generates_media)),
             (Condition::Mcp, about_ai(c.ai.mcp)),
             (Condition::Training, about_ai(c.ai.training)),
-            (Condition::Level2, Some(self.target_level() == 2)),
+            // At level 2 or above: a level-3 app is held to every level-2 requirement too (ADR-130).
+            (Condition::Level2, Some(self.target_level() >= 2)),
             // v2: the answers that replace the `never` rules describing v1's own template.
             (Condition::SelfHostedModel, about_ai(c.ai.self_hosted)),
             (Condition::MultiAgent, about_ai(c.ai.multi_agent)),
