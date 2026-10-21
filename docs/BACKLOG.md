@@ -97,6 +97,8 @@ hand. `python3 tools/backlog.py show <number>` prints an item; `list --open` pri
 | 9 | Process, any time | 0193 One file per backlog item, with a status line | done, 8 October 2026 | the owner's decision, 8 October 2026 |
 | 10 | The owner's order of 20 October, after 0489's V2.2.1 | 0624 No check splits into the owner answers and no check yet | done, 20 October 2026 | the owner, 20 October 2026 |
 | 10 | The owner's order of 20 October | 0507 Level 3 as an opt-in, when the owner asks for it | done, 21 October 2026 | the owner, 20 October 2026 |
+| 11 | The owner's order of 21 October | 0577 The owner's follow-up trial: the same prompts with the harness and the model swapped | claimed by claude/backlog-work, 20 October 2026 | the owner, 21 October 2026 |
+| 11 | The owner's order of 21 October | 0630 What the AI coding tool did that is worth a look | open | the owner, 21 October 2026 |
 <!-- roadmap:end -->
 
 Rows that name the same order number are one sub-item of the old roadmap, taken in the order listed. The phases' own
@@ -116,6 +118,8 @@ words, with which part of each item they meant, are in the history of this file 
   follow it wait on the coordination board until the loop trials are done.
 - 20 October 2026: after 0489's V2.2.1 part, the split of *No check* (0624), then level 3 as an opt-in (0507), taken
   then rather than held until every proposal from 0488 to 0500 is built; 0489's remaining parts follow.
+- 21 October 2026: the paper's tables in two periods, version 1 against StackVet, with 0577's trial rows and its Limits
+  block, then the report's section on what the AI coding tool did that is worth a look (0630).
 
 The status of each item as a read-only review found it on 11 October 2026 is a design entry of its own,
 "The roadmap's status checked against the code (11 October 2026)", under `docs/design/`.
