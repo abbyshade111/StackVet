@@ -95,8 +95,8 @@ hand. `python3 tools/backlog.py show <number>` prints an item; `list --open` pri
 | 8 | Added 12 October | 0257 The build-loop trial the coordinating session follows | partly done (what remains is on the item) | the owner, 12 October 2026 |
 | 9 | Process, any time | 0192 Process: shorter CI, a merge queue decision, and a nightly routine | done, 12 October 2026 | 8 October 2026 |
 | 9 | Process, any time | 0193 One file per backlog item, with a status line | done, 8 October 2026 | the owner's decision, 8 October 2026 |
-| 10 | The owner's order of 20 October, after 0489's V2.2.1 | 0624 No check splits into the owner answers and no check yet | claimed by claude/backlog-work, 20 October 2026 | the owner, 20 October 2026 |
-| 10 | The owner's order of 20 October | 0507 Level 3 as an opt-in, when the owner asks for it | open | the owner, 20 October 2026 |
+| 10 | The owner's order of 20 October, after 0489's V2.2.1 | 0624 No check splits into the owner answers and no check yet | done, 20 October 2026 | the owner, 20 October 2026 |
+| 10 | The owner's order of 20 October | 0507 Level 3 as an opt-in, when the owner asks for it | claimed by claude/backlog-work, 20 October 2026 | the owner, 20 October 2026 |
 <!-- roadmap:end -->
 
 Rows that name the same order number are one sub-item of the old roadmap, taken in the order listed. The phases' own

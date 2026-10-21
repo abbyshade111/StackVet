@@ -1,6 +1,6 @@
 # No check splits into the owner answers and no check yet, and a class is shown only where one was set
 
-**Status:** claimed by claude/backlog-work, 20 October 2026
+**Status:** done, 20 October 2026
 
 Filed at the owner's request, 20 October 2026, asked in a session. Severity: medium (a coverage list that says
 *No check* where StackVet asks the owner, and a class nobody chose, mislead the reader about what StackVet does).
@@ -35,7 +35,7 @@ StackVet says nothing about (20 October 2026)"; the new checks and probes it lis
    and the export take it from there. The counts in the charts and the tables move from *no check* to the two new
    rows. Done when V1.1.1 reads *The owner answers: a design question; `sv` shows where to look*, and a requirement
    with nothing reads *No check yet*.
-   **Part status:** open
+   **Part status:** done, 20 October 2026
 2. **The nine requirements that ask for a document and have no notes section.** V3.1.1, V8.1.3, V8.1.4, V11.1.4,
    V13.1.2, V13.1.3, V13.1.4, V15.1.4, V15.1.5, all level 3, so they were outside `security-notes.json`'s `elsewhere`
    list, which covers levels 1 and 2. A section each, with `facts` from locators `sv` already has. The other seven
@@ -56,4 +56,4 @@ StackVet says nothing about (20 October 2026)"; the new checks and probes it lis
    six by-hand instructions, the locators with their questions, the citation of V11.2.5 by
    `ast.check-passes-on-error`, and the cookie-size check on the running app (V3.3.5). Each passes its catalog's words
    test, and each credit is seen withheld (ADR-059).
-   **Part status:** partly done: the citation of V11.2.5 by `ast.check-passes-on-error`; the cookie-size check (V3.3.5); and, with backlog 0507, the level-3 design questions, the by-hand instructions for V3.7.5 and V13.2.6, and the level-3 locators (V10.2.3, V11.3.5, V15.4.1, the web server's for V4.2.3 and V4.2.4, and the media server's for V17.2.6), since the catalogs take levels 1 and 2 only
+   **Part status:** done, 20 October 2026 (the level 1 and 2 entries built; what is level 3 moved to 0507, at the owner's word)
