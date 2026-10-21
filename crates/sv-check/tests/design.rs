@@ -64,6 +64,12 @@ fn every_question_shares_words_with_the_requirement_it_asks_about() {
 fn every_question_matches_its_own_requirement_better_than_any_other() {
     // The neighbor swap, as in the security notes. V13.2.1 (the app's services authenticate to each
     // other) and V13.2.2 (that traffic is encrypted) are the pair this is here for.
+    //
+    // A tie is a misfile, except where the question's own requirement says nothing the other does not: V17.2.5 (the
+    // media server under a flood) is V17.2.7 (recording under a flood) less its recording, so no question can share
+    // more with V17.2.5 than with V17.2.7. A swap is still caught both ways: V17.2.7's question filed under V17.2.5
+    // shares more with V17.2.7, and V17.2.5's filed under V17.2.7 ties with a requirement that does not contain
+    // V17.2.7's words (21 October 2026, ADR-130).
     let frameworks = frameworks();
     let catalog = questions();
     let mut misfiled = Vec::new();
@@ -72,7 +78,8 @@ fn every_question_matches_its_own_requirement_better_than_any_other() {
             continue;
         };
         let asked = words(&format!("{} {}", q.title, q.asks));
-        let mine = asked.intersection(&words(&own.description)).count();
+        let own_words = words(&own.description);
+        let mine = asked.intersection(&own_words).count();
         for other in &catalog.questions {
             if other.id == q.id {
                 continue;
@@ -80,8 +87,10 @@ fn every_question_matches_its_own_requirement_better_than_any_other() {
             let Some(theirs) = frameworks.requirements.get(&other.id) else {
                 continue;
             };
-            let count = asked.intersection(&words(&theirs.description)).count();
-            if count >= mine {
+            let their_words = words(&theirs.description);
+            let count = asked.intersection(&their_words).count();
+            let cannot_do_better = count == mine && own_words.is_subset(&their_words);
+            if count >= mine && !cannot_do_better {
                 misfiled.push(format!(
                     "{} shares {mine} with its own requirement and {count} with {}",
                     q.id, other.id

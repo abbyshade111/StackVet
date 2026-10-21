@@ -345,6 +345,126 @@
       "plain": "When one part of the app, another program, or an AI asks for a record on someone's behalf, does the part holding the record check what that person may see, and not just trust the one asking?",
       "whereMeans": "the file where a service checks whose permissions to use",
       "howToFindOut": "Find each place a request reaches the app through something acting for a person: another of its services, a program with an API key, or the app's AI. Check whether the person's own token or id travels with it, and whether that is what decides access."
+    },
+    {
+      "id": "V10.3.5",
+      "title": "The resource server refuses a stolen or replayed access token",
+      "asks": "Does the resource server prevent the use of stolen access tokens, or their replay by unauthorized parties, by requiring sender-constrained access tokens, through Mutual TLS for OAuth 2 or OAuth 2 Demonstration of Proof of Possession (DPoP)?",
+      "plain": "If someone copied an access token the app accepts, could they use it from their own computer? Or does the app's API insist each token is used only by the program it was given to?",
+      "whereMeans": "the file where the API checks that a token is bound to the client presenting it",
+      "howToFindOut": "Find the code that checks access tokens on the app's API, and look for a `DPoP` header being checked, or the token's `cnf` claim compared with the client certificate. If tokens are accepted on their signature and expiry alone, a copied one works."
+    },
+    {
+      "id": "V10.4.14",
+      "title": "The authorization server issues only sender-bound access tokens",
+      "asks": "Does the authorization server issue only sender-constrained (Proof-of-Possession) access tokens, either certificate-bound access tokens using mutual TLS (mTLS) or DPoP-bound access tokens, and never plain bearer tokens?",
+      "plain": "Does the app's own sign-in server only ever hand out tokens tied to the program that asked for them, so a token on its own is useless to anyone else?",
+      "whereMeans": "the authorization server setting that requires DPoP or certificate-bound tokens",
+      "howToFindOut": "Look in the authorization server's settings, and in its published metadata (`dpop_signing_alg_values_supported`, `tls_client_certificate_bound_access_tokens`). Advertising support is not the same as requiring it: check that a client asking without DPoP or a certificate is refused."
+    },
+    {
+      "id": "V10.4.15",
+      "title": "Authorization details from a server-side client cannot be tampered with",
+      "asks": "For a server-side client, does the authorization server ensure the authorization_details parameter value comes from the client backend and that the user has not tampered with it, for example by requiring pushed authorization requests (PAR) or JWT-secured authorization requests (JAR)?",
+      "plain": "When a program on a server asks the app's sign-in server for permission to do specific things, is that request sent straight from server to server (or signed), so the person in the browser cannot change what is asked for on the way?",
+      "whereMeans": "the authorization server setting that requires PAR or JAR",
+      "howToFindOut": "Look in the authorization server's settings for pushed authorization requests (PAR) or signed request objects (JAR), and whether they are required for server-side clients or only allowed. If `authorization_details` is not used at all, write that down."
+    },
+    {
+      "id": "V11.1.3",
+      "title": "Every use of cryptography in the system is found by a discovery tool",
+      "asks": "Are cryptographic discovery mechanisms employed to identify all instances of cryptography in the system, including encryption, hashing, and signing operations, in the code, its libraries, and its servers?",
+      "plain": "Does anyone run a tool that finds every place the system scrambles, signs, or fingerprints data (in the app's code, the packages it uses, and its servers), so none is missed when something has to be replaced?",
+      "whereMeans": "the tool or report that lists every use of cryptography",
+      "howToFindOut": "Start from the cryptography list written for V11.1.2. Then find out whether a tool produced it (a code scanner, a bill of materials with cryptography in it, a server scan) or a person wrote it from memory. A list from memory misses what packages and servers do."
+    },
+    {
+      "id": "V11.7.1",
+      "title": "Memory is encrypted while sensitive data is in use",
+      "asks": "Is full memory encryption in use, protecting sensitive data while it is in use, so that unauthorized users or processes cannot read it from memory?",
+      "plain": "Does the app run on computers whose memory is encrypted (often called confidential computing), so that even someone with access to the machine cannot read sensitive data while the app is working on it?",
+      "whereMeans": "the hosting setting or machine type that encrypts memory",
+      "howToFindOut": "Look at where the app is hosted and which kind of machine it runs on. Cloud providers name these as confidential VMs or confidential computing (AMD SEV, Intel TDX). If it is an ordinary machine, write that down: that is the answer."
+    },
+    {
+      "id": "V11.7.2",
+      "title": "Only the data needed is decrypted, and only while it is needed",
+      "asks": "Does data minimization ensure that the minimal amount of data is exposed during processing, and that data is encrypted again immediately after use or as soon as feasible?",
+      "plain": "When the app has to unlock sensitive data to work on it, does it unlock only the parts it needs, and lock them again as soon as it is done?",
+      "whereMeans": "the file where sensitive data is decrypted for processing",
+      "howToFindOut": "Find where the app decrypts stored sensitive data. Check whether it decrypts only the fields that step needs, and whether the plain values are kept only for that step, not cached or left in a long-lived object."
+    },
+    {
+      "id": "V13.3.3",
+      "title": "Keys stay inside a vault or hardware module that does the cryptography",
+      "asks": "Are all cryptographic operations performed using an isolated security module, such as a vault or hardware security module, so that key material is managed there and never exposed outside of the security module?",
+      "plain": "Are the app's most important keys kept in a locked-away service (a key vault or a security chip) that does the signing and unlocking itself, so the keys never reach the app's own memory or files?",
+      "whereMeans": "the file or setting that sends cryptography to the vault or hardware module",
+      "howToFindOut": "Find where the app signs or decrypts. If it reads a key from an environment variable or a file and uses it in its own code, the key leaves the module. If it calls a key service (AWS KMS, Azure Key Vault, Google Cloud KMS, HashiCorp Vault's transit engine) to do the work, it does not."
+    },
+    {
+      "id": "V13.3.4",
+      "title": "Secrets expire and are rotated as the documentation says",
+      "asks": "Are secrets configured to expire and be rotated as the application's documentation says they should be?",
+      "plain": "For each password or key the app uses, is it really set to run out and be replaced on the schedule the app's notes give, rather than only written down as a plan?",
+      "whereMeans": "the setting or job that expires and rotates each secret",
+      "howToFindOut": "Start from what the security notes say for V13.1.4. For each secret listed there, look at where it is kept for an expiry date or an automatic rotation, and check when it was last replaced."
+    },
+    {
+      "id": "V14.2.6",
+      "title": "Only the sensitive data needed is returned, and it is masked",
+      "asks": "Does the application only return the minimum required sensitive data for its functionality, for example only some of the digits of a credit card number, and where the complete data is required, mask it in the user interface unless the user specifically views it?",
+      "plain": "When the app shows or sends sensitive details (a card number, an ID number), does it send only the part that is needed, such as the last four digits, and hide the rest on screen unless the person asks to see it?",
+      "whereMeans": "the file that decides how much of a sensitive value is returned",
+      "howToFindOut": "Open the pages and API responses that show sensitive details while signed in, and look at what arrives in the browser, not only what is shown. A full number sent and then hidden by the page is still returned."
+    },
+    {
+      "id": "V14.2.7",
+      "title": "Outdated sensitive data is deleted on a schedule",
+      "asks": "Is sensitive information subject to data retention classification, so that outdated or unnecessary data is deleted automatically, on a defined schedule, or as the situation requires?",
+      "plain": "Does the app delete sensitive information it no longer needs (old accounts, old orders, old messages) on its own, on a schedule, rather than keeping everything for ever?",
+      "whereMeans": "the job or file that deletes data past its retention period",
+      "howToFindOut": "List the kinds of sensitive data the app keeps, and how long each should be kept. Then look for a scheduled job, or a database setting, that deletes each when its time is up. If nothing does, write that down."
+    },
+    {
+      "id": "V15.2.5",
+      "title": "The risky parts of the app are walled off from the rest",
+      "asks": "Does the application implement additional protections, such as sandboxing, encapsulation, containerization, or network-level isolation, around the parts documented as containing dangerous functionality or using risky components, to delay and deter an attacker who compromises one part from pivoting elsewhere?",
+      "plain": "Are the parts of the app the notes call risky (the add-on packages and the dangerous features) kept apart from the rest, so someone who breaks in there cannot easily reach everything else?",
+      "whereMeans": "the setting or file that isolates the risky parts",
+      "howToFindOut": "Start from what the security notes say for V15.1.4 and V15.1.5. For each part listed, find out whether it runs in a container, process, or sandbox of its own with only the access it needs. If it runs inside the main app with all its access, write that down."
+    },
+    {
+      "id": "V15.4.4",
+      "title": "Thread pools and queues give every task a fair turn",
+      "asks": "Do resource allocation policies prevent thread starvation by ensuring fair access to resources, for example through thread pools, so that lower-priority threads can proceed within a reasonable time?",
+      "plain": "When the app is busy, does every job eventually get its turn, or can a flood of one kind of work keep the rest waiting for ever?",
+      "whereMeans": "the file or setting that sizes the worker pools and queues",
+      "howToFindOut": "Find the app's worker and queue settings (the web server's worker count, a task queue's concurrency, a thread pool's size). Check that slow or low-priority work has a pool or queue of its own, or a time limit, so it cannot hold every worker."
+    },
+    {
+      "id": "V17.2.5",
+      "title": "The media server keeps working during an SRTP flood from real users",
+      "asks": "Is the media server able to continue processing incoming media traffic during a flood of Secure Real-time Transport Protocol (SRTP) packets from legitimate users?",
+      "plain": "If many real callers send a lot of audio and video at once, does the media server keep carrying everyone's calls, rather than falling over?",
+      "whereMeans": "the media server's limits and its load-test results",
+      "howToFindOut": "Find the media server's settings for how many streams and how much traffic each connection may send, and ask whether it has been load-tested at more than the busiest expected day. A hosted service's published limits are the answer for one."
+    },
+    {
+      "id": "V17.2.7",
+      "title": "Recording keeps working during an SRTP flood from real users",
+      "asks": "Are the audio or video recording mechanisms associated with the media server able to continue processing incoming media traffic during a flood of SRTP packets from legitimate users?",
+      "plain": "If the app records calls, does recording keep working when many people send a lot of audio and video at once, rather than stopping or dropping parts of calls?",
+      "whereMeans": "the recording service's limits and its load-test results",
+      "howToFindOut": "Find what records calls (part of the media server, or a separate service), and look at its limits on how many streams it records at once. If the app does not record calls, write that down."
+    },
+    {
+      "id": "V17.2.8",
+      "title": "The DTLS certificate is checked against the SDP fingerprint",
+      "asks": "Is the Datagram Transport Layer Security (DTLS) certificate checked against the Session Description Protocol (SDP) fingerprint attribute, with the media stream terminated if the check fails, to ensure the authenticity of the media stream?",
+      "plain": "When a call starts, does the media server check that the other side's encryption certificate matches the one announced when the call was set up, and hang up if it does not?",
+      "whereMeans": "the media server setting that checks the certificate's fingerprint",
+      "howToFindOut": "Media libraries check this unless told not to, so look in the media server's settings for anything that turns the fingerprint check off or ignores a mismatch, often an option meant for testing."
     }
   ]
 }
