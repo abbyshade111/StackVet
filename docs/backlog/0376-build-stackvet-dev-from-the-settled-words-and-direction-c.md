@@ -1,6 +1,6 @@
 # Build stackvet.dev from the settled words and direction C
 
-**Status:** claimed by claude/backlog-work, 22 October 2026
+**Status:** partly done: publishing to Cloudflare (a deploy from GitHub with a token the owner makes, and stackvet.app's redirect rule); going live, after backlog 0373 and the owner's word
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -31,3 +31,24 @@ published. Nothing is live from this item until the owner says so.
 provide up to 5 options, a mix of free and low cost, with the pros and cons and your recommendation". So this claim
 builds the site into the repository (`exports/site/`, beside the framework pages), with nothing published, and then
 brings the owner up to five hosting options to choose from.
+
+**Built, 22 October 2026** (ADR-132, accepted): `python3 tools/website.py` writes the whole site into
+`exports/site/`, which git ignores, and publishes nothing: the home page, How StackVet works, the reports page with
+the example report, StackVet checks itself, and the credits, with the framework pages in `standards/`. The words are
+read from `docs/website/`, with the notes on them left out; the numbers from `docs/COVERAGE.md`; and the AI tools the
+setup prompts were tried in from `docs/prompts/setup.md`. `crates/sv-cli/tests/website.rs` holds it to them.
+
+In the same pull request, at the owner's word: a new self-assessment, StackVet's report on its own repository held to
+level 3, in `docs/website/self-assessment/` (its small files only), with its 312 things to fix to be gone through in
+backlog 0633; level 3 rows in the home page's "What it checks"; and the opening conversation's lines, proposed in
+`docs/website/home-page.md` for the owner to settle.
+
+What remains: hosting, which the owner chooses from up to five options, free and low cost, brought after this build;
+stackvet.app pointed at stackvet.dev; and going live, after the walk-through (backlog 0373) and the owner's word.
+
+**The owner's answers, 22 October 2026:** hosting on Cloudflare, where both addresses are already registered ("Let's
+go with Cloudflare, the domains are registered via Cloudflare already"), and the real Cursor conversation on the home
+page, with a VS Code line on How StackVet works. The build writes the `_headers` file Cloudflare reads. What remains:
+publishing (a GitHub Actions job that builds with `tools/website.py` and deploys, with a Cloudflare token the owner
+makes and stores as a secret, which is the owner's to do; and a redirect rule on stackvet.app's zone), and going live,
+after the walk-through (backlog 0373) and the owner's word.

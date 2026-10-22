@@ -11,6 +11,9 @@ description = "A command-line checker that reads an app's code, can run the app 
 # standard input and output, and `sv` listens on no network port.
 audience = "just-me"
 deployment = "local-only"
+# The owner asked on 22 October 2026 for StackVet's own report to hold it to level 3 (ADR-130), the highest, so the
+# self-assessment on stackvet.dev shows every requirement at every level.
+level = 3
 
 [stack]
 # Rust is `sv`. The JavaScript is the scripts `sv` runs inside its own test containers
