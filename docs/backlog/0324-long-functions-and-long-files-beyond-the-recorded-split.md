@@ -57,3 +57,8 @@ differs only in the run's id and its timings. Next: `compliance_as` in `markdown
 **Seventh split, 21 October 2026.** `compliance_as` in `sv-report/src/markdown.rs` hands five of its sections to
 functions of their own, word for word, from 650 lines to 355; the four pages made before and after on the example app
 differ only in their timings. Next: `main.rs`'s `Command` table and `cmd_probe`.
+
+**Eighth split, 21 October 2026.** `main.rs`'s `Command` struct and `COMMANDS` table into `sv-cli/src/commands.rs`,
+word for word; `sv --help`, each command's `--help`, and the refusal of an unknown option read the same before and
+after. Next: `cmd_probe` and `cmd_check` in `main.rs`, `the_owners_word` and `running_app` in `assemble.rs`, and
+`review` in `review.rs`.
