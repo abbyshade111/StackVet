@@ -1,6 +1,6 @@
 # Build stackvet.dev from the settled words and direction C
 
-**Status:** open
+**Status:** claimed by claude/backlog-work, 22 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -24,3 +24,10 @@ published. Nothing is live from this item until the owner says so.
 **The owner's answer, 15 October 2026:** after the paper's data is done.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): every condition to build is met (0224, 0433, 0370 to 0374, 0568); nothing is built. It now also has the reports page (0413) and the framework pages (0619, `tools/framework_pages.py`, ADR-129) to take in. Hosting and the two addresses are the owner's to choose, and nothing goes live while 0373 is open or before the owner's word. `docs/website/home-page.md`'s list of what is not yet true is brought up to date with this clean-up.
+
+**Record:** ADR-132, proposed with this claim.
+
+**The owner's answer, 22 October 2026,** asked where the site should be hosted: "Build first then do some research and
+provide up to 5 options, a mix of free and low cost, with the pros and cons and your recommendation". So this claim
+builds the site into the repository (`exports/site/`, beside the framework pages), with nothing published, and then
+brings the owner up to five hosting options to choose from.
