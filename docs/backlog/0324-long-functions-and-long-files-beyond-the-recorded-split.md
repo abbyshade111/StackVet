@@ -110,3 +110,10 @@ settles the findings beyond the scan (`Settling`: the `[[finding-review]]` entri
 to the running app, and the folders counted out), from nine to six; their bodies word for word. Eight allows are left
 in the workspace: six in the signed-in suite (`account_changes.rs`, `uploads.rs` twice, `flows.rs`, `mod.rs`,
 `owner_field.rs`), `review_then_report`, and the test helper `sealed` in `crates/sv-cli/tests/confirmations.rs`.
+
+**Sixteenth split, 22 October 2026.** `uploads.rs`'s `refusal_stands` and `took` take the upload route, what it
+answered the ordinary file, and the session that sent it in one `OnRoute`, from nine arguments to seven and from
+seven-and-a-tuple to five; their nine callers in `uploads.rs` and `archives.rs` build it, and their bodies are word for
+word. Six allows are left: `account_changes.rs`'s `one_change`, `flows.rs`'s `try_flow`, `mod.rs`'s
+`provider_session_checks`, `owner_field.rs`'s `owner_field_probe` (eleven arguments), `review_then_report`, and the
+test helper `sealed`.

@@ -675,12 +675,14 @@ pub(super) fn archive_checks(
             // is under 400 too. Not fetched back: an app may unpack an archive rather than keep it as sent.
             let judged = super::uploads::took(
                 http,
-                upload,
-                &ordinary_answer,
+                &super::uploads::OnRoute {
+                    upload,
+                    ordinary_answer: &ordinary_answer,
+                    session,
+                },
                 None,
                 &answer,
                 (&archive.id, &name, None),
-                session,
             );
             let sent = format!(
                 "sent {} ({} bytes as sent)",
@@ -733,9 +735,11 @@ pub(super) fn archive_checks(
                 ));
             } else if refusal_stands(
                 http,
-                upload,
-                &ordinary_answer,
-                session,
+                &super::uploads::OnRoute {
+                    upload,
+                    ordinary_answer: &ordinary_answer,
+                    session,
+                },
                 &token,
                 archive.id.trim_start_matches("upload-"),
                 "V5.2.3",
