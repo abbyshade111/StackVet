@@ -15,7 +15,17 @@ after the setup prompt library is tried (it would show that), with every screen 
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): its conditions are met: the setup prompt library was tried (0370, 0502, 14 October) and the paper's data is done (0568, 15 October). Nothing is made yet. It waits on the owner: every screen comes from a real run, and the trial's records are on the owner's drive.
 
+**The owner's material, 22 October 2026:** a new Cursor build made for this walk-through, from the setup prompts, kept
+on the owner's drive with its chat, 31 screenshots, the app, and its report. Claimed to make the walk-through as a
+click-through slide show from those screenshots, for stackvet.dev (built by `tools/website.py`, ADR-132), every screen
+read first for anything personal. Its record is a Later entry on ADR-132, in the pull request that builds it, since it
+changes what the site is built from.
+
 **Partly done, 22 October 2026** (ADR-132, Later): the walk-through of a build, from the owner's screenshots of the
 Cursor build, is the site's *How a build goes* (`docs/website/build-walkthrough-page.md`, seventeen screens, the
 username covered in two), behind the home page's *See how a build goes*. At the owner's word: the build now, the setup
 later, since the setup was not screenshotted. What remains is that walk-through of a setup.
+
+Two corrections to the claim above, from reading the material: the screenshots are 28, not 31 (the other three image
+files are icons inside a Python library in the app's folder); and the chat began with the owner's own request to
+connect StackVet, not with a prompt from `docs/prompts/setup.md`.
