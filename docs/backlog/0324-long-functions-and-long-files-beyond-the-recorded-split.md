@@ -90,3 +90,10 @@ takes seven, and clippy's limit, with no `clippy.toml`, is more than seven); `si
 `Asking` with what is their own. `review_then_report` keeps its allow: three of its eight are handed straight to
 `report_again::write_again`, so a struct for them belongs there first. Next: `cmd_check` and `cmd_probe` in `main.rs`,
 then the allows in `signed_in/{account_changes,owner_field,uploads}.rs` and `sv-cli/src/{seen,static_scan}.rs`.
+
+**Thirteenth split, 22 October 2026.** `cmd_check` in `sv-cli/src/main.rs` hands what `sv check` says it could not
+read, before what it found, to `say_what_was_not_read`, word for word, from 448 lines to 217; `sv check` on the
+example app and on one with a file that is not text, a link, and a SQL file prints the same before and after. With the
+function emptied only the SQL line's test went red: `crates/sv-cli/tests/check_not_read.rs` now holds the rest, red
+with it emptied. Next: `cmd_probe` in `main.rs`, then the allows in `signed_in/{account_changes,owner_field,uploads}.rs`
+and `sv-cli/src/{seen,static_scan}.rs`.

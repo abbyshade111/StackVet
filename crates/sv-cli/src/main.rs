@@ -1230,13 +1230,7 @@ fn cmd_check(args: &[String]) -> Result<i32> {
         .map(Manifest::set_apart)
         .unwrap_or_default();
     let static_scan = static_scan::StaticScan::read(&app_dir, &not_the_app, &loaded, &|_| {})?;
-    let static_scan::StaticScan {
-        listing,
-        secrets,
-        config,
-        code,
-        ..
-    } = &static_scan;
+    let static_scan::StaticScan { secrets, code, .. } = &static_scan;
     let gaps = static_scan.file_gaps();
 
     println!(
@@ -1253,6 +1247,188 @@ fn cmd_check(args: &[String]) -> Result<i32> {
         loaded.ast_rules.len()
     );
 
+    say_what_was_not_read(&static_scan);
+
+    // What this run looked at, for a review entry that matches nothing to say whether its rule
+    // looked: the five scanners, and nothing else runs here.
+    let mut examined = vec![sv_report::Examined::ran("sbom.")];
+    examined.extend(static_scan.examined());
+    let seals = sv_check::seal::Checker::for_app(&app_dir);
+    let reviews = manifest
+        .as_ref()
+        .map(|m| m.finding_review.as_slice())
+        .unwrap_or_default();
+    // The folders the owner left out, as `sv report` reads them (ADR-099).
+    let left_out = manifest
+        .as_ref()
+        .map(|m| sv_cli::left_out::LeftOut::of(m, &seals))
+        .unwrap_or_default();
+    let used = &static_scan.scan_report.not_the_app;
+    let settled = static_scan::settle(
+        &app_dir,
+        reviews,
+        static_scan.findings(),
+        &static_scan,
+        &examined,
+        &loaded,
+        &seals,
+        &[],
+        &left_out.counted_out(used),
+    );
+    let mut findings = settled.findings;
+    findings.sort_by(|a, b| {
+        a.severity
+            .cmp(&b.severity)
+            .then_with(|| a.location.file.cmp(&b.location.file))
+            .then_with(|| a.location.line.cmp(&b.location.line))
+    });
+
+    // Exactly one of these speaks: the finding above when the list is short of something, this
+    // when it is not. A document cannot be both an incomplete list and a good inventory.
+    let passed = static_scan.passed();
+    if !passed.is_empty() && gaps.read_nothing() {
+        // A check that found nothing in no files is not one that found the app fine.
+        println!(
+            "\nNothing is listed as checked and fine: no file of the app was read, so the {} check{} \
+             that found nothing had nothing to look in.",
+            passed.len(),
+            if passed.len() == 1 { "" } else { "s" }
+        );
+    } else if !passed.is_empty() {
+        println!("\nChecked and fine:");
+        for claim in &passed {
+            println!("  {} — {}", claim.check_id, claim.scope);
+        }
+    }
+
+    // What a person set aside, and what in [[finding-review]] does not count, said as the report
+    // says it: nothing is dropped quietly (ADR-023).
+    if !settled.set_aside.is_empty() {
+        println!("\nIn stackvet.toml, through `sv review`:");
+        for s in &settled.set_aside {
+            let (what, listed) = if s.verdict == "false-alarm" {
+                ("a false alarm", "not listed below")
+            } else {
+                ("an accepted risk", "still listed and counted below")
+            };
+            println!(
+                "  {} in {}: {what}, by {} on {} ({listed}): {}",
+                s.finding.rule_id, s.finding.location.file, s.by, s.on, s.why
+            );
+        }
+    }
+    if !settled.not_counted.is_empty() {
+        println!("\nNot counted in `[[finding-review]]`, so each finding stands:");
+        for why in &settled.not_counted {
+            println!("  {why}");
+        }
+    }
+    // The folders left out, said as the report says them: nothing is dropped quietly (ADR-099).
+    let files: Vec<&str> = (static_scan.listing.app_files())
+        .map(|f| f.relative.as_str())
+        .collect();
+    let left_out_lines = left_out.gaps(used, &files, &settled.left_out);
+    if !left_out_lines.is_empty() {
+        println!("\nLeft out of the checks, in stackvet.toml's `[[left-out]]`:");
+        for gap in &left_out_lines {
+            println!("  {}: {}", gap.what, gap.why);
+        }
+    }
+
+    let (status, reasons) = match &baseline {
+        None => gaps.status(fail_on, findings.iter().map(|f| f.severity)),
+        Some(b) => {
+            b.same_app(
+                manifest
+                    .as_ref()
+                    .map(|m| m.app.name.as_str())
+                    .filter(|n| !n.is_empty())
+                    .unwrap_or("This app"),
+            )?;
+            let new = findings.iter().filter(|f| !b.holds(f)).count();
+            println!(
+                "\nCompared with the baseline in {}: {new} of {} finding(s) new since then. Every \
+                 finding is listed below either way.",
+                b.folder.display(),
+                findings.len()
+            );
+            gaps.status_of(
+                fail_on,
+                findings.iter().filter(|f| !b.holds(f)).map(|f| f.severity),
+                "new finding(s), not in the baseline,",
+            )
+        }
+    };
+    if findings.is_empty() {
+        println!(
+            "\nNo credentials found in what was read. That is not the same as none being there: these \n\
+             rules know a list of well-known formats and one heuristic, and a credential in a shape \n\
+             nobody listed would not be found."
+        );
+        exit::explain(status, &reasons)
+            .iter()
+            .for_each(|l| println!("{l}"));
+        return Ok(status);
+    }
+
+    println!(
+        "\n{} thing{} to look at:",
+        findings.len(),
+        if findings.len() == 1 { "" } else { "s" }
+    );
+    for f in &findings {
+        // A finding about a file that is missing, such as no SECURITY.md, names the file it
+        // would be, not a line of it.
+        // A file name and a tool's title are the app's words or a tool's, and a line break in either
+        // started a line that read as `sv`'s own (the review of 8 October 2026, item 6): each is
+        // written on one line, its breaks shown as `\n`.
+        let file = sv_report::one_line(&f.location.file);
+        let place = if app_dir.join(&f.location.file).symlink_metadata().is_ok() {
+            format!("{file}:{}", f.location.line)
+        } else {
+            format!("{file} (not there)")
+        };
+        println!(
+            "\n  [{}] {}\n     {place}",
+            f.severity.name(),
+            sv_report::one_line(&f.title)
+        );
+        if let Some(secret) = &f.secret {
+            println!("     found: {}", secret.as_str());
+        }
+        for note in sv_report::finding_notes(f) {
+            println!("     {note}");
+        }
+        if baseline.as_ref().is_some_and(|b| b.holds(f)) {
+            println!("     also in the baseline: it was there before");
+        }
+        if !f.impact.is_empty() {
+            println!("     why it matters: {}", f.impact);
+        }
+        if !f.fix.is_empty() {
+            println!("     what to do: {}", f.fix);
+        }
+        if !f.requirement_ids.is_empty() {
+            println!("     evidence about: {}", f.requirement_ids.join(", "));
+        }
+    }
+    exit::explain(status, &reasons)
+        .iter()
+        .for_each(|l| println!("{l}"));
+    Ok(status)
+}
+
+/// What `sv check` could not read, said before what it found: a short list of findings under a long list of skipped
+/// files is a different result from a short list of findings. Part of `cmd_check`, moved out of it on 22 October 2026
+/// (backlog 0324), word for word.
+fn say_what_was_not_read(static_scan: &static_scan::StaticScan) {
+    let static_scan::StaticScan {
+        listing,
+        secrets,
+        config,
+        code,
+        ..
+    } = static_scan;
     // What was not read comes before what was found. A short list of findings under a long list of
     // skipped files is a different result from a short list of findings.
     if !secrets.coverage.skipped.is_empty() {
@@ -1479,174 +1655,6 @@ fn cmd_check(args: &[String]) -> Result<i32> {
             println!("  {id}\n     {why}");
         }
     }
-
-    // What this run looked at, for a review entry that matches nothing to say whether its rule
-    // looked: the five scanners, and nothing else runs here.
-    let mut examined = vec![sv_report::Examined::ran("sbom.")];
-    examined.extend(static_scan.examined());
-    let seals = sv_check::seal::Checker::for_app(&app_dir);
-    let reviews = manifest
-        .as_ref()
-        .map(|m| m.finding_review.as_slice())
-        .unwrap_or_default();
-    // The folders the owner left out, as `sv report` reads them (ADR-099).
-    let left_out = manifest
-        .as_ref()
-        .map(|m| sv_cli::left_out::LeftOut::of(m, &seals))
-        .unwrap_or_default();
-    let used = &static_scan.scan_report.not_the_app;
-    let settled = static_scan::settle(
-        &app_dir,
-        reviews,
-        static_scan.findings(),
-        &static_scan,
-        &examined,
-        &loaded,
-        &seals,
-        &[],
-        &left_out.counted_out(used),
-    );
-    let mut findings = settled.findings;
-    findings.sort_by(|a, b| {
-        a.severity
-            .cmp(&b.severity)
-            .then_with(|| a.location.file.cmp(&b.location.file))
-            .then_with(|| a.location.line.cmp(&b.location.line))
-    });
-
-    // Exactly one of these speaks: the finding above when the list is short of something, this
-    // when it is not. A document cannot be both an incomplete list and a good inventory.
-    let passed = static_scan.passed();
-    if !passed.is_empty() && gaps.read_nothing() {
-        // A check that found nothing in no files is not one that found the app fine.
-        println!(
-            "\nNothing is listed as checked and fine: no file of the app was read, so the {} check{} \
-             that found nothing had nothing to look in.",
-            passed.len(),
-            if passed.len() == 1 { "" } else { "s" }
-        );
-    } else if !passed.is_empty() {
-        println!("\nChecked and fine:");
-        for claim in &passed {
-            println!("  {} — {}", claim.check_id, claim.scope);
-        }
-    }
-
-    // What a person set aside, and what in [[finding-review]] does not count, said as the report
-    // says it: nothing is dropped quietly (ADR-023).
-    if !settled.set_aside.is_empty() {
-        println!("\nIn stackvet.toml, through `sv review`:");
-        for s in &settled.set_aside {
-            let (what, listed) = if s.verdict == "false-alarm" {
-                ("a false alarm", "not listed below")
-            } else {
-                ("an accepted risk", "still listed and counted below")
-            };
-            println!(
-                "  {} in {}: {what}, by {} on {} ({listed}): {}",
-                s.finding.rule_id, s.finding.location.file, s.by, s.on, s.why
-            );
-        }
-    }
-    if !settled.not_counted.is_empty() {
-        println!("\nNot counted in `[[finding-review]]`, so each finding stands:");
-        for why in &settled.not_counted {
-            println!("  {why}");
-        }
-    }
-    // The folders left out, said as the report says them: nothing is dropped quietly (ADR-099).
-    let files: Vec<&str> = (static_scan.listing.app_files())
-        .map(|f| f.relative.as_str())
-        .collect();
-    let left_out_lines = left_out.gaps(used, &files, &settled.left_out);
-    if !left_out_lines.is_empty() {
-        println!("\nLeft out of the checks, in stackvet.toml's `[[left-out]]`:");
-        for gap in &left_out_lines {
-            println!("  {}: {}", gap.what, gap.why);
-        }
-    }
-
-    let (status, reasons) = match &baseline {
-        None => gaps.status(fail_on, findings.iter().map(|f| f.severity)),
-        Some(b) => {
-            b.same_app(
-                manifest
-                    .as_ref()
-                    .map(|m| m.app.name.as_str())
-                    .filter(|n| !n.is_empty())
-                    .unwrap_or("This app"),
-            )?;
-            let new = findings.iter().filter(|f| !b.holds(f)).count();
-            println!(
-                "\nCompared with the baseline in {}: {new} of {} finding(s) new since then. Every \
-                 finding is listed below either way.",
-                b.folder.display(),
-                findings.len()
-            );
-            gaps.status_of(
-                fail_on,
-                findings.iter().filter(|f| !b.holds(f)).map(|f| f.severity),
-                "new finding(s), not in the baseline,",
-            )
-        }
-    };
-    if findings.is_empty() {
-        println!(
-            "\nNo credentials found in what was read. That is not the same as none being there: these \n\
-             rules know a list of well-known formats and one heuristic, and a credential in a shape \n\
-             nobody listed would not be found."
-        );
-        exit::explain(status, &reasons)
-            .iter()
-            .for_each(|l| println!("{l}"));
-        return Ok(status);
-    }
-
-    println!(
-        "\n{} thing{} to look at:",
-        findings.len(),
-        if findings.len() == 1 { "" } else { "s" }
-    );
-    for f in &findings {
-        // A finding about a file that is missing, such as no SECURITY.md, names the file it
-        // would be, not a line of it.
-        // A file name and a tool's title are the app's words or a tool's, and a line break in either
-        // started a line that read as `sv`'s own (the review of 8 October 2026, item 6): each is
-        // written on one line, its breaks shown as `\n`.
-        let file = sv_report::one_line(&f.location.file);
-        let place = if app_dir.join(&f.location.file).symlink_metadata().is_ok() {
-            format!("{file}:{}", f.location.line)
-        } else {
-            format!("{file} (not there)")
-        };
-        println!(
-            "\n  [{}] {}\n     {place}",
-            f.severity.name(),
-            sv_report::one_line(&f.title)
-        );
-        if let Some(secret) = &f.secret {
-            println!("     found: {}", secret.as_str());
-        }
-        for note in sv_report::finding_notes(f) {
-            println!("     {note}");
-        }
-        if baseline.as_ref().is_some_and(|b| b.holds(f)) {
-            println!("     also in the baseline: it was there before");
-        }
-        if !f.impact.is_empty() {
-            println!("     why it matters: {}", f.impact);
-        }
-        if !f.fix.is_empty() {
-            println!("     what to do: {}", f.fix);
-        }
-        if !f.requirement_ids.is_empty() {
-            println!("     evidence about: {}", f.requirement_ids.join(", "));
-        }
-    }
-    exit::explain(status, &reasons)
-        .iter()
-        .for_each(|l| println!("{l}"));
-    Ok(status)
 }
 
 /// Whether standard output goes straight into a file, as with `sv init > stackvet.toml`, rather
