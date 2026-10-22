@@ -19,3 +19,13 @@
 **The owner's go, 14 October 2026 (evening):** once the assigned and ready work on the board is done, build this on its own, with nothing else in flight; the data-and-figures item 0568 follows it.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): every file still on the list has grown since it was written. The owner's go of 14 October waited for the board's work, which no longer exists; the refactor can be claimed the normal way.
+
+**Checked against `main`, 21 October 2026, and the first split.** `docker.rs` (2,154 lines) and `signed_in/mod.rs`
+(2,147) were split since this was written, into `docker/{fence,probes,helpers,install,containers}.rs` and the
+`signed_in` modules; the rest grew: `sv-report/src/lib.rs` 4,317, `ai.rs` 4,048, `sv-cli/src/main.rs` 3,730,
+`signed_in/sessions.rs` 3,510, `sv-manifest/src/lib.rs` 3,455, and new to the list `signed_in/fake_app.rs` 3,898,
+`sv-cli/src/assemble.rs` 3,494, `sv-cli/src/review.rs` 3,334, `signed_in/uploads.rs` 3,139, and
+`signed_in/passwords.rs` 3,133. The `#[allow(clippy::too_many_arguments)]` count is 18. First split: the build loop's
+types and report lines out of `sv-report/src/lib.rs` into `sv-report/src/build_loop.rs`, still named from the crate's
+root, and its three inline test modules into sibling files, leaving 3,650 lines. Next: `ai.rs` (`run`), then
+`main.rs`.
