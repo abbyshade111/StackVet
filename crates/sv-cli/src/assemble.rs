@@ -2106,72 +2106,7 @@ fn the_owners_word(
             sv_check::notes::Evidence::default()
         }
     };
-    if !notes.unreadable.is_empty() {
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "who wrote {} section{} of {}",
-                notes.unreadable.len(),
-                if notes.unreadable.len() == 1 { "" } else { "s" },
-                notes_catalog.file
-            ),
-            why: format!(
-                "Each section says who wrote it on one line, `{} {}` or `{} {}`, and {} names \
-                 somebody else or says both, so nothing was made of it: {}.",
-                sv_check::notes::WRITTEN_BY,
-                sv_check::notes::BY_OWNER,
-                sv_check::notes::WRITTEN_BY,
-                sv_check::notes::BY_AI_TOOL,
-                if notes.unreadable.len() == 1 {
-                    "this one"
-                } else {
-                    "these"
-                },
-                notes.unreadable.join(", ")
-            ),
-            reason: sv_report::GapReason::CouldNotRead,
-            requirements: Vec::new(),
-        });
-    }
-    if !notes.not_read.is_empty() {
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "what is under {} heading{} of your own in {}",
-                notes.not_read.len(),
-                if notes.not_read.len() == 1 { "" } else { "s" },
-                notes_catalog.file
-            ),
-            why: format!(
-                "A heading that is not one of the file's questions ends the answer above it, so \
-                 what is under it was not read as an answer to anything: {}. Keeping notes of your \
-                 own there is fine. If one of them is part of an answer, move it up into that \
-                 answer, or use a `####` heading inside the answer instead.",
-                notes.not_read.join("; ")
-            ),
-            reason: sv_report::GapReason::Partial,
-            requirements: Vec::new(),
-        });
-    }
-    // A file written by hand under headings of its own, before any question: the Cursor trial's, which held the
-    // owner's real decisions and counted for nothing, said only in the counts (backlog 0542).
-    if let Some(first) = notes.outside.first() {
-        let n = notes.outside.len();
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "what is under {n} heading{} of your own in {}, before any of its questions",
-                if n == 1 { "" } else { "s" },
-                notes_catalog.file
-            ),
-            why: format!(
-                "An answer counts only under its question's own heading (`## V…`, as `sv notes` writes them), so \
-                 nothing under {} counts, the first being \"{first}\". If these are your decisions, have your AI \
-                 coding tool record each one with `stackvet_record_answer`, or run `sv notes` to add the questions \
-                 and move each answer under its own; then `sv review` makes them yours.",
-                if n == 1 { "it" } else { "these" }
-            ),
-            reason: sv_report::GapReason::Partial,
-            requirements: Vec::new(),
-        });
-    }
+    notes_gaps(&notes, &notes_catalog, gaps);
     // The decisions the design-time prompts write down (`sv_check::decisions`). Two sections count
     // toward Secure by Design controls, read as the notes are; the file's other sections are not
     // questions, so a heading `sv` does not read for credit is not reported as one left unread.
@@ -2188,36 +2123,7 @@ fn the_owners_word(
                     seals,
                 )
             });
-    if !decisions.unreadable.is_empty() {
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "who wrote {} section{} of {}",
-                decisions.unreadable.len(),
-                if decisions.unreadable.len() == 1 {
-                    ""
-                } else {
-                    "s"
-                },
-                decisions_catalog.file
-            ),
-            why: format!(
-                "Each section says who wrote it on one line, `{} {}` or `{} {}`, and {} names \
-                 somebody else or says both, so nothing was made of it: {}.",
-                sv_check::notes::WRITTEN_BY,
-                sv_check::notes::BY_OWNER,
-                sv_check::notes::WRITTEN_BY,
-                sv_check::notes::BY_AI_TOOL,
-                if decisions.unreadable.len() == 1 {
-                    "this one"
-                } else {
-                    "these"
-                },
-                decisions.unreadable.join(", ")
-            ),
-            reason: sv_report::GapReason::CouldNotRead,
-            requirements: Vec::new(),
-        });
-    }
+    decisions_gaps(&decisions, &decisions_catalog, gaps);
     // A review by a person is the one thing that section can ask for, and no tool can do it, so
     // what it says is repeated here, where what was not examined is listed. Its words are not read
     // for a yes or a no, and credit nothing.
@@ -2302,54 +2208,7 @@ fn the_owners_word(
             .map(|f| at_the_manifest(f, manifest_file)),
     );
     gaps.extend(planned_gaps(&design.planned));
-    if !design.unreadable.is_empty() {
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "your answer to {} design question{}",
-                design.unreadable.len(),
-                if design.unreadable.len() == 1 {
-                    ""
-                } else {
-                    "s"
-                }
-            ),
-            why: format!(
-                "stackvet.toml answers {} with a word that is not yes, no, not-sure, or planned, or \
-                 says it was answered `by` somebody other than \"owner\" or \"ai-tool\", so \
-                 nothing could be made of it: {}.",
-                if design.unreadable.len() == 1 {
-                    "this"
-                } else {
-                    "these"
-                },
-                design.unreadable.join(", ")
-            ),
-            reason: sv_report::GapReason::CouldNotRead,
-            requirements: Vec::new(),
-        });
-    }
-    if !design.unanswered.is_empty() {
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "{} question{} about how this app is built",
-                design.unanswered.len(),
-                if design.unanswered.len() == 1 {
-                    ""
-                } else {
-                    "s"
-                }
-            ),
-            why: format!(
-                "No tool can settle these — whether input is validated on the server, whether the \
-                 app's own services authenticate to each other. Answer them in the `[design]` \
-                 section of stackvet.toml: {}. Your AI coding tool can ask you them: `sv \
-                 questions` prints them for its chat.",
-                design.unanswered.join(", ")
-            ),
-            reason: sv_report::GapReason::PersonOnly,
-            requirements: Vec::new(),
-        });
-    }
+    design_gaps(&design, gaps);
 
     // The checks made by hand, recorded in stackvet.toml. The owner's `done` is their word about
     // what they saw; `problem` is a finding; an old one is out of date and counts for nothing.
@@ -2389,57 +2248,7 @@ fn the_owners_word(
             .cloned()
             .map(|f| at_the_manifest(f, manifest_file)),
     );
-    if !hand.unreadable.is_empty() {
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "{} check{} made by hand",
-                hand.unreadable.len(),
-                if hand.unreadable.len() == 1 { "" } else { "s" }
-            ),
-            why: format!(
-                "stackvet.toml records {} in `[checked-by-hand]` in a way nothing could be made \
-                 of, so it counts for nothing: {}.",
-                if hand.unreadable.len() == 1 {
-                    "this"
-                } else {
-                    "these"
-                },
-                hand.unreadable
-                    .iter()
-                    .map(|(id, why)| format!("{id} ({why})"))
-                    .collect::<Vec<_>>()
-                    .join("; ")
-            ),
-            reason: sv_report::GapReason::CouldNotRead,
-            requirements: Vec::new(),
-        });
-    }
-    if !hand.out_of_date.is_empty() {
-        gaps.push(sv_report::Gap {
-            what: format!(
-                "{} check{} made by hand more than {} days ago",
-                hand.out_of_date.len(),
-                if hand.out_of_date.len() == 1 { "" } else { "s" },
-                sv_check::hand::CURRENT_FOR_DAYS
-            ),
-            why: format!(
-                "Certificates expire and apps change, so an old check counts for nothing. Make \
-                 {} again and record the new date: {}.",
-                if hand.out_of_date.len() == 1 {
-                    "it"
-                } else {
-                    "them"
-                },
-                hand.out_of_date
-                    .iter()
-                    .map(|(id, on)| format!("{id}, checked on {on}"))
-                    .collect::<Vec<_>>()
-                    .join("; ")
-            ),
-            reason: sv_report::GapReason::PersonOnly,
-            requirements: Vec::new(),
-        });
-    }
+    hand_gaps(&hand, gaps);
     // A person confirming what the AI tool said moves it up to their tier, shown as confirmed. What
     // does not hold stays the tool's word and is named with its reason. See `sv_check::confirm`.
     let confirmation = |c: &sv_manifest::Confirmed| sv_check::confirm::Confirmation {
@@ -2597,6 +2406,225 @@ fn the_owners_word(
         decisions_text,
         notes_sha256,
     })
+}
+
+/// What could not be made of the notes file: sections whose writer is not said, headings of the owner's own under a question, and headings of their own before any question. Part of `the_owners_word`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn notes_gaps(
+    notes: &sv_check::notes::Evidence,
+    notes_catalog: &sv_check::notes::Catalog,
+    gaps: &mut Vec<sv_report::Gap>,
+) {
+    if !notes.unreadable.is_empty() {
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "who wrote {} section{} of {}",
+                notes.unreadable.len(),
+                if notes.unreadable.len() == 1 { "" } else { "s" },
+                notes_catalog.file
+            ),
+            why: format!(
+                "Each section says who wrote it on one line, `{} {}` or `{} {}`, and {} names \
+                 somebody else or says both, so nothing was made of it: {}.",
+                sv_check::notes::WRITTEN_BY,
+                sv_check::notes::BY_OWNER,
+                sv_check::notes::WRITTEN_BY,
+                sv_check::notes::BY_AI_TOOL,
+                if notes.unreadable.len() == 1 {
+                    "this one"
+                } else {
+                    "these"
+                },
+                notes.unreadable.join(", ")
+            ),
+            reason: sv_report::GapReason::CouldNotRead,
+            requirements: Vec::new(),
+        });
+    }
+    if !notes.not_read.is_empty() {
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "what is under {} heading{} of your own in {}",
+                notes.not_read.len(),
+                if notes.not_read.len() == 1 { "" } else { "s" },
+                notes_catalog.file
+            ),
+            why: format!(
+                "A heading that is not one of the file's questions ends the answer above it, so \
+                 what is under it was not read as an answer to anything: {}. Keeping notes of your \
+                 own there is fine. If one of them is part of an answer, move it up into that \
+                 answer, or use a `####` heading inside the answer instead.",
+                notes.not_read.join("; ")
+            ),
+            reason: sv_report::GapReason::Partial,
+            requirements: Vec::new(),
+        });
+    }
+    // A file written by hand under headings of its own, before any question: the Cursor trial's, which held the
+    // owner's real decisions and counted for nothing, said only in the counts (backlog 0542).
+    if let Some(first) = notes.outside.first() {
+        let n = notes.outside.len();
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "what is under {n} heading{} of your own in {}, before any of its questions",
+                if n == 1 { "" } else { "s" },
+                notes_catalog.file
+            ),
+            why: format!(
+                "An answer counts only under its question's own heading (`## V…`, as `sv notes` writes them), so \
+                 nothing under {} counts, the first being \"{first}\". If these are your decisions, have your AI \
+                 coding tool record each one with `stackvet_record_answer`, or run `sv notes` to add the questions \
+                 and move each answer under its own; then `sv review` makes them yours.",
+                if n == 1 { "it" } else { "these" }
+            ),
+            reason: sv_report::GapReason::Partial,
+            requirements: Vec::new(),
+        });
+    }
+}
+
+/// What could not be made of the design decisions file: sections whose writer is not said. Part of `the_owners_word`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn decisions_gaps(
+    decisions: &sv_check::notes::Evidence,
+    decisions_catalog: &sv_check::notes::Catalog,
+    gaps: &mut Vec<sv_report::Gap>,
+) {
+    if !decisions.unreadable.is_empty() {
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "who wrote {} section{} of {}",
+                decisions.unreadable.len(),
+                if decisions.unreadable.len() == 1 {
+                    ""
+                } else {
+                    "s"
+                },
+                decisions_catalog.file
+            ),
+            why: format!(
+                "Each section says who wrote it on one line, `{} {}` or `{} {}`, and {} names \
+                 somebody else or says both, so nothing was made of it: {}.",
+                sv_check::notes::WRITTEN_BY,
+                sv_check::notes::BY_OWNER,
+                sv_check::notes::WRITTEN_BY,
+                sv_check::notes::BY_AI_TOOL,
+                if decisions.unreadable.len() == 1 {
+                    "this one"
+                } else {
+                    "these"
+                },
+                decisions.unreadable.join(", ")
+            ),
+            reason: sv_report::GapReason::CouldNotRead,
+            requirements: Vec::new(),
+        });
+    }
+}
+
+/// What could not be made of the design questions' answers in stackvet.toml, and the questions left unanswered. Part of `the_owners_word`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn design_gaps(design: &sv_check::design::Outcome, gaps: &mut Vec<sv_report::Gap>) {
+    if !design.unreadable.is_empty() {
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "your answer to {} design question{}",
+                design.unreadable.len(),
+                if design.unreadable.len() == 1 {
+                    ""
+                } else {
+                    "s"
+                }
+            ),
+            why: format!(
+                "stackvet.toml answers {} with a word that is not yes, no, not-sure, or planned, or \
+                 says it was answered `by` somebody other than \"owner\" or \"ai-tool\", so \
+                 nothing could be made of it: {}.",
+                if design.unreadable.len() == 1 {
+                    "this"
+                } else {
+                    "these"
+                },
+                design.unreadable.join(", ")
+            ),
+            reason: sv_report::GapReason::CouldNotRead,
+            requirements: Vec::new(),
+        });
+    }
+    if !design.unanswered.is_empty() {
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "{} question{} about how this app is built",
+                design.unanswered.len(),
+                if design.unanswered.len() == 1 {
+                    ""
+                } else {
+                    "s"
+                }
+            ),
+            why: format!(
+                "No tool can settle these — whether input is validated on the server, whether the \
+                 app's own services authenticate to each other. Answer them in the `[design]` \
+                 section of stackvet.toml: {}. Your AI coding tool can ask you them: `sv \
+                 questions` prints them for its chat.",
+                design.unanswered.join(", ")
+            ),
+            reason: sv_report::GapReason::PersonOnly,
+            requirements: Vec::new(),
+        });
+    }
+}
+
+/// What could not be made of the checks done by hand in stackvet.toml, and those out of date. Part of `the_owners_word`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn hand_gaps(hand: &sv_check::hand::Outcome, gaps: &mut Vec<sv_report::Gap>) {
+    if !hand.unreadable.is_empty() {
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "{} check{} made by hand",
+                hand.unreadable.len(),
+                if hand.unreadable.len() == 1 { "" } else { "s" }
+            ),
+            why: format!(
+                "stackvet.toml records {} in `[checked-by-hand]` in a way nothing could be made \
+                 of, so it counts for nothing: {}.",
+                if hand.unreadable.len() == 1 {
+                    "this"
+                } else {
+                    "these"
+                },
+                hand.unreadable
+                    .iter()
+                    .map(|(id, why)| format!("{id} ({why})"))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            ),
+            reason: sv_report::GapReason::CouldNotRead,
+            requirements: Vec::new(),
+        });
+    }
+    if !hand.out_of_date.is_empty() {
+        gaps.push(sv_report::Gap {
+            what: format!(
+                "{} check{} made by hand more than {} days ago",
+                hand.out_of_date.len(),
+                if hand.out_of_date.len() == 1 { "" } else { "s" },
+                sv_check::hand::CURRENT_FOR_DAYS
+            ),
+            why: format!(
+                "Certificates expire and apps change, so an old check counts for nothing. Make \
+                 {} again and record the new date: {}.",
+                if hand.out_of_date.len() == 1 {
+                    "it"
+                } else {
+                    "them"
+                },
+                hand.out_of_date
+                    .iter()
+                    .map(|(id, on)| format!("{id}, checked on {on}"))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            ),
+            reason: sv_report::GapReason::PersonOnly,
+            requirements: Vec::new(),
+        });
+    }
 }
 
 /// The Appendix C requirements the coding rules given to this app come from, for the report's
@@ -3492,3 +3520,7 @@ mod env_file_tests;
 #[cfg(test)]
 #[path = "short_answers_gap_tests.rs"]
 mod short_answers_gap_tests;
+
+#[cfg(test)]
+#[path = "assemble_owner_gaps_tests.rs"]
+mod owner_gaps_tests;
