@@ -52,8 +52,7 @@ pub(super) fn provider_session(http: &mut dyn Http, section: &OidcSection, out: 
         before_login,
         &back,
         works,
-        &section.private,
-        EVIDENCE,
+        (&section.private, EVIDENCE),
         out,
     );
 }

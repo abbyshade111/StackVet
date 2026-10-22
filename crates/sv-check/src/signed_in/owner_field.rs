@@ -121,11 +121,13 @@ pub(super) fn owner_field_check(
     owner_field_probe(
         http,
         users,
-        "owner-field",
-        &owned.create,
-        owned.read.as_deref(),
-        owned.id_field.as_deref(),
-        owned.list.as_deref(),
+        Probed {
+            tag: "owner-field",
+            create: &owned.create,
+            read: owned.read.as_deref(),
+            id_field: owned.id_field.as_deref(),
+            list: owned.list.as_deref(),
+        },
         a,
         b,
         as_a,
@@ -184,11 +186,13 @@ pub(super) fn owner_field_creates(
         owner_field_probe(
             http,
             users,
-            &tag,
-            &request,
-            Some(read),
-            create.id_field.as_deref(),
-            None,
+            Probed {
+                tag: &tag,
+                create: &request,
+                read: Some(read),
+                id_field: create.id_field.as_deref(),
+                list: None,
+            },
             a,
             b,
             &as_a_body,
@@ -197,20 +201,32 @@ pub(super) fn owner_field_creates(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+/// The record a probe of the owner field is about: the probe's tag, how the record is made, where it is read and listed,
+/// and the field its id is in (backlog 0324: one struct where `owner_field_probe` took the five separately).
+struct Probed<'a> {
+    tag: &'a str,
+    create: &'a RequestTemplate,
+    read: Option<&'a str>,
+    id_field: Option<&'a str>,
+    list: Option<&'a str>,
+}
+
 fn owner_field_probe(
     http: &mut dyn Http,
     users: &UsersSection,
-    tag: &str,
-    create: &RequestTemplate,
-    read: Option<&str>,
-    id_field: Option<&str>,
-    list: Option<&str>,
+    probed: Probed<'_>,
     a: &Session,
     b: &Session,
     as_a: &str,
     out: &mut Outcome,
 ) {
+    let Probed {
+        tag,
+        create,
+        read,
+        id_field,
+        list,
+    } = probed;
     let Some((field, value)) = named_owner(as_a) else {
         out.not_assessed.push((
             "V15.3.3".to_owned(),

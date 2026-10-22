@@ -306,15 +306,13 @@ pub(crate) struct SignedIn {
 /// The session checks (V3.3.2, V3.3.4, V7.2.4) of a sign-in made some other way than the form, through another service
 /// (backlog 0232, part B): `before_login` the cookies the app gave before it, `back` the answer that finished it, and
 /// `evidence` the two requests a finding rests on.
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn provider_session_checks(
     http: &mut dyn Http,
     session: Session,
     before_login: Vec<(String, String)>,
     back: &ProbeResponse,
     works: bool,
-    private: &str,
-    evidence: [&str; 2],
+    (private, evidence): (&str, [&str; 2]),
     out: &mut Outcome,
 ) {
     let a = SignedIn {
