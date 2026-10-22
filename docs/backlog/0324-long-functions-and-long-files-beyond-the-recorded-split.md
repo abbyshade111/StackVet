@@ -42,3 +42,8 @@ Next: `run` in `ai.rs` (756 lines), then `sv-cli/src/main.rs`.
 **Fourth split, 21 October 2026.** `sv-cli/src/main.rs`'s six inline test modules into sibling files
 (`main_tests.rs`, `main_dependency_gap_tests.rs`, and the rest), from 3,730 lines to 3,167. Next: `main.rs`'s
 `Command` table and `cmd_probe`, then `run_checks` in `signed_in/mod.rs`.
+
+**Fifth split, 21 October 2026.** `run_checks` in `signed_in/mod.rs` hands its checks 9b to 9h to `late_checks`, word
+for word, from 819 lines to about 720. `check_guard_tests` reads both bodies now: with it reading `run_checks` alone, a
+check called bare in `late_checks` passed every test, and with both it is named. Next: `main.rs`'s `Command` table and
+`cmd_probe`, then `html.rs`'s `page` (863 lines) and `markdown.rs`'s `compliance_as` (650).

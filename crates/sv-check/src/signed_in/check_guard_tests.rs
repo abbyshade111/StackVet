@@ -4,15 +4,19 @@
 
 use super::*;
 
-/// The body of `run_checks`, where the suite calls its checks.
+/// The bodies of `run_checks` and of `late_checks`, which runs its checks 9b to 9h (backlog 0324): where the suite calls
+/// its checks.
 fn run_checks_source() -> String {
     let source = include_str!("mod.rs");
-    let start = source.find("\nfn run_checks(").expect("run_checks");
-    let end = source[start..]
-        .find("\n}\n")
-        .map(|n| start + n)
-        .expect("its end");
-    source[start..end].to_owned()
+    let body = |name: &str| {
+        let start = source.find(&format!("\nfn {name}(")).expect(name);
+        let end = source[start..]
+            .find("\n}\n")
+            .map(|n| start + n)
+            .expect("its end");
+        source[start..end].to_owned()
+    };
+    body("run_checks") + &body("late_checks")
 }
 
 #[test]
