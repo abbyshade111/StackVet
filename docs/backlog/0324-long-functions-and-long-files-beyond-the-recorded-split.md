@@ -53,3 +53,7 @@ own (the requirement tables, the AI process, the threats, what only the owner ca
 sits outside the tables), word for word, from 863 lines to 467; a report.html made before and after on the example app
 differs only in the run's id and its timings. Next: `compliance_as` in `markdown.rs` (650), then `main.rs`'s
 `Command` table and `cmd_probe`.
+
+**Seventh split, 21 October 2026.** `compliance_as` in `sv-report/src/markdown.rs` hands five of its sections to
+functions of their own, word for word, from 650 lines to 355; the four pages made before and after on the example app
+differ only in their timings. Next: `main.rs`'s `Command` table and `cmd_probe`.
