@@ -1,6 +1,6 @@
 # What the AI coding tool did that is worth a look, read from git and the hook record, as information in the report
 
-**Status:** claimed by claude/0630 (desktop session), 21 October 2026
+**Status:** partly done: packages installed that no lockfile holds, and a secret the tool wrote into a file, are not looked for yet; the section says so for the first
 
 **Record:** ADR-131, proposed with this claim.
 

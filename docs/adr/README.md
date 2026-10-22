@@ -177,7 +177,7 @@ source files, and in two tests:
 | [ADR-128](ADR-128.md) | A Dependabot pull request that only moves pins owes the decision records no line (accepted, 20 October 2026) |
 | [ADR-129](ADR-129.md) | stackvet.dev has a page for each framework, built from the data the checks keep, and never copied (accepted, 20 October 2026) |
 | [ADR-130](ADR-130.md) | Level 3 is the owner's opt-in, `[app] level = 3`, and it only ever raises the level (accepted, 20 October 2026) |
-| [ADR-131](ADR-131.md) | The report says what the AI coding tool did that is worth a look, as information that decides nothing (proposed, 21 October 2026) |
+| [ADR-131](ADR-131.md) | The report says what the AI coding tool did that is worth a look, as information that decides nothing (accepted, 21 October 2026) |
 
 ## Names in the records
 

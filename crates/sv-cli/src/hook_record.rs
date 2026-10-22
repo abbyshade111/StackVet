@@ -616,6 +616,54 @@ pub fn read_for(
     }
 }
 
+/// One command the tool ran, or one file it wrote, as the record keeps it, for the report's section on what the AI coding
+/// tool did that is worth a look (backlog 0630, ADR-131).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Done {
+    /// When, by `sv`'s clock, and the command, cut short and with any key cut out when the hook wrote it.
+    Ran { at: String, command: String },
+    /// When, and the file's path, relative to the app when it is inside it.
+    Wrote { at: String, file: String },
+}
+
+/// Each command and file write in the record of the app at `app_dir`, oldest first; `None` when there is no record to
+/// read. Read only for a report the person asked to read the record for: `read_for`'s consent holds here too.
+pub fn done_for(app_dir: &Path) -> Option<Vec<Done>> {
+    let path = record_of(&app_dir.canonical().ok()?)?;
+    if !std::fs::symlink_metadata(&path).is_ok_and(|m| m.is_file()) {
+        return None;
+    }
+    let mut bytes = Vec::new();
+    std::fs::File::open(&path)
+        .and_then(|f| f.take(MAX_BYTES + 1).read_to_end(&mut bytes))
+        .ok()?;
+    let done = String::from_utf8_lossy(&bytes)
+        .lines()
+        .filter_map(|raw| serde_json::from_str::<Value>(raw).ok())
+        .filter_map(|value| {
+            let at = value["at"].as_str().unwrap_or_default().to_owned();
+            if !matches!(
+                value["event"].as_str(),
+                Some("PostToolUse" | "PostToolUseFailure")
+            ) {
+                return None;
+            }
+            if let Some(command) = value["command"].as_str() {
+                Some(Done::Ran {
+                    at,
+                    command: command.to_owned(),
+                })
+            } else {
+                value["file"].as_str().map(|file| Done::Wrote {
+                    at,
+                    file: file.to_owned(),
+                })
+            }
+        })
+        .collect();
+    Some(done)
+}
+
 /// The tip the last report in `folder` kept, when `sv` can show it wrote that report and it read a record.
 pub fn earlier_tip(folder: &Path) -> Option<sv_report::hook::Tip> {
     let bytes = crate::report_seal::proven_report(folder).ok()?;

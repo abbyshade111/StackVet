@@ -173,6 +173,7 @@ pub fn information(report: &Report) -> String {
         h.starts_with("How the app is built with AI")
             || h == "What your AI coding tool's files let it do"
             || h == crate::hook::HEADING
+            || h == crate::tool_behavior::HEADING
             || h == "Findings about requirements this app is not being assessed against"
             || h.starts_with("Checks that ran and found nothing")
             || h == "Secure by Design controls above this app's target level"

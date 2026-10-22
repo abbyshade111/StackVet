@@ -37,6 +37,7 @@ pub mod pdf;
 pub mod sarif;
 pub mod seen;
 pub mod threats;
+pub mod tool_behavior;
 
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -1265,6 +1266,10 @@ pub struct Report {
     /// (`sv report --hook-record`). Its own section, apart from every count; credits nothing.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hook_record: Option<hook::HookSeen>,
+    /// What the AI coding tool did that is worth a look (backlog 0630, ADR-131): its own section, read from git, the hook
+    /// record when it was read, and the last report. Decides nothing and counts toward nothing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tool_behavior: Option<tool_behavior::ToolBehavior>,
     /// The checklist lines the owner ticked in `sv review` (backlog 0604, ADR-121), by each line's key, with the day,
     /// for those whose seal holds here. Shown as done in the checklist; credits nothing.
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
@@ -3018,6 +3023,10 @@ mod token_audience_tests;
 mod pages_tests;
 
 #[cfg(test)]
+#[path = "tool_behavior_tests.rs"]
+mod tool_behavior_tests;
+
+#[cfg(test)]
 #[path = "hook_tests.rs"]
 mod hook_tests;
 
@@ -3900,6 +3909,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         before_going_live,
         on_the_internet: inputs.on_the_internet,
         hook_record: None,
+        tool_behavior: None,
         checklist_done: std::collections::BTreeMap::new(),
         ai_tool: inputs.ai_tool,
         look_away: inputs.look_away,

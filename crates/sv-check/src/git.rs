@@ -392,6 +392,9 @@ fn records_by_hash(text: &str, hashes: &[String]) -> Vec<AiCommit> {
     found
 }
 
+#[path = "git_changes.rs"]
+pub mod changes;
+
 #[cfg(test)]
 #[path = "git_ai_tests.rs"]
 mod ai_tests;
