@@ -66,3 +66,23 @@ pub fn visible_words(body: &str) -> String {
 #[cfg(test)]
 #[path = "text_tests.rs"]
 mod tests;
+
+/// `text` with every character a reader cannot see written out as `\u{…}`: controls, zero-width characters and joiners,
+/// the controls that override the direction of text, the byte-order mark, the soft hyphen, variation selectors, and
+/// Unicode tag characters (backlog 0623). A prompt the AI checks sent carries some of them on purpose, and the report
+/// shows it as text, never as what it would do.
+pub fn invisible_written_out(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    for c in text.chars() {
+        let hidden = c.is_control()
+            || matches!(c,
+                '\u{00AD}' | '\u{200B}'..='\u{200F}' | '\u{202A}'..='\u{202E}' | '\u{2060}'..='\u{2064}'
+                | '\u{2066}'..='\u{2069}' | '\u{FE00}'..='\u{FE0F}' | '\u{FEFF}' | '\u{E0000}'..='\u{E007F}');
+        if hidden {
+            out.push_str(&format!("\\u{{{:04X}}}", u32::from(c)));
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}

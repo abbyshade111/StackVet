@@ -80,6 +80,7 @@ pub fn kill_switch(
         "Hello, what can you help me with? {}",
         crate::stand_in::marker("PLAIN", &t)
     );
+    http.prompt("ai-kill-switch", &prompt);
     let answer = send_filled(
         http,
         "ai-kill-switch",

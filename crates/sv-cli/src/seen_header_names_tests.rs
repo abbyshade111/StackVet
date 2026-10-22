@@ -42,6 +42,7 @@ fn a_token_under_a_header_named_for_it_does_not_reach_the_record() {
             id: "q",
             method: "GET",
             path: "/",
+            prompt: None,
         },
         Answered {
             status: 200,
@@ -86,6 +87,7 @@ fn a_header_that_only_names_credentials_keeps_its_value() {
             id: "q",
             method: "GET",
             path: "/",
+            prompt: None,
         },
         Answered {
             status: 200,

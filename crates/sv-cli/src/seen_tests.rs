@@ -351,6 +351,7 @@ fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
                     ("x-debug-key".to_owned(), key.clone()),
                 ],
                 body: format!("<p>your key is {key}</p>"),
+                prompt: None,
             },
             // A question no answer came to: counted, not kept.
             sv_check::signed_in::recording::Recorded {
@@ -360,6 +361,7 @@ fn no_credential_a_signed_in_answer_carries_reaches_the_record() {
                 status: None,
                 headers: Vec::new(),
                 body: String::new(),
+                prompt: None,
             },
         ],
         ..Default::default()

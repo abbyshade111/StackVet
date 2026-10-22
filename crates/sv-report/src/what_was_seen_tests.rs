@@ -21,6 +21,7 @@ fn exchange(
             .map(|(n, v)| ((*n).to_owned(), (*v).to_owned()))
             .collect(),
         body: body.into(),
+        prompt: None,
     }
 }
 

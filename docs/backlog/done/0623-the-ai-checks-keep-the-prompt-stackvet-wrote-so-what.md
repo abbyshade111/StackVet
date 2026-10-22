@@ -1,6 +1,6 @@
 # The AI checks keep the prompt StackVet wrote, so What StackVet saw shows what was asked as well as what came back (20 October 2026)
 
-**Status:** claimed by claude/backlog-work, 20 October 2026
+**Status:** done, 22 October 2026
 
 Filed from backlog 0381 at the owner's choice of 20 October 2026, asked in a session. Severity: low (evidence that
 shows the answer and not the question it answered).

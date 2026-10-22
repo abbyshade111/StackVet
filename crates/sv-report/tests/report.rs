@@ -653,6 +653,7 @@ fn a_finding_from_the_running_app_shows_what_stackvet_saw() {
                 headers: Vec::new(),
                 body: "<html><head><title>Sign in</title></head><body><p>Wrong email or password.</p></body></html>"
                     .into(),
+                prompt: None,
             })
             .collect(),
         ..Default::default()

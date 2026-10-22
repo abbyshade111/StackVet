@@ -227,6 +227,10 @@ impl Http for Patient<'_> {
         self.inner.say(line)
     }
 
+    fn prompt(&mut self, id: &str, prompt: &str) {
+        self.inner.prompt(id, prompt)
+    }
+
     fn provider(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
         self.inner.provider(request)
     }

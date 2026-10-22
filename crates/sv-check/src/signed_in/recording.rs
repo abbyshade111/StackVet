@@ -4,7 +4,9 @@
 //! Only the app's own answers are kept, from the requests the suite sends to the app. The test
 //! model's and the test sign-in provider's answers are not the app's, and are kept with the other
 //! stand-ins' records. A request's headers and body are never kept: they carry the test accounts'
-//! passwords and session cookies, which the suite sends and the record must not hold.
+//! passwords and session cookies, which the suite sends and the record must not hold. For an AI question, the prompt
+//! `sv` itself wrote is kept beside the answer, handed over by the AI suite through `Http::prompt` (backlog 0623):
+//! only that string, never the fields the app's page fills in, and never the request's body.
 
 use super::Http;
 use crate::probes::{ProbeRequest, ProbeResponse};
@@ -23,6 +25,8 @@ pub struct Recorded {
     pub headers: Vec<(String, String)>,
     /// The start of the response body, as the run keeps it.
     pub body: String,
+    /// The prompt `sv` wrote for an AI question asked as this id, when the AI suite handed one over (backlog 0623).
+    pub prompt: Option<String>,
 }
 
 /// Sends through `inner` as `inner` would, and keeps each exchange with the app.
@@ -30,6 +34,8 @@ pub struct Recording<'a> {
     inner: Box<dyn Http + 'a>,
     exchanges: Vec<Recorded>,
     used: std::collections::BTreeSet<String>,
+    /// The prompts handed over, by the id their question is sent as.
+    prompts: std::collections::BTreeMap<String, String>,
 }
 
 impl<'a> Recording<'a> {
@@ -38,6 +44,7 @@ impl<'a> Recording<'a> {
             inner,
             exchanges: Vec::new(),
             used: std::collections::BTreeSet::new(),
+            prompts: std::collections::BTreeMap::new(),
         }
     }
 
@@ -60,6 +67,8 @@ impl<'a> Recording<'a> {
 
     fn keep(&mut self, request: &ProbeRequest, response: Option<&ProbeResponse>) {
         let id = self.unique_id(&request.id);
+        // Kept for every answer to its id, so a question asked again after a limiter's wait keeps it too.
+        let prompt = self.prompts.get(&request.id).cloned();
         self.exchanges.push(Recorded {
             id,
             method: request.method.clone(),
@@ -67,6 +76,7 @@ impl<'a> Recording<'a> {
             status: response.map(|r| r.status),
             headers: response.map(|r| r.headers.clone()).unwrap_or_default(),
             body: response.map(|r| r.body.clone()).unwrap_or_default(),
+            prompt,
         });
     }
 }
@@ -111,6 +121,11 @@ impl Http for Recording<'_> {
         self.inner.say(line)
     }
 
+    fn prompt(&mut self, id: &str, prompt: &str) {
+        self.prompts.insert(id.to_owned(), prompt.to_owned());
+        self.inner.prompt(id, prompt)
+    }
+
     fn provider(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
         self.inner.provider(request)
     }
@@ -131,3 +146,7 @@ impl Http for Recording<'_> {
 #[cfg(test)]
 #[path = "recording_tests.rs"]
 mod recording_tests;
+
+#[cfg(test)]
+#[path = "recording_prompt_tests.rs"]
+mod recording_prompt_tests;

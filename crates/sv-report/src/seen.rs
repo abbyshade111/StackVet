@@ -185,6 +185,10 @@ pub struct Exchange {
     pub headers: Vec<(String, String)>,
     /// The start of the body, as much as the run keeps.
     pub body: String,
+    /// The prompt `sv` itself wrote for an AI question, through the same redaction as the answer (backlog 0623): never
+    /// a request's body or headers. Left out of the file for every other question.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt: Option<String>,
 }
 
 /// The most answers the record holds: the anonymous questions are fewer than a hundred today, and

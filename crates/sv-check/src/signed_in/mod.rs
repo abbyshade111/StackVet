@@ -184,6 +184,11 @@ pub trait Http {
     /// (backlog 0247). Nothing by default: a test's fake app has no one watching, and the real run prints it.
     fn say(&mut self, _line: &str) {}
 
+    /// The prompt `sv` itself wrote for the question it is about to send as `id` (backlog 0623, ADR-082, Later). Only the
+    /// AI suite calls this, with the string it composed, before any field the app's page fills in: never a request's
+    /// body or headers. The recorder keeps it beside the answer; a wrapper passes it on; anything else lets it go.
+    fn prompt(&mut self, _id: &str, _prompt: &str) {}
+
     /// Sends a request to the run's test OpenID Connect provider rather than to the app: `None`
     /// when the run has no provider. The path is the provider's own, query included.
     fn provider(&mut self, _request: &ProbeRequest) -> Option<ProbeResponse> {
@@ -586,6 +591,10 @@ impl Http for Counted<'_> {
 
     fn say(&mut self, line: &str) {
         self.inner.say(line)
+    }
+
+    fn prompt(&mut self, id: &str, prompt: &str) {
+        self.inner.prompt(id, prompt)
     }
 
     fn provider(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {

@@ -26,3 +26,11 @@ resolves it; and assert first that it did, since a fallback that quietly keeps t
 Break it to check: canonicalize after the removal again and watch both tests go red on a Mac with `TMPDIR` under `/var`.
 
 **Record.** None: a test's setup, not what `sv` reads.
+
+**A third, seen 22 October 2026.** `docker_mounts_a_folder_whose_name_holds_a_colon_and_a_comma`, in
+`crates/sv-run/tests/mount_path.rs`, hands Docker `std::env::temp_dir()`'s path as it is, `/var/folders/…`. Once
+Colima shares the Mac's temporary folder (`--mount /private/var/folders:w`, which the Ctrl-C tests in
+`crates/sv-cli/tests/interrupt.rs` need), it shares it under its real place, and inside Colima's machine `/var/folders`
+does not exist: "bind source path does not exist: /var/folders/…/Notes: 2026, app". Before that mount the test found
+no folder to share and took its no-backend path, so it never ran here. The fix is the same: canonicalize the folder
+once it is made, and assert it did.
