@@ -349,6 +349,16 @@ fn held_back_why(held: &sv_check::ast::HeldBackByPackage) -> String {
     )
 }
 
+/// What settles the findings beyond the scan itself, for `settle`: the `[[finding-review]]` entries a person set aside
+/// through `sv review`, the seal checker they are judged by, the decisions held to the running app, and the folders
+/// counted out. One struct where `settle` took the four separately (backlog 0324).
+pub struct Settling<'a> {
+    pub reviews: &'a [sv_manifest::FindingReview],
+    pub seals: &'a sv_check::seal::Checker,
+    pub decided: &'a [sv_check::decisions::Decided],
+    pub left_out: &'a [String],
+}
+
 /// The findings as every report lists them and every exit status counts them, from `findings`
 /// (the static scan's, and whatever else the run found): the same weakness on the same line from
 /// two tools merged into one; test code, a folder the manifest sets apart, and a bundled library
@@ -356,18 +366,20 @@ fn held_back_why(held: &sv_check::ast::HeldBackByPackage) -> String {
 /// through `sv review` applied (`reviews`, ADR-023); and one finding per line of code. `examined`
 /// is what this run looked at, complete, so an entry that matches nothing can say whether its rule
 /// looked (deep review R3).
-#[allow(clippy::too_many_arguments)]
 pub fn settle(
     app_dir: &Path,
-    reviews: &[sv_manifest::FindingReview],
     findings: Vec<sv_check::Finding>,
     scan: &StaticScan,
     examined: &[sv_report::Examined],
     loaded: &Loaded,
-    seals: &sv_check::seal::Checker,
-    decided: &[sv_check::decisions::Decided],
-    left_out: &[String],
+    settling: Settling<'_>,
 ) -> sv_check::review::Outcome {
+    let Settling {
+        reviews,
+        seals,
+        decided,
+        left_out,
+    } = settling;
     // The same weakness on the same line, reported by two tools, is one thing to fix.
     let mut findings = sv_check::finding::merge_same_place(findings);
     // Rust keeps its unit tests beside the code, so the file's name cannot say which is which.
