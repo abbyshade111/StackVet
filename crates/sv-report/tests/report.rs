@@ -568,7 +568,10 @@ fn a_note_worth_knowing_is_never_counted_named_or_advised_on_as_a_thing_to_fix()
     let (worst, _) = sv_report::bluf::worst_findings(&report);
     assert_eq!(worst.len(), 1, "the note is not among the worst");
     let headline = sv_report::bluf::headline(&report);
-    assert!(headline.starts_with("1 thing was found"), "{headline}");
+    assert!(
+        headline.starts_with("1 thing to fix was found"),
+        "{headline}"
+    );
     assert!(
         headline.contains("1 more is a note worth knowing"),
         "{headline}"
@@ -3201,7 +3204,7 @@ fn findings_in_test_code_are_listed_after_the_apps_own_and_still_count() {
     assert_eq!(worst[0].title, "Found in the app");
     let headline = sv_report::bluf::headline(&report);
     assert!(
-        headline.contains("2 of them are in test or sample code"),
+        headline.contains("2 more are in test or sample code"),
         "{headline}"
     );
 }
@@ -3282,7 +3285,7 @@ fn a_finding_only_worth_a_look_is_listed_apart_in_full_and_still_counts() {
     }
     let headline = sv_report::bluf::headline(&report);
     assert!(
-        headline.contains("1 of them is only worth a look, listed after the app's own."),
+        headline.contains("1 more is only worth a look, listed after the app's own."),
         "{headline}"
     );
     // And in SARIF, on its result only.
@@ -3326,7 +3329,7 @@ fn when_every_finding_is_in_test_code_the_report_does_not_read_as_clean() {
     );
     assert!(!markdown.contains("## Nothing was found\n"), "{markdown}");
     assert!(
-        sv_report::bluf::headline(&report).contains("It is in test or sample code"),
+        sv_report::bluf::headline(&report).contains("and it is in test or sample code"),
         "{}",
         sv_report::bluf::headline(&report)
     );

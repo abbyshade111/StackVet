@@ -39,20 +39,29 @@ pub struct NextStep {
     pub where_to_look: String,
 }
 
-/// The findings worth naming at the top, worst first, and how many were left out.
+/// The findings worth naming at the top, most serious first, and how many of the same kind were left out: the app's
+/// own things to fix, which the headline counts (backlog 0635), or, when its own code has none, what the report lists
+/// apart, which the headline then names.
 pub fn worst_findings(report: &Report) -> (Vec<&sv_check::Finding>, usize) {
     // A note worth knowing is never among the worst (ADR-110, Later).
-    let mut findings: Vec<&sv_check::Finding> = report
+    let (own, apart): (Vec<&sv_check::Finding>, Vec<&sv_check::Finding>) = report
         .findings
         .iter()
         .filter(|f| !crate::is_note(f))
-        .collect();
-    // The app's own first: a critical in a test is named after a low in the app, since the report
-    // lists it apart, but it is still named when there is room.
-    findings.sort_by_key(|f| (f.apart(), severity_rank(f.severity)));
+        .partition(|f| !f.apart());
+    let mut findings = if own.is_empty() { apart } else { own };
+    findings.sort_by_key(|f| severity_rank(f.severity));
     let shown = findings.len().min(NAMED_FINDINGS);
     let rest = findings.len() - shown;
     (findings.into_iter().take(shown).collect(), rest)
+}
+
+/// The words beside the list of the findings named at the top: its order, said where the list is (backlog 0635).
+pub const WORST_LEAD: &str = "Most serious first:";
+
+/// The last line of that list, when there are more than it names.
+pub fn more_line(rest: usize, place: &str) -> String {
+    format!("… and {rest} more, {place}")
 }
 
 fn severity_rank(s: Severity) -> u8 {
@@ -94,26 +103,18 @@ pub fn headline(report: &Report) -> String {
         .iter()
         .filter(|s| s.verdict == sv_check::review::FALSE_ALARM)
         .count();
-    // Information in test code is not a finding and is not counted (ADR-091). Said here, with the rules, so a
-    // reader knows the test files have something to review with `sv review`.
-    let information_said = if report.test_information.is_empty() {
-        String::new()
-    } else {
-        let mut rules: Vec<&str> = report
-            .test_information
-            .iter()
-            .map(|f| f.rule_id.as_str())
-            .collect();
-        rules.sort_unstable();
-        rules.dedup();
-        let k = report.test_information.len();
-        format!(
-            " {k} {} in test code {} information, not counted as {}: {}. Review them with `sv review`.",
-            if k == 1 { "thing" } else { "things" },
-            if k == 1 { "is" } else { "are" },
-            if k == 1 { "a finding" } else { "findings" },
-            rules.join(", ")
-        )
+    // Information in test code is not a finding and is not counted (ADR-091). Said here so a reader knows the test
+    // files have something to review with `sv review`; the rules that found it are named in information.md, not
+    // here, where their ids would mean nothing to the person reading (backlog 0635).
+    let information_said = match report.test_information.len() {
+        0 => String::new(),
+        1 => " 1 thing in test code is information, not a finding: information.md lists it. Review it with \
+              `sv review`."
+            .to_owned(),
+        k => format!(
+            " {k} things in test code are information, not findings: information.md lists them. Review them with \
+             `sv review`."
+        ),
     };
     let set_aside_said = match set_aside {
         0 => String::new(),
@@ -154,21 +155,28 @@ pub fn headline(report: &Report) -> String {
     let listed_apart: Vec<&sv_check::Finding> =
         report.findings.iter().filter(|f| f.apart()).collect();
     let named = crate::apart_named(&listed_apart);
-    let apart = match listed_apart.len() {
+    // The headline counts what the report calls things to fix, the app's own, so the number is the one "What to do
+    // next" and the section of things to fix give; what the report lists apart is a sentence of its own, and the
+    // order of the list is said beside the list, not here (backlog 0635).
+    let m = listed_apart.len();
+    if m == n {
+        return format!(
+            "{n} thing{} {} found, {} {named}, not the app's own code.{set_aside_said}{notes_said}{information_said}",
+            if n == 1 { "" } else { "s" },
+            if n == 1 { "was" } else { "were" },
+            if n == 1 { "and it is" } else { "and all are" }
+        );
+    }
+    let fix = n - m;
+    let apart = match m {
         0 => String::new(),
-        m if m == n => format!(
-            " {} {named}, not the app's own code.",
-            if n == 1 { "It is" } else { "All are" }
-        ),
-        m => format!(
-            " {m} of them {} {named}, listed after the app's own.",
-            if m == 1 { "is" } else { "are" }
-        ),
+        1 => format!(" 1 more is {named}, listed after the app's own."),
+        m => format!(" {m} more are {named}, listed after the app's own."),
     };
     format!(
-        "{n} thing{} {} found, worst first.{apart}{set_aside_said}{notes_said}{information_said}",
-        if n == 1 { "" } else { "s" },
-        if n == 1 { "was" } else { "were" }
+        "{fix} thing{} to fix {} found in the app's own code.{apart}{set_aside_said}{notes_said}{information_said}",
+        if fix == 1 { "" } else { "s" },
+        if fix == 1 { "was" } else { "were" }
     )
 }
 
@@ -654,7 +662,7 @@ mod tests {
         r.findings = vec![a_finding("probe.private-page-anonymous")];
         let line = headline(&r);
         assert!(
-            line.starts_with("1 thing was found, worst first."),
+            line.starts_with("1 thing to fix was found in the app's own code."),
             "{line}"
         );
         assert!(
@@ -671,7 +679,7 @@ mod tests {
         r.findings = vec![risk.finding.clone()];
         r.set_aside = vec![risk];
         let line = headline(&r);
-        assert_eq!(line, "1 thing was found, worst first.");
+        assert_eq!(line, "1 thing to fix was found in the app's own code.");
     }
 
     fn a_finding(rule: &str) -> sv_check::Finding {
@@ -716,8 +724,72 @@ mod tests {
         });
         r.findings = vec![a_finding("probe.one"), a_finding("config.two")];
         let line = headline(&r);
-        assert!(line.starts_with("2 things were found"), "got {line}");
+        assert!(line.starts_with("2 things to fix were found"), "got {line}");
         assert_eq!(worst_findings(&r).0.len(), 2, "and both are listed");
+    }
+
+    #[test]
+    fn one_count_of_things_to_fix_from_the_headline_to_what_to_do_next() {
+        // The owner's reading of 22 October 2026 (backlog 0635): "19 things were found, worst first" above a list
+        // ending "… and 14 more", a step "Fix the 10 things", and a section "10 things to fix". The headline counted
+        // findings the report lists apart, and the list's "more" counted them too.
+        let mut r = report(Counts {
+            applicable: 30,
+            needs_attention: 3,
+            not_verified: 27,
+            ..Counts::default()
+        });
+        let in_tests = |rule: &str| {
+            let mut f = a_finding(rule);
+            f.location.file = "tests/test_app.py".into();
+            f.marked_test_code = true;
+            f
+        };
+        r.findings = (0..7)
+            .map(|i| a_finding(&format!("app.{i}")))
+            .chain((0..4).map(|i| in_tests(&format!("test.{i}"))))
+            .collect();
+        assert_eq!(
+            r.findings.iter().filter(|f| f.apart()).count(),
+            4,
+            "the setup: four listed apart"
+        );
+        let line = headline(&r);
+        assert!(
+            line.starts_with("7 things to fix were found in the app's own code. 4 more are "),
+            "{line}"
+        );
+        assert!(
+            !line.contains("worst first"),
+            "the list's order is said beside the list: {line}"
+        );
+        let (shown, rest) = worst_findings(&r);
+        assert_eq!(
+            shown.len() + rest,
+            7,
+            "the list counts what the headline counts"
+        );
+        assert!(shown.iter().all(|f| !f.apart()));
+        let fix = &next_steps(&r)[0].what;
+        assert_eq!(fix, "Fix the 7 things that were found.");
+    }
+
+    #[test]
+    fn the_headline_names_no_rule_for_information_in_test_code() {
+        let mut r = report(Counts::default());
+        r.findings = vec![a_finding("probe.one")];
+        let mut info = a_finding("bandit.B101");
+        info.severity = Severity::Info;
+        info.location.file = "tests/test_app.py".into();
+        r.test_information = vec![info.clone(), info];
+        let line = headline(&r);
+        assert!(
+            line.contains(
+                "2 things in test code are information, not findings: information.md lists them."
+            ),
+            "{line}"
+        );
+        assert!(!line.contains("bandit.B101"), "{line}");
     }
 
     #[test]

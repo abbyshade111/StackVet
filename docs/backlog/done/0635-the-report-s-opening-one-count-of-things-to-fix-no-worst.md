@@ -1,6 +1,6 @@
 # The report's opening: one count of things to fix, no "worst first" in the headline, and the build record broken up
 
-**Status:** claimed by claude/report-opening, 22 October 2026
+**Status:** done, 22 October 2026
 
 Found by the owner on 22 October 2026, reading `report.html` of the Cursor build made for the walk-through (backlog
 0373), held to level 3, with `--run`. The owner: "The worst first doesn't make sense and the number of things to fix
@@ -47,3 +47,13 @@ left out is hidden; a number moves, it is never dropped):
   it.
 
 Its record is a Later entry on ADR-084 (what the report says of the build record), in the pull request that builds it.
+
+**Done, 22 October 2026** (ADR-084, Later). The headline now leads with the app's own things to fix ("9 things to fix
+were found in the app's own code."), the same number as "What to do next" and the section heading, and says what is
+listed apart in a sentence of its own; the list of the most serious follows it at once under "Most serious first:",
+its "… and N more" counted from the same things; no rule ids in the headline; the build record's paragraph is in two
+parts, the details folded under "How this record is kept, and what else it says" in report.html, with readable times;
+and report.html lists the counts under its bars only when there are no bars. Seen on a copy of the owner's build, made
+without `--run`, in report.html and compliance.md. Tests: `bluf.rs` (one count from the headline to what to do next,
+no rule in the headline), `build_loop_span_tests.rs`, `html.rs` (the counts not listed twice), and the report tests
+whose wording changed.
