@@ -62,3 +62,9 @@ differ only in their timings. Next: `main.rs`'s `Command` table and `cmd_probe`.
 word for word; `sv --help`, each command's `--help`, and the refusal of an unknown option read the same before and
 after. Next: `cmd_probe` and `cmd_check` in `main.rs`, `the_owners_word` and `running_app` in `assemble.rs`, and
 `review` in `review.rs`.
+
+**Ninth split, 21 October 2026.** `the_owners_word` in `sv-cli/src/assemble.rs` hands the gaps it says for the notes
+file, the design decisions, the design questions, and the checks done by hand to functions of their own, word for
+word, from 590 lines to 399. With each call taken out, only the notes' went red in any test: no test held the other
+three's words. `assemble_owner_gaps_tests.rs` now holds each, red with its function emptied. Next: `running_app` in
+`assemble.rs`, `review` in `review.rs`, and `cmd_check` and `cmd_probe` in `main.rs`.
