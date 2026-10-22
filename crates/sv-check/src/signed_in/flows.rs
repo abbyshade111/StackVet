@@ -81,7 +81,7 @@ pub(super) fn flow_checks(
         } else {
             "the `flow`".to_owned()
         };
-        match try_flow(http, users, accounts, a, flow, k, &name, out) {
+        match try_flow(http, users, accounts, a, (flow, k, &name), out) {
             Tried::Held { steps, tries } => held.push((name, steps, tries)),
             Tried::Skipped => skipped_any = true,
             Tried::NotJudged(why) => {
@@ -137,15 +137,12 @@ enum Tried {
 
 /// One flow, tried as `flow_checks` says. `k` is its place in the list: the first keeps the request
 /// ids and the marker the one flow always had, and each later one has its own (ADR-118).
-#[allow(clippy::too_many_arguments)]
 fn try_flow(
     http: &mut dyn Http,
     users: &UsersSection,
     accounts: &Accounts,
     a: &SignedIn,
-    flow: &sv_manifest::FlowSection,
-    k: usize,
-    name: &str,
+    (flow, k, name): (&sv_manifest::FlowSection, usize, &str),
     out: &mut Outcome,
 ) -> Tried {
     let label = if k == 0 {

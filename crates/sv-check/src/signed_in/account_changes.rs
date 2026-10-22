@@ -156,25 +156,21 @@ pub(super) fn account_change_checks(
             http,
             users,
             &mut session,
-            &account,
-            &wrong,
+            (&account, &wrong, spare),
             (kind, key, change),
-            spare,
             out,
         );
     }
 }
 
-/// One change, asked for with `wrong` and then with the account's own password, in `session`.
-#[allow(clippy::too_many_arguments)]
+/// One change, asked for with `wrong` and then with the account's own password, in `session`. The account, `wrong`, and
+/// `spare` come as one tuple (backlog 0324: where `one_change` took them apart).
 fn one_change(
     http: &mut dyn Http,
     users: &UsersSection,
     session: &mut Session,
-    account: &Account,
-    wrong: &str,
+    (account, wrong, spare): (&Account, &str, &str),
     (kind, key, change): (&str, &str, &sv_manifest::AccountChange),
-    spare: &str,
     out: &mut Outcome,
 ) {
     const IDS: &str = "V7.5.1";

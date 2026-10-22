@@ -117,3 +117,10 @@ seven-and-a-tuple to five; their nine callers in `uploads.rs` and `archives.rs` 
 word. Six allows are left: `account_changes.rs`'s `one_change`, `flows.rs`'s `try_flow`, `mod.rs`'s
 `provider_session_checks`, `owner_field.rs`'s `owner_field_probe` (eleven arguments), `review_then_report`, and the
 test helper `sealed`.
+
+**Seventeenth split, 22 October 2026.** The signed-in suite's last four allows go: `owner_field_probe` takes the record
+it probes as one `Probed` (the tag, how it is made, where it is read and listed, its id field), from eleven arguments to
+seven; `one_change`, `try_flow`, and `provider_session_checks` each take what travels together as one tuple, as
+`one_change` already did for the change itself, from eight to six, six, and seven. Their bodies are word for word. Two
+allows are left in the workspace: `review_then_report` (three of its arguments go straight to
+`report_again::write_again`) and the test helper `sealed` in `crates/sv-cli/tests/confirmations.rs`.
