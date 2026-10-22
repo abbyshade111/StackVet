@@ -3137,28 +3137,22 @@ fn untaught_lines(untaught: &[sv_check::ast::Untaught]) -> Vec<String> {
 }
 
 #[cfg(test)]
-#[path = "main_tests.rs"]
-mod tests;
+mod main_tests;
 
 #[cfg(test)]
-#[path = "main_dependency_gap_tests.rs"]
-mod dependency_gap_tests;
+mod main_dependency_gap_tests;
 
 #[cfg(test)]
-#[path = "main_rate_limited_gap_tests.rs"]
-mod rate_limited_gap_tests;
+mod main_rate_limited_gap_tests;
 
 #[cfg(all(test, unix))]
-#[path = "main_writing_through_links_tests.rs"]
-mod writing_through_links_tests;
+mod main_writing_through_links_tests;
 
 #[cfg(test)]
-#[path = "main_report_folder_tests.rs"]
-mod report_folder_tests;
+mod main_report_folder_tests;
 
 #[cfg(test)]
-#[path = "main_bundle_backstop_tests.rs"]
-mod bundle_backstop_tests;
+mod main_bundle_backstop_tests;
 
 #[cfg(test)]
 mod adapters_once_tests;
