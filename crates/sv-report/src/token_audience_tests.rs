@@ -30,6 +30,7 @@ fn asked(audience: &[&str]) -> Report {
             cookie: false,
             audience: audience.iter().map(|a| (*a).to_owned()).collect(),
         }),
+        outbound: None,
         measured_by: Vec::new(),
     });
     report

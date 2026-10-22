@@ -1,6 +1,6 @@
 # Outside services the code names and the run saw, beside the communication question, and an undeclared one reported
 
-**Status:** claimed by claude/backlog-work, 22 October 2026
+**Status:** done, 22 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 

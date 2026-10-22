@@ -497,7 +497,9 @@ MENTIONS = {"V6.1.1", "AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2
             # The owner's confirmed time frames, V15.1.1 on the owner's word; never coverage (0498).
             "V15.1.1",
             # The hook section names the requirements a claim speaks to, beside their verdict; never evidence (0607).
-            "V1.2.5", "V11.4.2"}
+            "V1.2.5", "V11.4.2",
+            # The hand check on outbound destinations, shown the folder's outbound rules; never evidence (0496).
+            "V13.2.5"}
 
 ID = r"(?:V|C)\d+\.\d+\.\d+|AC\.\d+\.\d+|SBD-[A-Z]+-\d+"
 

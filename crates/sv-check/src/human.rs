@@ -102,6 +102,10 @@ pub struct Item {
     /// and the services its `aud` field names. Where to look, never evidence; never in `report.json`.
     #[serde(skip)]
     pub token_audience: Option<crate::personal_fields::TokenFields>,
+    /// The outbound rules the folder's infrastructure files set, for V13.2.5 (backlog 0496). Where to look, never
+    /// evidence: a file in the folder is not known to be what runs; never in `report.json`.
+    #[serde(skip)]
+    pub outbound: Option<crate::outbound_rules::OutboundRules>,
     /// For a hand check whose requirement other checks measure parts of, those parts with this report's verdict on each
     /// (backlog 0610), so the owner reads them in one place. They answer the parts, never the question.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -279,6 +283,7 @@ pub fn checklist(
                 personal_fields: None,
                 crypto: None,
                 token_audience: None,
+                outbound: None,
                 measured_by: Vec::new(),
             });
         }
@@ -301,6 +306,7 @@ pub fn checklist(
                 personal_fields: None,
                 crypto: None,
                 token_audience: None,
+                outbound: None,
                 measured_by: Vec::new(),
             });
         }
@@ -323,6 +329,7 @@ pub fn checklist(
                 personal_fields: None,
                 crypto: None,
                 token_audience: None,
+                outbound: None,
                 measured_by: Vec::new(),
             });
         }

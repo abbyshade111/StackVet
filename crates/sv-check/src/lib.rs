@@ -78,12 +78,14 @@ pub mod test_report;
 pub mod text;
 // Built always, not only for this crate's tests, so the tests of `sv-run` and `sv-cli` write their
 // programs the same way (backlog 0501); nothing in `sv` calls it.
+pub mod outbound_rules;
 #[doc(hidden)]
 pub mod test_support;
 pub mod totp;
 pub mod verified;
 pub mod weak_keys;
 pub mod workflows;
+pub(crate) mod yaml;
 
 pub use finding::{Confidence, Finding, Location, Secret, Severity};
 pub use sbom::{Sbom, build as build_sbom, to_cyclonedx};

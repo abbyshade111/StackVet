@@ -198,6 +198,7 @@ fn question(item: &Item, fence: &crate::fence::Fence) -> String {
         ));
     }
     out.push_str(&routes(item, fence));
+    out.push_str(&outbound(item, fence));
     out.push_str(&pathways(item, fence));
     out.push_str(&personal_fields(item, fence));
     out.push_str(&crypto(item, fence));
@@ -305,6 +306,33 @@ fn pathways(item: &Item, fence: &crate::fence::Fence) -> String {
             fence.wrap(&way.what),
             fence.wrap(&way.file),
             way.line
+        ));
+    }
+    if found.more > 0 {
+        out.push_str(&format!("     And {} more, not shown.\n", found.more));
+    }
+    out
+}
+
+/// The outbound rules the folder's infrastructure files set (backlog 0496), each piece of the app's text through
+/// `fence`, with the sentence that says they are where to look and not evidence.
+fn outbound(item: &Item, fence: &crate::fence::Fence) -> String {
+    use sv_check::outbound_rules::RULES_SAY;
+    let Some(found) = &item.outbound else {
+        return String::new();
+    };
+    let mut out = format!("   {RULES_SAY}\n");
+    for r in &found.rules {
+        out.push_str(&format!(
+            "     {} ({}, line {}){}\n",
+            fence.wrap(&r.what),
+            fence.wrap(&r.file),
+            r.line,
+            if r.open_to_all {
+                ": it lets the app reach everywhere"
+            } else {
+                ""
+            }
         ));
     }
     if found.more > 0 {
