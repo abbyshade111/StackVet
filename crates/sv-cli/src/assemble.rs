@@ -1275,56 +1275,7 @@ fn running_app(
                     plan.health_path,
                     outcome.fence.explain()
                 ));
-                if let Some(note) = run_note.as_mut() {
-                    note.push_str(&format!(
-                        " What it answered is kept beside this report in {}, with the \
-                         credentials sv recognized cut out: it is the app's own text.",
-                        sv_report::seen::FILE
-                    ));
-                    note.push_str(&format!(
-                        " {}",
-                        crate::seen::lookups_sentence(outcome.stand_ins.names.as_deref())
-                    ));
-                }
-                if let (Some(note), Some(installed)) = (
-                    run_note.as_mut(),
-                    sv_run::install::sentence(&outcome.installed),
-                ) {
-                    note.push_str(&format!(" {installed}"));
-                }
-                if let (Some(note), Some(removed)) = (
-                    run_note.as_mut(),
-                    sv_run::cleanup::removed_sentence(&outcome.left_over_removed),
-                ) {
-                    note.push_str(&format!(" {removed}"));
-                }
-                if let (Some(note), Some(container)) =
-                    (run_note.as_mut(), outcome.container.sentences())
-                {
-                    note.push_str(&format!(" {container}"));
-                }
-                if let Some(note) = run_note.as_mut() {
-                    note.push_str(&format!(
-                        " {}",
-                        sv_run::resources::sentence(outcome.resources.as_ref())
-                    ));
-                }
-                // The settings the start command gave the copy run, by name (backlog 0386), then any that look like they
-                // weaken it.
-                if let (Some(note), Some(settings)) =
-                    (run_note.as_mut(), sv_run::start_settings::note(&plan.start))
-                {
-                    note.push_str(&format!(" {settings}"));
-                }
-                if let (Some(note), Some(weaker)) =
-                    (run_note.as_mut(), sv_run::weakening_note(&plan.start))
-                {
-                    note.push_str(&format!(" {weaker}"));
-                }
-                // Which settings files were read for that, and that no other is (backlog 0605).
-                if let Some(note) = run_note.as_mut() {
-                    note.push_str(&format!(" {settings_files}"));
-                }
+                run_note_details(&mut run_note, &outcome, &plan, &settings_files);
                 for (requirements, why) in signed_in_not_assessed {
                     // AISVS ids are the AI feature's, asked through the test model, which may not
                     // have involved signing in at all.
@@ -1357,160 +1308,14 @@ fn running_app(
                         requirements: requirement_ids(requirements),
                     });
                 }
-                match &outcome.tests {
-                    Some(result) if result.stopped_after.is_some() => {
-                        let after = result.stopped_after.unwrap_or(sv_run::TEST_LIMIT);
-                        tests_examined = sv_report::Examined::not_run(
-                            "tests.",
-                            "the app's own tests were stopped before they finished",
-                        );
-                        gaps.push(sv_report::Gap {
-                            what: "anything the app's own tests would have shown".to_owned(),
-                            why: format!(
-                                "they had not finished after {}, the most a test run may take, \
-                                 and were stopped. A suite cut short credits nothing, whatever it \
-                                 printed before it was stopped.",
-                                sv_run::minutes(after)
-                            ),
-                            reason: sv_report::GapReason::Stopped,
-                            requirements: Vec::new(),
-                        });
-                        test_output = sv_check::suite::failing_output(
-                            result.exit_code,
-                            &result.output,
-                            secret_rules,
-                        )
-                        .map(|t| sv_check::suite::FailingOutput {
-                            stopped_after: Some(sv_run::minutes(after)),
-                            ..t
-                        });
-                    }
-                    Some(result) => {
-                        // Only tests that name a requirement count, and only when something says
-                        // they passed. Matching a test to a requirement by what it is called would
-                        // credit one on the strength of a name somebody chose for other reasons.
-                        let known: std::collections::BTreeSet<&str> =
-                            frameworks.requirements.keys().map(String::as_str).collect();
-                        let named = sv_check::suite::tests_naming_requirements_in(listing, &known);
-                        let describe = |id: &str| {
-                            frameworks
-                                .requirements
-                                .get(id)
-                                .map(|r| r.description.clone())
-                        };
-
-                        // A suite that passed outright needs no report. One that did not is worth
-                        // whatever its runner's own report says still passed — and nothing more,
-                        // which is why an unreadable report falls back to crediting nothing rather
-                        // than to crediting what it managed to understand.
-                        let reported_cases = if result.exit_code == 0 {
-                            None
-                        } else {
-                            match sv_check::suite::reported_cases(result.report.as_deref()) {
-                                Some(Ok(cases)) => Some(cases),
-                                Some(Err(unreadable)) => {
-                                    gaps.push(sv_report::Gap {
-                                        what: "which of the app's own tests passed".to_owned(),
-                                        why: format!(
-                                            "the suite failed (exit {}) and its report could not \
-                                             be read: {}. Nothing is credited from it.",
-                                            result.exit_code, unreadable.why
-                                        ),
-                                        reason: sv_report::GapReason::CouldNotRead,
-                                        requirements: Vec::new(),
-                                    });
-                                    None
-                                }
-                                None => None,
-                            }
-                        };
-                        tests_examined = match (result.exit_code, &reported_cases) {
-                            (0, _) => sv_report::Examined::ran("tests."),
-                            (_, Some(_)) => sv_report::Examined::partly(
-                                "tests.",
-                                "the suite failed, and only the tests its runner reported as \
-                                 passing were read",
-                            ),
-                            (_, None) => sv_report::Examined::not_run(
-                                "tests.",
-                                "the suite failed and nothing says which of its tests passed",
-                            ),
-                        };
-                        let suite_outcome = if result.exit_code == 0 {
-                            sv_check::suite::SuiteOutcome::Passed
-                        } else {
-                            sv_check::suite::SuiteOutcome::Failed {
-                                cases: reported_cases.as_deref(),
-                            }
-                        };
-                        let (credited, mismatches) =
-                            sv_check::suite::credit(&named, suite_outcome, &describe);
-
-                        test_output = sv_check::suite::failing_output(
-                            result.exit_code,
-                            &result.output,
-                            secret_rules,
-                        );
-                        if result.exit_code != 0 {
-                            gaps.push(sv_report::Gap {
-                                what: "anything the failing tests would have shown".to_owned(),
-                                why: match (&reported_cases, credited.len()) {
-                                    (Some(_), 0) => format!(
-                                        "the suite failed (exit {}) and no test its runner \
-                                         reported as passing names a requirement",
-                                        result.exit_code
-                                    ),
-                                    (Some(_), n) => format!(
-                                        "the suite failed (exit {}); {n} requirement {} from \
-                                         tests its runner reported as passing, and the rest of \
-                                         the suite says nothing either way",
-                                        result.exit_code,
-                                        if n == 1 { "claim comes" } else { "claims come" }
-                                    ),
-                                    (None, _) => format!(
-                                        "they failed (exit {}) and nothing says which of them did, \
-                                         so nothing can be concluded from them either way. {}",
-                                        result.exit_code,
-                                        result.report_note.as_deref().unwrap_or(
-                                            "Declare test-report in stackvet.toml to have the \
-                                             tests that did pass still count."
-                                        )
-                                    ),
-                                },
-                                reason: if reported_cases.is_some() {
-                                    sv_report::GapReason::Partial
-                                } else {
-                                    sv_report::GapReason::Stopped
-                                },
-                                requirements: Vec::new(),
-                            });
-                        } else if credited.is_empty() {
-                            gaps.push(sv_report::Gap {
-                                what: "what the app's own tests cover".to_owned(),
-                                why: "the suite passed, and no test names the requirement it is \
-                                      for, so nothing here can say which requirements they are \
-                                      evidence about. `sv init` explains how to name them."
-                                    .to_owned(),
-                                reason: sv_report::GapReason::NotAsked,
-                                requirements: Vec::new(),
-                            });
-                        }
-                        findings.extend(mismatches);
-                        test_verified = credited;
-                    }
-                    None => {
-                        tests_examined = sv_report::Examined::not_run(
-                            "tests.",
-                            "stackvet.toml declares no test command",
-                        );
-                        gaps.push(sv_report::Gap {
-                            what: "the app's own tests".to_owned(),
-                            why: "stackvet.toml declares no test command".to_owned(),
-                            reason: sv_report::GapReason::NotAsked,
-                            requirements: Vec::new(),
-                        })
-                    }
-                }
+                (tests_examined, test_output, test_verified) = own_tests(
+                    &outcome.tests,
+                    listing,
+                    frameworks,
+                    secret_rules,
+                    findings,
+                    gaps,
+                );
             }
             Err((reason, kind)) => {
                 run_status = sv_report::RunStatus::CouldNotStart {
@@ -1557,6 +1362,230 @@ fn running_app(
         request_timings,
         check_timings,
     }
+}
+
+/// What the run's note says of how the copy was run: what was installed and removed, the container, the settings the
+/// start command gave it and any that weaken it, and which settings files were read for that. Part of `running_app`,
+/// moved out of it on 22 October 2026 (backlog 0324), word for word.
+fn run_note_details(
+    run_note: &mut Option<String>,
+    outcome: &sv_run::RunOutcome,
+    plan: &sv_run::RunPlan,
+    settings_files: &str,
+) {
+    if let Some(note) = run_note.as_mut() {
+        note.push_str(&format!(
+            " What it answered is kept beside this report in {}, with the \
+             credentials sv recognized cut out: it is the app's own text.",
+            sv_report::seen::FILE
+        ));
+        note.push_str(&format!(
+            " {}",
+            crate::seen::lookups_sentence(outcome.stand_ins.names.as_deref())
+        ));
+    }
+    if let (Some(note), Some(installed)) = (
+        run_note.as_mut(),
+        sv_run::install::sentence(&outcome.installed),
+    ) {
+        note.push_str(&format!(" {installed}"));
+    }
+    if let (Some(note), Some(removed)) = (
+        run_note.as_mut(),
+        sv_run::cleanup::removed_sentence(&outcome.left_over_removed),
+    ) {
+        note.push_str(&format!(" {removed}"));
+    }
+    if let (Some(note), Some(container)) = (run_note.as_mut(), outcome.container.sentences()) {
+        note.push_str(&format!(" {container}"));
+    }
+    if let Some(note) = run_note.as_mut() {
+        note.push_str(&format!(
+            " {}",
+            sv_run::resources::sentence(outcome.resources.as_ref())
+        ));
+    }
+    // The settings the start command gave the copy run, by name (backlog 0386), then any that look like they
+    // weaken it.
+    if let (Some(note), Some(settings)) =
+        (run_note.as_mut(), sv_run::start_settings::note(&plan.start))
+    {
+        note.push_str(&format!(" {settings}"));
+    }
+    if let (Some(note), Some(weaker)) = (run_note.as_mut(), sv_run::weakening_note(&plan.start)) {
+        note.push_str(&format!(" {weaker}"));
+    }
+    // Which settings files were read for that, and that no other is (backlog 0605).
+    if let Some(note) = run_note.as_mut() {
+        note.push_str(&format!(" {settings_files}"));
+    }
+}
+
+/// What the app's own tests showed when the run ran them: whether they were examined, the output of a failing run, and
+/// what they credit. Part of `running_app`, moved out of it on 22 October 2026 (backlog 0324), word for word but for
+/// reading the run's test result alone rather than the whole outcome; it sets the three it hands back as the arms there
+/// did.
+fn own_tests(
+    tests: &Option<sv_run::TestResult>,
+    listing: &sv_scan::files::Listing,
+    frameworks: &Frameworks,
+    secret_rules: &SecretRules,
+    findings: &mut Vec<sv_check::Finding>,
+    gaps: &mut Vec<sv_report::Gap>,
+) -> (
+    sv_report::Examined,
+    Option<sv_check::suite::FailingOutput>,
+    Vec<sv_check::Verified>,
+) {
+    let tests_examined;
+    let mut test_output = None;
+    let mut test_verified = Vec::new();
+    match tests {
+        Some(result) if result.stopped_after.is_some() => {
+            let after = result.stopped_after.unwrap_or(sv_run::TEST_LIMIT);
+            tests_examined = sv_report::Examined::not_run(
+                "tests.",
+                "the app's own tests were stopped before they finished",
+            );
+            gaps.push(sv_report::Gap {
+                what: "anything the app's own tests would have shown".to_owned(),
+                why: format!(
+                    "they had not finished after {}, the most a test run may take, \
+                     and were stopped. A suite cut short credits nothing, whatever it \
+                     printed before it was stopped.",
+                    sv_run::minutes(after)
+                ),
+                reason: sv_report::GapReason::Stopped,
+                requirements: Vec::new(),
+            });
+            test_output =
+                sv_check::suite::failing_output(result.exit_code, &result.output, secret_rules)
+                    .map(|t| sv_check::suite::FailingOutput {
+                        stopped_after: Some(sv_run::minutes(after)),
+                        ..t
+                    });
+        }
+        Some(result) => {
+            // Only tests that name a requirement count, and only when something says
+            // they passed. Matching a test to a requirement by what it is called would
+            // credit one on the strength of a name somebody chose for other reasons.
+            let known: std::collections::BTreeSet<&str> =
+                frameworks.requirements.keys().map(String::as_str).collect();
+            let named = sv_check::suite::tests_naming_requirements_in(listing, &known);
+            let describe = |id: &str| {
+                frameworks
+                    .requirements
+                    .get(id)
+                    .map(|r| r.description.clone())
+            };
+
+            // A suite that passed outright needs no report. One that did not is worth
+            // whatever its runner's own report says still passed — and nothing more,
+            // which is why an unreadable report falls back to crediting nothing rather
+            // than to crediting what it managed to understand.
+            let reported_cases = if result.exit_code == 0 {
+                None
+            } else {
+                match sv_check::suite::reported_cases(result.report.as_deref()) {
+                    Some(Ok(cases)) => Some(cases),
+                    Some(Err(unreadable)) => {
+                        gaps.push(sv_report::Gap {
+                            what: "which of the app's own tests passed".to_owned(),
+                            why: format!(
+                                "the suite failed (exit {}) and its report could not \
+                                 be read: {}. Nothing is credited from it.",
+                                result.exit_code, unreadable.why
+                            ),
+                            reason: sv_report::GapReason::CouldNotRead,
+                            requirements: Vec::new(),
+                        });
+                        None
+                    }
+                    None => None,
+                }
+            };
+            tests_examined = match (result.exit_code, &reported_cases) {
+                (0, _) => sv_report::Examined::ran("tests."),
+                (_, Some(_)) => sv_report::Examined::partly(
+                    "tests.",
+                    "the suite failed, and only the tests its runner reported as \
+                     passing were read",
+                ),
+                (_, None) => sv_report::Examined::not_run(
+                    "tests.",
+                    "the suite failed and nothing says which of its tests passed",
+                ),
+            };
+            let suite_outcome = if result.exit_code == 0 {
+                sv_check::suite::SuiteOutcome::Passed
+            } else {
+                sv_check::suite::SuiteOutcome::Failed {
+                    cases: reported_cases.as_deref(),
+                }
+            };
+            let (credited, mismatches) = sv_check::suite::credit(&named, suite_outcome, &describe);
+
+            test_output =
+                sv_check::suite::failing_output(result.exit_code, &result.output, secret_rules);
+            if result.exit_code != 0 {
+                gaps.push(sv_report::Gap {
+                    what: "anything the failing tests would have shown".to_owned(),
+                    why: match (&reported_cases, credited.len()) {
+                        (Some(_), 0) => format!(
+                            "the suite failed (exit {}) and no test its runner \
+                             reported as passing names a requirement",
+                            result.exit_code
+                        ),
+                        (Some(_), n) => format!(
+                            "the suite failed (exit {}); {n} requirement {} from \
+                             tests its runner reported as passing, and the rest of \
+                             the suite says nothing either way",
+                            result.exit_code,
+                            if n == 1 { "claim comes" } else { "claims come" }
+                        ),
+                        (None, _) => format!(
+                            "they failed (exit {}) and nothing says which of them did, \
+                             so nothing can be concluded from them either way. {}",
+                            result.exit_code,
+                            result.report_note.as_deref().unwrap_or(
+                                "Declare test-report in stackvet.toml to have the \
+                                 tests that did pass still count."
+                            )
+                        ),
+                    },
+                    reason: if reported_cases.is_some() {
+                        sv_report::GapReason::Partial
+                    } else {
+                        sv_report::GapReason::Stopped
+                    },
+                    requirements: Vec::new(),
+                });
+            } else if credited.is_empty() {
+                gaps.push(sv_report::Gap {
+                    what: "what the app's own tests cover".to_owned(),
+                    why: "the suite passed, and no test names the requirement it is \
+                          for, so nothing here can say which requirements they are \
+                          evidence about. `sv init` explains how to name them."
+                        .to_owned(),
+                    reason: sv_report::GapReason::NotAsked,
+                    requirements: Vec::new(),
+                });
+            }
+            findings.extend(mismatches);
+            test_verified = credited;
+        }
+        None => {
+            tests_examined =
+                sv_report::Examined::not_run("tests.", "stackvet.toml declares no test command");
+            gaps.push(sv_report::Gap {
+                what: "the app's own tests".to_owned(),
+                why: "stackvet.toml declares no test command".to_owned(),
+                reason: sv_report::GapReason::NotAsked,
+                requirements: Vec::new(),
+            })
+        }
+    }
+    (tests_examined, test_output, test_verified)
 }
 
 /// What no check read, each said as a gap: links, folders left out, files that did not parse,
@@ -3524,3 +3553,7 @@ mod short_answers_gap_tests;
 #[cfg(test)]
 #[path = "assemble_owner_gaps_tests.rs"]
 mod owner_gaps_tests;
+
+#[cfg(test)]
+#[path = "assemble_own_tests_tests.rs"]
+mod own_tests_tests;

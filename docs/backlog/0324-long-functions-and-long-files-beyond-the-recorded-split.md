@@ -68,3 +68,11 @@ file, the design decisions, the design questions, and the checks done by hand to
 word, from 590 lines to 399. With each call taken out, only the notes' went red in any test: no test held the other
 three's words. `assemble_owner_gaps_tests.rs` now holds each, red with its function emptied. Next: `running_app` in
 `assemble.rs`, `review` in `review.rs`, and `cmd_check` and `cmd_probe` in `main.rs`.
+
+**Tenth split, 22 October 2026.** `running_app` in `sv-cli/src/assemble.rs` hands what the run's note says of the copy
+to `run_note_details`, and what the app's own tests showed to `own_tests`, from 496 lines to 301. With either returning
+nothing, every test in sv-cli passed, those that start the app among them: nothing held how the app's own tests become
+credit. `assemble_own_tests_tests.rs` now holds `own_tests` (a suite that passed credits the requirement its test names;
+one that failed credits nothing and keeps its output; one stopped credits nothing and says so; none declared is said).
+`run_note_details` is still held by nothing: it needs a whole `sv_run::RunOutcome` and `RunPlan`, which no test can
+make yet. Next: `review` in `review.rs`, and `cmd_check` and `cmd_probe` in `main.rs`.
