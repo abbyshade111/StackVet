@@ -1,6 +1,6 @@
 # Nightly: Windows fails: the_second_report_reads_the_tool_s_commit_since_the_first_and_the_record_only_when_asked
 
-**Status:** open
+**Status:** done, 22 October 2026
 
 Recorded by the nightly CI routine on 22 October 2026. One test failed on Windows, and only there: the Windows
 workflow's push runs on `main` for two commits went red at the step "The whole test suite", with 4143 passed and
@@ -28,3 +28,7 @@ the failure said:
   (<https://github.com/abbyshade111/StackVet/actions/runs/39756541737>): 4147 passed, 0 failed.
 - **What is left:** nothing found by this routine. The next session can read #2197 and close this item as done. The
   Rust workflow (Linux) was green on both commits, so `main`'s required checks never went red.
+
+**Done, 22 October 2026: overtaken by #2197**, as the routine said. Checked against GitHub that day: #2197 merged at
+01:07 UTC (merge commit `b7c5f059`), and every Windows workflow run on `main` since has passed, the latest on
+`082ca7fe` (20:38 UTC). Nothing was left to build.
