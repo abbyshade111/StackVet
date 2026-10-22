@@ -944,6 +944,7 @@ fn only_you(report: &Report, b: &mut String) {
                 } + &rests_on(item)
                     + &in_the_packages(item)
                     + &routes(item)
+                    + &outbound(item)
                     + &pathways(item)
                     + &personal_fields(item)
                     + &crypto(item)
@@ -1360,6 +1361,36 @@ fn pathways(item: &sv_check::human::Item) -> String {
     if found.more > 0 {
         b.push_str(&format!(
             "<span class=\"note\">And {} more, not shown.</span>",
+            found.more
+        ));
+    }
+    b
+}
+
+/// The outbound rules the folder's infrastructure files set, beside V13.2.5 (backlog 0496), with the sentence that says
+/// they are where to look and not evidence; empty when none was found.
+fn outbound(item: &sv_check::human::Item) -> String {
+    use sv_check::outbound_rules::RULES_SAY;
+    let Some(found) = &item.outbound else {
+        return String::new();
+    };
+    let mut b = format!(
+        "<br><span class=\"note\">{}</span>\n<table>\n<tr><th>rule</th><th>lets the app reach everywhere</th><th>where</th></tr>\n",
+        escape(RULES_SAY)
+    );
+    for r in &found.rules {
+        b.push_str(&format!(
+            "<tr><td>{}</td><td>{}</td><td><code>{}</code>, line {}</td></tr>\n",
+            escape(&r.what),
+            if r.open_to_all { "yes" } else { "no" },
+            escape(&r.file),
+            r.line
+        ));
+    }
+    b.push_str("</table>");
+    if found.more > 0 {
+        b.push_str(&format!(
+            "<br><span class=\"note\">And {} more, not shown.</span>",
             found.more
         ));
     }

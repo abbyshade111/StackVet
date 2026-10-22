@@ -235,6 +235,26 @@ pub fn route_questions(listing: &sv_scan::files::Listing, report: &mut sv_report
     }
 }
 
+/// The question the folder's outbound rules are shown beside (backlog 0496): the server reaches only the places allowed.
+pub const OUTBOUND_QUESTIONS: &[&str] = &["V13.2.5"];
+
+/// Gives V13.2.5 the outbound rules the folder's infrastructure files set, when any was found (backlog 0496). Where to
+/// look, never evidence: nothing else reads the list, and the requirement stays the owner's to answer.
+pub fn outbound_questions(listing: &sv_scan::files::Listing, report: &mut sv_report::Report) {
+    let rules = sv_check::outbound_rules::read(listing);
+    if rules.rules.is_empty() {
+        return;
+    }
+    for item in report
+        .only_you_can_check
+        .iter_mut()
+        .chain(report.questions_for_you.iter_mut())
+        .filter(|item| OUTBOUND_QUESTIONS.contains(&item.id.as_str()))
+    {
+        item.outbound = Some(rules.clone());
+    }
+}
+
 /// The questions the ways into the app are shown beside (backlog 0491): every sign-in pathway written down, and none
 /// that is not.
 pub const PATHWAY_QUESTIONS: &[&str] = &["V6.1.3", "V6.3.4"];
