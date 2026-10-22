@@ -55,18 +55,15 @@ pub(super) fn checklist_lines(folder: &Path) -> Result<Vec<Offered>, String> {
 }
 
 /// Goes through the checklist lines not yet ticked, and records each one the owner ticks.
-#[allow(clippy::too_many_arguments)]
-pub(super) fn tick_checklist(
-    app_dir: &Path,
-    manifest: &sv_manifest::Manifest,
-    manifest_path: &Path,
-    doc: &mut toml_edit::DocumentMut,
-    today: Day,
-    key: &Signer,
-    checker: &Checker,
-    input: &mut dyn BufRead,
-    out: &mut dyn Write,
-) -> Result<()> {
+pub(super) fn tick_checklist(app_dir: &Path, asking: &mut super::Asking<'_>) -> Result<()> {
+    let (manifest, manifest_path, today, key, checker) = (
+        asking.manifest,
+        asking.manifest_path,
+        asking.today,
+        asking.key,
+        asking.checker,
+    );
+    let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     let folder = app_dir.join(sv_frameworks::names::REPORT_DIR);
     let lines = match checklist_lines(&folder) {
         Ok(lines) => lines,

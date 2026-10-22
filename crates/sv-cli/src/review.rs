@@ -646,65 +646,24 @@ fn review(
             notes_catalog.file
         )?;
         writeln!(out, "{}", findings_without_entries(app_dir))?;
-        if scope_waiting {
-            confirm_scope(
-                &manifest,
-                &manifest_path,
-                &mut doc,
-                today,
-                &key,
-                &checker,
-                input,
-                out,
-            )?;
-        }
-        if not_offered_waiting {
-            confirm_not_offered(
-                &manifest,
-                &manifest_path,
-                &mut doc,
-                today,
-                &key,
-                &checker,
-                input,
-                out,
-            )?;
-        }
-        if policy_waiting {
-            confirm_policy(
-                &manifest,
-                &manifest_path,
-                &mut doc,
-                today,
-                &key,
-                &checker,
-                input,
-                out,
-            )?;
-        }
-        if capabilities_waiting {
-            confirm_capabilities(
-                &manifest,
-                &manifest_path,
-                &mut doc,
-                today,
-                &key,
-                &checker,
-                input,
-                out,
-            )?;
-        }
-        // The checklist before going live, whether or not anything else waited (backlog 0604).
-        ticks::tick_checklist(
+        ask_last(
             app_dir,
-            &manifest,
-            &manifest_path,
-            &mut doc,
-            today,
-            &key,
-            &checker,
-            input,
-            out,
+            &mut Asking {
+                manifest: &manifest,
+                manifest_path: &manifest_path,
+                doc: &mut doc,
+                today,
+                key: &key,
+                checker: &checker,
+                input: &mut *input,
+                out: &mut *out,
+            },
+            Last {
+                scope: scope_waiting,
+                not_offered: not_offered_waiting,
+                policy: policy_waiting,
+                capabilities: capabilities_waiting,
+            },
         )?;
         return Ok(());
     }
@@ -900,67 +859,69 @@ fn review(
             ""
         }
     )?;
-    if scope_waiting {
-        confirm_scope(
-            &manifest,
-            &manifest_path,
-            &mut doc,
-            today,
-            &key,
-            &checker,
-            input,
-            out,
-        )?;
-    }
-    if not_offered_waiting {
-        confirm_not_offered(
-            &manifest,
-            &manifest_path,
-            &mut doc,
-            today,
-            &key,
-            &checker,
-            input,
-            out,
-        )?;
-    }
-    if policy_waiting {
-        confirm_policy(
-            &manifest,
-            &manifest_path,
-            &mut doc,
-            today,
-            &key,
-            &checker,
-            input,
-            out,
-        )?;
-    }
-    if capabilities_waiting {
-        confirm_capabilities(
-            &manifest,
-            &manifest_path,
-            &mut doc,
-            today,
-            &key,
-            &checker,
-            input,
-            out,
-        )?;
-    }
-    // Last, the checklist before going live, line by line, from the last sealed report (backlog 0604).
-    ticks::tick_checklist(
+    ask_last(
         app_dir,
-        &manifest,
-        &manifest_path,
-        &mut doc,
-        today,
-        &key,
-        &checker,
-        input,
-        out,
+        &mut Asking {
+            manifest: &manifest,
+            manifest_path: &manifest_path,
+            doc: &mut doc,
+            today,
+            key: &key,
+            checker: &checker,
+            input: &mut *input,
+            out: &mut *out,
+        },
+        Last {
+            scope: scope_waiting,
+            not_offered: not_offered_waiting,
+            policy: policy_waiting,
+            capabilities: capabilities_waiting,
+        },
     )?;
     Ok(())
+}
+
+/// What each step that asks the owner and records their answer works with: the manifest as read and as it is being
+/// written, the day, the key that seals the answer, the checker of seals already there, and the terminal. One struct
+/// where each of these steps took the eight separately (backlog 0324: the `too_many_arguments` allows marked where one
+/// was owed).
+struct Asking<'a> {
+    manifest: &'a sv_manifest::Manifest,
+    manifest_path: &'a Path,
+    doc: &'a mut toml_edit::DocumentMut,
+    today: Day,
+    key: &'a Signer,
+    checker: &'a Checker,
+    input: &'a mut dyn BufRead,
+    out: &'a mut dyn Write,
+}
+
+/// Which of the answers asked about last are waiting.
+struct Last {
+    scope: bool,
+    not_offered: bool,
+    policy: bool,
+    capabilities: bool,
+}
+
+/// What `review` asks last, whether or not anything else waited: the answers that set the level, the account changes
+/// listed as not offered, the time frames for fixing a known vulnerability, and the capability answers, each when it
+/// waits; then the checklist before going live, line by line, from the last sealed report (backlog 0604). Until 22
+/// October 2026 `review` held this sequence twice, word for word (backlog 0324).
+fn ask_last(app_dir: &Path, asking: &mut Asking<'_>, last: Last) -> Result<()> {
+    if last.scope {
+        confirm_scope(asking)?;
+    }
+    if last.not_offered {
+        confirm_not_offered(asking)?;
+    }
+    if last.policy {
+        confirm_policy(asking)?;
+    }
+    if last.capabilities {
+        confirm_capabilities(asking)?;
+    }
+    ticks::tick_checklist(app_dir, asking)
 }
 
 /// Signs again, at one yes, the entries whose seal was made with this computer's review key and
@@ -1776,17 +1737,15 @@ fn record_notes_confirmation(
 /// Puts `seal` on the answer to `id` in `section` of stackvet.toml, changing nothing else.
 /// The answers that set the level, asked about after every other entry, and saved when the owner
 /// confirms them.
-#[allow(clippy::too_many_arguments)]
-fn confirm_scope(
-    manifest: &sv_manifest::Manifest,
-    manifest_path: &Path,
-    doc: &mut toml_edit::DocumentMut,
-    today: Day,
-    key: &Signer,
-    checker: &Checker,
-    input: &mut dyn BufRead,
-    out: &mut dyn Write,
-) -> Result<()> {
+fn confirm_scope(asking: &mut Asking<'_>) -> Result<()> {
+    let (manifest, manifest_path, today, key, checker) = (
+        asking.manifest,
+        asking.manifest_path,
+        asking.today,
+        asking.key,
+        asking.checker,
+    );
+    let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(out, "\nLast, the answers that set the app's level.")?;
     if let Some(entry) = record_scope(manifest, today, key, input, out)? {
         set_scope(doc, &entry);
@@ -1797,17 +1756,15 @@ fn confirm_scope(
 
 /// The account changes listed as not offered, asked about after the level's answers, and saved
 /// when the owner confirms them (ADR-105).
-#[allow(clippy::too_many_arguments)]
-fn confirm_not_offered(
-    manifest: &sv_manifest::Manifest,
-    manifest_path: &Path,
-    doc: &mut toml_edit::DocumentMut,
-    today: Day,
-    key: &Signer,
-    checker: &Checker,
-    input: &mut dyn BufRead,
-    out: &mut dyn Write,
-) -> Result<()> {
+fn confirm_not_offered(asking: &mut Asking<'_>) -> Result<()> {
+    let (manifest, manifest_path, today, key, checker) = (
+        asking.manifest,
+        asking.manifest_path,
+        asking.today,
+        asking.key,
+        asking.checker,
+    );
+    let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
         "\nOne more: the account changes your app does not offer."
@@ -1902,17 +1859,15 @@ fn record_not_offered(
 
 /// `[policy] fix-within-days`, asked about after the account changes, and saved when the owner confirms it as the
 /// documented time frames V15.1.1 asks for (backlog 0498).
-#[allow(clippy::too_many_arguments)]
-fn confirm_policy(
-    manifest: &sv_manifest::Manifest,
-    manifest_path: &Path,
-    doc: &mut toml_edit::DocumentMut,
-    today: Day,
-    key: &Signer,
-    checker: &Checker,
-    input: &mut dyn BufRead,
-    out: &mut dyn Write,
-) -> Result<()> {
+fn confirm_policy(asking: &mut Asking<'_>) -> Result<()> {
+    let (manifest, manifest_path, today, key, checker) = (
+        asking.manifest,
+        asking.manifest_path,
+        asking.today,
+        asking.key,
+        asking.checker,
+    );
+    let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
         "\nOne more: how soon a known vulnerability in your app's packages is fixed."
@@ -1986,17 +1941,15 @@ fn record_policy(
 }
 
 /// The capability answers, asked about last, and saved when the owner confirms them as theirs (backlog 0606).
-#[allow(clippy::too_many_arguments)]
-fn confirm_capabilities(
-    manifest: &sv_manifest::Manifest,
-    manifest_path: &Path,
-    doc: &mut toml_edit::DocumentMut,
-    today: Day,
-    key: &Signer,
-    checker: &Checker,
-    input: &mut dyn BufRead,
-    out: &mut dyn Write,
-) -> Result<()> {
+fn confirm_capabilities(asking: &mut Asking<'_>) -> Result<()> {
+    let (manifest, manifest_path, today, key, checker) = (
+        asking.manifest,
+        asking.manifest_path,
+        asking.today,
+        asking.key,
+        asking.checker,
+    );
+    let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
         "\nLast: what stackvet.toml says your app does and does not do."

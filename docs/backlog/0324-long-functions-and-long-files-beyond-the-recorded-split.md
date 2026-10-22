@@ -76,3 +76,11 @@ credit. `assemble_own_tests_tests.rs` now holds `own_tests` (a suite that passed
 one that failed credits nothing and keeps its output; one stopped credits nothing and says so; none declared is said).
 `run_note_details` is still held by nothing: it needs a whole `sv_run::RunOutcome` and `RunPlan`, which no test can
 make yet. Next: `review` in `review.rs`, and `cmd_check` and `cmd_probe` in `main.rs`.
+
+**Eleventh split, 22 October 2026.** `review` in `sv-cli/src/review.rs` held the four confirmations asked last and the
+checklist twice, word for word; they are one `ask_last`, called from both places, and `review` goes from 515 lines to
+433. The parameter struct the `too_many_arguments` allows marked as owed is `Asking`, which `confirm_scope`,
+`confirm_not_offered`, `confirm_policy`, `confirm_capabilities`, and `tick_checklist` now take, their bodies word for
+word: five allows of nine in `review.rs` and `review/ticks.rs` gone, and four left (`review_then_report`, `sign_again`,
+`record_finding`, `record_confirmation`). With `ask_last` emptied, more than twenty review tests go red. Next: the four
+allows left, then `cmd_check` and `cmd_probe` in `main.rs`.
