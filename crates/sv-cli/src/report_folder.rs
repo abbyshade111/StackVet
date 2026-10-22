@@ -55,6 +55,8 @@ pub fn write_report_folder(
     for note in &held.notes {
         say(note);
     }
+    // The last report's findings and commit, read before this report replaces it (backlog 0630, ADR-131).
+    let earlier = crate::tool_behavior::earlier(out_dir);
     let mut report = build()?;
     // What the record of the build loop shows, read now and carried under this report's seal
     // (ADR-076).
@@ -73,6 +75,12 @@ pub fn write_report_folder(
     crate::build_loop::settle(&mut build_loop, &false_alarms);
     crate::build_loop::look_again(&mut build_loop, app_dir, &false_alarms);
     report.build_loop = Some(build_loop);
+    // What the AI coding tool did that is worth a look: read after the hook record, whose consent it keeps to.
+    report.tool_behavior = Some(crate::tool_behavior::read(
+        app_dir,
+        earlier.as_ref(),
+        &report,
+    ));
     // A manifest read under its old name is said at the terminal as the report says it (ADR-062).
     if let Some(note) = sv_manifest::locate(app_dir)
         .ok()

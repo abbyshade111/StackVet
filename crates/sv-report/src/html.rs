@@ -884,6 +884,29 @@ pub fn page(report: &Report) -> String {
         }
     }
 
+    // What the AI coding tool did that is worth a look (backlog 0630, ADR-131): decides nothing.
+    if let Some(t) = &report.tool_behavior {
+        b.push_str(&format!(
+            "<h2>{}</h2>\n",
+            escape(crate::tool_behavior::HEADING)
+        ));
+        for line in crate::tool_behavior::sentences(t) {
+            b.push_str(&format!("<p>{}</p>\n", escape(&line)));
+        }
+        if !t.seen.is_empty() {
+            b.push_str("<table><thead><tr><th>Kind</th><th>What was seen</th><th>Where</th></tr></thead><tbody>\n");
+            for s in &t.seen {
+                b.push_str(&format!(
+                    "<tr><td>{}</td><td>{}</td><td>{}</td></tr>\n",
+                    escape(s.kind.label()),
+                    escape(&s.what),
+                    escape(&s.place)
+                ));
+            }
+            b.push_str("</tbody></table>\n");
+        }
+    }
+
     // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
     if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
         b.push_str("<h2>What your AI coding tool's files let it do</h2>\n");
@@ -1667,6 +1690,7 @@ mod tests {
             before_going_live: Vec::new(),
             on_the_internet: false,
             hook_record: None,
+            tool_behavior: None,
             checklist_done: Default::default(),
             ai_tool: Default::default(),
             look_away: Default::default(),

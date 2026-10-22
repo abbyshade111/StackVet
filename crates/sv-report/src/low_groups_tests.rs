@@ -38,6 +38,7 @@ fn empty_report(gaps: Vec<crate::Gap>) -> Report {
         before_going_live: Vec::new(),
         on_the_internet: false,
         hook_record: None,
+        tool_behavior: None,
         checklist_done: Default::default(),
         ai_tool: Default::default(),
         look_away: Default::default(),
