@@ -775,6 +775,16 @@ fn cmd_probe(args: &[String]) -> Result<i32> {
     out.verified.extend(live.verified);
     out.not_assessed.extend(live.not_assessed);
 
+    say_probe_result(&out, reached);
+    // Not assessed when the address could not be reached, so a CI step fails rather than passing on
+    // an address this never touched (backlog 0235; ADR-029, Later).
+    Ok(probe_verdict::exit_code(reached))
+}
+
+/// What `sv probe` says it found: that it could not reach the address, or what came back wrong, what it checked and
+/// found nothing wrong with, and what it could not settle, then that it says nothing about the code. Part of
+/// `cmd_probe`, moved out of it on 22 October 2026 (backlog 0324), word for word.
+fn say_probe_result(out: &sv_check::production::Outcome, reached: bool) {
     if !reached {
         // Nothing was reached, so nothing about the site itself was asked. Saying "nothing came
         // back wrong" here reads as a pass, and a clean-looking answer from a site this never
@@ -827,9 +837,6 @@ fn cmd_probe(args: &[String]) -> Result<i32> {
         "This says nothing about the code. Run `sv report` in the app folder for that, and read \
          the two together."
     );
-    // Not assessed when the address could not be reached, so a CI step fails rather than passing on
-    // an address this never touched (backlog 0235; ADR-029, Later).
-    Ok(probe_verdict::exit_code(reached))
 }
 
 /// Writes `security-notes.md`: the questions no tool can answer, for the requirements that apply.

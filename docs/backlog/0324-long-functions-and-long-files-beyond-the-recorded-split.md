@@ -97,3 +97,9 @@ example app and on one with a file that is not text, a link, and a SQL file prin
 function emptied only the SQL line's test went red: `crates/sv-cli/tests/check_not_read.rs` now holds the rest, red
 with it emptied. Next: `cmd_probe` in `main.rs`, then the allows in `signed_in/{account_changes,owner_field,uploads}.rs`
 and `sv-cli/src/{seen,static_scan}.rs`.
+
+**Fourteenth split, 22 October 2026.** `cmd_probe` in `sv-cli/src/main.rs` hands what `sv probe` says it found to
+`say_probe_result`, word for word, from 153 lines to 102; `sv probe` against the stand-in `curl` prints the same 81
+lines before and after, reached and not. `probe_exit.rs` held only the exit codes and the line for an address not
+reached: `crates/sv-cli/tests/probe_said.rs` now holds what an address that answers is told, red with the function
+emptied. Next: the allows in `signed_in/{account_changes,owner_field,uploads}.rs` and `sv-cli/src/{seen,static_scan}.rs`.
