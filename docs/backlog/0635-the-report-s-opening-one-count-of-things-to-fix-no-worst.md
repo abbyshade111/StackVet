@@ -9,20 +9,20 @@ up to make it more readable."
 
 **What the opening says now, and why it reads wrong** (`crates/sv-report/src/bluf.rs`, `html.rs`, `build_loop.rs`):
 
-1. **Three numbers for one list.** The headline says "19 things were found, worst first. 9 of them are in test or
+- **Three numbers for one list.** The headline says "19 things were found, worst first. 9 of them are in test or
    sample code, or from rules written for a framework this app does not use, listed after the app's own." The list
    under it ends "… and 14 more, in security.md, worst first" (19 less the 5 it names). "What to do next" says "Fix
    the 10 things that were found", and the section below is "10 things to fix". The 10 is the app's own; the 19 counts
    findings the report itself sets apart; the 14 is neither.
-2. **"Worst first" in the headline** describes the order of a list that comes several paragraphs later, after the
+- **"Worst first" in the headline** describes the order of a list that comes several paragraphs later, after the
    build record, so it reads as a claim about nothing in sight.
-3. **Rule ids in the headline:** "48 things in test code are information, not counted as findings: bandit.B101,
+- **Rule ids in the headline:** "48 things in test code are information, not counted as findings: bandit.B101,
    bandit.B105." The ids mean nothing to the people the report is for.
-4. **The wall of text:** right under the headline, the build-loop record (ADR-076, ADR-084) is one paragraph of about
+- **The wall of text:** right under the headline, the build-loop record (ADR-076, ADR-084) is one paragraph of about
    220 words: how many times the AI tool called sv, the first and last check's counts, what changed between them, the
    sections it asked about, the tool's own name, the hash chain, and why the chain cannot catch a rewrite, then where
    the record is kept.
-5. **The same counts twice:** the bars of what stands behind each requirement, and right under them "Of the
+- **The same counts twice:** the bars of what stands behind each requirement, and right under them "Of the
    requirements that apply to this app" with the same seven numbers as a list.
 
 **To do** (the honesty rules at the top of `bluf.rs` hold throughout: no score, nothing reads as a pass, and nothing
