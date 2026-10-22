@@ -450,6 +450,94 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
     }
     requirements_by_chapter(&mut out, report);
 
+    ai_process(&mut out, report);
+
+    threats(&mut out, report);
+
+    only_you(&mut out, report);
+
+    // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
+    if let Some(seen) = &report.hook_record {
+        out.push_str(&format!("## {}\n\n", crate::hook::HEADING));
+        let (lines, command) = crate::hook::sentences(seen, &report.requirements);
+        for line in lines {
+            let line = inert(&line).replace(crate::hook::COMMAND, &code(command.unwrap_or("")));
+            out.push_str(&format!("{line}\n\n"));
+        }
+    }
+
+    // What the AI coding tool did that is worth a look (backlog 0630, ADR-131): decides nothing.
+    if let Some(t) = &report.tool_behavior {
+        out.push_str(&format!("## {}\n\n", crate::tool_behavior::HEADING));
+        for line in crate::tool_behavior::sentences(t) {
+            out.push_str(&format!("{}\n\n", inert(&line)));
+        }
+        if !t.seen.is_empty() {
+            out.push_str("| Kind | What was seen | Where |\n|---|---|---|\n");
+            for s in &t.seen {
+                out.push_str(&format!(
+                    "| {} | {} | {} |\n",
+                    s.kind.label(),
+                    cell(&s.what),
+                    cell(&s.place)
+                ));
+            }
+            out.push('\n');
+        }
+    }
+
+    // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
+    if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
+        out.push_str("## What your AI coding tool's files let it do\n\n");
+        out.push_str("These files in the project folder belong to the AI coding tool you build with, not to the app, so nothing here counts toward the app's grade or any requirement. Each line is something a file lets the tool do on the computer that opens this folder: run a command, send its work or its key somewhere, act without asking, or start a server. You may have set it up on purpose. If you did not, or do not know where it came from, look before you trust the folder. Claude Code asks before it uses a folder's own settings for the first time. The risk column names the OWASP Agentic Skills Top 10 risk it speaks to; that list is not one this report is graded against.\n\n");
+        if !report.ai_tool.notes.is_empty() {
+            out.push_str("| file | tool | what it lets the tool do | risk |\n|---|---|---|---|\n");
+            for note in &report.ai_tool.notes {
+                out.push_str(&format!(
+                    "| {} | {} | {} | {} |\n",
+                    cell(&format!("`{}`", note.file)),
+                    cell(&note.tool),
+                    cell(&note.what),
+                    cell(note.risk)
+                ));
+            }
+            out.push('\n');
+        }
+        if !report.ai_tool.not_read.is_empty() {
+            out.push_str(&format!(
+                "Not read: {}.\n\n",
+                inert(&report.ai_tool.not_read.join("; "))
+            ));
+        }
+    }
+
+    tests_to_write(&mut out, report);
+
+    outside_the_tables(&mut out, report);
+
+    if pdf {
+        let low: Vec<&sv_check::Finding> = report
+            .findings
+            .iter()
+            .filter(|f| crate::is_grouped_low(f))
+            .collect();
+        if !low.is_empty() {
+            out.push_str(&format!(
+                "## Every low-severity finding\n\n{} finding{}, grouped by rule above. Each counts as a finding.\n\n",
+                low.len(),
+                if low.len() == 1 { "" } else { "s" }
+            ));
+            for finding in low {
+                finding_section(&mut out, report, finding);
+            }
+        }
+    }
+    appendix(&mut out, report);
+    out
+}
+
+/// How the app is built with AI, when the report has lines on it. Part of `compliance_as`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn ai_process(out: &mut String, report: &Report) {
     if !report.ai_process.lines.is_empty() {
         let p = &report.ai_process;
         out.push_str("## How the app is built with AI (OWASP AISVS Appendix C)\n\n");
@@ -465,7 +553,10 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
         }
         out.push('\n');
     }
+}
 
+/// The threats the app's own threat model names, when it has one. Part of `compliance_as`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn threats(out: &mut String, report: &Report) {
     if !report.threats.is_empty() {
         out.push_str("## Threats\n\n");
         out.push_str(&format!("{}\n\n", crate::threats::INTRO));
@@ -532,7 +623,10 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
             }
         }
     }
+}
 
+/// What only the owner can check, high up, and what only the live site can answer. Part of `compliance_as`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn only_you(out: &mut String, report: &Report) {
     // High up, and above "Tests worth writing first": these are the ones nothing will ever settle
     // on its own, so they are the part of the work that cannot be delegated to a tool.
     if !report.only_you_can_check.is_empty() {
@@ -593,62 +687,10 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
         }
         out.push('\n');
     }
+}
 
-    // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
-    if let Some(seen) = &report.hook_record {
-        out.push_str(&format!("## {}\n\n", crate::hook::HEADING));
-        let (lines, command) = crate::hook::sentences(seen, &report.requirements);
-        for line in lines {
-            let line = inert(&line).replace(crate::hook::COMMAND, &code(command.unwrap_or("")));
-            out.push_str(&format!("{line}\n\n"));
-        }
-    }
-
-    // What the AI coding tool did that is worth a look (backlog 0630, ADR-131): decides nothing.
-    if let Some(t) = &report.tool_behavior {
-        out.push_str(&format!("## {}\n\n", crate::tool_behavior::HEADING));
-        for line in crate::tool_behavior::sentences(t) {
-            out.push_str(&format!("{}\n\n", inert(&line)));
-        }
-        if !t.seen.is_empty() {
-            out.push_str("| Kind | What was seen | Where |\n|---|---|---|\n");
-            for s in &t.seen {
-                out.push_str(&format!(
-                    "| {} | {} | {} |\n",
-                    s.kind.label(),
-                    cell(&s.what),
-                    cell(&s.place)
-                ));
-            }
-            out.push('\n');
-        }
-    }
-
-    // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
-    if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
-        out.push_str("## What your AI coding tool's files let it do\n\n");
-        out.push_str("These files in the project folder belong to the AI coding tool you build with, not to the app, so nothing here counts toward the app's grade or any requirement. Each line is something a file lets the tool do on the computer that opens this folder: run a command, send its work or its key somewhere, act without asking, or start a server. You may have set it up on purpose. If you did not, or do not know where it came from, look before you trust the folder. Claude Code asks before it uses a folder's own settings for the first time. The risk column names the OWASP Agentic Skills Top 10 risk it speaks to; that list is not one this report is graded against.\n\n");
-        if !report.ai_tool.notes.is_empty() {
-            out.push_str("| file | tool | what it lets the tool do | risk |\n|---|---|---|---|\n");
-            for note in &report.ai_tool.notes {
-                out.push_str(&format!(
-                    "| {} | {} | {} | {} |\n",
-                    cell(&format!("`{}`", note.file)),
-                    cell(&note.tool),
-                    cell(&note.what),
-                    cell(note.risk)
-                ));
-            }
-            out.push('\n');
-        }
-        if !report.ai_tool.not_read.is_empty() {
-            out.push_str(&format!(
-                "Not read: {}.\n\n",
-                inert(&report.ai_tool.not_read.join("; "))
-            ));
-        }
-    }
-
+/// The tests worth writing first, level 1 only, with how many deeper ones `sv mcp` and report.json hold. Part of `compliance_as`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn tests_to_write(out: &mut String, report: &Report) {
     // Level 1 only. The whole list is 87 rows of requirement ids for an owner who is not a
     // programmer, and it reads as a to-do list aimed at somebody else — which it is: its real
     // audience is the AI coding tool, and `sv mcp` gives that one the complete list. What is left
@@ -692,7 +734,10 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
             out.push('\n');
         }
     }
+}
 
+/// What sits outside the chapters: what is undecided, findings about requirements not assessed, checks that found nothing against nothing in the tables, the Secure by Design controls above the target level, what was excluded, and what the app says about itself. Part of `compliance_as`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn outside_the_tables(out: &mut String, report: &Report) {
     if !report.undecided.is_empty() {
         out.push_str("<details>\n<summary><strong>Requirements nobody has placed</strong> — each names the question that would place it</summary>\n\n");
         out.push_str(
@@ -809,26 +854,6 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
         }
         out.push('\n');
     }
-
-    if pdf {
-        let low: Vec<&sv_check::Finding> = report
-            .findings
-            .iter()
-            .filter(|f| crate::is_grouped_low(f))
-            .collect();
-        if !low.is_empty() {
-            out.push_str(&format!(
-                "## Every low-severity finding\n\n{} finding{}, grouped by rule above. Each counts as a finding.\n\n",
-                low.len(),
-                if low.len() == 1 { "" } else { "s" }
-            ));
-            for finding in low {
-                finding_section(&mut out, report, finding);
-            }
-        }
-    }
-    appendix(&mut out, report);
-    out
 }
 
 /// The chapter table, then each chapter's requirements that apply, by id, level, and status.
