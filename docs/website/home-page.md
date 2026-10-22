@@ -26,7 +26,7 @@ harbor teal, plum, and blueprint navy). **Direction C, in the logo's own colors:
   `#14201C` with `#F3F4EF` text, panels `#182A23`, "needs attention" `#FDBA74`, "checked" `#A7D7BF`.
 - Every grid stacks to one column at phone width; every button is at least 44 px high.
 
-
+## 1. The opening
 
 **Vibe-code your app with security in mind from the first prompt.**
 
@@ -36,6 +36,16 @@ answer. Once your app works, StackVet writes a report: the most important things
 checked, and what nobody has looked at yet.
 
 Buttons: *Get started*, *See how a build goes* (a walk-through of one build from the first prompt; *not yet made*).
+
+*An example, written to show how a build goes:*
+
+> **You:** I want an app where anyone can sign up to lend books to their neighbors. It keeps each person's name,
+> email address, and street.
+> **Your AI tool:** Before I write any code: StackVet holds this app to ASVS level 2, because anyone can sign up.
+> **Your AI tool asks:** Should a neighbor see who has borrowed a book, or only the book's owner?
+> **You:** Only the owner.
+> **Your AI tool, later:** StackVet found that passwords were stored with a method that is too quick to guess
+> against. I changed it, and StackVet checked again: it no longer finds that.
 
 - "Security in mind" says how the app is built, not what it ends up being: StackVet never says an app is secure.
 - The order of the last sentence, the most important things to fix first, is true of the report since 13 October
@@ -109,11 +119,13 @@ OWASP is a nonprofit that writes the security checklists many companies build to
 
 | Standard | What it covers | Requirements | StackVet can confirm or fail |
 |---|---|---|---|
-| ASVS 5.0, levels 1 and 2 | Web apps and the services behind them | 253 | 112 |
+| ASVS 5.0, levels 1 and 2 | Web apps and the services behind them | 253 | 122 |
+| ASVS 5.0, level 3 | The same, for apps where a break-in would do the most harm | 92 | 10 |
 | AISVS 1.0, levels 1 and 2 | Apps that use AI | 146 | 26 |
+| AISVS 1.0, level 3 | The same, at the highest level | 45 | 1 |
 | Secure by Design 0.5 | Decisions made before the code | 36 | built into planning |
 
-StackVet has a check for 40 more of the ASVS requirements and 18 more of the AISVS ones, but those checks can only
+StackVet has a check for 61 more of the ASVS requirements and 19 more of the AISVS ones, but those checks can only
 show the protection missing: when they find nothing wrong, that doesn't show the protection is there.
 
 Five of the ASVS ones counted above only CodeQL can check, and it runs only when you turn it on, because its license
@@ -122,8 +134,8 @@ verified.
 
 ASVS and AISVS sort their requirements into three levels. Level 1 is the baseline for any app, and level 2 is for
 most apps that hold people's information; StackVet holds each app to one of those two, from what you tell it the app
-does and keeps. Level 3, for apps where a break-in would do the most harm, such as banking or medical systems, has
-been left out so far, so it isn't counted here.
+does and keeps. Level 3, for apps where a break-in would do the most harm, such as banking or medical systems, is
+there when you ask for it: StackVet holds your app to level 3 if you set it.
 
 The Secure by Design requirements are decisions, not code, so no check can settle them. Instead, StackVet builds them
 into the design process: before your AI tool writes a feature, it gets the decisions to make and the prompts that
@@ -136,16 +148,17 @@ It reads code in multiple programming languages: Python, JavaScript, TypeScript,
 Rust, C, C++, Dart, Swift, and shell scripts. If your app uses a language it can't read, the report says so, rather
 than guessing.
 
-- The counts are `docs/COVERAGE.md`'s "Can be credited" on 14 October 2026, levels 1 and 2 only: ASVS level 1, 44
-  of 70, and level 2, 68 of 183 (the "ASVS 5.0 by level" table); AISVS level 1, 16 of 51, and level 2, 10 of 95 (the
-  "AISVS 1.0 by level" table). The "more" sentence is "Can settle" less "Can be credited" on the same rows: ASVS
-  58 + 94 - 112 = 40, AISVS 24 + 20 - 26 = 18. All of these are read from that file when the site is built. The
-  owner chose this column on 13 October 2026 (backlog 0433).
+- The counts are `docs/COVERAGE.md`'s "Can be credited", read from that file when the site is built
+  (`tools/website.py`): the levels 1 and 2 rows add its "ASVS 5.0 by level" and "AISVS 1.0 by level" tables' L1 and
+  L2 rows, and the level 3 rows are their L3 rows. The "more" sentence is "Can settle" less "Can be credited" on
+  every row of the table. The figures written here are those of 22 October 2026; the site uses the file's. The owner
+  chose this column on 13 October 2026 (backlog 0433), and the level 3 rows on 22 October 2026, when level 3 had
+  become something an app can be held to (ADR-130).
 - "Confirm or fail": a requirement counted here can come back *checked* (or *checked in part*) as well as
   *needs attention*. Many can only ever be *checked in part*, since the check tries part of what the requirement
   asks; `docs/COVERAGE.md` gives that count under the level table.
-- "Left out so far" is `stackvet.toml`'s own wording: level 3 is one `sv` "does not yet hold any app to". The level
-  3 examples are to be checked against ASVS's own wording before launch.
+- "If you set it" is `[app] level = 3` in `stackvet.toml` (ADR-130), which only ever raises the level. The level 3
+  examples are to be checked against ASVS's own wording before launch.
 - A picture for this section: `docs/coverage-by-level.svg` draws the ASVS level table as bars, and
   `docs/coverage-by-chapter.svg` the chapter table, each part labeled with its count. `tools/coverage.py` draws both
   from the same counts as `docs/COVERAGE.md`, so the site can show one beside the table (backlog 0483).

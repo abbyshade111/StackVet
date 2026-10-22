@@ -1,0 +1,2298 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "tools": [
+      {
+        "vendor": "StackVet",
+        "name": "sv"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "app:sv (StackVet)",
+      "name": "sv (StackVet)"
+    },
+    "properties": [
+      {
+        "name": "securevibe:complete",
+        "value": "false"
+      },
+      {
+        "name": "securevibe:declared-versions",
+        "value": "3 component(s) carry the version that was asked for, not the version installed"
+      },
+      {
+        "name": "securevibe:unread:Go",
+        "value": "`crates/sv-scan/tests/fixtures/go-stdlib-xml/go.sum` was read and no packages could be taken from it, so nothing from Go is listed"
+      },
+      {
+        "name": "securevibe:unread:npm",
+        "value": "npm is in use but nothing readable says which versions are installed, so none of its packages are listed"
+      },
+      {
+        "name": "securevibe:unread:npm",
+        "value": "`crates/sv-scan/tests/fixtures/node-websockets/package-lock.json` was read and no packages could be taken from it, so nothing from npm is listed"
+      },
+      {
+        "name": "securevibe:unread:npm",
+        "value": "`crates/sv-scan/tests/fixtures/pinned-clean/package-lock.json` was read and no packages could be taken from it, so nothing from npm is listed"
+      },
+      {
+        "name": "securevibe:unread:npm",
+        "value": "npm is in use but nothing readable says which versions are installed, so none of its packages are listed"
+      },
+      {
+        "name": "securevibe:unread:Python",
+        "value": "`crates/sv-scan/tests/fixtures/unpinned-python/requirements.txt` has no lockfile beside it, and 2 of what it installs is asked for as a range, as any version, from an address or a folder, or from another file (flask, gunicorn), so it is not listed; a lockfile, such as one from `pip-compile --generate-hashes` or `uv pip compile`, is what `sv` reads"
+      },
+      {
+        "name": "securevibe:unread:npm",
+        "value": "`crates/sv-scan/tests/fixtures/unreadable-language/package-lock.json` was read and no packages could be taken from it, so nothing from npm is listed"
+      },
+      {
+        "name": "securevibe:unread:Ruby",
+        "value": "Ruby is in use but nothing readable says which versions are installed, so none of its packages are listed"
+      },
+      {
+        "name": "securevibe:unread:npm",
+        "value": "npm is in use but nothing readable says which versions are installed, so none of its packages are listed"
+      },
+      {
+        "name": "securevibe:unread:Go",
+        "value": "Go is in use but nothing readable says which versions are installed, so none of its packages are listed"
+      },
+      {
+        "name": "securevibe:unread:Dart (pub)",
+        "value": "`crates/sv-scan/tests/fixtures/dart-server/pubspec.yaml` declares Dart (pub) dependencies, and `sv` does not read that file, so none of its packages is listed or compared with known vulnerabilities"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/Flask@3.1.3",
+      "name": "Flask",
+      "version": "3.1.3",
+      "purl": "pkg:pypi/Flask@3.1.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "declared: this is what was asked for, and may be a range"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/authlib@1.6.12",
+      "name": "authlib",
+      "version": "1.6.12",
+      "purl": "pkg:pypi/authlib@1.6.12",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/backports-zstd@1.7.0",
+      "name": "backports-zstd",
+      "version": "1.7.0",
+      "purl": "pkg:pypi/backports-zstd@1.7.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/brotli@1.2.0",
+      "name": "brotli",
+      "version": "1.2.0",
+      "purl": "pkg:pypi/brotli@1.2.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/brotlicffi@1.2.0.2",
+      "name": "brotlicffi",
+      "version": "1.2.0.2",
+      "purl": "pkg:pypi/brotlicffi@1.2.0.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/cffi@2.1.1",
+      "name": "cffi",
+      "version": "2.1.1",
+      "purl": "pkg:pypi/cffi@2.1.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/flask@3.0.0",
+      "name": "flask",
+      "version": "3.0.0",
+      "purl": "pkg:pypi/flask@3.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/flask@3.0.3",
+      "name": "flask",
+      "version": "3.0.3",
+      "purl": "pkg:pypi/flask@3.0.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "declared: this is what was asked for, and may be a range"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/flask@3.1.3",
+      "name": "flask",
+      "version": "3.1.3",
+      "purl": "pkg:pypi/flask@3.1.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/gunicorn@21.2.0",
+      "name": "gunicorn",
+      "version": "21.2.0",
+      "purl": "pkg:pypi/gunicorn@21.2.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/gunicorn@22.0.0",
+      "name": "gunicorn",
+      "version": "22.0.0",
+      "purl": "pkg:pypi/gunicorn@22.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/inflate64@1.0.4",
+      "name": "inflate64",
+      "version": "1.0.4",
+      "purl": "pkg:pypi/inflate64@1.0.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/multivolumefile@0.2.3",
+      "name": "multivolumefile",
+      "version": "0.2.3",
+      "purl": "pkg:pypi/multivolumefile@0.2.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/psutil@7.2.2",
+      "name": "psutil",
+      "version": "7.2.2",
+      "purl": "pkg:pypi/psutil@7.2.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/py7zr@1.1.4",
+      "name": "py7zr",
+      "version": "1.1.4",
+      "purl": "pkg:pypi/py7zr@1.1.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pybcj@1.0.8",
+      "name": "pybcj",
+      "version": "1.0.8",
+      "purl": "pkg:pypi/pybcj@1.0.8",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pycparser@3.11",
+      "name": "pycparser",
+      "version": "3.11",
+      "purl": "pkg:pypi/pycparser@3.11",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pycryptodomex@3.24.1",
+      "name": "pycryptodomex",
+      "version": "3.24.1",
+      "purl": "pkg:pypi/pycryptodomex@3.24.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pyjwt@2.15.1",
+      "name": "pyjwt",
+      "version": "2.15.1",
+      "purl": "pkg:pypi/pyjwt@2.15.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pyppmd@1.3.1",
+      "name": "pyppmd",
+      "version": "1.3.1",
+      "purl": "pkg:pypi/pyppmd@1.3.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/six@1.16.0",
+      "name": "six",
+      "version": "1.16.0",
+      "purl": "pkg:pypi/six@1.16.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "declared: this is what was asked for, and may be a range"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/stripe@7.8.0",
+      "name": "stripe",
+      "version": "7.8.0",
+      "purl": "pkg:pypi/stripe@7.8.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/texttable@1.7.1",
+      "name": "texttable",
+      "version": "1.7.1",
+      "purl": "pkg:pypi/texttable@1.7.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/aes@0.9.3",
+      "name": "aes",
+      "version": "0.9.3",
+      "purl": "pkg:cargo/aes@0.9.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/aho-corasick@1.1.5",
+      "name": "aho-corasick",
+      "version": "1.1.5",
+      "purl": "pkg:cargo/aho-corasick@1.1.5",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/anyhow@1.0.104",
+      "name": "anyhow",
+      "version": "1.0.104",
+      "purl": "pkg:cargo/anyhow@1.0.104",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/arbitrary@1.5.0",
+      "name": "arbitrary",
+      "version": "1.5.0",
+      "purl": "pkg:cargo/arbitrary@1.5.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/bcrypt-pbkdf@0.11.0",
+      "name": "bcrypt-pbkdf",
+      "version": "0.11.0",
+      "purl": "pkg:cargo/bcrypt-pbkdf@0.11.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/block-buffer@0.12.1",
+      "name": "block-buffer",
+      "version": "0.12.1",
+      "purl": "pkg:cargo/block-buffer@0.12.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/blowfish@0.10.0",
+      "name": "blowfish",
+      "version": "0.10.0",
+      "purl": "pkg:cargo/blowfish@0.10.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/byteorder@1.5.0",
+      "name": "byteorder",
+      "version": "1.5.0",
+      "purl": "pkg:cargo/byteorder@1.5.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cc@1.4.7",
+      "name": "cc",
+      "version": "1.4.7",
+      "purl": "pkg:cargo/cc@1.4.7",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cfg-if@1.0.5",
+      "name": "cfg-if",
+      "version": "1.0.5",
+      "purl": "pkg:cargo/cfg-if@1.0.5",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cipher@0.5.2",
+      "name": "cipher",
+      "version": "0.5.2",
+      "purl": "pkg:cargo/cipher@0.5.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cmov@0.5.4",
+      "name": "cmov",
+      "version": "0.5.4",
+      "purl": "pkg:cargo/cmov@0.5.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/const-oid@0.10.2",
+      "name": "const-oid",
+      "version": "0.10.2",
+      "purl": "pkg:cargo/const-oid@0.10.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cpubits@0.1.1",
+      "name": "cpubits",
+      "version": "0.1.1",
+      "purl": "pkg:cargo/cpubits@0.1.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cpufeatures@0.3.1",
+      "name": "cpufeatures",
+      "version": "0.3.1",
+      "purl": "pkg:cargo/cpufeatures@0.3.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/crypto-common@0.2.2",
+      "name": "crypto-common",
+      "version": "0.2.2",
+      "purl": "pkg:cargo/crypto-common@0.2.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/ctr@0.10.1",
+      "name": "ctr",
+      "version": "0.10.1",
+      "purl": "pkg:cargo/ctr@0.10.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/ctutils@0.4.2",
+      "name": "ctutils",
+      "version": "0.4.2",
+      "purl": "pkg:cargo/ctutils@0.4.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/curve25519-dalek@5.0.0",
+      "name": "curve25519-dalek",
+      "version": "5.0.0",
+      "purl": "pkg:cargo/curve25519-dalek@5.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/curve25519-dalek-derive@0.1.1",
+      "name": "curve25519-dalek-derive",
+      "version": "0.1.1",
+      "purl": "pkg:cargo/curve25519-dalek-derive@0.1.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/digest@0.11.3",
+      "name": "digest",
+      "version": "0.11.3",
+      "purl": "pkg:cargo/digest@0.11.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/ed25519@3.0.0",
+      "name": "ed25519",
+      "version": "3.0.0",
+      "purl": "pkg:cargo/ed25519@3.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/ed25519-dalek@3.0.0",
+      "name": "ed25519-dalek",
+      "version": "3.0.0",
+      "purl": "pkg:cargo/ed25519-dalek@3.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/equivalent@1.0.2",
+      "name": "equivalent",
+      "version": "1.0.2",
+      "purl": "pkg:cargo/equivalent@1.0.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/fiat-crypto@0.3.0",
+      "name": "fiat-crypto",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/fiat-crypto@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/find-msvc-tools@0.1.13",
+      "name": "find-msvc-tools",
+      "version": "0.1.13",
+      "purl": "pkg:cargo/find-msvc-tools@0.1.13",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/foldhash@0.2.0",
+      "name": "foldhash",
+      "version": "0.2.0",
+      "purl": "pkg:cargo/foldhash@0.2.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/getrandom@0.4.3",
+      "name": "getrandom",
+      "version": "0.4.3",
+      "purl": "pkg:cargo/getrandom@0.4.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/hashbrown@0.17.1",
+      "name": "hashbrown",
+      "version": "0.17.1",
+      "purl": "pkg:cargo/hashbrown@0.17.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/hmac@0.13.0",
+      "name": "hmac",
+      "version": "0.13.0",
+      "purl": "pkg:cargo/hmac@0.13.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/hybrid-array@0.4.15",
+      "name": "hybrid-array",
+      "version": "0.4.15",
+      "purl": "pkg:cargo/hybrid-array@0.4.15",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/indexmap@2.14.2",
+      "name": "indexmap",
+      "version": "2.14.2",
+      "purl": "pkg:cargo/indexmap@2.14.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/inout@0.2.2",
+      "name": "inout",
+      "version": "0.2.2",
+      "purl": "pkg:cargo/inout@0.2.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/itoa@1.0.18",
+      "name": "itoa",
+      "version": "1.0.18",
+      "purl": "pkg:cargo/itoa@1.0.18",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/jobserver@0.1.35",
+      "name": "jobserver",
+      "version": "0.1.35",
+      "purl": "pkg:cargo/jobserver@0.1.35",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/libc@0.2.190",
+      "name": "libc",
+      "version": "0.2.190",
+      "purl": "pkg:cargo/libc@0.2.190",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/libfuzzer-sys@0.4.13",
+      "name": "libfuzzer-sys",
+      "version": "0.4.13",
+      "purl": "pkg:cargo/libfuzzer-sys@0.4.13",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/memchr@2.8.3",
+      "name": "memchr",
+      "version": "2.8.3",
+      "purl": "pkg:cargo/memchr@2.8.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/pbkdf2@0.13.0",
+      "name": "pbkdf2",
+      "version": "0.13.0",
+      "purl": "pkg:cargo/pbkdf2@0.13.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/proc-macro2@1.0.107",
+      "name": "proc-macro2",
+      "version": "1.0.107",
+      "purl": "pkg:cargo/proc-macro2@1.0.107",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/quote@1.0.47",
+      "name": "quote",
+      "version": "1.0.47",
+      "purl": "pkg:cargo/quote@1.0.47",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/r-efi@6.0.0",
+      "name": "r-efi",
+      "version": "6.0.0",
+      "purl": "pkg:cargo/r-efi@6.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/regex@1.13.1",
+      "name": "regex",
+      "version": "1.13.1",
+      "purl": "pkg:cargo/regex@1.13.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/regex-automata@0.4.18",
+      "name": "regex-automata",
+      "version": "0.4.18",
+      "purl": "pkg:cargo/regex-automata@0.4.18",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/regex-syntax@0.8.11",
+      "name": "regex-syntax",
+      "version": "0.8.11",
+      "purl": "pkg:cargo/regex-syntax@0.8.11",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/rustc_version@0.4.1",
+      "name": "rustc_version",
+      "version": "0.4.1",
+      "purl": "pkg:cargo/rustc_version@0.4.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/semver@1.0.28",
+      "name": "semver",
+      "version": "1.0.28",
+      "purl": "pkg:cargo/semver@1.0.28",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/serde@1.0.229",
+      "name": "serde",
+      "version": "1.0.229",
+      "purl": "pkg:cargo/serde@1.0.229",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/serde_core@1.0.229",
+      "name": "serde_core",
+      "version": "1.0.229",
+      "purl": "pkg:cargo/serde_core@1.0.229",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/serde_derive@1.0.229",
+      "name": "serde_derive",
+      "version": "1.0.229",
+      "purl": "pkg:cargo/serde_derive@1.0.229",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/serde_json@1.0.154",
+      "name": "serde_json",
+      "version": "1.0.154",
+      "purl": "pkg:cargo/serde_json@1.0.154",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/serde_spanned@1.1.1",
+      "name": "serde_spanned",
+      "version": "1.1.1",
+      "purl": "pkg:cargo/serde_spanned@1.1.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sha1@0.11.0",
+      "name": "sha1",
+      "version": "0.11.0",
+      "purl": "pkg:cargo/sha1@0.11.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sha2@0.11.1",
+      "name": "sha2",
+      "version": "0.11.1",
+      "purl": "pkg:cargo/sha2@0.11.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/shlex@2.0.1",
+      "name": "shlex",
+      "version": "2.0.1",
+      "purl": "pkg:cargo/shlex@2.0.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/signature@3.0.0",
+      "name": "signature",
+      "version": "3.0.0",
+      "purl": "pkg:cargo/signature@3.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/streaming-iterator@0.1.9",
+      "name": "streaming-iterator",
+      "version": "0.1.9",
+      "purl": "pkg:cargo/streaming-iterator@0.1.9",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/subtle@2.6.1",
+      "name": "subtle",
+      "version": "2.6.1",
+      "purl": "pkg:cargo/subtle@2.6.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-check@0.1.0",
+      "name": "sv-check",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/sv-check@0.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-cli@0.1.0",
+      "name": "sv-cli",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/sv-cli@0.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-frameworks@0.1.0",
+      "name": "sv-frameworks",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/sv-frameworks@0.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-fuzz@0.0.0",
+      "name": "sv-fuzz",
+      "version": "0.0.0",
+      "purl": "pkg:cargo/sv-fuzz@0.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-manifest@0.1.0",
+      "name": "sv-manifest",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/sv-manifest@0.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-report@0.1.0",
+      "name": "sv-report",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/sv-report@0.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-run@0.1.0",
+      "name": "sv-run",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/sv-run@0.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-scan@0.1.0",
+      "name": "sv-scan",
+      "version": "0.1.0",
+      "purl": "pkg:cargo/sv-scan@0.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/syn@2.0.119",
+      "name": "syn",
+      "version": "2.0.119",
+      "purl": "pkg:cargo/syn@2.0.119",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/syn@3.0.6",
+      "name": "syn",
+      "version": "3.0.6",
+      "purl": "pkg:cargo/syn@3.0.6",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml@1.1.6+spec-1.1.0",
+      "name": "toml",
+      "version": "1.1.6+spec-1.1.0",
+      "purl": "pkg:cargo/toml@1.1.6+spec-1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml_datetime@1.1.1+spec-1.1.0",
+      "name": "toml_datetime",
+      "version": "1.1.1+spec-1.1.0",
+      "purl": "pkg:cargo/toml_datetime@1.1.1+spec-1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml_edit@0.25.15+spec-1.1.0",
+      "name": "toml_edit",
+      "version": "0.25.15+spec-1.1.0",
+      "purl": "pkg:cargo/toml_edit@0.25.15+spec-1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml_parser@1.1.3+spec-1.1.0",
+      "name": "toml_parser",
+      "version": "1.1.3+spec-1.1.0",
+      "purl": "pkg:cargo/toml_parser@1.1.3+spec-1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml_writer@1.1.2+spec-1.1.0",
+      "name": "toml_writer",
+      "version": "1.1.2+spec-1.1.0",
+      "purl": "pkg:cargo/toml_writer@1.1.2+spec-1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter@0.27.1",
+      "name": "tree-sitter",
+      "version": "0.27.1",
+      "purl": "pkg:cargo/tree-sitter@0.27.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-bash@0.25.1",
+      "name": "tree-sitter-bash",
+      "version": "0.25.1",
+      "purl": "pkg:cargo/tree-sitter-bash@0.25.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-c@0.24.2",
+      "name": "tree-sitter-c",
+      "version": "0.24.2",
+      "purl": "pkg:cargo/tree-sitter-c@0.24.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-c-sharp@0.23.5",
+      "name": "tree-sitter-c-sharp",
+      "version": "0.23.5",
+      "purl": "pkg:cargo/tree-sitter-c-sharp@0.23.5",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-cpp@0.23.4",
+      "name": "tree-sitter-cpp",
+      "version": "0.23.4",
+      "purl": "pkg:cargo/tree-sitter-cpp@0.23.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-dart@0.2.0",
+      "name": "tree-sitter-dart",
+      "version": "0.2.0",
+      "purl": "pkg:cargo/tree-sitter-dart@0.2.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-go@0.25.0",
+      "name": "tree-sitter-go",
+      "version": "0.25.0",
+      "purl": "pkg:cargo/tree-sitter-go@0.25.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-java@0.23.5",
+      "name": "tree-sitter-java",
+      "version": "0.23.5",
+      "purl": "pkg:cargo/tree-sitter-java@0.23.5",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-javascript@0.25.0",
+      "name": "tree-sitter-javascript",
+      "version": "0.25.0",
+      "purl": "pkg:cargo/tree-sitter-javascript@0.25.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-kotlin-ng@1.1.0",
+      "name": "tree-sitter-kotlin-ng",
+      "version": "1.1.0",
+      "purl": "pkg:cargo/tree-sitter-kotlin-ng@1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-language@0.1.9",
+      "name": "tree-sitter-language",
+      "version": "0.1.9",
+      "purl": "pkg:cargo/tree-sitter-language@0.1.9",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-php@0.25.1",
+      "name": "tree-sitter-php",
+      "version": "0.25.1",
+      "purl": "pkg:cargo/tree-sitter-php@0.25.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-python@0.25.0",
+      "name": "tree-sitter-python",
+      "version": "0.25.0",
+      "purl": "pkg:cargo/tree-sitter-python@0.25.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-ruby@0.23.1",
+      "name": "tree-sitter-ruby",
+      "version": "0.23.1",
+      "purl": "pkg:cargo/tree-sitter-ruby@0.23.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-rust@0.24.2",
+      "name": "tree-sitter-rust",
+      "version": "0.24.2",
+      "purl": "pkg:cargo/tree-sitter-rust@0.24.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-swift@0.7.4",
+      "name": "tree-sitter-swift",
+      "version": "0.7.4",
+      "purl": "pkg:cargo/tree-sitter-swift@0.7.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-typescript@0.23.2",
+      "name": "tree-sitter-typescript",
+      "version": "0.23.2",
+      "purl": "pkg:cargo/tree-sitter-typescript@0.23.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tree-sitter-yaml@0.7.2",
+      "name": "tree-sitter-yaml",
+      "version": "0.7.2",
+      "purl": "pkg:cargo/tree-sitter-yaml@0.7.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/typenum@1.20.1",
+      "name": "typenum",
+      "version": "1.20.1",
+      "purl": "pkg:cargo/typenum@1.20.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/unicode-ident@1.0.26",
+      "name": "unicode-ident",
+      "version": "1.0.26",
+      "purl": "pkg:cargo/unicode-ident@1.0.26",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/winnow@1.0.4",
+      "name": "winnow",
+      "version": "1.0.4",
+      "purl": "pkg:cargo/winnow@1.0.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zeroize@1.9.1",
+      "name": "zeroize",
+      "version": "1.9.1",
+      "purl": "pkg:cargo/zeroize@1.9.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zmij@1.0.23",
+      "name": "zmij",
+      "version": "1.0.23",
+      "purl": "pkg:cargo/zmij@1.0.23",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "platform",
+      "bom-ref": "python",
+      "name": "python",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "not known: stackvet.toml names no image to start the app in"
+        },
+        {
+          "name": "securevibe:modules",
+          "value": "the modules of python's own library the app's code imports, read from its import lines: 44, listed under this component"
+        }
+      ],
+      "components": [
+        {
+          "type": "library",
+          "bom-ref": "python/argparse",
+          "name": "argparse",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/collections",
+          "name": "collections",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, tools/coverage.py, tools/framework_pages.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/csv",
+          "name": "csv",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/datetime",
+          "name": "datetime",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, examples/notes-with-users/app.py, tools/backlog.py, tools/codeql_suites.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/semgrep_packs.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/difflib",
+          "name": "difflib",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/backlog.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/fnmatch",
+          "name": "fnmatch",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/adr_check.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/glob",
+          "name": "glob",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/loop-2/score_loop2.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/hashlib",
+          "name": "hashlib",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, docs/prompts/loop-compare/blind_tester.py, examples/notes-with-users/app.py, tools/prompt_stamps.py, tools/pwned_passwords.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/hmac",
+          "name": "hmac",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "examples/notes-with-users/app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/html",
+          "name": "html",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/period_figures.py, docs/paper/trials/make_figure.py, examples/notes-with-users/app.py, tools/backlog.py, tools/docs_page.py, tools/framework_pages.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/http.client",
+          "name": "http.client",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/pwned_passwords.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/http.cookies",
+          "name": "http.cookies",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "examples/notes-with-users/app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/http.server",
+          "name": "http.server",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "crates/sv-run/tests/fixtures/install-app/app.py, examples/notes-with-users/app.py, examples/partly-passing/app.py, examples/tested-notes/app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/importlib.util",
+          "name": "importlib.util",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/period_records.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_start.py, tools/backlog.py, tools/design_entry.py, tools/docs_page.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/io",
+          "name": "io",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/itertools",
+          "name": "itertools",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/cvss4_tables.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/json",
+          "name": "json",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/trials/make_figure.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, tools/adr_check.py, tools/atlas_references.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/math",
+          "name": "math",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/website/diagrams/source/make_diagrams.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/os",
+          "name": "os",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "crates/sv-check/tests/fixtures/semgrep-aisvs/app/assistant.py, crates/sv-check/tests/fixtures/semgrep-aisvs/app/careful.py, crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/codeql-app-py/app.py, crates/sv-run/tests/fixtures/install-app/app.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, examples/notes-with-users/app.py, examples/notes-with-users/seed.py, examples/partly-passing/app.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/app.py, examples/tested-notes/tests/test_search.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/pathlib",
+          "name": "pathlib",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/paper/trials/make_figure.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/pickle",
+          "name": "pickle",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/posixpath",
+          "name": "posixpath",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/docs_page.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/pty",
+          "name": "pty",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-2/scripted_review.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/random",
+          "name": "random",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, tools/cvss4_tables.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/re",
+          "name": "re",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_trial.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/merge_main.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_rule_map.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/secrets",
+          "name": "secrets",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "examples/notes-with-users/app.py, examples/notes-with-users/seed.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/select",
+          "name": "select",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-2/scripted_review.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/shlex",
+          "name": "shlex",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-pilot/loop_trial.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/shutil",
+          "name": "shutil",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-compare/blind_tester.py, tools/image_smoke.py, tools/prompt_trial.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/sqlite3",
+          "name": "sqlite3",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "examples/notes-with-users/app.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/tests/test_search.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/statistics",
+          "name": "statistics",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-scale/vuln_chart.py, tools/pwned_passwords.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/subprocess",
+          "name": "subprocess",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/semgrep-app/app.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_trial.py, tools/adr_check.py, tools/codeql_suites.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/sys",
+          "name": "sys",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/tests/test_search.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/tempfile",
+          "name": "tempfile",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-pilot/loop_measures.py, tools/_shared.py, tools/adr_check.py, tools/backlog.py, tools/ci_shards.py, tools/design_entry.py, tools/image_smoke.py, tools/merge_main.py, tools/record_numbers.py, tools/semgrep_packs.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/time",
+          "name": "time",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-pilot/loop_trial.py, tools/prompt_trial.py, tools/pwned_passwords.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/tomllib",
+          "name": "tomllib",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/prompts/loop-2/score_loop2.py, docs/prompts/trial-3/testability.py, tools/prompt_trial.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/unittest",
+          "name": "unittest",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/tests/test_search.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/urllib.error",
+          "name": "urllib.error",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/pwned_passwords.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/urllib.parse",
+          "name": "urllib.parse",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "examples/notes-with-users/app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/urllib.request",
+          "name": "urllib.request",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/atlas_references.py, tools/pwned_passwords.py, tools/record_numbers.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/xml.etree.ElementTree",
+          "name": "xml.etree.ElementTree",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "crates/sv-scan/tests/fixtures/stdlib-xml-python/app.py, examples/flask-booking/app.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/xml.sax.saxutils",
+          "name": "xml.sax.saxutils",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/website/diagrams/source/make_diagrams.py, examples/partly-passing/run_tests.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/zipfile",
+          "name": "zipfile",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/image_smoke.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/zoneinfo",
+          "name": "zoneinfo",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "docs/paper/tables/periods.py"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

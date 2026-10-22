@@ -2,8 +2,9 @@
 """Writes stackvet.dev's framework pages: one for each standard StackVet checks against, with every requirement and
 what StackVet does about it (backlog 0619, ADR-129).
 
-    python3 tools/framework_pages.py                 # writes exports/site/ (git ignores exports/)
+    python3 tools/framework_pages.py                 # writes exports/site/standards/ (git ignores exports/)
     python3 tools/framework_pages.py --out DIR       # writes DIR instead
+    python3 tools/framework_pages.py --home URL      # the wordmark links to URL, the site's home page
     python3 tools/framework_pages.py --self-test     # checks the small pieces against samples, and stops
 
 Three pages and an index: OWASP ASVS 5.0; AISVS 1.0 with its Appendix C; and the Secure by Design checklist 0.5.0.
@@ -27,6 +28,7 @@ The pages are self-contained: no script, style sheet, font, or image is fetched,
 system's when Atkinson Hyperlegible is not installed. The only links out are to the standards' own sources. It writes
 only into a folder it marks as its own, inside the repository only under `exports/`, and never through a link. Where
 the site is hosted, and whether these pages are published, is the owner's to decide (backlog 0376).
+`tools/website.py` builds the rest of the site around them, writing them into its `standards/` folder (ADR-132).
 """
 
 import argparse
@@ -45,7 +47,7 @@ sys.path.insert(0, str(HERE))
 from _shared import write_text  # noqa: E402  (tools/_shared.py)
 
 MARK = ".stackvet-framework-pages"
-DEFAULT_OUT = ROOT / "exports" / "site"
+DEFAULT_OUT = ROOT / "exports" / "site" / "standards"
 
 # What StackVet does about a requirement, in the site's words (docs/website/home-page.md, "What it checks"), for the
 # five kinds tools/coverage.py sorts every requirement into.
@@ -362,13 +364,13 @@ def code_words(text):
     return re.sub(r"`([^`]+)`", r"<code>\1</code>", e(text))
 
 
-def page(title, here, body, commit):
+def page(title, here, body, commit, home=None):
     nav = "".join(f'<a href="{f}"{" class=here" if k == here else ""}>{e(short)}</a>'
                   for k, (f, short, *_rest) in PAGES.items())
     return (f"<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
             f"<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>{e(title)}</title>\n"
             f"<style>{CSS}</style>\n</head>\n<body>\n<header class=\"top\"><div class=\"wrap\">"
-            f"<a class=\"wordmark\" href=\"index.html\">StackVet</a><nav>{nav}</nav></div></header>\n"
+            f"<a class=\"wordmark\" href=\"{e(home or 'index.html')}\">StackVet</a><nav>{nav}</nav></div></header>\n"
             f"<main class=\"wrap\">\n{body}\n</main>\n<footer><div class=\"wrap\">{footer(here, commit)}</div></footer>\n"
             f"<script>{FILTER_JS}</script>\n</body>\n</html>\n")
 
@@ -445,7 +447,7 @@ def entry(i, words, other_page):
             f"<dt>When it applies</dt><dd>{e(i['applies'])}</dd>{level_note}{severity}{related}</dl></article>")
 
 
-def framework_page(key, items, commit):
+def framework_page(key, items, commit, home=None):
     _file, short, long, what, url = PAGES[key]
     words = SBD_COVERAGE if key == "sbd" else COVERAGE
     statuses = ["support", "owner"] if key == "sbd" else ["settle", "found", "support", "owner", "none"]
@@ -482,10 +484,10 @@ def framework_page(key, items, commit):
             body.append(f"<h3>{e(section)} {e(i['section_name'])}</h3>")
         body.append(entry(i, words, other))
     body.append("</section>")
-    return page(f"{short} — StackVet", key, "\n".join(body), commit)
+    return page(f"{short} — StackVet", key, "\n".join(body), commit, home)
 
 
-def index_page(pages, commit):
+def index_page(pages, commit, home=None):
     cards = []
     for key, (f, short, long, what, _url) in PAGES.items():
         items = pages[key]
@@ -502,7 +504,7 @@ def index_page(pages, commit):
             '<p class="lede">OWASP is a nonprofit that writes the security checklists many companies build to. '
             "StackVet uses three of them. Each page lists every requirement, says what StackVet does about it, "
             "and says plainly what it does not.</p>" f'<div class="grid">{"".join(cards)}</div>')
-    return page("What StackVet checks — StackVet", "index", body, commit)
+    return page("What StackVet checks — StackVet", "index", body, commit, home)
 
 
 # ---------------------------------------------------------------- writing
@@ -518,16 +520,16 @@ def safe_out(out):
     return out
 
 
-def build(out):
+def build(out, home=None):
     out = safe_out(out)
     pages = entries()
     commit = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--short", "HEAD"], capture_output=True,
                             text=True, encoding="utf-8").stdout.strip() or "unknown"
     out.mkdir(parents=True, exist_ok=True)
     write_text(out / MARK, "Made by tools/framework_pages.py. Run it again to bring these pages up to date.\n")
-    write_text(out / "index.html", index_page(pages, commit))
+    write_text(out / "index.html", index_page(pages, commit, home))
     for key, items in pages.items():
-        write_text(out / PAGES[key][0], framework_page(key, items, commit))
+        write_text(out / PAGES[key][0], framework_page(key, items, commit, home))
     print(f"wrote {out}: index.html and " + ", ".join(f"{PAGES[k][0]} ({len(v)})" for k, v in pages.items()))
 
 
@@ -550,13 +552,14 @@ def self_test():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--out", default=str(DEFAULT_OUT), help="the folder to write (default: exports/site/)")
+    parser.add_argument("--out", default=str(DEFAULT_OUT), help="the folder to write (default: exports/site/standards/)")
+    parser.add_argument("--home", help="where the wordmark links: the site's home page (default: these pages' index)")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if args.self_test:
         self_test()
         return
-    build(args.out)
+    build(args.out, args.home)
 
 
 if __name__ == "__main__":
