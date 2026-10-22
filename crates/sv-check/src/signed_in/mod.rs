@@ -1781,6 +1781,145 @@ fn run_checks(
         )
     );
 
+    // 9b to 9h: the checks that sign in on their own or change what the app holds, late in the run for the reasons
+    // each gives, in `late_checks`.
+    out = late_checks(
+        http,
+        Late {
+            users,
+            accounts,
+            policy,
+            slow,
+            confirm: &confirm,
+            confirm_path,
+            signed_in_works,
+            admins_pages,
+        },
+        out,
+    );
+
+    // 10. Last of all, because it changes a password: with an account made for it when there is a
+    //    sign-up, and with A's own when there is not.
+    asked!(
+        out,
+        http,
+        "change_password_checks",
+        &["V6.2.2", "V6.2.3", "V6.3.7", "V7.4.3"],
+        change_password_checks(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "change_email_check",
+        &["V7.5.1"],
+        change_email_check(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "account_change_checks",
+        &["V7.5.1"],
+        account_changes::account_change_checks(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "delete_account_check",
+        &["V7.4.2"],
+        delete_account_check(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "reset_checks",
+        &["V6.3.8", "V6.4.3"],
+        reset_checks(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "activation_checks",
+        &["V6.4.1"],
+        activation_checks(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "email_code_checks",
+        &["V6.5.1", "V6.5.4", "V6.6.2", "V6.6.3"],
+        email_code_checks(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "email_code_lifetime",
+        &["V6.5.5"],
+        email_code_lifetime(http, users, accounts, confirm.as_deref(), slow, &mut out)
+    );
+    asked!(
+        out,
+        http,
+        "totp_checks",
+        &["V6.5.1", "V6.5.5"],
+        totp_checks(http, users, accounts, confirm.as_deref(), &mut out)
+    );
+
+    // 10. After everything else, without exception. This one deliberately provokes the app into
+    //     refusing requests, and a limiter that counts by address rather than by account would then
+    //     be refusing every check above too. Running it last means the worst it can cost is itself.
+    asked!(
+        out,
+        http,
+        "brute_force_check",
+        &["V6.3.1", "V15.3.4"],
+        brute_force_check(http, users, accounts, policy, &mut out)
+    );
+    // And codes after passwords: both set out to be refused, and this one is the newer.
+    asked!(
+        out,
+        http,
+        "email_code_guessing",
+        &["V6.6.3"],
+        email_code_guessing(http, users, accounts, confirm.as_deref(), policy, &mut out)
+    );
+    // The only sign-ins after the guesses: three wrong passwords would use up part of a limit that
+    // counts by address before the guessing check, and here a limit still refusing leaves them
+    // uncompared rather than misread.
+    quiet!(signin_reveals_account_check(
+        http, users, accounts, &mut out
+    ));
+
+    out
+}
+
+/// What checks 9b to 9h of `run_checks` read of what the run has so far.
+struct Late<'a> {
+    users: &'a UsersSection,
+    accounts: &'a Accounts,
+    policy: &'a sv_manifest::PolicySection,
+    slow: bool,
+    confirm: &'a Option<String>,
+    confirm_path: Option<String>,
+    signed_in_works: bool,
+    admins_pages: Vec<Option<ProbeResponse>>,
+}
+
+/// Checks 9b to 9h of `run_checks`, in its order, each through `asked!` or `quiet!` as there (`check_guard_tests` reads
+/// this body with `run_checks`'s): the WebSocket, the redirects, the token's expiry, the admin actions, the role
+/// fields, the once action, the bursts, the archives, and ending sessions. Moved out of `run_checks` on 21 October
+/// 2026 (backlog 0324), word for word; `out` comes in and goes back, so each call still names `&mut out`.
+fn late_checks(http: &mut Counted<'_>, late: Late<'_>, mut out: Outcome) -> Outcome {
+    let Late {
+        users,
+        accounts,
+        policy,
+        slow,
+        confirm,
+        confirm_path,
+        signed_in_works,
+        admins_pages,
+    } = late;
+
     // 9b. A private WebSocket, with a sign-in of its own that it signs out at the end: after
     //     everything that needed A's first session.
     asked!(
@@ -1892,97 +2031,6 @@ fn run_checks(
             http, users, accounts, confirm, &mut out
         ));
     }
-    // 10. Last of all, because it changes a password: with an account made for it when there is a
-    //    sign-up, and with A's own when there is not.
-    asked!(
-        out,
-        http,
-        "change_password_checks",
-        &["V6.2.2", "V6.2.3", "V6.3.7", "V7.4.3"],
-        change_password_checks(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "change_email_check",
-        &["V7.5.1"],
-        change_email_check(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "account_change_checks",
-        &["V7.5.1"],
-        account_changes::account_change_checks(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "delete_account_check",
-        &["V7.4.2"],
-        delete_account_check(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "reset_checks",
-        &["V6.3.8", "V6.4.3"],
-        reset_checks(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "activation_checks",
-        &["V6.4.1"],
-        activation_checks(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "email_code_checks",
-        &["V6.5.1", "V6.5.4", "V6.6.2", "V6.6.3"],
-        email_code_checks(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "email_code_lifetime",
-        &["V6.5.5"],
-        email_code_lifetime(http, users, accounts, confirm.as_deref(), slow, &mut out)
-    );
-    asked!(
-        out,
-        http,
-        "totp_checks",
-        &["V6.5.1", "V6.5.5"],
-        totp_checks(http, users, accounts, confirm.as_deref(), &mut out)
-    );
-
-    // 10. After everything else, without exception. This one deliberately provokes the app into
-    //     refusing requests, and a limiter that counts by address rather than by account would then
-    //     be refusing every check above too. Running it last means the worst it can cost is itself.
-    asked!(
-        out,
-        http,
-        "brute_force_check",
-        &["V6.3.1", "V15.3.4"],
-        brute_force_check(http, users, accounts, policy, &mut out)
-    );
-    // And codes after passwords: both set out to be refused, and this one is the newer.
-    asked!(
-        out,
-        http,
-        "email_code_guessing",
-        &["V6.6.3"],
-        email_code_guessing(http, users, accounts, confirm.as_deref(), policy, &mut out)
-    );
-    // The only sign-ins after the guesses: three wrong passwords would use up part of a limit that
-    // counts by address before the guessing check, and here a limit still refusing leaves them
-    // uncompared rather than misread.
-    quiet!(signin_reveals_account_check(
-        http, users, accounts, &mut out
-    ));
-
     out
 }
 
