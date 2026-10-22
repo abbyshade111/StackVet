@@ -1,6 +1,6 @@
 # Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150
 
-**Status:** claimed by claude/backlog-work, 20 October 2026
+**Status:** partly done: nine files are still over 3,000 lines (signed_in/fake_app.rs 3,898, the test fake, whose answer is 2,021 lines; sv-report/src/lib.rs 3,665; sv-cli/src/assemble.rs 3,561; signed_in/sessions.rs 3,510; sv-manifest/src/lib.rs 3,455; sv-cli/src/review.rs 3,300; ai.rs 3,279; signed_in/uploads.rs 3,166; signed_in/passwords.rs 3,133), two too_many_arguments allows are left (review_then_report, whose three arguments go to report_again::write_again first, and the test helper sealed), and run_note_details is held by no test, since none can make a RunOutcome and RunPlan yet
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: low. Verified against the code by the reviewing session before filing.
 
@@ -124,3 +124,14 @@ seven; `one_change`, `try_flow`, and `provider_session_checks` each take what tr
 `one_change` already did for the change itself, from eight to six, six, and seven. Their bodies are word for word. Two
 allows are left in the workspace: `review_then_report` (three of its arguments go straight to
 `report_again::write_again`) and the test helper `sealed` in `crates/sv-cli/tests/confirmations.rs`.
+
+**Partly done, 22 October 2026, at the owner's word** ("yes, mark it partly done and move to 0623"). Seventeen splits
+since 21 October (#2196, #2198 to #2200, #2202 to #2206, #2208 to #2215), each with behavior unchanged and checked by
+its own means: the line sets of the old and new file, the report pages or command output made before and after, and
+each moved piece stubbed to see which tests went red. The workspace's `too_many_arguments` allows went from 18 to 2,
+and the longest functions on the list from 819, 863, 736, 650, 590, 515, 496, and 448 lines to 725, 467, 461, 355,
+399, 433, 301, and 217. Seven of the moved blocks were held by no test; six now are (the three gaps for the owner's
+word, the app's own tests, `sv check`'s unread lines, and `sv probe`'s result), and `run_note_details` is not. The
+guard per check now reads the late signed-in checks it would otherwise have lost. What remains is on the
+status line: splitting the nine long files further moves less with each split, and is left for a session with nothing
+else ahead of it.
