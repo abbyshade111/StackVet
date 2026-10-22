@@ -121,8 +121,11 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         assert!(!home.contains(note), "the home page shows a note: {note:?}");
     }
     // The conversation beside the headline, with the AI tool's question in the question bubble.
-    assert!(home.contains("An example, written to show how a build goes"));
+    assert!(home.contains("From a real build in Cursor, 14 October 2026"));
     assert!(home.contains(r#"class="turn asks""#));
+    assert!(
+        home.contains("I want to do invite codes because I only want my family to have access")
+    );
     // The tools the setup prompts were tried in, from docs/prompts/setup.md, in place of the placeholder.
     assert!(!home.contains("[the tools they have really been tried in"));
     assert!(
@@ -219,6 +222,64 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
             }
         }
     }
+
+    // How StackVet works: its own words, with the real VS Code line, then the paper's description.
+    let how = read("how-it-works.html");
+    assert!(how.contains("When only you can answer, your AI tool stops and asks."));
+    assert!(how.contains("I shouldn’t invent a contact address"));
+    assert!(
+        how.contains("does not write the app"),
+        "the paper's description is not shown"
+    );
+    assert!(
+        !how.contains("make_how_it_works.py"),
+        "a note on the page's words is shown"
+    );
+
+    // The headers Cloudflare sends: every inline script a page carries is allowed by its hash, and nothing else.
+    let headers = read("_headers");
+    let policy = headers
+        .lines()
+        .find_map(|l| l.trim().strip_prefix("Content-Security-Policy: "))
+        .expect("a content security policy");
+    let script_src = policy
+        .split(';')
+        .find_map(|d| d.trim().strip_prefix("script-src "))
+        .expect("script-src");
+    assert!(!script_src.contains("unsafe"), "{script_src}");
+    assert!(policy.contains("default-src 'none'") && policy.contains("frame-ancestors 'none'"));
+    let mut scripts = 0;
+    for page in made
+        .iter()
+        .filter(|p| p.extension().is_some_and(|x| x == "html"))
+    {
+        let text = std::fs::read_to_string(dir.join(page)).unwrap();
+        for (at, _) in text.match_indices("<script>") {
+            let body = &text[at + 8..at + text[at..].find("</script>").unwrap()];
+            let hash = std::process::Command::new("python3")
+                .args(["-I", "-c", "import base64,hashlib,sys;print(base64.b64encode(hashlib.sha256(sys.stdin.buffer.read()).digest()).decode())"])
+                .stdin(std::process::Stdio::piped())
+                .stdout(std::process::Stdio::piped())
+                .spawn()
+                .and_then(|mut c| {
+                    use std::io::Write;
+                    c.stdin.take().unwrap().write_all(body.as_bytes())?;
+                    c.wait_with_output()
+                })
+                .unwrap();
+            let hash = String::from_utf8(hash.stdout).unwrap();
+            assert!(
+                script_src.contains(&format!("'sha256-{}'", hash.trim())),
+                "{}'s script is not allowed by the policy",
+                page.display()
+            );
+            scripts += 1;
+        }
+    }
+    assert!(
+        scripts > 0,
+        "the setup: the framework pages carry their filter's script"
+    );
 
     // StackVet's own report on itself, and the credits, each a page.
     let itself = read("checks-itself.html");

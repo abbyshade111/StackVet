@@ -37,16 +37,29 @@ checked, and what nobody has looked at yet.
 
 Buttons: *Get started*, *See how a build goes* (a walk-through of one build from the first prompt; *not yet made*).
 
-*An example, written to show how a build goes:*
+*From a real build in Cursor, 14 October 2026, in the tool's and the person's own words, shortened, with one line
+moved to the end and a few words of ours in square brackets:*
 
-> **You:** I want an app where anyone can sign up to lend books to their neighbors. It keeps each person's name,
-> email address, and street.
-> **Your AI tool:** Before I write any code: StackVet holds this app to ASVS level 2, because anyone can sign up.
-> **Your AI tool asks:** Should a neighbor see who has borrowed a book, or only the book's owner?
-> **You:** Only the owner.
-> **Your AI tool, later:** StackVet found that passwords were stored with a method that is too quick to guess
-> against. I changed it, and StackVet checked again: it no longer finds that.
+> **You:** I want to build: an application for my iPhone that I can share with my family (everyone has their own
+> login) where we can post any games we've vibecoded and play each others' games.
+> **Your AI tool:** No application code is written yet. Three lines that decide where the app runs, whether anyone
+> signs in, and how it is reached are still open, so I need your answers before those go in the file.
+> **Your AI tool asks:** Anyone who can open the site can create an account, and a new account can play every game.
+> There is no invite code. Say if you want one.
+> **You:** I want to do invite codes because I only want my family to have access
+> **Your AI tool, later:** Creating an account now requires one shared invite code. … I checked a wrong code in the
+> browser, and the page said it was not right.
+> **Your AI tool:** [On two findings about passwords in its tests:] As I read them, these are passphrases I
+> invented for the tests, not a password for a real account. I did not change the tests to hide them. If you agree
+> they are false alarms, you can record that yourself with `sv review`.
 
+- The conversation is the Cursor build of the setup prompt trial (`docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`),
+  chosen by the owner on 22 October 2026 over a written example. Each line is quoted from the chat as it is kept on
+  the owner's drive, with cuts marked "…". The person's two lines are the brief pasted into all three tools and an
+  answer typed in reply. The last line was said in the same message as the question about invite codes, before the
+  person answered; it is moved to the end, as the label says. Its words in square brackets are not the tool's:
+  they stand in for the lines where the tool printed the test passwords, which are left out, as is every folder path. No line
+  names a person.
 - "Security in mind" says how the app is built, not what it ends up being: StackVet never says an app is secure.
 - The order of the last sentence, the most important things to fix first, is true of the report since 13 October
   2026 (item 2 below, done).

@@ -18,7 +18,7 @@ Every word is read from where it is kept, never copied here, so the site cannot 
 - the coverage numbers in the home page's "What it checks" from `docs/COVERAGE.md`'s level tables, and the AI tools
   the setup prompts were tried in from `docs/prompts/setup.md`'s "Tried so far". The home page holds the numbers of the
   day it was written; the site puts the file's in their place, and stops if the words they sit in have changed;
-- How StackVet works from `docs/paper/HOW-SV-WORKS.md`'s description and `docs/website/diagrams/how-it-works.svg`;
+- How StackVet works from `docs/website/how-it-works-page.md`, then `docs/paper/HOW-SV-WORKS.md`'s description;
 - StackVet checks itself from `docs/website/self-assessment/`, StackVet's own report on its own repository;
 - the framework pages from `tools/framework_pages.py`, into `standards/`.
 
@@ -27,9 +27,16 @@ The report files the pages link to are copied beside them, and each Markdown one
 script, style sheet, font, or image is fetched from anywhere, and the type falls back to the system's when Atkinson
 Hyperlegible is not installed. It writes only into a folder it marks as its own, inside the repository only under
 `exports/`, and never through a link.
+
+It also writes `_headers`, the response headers Cloudflare sends with every page (the owner chose Cloudflare on 22
+October 2026, ADR-132): a content security policy that lets a page run only the scripts this build wrote into it, by
+their hashes, and load nothing from anywhere else, with the headers that stop other sites framing a page, guessing a
+file's type, or being told where a reader came from.
 """
 
 import argparse
+import base64
+import hashlib
 import html
 import os
 import re
@@ -294,6 +301,21 @@ def block_html(b, here="index.md", prefix=""):
     return md(b, here)
 
 
+def blocks_html(bl, here="index.md", prefix=""):
+    """A run of blocks. A line in italics ending in a colon, above a conversation quoted line by line, is its
+    label."""
+    out, i = [], 0
+    while i < len(bl):
+        b = bl[i]
+        if i + 1 < len(bl) and bl[i + 1].lstrip().startswith("> **") and b.rstrip().endswith(":*"):
+            out.append(conversation(bl[i + 1], " ".join(b.split()).strip("*").rstrip(":")))
+            i += 2
+            continue
+        out.append(block_html(b, here, prefix))
+        i += 1
+    return "".join(out)
+
+
 def heading_of(bl):
     """A section's first block, its headline in bold, and the rest."""
     if bl and re.fullmatch(r"\*\*[^*]+\*\*", bl[0].strip()):
@@ -337,14 +359,15 @@ def home_page(home_md, coverage, setup, commit):
             at = next((i for i, b in enumerate(rest) if b.lstrip().startswith(">")), None)
             if at is None or at == 0:
                 die("the home page's opening has no conversation in it")
-            label = " ".join(rest[at - 1].split()).strip("*").rstrip(":")
-            words = "".join(block_html(b) for b in rest[:at - 1])
-            chat = conversation(rest[at], label)
-            after = "".join(block_html(b) for b in rest[at + 1:])
+            words = blocks_html(rest[:at - 1])
+            chat = blocks_html(rest[at - 1:at + 1])
+            if 'class="chat"' not in chat:
+                die("the home page's conversation has no label above it, in italics, ending in a colon")
+            after = blocks_html(rest[at + 1:])
             out.append(f'<section class="hero" id="{ident}"><div><h1>{e(headline)}</h1>{words}</div>'
                        f"<div>{chat}</div></section>{after}")
             continue
-        inner = "".join(block_html(b) for b in rest)
+        inner = blocks_html(rest)
         extra = {
             "the-report": '<div class="buttons"><a class="button" href="reports.html">What each file of a report is '
                           "for, with a real one</a></div>",
@@ -374,7 +397,7 @@ def not_endorsed(home_md):
 
 def credits_page(home_md, commit):
     headline, rest = heading_of(credits_section(home_md))
-    body = f"<h1>{e(headline)}</h1>" + "".join(block_html(b) for b in rest)
+    body = f"<h1>{e(headline)}</h1>" + blocks_html(rest)
     return shell("Credits — StackVet", "credits", f'<div class="md">{body}</div>', commit)
 
 
@@ -386,26 +409,22 @@ def reports_page(reports_md, commit):
         headline, rest = heading_of(blocks(body))
         level = "h1" if not out else "h2"
         out.append(f'<section id="{section_id(title)}"><{level}>{e(headline or title)}</{level}>'
-                   + "".join(block_html(b, "reports.md") for b in rest) + "</section>")
+                   + blocks_html(rest, "reports.md") + "</section>")
     return shell("The report — StackVet", "reports", f'<div class="md">{"".join(out)}</div>', commit)
 
 
-def how_page(how_md, commit):
+def how_page(page_md, how_md, commit):
     found = re.search(r"^## Description\n(.*?)(?=^## |\Z)", how_md, re.M | re.S)
     if not found:
         die("docs/paper/HOW-SV-WORKS.md has no Description section")
-    body = ("<h1>How StackVet works</h1>"
-            '<p class="lede">The path from "I built an app" to "I have a report": what you do, what your AI coding '
-            "tool does, and what StackVet does.</p>"
-            '<figure><img src="diagrams/how-it-works.svg" alt="Three lanes, you, your AI coding tool, and StackVet, '
-            'across five steps: plan, build, check, questions, and report."></figure>'
-            '<h2>In detail</h2><p class="note">This is the account written for the research paper about StackVet, '
-            "of StackVet as it was on 4 October 2026, when it was still called SecureVibe and its settings file "
-            "<code>securevibe.toml</code>. The way it works is the same; some details, such as the number of "
-            f'commands, have grown since. The current map of the code is <a href="{GITHUB}/blob/main/docs/'
-            'ARCHITECTURE.md">docs/ARCHITECTURE.md</a>.</p>'
-            f'<div class="md">{md(found[1], "how.md")}</div>')
-    return shell("How StackVet works — StackVet", "how", body, commit)
+    out = []
+    for title, body in sections(page_md):
+        headline, rest = heading_of(without_notes(blocks(body)))
+        level = "h1" if not out else "h2"
+        out.append(f'<section id="{section_id(title)}"><{level}>{e(headline or title)}</{level}>'
+                   + blocks_html(rest, "how.md") + "</section>")
+    out.append(f'<div class="md">{md(found[1], "how.md")}</div>')
+    return shell("How StackVet works — StackVet", "how", "".join(out), commit)
 
 
 def self_files():
@@ -465,6 +484,25 @@ def safe_out(out):
     return out
 
 
+def headers(out):
+    """`_headers` for Cloudflare: every inline script the build wrote is allowed by its hash, and nothing else runs.
+    Inline styles are allowed, since the pages and the example report set them in `style` attributes too."""
+    scripts = set()
+    for page in sorted(out.rglob("*.html")):
+        scripts.update(re.findall(r"<script>(.*?)</script>", page.read_text(encoding="utf-8"), re.S))
+    hashes = " ".join(sorted("'sha256-" + base64.b64encode(hashlib.sha256(s.encode("utf-8")).digest()).decode()
+                             + "'" for s in scripts)) or "'none'"
+    policy = (f"default-src 'none'; script-src {hashes}; style-src 'unsafe-inline'; img-src 'self'; "
+              "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+    return ("/*\n"
+            f"  Content-Security-Policy: {policy}\n"
+            "  X-Content-Type-Options: nosniff\n"
+            "  Referrer-Policy: no-referrer\n"
+            "  Permissions-Policy: camera=(), microphone=(), geolocation=()\n"
+            "  Cross-Origin-Opener-Policy: same-origin\n"
+            "  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n")
+
+
 def copy(src, dst):
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(src, dst)
@@ -480,7 +518,8 @@ def build(out):
         "index.html": home_page(home_md, read("docs/COVERAGE.md"), read("docs/prompts/setup.md"), commit),
         "credits.html": credits_page(home_md, commit),
         "reports.html": reports_page(read("docs/website/reports-page.md"), commit),
-        "how-it-works.html": how_page(read("docs/paper/HOW-SV-WORKS.md"), commit),
+        "how-it-works.html": how_page(read("docs/website/how-it-works-page.md"), read("docs/paper/HOW-SV-WORKS.md"),
+                                      commit),
         "checks-itself.html": itself_page(commit),
     }
     out.mkdir(parents=True, exist_ok=True)
@@ -504,6 +543,7 @@ def build(out):
             write_text(out / "self-assessment" / (name[:-3] + ".html"),
                        markdown_page(SELF / name, "StackVet's report on itself", commit, 1))
     framework_pages.build(out / "standards", home="../index.html")
+    write_text(out / "_headers", headers(out))
     print(f"wrote {out}: " + ", ".join(pages) + ", the report files, and standards/")
 
 
