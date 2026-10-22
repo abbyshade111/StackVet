@@ -35,7 +35,8 @@ security rules apply, checks the code after each feature, and has your tool ask 
 answer. Once your app works, StackVet writes a report: the most important things to fix first, then what was
 checked, and what nobody has looked at yet.
 
-Buttons: *Get started*, *See how a build goes* (a walk-through of one build from the first prompt; *not yet made*).
+Buttons: *Get started*, *See how a build goes* (the click-through of one real build, `build-walkthrough-page.md`, made
+22 October 2026, backlog 0373).
 
 *From a real build in Cursor, 14 October 2026, in the tool's and the person's own words, shortened, with one line
 moved to the end and a few words of ours in square brackets:*
