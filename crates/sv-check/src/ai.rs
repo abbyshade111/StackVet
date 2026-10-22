@@ -1245,9 +1245,43 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
         );
     }
 
-    // 7. C10.4.1 and C10.4.2, when the feature gives the model tools from an MCP server: the test
-    //    model asks for the test MCP server's tool, which answers with a clean result (the control),
-    //    one that breaks its declared schema, and one carrying an injected instruction.
+    // 7. C10.4.1 and C10.4.2, when the feature gives the model tools from an MCP server.
+    mcp_questions(http, section, &mut ask, &mut out, &mut markers);
+
+    // 8. C11.2.2: one more message than the owner says a minute allows.
+    let burst = rate_question(http, section, ctx, &mut ask, &mut out);
+
+    // 9. The questions added after the rate check, a minute after its burst when there was one, so
+    //    a limit it tripped has lifted: C7.3.4, C7.3.1, C2.2.2, and C2.1.4.
+    if burst {
+        http.wait(61);
+    }
+    more_questions(http, section, &mut ask, shows_replies, &mut out);
+    markup_question(http, &mut ask, &mut out);
+    shape_questions(http, &mut ask, shows_replies, &mut out);
+    markers.failure = failure_questions(http, &mut ask, shows_replies, &mut out);
+    record_tool_questions(http, section, &mut ask, records, &mut out);
+    retrieval_questions(http, &mut ask, notes, &mut out);
+    // Last, because an app it holds may answer nothing until the test model lets go.
+    hang_questions(http, &mut ask, shows_replies, &mut out);
+    (out, markers)
+}
+
+/// Step 7 of `run`: C10.4.1 and C10.4.2, when the feature gives the model tools from an MCP server. The test model asks
+/// for the test MCP server's tool, which answers with a clean result (the control), one that breaks its declared
+/// schema, and one carrying an injected instruction.
+fn mcp_questions<F>(
+    http: &mut dyn Http,
+    section: &AiSection,
+    ask: &mut F,
+    out: &mut Outcome,
+    markers: &mut LogMarkers,
+) where
+    F: FnMut(&mut dyn Http, u32, &str, &str) -> (String, Option<ProbeResponse>),
+{
+    let say = |ids: &str, why: String, out: &mut Outcome| {
+        out.not_assessed.push((ids.to_owned(), why));
+    };
     const MCP_IDS: &str = "C10.4.1, C10.4.2, C9.3.2";
     if let Some(env) = &section.mcp_url_env {
         let mut probe = |http: &mut dyn Http, n: u32, kind: &str| {
@@ -1288,7 +1322,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                  have held its answer, was not first called and answered as it should be, so it \
                  was not asked."
                     .to_owned(),
-                &mut out,
+                out,
             );
         }
         if !plain_seen.tool_requested {
@@ -1303,7 +1337,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                         format!(" (it offered {})", plain_seen.tools_offered.join(", "))
                     }
                 ),
-                &mut out,
+                out,
             );
         } else if !plain_seen.mcp_called || !result_of(&plain, &plain_seen) {
             say(
@@ -1311,7 +1345,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                 "Whether MCP tool results are checked: a clean result from the test MCP server did \
                  not reach the model, so a hostile one not reaching it would show nothing."
                     .to_owned(),
-                &mut out,
+                out,
             );
         } else {
             for (n, kind, rule, id) in [
@@ -1345,7 +1379,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                         "The app did not call the MCP tool this time, though it had for the \
                          control, so nothing is shown."
                             .to_owned(),
-                        &mut out,
+                        out,
                     );
                 } else if reached {
                     out.findings.push(on(
@@ -1390,8 +1424,8 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                     .in_part());
                 }
             }
-            agent_limit(http, &mut probe, &mut out);
-            tool_timeout(http, &mut probe, &mut out);
+            agent_limit(http, &mut probe, out);
+            tool_timeout(http, &mut probe, out);
         }
     } else {
         say(
@@ -1401,14 +1435,28 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
              address from, as `mcp-url-env` under `[stack.run.ai]` in stackvet.toml, and it is \
              given a test MCP server there."
                 .to_owned(),
-            &mut out,
+            out,
         );
     }
+}
 
+/// Step 8 of `run`: C11.2.2, the last of the first questions because it sets out to make the app refuse: one more message
+/// than the owner says a minute allows, then a page of the app's own that is not the AI feature, so a limit on the
+/// feature is told from one on everything. Whether it sent the burst, so the next questions wait for it to lift.
+fn rate_question<F>(
+    http: &mut dyn Http,
+    section: &AiSection,
+    ctx: &Context,
+    ask: &mut F,
+    out: &mut Outcome,
+) -> bool
+where
+    F: FnMut(&mut dyn Http, u32, &str, &str) -> (String, Option<ProbeResponse>),
+{
+    let say = |ids: &str, why: String, out: &mut Outcome| {
+        out.not_assessed.push((ids.to_owned(), why));
+    };
     let mut burst = false;
-    // 8. C11.2.2, the last of the first questions because it sets out to make the app refuse: one more
-    //    message than the owner says a minute allows, then a page of the app's own that is not the
-    //    AI feature, so a limit on the feature is told from one on everything.
     match ctx.policy.ai_requests_per_minute {
         None => say(
             "C11.2.2",
@@ -1416,7 +1464,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
              minute it should pass on, as `ai-requests-per-minute` under `[policy]` in \
              stackvet.toml, and this will send one more than that."
                 .to_owned(),
-            &mut out,
+            out,
         ),
         Some(n) if n == 0 || n >= MOST_MESSAGES => say(
             "C11.2.2",
@@ -1424,7 +1472,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                 "[policy] ai-requests-per-minute is {n}; this check sends between 2 and \
                  {MOST_MESSAGES} messages, so it cannot hold the app to that number."
             ),
-            &mut out,
+            out,
         ),
         Some(n) => {
             burst = true;
@@ -1456,7 +1504,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                     "Whether the AI feature limits how often it can be asked: the first message of \
                      the burst did not reach the model, so a refusal later on shows nothing."
                         .to_owned(),
-                    &mut out,
+                    out,
                 );
             } else if took > 55 {
                 say(
@@ -1467,7 +1515,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                          counts over.",
                         n + 1
                     ),
-                    &mut out,
+                    out,
                 );
             } else if reached > n {
                 out.findings.push(on(
@@ -1493,7 +1541,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                          others was not a limit that stayed shut.",
                         n + 1
                     ),
-                    &mut out,
+                    out,
                 );
             } else if !ok(&other) {
                 say(
@@ -1505,7 +1553,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
                         ctx.health,
                         status(&other)
                     ),
-                    &mut out,
+                    out,
                 );
             } else {
                 out.verified.push(crate::Verified::new(
@@ -1525,21 +1573,7 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
             }
         }
     }
-
-    // 9. The questions added after the rate check, a minute after its burst when there was one, so
-    //    a limit it tripped has lifted: C7.3.4, C7.3.1, C2.2.2, and C2.1.4.
-    if burst {
-        http.wait(61);
-    }
-    more_questions(http, section, &mut ask, shows_replies, &mut out);
-    markup_question(http, &mut ask, &mut out);
-    shape_questions(http, &mut ask, shows_replies, &mut out);
-    markers.failure = failure_questions(http, &mut ask, shows_replies, &mut out);
-    record_tool_questions(http, section, &mut ask, records, &mut out);
-    retrieval_questions(http, &mut ask, notes, &mut out);
-    // Last, because an app it holds may answer nothing until the test model lets go.
-    hang_questions(http, &mut ask, shows_replies, &mut out);
-    (out, markers)
+    burst
 }
 
 /// The two notes C5.2.2 asks about: each test user's, as the private marker it holds and the word
