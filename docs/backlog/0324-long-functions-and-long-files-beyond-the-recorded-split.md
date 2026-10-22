@@ -84,3 +84,9 @@ checklist twice, word for word; they are one `ask_last`, called from both places
 word: five allows of nine in `review.rs` and `review/ticks.rs` gone, and four left (`review_then_report`, `sign_again`,
 `record_finding`, `record_confirmation`). With `ask_last` emptied, more than twenty review tests go red. Next: the four
 allows left, then `cmd_check` and `cmd_probe` in `main.rs`.
+
+**Twelfth split, 22 October 2026.** Three of `review.rs`'s four allows left: `record_finding`'s was never needed (it
+takes seven, and clippy's limit, with no `clippy.toml`, is more than seven); `sign_again` and `record_confirmation` take
+`Asking` with what is their own. `review_then_report` keeps its allow: three of its eight are handed straight to
+`report_again::write_again`, so a struct for them belongs there first. Next: `cmd_check` and `cmd_probe` in `main.rs`,
+then the allows in `signed_in/{account_changes,owner_field,uploads}.rs` and `sv-cli/src/{seen,static_scan}.rs`.

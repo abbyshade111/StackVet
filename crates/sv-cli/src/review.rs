@@ -626,14 +626,17 @@ fn review(
     if !older.is_empty() {
         sign_again(
             &older,
-            &manifest,
-            &mut doc,
-            &manifest_path,
             &files,
-            &key,
-            &checker,
-            input,
-            out,
+            &mut Asking {
+                manifest: &manifest,
+                manifest_path: &manifest_path,
+                doc: &mut doc,
+                today,
+                key: &key,
+                checker: &checker,
+                input: &mut *input,
+                out: &mut *out,
+            },
         )?;
     }
     if waiting.is_empty() {
@@ -767,7 +770,20 @@ fn review(
                     }
                 };
                 match record_confirmation(
-                    section, &id, &confirmed, &current, today, &key, input, out,
+                    section,
+                    &id,
+                    &confirmed,
+                    &current,
+                    &mut Asking {
+                        manifest: &manifest,
+                        manifest_path: &manifest_path,
+                        doc: &mut doc,
+                        today,
+                        key: &key,
+                        checker: &checker,
+                        input: &mut *input,
+                        out: &mut *out,
+                    },
                 )? {
                     Some(c) => {
                         set_confirmation(&mut doc, section, &id, &c)
@@ -927,18 +943,18 @@ fn ask_last(app_dir: &Path, asking: &mut Asking<'_>, last: Last) -> Result<()> {
 /// Signs again, at one yes, the entries whose seal was made with this computer's review key and
 /// holds here (ADR-043): such a seal already shows the entry was recorded here, so nothing is asked
 /// again. Each is signed over what it says now, which is what its seal holds for.
-#[allow(clippy::too_many_arguments)]
 fn sign_again(
     older: &[Waiting],
-    manifest: &sv_manifest::Manifest,
-    doc: &mut toml_edit::DocumentMut,
-    manifest_path: &Path,
     files: &[(sv_check::notes::Catalog, PathBuf)],
-    key: &Signer,
-    checker: &Checker,
-    input: &mut dyn BufRead,
-    out: &mut dyn Write,
+    asking: &mut Asking<'_>,
 ) -> Result<()> {
+    let (manifest, manifest_path, key, checker) = (
+        asking.manifest,
+        asking.manifest_path,
+        asking.key,
+        asking.checker,
+    );
+    let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
         "{} recorded through `sv review` on this computer before it signed what it records. \
@@ -1127,7 +1143,6 @@ struct Recorded {
 
 /// Asks about one `[[finding-review]]` entry. What to write when the person records it: `by`,
 /// `why`, `on`, the seal, and the fingerprint in today's form.
-#[allow(clippy::too_many_arguments)]
 fn record_finding(
     app_dir: &Path,
     entry: &sv_manifest::FindingReview,
@@ -1294,17 +1309,15 @@ fn record_finding(
 }
 
 /// Asks about one confirmation. The confirmation to write when the person records it.
-#[allow(clippy::too_many_arguments)]
 fn record_confirmation(
     section: &str,
     id: &str,
     proposed: &sv_manifest::Confirmed,
     current: &Current,
-    today: Day,
-    key: &Signer,
-    input: &mut dyn BufRead,
-    out: &mut dyn Write,
+    asking: &mut Asking<'_>,
 ) -> Result<Option<sv_manifest::Confirmed>> {
+    let (today, key) = (asking.today, asking.key);
+    let (input, out) = (&mut *asking.input, &mut *asking.out);
     match current {
         Current::Design { answer, location } => writeln!(
             out,
