@@ -29,3 +29,8 @@
 types and report lines out of `sv-report/src/lib.rs` into `sv-report/src/build_loop.rs`, still named from the crate's
 root, and its three inline test modules into sibling files, leaving 3,650 lines. Next: `ai.rs` (`run`), then
 `main.rs`.
+
+**Second split, 21 October 2026.** `kill_switch` out of `ai.rs` into `ai/kill_switch.rs`, and the checks of what the
+app's output recorded (`LogMarkers`, `logged`, and their rules' readers) into `ai/logged.rs`, still named from `ai`;
+`ai.rs` goes from 4,048 lines to 3,240. ADR-071, ADR-073, ADR-074, ADR-075, ADR-079, and ADR-088 name the new files.
+Next: `run` in `ai.rs` (756 lines), then `sv-cli/src/main.rs`.
