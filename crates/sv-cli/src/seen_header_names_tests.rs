@@ -35,7 +35,20 @@ fn a_token_under_a_header_named_for_it_does_not_reach_the_record() {
         .chain([("x-refresh-token-2".to_owned(), format!("Bearer {token}"))])
         .collect();
     let mut removed = 0;
-    let kept = kept_exchange(rules, &mut removed, "q", "GET", "/", 200, &headers, "");
+    let kept = kept_exchange(
+        rules,
+        &mut removed,
+        Asked {
+            id: "q",
+            method: "GET",
+            path: "/",
+        },
+        Answered {
+            status: 200,
+            headers: &headers,
+            body: "",
+        },
+    );
     for (name, value) in &kept.headers {
         assert!(!value.contains(&token), "{name}: {value}");
         assert!(value.contains("[removed, "), "{name}: {value}");
@@ -66,7 +79,20 @@ fn a_header_that_only_names_credentials_keeps_its_value() {
     .map(|(n, v)| ((*n).to_owned(), (*v).to_owned()))
     .collect();
     let mut removed = 0;
-    let kept = kept_exchange(rules, &mut removed, "q", "GET", "/", 200, &headers, "");
+    let kept = kept_exchange(
+        rules,
+        &mut removed,
+        Asked {
+            id: "q",
+            method: "GET",
+            path: "/",
+        },
+        Answered {
+            status: 200,
+            headers: &headers,
+            body: "",
+        },
+    );
     assert_eq!(kept.headers, headers);
     assert_eq!(removed, 0);
 }

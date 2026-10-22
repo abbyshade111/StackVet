@@ -103,3 +103,10 @@ and `sv-cli/src/{seen,static_scan}.rs`.
 lines before and after, reached and not. `probe_exit.rs` held only the exit codes and the line for an address not
 reached: `crates/sv-cli/tests/probe_said.rs` now holds what an address that answers is told, red with the function
 emptied. Next: the allows in `signed_in/{account_changes,owner_field,uploads}.rs` and `sv-cli/src/{seen,static_scan}.rs`.
+
+**Fifteenth split, 22 October 2026.** Two of sv-cli's allows go: `seen.rs`'s `kept_exchange` takes what was asked
+(`Asked`) and what came back (`Answered`), from eight arguments to four, and `static_scan.rs`'s `settle` takes what
+settles the findings beyond the scan (`Settling`: the `[[finding-review]]` entries, the seal checker, the decisions held
+to the running app, and the folders counted out), from nine to six; their bodies word for word. Eight allows are left
+in the workspace: six in the signed-in suite (`account_changes.rs`, `uploads.rs` twice, `flows.rs`, `mod.rs`,
+`owner_field.rs`), `review_then_report`, and the test helper `sealed` in `crates/sv-cli/tests/confirmations.rs`.

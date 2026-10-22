@@ -2831,14 +2831,16 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     let used = &static_scan.scan_report.not_the_app;
     let reviewed = static_scan::settle(
         app_dir,
-        &manifest.finding_review,
         findings,
         static_scan,
         &examined,
         loaded,
-        seals,
-        &safe_defaults.decided,
-        &left_out.counted_out(used),
+        static_scan::Settling {
+            reviews: &manifest.finding_review,
+            seals,
+            decided: &safe_defaults.decided,
+            left_out: &left_out.counted_out(used),
+        },
     );
     let files: Vec<&str> = (static_scan.listing.app_files())
         .map(|f| f.relative.as_str())

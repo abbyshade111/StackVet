@@ -58,12 +58,16 @@ pub fn record(
         let kept = kept_exchange(
             rules,
             &mut seen.credentials_removed,
-            &request.id,
-            &request.method,
-            &request.path,
-            response.status,
-            &response.headers,
-            &response.body,
+            Asked {
+                id: &request.id,
+                method: &request.method,
+                path: &request.path,
+            },
+            Answered {
+                status: response.status,
+                headers: &response.headers,
+                body: &response.body,
+            },
         );
         seen.exchanges.push(kept);
     }
@@ -93,12 +97,16 @@ pub fn signed_in(
         let kept = kept_exchange(
             rules,
             &mut seen.credentials_removed,
-            &exchange.id,
-            &exchange.method,
-            &exchange.path,
-            status,
-            &exchange.headers,
-            &exchange.body,
+            Asked {
+                id: &exchange.id,
+                method: &exchange.method,
+                path: &exchange.path,
+            },
+            Answered {
+                status,
+                headers: &exchange.headers,
+                body: &exchange.body,
+            },
         );
         seen.signed_in.push(kept);
     }
@@ -124,19 +132,34 @@ pub fn liveness(rules: &SecretRules, readings: &[sv_check::running::Liveness], s
     }
 }
 
+/// What was asked, as `kept_exchange` keeps it: the question's id, its method, and its path.
+struct Asked<'a> {
+    id: &'a str,
+    method: &'a str,
+    path: &'a str,
+}
+
+/// What came back: the status, the headers, and the body.
+struct Answered<'a> {
+    status: u16,
+    headers: &'a [(String, String)],
+    body: &'a str,
+}
+
 /// One answer, kept: its session and sign-in headers' values taken out, and every string in it
 /// through `redact_text`, counting the credentials cut into `removed`.
-#[allow(clippy::too_many_arguments)]
 fn kept_exchange(
     rules: &SecretRules,
     removed: &mut usize,
-    id: &str,
-    method: &str,
-    path: &str,
-    status: u16,
-    headers: &[(String, String)],
-    body: &str,
+    asked: Asked<'_>,
+    answered: Answered<'_>,
 ) -> Exchange {
+    let Asked { id, method, path } = asked;
+    let Answered {
+        status,
+        headers,
+        body,
+    } = answered;
     let mut cut = |text: &str| {
         let (text, n) = redact_around_markers(rules, text);
         *removed += n;

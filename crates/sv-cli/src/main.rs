@@ -1273,14 +1273,16 @@ fn cmd_check(args: &[String]) -> Result<i32> {
     let used = &static_scan.scan_report.not_the_app;
     let settled = static_scan::settle(
         &app_dir,
-        reviews,
         static_scan.findings(),
         &static_scan,
         &examined,
         &loaded,
-        &seals,
-        &[],
-        &left_out.counted_out(used),
+        static_scan::Settling {
+            reviews,
+            seals: &seals,
+            decided: &[],
+            left_out: &left_out.counted_out(used),
+        },
     );
     let mut findings = settled.findings;
     findings.sort_by(|a, b| {
