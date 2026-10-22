@@ -19,6 +19,9 @@ Every word is read from where it is kept, never copied here, so the site cannot 
   the setup prompts were tried in from `docs/prompts/setup.md`'s "Tried so far". The home page holds the numbers of the
   day it was written; the site puts the file's in their place, and stops if the words they sit in have changed;
 - How StackVet works from `docs/website/how-it-works-page.md`, then `docs/paper/HOW-SV-WORKS.md`'s description;
+- How a build goes, the click-through of one real build, from `docs/website/build-walkthrough-page.md` and its
+  screenshots in `docs/website/walkthrough/`: one step to a section, each with a link to the next, so it needs no
+  script;
 - StackVet checks itself from `docs/website/self-assessment/`, StackVet's own report on its own repository;
 - the framework pages from `tools/framework_pages.py`, into `standards/`.
 
@@ -71,7 +74,7 @@ PAGES = {
 # Where each button the home page names goes. None is a button for something not made yet: it is shown as coming.
 BUTTONS = {
     "Get started": "#get-started",
-    "See how a build goes": None,  # the walk-through of one build, backlog 0373
+    "See how a build goes": "how-a-build-goes.html",  # backlog 0373
     "Open the setup prompts": f"{GITHUB}/blob/main/docs/prompts/setup.md",
     "Watch the walk-through": None,  # backlog 0373
     "Read the guide": f"{GITHUB}/blob/main/docs/GETTING-STARTED.md",
@@ -117,6 +120,8 @@ section.band ul.statuses li { background: #182A23; color: var(--band-text); }
 .table table, .md table { border-collapse: collapse; width: 100%; background: var(--panel); margin: 12px 0; }
 .table th, .table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 figure { margin: 20px 0; }
+section.step { scroll-margin-top: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+section.step h2 { border-top: 0; }
 figure img { max-width: 100%; height: auto; background: var(--panel); border-radius: 10px; }
 figcaption { color: var(--caption); font-size: 15px; }
 .md { overflow-wrap: anywhere; }
@@ -427,6 +432,27 @@ def how_page(page_md, how_md, commit):
     return shell("How StackVet works — StackVet", "how", "".join(out), commit)
 
 
+def build_page(page_md, commit):
+    """One step to a section: its heading, its caption, its screen, and a link on to the next."""
+    steps = []
+    for title, body in sections(page_md):
+        headline, rest = heading_of(without_notes(blocks(body)))
+        steps.append((section_id(title), headline or title, rest))
+    if len(steps) < 2:
+        die("docs/website/build-walkthrough-page.md has no steps")
+    out = []
+    for n, (ident, headline, rest) in enumerate(steps):
+        level = "h1" if n == 0 else "h2"
+        number = "" if n == 0 else f'<p class="small">Step {n} of {len(steps) - 1}</p>'
+        if n + 1 < len(steps):
+            on = f'<a class="button" href="#{steps[n + 1][0]}">{"Start" if n == 0 else "Next"}: {e(steps[n + 1][1])}</a>'
+        else:
+            on = '<a class="button secondary" href="index.html">Back to the home page</a>'
+        out.append(f'<section class="step" id="{ident}">{number}<{level}>{e(headline)}</{level}>'
+                   f'{blocks_html(rest, "build.md")}<div class="buttons">{on}</div></section>')
+    return shell("How a build goes — StackVet", "", "".join(out), commit)
+
+
 def self_files():
     names = sorted(p.name for p in SELF.iterdir() if p.is_file() and p.name != "README.md")
     if "compliance.md" not in names:
@@ -524,6 +550,7 @@ def build(out):
         "index.html": home_page(home_md, read("docs/COVERAGE.md"), read("docs/prompts/setup.md"), commit),
         "credits.html": credits_page(home_md, commit),
         "reports.html": reports_page(read("docs/website/reports-page.md"), commit),
+        "how-a-build-goes.html": build_page(read("docs/website/build-walkthrough-page.md"), commit),
         "how-it-works.html": how_page(read("docs/website/how-it-works-page.md"), read("docs/paper/HOW-SV-WORKS.md"),
                                       commit),
         "checks-itself.html": itself_page(commit),
@@ -533,6 +560,8 @@ def build(out):
     for name, text in pages.items():
         write_text(out / name, text)
     copy(ROOT / "docs/coverage-by-level.svg", out / "coverage-by-level.svg")
+    for shot in sorted((WEBSITE / "walkthrough").glob("*.png")):
+        copy(shot, out / "walkthrough" / shot.name)
     for svg in sorted((WEBSITE / "diagrams").glob("*.svg")):
         copy(svg, out / "diagrams" / svg.name)
     copy(ROOT / "docs/brand/favicon.svg", out / "favicon.svg")

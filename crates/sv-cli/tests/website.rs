@@ -223,6 +223,35 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         }
     }
 
+    // How a build goes: the home page's button leads to it, every step leads on to the next, and every screen is
+    // one of the walk-through's own, read for anything personal before it was kept (backlog 0373).
+    assert!(home.contains(r#"href="how-a-build-goes.html">See how a build goes</a>"#));
+    let build = read("how-a-build-goes.html");
+    let steps = build.matches(r#"<section class="step""#).count();
+    let shots = std::fs::read_dir(repo().join("docs/website/walkthrough"))
+        .unwrap()
+        .count();
+    assert!(steps > 2, "the setup: the page has steps");
+    assert_eq!(
+        build.matches(r#"src="walkthrough/"#).count(),
+        shots,
+        "every screenshot kept is shown once"
+    );
+    assert_eq!(
+        build.matches(">Next: ").count() + build.matches(">Start: ").count(),
+        steps - 1,
+        "each step but the last leads on"
+    );
+    for note in [
+        "has no screenshots, so it is not shown",
+        "a fault the owner found here",
+    ] {
+        assert!(
+            !build.contains(note),
+            "a note on the page's words is shown: {note}"
+        );
+    }
+
     // How StackVet works: its own words, with the real VS Code line, then the paper's description.
     let how = read("how-it-works.html");
     assert!(how.contains("When only you can answer, your AI tool stops and asks."));

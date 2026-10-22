@@ -1,6 +1,6 @@
 # A short walk-through of a setup, as a video or a click-through slide show
 
-**Status:** open
+**Status:** partly done: the walk-through of a setup, for *Watch the walk-through*, once the owner has screenshots of one
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -14,3 +14,8 @@ after the setup prompt library is tried (it would show that), with every screen 
 **The owner's answer, 15 October 2026:** after the paper's data (0568's tables and figures) is done.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): its conditions are met: the setup prompt library was tried (0370, 0502, 14 October) and the paper's data is done (0568, 15 October). Nothing is made yet. It waits on the owner: every screen comes from a real run, and the trial's records are on the owner's drive.
+
+**Partly done, 22 October 2026** (ADR-132, Later): the walk-through of a build, from the owner's screenshots of the
+Cursor build, is the site's *How a build goes* (`docs/website/build-walkthrough-page.md`, seventeen screens, the
+username covered in two), behind the home page's *See how a build goes*. At the owner's word: the build now, the setup
+later, since the setup was not screenshotted. What remains is that walk-through of a setup.
