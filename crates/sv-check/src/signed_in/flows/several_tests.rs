@@ -82,6 +82,7 @@ fn the_credit_rests_on_every_flows_sign_ins() {
             status: Some(303),
             headers: Vec::new(),
             body: String::new(),
+            prompt: None,
         })
         .collect();
     let mut credits = vec![crate::Verified::new(

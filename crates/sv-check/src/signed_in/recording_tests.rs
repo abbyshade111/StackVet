@@ -143,6 +143,7 @@ fn a_signed_in_credit_names_only_the_recorded_answers_its_entry_lists() {
         status: Some(200),
         headers: Vec::new(),
         body: String::new(),
+        prompt: None,
     };
     let exchanges = [
         exchange("admin-a-0"),

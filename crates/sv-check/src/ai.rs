@@ -879,6 +879,8 @@ pub fn run(http: &mut dyn Http, section: &AiSection, ctx: &Context) -> (Outcome,
             words.replace("{tag}", &tag),
             crate::stand_in::marker(kind, &tag)
         );
+        // The prompt this composed, and nothing the app's page fills in, kept beside the answer (backlog 0623).
+        http.prompt(&question_id(kind, n), &prompt);
         let response = send_filled(
             http,
             &question_id(kind, n),
@@ -3272,3 +3274,6 @@ mod asked_again_tests;
 
 #[cfg(test)]
 mod questions_named_tests;
+
+#[cfg(test)]
+mod prompts_kept_tests;

@@ -110,6 +110,7 @@ fn a_test_password_in_a_signed_in_answer_is_blanked() {
             status: Some(200),
             headers: vec![("x-echo".to_owned(), s[1].clone())],
             body: format!("<input value=\"{}\">", s[0]),
+            prompt: None,
         }],
         ..Default::default()
     };

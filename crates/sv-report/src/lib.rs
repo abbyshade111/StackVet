@@ -2208,7 +2208,18 @@ fn exchange_line(e: &seen::Exchange) -> String {
     } else {
         format!(": \"{words}\"")
     };
-    format!("{} {} answered {}{to}{said}", e.method, e.path, e.status)
+    match &e.prompt {
+        // What `sv` asked, as it was sent and with what a reader cannot see written out, so an injection is read as
+        // text (backlog 0623).
+        Some(prompt) => format!(
+            "StackVet sent \"{}\" to {} {}, which answered {}{to}{said}",
+            sv_check::text::invisible_written_out(prompt),
+            e.method,
+            e.path,
+            e.status
+        ),
+        None => format!("{} {} answered {}{to}{said}", e.method, e.path, e.status),
+    }
 }
 
 fn reading_line(r: &seen::Reading) -> String {
@@ -2603,6 +2614,10 @@ mod pages_tests;
 #[cfg(test)]
 #[path = "tool_behavior_tests.rs"]
 mod tool_behavior_tests;
+
+#[cfg(test)]
+#[path = "prompt_shown_tests.rs"]
+mod prompt_shown_tests;
 
 #[cfg(test)]
 #[path = "hook_tests.rs"]

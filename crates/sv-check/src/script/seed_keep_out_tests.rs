@@ -26,6 +26,7 @@ fn a_value_the_seed_printed_is_taken_out_of_everything_written_down() {
         status: Some(403),
         headers: vec![("x-invite".into(), code())],
         body: format!("<p>{} was refused</p> about", code()),
+        prompt: None,
     });
     out.log_tail
         .push(format!("signup refused invite={}", code()));

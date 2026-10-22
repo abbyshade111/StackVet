@@ -62,6 +62,7 @@ pub fn record(
                 id: &request.id,
                 method: &request.method,
                 path: &request.path,
+                prompt: None,
             },
             Answered {
                 status: response.status,
@@ -101,6 +102,7 @@ pub fn signed_in(
                 id: &exchange.id,
                 method: &exchange.method,
                 path: &exchange.path,
+                prompt: exchange.prompt.as_deref(),
             },
             Answered {
                 status,
@@ -132,11 +134,13 @@ pub fn liveness(rules: &SecretRules, readings: &[sv_check::running::Liveness], s
     }
 }
 
-/// What was asked, as `kept_exchange` keeps it: the question's id, its method, and its path.
+/// What was asked, as `kept_exchange` keeps it: the question's id, its method, its path, and, for an AI question, the
+/// prompt `sv` itself wrote (backlog 0623).
 struct Asked<'a> {
     id: &'a str,
     method: &'a str,
     path: &'a str,
+    prompt: Option<&'a str>,
 }
 
 /// What came back: the status, the headers, and the body.
@@ -154,7 +158,12 @@ fn kept_exchange(
     asked: Asked<'_>,
     answered: Answered<'_>,
 ) -> Exchange {
-    let Asked { id, method, path } = asked;
+    let Asked {
+        id,
+        method,
+        path,
+        prompt,
+    } = asked;
     let Answered {
         status,
         headers,
@@ -179,6 +188,9 @@ fn kept_exchange(
         .collect();
     let body = cut(body);
     let path = cut(path);
+    // `sv`'s own prompt, through the same cut as the answer: it holds no credential, and if one were ever in it, it
+    // would not be kept (backlog 0623).
+    let prompt = prompt.map(&mut cut);
     Exchange {
         id: id.to_owned(),
         method: method.to_owned(),
@@ -186,6 +198,7 @@ fn kept_exchange(
         status,
         headers,
         body,
+        prompt,
     }
 }
 
@@ -426,3 +439,7 @@ mod seen_names_tests;
 #[cfg(test)]
 #[path = "seen_header_names_tests.rs"]
 mod seen_header_names_tests;
+
+#[cfg(test)]
+#[path = "seen_prompt_tests.rs"]
+mod seen_prompt_tests;
