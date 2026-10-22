@@ -38,3 +38,7 @@ Next: `run` in `ai.rs` (756 lines), then `sv-cli/src/main.rs`.
 **Third split, 21 October 2026.** `run` in `ai.rs` hands steps 7 (the MCP tool questions) and 8 (the rate check) to
 `mcp_questions` and `rate_question`, shaped as its other steps' helpers are, and goes from 736 lines to 461. Next:
 `sv-cli/src/main.rs`, then `run_checks` in `signed_in/mod.rs`.
+
+**Fourth split, 21 October 2026.** `sv-cli/src/main.rs`'s six inline test modules into sibling files
+(`main_tests.rs`, `main_dependency_gap_tests.rs`, and the rest), from 3,730 lines to 3,167. Next: `main.rs`'s
+`Command` table and `cmd_probe`, then `run_checks` in `signed_in/mod.rs`.
