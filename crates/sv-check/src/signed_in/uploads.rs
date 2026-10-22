@@ -129,23 +129,34 @@ pub(super) fn send_bytes(
     http.send(&request)
 }
 
+/// The upload route a refusal is judged on, with what it answered the ordinary file and the session that sent it: what
+/// `refusal_stands` and `took` read alike (backlog 0324: one struct where each took the three separately).
+#[derive(Clone, Copy)]
+pub(super) struct OnRoute<'a> {
+    pub(super) upload: &'a UploadSection,
+    pub(super) ordinary_answer: &'a ProbeResponse,
+    pub(super) session: &'a Session,
+}
+
 /// Whether a refusal can be credited to the file: an ordinary file of the kind sent (a GIF unless `accepts` says), with its own token and marker,
 /// sent straight after and accepted. A quota reached, a token spent, or a value the app keeps
 /// unique would refuse that too, and then the refusal is not assessed, and `false` comes back.
 /// After rather than before, because a quota the refused file would have reached is only shown by
 /// what comes next.
-#[allow(clippy::too_many_arguments)]
 pub(super) fn refusal_stands(
     http: &mut dyn Http,
-    upload: &UploadSection,
-    ordinary_answer: &ProbeResponse,
-    session: &Session,
+    route: &OnRoute<'_>,
     token: &Token,
     after: &str,
     requirement: &str,
     what: &str,
     out: &mut Outcome,
 ) -> bool {
+    let OnRoute {
+        upload,
+        ordinary_answer,
+        session,
+    } = *route;
     let id = format!("upload-after-{after}");
     let kind = kind_of(upload);
     let name = format!("sv-probe-after-{after}.{}", kind.ext);
@@ -233,16 +244,18 @@ pub(super) fn served_back_works(
 /// (`refusal_stands` then asks whether the refusal was about the file). Otherwise, when fetching back by name
 /// found the ordinary file, the file is fetched back by its name and `holds` looked for; and when it was not,
 /// or the fetch shows nothing either way, the answer is read beside the ordinary file's.
-#[allow(clippy::too_many_arguments)]
 pub(super) fn took(
     http: &mut dyn Http,
-    upload: &UploadSection,
-    ordinary_answer: &ProbeResponse,
+    route: &OnRoute<'_>,
     served: Option<&str>,
     answer: &Option<ProbeResponse>,
     (id, name, holds): (&str, &str, Option<&str>),
-    session: &Session,
 ) -> Took {
+    let OnRoute {
+        upload,
+        ordinary_answer,
+        session,
+    } = *route;
     let Some(given) = answer.as_ref().filter(|r| r.status < 400) else {
         return Took::No;
     };
@@ -386,12 +399,14 @@ pub(super) fn upload_checks(
             let answer = send_upload(http, upload, &big, session, &token);
             let judged = took(
                 http,
-                upload,
-                &ordinary_answer,
+                &OnRoute {
+                    upload,
+                    ordinary_answer: &ordinary_answer,
+                    session,
+                },
                 served.as_deref(),
                 &answer,
                 ("upload-oversized", big.name, Some(&holds)),
-                session,
             );
             let sent = most + 1024 + kind.wrapping();
             let step = format!("sent a file of {sent} bytes where {most} is the stated limit");
@@ -412,9 +427,11 @@ pub(super) fn upload_checks(
                     out.steps.push(format!("{step}: refused"));
                     if refusal_stands(
                         http,
-                        upload,
-                        &ordinary_answer,
-                        session,
+                        &OnRoute {
+                            upload,
+                            ordinary_answer: &ordinary_answer,
+                            session,
+                        },
                         &token,
                         "oversized",
                         "V5.2.1",
@@ -465,8 +482,11 @@ pub(super) fn upload_checks(
     let answer = send_upload(http, upload, &mismatched, session, &token);
     let judged = took(
         http,
-        upload,
-        &ordinary_answer,
+        &OnRoute {
+            upload,
+            ordinary_answer: &ordinary_answer,
+            session,
+        },
         served.as_deref(),
         &answer,
         (
@@ -474,7 +494,6 @@ pub(super) fn upload_checks(
             mismatched.name,
             Some(kind.not_it_holds),
         ),
-        session,
     );
     let (ext, a) = (kind.ext, kind.a);
     let step = format!("sent a .{ext} whose contents are not {a}");
@@ -494,9 +513,11 @@ pub(super) fn upload_checks(
             out.steps.push(format!("{step}: refused"));
             if refusal_stands(
                 http,
-                upload,
-                &ordinary_answer,
-                session,
+                &OnRoute {
+                    upload,
+                    ordinary_answer: &ordinary_answer,
+                    session,
+                },
                 &token,
                 "mismatched",
                 "V5.2.2",
@@ -605,9 +626,11 @@ fn traversal_check(
         let what = "A file named to land outside the upload folder";
         if !refusal_stands(
             http,
-            upload,
-            ordinary_answer,
-            session,
+            &OnRoute {
+                upload,
+                ordinary_answer,
+                session,
+            },
             token,
             "traversal",
             "V5.3.2",
@@ -760,9 +783,11 @@ fn svg_check(
         let what = "An SVG image carrying a script";
         if !refusal_stands(
             http,
-            upload,
-            ordinary_answer,
-            session,
+            &OnRoute {
+                upload,
+                ordinary_answer,
+                session,
+            },
             token,
             "svg",
             "V1.3.4",
@@ -1068,9 +1093,11 @@ fn scan_check(
         let what = "The antivirus test file (EICAR)";
         if !refusal_stands(
             http,
-            upload,
-            ordinary_answer,
-            session,
+            &OnRoute {
+                upload,
+                ordinary_answer,
+                session,
+            },
             token,
             "eicar",
             "V5.4.3",
