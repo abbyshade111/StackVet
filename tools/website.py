@@ -484,12 +484,18 @@ def safe_out(out):
     return out
 
 
+def inline_scripts(page):
+    """The text of each script in a page, however its tags are written (`<SCRIPT>`, `</script >`), so none is left
+    out of the policy."""
+    return re.findall(r"<script\b[^>]*>(.*?)</script\b[^>]*>", page, re.S | re.I)
+
+
 def headers(out):
     """`_headers` for Cloudflare: every inline script the build wrote is allowed by its hash, and nothing else runs.
     Inline styles are allowed, since the pages and the example report set them in `style` attributes too."""
     scripts = set()
     for page in sorted(out.rglob("*.html")):
-        scripts.update(re.findall(r"<script>(.*?)</script>", page.read_text(encoding="utf-8"), re.S))
+        scripts.update(inline_scripts(page.read_text(encoding="utf-8")))
     hashes = " ".join(sorted("'sha256-" + base64.b64encode(hashlib.sha256(s.encode("utf-8")).digest()).decode()
                              + "'" for s in scripts)) or "'none'"
     policy = (f"default-src 'none'; script-src {hashes}; style-src 'unsafe-inline'; img-src 'self'; "
@@ -578,6 +584,7 @@ def self_test():
     assert 'class="turn you"' in chat and "I want an app." in chat and 'class="turn asks"' in chat
     assert 'class="badge found"' in status_lines("| | |\n|---|---|\n| needs attention | Too quick. |")
     assert "<h3>New?</h3><p>Start here.</p>" == block_html("**New?**\nStart here.")
+    assert inline_scripts("<script>a()</script><SCRIPT type=module>b()</SCRIPT ><p>") == ["a()", "b()"]
     print("website self-test: ok")
 
 
