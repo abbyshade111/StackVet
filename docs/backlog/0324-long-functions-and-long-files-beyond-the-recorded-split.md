@@ -130,7 +130,8 @@ since 21 October (#2196, #2198 to #2200, #2202 to #2206, #2208 to #2215), each w
 its own means: the line sets of the old and new file, the report pages or command output made before and after, and
 each moved piece stubbed to see which tests went red. The workspace's `too_many_arguments` allows went from 18 to 2,
 and the longest functions on the list from 819, 863, 736, 650, 590, 515, 496, and 448 lines to 725, 467, 461, 355,
-399, 433, 301, and 217. Seven of the moved blocks were held by no test; five now are (the owner's-word gaps, the app's
-own tests, `sv check`'s unread lines, `sv probe`'s result, and the late signed-in checks' guard). What remains is on the
+399, 433, 301, and 217. Seven of the moved blocks were held by no test; six now are (the three gaps for the owner's
+word, the app's own tests, `sv check`'s unread lines, and `sv probe`'s result), and `run_note_details` is not. The
+guard per check now reads the late signed-in checks it would otherwise have lost. What remains is on the
 status line: splitting the nine long files further moves less with each split, and is left for a session with nothing
 else ahead of it.
