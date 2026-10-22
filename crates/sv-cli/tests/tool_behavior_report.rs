@@ -113,20 +113,26 @@ fn the_second_report_reads_the_tool_s_commit_since_the_first_and_the_record_only
     place.git(&["add", "-A"]);
     place.git(&["commit", "-qm", "Start the app"]);
 
-    // The hook records a force-push and a write to the answers, as Claude Code would hand them to it.
-    let printed = place.sv(&["connect", "claude", "--hook"]);
-    let block: Value = serde_json::from_slice(&printed.stdout).unwrap();
-    let hook = block["hooks"]["PostToolUse"][0]["hooks"][0]["command"]
-        .as_str()
-        .unwrap()
-        .to_owned();
-    let app = place.app.display().to_string();
+    // The hook records a force-push and a write to the answers, as Claude Code would hand them to it. The hook's
+    // own command is called as the printed hook calls it, without a shell, so the test runs on Windows too; the JSON is
+    // built, not pasted, since a Windows path's backslashes are escapes in JSON text.
+    let file = place.app.join("stackvet.toml").display().to_string();
     for input in [
-        r#"{"hook_event_name":"PostToolUse","session_id":"s","tool_name":"Bash","tool_input":{"command":"git push --force origin main"}}"#.to_owned(),
-        format!(r#"{{"hook_event_name":"PostToolUse","session_id":"s","tool_name":"Write","tool_input":{{"file_path":"{app}/stackvet.toml"}}}}"#),
+        serde_json::json!({"hook_event_name": "PostToolUse", "session_id": "s", "tool_name": "Bash",
+                           "tool_input": {"command": "git push --force origin main"}}),
+        serde_json::json!({"hook_event_name": "PostToolUse", "session_id": "s", "tool_name": "Write",
+                           "tool_input": {"file_path": file}}),
     ] {
-        let ran = place.run(Command::new("sh").args(["-c", &hook]), Some(&input));
-        assert!(ran.status.success(), "{}", String::from_utf8_lossy(&ran.stderr));
+        let app = place.app.display().to_string();
+        let ran = place.run(
+            Command::new(env!("CARGO_BIN_EXE_sv")).args(["hook-record", "--app", &app]),
+            Some(&input.to_string()),
+        );
+        assert!(
+            ran.status.success(),
+            "{}",
+            String::from_utf8_lossy(&ran.stderr)
+        );
     }
     let records = place.home.join("state/stackvet/hook-records");
     assert_eq!(
