@@ -47,3 +47,9 @@ Next: `run` in `ai.rs` (756 lines), then `sv-cli/src/main.rs`.
 for word, from 819 lines to about 720. `check_guard_tests` reads both bodies now: with it reading `run_checks` alone, a
 check called bare in `late_checks` passed every test, and with both it is named. Next: `main.rs`'s `Command` table and
 `cmd_probe`, then `html.rs`'s `page` (863 lines) and `markdown.rs`'s `compliance_as` (650).
+
+**Sixth split, 21 October 2026.** `page` in `sv-report/src/html.rs` hands six of its sections to functions of their
+own (the requirement tables, the AI process, the threats, what only the owner can check, the tests to write, and what
+sits outside the tables), word for word, from 863 lines to 467; a report.html made before and after on the example app
+differs only in the run's id and its timings. Next: `compliance_as` in `markdown.rs` (650), then `main.rs`'s
+`Command` table and `cmd_probe`.

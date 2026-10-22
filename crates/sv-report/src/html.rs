@@ -606,6 +606,103 @@ pub fn page(report: &Report) -> String {
     if let Some(note) = crate::plain_note(report) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&note)));
     }
+    requirement_groups(report, &mut b);
+
+    ai_process(report, &mut b);
+
+    threats(report, &mut b);
+
+    only_you(report, &mut b);
+
+    // The same, with everything else to do before going live, in the order of a deployment (backlog 0589).
+    b.push_str(&crate::checklist::html(report));
+
+    // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
+    if let Some(seen) = &report.hook_record {
+        b.push_str(&format!("<h2>{}</h2>\n", escape(crate::hook::HEADING)));
+        let (lines, command) = crate::hook::sentences(seen, &report.requirements);
+        for line in lines {
+            let line = crate::checklist::text(&line).replace(
+                crate::hook::COMMAND,
+                &format!("<code>{}</code>", escape(command.unwrap_or(""))),
+            );
+            b.push_str(&format!("<p>{line}</p>\n"));
+        }
+    }
+
+    // What the AI coding tool did that is worth a look (backlog 0630, ADR-131): decides nothing.
+    if let Some(t) = &report.tool_behavior {
+        b.push_str(&format!(
+            "<h2>{}</h2>\n",
+            escape(crate::tool_behavior::HEADING)
+        ));
+        for line in crate::tool_behavior::sentences(t) {
+            b.push_str(&format!("<p>{}</p>\n", escape(&line)));
+        }
+        if !t.seen.is_empty() {
+            b.push_str("<table><thead><tr><th>Kind</th><th>What was seen</th><th>Where</th></tr></thead><tbody>\n");
+            for s in &t.seen {
+                b.push_str(&format!(
+                    "<tr><td>{}</td><td>{}</td><td>{}</td></tr>\n",
+                    escape(s.kind.label()),
+                    escape(&s.what),
+                    escape(&s.place)
+                ));
+            }
+            b.push_str("</tbody></table>\n");
+        }
+    }
+
+    // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
+    if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
+        b.push_str("<h2>What your AI coding tool's files let it do</h2>\n");
+        b.push_str(&format!("<p>{}</p>\n", escape("These files in the project folder belong to the AI coding tool you build with, not to the app, so nothing here counts toward the app's grade or any requirement. Each line is something a file lets the tool do on the computer that opens this folder: run a command, send its work or its key somewhere, act without asking, or start a server. You may have set it up on purpose. If you did not, or do not know where it came from, look before you trust the folder. Claude Code asks before it uses a folder's own settings for the first time. The risk column names the OWASP Agentic Skills Top 10 risk it speaks to; that list is not one this report is graded against.")));
+        if !report.ai_tool.notes.is_empty() {
+            b.push_str(
+                "<table>\n<tr><th>file</th><th>tool</th><th>what it lets the tool do</th><th>risk</th></tr>\n",
+            );
+            for note in &report.ai_tool.notes {
+                b.push_str(&format!(
+                    "<tr><td><code>{}</code></td><td>{}</td><td>{}</td><td>{}</td></tr>\n",
+                    escape(&note.file),
+                    escape(&note.tool),
+                    escape(&note.what),
+                    escape(note.risk)
+                ));
+            }
+            b.push_str("</table>\n");
+        }
+        if !report.ai_tool.not_read.is_empty() {
+            b.push_str(&format!(
+                "<p>Not read: {}.</p>\n",
+                escape(&report.ai_tool.not_read.join("; "))
+            ));
+        }
+    }
+
+    tests_to_write(report, &mut b);
+
+    outside_the_tables(report, &mut b);
+
+    // What each file in the folder is for, so the two Markdown reports are not taken for the same (backlog 0413).
+    b.push_str("<h2>The files in this folder</h2>\n");
+    b.push_str("<table>\n<tr><th>file</th><th>what it holds</th><th>who it is for</th></tr>\n");
+    for file in &crate::folder::FILES {
+        b.push_str(&format!(
+            "<tr><td><code>{}</code></td><td>{}</td><td>{}</td></tr>\n",
+            escape(file.name),
+            escape(file.holds),
+            escape(file.for_whom)
+        ));
+    }
+    b.push_str("</table>\n");
+
+    b.push_str("</body>\n</html>\n");
+    b
+}
+
+/// The requirements, a table per level, level 1 first (`crate::groups`). Part of `page`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn requirement_groups(report: &Report, b: &mut String) {
     for group in crate::groups::by_level(&report.requirements) {
         b.push_str(&format!(
             "<h3>{} <span class=\"note\">— {} of them</span></h3>\n",
@@ -700,7 +797,10 @@ pub fn page(report: &Report) -> String {
         }
         b.push_str("</table>\n");
     }
+}
 
+/// How the app is built with AI, when the report has lines on it. Part of `page`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn ai_process(report: &Report, b: &mut String) {
     if !report.ai_process.lines.is_empty() {
         let p = &report.ai_process;
         b.push_str("<h2>How the app is built with AI (OWASP AISVS Appendix C)</h2>\n");
@@ -720,7 +820,10 @@ pub fn page(report: &Report) -> String {
         }
         b.push_str("</table>\n</details>\n");
     }
+}
 
+/// The threats the app's own threat model names, when it has one. Part of `page`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn threats(report: &Report, b: &mut String) {
     if !report.threats.is_empty() {
         b.push_str("<h2>Threats</h2>\n");
         b.push_str(&format!("<p>{}</p>\n", escape(crate::threats::INTRO)));
@@ -790,7 +893,10 @@ pub fn page(report: &Report) -> String {
             }
         }
     }
+}
 
+/// What only the owner can check, high up, and what only the live site can answer. Part of `page`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn only_you(report: &Report, b: &mut String) {
     // High up, above the tests: nothing will ever settle these on its own.
     if !report.only_you_can_check.is_empty() {
         b.push_str("<h2>What only you can check</h2>\n");
@@ -867,73 +973,10 @@ pub fn page(report: &Report) -> String {
         }
         b.push_str("</table>\n");
     }
+}
 
-    // The same, with everything else to do before going live, in the order of a deployment (backlog 0589).
-    b.push_str(&crate::checklist::html(report));
-
-    // What the hook record showed, read only with the person's consent for this run (backlog 0566, ADR-122).
-    if let Some(seen) = &report.hook_record {
-        b.push_str(&format!("<h2>{}</h2>\n", escape(crate::hook::HEADING)));
-        let (lines, command) = crate::hook::sentences(seen, &report.requirements);
-        for line in lines {
-            let line = crate::checklist::text(&line).replace(
-                crate::hook::COMMAND,
-                &format!("<code>{}</code>", escape(command.unwrap_or(""))),
-            );
-            b.push_str(&format!("<p>{line}</p>\n"));
-        }
-    }
-
-    // What the AI coding tool did that is worth a look (backlog 0630, ADR-131): decides nothing.
-    if let Some(t) = &report.tool_behavior {
-        b.push_str(&format!(
-            "<h2>{}</h2>\n",
-            escape(crate::tool_behavior::HEADING)
-        ));
-        for line in crate::tool_behavior::sentences(t) {
-            b.push_str(&format!("<p>{}</p>\n", escape(&line)));
-        }
-        if !t.seen.is_empty() {
-            b.push_str("<table><thead><tr><th>Kind</th><th>What was seen</th><th>Where</th></tr></thead><tbody>\n");
-            for s in &t.seen {
-                b.push_str(&format!(
-                    "<tr><td>{}</td><td>{}</td><td>{}</td></tr>\n",
-                    escape(s.kind.label()),
-                    escape(&s.what),
-                    escape(&s.place)
-                ));
-            }
-            b.push_str("</tbody></table>\n");
-        }
-    }
-
-    // The AI coding tool's own files (ADR-049): apart from the app's grade, and graded by nothing.
-    if !report.ai_tool.notes.is_empty() || !report.ai_tool.not_read.is_empty() {
-        b.push_str("<h2>What your AI coding tool's files let it do</h2>\n");
-        b.push_str(&format!("<p>{}</p>\n", escape("These files in the project folder belong to the AI coding tool you build with, not to the app, so nothing here counts toward the app's grade or any requirement. Each line is something a file lets the tool do on the computer that opens this folder: run a command, send its work or its key somewhere, act without asking, or start a server. You may have set it up on purpose. If you did not, or do not know where it came from, look before you trust the folder. Claude Code asks before it uses a folder's own settings for the first time. The risk column names the OWASP Agentic Skills Top 10 risk it speaks to; that list is not one this report is graded against.")));
-        if !report.ai_tool.notes.is_empty() {
-            b.push_str(
-                "<table>\n<tr><th>file</th><th>tool</th><th>what it lets the tool do</th><th>risk</th></tr>\n",
-            );
-            for note in &report.ai_tool.notes {
-                b.push_str(&format!(
-                    "<tr><td><code>{}</code></td><td>{}</td><td>{}</td><td>{}</td></tr>\n",
-                    escape(&note.file),
-                    escape(&note.tool),
-                    escape(&note.what),
-                    escape(note.risk)
-                ));
-            }
-            b.push_str("</table>\n");
-        }
-        if !report.ai_tool.not_read.is_empty() {
-            b.push_str(&format!(
-                "<p>Not read: {}.</p>\n",
-                escape(&report.ai_tool.not_read.join("; "))
-            ));
-        }
-    }
-
+/// The tests to write, level 1 only, with how many deeper ones `sv mcp` and report.json hold. Part of `page`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn tests_to_write(report: &Report, b: &mut String) {
     // Level 1 only; see the note in the Markdown renderer. `sv mcp` gives the AI coding tool the
     // whole list, and report.json carries it.
     let level_one: Vec<&crate::TestToWrite> = report
@@ -999,7 +1042,10 @@ pub fn page(report: &Report) -> String {
         // `<details>` (the deep review's improvement 6).
         b.push_str("</details>\n");
     }
+}
 
+/// What sits outside the tables: checks that found nothing against nothing in them, findings about requirements not assessed, and the Secure by Design controls above the target level. Part of `page`, moved out of it on 21 October 2026 (backlog 0324), word for word.
+fn outside_the_tables(report: &Report, b: &mut String) {
     if !report.satisfied_elsewhere.is_empty() {
         b.push_str(
             "<h2>Checks that ran and found nothing, against nothing in the tables above</h2>\n",
@@ -1079,22 +1125,6 @@ pub fn page(report: &Report) -> String {
         b.push_str("</table>\n");
         b.push_str("</details>\n");
     }
-
-    // What each file in the folder is for, so the two Markdown reports are not taken for the same (backlog 0413).
-    b.push_str("<h2>The files in this folder</h2>\n");
-    b.push_str("<table>\n<tr><th>file</th><th>what it holds</th><th>who it is for</th></tr>\n");
-    for file in &crate::folder::FILES {
-        b.push_str(&format!(
-            "<tr><td><code>{}</code></td><td>{}</td><td>{}</td></tr>\n",
-            escape(file.name),
-            escape(file.holds),
-            escape(file.for_whom)
-        ));
-    }
-    b.push_str("</table>\n");
-
-    b.push_str("</body>\n</html>\n");
-    b
 }
 
 fn finding_section(b: &mut String, report: &Report, f: &sv_check::Finding) {
