@@ -211,9 +211,9 @@ or changes anything. If a step doesn't work, it stops and tells you what happene
 You'll need an AI coding tool that can run commands on your computer, not only a chat window. The setup prompts have
 been tried in *[the tools they have really been tried in, filled in from the owner's test]*.
 
-Want to see it first? Watch a two-minute walk-through of a setup from start to finish.
+Want to see it first? Follow one real build, screen by screen, from the first decisions to the report.
 
-Buttons: *Open the setup prompts*, *Watch the walk-through*.
+Buttons: *Open the setup prompts*, *See how a build goes*.
 
 **Used a terminal or Docker before?**
 Install Docker Desktop or Colima, fetch StackVet with one command, and connect it to your AI tool; on Windows,
@@ -225,8 +225,9 @@ For the checks that start your app, install StackVet on your computer as well:
 
 Button: *Read the guide*.
 
-- The walk-through is *not yet made* (item 4); the setup prompt library is (item 1, done 14 October 2026). The site
-  names only AI tools the prompts have really been tried in.
+- The walk-through is the build's, *How a build goes* (`build-walkthrough-page.md`, item 4): the owner chose on 22
+  October 2026 to start with it, and leave a walk-through of a setup for later. The setup prompt library is item 1,
+  done 14 October 2026. The site names only AI tools the prompts have really been tried in.
 
 ## 8. Free, open, and new
 
@@ -298,5 +299,6 @@ The site does not go live while any of these is open:
    (backlog 0371).
 3. ~~Each requirement in the report stated in plain language, beside OWASP's wording, with checks named in words.~~
    Done 14 October 2026 (backlog 0372).
-4. A short walk-through of a setup, as a video or a click-through slide show.
+4. ~~A short walk-through of a setup, as a video or a click-through slide show.~~ Done 22 October 2026 as the
+   walk-through of a build, at the owner's word, the setup's left for later (backlog 0373).
 5. ~~Every credited tool's and data source's license confirmed from its source.~~ Done 14 October 2026 (backlog 0374).

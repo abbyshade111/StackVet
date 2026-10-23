@@ -132,8 +132,15 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         home.contains("The setup prompts have been tried in Cursor"),
         "the tools tried are not named"
     );
-    // A button for something not made yet is shown as coming, never as a link.
-    assert!(home.contains("Watch the walk-through<span class=\"small\">&nbsp;(coming)"));
+    // Nothing on the home page is shown as coming: both of its walk-through buttons lead to the build's
+    // (backlog 0373, at the owner's word).
+    assert!(!home.contains("(coming)"), "a button is shown as coming");
+    assert_eq!(
+        home.matches(r#"href="how-a-build-goes.html">See how a build goes</a>"#)
+            .count(),
+        2,
+        "the opening's button and Get started's"
+    );
 
     // The numbers are docs/COVERAGE.md's, not the ones written in the words.
     let asvs = levels("ASVS 5.0 by level");

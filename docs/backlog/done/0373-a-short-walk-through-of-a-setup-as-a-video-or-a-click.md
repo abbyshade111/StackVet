@@ -1,6 +1,6 @@
 # A short walk-through of a setup, as a video or a click-through slide show
 
-**Status:** claimed by claude/0373-start-with-build, 22 October 2026
+**Status:** done, 22 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -34,3 +34,9 @@ connect StackVet, not with a prompt from `docs/prompts/setup.md`.
 with the walkthrough for now." Claimed again to finish it that way: the home page's "Want to see it first?" and its
 *Watch the walk-through* lead to *How a build goes*, nothing is shown as coming, and the walk-through of a setup is
 left for later, not a condition of going live.
+
+**Done, 22 October 2026,** at the owner's word: the walk-through is the build's, *How a build goes*, and nothing on
+the site is shown as coming. The home page's "Want to see it first?" in "Get started" now reads "Follow one real
+build, screen by screen, from the first decisions to the report", and its button is *See how a build goes*, as the
+opening's is; *Watch the walk-through* is gone from `tools/website.py`'s buttons. A walk-through of a setup is left
+for later, and is no longer a condition of going live (`docs/website/home-page.md`, "Not yet true", item 4).
