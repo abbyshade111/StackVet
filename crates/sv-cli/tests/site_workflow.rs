@@ -71,24 +71,37 @@ fn the_token_reaches_the_deploy_step_alone() {
         "the job a pull request runs sees a secret:\n{check}"
     );
     let deploy = job(&text, "deploy");
-    for secret in [
-        "secrets.CLOUDFLARE_API_TOKEN",
-        "secrets.CLOUDFLARE_ACCOUNT_ID",
+    // Only the names of the repository's secrets are read here, as text in the workflow, and the messages name them in
+    // words, so nothing that looks like a secret is printed.
+    for (reference, what) in [
+        (
+            "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+            "the Cloudflare token",
+        ),
+        (
+            "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}",
+            "the Cloudflare account",
+        ),
     ] {
-        assert_eq!(text.matches(secret).count(), 1, "{secret} is used once");
+        assert_eq!(text.matches(reference).count(), 1, "{what} is used once");
         assert!(
-            deploy.contains(&format!("${{{{ {secret} }}}}")),
-            "{secret} is not the deploy step's"
+            deploy.contains(reference),
+            "{what} is not the deploy step's"
         );
     }
     // Handed through the action's inputs, never written into a script (backlog 0318).
-    for line in deploy.lines().filter(|l| l.contains("secrets.")) {
-        assert!(
-            line.trim_start().starts_with("apiToken:")
-                || line.trim_start().starts_with("accountId:"),
-            "{line}"
-        );
-    }
+    let handed_in_a_script = deploy
+        .lines()
+        .filter(|l| l.contains("secrets."))
+        .filter(|l| {
+            let l = l.trim_start();
+            !(l.starts_with("apiToken:") || l.starts_with("accountId:"))
+        })
+        .count();
+    assert_eq!(
+        handed_in_a_script, 0,
+        "a secret reaches the deploy other than through the action's inputs"
+    );
     assert!(
         text.contains("permissions:\n  contents: read\n"),
         "the workflow can only read the repository"
