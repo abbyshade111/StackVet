@@ -1,6 +1,6 @@
 # Sign-up checks fill one seed value into every account they make, so a one-use invite code fails all but the first
 
-**Status:** open
+**Status:** claimed by claude/0637, 23 October 2026
 
 Found in the owner's Cursor build of 22 October 2026 (backlog 0373), read in the app's folder on the owner's drive. The
 app is invite-only, and its invites work once: `app.py` records who used one (line 637) and refuses one already used
@@ -25,3 +25,5 @@ To do, with a decision record, since it changes what `stackvet.toml` can say and
 The rate limit that held back other signed-in checks in the same run (10 new games a minute) is the app's own, and the
 report handled it as it should: it waited as asked, then said which checks a refusal there could not credit. Nothing
 to change in StackVet for that.
+
+**Claimed, 23 October 2026,** at the owner's answer ("Numbered values"). **Record, proposed:** ADR-134.
