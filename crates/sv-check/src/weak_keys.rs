@@ -122,6 +122,14 @@ pub fn weak_keys_in(source: &str) -> Vec<(usize, String)> {
                 _ => pattern.says.to_owned(),
             };
             let line = source[..whole.start()].matches('\n').count() + 1;
+            // A comment makes no key: it describes one, as this file's own comments do (ADR-137).
+            let line_start = source[..whole.start()].rfind('\n').map_or(0, |i| i + 1);
+            let line_end = source[whole.start()..]
+                .find('\n')
+                .map_or(source.len(), |i| whole.start() + i);
+            if crate::cert_checks::commented(&source[line_start..line_end]) {
+                continue;
+            }
             out.push((line, says));
         }
     }
@@ -181,3 +189,6 @@ pub fn check(listing: &Listing, report: &mut ConfigReport) {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod comment_tests;
