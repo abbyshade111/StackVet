@@ -452,30 +452,38 @@ def build_page(page_md, commit):
     return shell("How a build goes — StackVet", "", "".join(out), commit)
 
 
+# The files of StackVet's report on itself the site publishes: the bill of materials alone. The finding-by-finding
+# files are read for the page's counts and kept in the repository, not published (the owner's choice of 23 October
+# 2026, backlog 0633).
+SELF_PUBLISHED = ("sbom.cdx.json",)
+
+
 def self_files():
-    names = sorted(p.name for p in SELF.iterdir() if p.is_file() and p.name != "README.md")
-    if "compliance.md" not in names:
-        die("docs/website/self-assessment/ has no compliance.md")
+    names = sorted(p.name for p in SELF.iterdir() if p.is_file() and p.name in SELF_PUBLISHED)
+    if not (SELF / "summary.md").is_file():
+        die("docs/website/self-assessment/ has no summary.md")
     return names
 
 
 def itself_page(commit):
-    compliance = (SELF / "compliance.md").read_text(encoding="utf-8")
-    produced = re.search(r"^Produced by .*$", compliance, re.M)
-    known = re.search(r"^Of the requirements that apply to this app:\n\n((?:- .*\n)+)", compliance, re.M)
-    held = re.search(r"^Held to ASVS level \d\..*$", compliance, re.M)
-    if not (produced and known and held):
-        die("docs/website/self-assessment/compliance.md no longer opens as this script expects")
+    summary = (SELF / "summary.md").read_text(encoding="utf-8")
+    produced = re.search(r"^Produced by .*$", summary, re.M)
+    known = re.search(r"^Of the requirements that apply to this app:\n\n((?:- .*\n)+)", summary, re.M)
+    held = re.search(r"^Held to ASVS level \d\..*$", summary, re.M)
+    to_fix = re.search(r"^Things to fix: (\d+)$", summary, re.M)
+    not_examined = re.search(r"^Things not examined: (\d+)$", summary, re.M)
+    if not (produced and known and held and to_fix and not_examined):
+        die("docs/website/self-assessment/summary.md no longer reads as this script expects")
     readme = (SELF / "README.md").read_text(encoding="utf-8").split("\n", 1)[1]
-    files = "".join(
-        f'<li><a href="self-assessment/{e(n[:-3] + ".html" if n.endswith(".md") else n)}">{e(n)}</a></li>'
-        for n in self_files())
+    files = "".join(f'<li><a href="self-assessment/{e(n)}">{e(n)}</a>, the bill of materials</li>'
+                    for n in self_files())
     body = ("<h1>StackVet checks itself</h1>"
             '<p class="lede">StackVet\'s own report on its own code, held to the highest level there is, ASVS and '
-            "AISVS level 3. It is shown as it came out, with nothing set aside.</p>"
+            "AISVS level 3. A summary of it: the things it found are being gone through.</p>"
             f'<div class="panel"><p>{md(produced[0])[3:-4]}</p><p>Of the requirements that apply:</p>'
-            f'{md(known[1])}<p class="small">{md(held[0])[3:-4]}</p></div>'
-            f'<h2>The report\'s files</h2><ul>{files}</ul>'
+            f'{md(known[1])}<p class="small">{md(held[0])[3:-4]}</p>'
+            f'<p>{e(to_fix[1])} things to fix were found, and {e(not_examined[1])} things were not examined.</p></div>'
+            f'<h2>Published here</h2><ul>{files}</ul>'
             f'<div class="md">{md(readme, "self.md")}</div>'
             f'<h2>The code it checked, and the earlier report</h2><p>The code is on <a href="{GITHUB}">GitHub</a>. '
             "The research paper's own report of StackVet, of 4 October 2026, is kept as it was, at "
@@ -573,9 +581,6 @@ def build(out):
                        markdown_page(src, "an example report", commit, len(rel.parts)))
     for name in self_files():
         copy(SELF / name, out / "self-assessment" / name)
-        if name.endswith(".md"):
-            write_text(out / "self-assessment" / (name[:-3] + ".html"),
-                       markdown_page(SELF / name, "StackVet's report on itself", commit, 1))
     framework_pages.build(out / "standards", home="../index.html")
     write_text(out / "_headers", headers(out))
     # What Cloudflare is not to upload when the site is deployed (deploy/stackvet.dev/wrangler.jsonc): the markers
