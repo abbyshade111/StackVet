@@ -63,8 +63,9 @@ Three ways, which do not agree:
   `net/http` (`r.URL.Query()`, `r.FormValue`), PHP's `$_GET` and `$_FILES`, Axum's and Actix's extractors (`Path`,
   `Query`, `Form`, `Multipart`), and so on, the frameworks the trial apps used first.
 - The cost: a path built from a request through a call the reading does not follow (a helper in another file, a value
-  stored and read back) is listed apart rather than among the things to fix. The rule never credits V5.3.2 (it is
-  `findingsOnly`-shaped already, `inPart` at most), so this changes which list a finding is on, not what is verified.
+  stored and read back) is listed apart rather than among the things to fix. A finding listed apart still counts,
+  so V5.3.2 needs attention exactly when it does now; this changes which list a finding is on, not what is verified. (A
+  clean run of the rule credits V5.3.2 in part, `inPart`, as now.)
 - Rust gains the safe forms the other languages have: names followed back to fixed text, and joins under a constant.
 
 **B. Rust's safe forms only.** Teach Rust what Python and JavaScript know (fixed text through names, a join under a
