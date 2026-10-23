@@ -21,5 +21,6 @@ identity that asked for the AI generation in the first place (separation of duti
 count as the human reviewer." So `sv review` asks, before the entries are listed, whether someone other than the
 person who asked the AI tool for the code reviewed it, writes the answer beside the owner's check by hand, and seals it
 with the entry. AC.4.1 counts as checked by hand only with `reviewer = "someone-else"`; otherwise the report names it
-in a gap that says what was recorded and what the requirement asks, and it stays not verified. Tests:
+in a gap that says what was recorded and what the requirement asks, and it stays not verified. A `problem` recorded for AC.4.1 stays a finding, whoever looked: only a `done` waits for a
+second person. Tests:
 `crates/sv-cli/src/review/separate_review_tests.rs` and `crates/sv-cli/tests/separate_review.rs`.
