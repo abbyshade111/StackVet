@@ -12,3 +12,6 @@ StackVet's own code.
 To do: read a `cfg` whose condition is `test`, or `all(...)` with `test` among its own arguments, as test-only, in
 both places; and not `any(test, ...)`, `not(test)`, or one where `test` sits under `not` or `any`, which can hold in a
 build that is not a test. Test each form, both ways. A Later entry on ADR-136.
+
+**Built within 0654,** at the owner's answer of 23 October 2026 to backlog 0647: one reading of test code for every
+check, which reads `cfg(all(test, ...))` too.

@@ -91,3 +91,9 @@ one line inside the group.
 
 Each choice is a decision record of its own when it is built (what counts as evidence, and at which tier). Then
 StackVet's report on itself is made again.
+
+## The owner's answer, 23 October 2026
+
+Asked which choice, the owner answered "A: read the source (Recommended)", and for test code chose all three: "One
+reading for all checks", "Weak-key check labels, not skips", and "SBOM skips test lockfiles". Built as backlog 0653 to
+0656.

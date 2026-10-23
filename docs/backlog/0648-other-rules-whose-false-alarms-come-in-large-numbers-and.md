@@ -12,3 +12,5 @@ what; read a sample of each against the code; and for each rule whose findings a
 rule cannot see where a value came from, it reads text that cannot run, it fires on test code), what would fix it, and
 what the fix would cost in real faults it might then miss. Each rule worth fixing becomes an item of its own, with a test
 that it still fires where it should. After 0647, which may answer the same question for one rule first.
+
+**Order,** at the owner's word of 23 October 2026: after 0656, the last of 0647's builds.
