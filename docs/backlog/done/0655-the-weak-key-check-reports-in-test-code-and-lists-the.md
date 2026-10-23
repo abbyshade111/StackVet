@@ -1,6 +1,6 @@
 # The weak-key check reports in test code and lists the finding apart, instead of skipping test files
 
-**Status:** claimed by claude/0647, 23 October 2026
+**Status:** done, 23 October 2026
 
 From the owner's answer of 23 October 2026 to backlog 0647's choices ("A: read the source", and all three test-code fixes); the design entry is `docs/design/0394-the-path-rule-s-false-alarms-and-how-test-code-is-read-23.md`.
 
@@ -9,3 +9,8 @@ apart (ADR-023). To do: read test files too, mark a finding there as in test cod
 apart and still counts. Test both. A Later entry on ADR-137.
 
 **Order,** at the owner's word of 23 October 2026: after 0654.
+
+**Done, 23 October 2026** (ADR-137, Later), in the same pull request as 0654: building 0654 made the weak-key check skip
+Rust's test modules too, and StackVet's own V11.6.1 dropped to "not verified" with six findings in a test gone. The check
+now reads test code, and a finding there is marked as test code, listed apart, and counted. Test:
+`crates/sv-check/src/weak_keys/test_code_tests.rs`.
