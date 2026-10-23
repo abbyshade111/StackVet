@@ -1,6 +1,6 @@
 # The path rule reads where a value came from: a path built from a request is a thing to fix, and any other value is listed apart
 
-**Status:** claimed by claude/0647, 23 October 2026
+**Status:** partly done: Rust's safe forms: a name followed back to fixed text, and a join under a constant (ADR-138, Not built)
 
 From the owner's answer of 23 October 2026 to backlog 0647's choices ("A: read the source", and all three test-code fixes); the design entry is `docs/design/0394-the-path-rule-s-false-alarms-and-how-test-code-is-read-23.md`.
 

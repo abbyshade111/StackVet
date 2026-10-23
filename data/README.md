@@ -111,6 +111,10 @@ What a match must look like to be reported, each optional (per language unless i
   matches `safeArgumentPatterns`.
 - `argumentNamesRead` (true or false): `argumentPatterns` also matches through a name set, in the function around
   the call, to text the pattern matches.
+- `argumentNamesDepth` (a number, 1 when left out): how many names deep `argumentNamesRead` follows a value. With 3,
+  `name = request.args["f"]`, then `path = os.path.join(UPLOADS, name)`, then `open(path)` is read as the request's value
+  reaching `open` (backlog 0653, ADR-138). Rust's `let`, and a handler's extractor parameter (`Path(name): Path<String>`,
+  read as set to its type), are followed too.
 - `functionNamesRead` (true or false): `functionPatterns` also matches through the name `@fn` begins with, read as
   what the function around it sets it to.
 - `safeNamesRead` (true or false, Python only): an argument is also safe when each name in it is, followed to where

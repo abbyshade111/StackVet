@@ -125,7 +125,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V3.7.1 | L2 | Reads the code: `config.client-tech-unsupported` (sv only ever as a finding: `config.client-tech-unsupported`) |
 | V3.7.2 | L2 | Reads the code: `ast.open-redirect`; Signed in: `probe.open-redirect`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `probe.open-redirect`) |
 | V4.4.1 | L1 | Reads the code: `ast.plaintext-websocket-url`; Outside tools: `semgrep` (semgrep only ever as a finding: `detect-insecure-websocket`; sv only ever as a finding: `ast.plaintext-websocket-url`) |
-| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`, `ast.file-path-from-request`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.file-path-from-request`) |
 | V6.2.10 | L2 | Reads the code: `ast.password-expiry-enforced` (sv only ever as a finding: `ast.password-expiry-enforced`) |
 | V6.5.2 | L2 | Reads the code: `ast.backup-codes-stored-plain` (sv only ever as a finding: `ast.backup-codes-stored-plain`) |
 | V6.5.3 | L2 | Reads the code: `ast.insecure-random-for-code` (sv only ever as a finding: `ast.insecure-random-for-code`) |
@@ -209,7 +209,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V5.2.2 | L1 | Signed in: `probe.file-contents-unchecked` |
 | V5.2.3 | L2 | Signed in: `probe.archive-unchecked`; Outside tools: `semgrep` (semgrep only ever as a finding: `potential-dos-via-decompression-bomb`) |
 | V5.3.1 | L1 | Signed in: `probe.uploaded-file-executed` |
-| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V5.3.2 | L1 | Reads the code: `ast.file-path-from-value`, `ast.file-path-from-request`; Signed in: `probe.upload-path-traversal`; Outside tools: `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.file-path-from-request`) |
 | V5.4.1 | L2 | Signed in: `probe.download-unnamed` |
 | V5.4.2 | L2 | Signed in: `probe.download-name-injected` |
 | V6.2.1 | L1 | Signed in: `probe.short-password-accepted` |

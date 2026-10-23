@@ -247,6 +247,28 @@ pub const WORTH_A_LOOK: &[&str] = &[
     "semgrep.ruby.rails.security.audit.xss.templates.var-in-href.var-in-href",
 ];
 
+/// The rule that reports a file opened at a path built from any value, and the one that reports a path built from a
+/// request's input (backlog 0653, ADR-138). Where the second reads the language, a finding of the first that nothing
+/// else reported is only worth a look: the path is a value, but not one traced to a request.
+pub const PATH_FROM_VALUE: &str = "ast.file-path-from-value";
+pub const PATH_FROM_REQUEST: &str = "ast.file-path-from-request";
+
+/// The languages `PATH_FROM_REQUEST` reads, by `sv_scan`'s names; a test holds this to the rule's own queries. In any
+/// other language a `PATH_FROM_VALUE` finding stays a thing to fix, since a request's input there is not looked for.
+pub const PATH_FROM_REQUEST_LANGUAGES: &[&str] = &[
+    "csharp",
+    "go",
+    "java",
+    "javascript",
+    "kotlin",
+    "php",
+    "python",
+    "ruby",
+    "rust",
+    "shell",
+    "typescript",
+];
+
 /// The most of one value from an app's answer (a header, mostly) a finding quotes.
 pub const QUOTED_CHARS: usize = 200;
 
@@ -363,9 +385,20 @@ impl Finding {
     /// `WORTH_A_LOOK` and by nothing else, with every other problem on its line the same. One that
     /// another tool also reported, or that shares its line with a problem of another kind, is not.
     pub fn worth_a_look(&self) -> bool {
-        WORTH_A_LOOK.contains(&self.rule_id.as_str())
+        (WORTH_A_LOOK.contains(&self.rule_id.as_str()) || self.path_not_from_request())
             && self.also_reported_by.is_empty()
             && self.also_on_this_line.iter().all(Finding::worth_a_look)
+    }
+
+    /// Whether this is a file path built from a value that the request-path rule, which reads this file's language,
+    /// did not trace to a request's input (backlog 0653, ADR-138). Listed apart as worth a look; it still counts.
+    pub fn path_not_from_request(&self) -> bool {
+        self.rule_id == PATH_FROM_VALUE
+            && std::path::Path::new(&self.location.file)
+                .extension()
+                .and_then(|e| e.to_str())
+                .and_then(|e| sv_scan::ecosystems::language_of(&e.to_ascii_lowercase()))
+                .is_some_and(|language| PATH_FROM_REQUEST_LANGUAGES.contains(&language))
     }
 
     /// Whether the reports list this finding apart from the app's own code: in test or sample code,
@@ -701,6 +734,9 @@ pub(crate) fn reads_code(f: &Finding) -> bool {
 }
 
 mod rust_modules;
+
+#[cfg(test)]
+mod path_apart_tests;
 
 #[cfg(test)]
 mod quoted_tests;

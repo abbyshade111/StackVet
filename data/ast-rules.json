@@ -419,7 +419,7 @@
         "CWE-22",
         "CWE-73"
       ],
-      "description": "A file path used to read, write or delete a file is built from a value rather than written out, so the file operation goes wherever that value points.",
+      "description": "A file path used to read, write or delete a file is built from a value rather than written out, so the file operation goes wherever that value points. Where the rule that reads a request's input (`ast.file-path-from-request`) reads the language, a path it could not trace to a request is listed apart as worth a look; it still counts.",
       "impact": "If any part of the path comes from a request, a name like ../../etc/passwd reads or overwrites a file outside the folder the app meant to use.",
       "fix": "Keep user-submitted file names out of file paths: store files under names the app generates, and look them up by id. Where a submitted name has to be used, reduce it to a bare name (secure_filename in Flask, path.basename in Node) and check that the resolved path is still inside the folder it should be in.",
       "literalArgumentIsSafe": true,
@@ -488,6 +488,102 @@
       "argumentNamesRead": true,
       "safeNamesRead": true,
       "inPart": true
+    },
+    {
+      "id": "ast.file-path-from-request",
+      "title": "A file is opened at a path built from a request's input",
+      "severity": "high",
+      "confidence": "medium",
+      "requirementIds": [
+        "V5.3.2"
+      ],
+      "cwe": [
+        "CWE-22",
+        "CWE-73"
+      ],
+      "description": "A file path used to read, write, or delete a file is built from something a request sent (a query value, a form field, a part of the address, or an uploaded file's own name), so whoever sent the request chooses where the file operation goes.",
+      "impact": "A name like ../../etc/passwd, sent by anyone who can reach the app, reads or overwrites a file outside the folder the app meant to use.",
+      "fix": "Keep user-submitted file names out of file paths: store files under names the app generates, and look them up by id. Where a submitted name has to be used, reduce it to a bare name (secure_filename in Flask, path.basename in Node) and check that the resolved path is still inside the folder it should be in.",
+      "literalArgumentIsSafe": true,
+      "queries": {
+        "python": "(call function: (identifier) @fn arguments: (argument_list . (_) @arg)) @hit",
+        "javascript": "[(call_expression function: (member_expression object: (identifier) @mod property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (call_expression function: (member_expression object: (member_expression property: (property_identifier) @mod) property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (call_expression function: (identifier) @fn @mod\n                  arguments: (arguments . (_) @arg))] @hit",
+        "typescript": "[(call_expression function: (member_expression object: (identifier) @mod property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (call_expression function: (member_expression object: (member_expression property: (property_identifier) @mod) property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (call_expression function: (identifier) @fn @mod\n                  arguments: (arguments . (_) @arg))] @hit",
+        "go": "(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn)\n                 arguments: (argument_list . (_) @arg)) @hit",
+        "php": "(function_call_expression function: (name) @fn\n                          arguments: (arguments . (argument (_) @arg))) @hit\n(include_expression \"include\" @fn (_) @arg) @hit\n(include_once_expression \"include_once\" @fn (_) @arg) @hit\n(require_expression \"require\" @fn (_) @arg) @hit\n(require_once_expression \"require_once\" @fn (_) @arg) @hit",
+        "ruby": "(call receiver: (constant) @mod method: (identifier) @fn\n            arguments: (argument_list . (_) @arg)) @hit\n(call !receiver method: (identifier) @fn @mod\n      arguments: (argument_list . (_) @arg)) @hit",
+        "java": "(object_creation_expression type: (type_identifier) @fn @mod\n                            arguments: (argument_list . (_) @arg)) @hit\n(method_invocation object: (identifier) @mod name: (identifier) @fn\n                   arguments: (argument_list (_) @arg)) @hit",
+        "kotlin": "(call_expression (identifier) @fn (value_arguments . (value_argument (_) @arg))) @hit",
+        "csharp": "(invocation_expression\n   function: (member_access_expression expression: (identifier) @mod\n                                       name: (identifier) @fn)\n   arguments: (argument_list . (argument (_) @arg))) @hit",
+        "rust": "(call_expression function: (scoped_identifier path: (_) @mod name: (identifier) @fn)\n                 arguments: (arguments . (_) @arg)) @hit",
+        "shell": "(command name: (command_name) @fn argument: [(string (simple_expansion (variable_name) @arg)) (simple_expansion (variable_name) @arg) (concatenation (simple_expansion (variable_name) @arg)) (string (expansion (variable_name) @arg)) (expansion (variable_name) @arg) (concatenation (expansion (variable_name) @arg))]) @hit"
+      },
+      "functionPatterns": {
+        "python": "^(open|send_file|FileResponse)$",
+        "javascript": "^(readFile|readFileSync|createReadStream|writeFile|writeFileSync|createWriteStream|appendFile|appendFileSync|unlink|unlinkSync|rm|rmSync|sendFile|download)$",
+        "typescript": "^(readFile|readFileSync|createReadStream|writeFile|writeFileSync|createWriteStream|appendFile|appendFileSync|unlink|unlinkSync|rm|rmSync|sendFile|download)$",
+        "go": "^(Open|OpenFile|ReadFile|WriteFile|Create|Remove|RemoveAll)$",
+        "php": "^(file_get_contents|file_put_contents|fopen|readfile|file|unlink|include|include_once|require|require_once)$",
+        "ruby": "^(read|binread|readlines|open|new|write|binwrite|delete|unlink|send_file)$",
+        "java": "^(File|FileInputStream|FileOutputStream|FileReader|FileWriter|RandomAccessFile|get|of)$",
+        "kotlin": "^(File|FileInputStream|FileOutputStream|FileReader|FileWriter|RandomAccessFile)$",
+        "csharp": "^(ReadAllText|ReadAllBytes|ReadAllLines|OpenRead|OpenWrite|Open|WriteAllText|WriteAllBytes|AppendAllText|Delete)$",
+        "rust": "^(open|create|read|read_to_string|write|remove_file|remove_dir_all|new)$",
+        "shell": "^(cat|rm|cp|mv|ln|head|tail|source|\\.|tar|chmod|chown|touch|mkdir|rmdir|tee|unlink)$"
+      },
+      "modulePatterns": {
+        "javascript": "^(fs|fsp|res|response|promises|readFile|readFileSync|createReadStream|writeFile|writeFileSync|createWriteStream|appendFile|appendFileSync|unlink|unlinkSync|rm|rmSync)$",
+        "typescript": "^(fs|fsp|res|response|promises|readFile|readFileSync|createReadStream|writeFile|writeFileSync|createWriteStream|appendFile|appendFileSync|unlink|unlinkSync|rm|rmSync)$",
+        "go": "^(os|ioutil)$",
+        "ruby": "^(File|IO|send_file)$",
+        "csharp": "^File$",
+        "rust": "(^|::)(File|fs|NamedFile|ServeFile|ServeDir)$",
+        "java": "^(File|FileInputStream|FileOutputStream|FileReader|FileWriter|RandomAccessFile|Paths|Path)$"
+      },
+      "safeArgumentPatterns": {
+        "python": "^[A-Z][A-Z0-9_]*$|secure_filename\\(|safe_join\\(|^os\\.path\\.join\\(\\s*(os\\.path\\.dirname\\(\\s*(os\\.path\\.abspath\\(\\s*)?__file__\\s*\\)\\)?|BASE_DIR)(\\s*,\\s*('[^'{}]*'|\"[^\"{}]*\"))*\\s*,?\\s*\\)$",
+        "javascript": "^[A-Z][A-Z0-9_]*$|^path\\.(join|resolve)\\(\\s*(__dirname|process\\.cwd\\(\\)|import\\.meta\\.dirname)(\\s*,\\s*('[^']*'|\"[^\"]*\"))*\\s*,?\\s*\\)$|^new URL\\(\\s*('[^']*'|\"[^\"]*\")\\s*,\\s*import\\.meta\\.url\\s*\\)$",
+        "typescript": "^[A-Z][A-Z0-9_]*$|^path\\.(join|resolve)\\(\\s*(__dirname|process\\.cwd\\(\\)|import\\.meta\\.dirname)(\\s*,\\s*('[^']*'|\"[^\"]*\"))*\\s*,?\\s*\\)$|^new URL\\(\\s*('[^']*'|\"[^\"]*\")\\s*,\\s*import\\.meta\\.url\\s*\\)$",
+        "ruby": "^([A-Z][A-Z0-9_]*|Rails\\.root\\.join\\(\\s*(['\"][^'\"#]*['\"]\\s*,?\\s*)*\\))$",
+        "php": "^([A-Z][A-Z0-9_]*|\\(?\\s*(__DIR__|dirname\\(__FILE__\\))\\s*\\.\\s*['\"][^'\"$]*['\"]\\s*\\)?)$"
+      },
+      "argumentPatterns": {
+        "python": "\\brequest\\.(args|form|files|values|json|data|GET|POST|FILES|query_params|path_params|headers|cookies|view_args)\\b|\\brequest\\.get_json\\(|\\.filename\\b",
+        "javascript": "\\b(req|request)\\.(query|body|params|headers|cookies|file|files|path|url|originalUrl)\\b|\\bctx\\.(query|params|request\\.(body|query|files?))\\b|\\bsearchParams\\.get\\(|\\bc\\.req\\.(param|query)\\(|\\.originalname\\b",
+        "go": "\\.URL\\.(Query\\(\\)|Path\\b|RawQuery\\b)|\\.(FormValue|PostFormValue|FormFile|PathValue|Query|QueryParam|Param|DefaultQuery|PostForm|URLParam)\\(|\\bmux\\.Vars\\(|\\bchi\\.URLParam\\(|\\.Filename\\b",
+        "php": "\\$_(GET|POST|FILES|REQUEST|COOKIE)\\b|\\$_SERVER\\s*\\[\\s*['\\\"](PATH_INFO|REQUEST_URI|QUERY_STRING|PHP_SELF)['\\\"]|\\$request->(input|get|query|file|route|post|all)\\(|\\brequest\\(\\)->|->getClientOriginalName\\(",
+        "ruby": "\\bparams\\b|\\brequest\\.(params|path|path_info|query_string|body|GET|POST)\\b|\\.original_filename\\b",
+        "java": "\\.(getParameter|getParameterValues|getPathInfo|getRequestURI|getServletPath|getPart|getSubmittedFileName|getOriginalFilename|getHeader)\\(|\\bctx\\.(pathParam|queryParam|formParam|uploadedFile)\\(",
+        "kotlin": "\\bcall\\.(parameters|request\\.queryParameters|receive\\w*)\\b|\\.(getParameter|getOriginalFilename|originalFilename)\\b",
+        "csharp": "\\bRequest\\.(Query|Form|RouteValues|Path|Files|Headers|Cookies)\\b|\\bHttpContext\\.Request\\b|\\.FileName\\b",
+        "rust": "^&?(axum::extract::|actix_web::web::|web::|extract::)?((Path|Query|Form|Json|RawQuery)\\s*<|Multipart\\b)|\\b(req|request)\\.(uri|match_info|query_string|body|headers)\\(\\)",
+        "shell": "^(QUERY_STRING|PATH_INFO|PATH_TRANSLATED|REQUEST_URI|HTTP_[A-Z_]+)$|\\$\\{?(QUERY_STRING|PATH_INFO|PATH_TRANSLATED|REQUEST_URI|HTTP_[A-Z_]+)\\b",
+        "typescript": "\\b(req|request)\\.(query|body|params|headers|cookies|file|files|path|url|originalUrl)\\b|\\bctx\\.(query|params|request\\.(body|query|files?))\\b|\\bsearchParams\\.get\\(|\\bc\\.req\\.(param|query)\\(|\\.originalname\\b"
+      },
+      "argumentNamesRead": true,
+      "argumentNamesDepth": 3,
+      "safeNamesRead": true,
+      "findingsOnly": true,
+      "looksFor": "a file opened, written, or deleted at a path built from a request's input",
+      "looksForIn": {
+        "python": "Flask's, Django's, and FastAPI's request (`request.args`, `request.form`, `request.files`, `request.GET`, `request.query_params`, and the like) and an uploaded file's own name (`.filename`), reaching a file call in the same function, directly or through up to three names",
+        "javascript": "Express's, Koa's, and Hono's request (`req.query`, `req.params`, `req.body`, `ctx.query`, `c.req.param()`), a URL's `searchParams`, and an uploaded file's own name (`.originalname`), reaching a file call in the same function, directly or through up to three names",
+        "typescript": "Express's, Koa's, and Hono's request (`req.query`, `req.params`, `req.body`, `ctx.query`, `c.req.param()`), a URL's `searchParams`, and an uploaded file's own name (`.originalname`), reaching a file call in the same function, directly or through up to three names",
+        "go": "`net/http`'s request (`r.URL.Query()`, `r.FormValue`, `r.PathValue`, `r.FormFile`), gorilla/mux's and chi's path values, gin's and echo's (`c.Param`, `c.Query`), and an uploaded file's own name (`.Filename`), reaching a file call in the same function, directly or through up to three names",
+        "php": "`$_GET`, `$_POST`, `$_FILES`, `$_REQUEST`, the request's path in `$_SERVER`, Laravel's `$request->input()` and its kin, and an upload's `getClientOriginalName()`, reaching a file call in the same function, directly or through up to three names",
+        "ruby": "Rails' and Sinatra's `params`, the request's path and query, and an upload's `original_filename`, reaching a file call in the same function, directly or through up to three names",
+        "java": "the servlet request (`getParameter`, `getPathInfo`, `getRequestURI`, `getPart`), an upload's `getSubmittedFileName` or `getOriginalFilename`, and Javalin's `ctx.pathParam` and its kin, reaching a file call in the same method, directly or through up to three names; a Spring handler's `@PathVariable` or `@RequestParam` parameter is not read",
+        "kotlin": "Ktor's `call.parameters`, `call.request.queryParameters`, and `call.receive`, and a servlet's `getParameter`, reaching a file call in the same function, directly or through up to three names",
+        "csharp": "ASP.NET's `Request.Query`, `Request.Form`, `Request.RouteValues`, `Request.Path`, and `Request.Files`, and an upload's `.FileName`, reaching a file call in the same method, directly or through up to three names; a controller action's bound parameters are not read",
+        "rust": "a handler's extractor parameter (`Path`, `Query`, `Form`, `Json`, or `Multipart` in Axum or Actix: `Path(name): Path<String>`) and the request's `uri()` or `match_info()`, reaching a file call in the same function, directly or through up to three names, `let`, `if let`, and `while let` included, so a multipart field's `file_name()` is followed back to the extractor; a path's own `file_name()` is not a request's input",
+        "shell": "only commands such as cat, rm, or cp given a path from a web request variable (QUERY_STRING, PATH_INFO, and similar), or from a variable the same function (or the script, outside any function) sets from one; a path from any other variable is not looked at"
+      },
+      "nothingToFind": {
+        "c": "Not looked for in C yet: a file path built from a request's input. This rule only ever reports, so finding none in C credits nothing either way, and there `ast.file-path-from-value` stays among the things to fix.",
+        "cpp": "Not looked for in C++ yet: a file path built from a request's input. This rule only ever reports, so finding none in C++ credits nothing either way, and there `ast.file-path-from-value` stays among the things to fix.",
+        "dart": "Not looked for in Dart yet: a file path built from a request's input. This rule only ever reports, so finding none in Dart credits nothing either way, and there `ast.file-path-from-value` stays among the things to fix.",
+        "swift": "Not looked for in Swift yet: a file path built from a request's input. This rule only ever reports, so finding none in Swift credits nothing either way, and there `ast.file-path-from-value` stays among the things to fix."
+      }
     },
     {
       "id": "ast.weak-hash-function",
