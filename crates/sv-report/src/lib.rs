@@ -1805,7 +1805,8 @@ pub const TEST_CODE_SECTION: &str = "Listed apart because they are in code that 
      examples, Rust code built only for its tests, or a folder stackvet.toml says is not the app; \
      or in a copy of another project's library kept in the app, such as jQuery in public/js, named \
      beside each; or only worth a look, from one of five Semgrep rules that were wrong 279 times in \
-     280 when measured on real apps, said beside each. They still count toward the requirements they \
+     280 when measured on real apps, or a file path built from a value StackVet did not see come from a \
+     request, said beside each. They still count toward the requirements they \
      are about. Test code can hold a real key, sample code gets copied, an old copy of a library \
      carries that library's own problems, and one worth-a-look finding in 280 was real, so read each \
      one before deciding it does not matter.";
@@ -2398,7 +2399,15 @@ pub fn finding_notes(f: &sv_check::Finding) -> Vec<String> {
         )),
         None => {}
     }
-    if f.worth_a_look() {
+    if f.worth_a_look() && f.path_not_from_request() {
+        notes.push(
+            "Worth a look: the path is built from a value, and StackVet did not see it come from a request's input in \
+             the same function, so it is listed apart from the things to fix. It still counts. Read where the value \
+             comes from: if a person outside can choose it, through a helper, a stored value, or a file, this is a \
+             thing to fix; if it is the app's own, it is a false alarm and the code can stay."
+                .to_owned(),
+        );
+    } else if f.worth_a_look() {
         notes.push(
             "Worth a look: the rule that found it was wrong 279 times in 280 when measured on real \
              apps, so it is listed apart. It still counts, and the one in 280 was real, so read the \

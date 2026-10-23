@@ -1,6 +1,6 @@
 # The path rule reads where a value came from: a path built from a request is a thing to fix, and any other value is listed apart
 
-**Status:** claimed by claude/0647, 23 October 2026
+**Status:** partly done: Rust's safe forms: a name followed back to fixed text, and a join under a constant (ADR-138, Not built)
 
 From the owner's answer of 23 October 2026 to backlog 0647's choices ("A: read the source", and all three test-code fixes); the design entry is `docs/design/0394-the-path-rule-s-false-alarms-and-how-test-code-is-read-23.md`.
 
@@ -17,3 +17,10 @@ value came from; on StackVet it listed 150, none from a request. To do:
   constant.
 - Tests: each framework's request input found and raised; a value from elsewhere listed apart; a safe form spared; and
   V5.3.2's status unchanged by which list a finding is on. ADR-138, proposed.
+
+**Built, 23 October 2026** (ADR-138, accepted). `ast.file-path-from-request` reports a path built from a request's input
+in eleven languages, followed through up to three names; a path rule finding from any other value is listed apart as
+worth a look in those languages, still counted. On StackVet's own code the things to fix fell from 151 to 1 (the bill
+of materials, backlog 0656), with the same 31 requirements needing attention. Tests:
+`crates/sv-check/src/ast/path_from_request_tests.rs` and `crates/sv-check/src/finding/path_apart_tests.rs`. What remains
+is Rust's safe forms, which matter less now that Rust's other-value path findings are listed apart.

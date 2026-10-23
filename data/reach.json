@@ -1965,6 +1965,12 @@
     "finding_only": false
    },
    {
+    "id": "ast.file-path-from-request",
+    "run": "Reads the code",
+    "looks_for": "A file is opened at a path built from a request's input",
+    "finding_only": true
+   },
+   {
     "id": "probe.upload-path-traversal",
     "run": "Signed in",
     "looks_for": "The app builds where it saves an upload from the name the uploader chose. A name starting `../` puts the file outside the upload folder, so whoever uploads can write files where the app keeps its own: over a page it serves, or a script i...",

@@ -2163,6 +2163,8 @@ fn a_ruby_load_on_something_that_is_not_a_deserialiser_is_not_reported() {
         ("ast.file-path-from-value", "shell", "rm -f /tmp/upload${PATH_INFO}", true),
         ("ast.file-path-from-value", "shell", "cat \"$CONFIG_FILE\"", false),
         ("ast.file-path-from-value", "shell", "echo \"$QUERY_STRING\"", false),
+        ("ast.file-path-from-request", "shell", "cat \"/srv/files/$QUERY_STRING\"", true),
+        ("ast.file-path-from-request", "shell", "cat \"$CONFIG_FILE\"", false),
         ("ast.file-path-from-value", "shell", "file=\"${QUERY_STRING#name=}\"\ncat \"/srv/files/$file\"\n", true),
         ("ast.file-path-from-value", "shell", "serve() {\n  local name\n  name=$(printf '%s' \"$PATH_INFO\" | tr -d '.')\n  rm -f \"/tmp/uploads/$name\"\n}\n", true),
         ("ast.file-path-from-value", "shell", "parse() {\n  target=\"$QUERY_STRING\"\n}\nserve() {\n  cat \"$target\"\n}\n", true),
@@ -3372,8 +3374,19 @@ fn the_newer_rules_find_the_unsafe_form_and_leave_the_safe_one() {
             ));
         }
         // A negative that another rule reports is still a negative for this one, but a
-        // positive that fires a second, unrelated rule is a query matching too much.
-        if *expected && let Some(other) = findings.iter().find(|f| f.rule_id != *rule) {
+        // positive that fires a second, unrelated rule is a query matching too much. A rule that
+        // shares a CWE is the same weakness, merged into one finding in the report: a path built
+        // from a request is both path rules' (ADR-138).
+        let cwes: Vec<&String> = findings
+            .iter()
+            .filter(|f| f.rule_id == *rule)
+            .flat_map(|f| &f.cwe)
+            .collect();
+        if *expected
+            && let Some(other) = findings
+                .iter()
+                .find(|f| f.rule_id != *rule && !f.cwe.iter().any(|c| cwes.contains(&c)))
+        {
             wrong.push(format!(
                 "{rule} in {language}: `{source}` also fired {}",
                 other.rule_id

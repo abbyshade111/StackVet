@@ -200,6 +200,11 @@ pub struct AstRule {
     /// function is another variable; in shell, the whole script, where variables are global.
     #[serde(default)]
     pub argument_names_read: bool,
+    /// How many names deep `argumentNamesRead` follows a value, 1 when left out: with 3,
+    /// `name = request.args["f"]`, then `path = os.path.join(UPLOADS, name)`, then `open(path)` is read as the request's
+    /// value reaching `open` (backlog 0653, ADR-138).
+    #[serde(default)]
+    pub argument_names_depth: Option<u8>,
     /// When true, `functionPatterns` also matches through a name: the name a `@fn` begins with
     /// (`s` in `s.user` or `s["user"]`) read as what the function around it sets it to.
     ///
@@ -1118,7 +1123,13 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                     Some(_)
                         if compiled.rule.argument_names_read
                             && arg_node.is_some_and(|arg| {
-                                name_set_to(arg, source.as_bytes(), pattern, language == "shell")
+                                name_set_to(
+                                    arg,
+                                    source.as_bytes(),
+                                    pattern,
+                                    language == "shell",
+                                    compiled.rule.argument_names_depth.unwrap_or(1),
+                                )
                             }) => {}
                     _ => continue,
                 }
@@ -1294,6 +1305,11 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
 /// `$x = v`, `x := v`, and the shell's `x=v`) or a declaration with a value (`let x = v`,
 /// `String x = v`, `var x = v`).
 const SETTERS: &[&str] = &[
+    // Rust's `let` (and `if let` and `while let`), and a function's parameter, whose pattern a handler's extractor binds (`Path(name): Path<String>`,
+    // read as set to its type): read only by a rule with a Rust argument pattern (backlog 0653).
+    "let_declaration",
+    "let_condition",
+    "parameter",
     "assignment",
     "assignment_expression",
     "assignment_statement",
@@ -1491,12 +1507,14 @@ fn words_of(name: &str) -> String {
 
 /// Whether a name in `arg` is set, in the function around it, to text `pattern` matches. With
 /// `whole_file`, anywhere in the file: a shell variable is global unless declared `local`, so one set
-/// in another function is the same variable.
+/// in another function is the same variable. With `depth` above 1, a name set to a value that does not match is
+/// followed through the names in that value, up to `depth` names deep.
 fn name_set_to(
     arg: tree_sitter::Node,
     source: &[u8],
     pattern: &regex::Regex,
     whole_file: bool,
+    depth: u8,
 ) -> bool {
     let text = |n: tree_sitter::Node| n.utf8_text(source).unwrap_or("");
     // The names in the argument, `$` left off PHP's.
@@ -1546,13 +1564,34 @@ fn name_set_to(
                     node.named_children(&mut cursor).last()
                 });
             if let (Some(target), Some(value)) = (target, value)
-                && text(target)
+                && (text(target)
                     .split(',')
                     .any(|t| names.contains(t.trim().trim_start_matches('$')))
-                && pattern.is_match(text(value))
+                    || bound_in_pattern(target, source, &names))
+                && (pattern.is_match(text(value))
+                    || (depth > 1
+                        && value.id() != arg.id()
+                        && name_set_to(value, source, pattern, whole_file, depth - 1)))
             {
                 return true;
             }
+        }
+        let mut cursor = node.walk();
+        stack.extend(node.named_children(&mut cursor));
+    }
+    false
+}
+
+/// Whether `target` is a pattern that binds one of `names`: Rust's `let (a, b) = ...` or a handler's
+/// `Path(name): Path<String>`, whose names sit inside the pattern rather than being its whole text.
+fn bound_in_pattern(target: tree_sitter::Node, source: &[u8], names: &BTreeSet<&str>) -> bool {
+    if !target.kind().ends_with("_pattern") {
+        return false;
+    }
+    let mut stack = vec![target];
+    while let Some(node) = stack.pop() {
+        if node.kind() == "identifier" && names.contains(node.utf8_text(source).unwrap_or("")) {
+            return true;
         }
         let mut cursor = node.walk();
         stack.extend(node.named_children(&mut cursor));
@@ -2555,6 +2594,9 @@ mod tests;
 
 #[cfg(test)]
 mod shell_list_tests;
+
+#[cfg(test)]
+mod path_from_request_tests;
 
 #[cfg(test)]
 mod followed_tests;
