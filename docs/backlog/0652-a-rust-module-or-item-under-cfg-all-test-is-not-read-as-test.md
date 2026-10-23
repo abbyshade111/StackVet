@@ -1,6 +1,6 @@
 # A Rust module or item under cfg(all(test, ...)) is not read as test code
 
-**Status:** open
+**Status:** claimed by claude/0647, 23 October 2026
 
 Found 23 October 2026, reading the things to fix in StackVet's report on itself after backlog 0644. `sv` reads Rust test
 code by the exact attribute `#[cfg(test)]` (`crates/sv-check/src/finding.rs`, `marks_test`, and
