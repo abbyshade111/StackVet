@@ -2249,8 +2249,10 @@ fn the_owners_word(
     // what they saw; `problem` is a finding; an old one is out of date and counts for nothing.
     // AC.4.1 counts a review only by someone other than the person who asked for the code (ADR-133): the owner's own
     // look is kept and shown as a gap, and the AI tool's word, which the requirement does not count, credits nothing.
+    // A `problem` is a finding whoever looked, and is never set aside.
     let second_look = |id: &str, a: &sv_manifest::HandCheck| {
         id != sv_check::hand::SEPARATE_REVIEW
+            || a.result.trim() != sv_check::hand::DONE
             || a.reviewer.as_deref() == Some(sv_check::hand::SOMEONE_ELSE)
     };
     separate_review_gap(manifest, gaps);
@@ -2323,8 +2325,12 @@ fn the_owners_word(
     > = manifest
         .checked_by_hand
         .iter()
-        // The AI coding tool's check, confirmed, is not a person's review of the code (ADR-133).
-        .filter(|(id, _)| id.as_str() != sv_check::hand::SEPARATE_REVIEW)
+        // The AI coding tool's check, confirmed, is not a person's review of the code (ADR-133); its `problem` is still
+        // a finding.
+        .filter(|(id, a)| {
+            id.as_str() != sv_check::hand::SEPARATE_REVIEW
+                || a.result.trim() != sv_check::hand::DONE
+        })
         .filter_map(|(id, a)| {
             let c = a.confirmed.as_ref()?;
             Some((id.clone(), (confirmation(c), a.result.clone())))
@@ -2617,7 +2623,6 @@ fn design_gaps(design: &sv_check::design::Outcome, gaps: &mut Vec<sv_report::Gap
     }
 }
 
-/// What could not be made of the checks done by hand in stackvet.toml, and those out of date. Part of `the_owners_word`, moved out of it on 21 October 2026 (backlog 0324), word for word.
 /// What the report says of AC.4.1 when a check by hand for it is there and does not count (ADR-133): who reviewed is
 /// not someone other than the person who asked for the code, or was not answered, or the check is the AI tool's.
 fn separate_review_gap(manifest: &sv_manifest::Manifest, gaps: &mut Vec<sv_report::Gap>) {
@@ -2625,6 +2630,10 @@ fn separate_review_gap(manifest: &sv_manifest::Manifest, gaps: &mut Vec<sv_repor
     let Some(h) = manifest.checked_by_hand.get(id) else {
         return;
     };
+    // A `problem` is a finding, not a review waiting for a second person.
+    if h.result.trim() != sv_check::hand::DONE {
+        return;
+    }
     if h.reviewer.as_deref() == Some(sv_check::hand::SOMEONE_ELSE)
         && h.by.as_deref() == Some(sv_check::design::OWNER)
     {
@@ -2651,6 +2660,7 @@ fn separate_review_gap(manifest: &sv_manifest::Manifest, gaps: &mut Vec<sv_repor
     });
 }
 
+/// What could not be made of the checks done by hand in stackvet.toml, and those out of date. Part of `the_owners_word`, moved out of it on 21 October 2026 (backlog 0324), word for word.
 fn hand_gaps(hand: &sv_check::hand::Outcome, gaps: &mut Vec<sv_report::Gap>) {
     if !hand.unreadable.is_empty() {
         gaps.push(sv_report::Gap {
