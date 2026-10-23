@@ -336,6 +336,11 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         itself.contains("things to fix were found, and"),
         "the counts are on the page"
     );
+    // The paper's own report stays in the repository; the site neither links nor names it.
+    assert!(
+        !itself.contains("self-assessment-v2"),
+        "the paper's own report is not on the page"
+    );
     let published: Vec<&PathBuf> = made
         .iter()
         .filter(|p| p.starts_with("self-assessment"))

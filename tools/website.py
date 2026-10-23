@@ -474,7 +474,13 @@ def itself_page(commit):
     not_examined = re.search(r"^Things not examined: (\d+)$", summary, re.M)
     if not (produced and known and held and to_fix and not_examined):
         die("docs/website/self-assessment/summary.md no longer reads as this script expects")
-    readme = (SELF / "README.md").read_text(encoding="utf-8").split("\n", 1)[1]
+    # The README's paragraphs for the site: what it shows, and how the report was made. The rest is for the repository's
+    # readers (where the report's other files went, and the paper's own report, which the site does not link).
+    paragraphs = (SELF / "README.md").read_text(encoding="utf-8").split("\n\n")
+    readme = "\n\n".join(p for p in paragraphs
+                         if p.startswith(("**What stackvet.dev shows of it.**", "**How it was made,**")))
+    if readme.count("**") < 4:
+        die("docs/website/self-assessment/README.md no longer has the paragraphs the page shows")
     files = "".join(f'<li><a href="self-assessment/{e(n)}">{e(n)}</a>, the bill of materials</li>'
                     for n in self_files())
     body = ("<h1>StackVet checks itself</h1>"
@@ -485,9 +491,7 @@ def itself_page(commit):
             f'<p>{e(to_fix[1])} things to fix were found, and {e(not_examined[1])} things were not examined.</p></div>'
             f'<h2>Published here</h2><ul>{files}</ul>'
             f'<div class="md">{md(readme, "self.md")}</div>'
-            f'<h2>The code it checked, and the earlier report</h2><p>The code is on <a href="{GITHUB}">GitHub</a>. '
-            "The research paper's own report of StackVet, of 4 October 2026, is kept as it was, at "
-            f'<a href="{GITHUB}/tree/main/docs/paper/self-assessment-v2">docs/paper/self-assessment-v2</a>.</p>')
+            f'<h2>The code it checked</h2><p>The code is on <a href="{GITHUB}">GitHub</a>.</p>')
     return shell("StackVet checks itself — StackVet", "itself", body, commit)
 
 
