@@ -1,6 +1,6 @@
 # The path rule's false alarms are so many that a real fault among them would be missed, and test code is read unevenly
 
-**Status:** open
+**Status:** claimed by claude/0647, 23 October 2026
 
 From the triage of StackVet's findings on its own repository (backlog 0633, 23 October 2026). The owner's word, 23 October 2026, asked how to handle the 269 *A file is opened at a path built from a value*
 findings (`ast.file-path-from-value`, V5.3.2, low confidence) on StackVet's own code: "leave them counted for now as
