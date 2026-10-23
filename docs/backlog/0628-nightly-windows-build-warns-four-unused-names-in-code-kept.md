@@ -20,3 +20,5 @@ The fix is small and local: put the import, the three variants' uses, and the `m
 the code that needs them (or `#[cfg_attr(not(unix), allow(...))]`), and on Windows make `hidden` not `drop` a `()`.
 Whether the Windows workflow should also fail on warnings is a separate question for the owner. This routine records;
 it fixes nothing.
+
+Seen again on 23 October 2026: Windows (scheduled), run <https://github.com/abbyshade111/StackVet/actions/runs/39932434655>, commit `3970e3b`. The same four warnings (adapters.rs lines 31, 951, and 2658; review.rs line 226); 4,179 tests passed, 0 failed.
