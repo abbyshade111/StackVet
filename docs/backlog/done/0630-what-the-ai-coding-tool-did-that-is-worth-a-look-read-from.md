@@ -1,6 +1,6 @@
 # What the AI coding tool did that is worth a look, read from git and the hook record, as information in the report
 
-**Status:** claimed by claude/0630-rest, 22 October 2026
+**Status:** done, 22 October 2026
 
 **Record:** ADR-131, proposed with this claim.
 
@@ -53,3 +53,8 @@ from the hook record's commands against the app's lockfiles; and a secret in a f
 finding set beside the hook record's file writes. Both under the rules above: informational, counted toward nothing,
 saying what was seen and where. **Record, proposed:** a Later entry on ADR-131, made accepted in the pull request that
 builds them.
+
+**Done, 22 October 2026** (ADR-131, Later): the section now names packages the AI coding tool installed that no
+lockfile in the app holds, read from the hook record's commands against the bill of materials, and a secret the secrets
+scan found in a file the tool wrote, by the hook record's file writes or an AI tool's commit. Both informational, as
+the rest of the section. Tests: `crates/sv-cli/src/tool_behavior_installs_tests.rs`.
