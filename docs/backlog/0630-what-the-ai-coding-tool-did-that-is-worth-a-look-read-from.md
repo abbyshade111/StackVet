@@ -1,6 +1,6 @@
 # What the AI coding tool did that is worth a look, read from git and the hook record, as information in the report
 
-**Status:** partly done: packages installed that no lockfile holds, and a secret the tool wrote into a file, are not looked for yet; the section says so for the first
+**Status:** claimed by claude/0630-rest, 22 October 2026
 
 **Record:** ADR-131, proposed with this claim.
 
@@ -46,3 +46,10 @@ hook record when it is there, and the reports before this one:
   contents, a command's output, the person's prompts, or the tool's words (ADR-122).
 
 **Record.** A new ADR, proposed with the claim: what the section reads, and that it never decides anything.
+
+**Claimed again, 22 October 2026,** for the two lines not yet looked for, the roadmap's first open row a session can
+build (0120's and 0257's remains wait on the owner): packages the AI coding tool installed that no lockfile holds, read
+from the hook record's commands against the app's lockfiles; and a secret in a file the tool wrote, the secrets scan's
+finding set beside the hook record's file writes. Both under the rules above: informational, counted toward nothing,
+saying what was seen and where. **Record, proposed:** a Later entry on ADR-131, made accepted in the pull request that
+builds them.
