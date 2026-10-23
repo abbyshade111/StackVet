@@ -1628,7 +1628,7 @@
         },
         {
           "name": "securevibe:modules",
-          "value": "the modules of python's own library the app's code imports, read from its import lines: 44, listed under this component"
+          "value": "the modules of python's own library the app's code imports, read from its import lines: 45, listed under this component"
         }
       ],
       "components": [
@@ -1643,7 +1643,22 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py"
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/website.py"
+            }
+          ]
+        },
+        {
+          "type": "library",
+          "bom-ref": "python/base64",
+          "name": "base64",
+          "properties": [
+            {
+              "name": "securevibe:part-of",
+              "value": "python's own library, not a separate package: a flaw in it is fixed in a newer python"
+            },
+            {
+              "name": "securevibe:imported-by",
+              "value": "tools/website.py"
             }
           ]
         },
@@ -1748,7 +1763,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, docs/prompts/loop-compare/blind_tester.py, examples/notes-with-users/app.py, tools/prompt_stamps.py, tools/pwned_passwords.py"
+              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, docs/prompts/loop-compare/blind_tester.py, examples/notes-with-users/app.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/website.py"
             }
           ]
         },
@@ -1778,7 +1793,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/paper/tables/period_figures.py, docs/paper/trials/make_figure.py, examples/notes-with-users/app.py, tools/backlog.py, tools/docs_page.py, tools/framework_pages.py"
+              "value": "docs/paper/tables/period_figures.py, docs/paper/trials/make_figure.py, examples/notes-with-users/app.py, tools/backlog.py, tools/docs_page.py, tools/framework_pages.py, tools/website.py"
             }
           ]
         },
@@ -1913,7 +1928,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "crates/sv-check/tests/fixtures/semgrep-aisvs/app/assistant.py, crates/sv-check/tests/fixtures/semgrep-aisvs/app/careful.py, crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/codeql-app-py/app.py, crates/sv-run/tests/fixtures/install-app/app.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, examples/notes-with-users/app.py, examples/notes-with-users/seed.py, examples/partly-passing/app.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/app.py, examples/tested-notes/tests/test_search.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+              "value": "crates/sv-check/tests/fixtures/semgrep-aisvs/app/assistant.py, crates/sv-check/tests/fixtures/semgrep-aisvs/app/careful.py, crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/codeql-app-py/app.py, crates/sv-run/tests/fixtures/install-app/app.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, examples/notes-with-users/app.py, examples/notes-with-users/seed.py, examples/partly-passing/app.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/app.py, examples/tested-notes/tests/test_search.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/website.py"
             }
           ]
         },
@@ -1928,7 +1943,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/paper/trials/make_figure.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py"
+              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/paper/trials/make_figure.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/website.py"
             }
           ]
         },
@@ -2003,7 +2018,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_trial.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/merge_main.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_rule_map.py"
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_trial.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/merge_main.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_rule_map.py, tools/website.py"
             }
           ]
         },
@@ -2063,7 +2078,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/prompts/loop-compare/blind_tester.py, tools/image_smoke.py, tools/prompt_trial.py"
+              "value": "docs/prompts/loop-compare/blind_tester.py, tools/image_smoke.py, tools/prompt_trial.py, tools/website.py"
             }
           ]
         },
@@ -2108,7 +2123,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/semgrep-app/app.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_trial.py, tools/adr_check.py, tools/codeql_suites.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/semgrep-app/app.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_trial.py, tools/adr_check.py, tools/codeql_suites.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/website.py"
             }
           ]
         },
@@ -2123,7 +2138,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/tests/test_search.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/tests/test_search.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/website.py"
             }
           ]
         },
