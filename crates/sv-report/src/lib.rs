@@ -1619,7 +1619,8 @@ pub enum RunStatus {
         answered: usize,
         /// Whether it was asked more as signed-in users.
         signed_in: bool,
-        /// Its own tests: `passed`, `failed`, `stopped` (for taking too long), or `not-declared`.
+        /// Its own tests: `passed`, `failed`, `stopped` (for taking too long), `could-not-write` (stopped on the app's
+        /// read-only folder), or `not-declared`.
         tests: String,
     },
     /// Asked for, and the app could not be started or never answered.
@@ -1627,6 +1628,13 @@ pub enum RunStatus {
 }
 
 impl RunStatus {
+    /// Whether a test run's output says it stopped on writing into a folder it may not write to: the app's own folder,
+    /// mounted read-only while it runs (backlog 0639). The owner's Cursor build wrote `--junitxml=junit.xml` into it,
+    /// and pytest stopped with `Read-only file system: '/app/junit.xml'`; its 27 tests pass.
+    pub fn wrote_into_read_only(output: &str) -> bool {
+        output.contains("Read-only file system") || output.contains("EROFS")
+    }
+
     /// `tests` for a run, from the exit code of its test command, when one was declared and run.
     pub fn tests_state(exit_code: Option<i32>) -> &'static str {
         match exit_code {
@@ -1663,6 +1671,11 @@ impl RunStatus {
                     "stopped" => {
                         "Its own tests took longer than a test run may and were stopped, so they \
                          credit nothing; the report shows the last lines they printed."
+                    }
+                    "could-not-write" => {
+                        "Its own tests stopped on writing into the app's folder, which is read-only while it runs, \
+                         so whether they pass is not known from this run; the report shows the last lines they \
+                         printed."
                     }
                     _ => "stackvet.toml declares no test command, so its own tests were not run.",
                 };
@@ -1764,6 +1777,16 @@ pub fn test_output_intro(t: &sv_check::suite::FailingOutput) -> String {
         ),
         // The shell's own code for a program it could not find: most often the test runner, not installed where the
         // app runs (backlog 0532).
+        // Writing into the app's folder, read-only while it runs: most often a test report written beside the code
+        // rather than under /sv-reports (backlog 0639). Not a failing test, and not a passing one.
+        None if t.exit_code != 0 && RunStatus::wrote_into_read_only(&t.text) => format!(
+            "The app's own tests stopped when `sv` ran them (exit {}) on writing into the app's folder, which is \
+             read-only while it runs (the output says `Read-only file system`), so whether they pass is not known \
+             from this run. Most often it is the test report: a test command that writes one must write it under \
+             `/sv-reports`, as `--junitxml=/sv-reports/junit.xml`. `sv preflight` says where the test command \
+             writes its report. {what}{redacted}",
+            t.exit_code
+        ),
         None if t.exit_code == 127 => format!(
             "The app's own tests could not start when `sv` ran them (exit 127, the shell's code for a program it \
              could not find): most often the test runner is not installed where the app runs. `sv preflight` says \
@@ -2249,6 +2272,8 @@ fn reading_line(r: &seen::Reading) -> String {
     )
 }
 
+#[cfg(test)]
+mod read_only_tests;
 #[cfg(test)]
 mod what_was_seen_tests;
 

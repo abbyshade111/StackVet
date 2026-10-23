@@ -1155,6 +1155,12 @@ fn running_app(
                     signed_in: outcome.signed_in.is_some(),
                     tests: match &outcome.tests {
                         Some(t) if t.stopped_after.is_some() => "stopped",
+                        Some(t)
+                            if t.exit_code != 0
+                                && sv_report::RunStatus::wrote_into_read_only(&t.output) =>
+                        {
+                            "could-not-write"
+                        }
                         other => {
                             sv_report::RunStatus::tests_state(other.as_ref().map(|t| t.exit_code))
                         }

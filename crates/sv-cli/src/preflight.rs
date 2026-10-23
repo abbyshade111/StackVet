@@ -698,6 +698,7 @@ pub fn of(app_dir: &Path) -> anyhow::Result<Found> {
     items.extend(install(&manifest, app_dir));
     items.extend(build_installs(&manifest));
     items.extend(test_runner::item(&manifest, app_dir));
+    items.extend(test_runner::report_path_item(&manifest));
     Ok((
         sorted(items),
         ahead(&manifest, &source),
