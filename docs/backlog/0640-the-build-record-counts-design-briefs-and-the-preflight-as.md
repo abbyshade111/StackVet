@@ -1,6 +1,6 @@
 # The build record counts design briefs and the preflight as checks of the app
 
-**Status:** open
+**Status:** claimed by claude/0640, 22 October 2026
 
 Found in the said-versus-did reading of the owner's Cursor build of 22 October 2026 (backlog 0373; the app and its records are on the owner's drive), checked against the record before filing.
 
@@ -13,3 +13,6 @@ check" was a brief made before any code was written.
 To do: count as a check only a `stackvet_check` call (and say the others apart: "4 briefs before building, 1
 preflight"); make "the first check" the first `stackvet_check`. A test with a record holding briefs, a preflight, and
 checks.
+
+**Claimed, 22 October 2026,** at the owner's word ("Please continue with 0638 and the other items filed today and outside
+the roadmap"), with 0638, each to be built in a pull request of its own.

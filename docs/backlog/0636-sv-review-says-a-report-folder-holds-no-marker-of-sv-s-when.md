@@ -1,6 +1,6 @@
 # sv review says a report folder "holds no marker of sv's" when no report has been written yet
 
-**Status:** open
+**Status:** claimed by claude/0636, 22 October 2026
 
 Found in the owner's Cursor build of 22 October 2026 (backlog 0373). At 6:40 PM the owner ran `sv review` before any
 `sv report` had written a report: the app's `stackvet-report` folder was created at 6:43:35 PM, by the full report.
@@ -16,3 +16,6 @@ To do: when the folder does not exist, say so plainly: "No report has been writt
 checklist before going live to tick. Write the report with `sv report`, then run `sv review` again." Keep the present
 words for a folder that is there without sv's marker. A test for each. Check what else passes on
 `holds_only_svs`'s reason (`sv explain --report`, `sv compare`, the MCP server's report resources) for the same.
+
+**Claimed, 22 October 2026,** at the owner's word ("Please continue with 0638 and the other items filed today and outside
+the roadmap"), with 0638, each to be built in a pull request of its own.
