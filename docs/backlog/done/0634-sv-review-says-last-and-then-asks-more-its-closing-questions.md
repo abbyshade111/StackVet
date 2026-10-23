@@ -1,6 +1,6 @@
 # sv review says "Last" and then asks more: its closing questions should say how many are left
 
-**Status:** claimed by claude/0634, 22 October 2026
+**Status:** done, 22 October 2026
 
 Found by the owner on 22 October 2026, running `sv review` at the end of a new Cursor build for the walk-through
 (backlog 0373): the review said "Last, the answers that set the app's level.", then asked "One more: the account
@@ -27,3 +27,9 @@ prompt 7) may quote these words too: check it.
 
 **Claimed, 22 October 2026,** at the owner's word ("Please continue with 0638 and the other items filed today and outside
 the roadmap"), with 0638, each to be built in a pull request of its own.
+
+**Done, 22 October 2026.** `ask_last` counts the closing questions waiting before it asks the first, says "N more
+questions." once when there is more than one, and each opens with where it stands ("Question 2 of 4: the account
+changes your app does not offer."), or "One more question: …" when it is the only one; none says "Last" or "One
+more:". Tests: `crates/sv-cli/src/review/closing_tests.rs` (all four waiting, numbered in order, and the words for one
+alone); `scope_tests.rs` looks for the level's question by its subject.
