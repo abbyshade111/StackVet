@@ -1,6 +1,6 @@
 # The credential rule flags sv's own {seed:NAME} placeholder as a code written into the code
 
-**Status:** open
+**Status:** claimed by claude/0638-seed-placeholder, 22 October 2026
 
 Found in the said-versus-did reading of the owner's Cursor build of 22 October 2026 (backlog 0373; the app and its records are on the owner's drive), checked against the record before filing.
 
@@ -16,3 +16,8 @@ blank only when what is inside is letters, digits, `_`, `.`, brackets, commas, a
 
 To do: treat `{seed:NAME}`, and any placeholder `sv` itself fills in `stackvet.toml`, as a blank, with a test that the
 rule still fires on a real code beside it, and that `{seed:INVITE}x9Q2` (text of its own) is still judged.
+
+**Claimed, 22 October 2026,** at the owner's word ("Please continue with 0638 and the other items filed today"). The
+fix is narrow: a whole value of the form `{seed:NAME}`, with NAME as `sv run` reads a seed's names (a letter or `_`,
+then letters, digits, and `_`), is a blank; anything else beside it is still judged. No record is owed: what counts as
+a placeholder is a check's precision, not what counts as evidence.
