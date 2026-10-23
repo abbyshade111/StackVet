@@ -1688,10 +1688,10 @@ fn a_clean_result_names_the_calls_it_read_in_each_language() {
         ),
         "{scope}"
     );
-    // Go's pattern also takes a shell named in quotes, which is not a call's name: the list says it
-    // is not all of them.
+    // Go's rule reads a program given `-c` (ADR-135), which is not a call's name: what it reads is said in words.
     assert!(
-        scope.contains("1 go file (the calls it reads: `Command`, and others like them)"),
+        scope.contains("a program given `-c` and then a command built from a value, as `exec.Command(\"sh\", \"-c\", value)`")
+            && scope.ends_with("in 1 go file"),
         "{scope}"
     );
 }
