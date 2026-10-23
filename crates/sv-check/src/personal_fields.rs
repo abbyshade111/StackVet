@@ -237,7 +237,7 @@ pub fn read(listing: &sv_scan::files::Listing) -> PersonalFields {
                 _ => continue,
             }
         };
-        if sv_scan::files::is_test_path(relative) {
+        if listing.is_test_code(relative) {
             continue;
         }
         let Ok(source) = entry.read_text() else {

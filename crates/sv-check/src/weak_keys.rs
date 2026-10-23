@@ -138,10 +138,12 @@ pub fn weak_keys_in(source: &str) -> Vec<(usize, String)> {
     out
 }
 
-/// Reads the app's own files, test code aside, for a key made in a way no longer approved.
+/// Reads the app's files for a key made in a way no longer approved. Test code is read too, as the code rules read it
+/// (backlog 0655, ADR-137, Later): a finding there is marked as test code where the report marks every finding, listed
+/// apart, and still counts. Until 23 October 2026 test files were skipped, so a weak key made in one was not seen.
 pub fn check(listing: &Listing, report: &mut ConfigReport) {
     for entry in listing.app_files() {
-        if entry.language.is_none() || sv_scan::files::is_test_path(&entry.relative) {
+        if entry.language.is_none() {
             continue;
         }
         let Ok(source) = entry.read_text() else {
@@ -192,3 +194,6 @@ mod tests;
 
 #[cfg(test)]
 mod comment_tests;
+
+#[cfg(test)]
+mod test_code_tests;

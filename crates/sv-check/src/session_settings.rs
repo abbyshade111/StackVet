@@ -94,7 +94,7 @@ pub fn read_all(listing: &sv_scan::files::Listing) -> Vec<Setting> {
         let Some(language) = entry.language else {
             continue;
         };
-        if sv_scan::files::is_test_path(&entry.relative) {
+        if listing.is_test_code(&entry.relative) {
             continue;
         }
         let key = match language {

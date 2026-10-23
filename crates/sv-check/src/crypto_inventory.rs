@@ -158,7 +158,7 @@ impl CryptoInventory {
 pub fn read(listing: &sv_scan::files::Listing) -> CryptoInventory {
     let mut inventory = CryptoInventory::default();
     for entry in listing.app_files() {
-        if sv_scan::files::is_test_path(&entry.relative) {
+        if listing.is_test_code(&entry.relative) {
             continue;
         }
         let lower = entry.relative.to_lowercase();

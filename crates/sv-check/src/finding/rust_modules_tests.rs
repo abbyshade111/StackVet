@@ -1,7 +1,7 @@
 //! Backlog 0644, ADR-136: a Rust module that is a file of its own is test code when the file declaring it puts it under
 //! `#[cfg(test)]`, by each path Rust reads a module from, and a module declared inside such a file is too.
 
-use super::super::{Finding, Severity, mark_rust_test_code};
+use super::{Finding, Severity, mark_rust_test_code};
 use std::path::Path;
 
 fn finding_in(file: &str) -> Finding {

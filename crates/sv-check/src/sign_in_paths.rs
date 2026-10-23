@@ -89,7 +89,7 @@ pub fn read_all(listing: &sv_scan::files::Listing) -> Vec<Pathway> {
         .collect();
     for entry in listing.app_files() {
         if !matches!(entry.language, Some("python" | "javascript" | "typescript"))
-            || sv_scan::files::is_test_path(&entry.relative)
+            || listing.is_test_code(&entry.relative)
         {
             continue;
         }

@@ -421,7 +421,7 @@ impl Finding {
 pub fn mark_rust_test_code(app_dir: &std::path::Path, findings: &mut [Finding]) {
     let mut read: std::collections::HashMap<String, Vec<(usize, usize)>> =
         std::collections::HashMap::new();
-    let mut modules = rust_modules::TestModules::default();
+    let mut modules = sv_scan::rust_tests::TestModules::default();
     let mut whole: std::collections::HashMap<String, bool> = std::collections::HashMap::new();
     for f in findings {
         if !f.location.file.ends_with(".rs") {
@@ -434,7 +434,7 @@ pub fn mark_rust_test_code(app_dir: &std::path::Path, findings: &mut [Finding]) 
         });
         let test_module = *whole
             .entry(f.location.file.clone())
-            .or_insert_with(|| modules.is_test_module(app_dir, &f.location.file));
+            .or_insert_with(|| modules.is_test_only(app_dir, &f.location.file));
         f.marked_test_code |= test_module
             || lines
                 .iter()
@@ -470,7 +470,7 @@ pub fn rust_test_lines(source: &str) -> Vec<(usize, usize)> {
             .filter(|c| !c.is_whitespace())
             .collect();
         match node.kind() {
-            "inner_attribute_item" if text == "#![cfg(test)]" => {
+            "inner_attribute_item" if sv_scan::rust_tests::cfg_test_only(&text) => {
                 return vec![(1, usize::MAX)];
             }
             "attribute_item" if marks_test(&text) => {
@@ -498,9 +498,10 @@ pub fn rust_test_lines(source: &str) -> Vec<(usize, usize)> {
     out
 }
 
-/// `#[cfg(test)]`, `#[test]`, or a test runner's own, such as `#[tokio::test]`, whitespace removed.
+/// `#[cfg(test)]` or any `cfg` that holds only in a test build (`#[cfg(all(test, unix))]`, backlog 0654), `#[test]`, or
+/// a test runner's own, such as `#[tokio::test]`, whitespace removed.
 fn marks_test(attribute: &str) -> bool {
-    attribute == "#[cfg(test)]"
+    sv_scan::rust_tests::cfg_test_only(attribute)
         || attribute == "#[test]"
         || (attribute.starts_with("#[")
             && (attribute.ends_with("::test]") || attribute.contains("::test(")))
@@ -733,7 +734,9 @@ pub(crate) fn reads_code(f: &Finding) -> bool {
     f.location.line > 0 && !ELSEWHERE.iter().any(|p| f.rule_id.starts_with(p))
 }
 
-mod rust_modules;
+#[cfg(test)]
+#[path = "finding/rust_modules_tests.rs"]
+mod rust_modules_tests;
 
 #[cfg(test)]
 mod path_apart_tests;
