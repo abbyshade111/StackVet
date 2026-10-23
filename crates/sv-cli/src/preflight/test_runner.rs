@@ -166,3 +166,95 @@ fn other_requirements(app_dir: &Path, package: &str) -> Option<(String, String)>
 #[cfg(test)]
 #[path = "test_runner_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "test_report_path_tests.rs"]
+mod test_report_path_tests;
+
+/// Where the test command writes its report, when it names a place: the value of a runner's report option
+/// (`--junitxml=`, `--junitfile=`, `--outputFile=`, `--test-reporter-destination=`, and their kin), or a file the
+/// command's output is sent to (`> go-test.json`).
+pub(super) fn report_paths(test: &str) -> Vec<String> {
+    const OPTIONS: &[&str] = &[
+        "--junitxml",
+        "--junit-xml",
+        "--junitfile",
+        "--jsonfile",
+        "--outputFile",
+        "--output-file",
+        "--test-reporter-destination",
+        "--json-report-file",
+        "--reporter-options",
+    ];
+    let words: Vec<&str> = test.split_whitespace().collect();
+    let mut out = Vec::new();
+    for (i, word) in words.iter().enumerate() {
+        let word = word.trim_matches(|c| c == '"' || c == '\'');
+        for option in OPTIONS {
+            if let Some(value) = word.strip_prefix(option).and_then(|r| r.strip_prefix('=')) {
+                out.push(value.to_owned());
+            } else if word == *option
+                && let Some(next) = words.get(i + 1)
+            {
+                out.push(next.trim_matches(|c| c == '"' || c == '\'').to_owned());
+            }
+        }
+        if matches!(word, ">" | "1>")
+            && let Some(next) = words.get(i + 1)
+        {
+            out.push((*next).to_owned());
+        } else if let Some(file) = word
+            .strip_prefix('>')
+            .filter(|f| !f.is_empty() && !f.starts_with('&'))
+        {
+            out.push(file.to_owned());
+        }
+    }
+    // `--reporter-options output=…` (mocha-junit-reporter) names its file inside a list.
+    out.into_iter()
+        .map(|v| match v.split_once("output=") {
+            Some((_, file)) => file.split(',').next().unwrap_or_default().to_owned(),
+            None => v,
+        })
+        .filter(|v| !v.is_empty())
+        .collect()
+}
+
+/// Whether the test command writes its report where the runner can write while the app runs (backlog 0639): under
+/// `/sv-reports`, and not in the app's own folder, which is mounted read-only then. The owner's Cursor build wrote
+/// `--junitxml=junit.xml`, pytest stopped with `Read-only file system: '/app/junit.xml'`, and the report read that as
+/// tests failing; its 27 tests pass.
+pub(super) fn report_path_item(manifest: &Manifest) -> Option<Item> {
+    let test = manifest.stack.run.test.as_deref()?.trim();
+    let paths = report_paths(test);
+    if paths.is_empty() {
+        return None;
+    }
+    let outside: Vec<&String> = paths
+        .iter()
+        .filter(|p| !(p.as_str() == "/sv-reports" || p.starts_with("/sv-reports/")))
+        .collect();
+    if outside.is_empty() {
+        return Some(Item::new(
+            "test-report-path",
+            Answer::Looks,
+            vec![sv(
+                "The test command writes its report under /sv-reports, the one folder a runner can write to while \
+                 the app runs.",
+            )],
+        ));
+    }
+    let mut says = vec![sv("The test command writes its report to ")];
+    says.push(app(outside
+        .iter()
+        .map(|p| format!("`{p}`"))
+        .collect::<Vec<_>>()
+        .join(" and ")));
+    says.push(sv(
+        ", in the app's own folder, which is mounted read-only while the app runs: the runner stops when it tries, \
+         and the run cannot tell whether the tests pass. Write it under /sv-reports instead, as \
+         `--junitxml=/sv-reports/junit.xml`, and set `test-report` to the file's name there, as \
+         `test-report = \"junit.xml\"`.",
+    ));
+    Some(Item::new("test-report-path", Answer::Look, says))
+}

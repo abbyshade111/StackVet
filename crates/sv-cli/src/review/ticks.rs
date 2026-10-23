@@ -65,6 +65,16 @@ pub(super) fn tick_checklist(app_dir: &Path, asking: &mut super::Asking<'_>) -> 
     );
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     let folder = app_dir.join(sv_frameworks::names::REPORT_DIR);
+    // No report written yet is said as that, not as a folder without sv's marker (backlog 0636: the owner's build was
+    // told its folder "holds no marker of sv's" three minutes before its first report made the folder).
+    if std::fs::symlink_metadata(&folder).is_err() {
+        writeln!(
+            out,
+            "\nNo report has been written for this app yet, so there is no checklist before going live to tick. \
+             Write the report with `sv report`, then run `sv review` again to tick its lines."
+        )?;
+        return Ok(());
+    }
     let lines = match checklist_lines(&folder) {
         Ok(lines) => lines,
         Err(why) => {

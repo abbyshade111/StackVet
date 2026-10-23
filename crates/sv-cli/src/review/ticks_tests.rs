@@ -198,14 +198,36 @@ fn a_note_not_sealed_or_changed_since_is_not_shown_done() {
 }
 
 #[test]
-fn with_no_sealed_report_the_checklist_is_not_offered_and_review_says_why() {
+fn with_no_report_yet_review_says_so_plainly() {
+    // Backlog 0636: the owner's build was told its folder "holds no marker of sv's" before any report had made it.
     let s = Scratch::new("no-report");
     std::fs::write(s.app().join("app.py"), "x = 1\n").unwrap();
     std::fs::write(s.app().join("stackvet.toml"), MANIFEST).unwrap();
+    assert!(
+        !s.app().join("stackvet-report").exists(),
+        "the setup: no report folder"
+    );
     let (result, said) = s.run("");
     result.unwrap();
     assert!(
-        said.contains("The checklist before going live was not offered"),
+        said.contains("No report has been written for this app yet, so there is no checklist before going live"),
+        "{said}"
+    );
+    assert!(!said.contains("holds no marker"), "{said}");
+}
+
+#[test]
+fn a_report_folder_sv_did_not_mark_is_said_as_that() {
+    let s = Scratch::new("unmarked-report");
+    std::fs::write(s.app().join("app.py"), "x = 1\n").unwrap();
+    std::fs::write(s.app().join("stackvet.toml"), MANIFEST).unwrap();
+    std::fs::create_dir_all(s.app().join("stackvet-report")).unwrap();
+    std::fs::write(s.app().join("stackvet-report/report.json"), "{}").unwrap();
+    let (result, said) = s.run("");
+    result.unwrap();
+    assert!(
+        said.contains("The checklist before going live was not offered")
+            && said.contains("holds no marker of sv's"),
         "{said}"
     );
 }

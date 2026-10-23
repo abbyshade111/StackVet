@@ -46,6 +46,11 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
             "The last report in {} lists {n} findings that count.",
             folder.display()
         ),
+        // No folder is no report yet, said as that, not as a folder without sv's marker (backlog 0636).
+        Err(_) if std::fs::symlink_metadata(&folder).is_err() => {
+            "No report has been written for this app yet, so there are no findings to count."
+                .to_owned()
+        }
         Err(why) => format!(
             "No report sv can show it wrote was read in {} to count from: {why}.",
             folder.display()
@@ -928,17 +933,31 @@ struct Last {
 /// waits; then the checklist before going live, line by line, from the last sealed report (backlog 0604). Until 22
 /// October 2026 `review` held this sequence twice, word for word (backlog 0324).
 fn ask_last(app_dir: &Path, asking: &mut Asking<'_>, last: Last) -> Result<()> {
+    // How many are left is said once, and each says where it stands, so none says it is the last while others follow
+    // (backlog 0634: the review said "Last," then "One more" twice, then "Last:" again).
+    let n = [last.scope, last.not_offered, last.policy, last.capabilities]
+        .iter()
+        .filter(|w| **w)
+        .count();
+    if n > 1 {
+        writeln!(asking.out, "\n{n} more questions.")?;
+    }
+    let mut i = 0;
+    let mut at = || {
+        i += 1;
+        closing_place(i, n)
+    };
     if last.scope {
-        confirm_scope(asking)?;
+        confirm_scope(asking, &at())?;
     }
     if last.not_offered {
-        confirm_not_offered(asking)?;
+        confirm_not_offered(asking, &at())?;
     }
     if last.policy {
-        confirm_policy(asking)?;
+        confirm_policy(asking, &at())?;
     }
     if last.capabilities {
-        confirm_capabilities(asking)?;
+        confirm_capabilities(asking, &at())?;
     }
     ticks::tick_checklist(app_dir, asking)
 }
@@ -1014,6 +1033,16 @@ fn ask_reviewer(
         }
     )?;
     sv_manifest::Manifest::load(manifest_path)
+}
+
+/// Where one of the closing questions stands, for the words it opens with: "Question 2 of 3", or "One more question"
+/// when it is the only one (backlog 0634).
+pub(crate) fn closing_place(i: usize, n: usize) -> String {
+    if n == 1 {
+        "One more question".to_owned()
+    } else {
+        format!("Question {i} of {n}")
+    }
 }
 
 /// Signs again, at one yes, the entries whose seal was made with this computer's review key and
@@ -1832,7 +1861,7 @@ fn record_notes_confirmation(
 /// Puts `seal` on the answer to `id` in `section` of stackvet.toml, changing nothing else.
 /// The answers that set the level, asked about after every other entry, and saved when the owner
 /// confirms them.
-fn confirm_scope(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_scope(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -1841,7 +1870,7 @@ fn confirm_scope(asking: &mut Asking<'_>) -> Result<()> {
         asking.checker,
     );
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
-    writeln!(out, "\nLast, the answers that set the app's level.")?;
+    writeln!(out, "\n{at}: the answers that set the app's level.")?;
     if let Some(entry) = record_scope(manifest, today, key, input, out)? {
         set_scope(doc, &entry);
         save(manifest_path, doc, &|m| counts(m, &Waiting::Scope, checker))?;
@@ -1851,7 +1880,7 @@ fn confirm_scope(asking: &mut Asking<'_>) -> Result<()> {
 
 /// The account changes listed as not offered, asked about after the level's answers, and saved
 /// when the owner confirms them (ADR-105).
-fn confirm_not_offered(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_not_offered(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -1860,10 +1889,7 @@ fn confirm_not_offered(asking: &mut Asking<'_>) -> Result<()> {
         asking.checker,
     );
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
-    writeln!(
-        out,
-        "\nOne more: the account changes your app does not offer."
-    )?;
+    writeln!(out, "\n{at}: the account changes your app does not offer.")?;
     if let Some(entry) = record_not_offered(manifest, today, key, input, out)? {
         set_not_offered(doc, &entry);
         save(manifest_path, doc, &|m| {
@@ -1954,7 +1980,7 @@ fn record_not_offered(
 
 /// `[policy] fix-within-days`, asked about after the account changes, and saved when the owner confirms it as the
 /// documented time frames V15.1.1 asks for (backlog 0498).
-fn confirm_policy(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_policy(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -1965,7 +1991,7 @@ fn confirm_policy(asking: &mut Asking<'_>) -> Result<()> {
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
-        "\nOne more: how soon a known vulnerability in your app's packages is fixed."
+        "\n{at}: how soon a known vulnerability in your app's packages is fixed."
     )?;
     if let Some(entry) = record_policy(manifest, today, key, input, out)? {
         set_policy(doc, &entry);
@@ -2036,7 +2062,7 @@ fn record_policy(
 }
 
 /// The capability answers, asked about last, and saved when the owner confirms them as theirs (backlog 0606).
-fn confirm_capabilities(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_capabilities(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -2047,7 +2073,7 @@ fn confirm_capabilities(asking: &mut Asking<'_>) -> Result<()> {
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
-        "\nLast: what stackvet.toml says your app does and does not do."
+        "\n{at}: what stackvet.toml says your app does and does not do."
     )?;
     if let Some(entry) = record_capabilities(manifest, today, key, input, out)? {
         set_capabilities(doc, &entry);
@@ -2572,6 +2598,8 @@ mod confirm_notes_tests;
 #[cfg(test)]
 mod passphrase_tests;
 
+#[cfg(test)]
+mod closing_tests;
 #[cfg(test)]
 mod scope_tests;
 

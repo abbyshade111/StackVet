@@ -28,7 +28,7 @@ fn the_owner_confirms_both_answers_and_the_seal_holds() {
     let (result, out) = s.run("owner\n");
     result.unwrap();
     assert!(
-        out.contains("Last, the answers that set the app's level."),
+        out.contains("the answers that set the app's level."),
         "{out}"
     );
     assert!(out.contains("[app] audience = \"just-me\""), "{out}");
@@ -73,7 +73,10 @@ fn once_confirmed_it_is_not_asked_again() {
     s.run("owner\n").0.unwrap();
     let (result, out) = s.run("");
     result.unwrap();
-    assert!(!out.contains("Last, the answers"), "{out}");
+    assert!(
+        !out.contains("the answers that set the app's level"),
+        "{out}"
+    );
 }
 
 #[test]
@@ -105,7 +108,10 @@ fn an_answer_changed_after_it_was_confirmed_is_asked_about_again() {
         std::fs::write(s.app().join("stackvet.toml"), changed).unwrap();
         assert!(!confirmed(&s), "{name}: still counted after the change");
         let (_, out) = s.run("\n");
-        assert!(out.contains("Last, the answers"), "{name}: {out}");
+        assert!(
+            out.contains("the answers that set the app's level"),
+            "{name}: {out}"
+        );
     }
 }
 
@@ -141,7 +147,10 @@ fn a_scope_review_written_by_hand_is_not_a_confirmation() {
     );
     assert!(!confirmed(&s), "an entry with no seal counts");
     let (_, out) = s.run("\n");
-    assert!(out.contains("Last, the answers"), "{out}");
+    assert!(
+        out.contains("the answers that set the app's level"),
+        "{out}"
+    );
     // A seal copied from another entry does not hold for this one.
     let t = Scratch::new("scope-copied");
     with_app(&t, APP);
