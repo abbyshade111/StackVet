@@ -204,6 +204,9 @@ mod images_file_tests;
 #[cfg(test)]
 #[path = "docker_images_tests.rs"]
 mod images_tests;
+#[cfg(test)]
+#[path = "docker/stale_report_tests.rs"]
+mod stale_report_tests;
 
 #[cfg(test)]
 #[path = "docker_ipv6_advice_tests.rs"]
@@ -415,6 +418,15 @@ impl DockerBackend {
         let mut c = Command::new(&self.binary);
         c.args(self.prepared(args));
         output_of(&mut c)
+    }
+
+    /// Removes a test report left in the app's container, before its tests run, and says whether `rm` succeeded. The
+    /// path, from `[stack.run] test_report`, is an argument of its own and no shell reads it, so a quote in it is part
+    /// of the name (backlog 0646): until 23 October 2026 it went through `sh -c "rm -f -- '<path>'"`.
+    fn remove_stale_report(&self, app: &str, path: &str) -> bool {
+        self.docker(&["exec", app, "rm", "-f", "--", path])
+            .map(|(code, _)| code == 0)
+            .unwrap_or(false)
     }
 
     /// What the engine says of the app's container now: one `docker stats` reading and the limits it started
@@ -1041,11 +1053,9 @@ impl DockerBackend {
             // So it is removed first, and after the run the file must be there or nothing is read.
             // This is the same rule as a missing tool in the adapters: absent never reads as clean.
             let report_path = plan.test_report.as_ref().map(|p| crate::report_path(p));
-            let removed_stale = report_path.as_ref().map(|path| {
-                self.docker(&["exec", &app, "sh", "-c", &format!("rm -f -- '{path}'")])
-                    .map(|(code, _)| code == 0)
-                    .unwrap_or(false)
-            });
+            let removed_stale = report_path
+                .as_ref()
+                .map(|path| self.remove_stale_report(&app, path));
             // At most `TEST_LIMIT`: a suite that hangs would otherwise hang the whole run. Stopping
             // the `docker exec` leaves the suite running in the app's container, which the
             // teardown then removes.
