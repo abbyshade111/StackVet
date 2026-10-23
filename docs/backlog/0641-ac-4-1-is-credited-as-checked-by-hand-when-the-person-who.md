@@ -1,6 +1,6 @@
 # AC.4.1 is credited as checked by hand when the person who checked is the one who asked for the code
 
-**Status:** open
+**Status:** claimed by claude/0641, 23 October 2026
 
 Found in the said-versus-did reading of the owner's Cursor build of 22 October 2026 (backlog 0373; the app and its records are on the owner's drive), checked against the record before filing.
 
@@ -13,3 +13,5 @@ who asked for the code, which the requirement's wording should be read for.
 To do: read AC.4.1's text in `data/frameworks/` for what it asks of the reviewer; if it asks for someone other than
 the requester, have `sv review` (and the question the AI tool asks) ask who reviewed it, and the report say so beside
 the credit; if it does not, write that reading into the item and close it. Record the reading either way.
+
+**Claimed, 23 October 2026,** at the owner's answer ("Ask who reviewed"). **Record, proposed:** ADR-133.
