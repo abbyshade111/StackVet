@@ -61,7 +61,7 @@ pub struct OutboundRules {
 pub fn read(listing: &sv_scan::files::Listing) -> OutboundRules {
     let mut rules = Vec::new();
     for entry in listing.app_files() {
-        if sv_scan::files::is_test_path(&entry.relative) {
+        if listing.is_test_code(&entry.relative) {
             continue;
         }
         let extension = entry.extension.as_deref().unwrap_or_default();

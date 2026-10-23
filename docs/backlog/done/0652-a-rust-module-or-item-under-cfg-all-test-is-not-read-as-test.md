@@ -1,6 +1,6 @@
 # A Rust module or item under cfg(all(test, ...)) is not read as test code
 
-**Status:** claimed by claude/0647, 23 October 2026
+**Status:** done, 23 October 2026
 
 Found 23 October 2026, reading the things to fix in StackVet's report on itself after backlog 0644. `sv` reads Rust test
 code by the exact attribute `#[cfg(test)]` (`crates/sv-check/src/finding.rs`, `marks_test`, and
@@ -15,3 +15,6 @@ build that is not a test. Test each form, both ways. A Later entry on ADR-136.
 
 **Built within 0654,** at the owner's answer of 23 October 2026 to backlog 0647: one reading of test code for every
 check, which reads `cfg(all(test, ...))` too.
+
+**Done, 23 October 2026,** within backlog 0654 (ADR-139): `#[cfg(all(test, unix))]` and every `cfg` that holds only in a test
+build reads as test code, on a declaring line and on lines inside a file; `any(test, ...)` and `not(test)` do not.

@@ -371,6 +371,9 @@ pub struct Listing {
     /// Folders carrying `sv`'s report marker, or named as its report folder, that hold something `sv`
     /// does not write. They were read as the app's own code, since the marker proves nothing there.
     pub refused_markers: Vec<String>,
+    /// What is known of which Rust files are compiled only for tests, read as checks ask (`Listing::is_test_code`) and
+    /// shared by every copy of this listing.
+    rust_tests: std::sync::Arc<std::sync::Mutex<crate::rust_tests::TestModules>>,
 }
 
 impl Listing {
@@ -420,16 +423,40 @@ impl Listing {
         self.app_files().filter(|f| f.language.is_some())
     }
 
+    /// A listing of nothing, rooted at `root`: what a scan stands on when walking the folder failed.
+    pub fn empty(root: &Path) -> Listing {
+        Listing {
+            root: root.to_path_buf(),
+            ..Default::default()
+        }
+    }
+
+    /// Whether `relative` is test code, read one way for every check (backlog 0654, ADR-139): a folder or file named
+    /// for tests (`is_test_path`), or a Rust file compiled only for tests, by its own `#![cfg(test)]` or by the line that
+    /// declares it as a module (`#[cfg(test)]`, `#[cfg(all(test, unix))]`), read from the folder on disk so a half of
+    /// a `split` listing reads the same as the whole.
+    pub fn is_test_code(&self, relative: &str) -> bool {
+        is_test_path(relative)
+            || (relative.ends_with(".rs")
+                && self
+                    .rust_tests
+                    .lock()
+                    .map(|mut known| known.is_test_only(&self.root, relative))
+                    .unwrap_or(false))
+    }
+
     /// This listing in two: what lies outside `folders`, and what lies in them, as stackvet.toml's
     /// `not-the-app` names them (`crate::under_any`). Both keep the same root, so paths read the same.
     pub fn split(&self, folders: &[String]) -> (Listing, Listing) {
         let (mut ours, mut theirs) = (
             Listing {
                 root: self.root.clone(),
+                rust_tests: self.rust_tests.clone(),
                 ..Default::default()
             },
             Listing {
                 root: self.root.clone(),
+                rust_tests: self.rust_tests.clone(),
                 ..Default::default()
             },
         );

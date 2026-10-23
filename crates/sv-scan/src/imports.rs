@@ -22,12 +22,22 @@ pub struct Imports {
 impl Imports {
     /// Notes what one file imports. `language` is the listing's language for the file.
     pub fn read(&mut self, language: &str, relative: &str, contents: &str) {
+        self.read_as(
+            language,
+            relative,
+            contents,
+            crate::files::is_test_path(relative),
+        );
+    }
+
+    /// The same, with whether the file is test code already read (`Listing::is_test_code`, which knows Rust's test
+    /// modules too).
+    pub fn read_as(&mut self, language: &str, relative: &str, contents: &str, test: bool) {
         let (ecosystem, names) = match language {
             "python" => ("Python", python(contents)),
             "javascript" | "typescript" => ("npm", javascript(contents)),
             _ => return,
         };
-        let test = crate::files::is_test_path(relative);
         for name in names {
             let key = (ecosystem, name);
             if test {

@@ -185,7 +185,7 @@ source files, and in two tests:
 | [ADR-136](ADR-136.md) | A Rust module that is compiled only for tests is read as test code (accepted, 23 October 2026) |
 | [ADR-137](ADR-137.md) | A check that reads code for a setting does not read it in a comment, or in a file of another programming language (accepted, 23 October 2026) |
 | [ADR-138](ADR-138.md) | The path rule reads where a value came from: a path built from a request is a thing to fix (accepted, 23 October 2026) |
-| [ADR-139](ADR-139.md) | One reading of test code for every check (proposed, 23 October 2026) |
+| [ADR-139](ADR-139.md) | One reading of test code for every check (accepted, 23 October 2026) |
 | [ADR-140](ADR-140.md) | The bill of materials leaves out lockfiles in test code and in folders named as not the app (proposed, 23 October 2026) |
 
 ## Names in the records

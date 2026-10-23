@@ -60,10 +60,7 @@ impl StaticScan {
                         scanner: "file_list",
                         place,
                     });
-                    sv_scan::files::Listing {
-                        root: app_dir.to_path_buf(),
-                        ..Default::default()
-                    }
+                    sv_scan::files::Listing::empty(app_dir)
                 }
             };
         starting(1);

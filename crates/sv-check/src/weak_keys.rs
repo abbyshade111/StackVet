@@ -141,7 +141,7 @@ pub fn weak_keys_in(source: &str) -> Vec<(usize, String)> {
 /// Reads the app's own files, test code aside, for a key made in a way no longer approved.
 pub fn check(listing: &Listing, report: &mut ConfigReport) {
     for entry in listing.app_files() {
-        if entry.language.is_none() || sv_scan::files::is_test_path(&entry.relative) {
+        if entry.language.is_none() || listing.is_test_code(&entry.relative) {
             continue;
         }
         let Ok(source) = entry.read_text() else {

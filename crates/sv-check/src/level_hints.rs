@@ -96,7 +96,7 @@ pub fn find(
             .rsplit_once('.')
             .map(|(_, e)| e.to_ascii_lowercase());
         if !extension.is_some_and(|e| hints.extensions.contains(&e))
-            || crate::finding::is_test_path(relative)
+            || listing.is_test_code(relative)
             || set_apart
                 .iter()
                 .any(|folder| relative.starts_with(&format!("{}/", folder.trim_end_matches('/'))))

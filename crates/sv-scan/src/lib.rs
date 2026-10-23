@@ -20,6 +20,7 @@ pub mod imports;
 pub mod jvm;
 mod not_the_app;
 pub mod requirements;
+pub mod rust_tests;
 pub mod text;
 pub use not_the_app::not_the_app_in;
 
@@ -298,8 +299,8 @@ pub fn scan_listing_app(
         }
         report.files_read += 1;
         report.languages.insert(language.to_owned());
-        imports.read(language, &entry.relative, &contents);
-        let test = files::is_test_path(&entry.relative);
+        let test = listing.is_test_code(&entry.relative);
+        imports.read_as(language, &entry.relative, &contents, test);
         let hits = if test {
             &mut test_hits
         } else {
