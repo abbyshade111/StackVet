@@ -355,18 +355,6 @@ def backlog_tool():
     return module
 
 
-def roadmap_phases(text):
-    """Which paragraph of the roadmap in docs/BACKLOG.md names each item, by its exact title in quotes:
-    {title: "Phase 1"}. An item the roadmap does not name has no phase."""
-    out = {}
-    for m in re.finditer(r"\*\*(?P<head>Phase \d[^*]*|After the roadmap[^*]*|Process, any time[^*]*)\*\*(?P<body>.*?)(?=\n\*\*|\Z)",
-                         text, re.S):
-        label = re.split(r"[:,]", m.group("head"))[0].strip()
-        for title in re.findall(r'"([^"]+)"', m.group("body")):
-            out.setdefault(title, label)
-    return out
-
-
 def counts_line(found):
     """The same sentence `tools/backlog.py summary` prints, so a test can hold the two together."""
     by = {}
@@ -379,11 +367,10 @@ def board(docs):
     """The backlog at a glance: the counts, then every item under still to come, being worked on, or done."""
     tool = backlog_tool()
     found = tool.items(ROOT / "docs" / "backlog")
-    phases = roadmap_phases((ROOT / "docs" / "BACKLOG.md").read_text(encoding="utf-8", errors="replace"))
     groups = [
         ("Being worked on", "Claimed by a session, or partly done with parts still open.",
          [i for i in found if i.kind in ("claimed", "partly done")]),
-        ("Still to come", "Open, and nobody's yet. The roadmap at the top of the backlog says the order.",
+        ("Still to come", "Open, and nobody's yet. The lowest number comes first, after any item it says it comes after.",
          [i for i in found if i.kind == "open"]),
         ("Done", "Newest first.", sorted([i for i in found if i.kind == "done"], key=lambda i: -(i.number or 0))),
     ]
@@ -401,7 +388,6 @@ def board(docs):
             href = rel[:-3] + ".html" if rel in docs else None
             title = html.escape(i.title or i.path.name)
             cell = f'<a href="{html.escape(href)}">{title}</a>' if href else title
-            phase = phases.get(i.title or "", "")
             c = i.counts
             # From each part's own status line (backlog 0228), so what is under way shows beside what is done.
             parts = ", ".join(
@@ -411,8 +397,8 @@ def board(docs):
             ) if sum(c.values()) else ""
             rows.append("<tr>" + "".join(f"<td>{x}</td>" for x in (
                 f"{i.number:04d}" if i.number is not None else "", cell, html.escape(i.status_text or ""),
-                html.escape(phase), html.escape(parts))) + "</tr>")
-        body.append("<table><thead><tr><th>#</th><th>Item</th><th>Status</th><th>Roadmap</th><th>Parts</th></tr></thead><tbody>"
+                html.escape(parts))) + "</tr>")
+        body.append("<table><thead><tr><th>#</th><th>Item</th><th>Status</th><th>Parts</th></tr></thead><tbody>"
                     + "".join(rows) + "</tbody></table>")
     return "\n".join(body), counts_line(found)
 

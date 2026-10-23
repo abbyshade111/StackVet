@@ -4,8 +4,8 @@ StackVet (`sv`) is a Rust command-line tool and MCP server that checks an app wr
 ASVS 5.0, AISVS 1.0, and the Secure by Design checklist, and writes reports that say plainly what was verified and what
 was not. The person builds the app in their own AI coding tool; `sv` picks up the code and grades it. Read
 `docs/ARCHITECTURE.md` first: it is the ten-minute map of the crates, `data/`, `docs/`, and `tools/` (each script says
-its purpose at its top). The design is `docs/design/`, what is left to do is `docs/backlog/` (the roadmap is at the top
-of `docs/BACKLOG.md`), and why things are as they are is `docs/adr/`.
+its purpose at its top). The design is `docs/design/`, what is left to do is `docs/backlog/` (its rules are in
+`docs/BACKLOG.md`), and why things are as they are is `docs/adr/`.
 
 **v1 is archived, not part of this tree:** it is on the `v1` branch and the tags `v1-paper` and `v1-final`, and a patch
 to v1 is made there. **History is never rewritten** (no `filter-repo`, no squashing old commits, no force-push to
@@ -74,8 +74,10 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
 
 ### How the work is shared between sessions
 
-- **The roadmap at the top of `docs/BACKLOG.md` says what comes next.** With no word from the owner, take its first
-  unclaimed sub-item. Check it against `main` first: some are overtaken and want a done note, not a build.
+- **The backlog folder says what comes next** (the roadmap was retired on 23 October 2026, at the owner's word). With
+  no word from the owner, take the lowest-numbered open item that is unclaimed, unless its text says it comes after an
+  item that is not done yet (an `**Order,** ... after NNNN.` line). Check it against `main` first: some are overtaken
+  and want a done note, not a build.
 - **Claim a backlog item before starting it, in a pull request of its own, and merge that before building:** a claim
   only on a branch, or in a message, is invisible. `python3 tools/backlog.py` claims, finishes, adds, and lists items
   (its top says how); a review files each finding as an item of its own. A new test goes in a sibling test file, not at

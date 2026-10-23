@@ -27,8 +27,8 @@ begun. A done item's file is under docs/backlog/done/, the rest beside it, so th
 0228, part 6); `done` moves an item there and rewrites any path to it in the repository, and `tidy` puts every item where
 its status says. `--check` warns, without failing, of a live item past 300 lines (part 8). The numbers keep the order the items stood
 in the old single file when it was split on 8 October 2026, and are an identity, not a date; two pull requests open
-at once may take the same number, which harms nothing. docs/BACKLOG.md holds the rules and the roadmap, and no item
-and no list of items: a list every item adds a line to would bring back the conflicts this layout is for.
+at once may take the same number, which harms nothing. docs/BACKLOG.md holds the rules, and no item and no list
+of items: a list every item adds a line to would bring back the conflicts this layout is for.
 
     python3 tools/backlog.py list                     # every item, in number order
     python3 tools/backlog.py list --open              # only the open ones (--claimed, --done, --partly likewise)
@@ -43,8 +43,6 @@ and no list of items: a list every item adds a line to would bring back the conf
     python3 tools/backlog.py convert                  # gives every part with no status line one, once (run on 9 October 2026)
     python3 tools/backlog.py tidy                     # puts each item's file under done/ or beside it, as its status says
     python3 tools/backlog.py show 0150                # prints the item
-    python3 tools/backlog.py roadmap                  # lists the roadmap rows in docs/BACKLOG.md whose status is stale
-    python3 tools/backlog.py roadmap --write          # writes each row's status from its item's status line
     python3 tools/backlog.py --check                  # fails on a misnamed file, a missing title or status, two files with
                                                       # one title, or an item left in docs/BACKLOG.md
     python3 tools/backlog.py move FILE                # makes an item of each `- **title.**` entry of FILE, a backlog in the
@@ -56,7 +54,7 @@ An item may be named by its number or by its exact title. A branch written befor
 docs/BACKLOG.md once it merges `main`. To mend it:
 
     git show HEAD:docs/BACKLOG.md > /tmp/old-backlog.md    # the branch's own copy
-    git checkout MERGE_HEAD -- docs/BACKLOG.md             # main's rules and roadmap
+    git checkout MERGE_HEAD -- docs/BACKLOG.md             # main's rules
     python3 tools/backlog.py move /tmp/old-backlog.md      # the branch's new items, as files
 
 An item the branch only added lines to (a claim or a done note inside it) has those lines carried into its file by
@@ -498,9 +496,6 @@ def problems(backlog, folder):
         for n, line in enumerate(backlog.read_text(encoding="utf-8").split("\n"), 1):
             if line.startswith("- **") or line.startswith("- ~~**"):
                 found.append(f"{backlog.name} line {n} is an item; items are files under {folder.name}/")
-    for number, shown, true in roadmap(backlog, folder):
-        found.append(f"docs/BACKLOG.md's roadmap says {number} is {shown!r}, and the item says {true!r}: "
-                     f"run python3 tools/backlog.py roadmap --write")
     return found
 
 
@@ -876,20 +871,6 @@ rules
         assert new(folder, "Newer").name == "0010-newer.md"
         write_text(folder / "0011-long.md", "# Long\n\n**Status:** open\n\n" + "a line\n" * (LONG_ITEM + 1))
         assert any("0011-long.md is" in w for w in warnings(folder)) and problems(root / "NONE.md", folder) == []
-        # The roadmap's status column follows its items (backlog 0486): stale is a problem, `done` rewrites it.
-        roadmap_file = root / "BACKLOG.md"
-        write_text(roadmap_file, f"# B\n\n{ROADMAP_START}\n| Order | Phase | Item | Status | Asked |\n|---|---|---|---|---|\n"
-                                 f"| 1 | 0 | 0010 Newer | open | 9 October 2026 |\n{ROADMAP_END}\n")
-        assert roadmap(roadmap_file, folder) == [], "a fresh row is not stale"
-        set_by_hand = find(folder, "10")
-        set_by_hand.set_status("claimed by gamma, 11 October 2026")
-        assert roadmap(roadmap_file, folder) == [("0010", "open", "claimed by gamma, 11 October 2026")]
-        assert any("roadmap says 0010" in p for p in problems(roadmap_file, folder)), "a stale row is a problem"
-        assert mark_done(folder, "10", "12 October 2026", None) is True
-        assert "| 0010 Newer | done, 12 October 2026 |" in roadmap_file.read_text(encoding="utf-8"), "done rewrites the row"
-        assert roadmap(roadmap_file, folder) == []
-        assert mark_done(folder, "10", "12 October 2026", "a little") is True
-        assert "| partly done (what remains is on the item) |" in roadmap_file.read_text(encoding="utf-8")
     print("backlog self-test: ok")
 
 
@@ -899,58 +880,6 @@ def split_key(key):
     if part and not part.isdigit():
         raise SystemExit(f"{key!r}: a part is named by its number, as 226.3")
     return item, int(part) if part else None
-
-
-# The roadmap in docs/BACKLOG.md is a table between these markers, one row per item, in the order of work (backlog
-# 0486). Its status column is written from each item's own status line, by `roadmap --write`, and by `claim` and
-# `done` when they change an item the table names; `--check` fails while a row is stale. The order, the phase, and
-# the owner's date are written by hand, as the order changes.
-ROADMAP_START, ROADMAP_END = "<!-- roadmap:start -->", "<!-- roadmap:end -->"
-ROADMAP_ROW = re.compile(r"^\| (?P<head>[^|]*\| [^|]*\| (?P<item>\d{4})[^|]*) \| (?P<status>[^|]*?) \| (?P<tail>[^|]*) \|$")
-
-
-def roadmap_status(item):
-    """An item's status as the roadmap shows it: its status line, but a partly done item's remainder stays on the
-    item, where it can be read whole."""
-    if item.kind == "partly done":
-        return "partly done (what remains is on the item)"
-    return item.status_text or "no status line"
-
-
-def roadmap(backlog, folder, write=False):
-    """The roadmap rows whose status differs from their item's, as (number, shown, true); with `write`, each is
-    rewritten. Nothing when the file has no roadmap table."""
-    if not backlog.exists():
-        return []
-    text = backlog.read_text(encoding="utf-8")
-    if ROADMAP_START not in text or ROADMAP_END not in text:
-        return []
-    start = text.index(ROADMAP_START)
-    end = text.index(ROADMAP_END, start)
-    lines = text[start:end].split("\n")
-    stale = []
-    for i, line in enumerate(lines):
-        m = ROADMAP_ROW.match(line)
-        if not m:
-            continue
-        number = m.group("item")
-        try:
-            true = roadmap_status(find(folder, number))
-        except SystemExit:
-            true = "no such item"
-        if m.group("status") != true:
-            stale.append((number, m.group("status"), true))
-            lines[i] = f"| {m.group('head')} | {true} | {m.group('tail')} |"
-    if write and stale:
-        write_text(backlog, text[:start] + "\n".join(lines) + text[end:])
-    return stale
-
-
-def refresh_roadmap(folder):
-    """After a claim or a done note: the roadmap's rows follow, so finishing an item never leaves the table stale."""
-    backlog = folder.parent / "BACKLOG.md"
-    for number, _, true in roadmap(backlog, folder, write=True):
-        print(f"  the roadmap's row for {number} now says: {true}")
 
 
 def claim(folder, key, session, date):
@@ -976,7 +905,6 @@ def claim(folder, key, session, date):
         return False
     item.set_status(f"claimed by {session}, {date}")
     print(f"{item.path.name}: {item.status_text}")
-    refresh_roadmap(folder)
     return True
 
 
@@ -993,7 +921,6 @@ def mark_done(folder, key, date, remains):
     print(f"{item.path.name}: {item.status_text}" + (f", now in {DONE_DIR}/" if item.kind == "done" else ""))
     for path in rewritten:
         print(f"  rewrote its path in {path}")
-    refresh_roadmap(folder)
     return True
 
 
@@ -1079,8 +1006,7 @@ def main(argv):
     import argparse
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("command", nargs="?", default="list",
-                        choices=["list", "summary", "board", "new", "claim", "done", "show", "move", "convert", "tidy",
-                                 "roadmap"])
+                        choices=["list", "summary", "board", "new", "claim", "done", "show", "move", "convert", "tidy"])
     parser.add_argument("args", nargs="*")
     parser.add_argument("--open", action="store_true")
     parser.add_argument("--claimed", action="store_true")
@@ -1097,7 +1023,6 @@ def main(argv):
         "as stackvet-backlog.html)",
     )
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--write", action="store_true", help="with roadmap: write each row's status")
     parser.add_argument("--self-test", action="store_true")
     a = parser.parse_args(argv)
     if a.self_test:
@@ -1141,13 +1066,6 @@ def main(argv):
     if a.command == "show" and len(a.args) == 1:
         print(find(FOLDER, a.args[0]).text)
         return 0
-    if a.command == "roadmap":
-        stale = roadmap(BACKLOG, FOLDER, write=a.write)
-        for number, shown, true in stale:
-            print(f"{number}: {'now ' if a.write else ''}{true!r}" + ("" if a.write else f" (the roadmap says {shown!r})"))
-        if not stale:
-            print("the roadmap's statuses are the items' own")
-        return 0 if a.write or not stale else 1
     if a.command == "tidy":
         for item, rewritten in tidy(FOLDER):
             print(f"{item.path.relative_to(ROOT)}" + (f" ({len(rewritten)} references rewritten)" if rewritten else ""))
