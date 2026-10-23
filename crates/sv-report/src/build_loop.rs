@@ -300,8 +300,52 @@ pub fn build_loop_line(report: &Report) -> Option<String> {
     report.build_loop.as_ref().map(build_loop_said)
 }
 
-/// What `build_loop_line` says of one record.
+/// When the record's calls were made, for a person to read: "on 2026-10-22, from 22:03 to 22:56 UTC" when the first
+/// and the last fall on one day (backlog 0635), and the record's own times when they do not, or do not read as times.
+fn span_said(first: Option<&str>, last: Option<&str>) -> String {
+    // `2026-10-22T22:03:54Z`: the date, and the hour and minute.
+    let parts = |s: &str| -> Option<(String, String)> {
+        let (date, time) = s.split_once('T')?;
+        let clock = time.get(..5)?;
+        let ok = date.len() == 10 && time.ends_with('Z') && clock.as_bytes().get(2) == Some(&b':');
+        ok.then(|| (date.to_owned(), clock.to_owned()))
+    };
+    match (first, last) {
+        (Some(first), Some(last)) if first != last => match (parts(first), parts(last)) {
+            (Some((d1, t1)), Some((d2, t2))) if d1 == d2 => {
+                format!(", on {d1}, from {t1} to {t2} UTC")
+            }
+            _ => format!(", from {first} to {last}"),
+        },
+        (Some(first), _) => match parts(first) {
+            Some((d, t)) => format!(", on {d} at {t} UTC"),
+            None => format!(", at {first}"),
+        },
+        _ => String::new(),
+    }
+}
+
+/// What `build_loop_line` says of one record, in one paragraph.
 pub fn build_loop_said(b: &BuildLoop) -> String {
+    let (lead, details) = build_loop_parts(b);
+    lead + &details
+}
+
+/// `build_loop_line` in two parts, for the top of the report (backlog 0635): what a person needs first, and the
+/// details a report shows folded away. Together they say what `build_loop_said` says. `None` for a report that was
+/// not written into a report folder.
+pub fn build_loop_lines(report: &Report) -> Option<(String, String)> {
+    report.build_loop.as_ref().map(|b| {
+        let (lead, details) = build_loop_parts(b);
+        (lead, details.trim_start().to_owned())
+    })
+}
+
+/// The record's paragraph as what a person needs first (how many checks, what they came to, what moved between
+/// them, and anything that changes what those numbers mean: calls that went unanswered or unwritten, a broken chain,
+/// a full record) and the details: what it asked and was handed, the names the two sides gave, a chain that holds,
+/// and where the record is kept.
+fn build_loop_parts(b: &BuildLoop) -> (String, String) {
     let caveat = " This is about how the app was built, not about the app: it credits nothing and \
                   changes no count. sv keeps the record in the app's .stackvet folder, where the AI \
                   coding tool can write too: these numbers are what the record said when this report was \
@@ -313,13 +357,16 @@ pub fn build_loop_said(b: &BuildLoop) -> String {
         n => format!(" {n} lines of the record could not be read, and are left out."),
     };
     if b.off {
-        return "The record of the build loop is turned off in stackvet.toml (`build-loop-record = \
+        return (
+            "The record of the build loop is turned off in stackvet.toml (`build-loop-record = \
              false`), so this report cannot say whether sv was used while the app was built."
-            .to_owned();
+                .to_owned(),
+            String::new(),
+        );
     }
     let gaps = loop_gaps(b);
     if b.calls == 0 && !b.signs_of_use.is_empty() {
-        return format!(
+        let text = format!(
             "No record of the build was found; it may have been deleted. No call from an AI coding \
              tool to sv's MCP server is recorded for this app, but other signs show sv was used with \
              it: {}. The record is kept in the app's .stackvet folder (build-loop.jsonl) and goes if \
@@ -327,19 +374,17 @@ pub fn build_loop_said(b: &BuildLoop) -> String {
              built.{unreadable}{gaps}",
             list_and(&b.signs_of_use)
         );
+        return (text, String::new());
     }
     if b.calls == 0 {
-        return format!(
+        let text = format!(
             "Nothing shows that sv was used while this app was built: no call from an AI coding \
              tool to sv's MCP server is recorded for it. That is not a finding. The app may have \
              been checked at a terminal, or built before sv kept this record.{unreadable}{gaps}"
         );
+        return (text, String::new());
     }
-    let span = match (&b.first, &b.last) {
-        (Some(first), Some(last)) if first != last => format!(", from {first} to {last}"),
-        (Some(first), _) => format!(", at {first}"),
-        _ => String::new(),
-    };
+    let span = span_said(b.first.as_deref(), b.last.as_deref());
     let mut text = format!(
         "While this app was built, its AI coding tool asked sv {} time{} through sv's MCP server, \
          {} of them a check of the app{span}.",
@@ -389,15 +434,15 @@ pub fn build_loop_said(b: &BuildLoop) -> String {
             if m.new == 1 { "was" } else { "were" },
         ));
     }
-    text.push_str(&handed_said(b));
+    let mut details = handed_said(b);
     if !b.clients.is_empty() {
-        text.push_str(&format!(
+        details.push_str(&format!(
             " The AI coding tool named itself {} when it connected (its own word, not checked).",
             list_and(&b.clients)
         ));
     }
     if !b.svs.is_empty() {
-        text.push_str(&format!(" It was answered by sv {}.", list_and(&b.svs)));
+        details.push_str(&format!(" It was answered by sv {}.", list_and(&b.svs)));
     }
     text.push_str(&unreadable);
     text.push_str(&gaps);
@@ -410,7 +455,7 @@ pub fn build_loop_said(b: &BuildLoop) -> String {
         ));
     } else if let (true, Some(head)) = (b.chained > 0, &b.chain_head) {
         let short: String = head.chars().take(12).collect();
-        text.push_str(&format!(
+        details.push_str(&format!(
             " Each of the record's {} chained lines checks out against the one before it, ending at the hash {short}. \
              Lines cut from the end, or a rewrite of the whole record, would leave a valid chain all the same, \
              so compare that hash with an earlier report's: if the record has only grown since, its chain still \
@@ -424,6 +469,10 @@ pub fn build_loop_said(b: &BuildLoop) -> String {
              check here is the last one written, not necessarily the last one made.",
         );
     }
-    text.push_str(caveat);
-    text
+    details.push_str(caveat);
+    (text, details)
 }
+
+#[cfg(test)]
+#[path = "build_loop_span_tests.rs"]
+mod span_tests;

@@ -71,7 +71,7 @@ fn a_finding_in_a_copied_library_is_listed_apart_named_for_it_and_still_counts()
     // The summary at the top counts it apart too.
     assert!(
         compliance.contains(
-            "1 of them is in copies of other projects' libraries kept in the app, listed after the \
+            "1 more is in copies of other projects' libraries kept in the app, listed after the \
              app's own."
         ),
         "{compliance}"
