@@ -88,25 +88,45 @@ pub(crate) fn sign_up_value_note(signup: &RequestTemplate) -> String {
     let Some(name) = names.first() else {
         return "The sign-up form may need a value stackvet.toml does not carry, such as an invite code.".to_owned();
     };
-    let (numbered, sign_ups) = SEED_VALUES.with(|values| {
+    let (numbered, sign_ups, printed) = SEED_VALUES.with(|values| {
         let values = values.borrow();
         let numbered = (1..)
             .take_while(|n| values.contains_key(&format!("{name}_{n}")))
             .count();
-        (numbered, SIGN_UPS.with(|n| n.get()))
+        (
+            numbered,
+            SIGN_UPS.with(|n| n.get()),
+            values.contains_key(name.as_str()),
+        )
     });
-    if numbered == 0 {
-        format!(
+    // Each sentence says only what the count shows: a value that works once explains a sign-up after the first, and
+    // running out explains one past the last value printed. Otherwise the value was sent and the app still refused.
+    match (numbered, sign_ups) {
+        (0, _) if !printed => format!(
+            "The sign-up form cites `{{seed:{name}}}`, which the seed did not print, so it was sent as written. Have \
+             the seed print it as a `{name}=…` line."
+        ),
+        (0, 2..) => format!(
             "The sign-up form cites `{{seed:{name}}}`, one value the seed printed, and this run signs several accounts \
              up with it: a value that works once, as an invite code often does, lets only the first in. Have the seed \
              print one for each account, `{name}_1=…`, `{name}_2=…`, and on, and each sign-up takes the next."
-        )
-    } else {
-        format!(
-            "The seed printed {numbered} numbered `{name}_` value{} and this run made {sign_ups} sign-ups, so those \
-             past them went without one. Have the seed print more.",
-            if numbered == 1 { "" } else { "s" }
-        )
+        ),
+        (0, _) => format!(
+            "The sign-up form cites `{{seed:{name}}}`, a value the seed printed, and this was the run's first sign-up, so \
+             the value was sent unused. The app may not accept the value the seed prints, or the form may need \
+             another stackvet.toml does not carry."
+        ),
+        (n, s) if s > n => format!(
+            "The seed printed {n} numbered `{name}_` value{} and this run made {s} sign-ups, so those past them went \
+             without one. Have the seed print more.",
+            if n == 1 { "" } else { "s" }
+        ),
+        (n, s) => format!(
+            "This sign-up took `{name}_{}`, a numbered value the seed printed ({n} in all), so it did not go without \
+             one. The app may not accept the values the seed prints, or the form may need another stackvet.toml does \
+             not carry.",
+            s.max(1)
+        ),
     }
 }
 

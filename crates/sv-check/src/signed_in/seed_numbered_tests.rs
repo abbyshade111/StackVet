@@ -50,6 +50,12 @@ fn without_numbered_values_every_sign_up_takes_the_one_value() {
 #[test]
 fn the_report_says_a_value_may_work_once_and_how_to_print_one_per_account() {
     let _seed = SeedValues::set(&values(&[("INVITE", "the-code")]));
+    // The first sign-up: the value was unused, so working once is not why it failed, and the report does not say so.
+    next_sign_up();
+    let said = sign_up_value_note(&invite_form());
+    assert!(said.contains("this was the run's first sign-up"), "{said}");
+    assert!(!said.contains("works once"), "{said}");
+    next_sign_up();
     let said = sign_up_value_note(&invite_form());
     assert!(
         said.contains("cites `{seed:INVITE}`, one value the seed printed"),
@@ -61,14 +67,24 @@ fn the_report_says_a_value_may_work_once_and_how_to_print_one_per_account() {
         "the value is never said: {said}"
     );
     let _more = SeedValues::set(&values(&[("INVITE_1", "a"), ("INVITE_2", "b")]));
-    for _ in 0..3 {
+    // Within the values printed: this sign-up had one, and the report does not say it ran short.
+    for _ in 0..2 {
         next_sign_up();
     }
+    let said = sign_up_value_note(&invite_form());
+    assert!(said.contains("This sign-up took `INVITE_2`"), "{said}");
+    assert!(!said.contains("went without one"), "{said}");
+    next_sign_up();
     let said = sign_up_value_note(&invite_form());
     assert!(
         said.contains("printed 2 numbered `INVITE_` values and this run made 3 sign-ups"),
         "{said}"
     );
+    // A value the seed did not print is not said to be one it printed.
+    let _none = SeedValues::set(&values(&[("OTHER", "x")]));
+    next_sign_up();
+    let said = sign_up_value_note(&invite_form());
+    assert!(said.contains("which the seed did not print"), "{said}");
     // A form that cites no seed value keeps the words it had.
     let plain = RequestTemplate {
         form: values(&[("email", "{user}")]),
