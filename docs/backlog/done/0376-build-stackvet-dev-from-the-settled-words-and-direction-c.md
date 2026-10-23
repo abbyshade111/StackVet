@@ -91,3 +91,6 @@ runner's and `curl`'s alike. The owner turned it off. Then, checked from the ses
 
 The managed rules the zone keeps were seen blocking a scanner's requests for `/wp-config.php` the same hour; they are
 separate from Bot Fight Mode and stay on.
+
+The owner then started **Actions → Site** once more, with Bot Fight Mode off: every step passed, its last one finding
+"stackvet.dev answers, with its content security policy." (version `a4eac745-aa3f-4fca-ad75-6c0384331bd6`, 02:14 UTC).
