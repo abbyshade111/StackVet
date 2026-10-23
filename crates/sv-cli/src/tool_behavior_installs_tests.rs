@@ -122,23 +122,24 @@ fn a_package_no_lockfile_holds_is_a_line_and_a_locked_one_is_not() {
     let seen = installs_and_secrets(None, Some(&done), &components, &[]);
     let what: Vec<&str> = seen.iter().map(|s| s.what.as_str()).collect();
     // Flask_Login is flask-login, which a lockfile holds; named once even when installed twice.
-    assert_eq!(seen.len(), 2, "{what:#?}");
+    assert!(seen.len() == 2, "two packages no lockfile holds");
     assert!(seen.iter().all(|s| s.kind == Kind::PackageInstalled));
     assert!(
         what[0].starts_with("the Python package requests was installed"),
-        "{}",
-        what[0]
+        "the first line names requests, which only a manifest names"
     );
     assert!(
         what[0].ends_with("a manifest names it, but no lockfile in the app pins its version"),
-        "{}",
-        what[0]
+        "the first line says a manifest names it"
     );
     assert!(
         what[1].contains("left_over")
             && what[1].ends_with("no lockfile or manifest in the app names it")
     );
-    assert_eq!(seen[0].place, "the hook record, 2026-10-22T18:10:00Z");
+    assert!(
+        seen[0].place == "the hook record, 2026-10-22T18:10:00Z",
+        "the first line is placed at the hook record's command"
+    );
 }
 
 #[test]
@@ -162,11 +163,7 @@ fn a_secret_is_a_line_only_in_a_file_the_tool_wrote() {
     ];
     let seen = installs_and_secrets(Some(&[commit]), Some(&done), &[], &findings);
     // The messages say what failed in words: a test of how secrets are told is no place to print what it found.
-    assert!(
-        seen.len() == 2,
-        "two lines, one per file the tool wrote, not {}",
-        seen.len()
-    );
+    assert!(seen.len() == 2, "two lines, one per file the tool wrote");
     assert!(seen.iter().all(|s| s.kind == Kind::SecretWritten));
     assert!(
         seen[0].what
