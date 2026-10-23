@@ -1,6 +1,6 @@
 # Build stackvet.dev from the settled words and direction C
 
-**Status:** partly done: publishing to Cloudflare (a deploy from GitHub with a token the owner makes, and stackvet.app's redirect rule); going live, at the owner's word
+**Status:** claimed by claude/0376-deploy, 22 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -55,3 +55,13 @@ after the walk-through (backlog 0373) and the owner's word.
 
 **22 October 2026:** the walk-through (backlog 0373) is done as the build's, at the owner's word, so going live waits
 only on publishing and the owner's word.
+
+**The owner's word, 22 October 2026:** "go ahead and write the deploy job. I added the API token and the A record for
+.app, waiting to do the redirect rule." Both secrets are in the repository (`CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID`). Claimed to write the deploy: a workflow the owner starts by hand (`workflow_dispatch`
+only), which builds the site with `tools/website.py` and publishes `exports/site/` to Cloudflare as a Worker of static
+files at stackvet.dev, with Cloudflare's own action pinned by commit. Writing it publishes nothing: the first run the
+owner starts is going live. The redirect rule on stackvet.app stays the owner's to add.
+
+**Record, proposed:** a Later entry on ADR-132 (the deploy, its new dependency on `cloudflare/wrangler-action`, what
+it uploads, and that only the owner starts it), made accepted in the pull request that builds it.
