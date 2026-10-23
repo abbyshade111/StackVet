@@ -1,6 +1,6 @@
 # Go through StackVet's findings on its own repository, fix the rules that are wrong, and set aside the false alarms for the owner to confirm
 
-**Status:** claimed by claude/0633, 23 October 2026
+**Status:** done, 23 October 2026
 
 From the self-assessment made for stackvet.dev on 22 October 2026 (backlog 0376, `docs/website/self-assessment`):
 `sv report .` on this repository, held to level 3, lists 312 things to fix. The owner chose on 22 October 2026 to
@@ -68,3 +68,16 @@ too: whether they come off `main` is put to the owner, since the history keeps t
 
 What remains here: the `[[finding-review]]` entries, after 0643 to 0646 land; then the report made again and the page
 refreshed.
+
+**Done, 23 October 2026.** The fixes the triage found are built: the shell-command rule in Rust and Go (0643, ADR-135),
+Rust test modules read as test code (0644, ADR-136), the weak-key and certificate checks (0645, ADR-137), and the stale
+report removed with no shell (0646). Twelve findings by design were proposed as false alarms in `stackvet.toml` and
+the owner confirmed each in `sv review`, after two of their reasons were reworded: quoting a trial app's
+credential-shaped line in a reason made the secrets scan report `stackvet.toml` itself. The owner also tried leaving
+the tests' folders out (`[[left-out]]`), to see the feature work: confirmed, it stopped checking 420 files, took 1,854
+findings out of the count, and moved 17 requirements from "needs attention" to "not verified", since their only
+evidence was the deliberately vulnerable fixtures; the owner then took it back, so the full scan stands. The report
+made again: 151 things to fix in StackVet's own code (312 on 22 October), 3,394 more listed apart in test and sample
+code, 12 set aside, and 27 things not examined. `docs/website/self-assessment/summary.md`, `sbom.cdx.json`, and the
+README are refreshed; the owner publishes the page with **Actions → Site**. The 151 are nearly all the path rule's
+(backlog 0647, next), and the bill of materials reading test fixtures is noted there.
