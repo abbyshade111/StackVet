@@ -27,9 +27,13 @@ fn a_report_json_sv_cannot_show_it_wrote_is_not_counted_from() {
 #[test]
 fn with_no_report_it_says_so_rather_than_a_count() {
     let said = findings_without_entries(&app("none"));
+    // No folder at all is no report yet, said as that (backlog 0636), not as a folder without sv's marker.
     assert!(
-        said.contains("No report sv can show it wrote was read"),
+        said.contains(
+            "No report has been written for this app yet, so there are no findings to count."
+        ),
         "{said}"
     );
+    assert!(!said.contains("holds no marker"), "{said}");
     assert!(!said.contains("lists"), "no count without a report: {said}");
 }
