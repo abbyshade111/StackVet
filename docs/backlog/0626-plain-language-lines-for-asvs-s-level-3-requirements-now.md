@@ -12,3 +12,9 @@ now has 92 rows with no plain line, and `crates/sv-report/tests/plain_requiremen
 
 **To do:** a line for each, held to its requirement's words as the others are, and the exemption in the test removed,
 so a level-3 requirement without one fails it by name.
+
+**The owner's word, 23 October 2026,** among the things to do after backlog 0633: "add plain language for any
+requirements (assuming level 3) that don't have it yet". On that day, all 92 of ASVS's level-3 requirements still had none,
+and every other requirement had one.
+
+**Order,** at the owner's word of 23 October 2026: after 0650.
