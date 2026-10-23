@@ -440,6 +440,9 @@ tls = "terminated-upstream"   # off | self | terminated-upstream
 #   confirmed = { by = "ai-tool", how } — proposes that a person make a check the AI tool made; as
 #         for [design], it counts, as much as their own check made by hand, once they have made it
 #         and recorded it through `sv review`.
+#   reviewer = for AC.4.1 only, a person reviewing the code the AI tool wrote: "someone-else" or
+#         "the-requester". The requirement counts a review only by someone other than the person who
+#         asked the tool for the code; `sv review` asks which, and seals the answer with the entry.
 [checked-by-hand]
 # "V12.2.2" = { result = "done", on = "2026-09-26", by = "owner", how = "Opened the live site; the padlock shows a trusted certificate for the right name, valid to December." }
 

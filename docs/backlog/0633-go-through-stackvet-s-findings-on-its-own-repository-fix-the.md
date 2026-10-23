@@ -1,6 +1,6 @@
 # Go through StackVet's findings on its own repository, fix the rules that are wrong, and set aside the false alarms for the owner to confirm
 
-**Status:** open
+**Status:** claimed by claude/0633, 23 October 2026
 
 From the self-assessment made for stackvet.dev on 22 October 2026 (backlog 0376, `docs/website/self-assessment`):
 `sv report .` on this repository, held to level 3, lists 312 things to fix. The owner chose on 22 October 2026 to
@@ -38,3 +38,14 @@ your-decisions.md, not-examined.md, before-going-live.md, low-findings.md, seen.
 its file and line in StackVet's own code. Among the choices: a summary only (the counts, what was not examined, and
 that the findings are being gone through), the full files behind a note, or the files after triage with what is a real
 fault fixed first. Until then the files stay as they are, unless the owner asks for them to come down sooner.
+
+**The owner's answers, 23 October 2026,** asked what stackvet.dev should show of StackVet's report on itself, and
+when: "A summary only", and "Now". So the site's "StackVet checks itself" keeps the counts, what could not be examined,
+and the bill of materials, says the findings are being gone through, and no longer publishes the finding-by-finding
+files; that goes first, ahead of the triage, and the owner publishes it with **Actions → Site**. The triage that follows
+is this item's own. **Claimed, 23 October 2026,** for both. The files stay in the repository, where they are public
+too: whether they come off `main` is put to the owner, since the history keeps them either way.
+
+**First part, 23 October 2026:** stackvet.dev's "StackVet checks itself" is a summary, read from
+`docs/website/self-assessment/summary.md`, with the bill of materials; the finding-by-finding files are removed from
+`main` (ADR-132, Later). What remains is the triage itself, and the page refreshed after it.

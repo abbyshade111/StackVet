@@ -46,6 +46,11 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
             "The last report in {} lists {n} findings that count.",
             folder.display()
         ),
+        // No folder is no report yet, said as that, not as a folder without sv's marker (backlog 0636).
+        Err(_) if std::fs::symlink_metadata(&folder).is_err() => {
+            "No report has been written for this app yet, so there are no findings to count."
+                .to_owned()
+        }
         Err(why) => format!(
             "No report sv can show it wrote was read in {} to count from: {why}.",
             folder.display()
@@ -514,6 +519,9 @@ fn review(
     let key = signing.for_app(&app);
     let checker = Checker::in_folder(Some(&folder), app_dir);
     let rules = sv_check::secrets::SecretRules::shared().map_err(anyhow::Error::msg)?;
+    // AC.4.1's reviewer must not be the person who asked for the code: asked before the entries are listed, and
+    // sealed with the rest of its entry (ADR-133).
+    let manifest = ask_reviewer(manifest, &manifest_path, &mut doc, &checker, input, out)?;
 
     let mut waiting = Vec::new();
     // Entries whose seal was made with the review key and holds here: signed again at one yes.
@@ -925,19 +933,116 @@ struct Last {
 /// waits; then the checklist before going live, line by line, from the last sealed report (backlog 0604). Until 22
 /// October 2026 `review` held this sequence twice, word for word (backlog 0324).
 fn ask_last(app_dir: &Path, asking: &mut Asking<'_>, last: Last) -> Result<()> {
+    // How many are left is said once, and each says where it stands, so none says it is the last while others follow
+    // (backlog 0634: the review said "Last," then "One more" twice, then "Last:" again).
+    let n = [last.scope, last.not_offered, last.policy, last.capabilities]
+        .iter()
+        .filter(|w| **w)
+        .count();
+    if n > 1 {
+        writeln!(asking.out, "\n{n} more questions.")?;
+    }
+    let mut i = 0;
+    let mut at = || {
+        i += 1;
+        closing_place(i, n)
+    };
     if last.scope {
-        confirm_scope(asking)?;
+        confirm_scope(asking, &at())?;
     }
     if last.not_offered {
-        confirm_not_offered(asking)?;
+        confirm_not_offered(asking, &at())?;
     }
     if last.policy {
-        confirm_policy(asking)?;
+        confirm_policy(asking, &at())?;
     }
     if last.capabilities {
-        confirm_capabilities(asking)?;
+        confirm_capabilities(asking, &at())?;
     }
     ticks::tick_checklist(app_dir, asking)
+}
+
+use sv_check::hand::{SEPARATE_REVIEW, SOMEONE_ELSE, THE_REQUESTER};
+
+/// Asks who reviewed the code for AC.4.1, when the owner's check by hand for it waits to be recorded, and writes the
+/// answer into stackvet.toml before the entries are listed, so it is shown and sealed with the rest (ADR-133). AC.4.1:
+/// "The reviewer must not be the same identity that asked for the AI generation in the first place."
+fn ask_reviewer(
+    manifest: sv_manifest::Manifest,
+    manifest_path: &Path,
+    doc: &mut toml_edit::DocumentMut,
+    checker: &Checker,
+    input: &mut dyn BufRead,
+    out: &mut dyn Write,
+) -> Result<sv_manifest::Manifest> {
+    let Some(h) = manifest.checked_by_hand.get(SEPARATE_REVIEW) else {
+        return Ok(manifest);
+    };
+    let recorded = matches!(
+        sv_check::seal::owner_recorded(
+            checker,
+            h.seal.as_deref(),
+            &sv_check::seal::hand_check_fields(SEPARATE_REVIEW, h),
+        ),
+        Ok(Sealed::Signed { .. })
+    );
+    if h.by.as_deref() != Some(sv_check::design::OWNER) || recorded || h.result.trim() != "done" {
+        return Ok(manifest);
+    }
+    writeln!(
+        out,
+        "\nBefore the entries: your check made by hand for {SEPARATE_REVIEW}, a person reviewing the code the AI coding \
+         tool wrote. The requirement asks that the reviewer is not the person who asked the tool for the code, so the \
+         review is a second look."
+    )?;
+    let answer = loop {
+        let Some(said) = ask(
+            input,
+            out,
+            "Did someone other than the person who asked the AI tool for the code review it? Type `yes` or `no`.\n> ",
+        )?
+        else {
+            return Ok(manifest);
+        };
+        match said.trim().to_ascii_lowercase().as_str() {
+            "yes" => break SOMEONE_ELSE,
+            "no" => break THE_REQUESTER,
+            _ => writeln!(out, "  Type `yes` or `no`.")?,
+        }
+    };
+    let entry = doc
+        .get_mut("checked-by-hand")
+        .and_then(|t| t.get_mut(SEPARATE_REVIEW))
+        .and_then(|t| t.as_table_like_mut())
+        .context("the entry is not where it was")?;
+    entry.insert("reviewer", toml_edit::value(answer));
+    save(manifest_path, doc, &|m| {
+        m.checked_by_hand
+            .get(SEPARATE_REVIEW)
+            .is_some_and(|h| h.reviewer.as_deref() == Some(answer))
+    })?;
+    writeln!(
+        out,
+        "  {}",
+        if answer == SOMEONE_ELSE {
+            "Written beside it: reviewed by someone other than the person who asked for the code. Recording the \
+             entry as yours seals that too."
+        } else {
+            "Written beside it: reviewed by the person who asked for the code. Your look is kept and shown, and \
+             AC.4.1 stays not verified until someone else reviews it."
+        }
+    )?;
+    sv_manifest::Manifest::load(manifest_path)
+}
+
+/// Where one of the closing questions stands, for the words it opens with: "Question 2 of 3", or "One more question"
+/// when it is the only one (backlog 0634).
+pub(crate) fn closing_place(i: usize, n: usize) -> String {
+    if n == 1 {
+        "One more question".to_owned()
+    } else {
+        format!("Question {i} of {n}")
+    }
 }
 
 /// Signs again, at one yes, the entries whose seal was made with this computer's review key and
@@ -1602,10 +1707,16 @@ fn own_answer(
             (
                 format!(
                     "Your check made by hand for requirement {id}, as stackvet.toml gives it: {}, \
-                     on {}: \"{}\"",
+                     on {}: \"{}\"{}",
                     h.result,
                     h.on.as_deref().unwrap_or("no date"),
-                    h.how.as_deref().unwrap_or("nothing written").trim()
+                    h.how.as_deref().unwrap_or("nothing written").trim(),
+                    match h.reviewer.as_deref() {
+                        Some(SOMEONE_ELSE) =>
+                            ", reviewed by someone other than the person who asked for the code",
+                        Some(THE_REQUESTER) => ", reviewed by the person who asked for the code",
+                        _ => "",
+                    }
                 ),
                 sv_check::seal::hand_check_fields(id, h),
             )
@@ -1750,7 +1861,7 @@ fn record_notes_confirmation(
 /// Puts `seal` on the answer to `id` in `section` of stackvet.toml, changing nothing else.
 /// The answers that set the level, asked about after every other entry, and saved when the owner
 /// confirms them.
-fn confirm_scope(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_scope(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -1759,7 +1870,7 @@ fn confirm_scope(asking: &mut Asking<'_>) -> Result<()> {
         asking.checker,
     );
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
-    writeln!(out, "\nLast, the answers that set the app's level.")?;
+    writeln!(out, "\n{at}: the answers that set the app's level.")?;
     if let Some(entry) = record_scope(manifest, today, key, input, out)? {
         set_scope(doc, &entry);
         save(manifest_path, doc, &|m| counts(m, &Waiting::Scope, checker))?;
@@ -1769,7 +1880,7 @@ fn confirm_scope(asking: &mut Asking<'_>) -> Result<()> {
 
 /// The account changes listed as not offered, asked about after the level's answers, and saved
 /// when the owner confirms them (ADR-105).
-fn confirm_not_offered(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_not_offered(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -1778,10 +1889,7 @@ fn confirm_not_offered(asking: &mut Asking<'_>) -> Result<()> {
         asking.checker,
     );
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
-    writeln!(
-        out,
-        "\nOne more: the account changes your app does not offer."
-    )?;
+    writeln!(out, "\n{at}: the account changes your app does not offer.")?;
     if let Some(entry) = record_not_offered(manifest, today, key, input, out)? {
         set_not_offered(doc, &entry);
         save(manifest_path, doc, &|m| {
@@ -1872,7 +1980,7 @@ fn record_not_offered(
 
 /// `[policy] fix-within-days`, asked about after the account changes, and saved when the owner confirms it as the
 /// documented time frames V15.1.1 asks for (backlog 0498).
-fn confirm_policy(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_policy(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -1883,7 +1991,7 @@ fn confirm_policy(asking: &mut Asking<'_>) -> Result<()> {
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
-        "\nOne more: how soon a known vulnerability in your app's packages is fixed."
+        "\n{at}: how soon a known vulnerability in your app's packages is fixed."
     )?;
     if let Some(entry) = record_policy(manifest, today, key, input, out)? {
         set_policy(doc, &entry);
@@ -1954,7 +2062,7 @@ fn record_policy(
 }
 
 /// The capability answers, asked about last, and saved when the owner confirms them as theirs (backlog 0606).
-fn confirm_capabilities(asking: &mut Asking<'_>) -> Result<()> {
+fn confirm_capabilities(asking: &mut Asking<'_>, at: &str) -> Result<()> {
     let (manifest, manifest_path, today, key, checker) = (
         asking.manifest,
         asking.manifest_path,
@@ -1965,7 +2073,7 @@ fn confirm_capabilities(asking: &mut Asking<'_>) -> Result<()> {
     let (doc, input, out) = (&mut *asking.doc, &mut *asking.input, &mut *asking.out);
     writeln!(
         out,
-        "\nLast: what stackvet.toml says your app does and does not do."
+        "\n{at}: what stackvet.toml says your app does and does not do."
     )?;
     if let Some(entry) = record_capabilities(manifest, today, key, input, out)? {
         set_capabilities(doc, &entry);
@@ -2491,7 +2599,12 @@ mod confirm_notes_tests;
 mod passphrase_tests;
 
 #[cfg(test)]
+mod closing_tests;
+#[cfg(test)]
 mod scope_tests;
+
+#[cfg(test)]
+mod separate_review_tests;
 
 #[cfg(test)]
 mod policy_tests;

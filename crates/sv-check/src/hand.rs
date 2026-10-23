@@ -41,6 +41,16 @@ use crate::verified::Tier;
 use crate::{Confidence, Finding, Location, Severity, Verified};
 use std::collections::BTreeMap;
 
+/// The requirement whose check by hand counts only when someone other than the person who asked the AI tool for the
+/// code reviewed it (ADR-133): AISVS Appendix C's "The reviewer must not be the same identity that asked for the AI
+/// generation in the first place."
+pub const SEPARATE_REVIEW: &str = "AC.4.1";
+
+/// What `[checked-by-hand]`'s `reviewer` says for it: someone other than the person who asked for the code, or that
+/// person (ADR-133).
+pub const SOMEONE_ELSE: &str = "someone-else";
+pub const THE_REQUESTER: &str = "the-requester";
+
 pub const DONE: &str = "done";
 pub const PROBLEM: &str = "problem";
 pub const NOT_YET: &str = "not-yet";

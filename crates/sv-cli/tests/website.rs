@@ -184,7 +184,6 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         "standards/asvs.html",
         "reports/notes-with-users/report.html",
         "reports/notes-with-users/compliance.html",
-        "self-assessment/compliance.html",
         "self-assessment/sbom.cdx.json",
     ] {
         assert!(made.contains(&PathBuf::from(page)), "{page} is not made");
@@ -331,6 +330,26 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
     // StackVet's own report on itself, and the credits, each a page.
     let itself = read("checks-itself.html");
     assert!(itself.contains("Held to ASVS level 3"), "{itself}");
+    // A summary only (the owner's choice of 23 October 2026, backlog 0633): the counts and the bill of materials,
+    // never the finding-by-finding files.
+    assert!(
+        itself.contains("things to fix were found, and"),
+        "the counts are on the page"
+    );
+    // The paper's own report stays in the repository; the site neither links nor names it.
+    assert!(
+        !itself.contains("self-assessment-v2"),
+        "the paper's own report is not on the page"
+    );
+    let published: Vec<&PathBuf> = made
+        .iter()
+        .filter(|p| p.starts_with("self-assessment"))
+        .collect();
+    assert_eq!(
+        published,
+        [&PathBuf::from("self-assessment/sbom.cdx.json")],
+        "only the bill of materials of StackVet's report on itself is published"
+    );
     assert!(read("credits.html").contains("OWASP Application Security Verification Standard"));
     std::fs::remove_dir_all(&dir).ok();
 }

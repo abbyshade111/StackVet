@@ -862,14 +862,20 @@ pub fn checklist_done_fields(entry: &sv_manifest::ChecklistDone) -> Vec<String> 
 /// The fields a result under `[checked-by-hand]` is sealed over.
 pub fn hand_check_fields(requirement: &str, h: &sv_manifest::HandCheck) -> Vec<String> {
     let field = |v: Option<&str>| v.unwrap_or("").trim().to_owned();
-    vec![
+    let mut fields = vec![
         "checked-by-hand-result".to_owned(),
         requirement.trim().to_owned(),
         h.result.trim().to_owned(),
         field(h.on.as_deref()),
         field(h.by.as_deref()),
         field(h.how.as_deref()),
-    ]
+    ];
+    // Who reviewed, for AC.4.1 (ADR-133), sealed with the rest so the AI coding tool cannot change it after the owner
+    // gave it; left out, nothing is added, so a seal made before the field existed still holds.
+    if let Some(reviewer) = &h.reviewer {
+        fields.push(format!("reviewer={}", reviewer.trim()));
+    }
+    fields
 }
 
 /// The fields `[scope-review]` is sealed over: who and when first, then the audience, then whether
@@ -1292,6 +1298,7 @@ mod tests {
             assert_ne!(changed, base);
         }
         let hand = sv_manifest::HandCheck {
+            reviewer: None,
             result: "problem".into(),
             on: Some("2026-10-04".into()),
             by: Some("owner".into()),
@@ -1304,6 +1311,7 @@ mod tests {
             hand_check_fields(
                 "V2.3.4",
                 &sv_manifest::HandCheck {
+                    reviewer: None,
                     result: "done".into(),
                     ..hand.clone()
                 },
@@ -1311,6 +1319,7 @@ mod tests {
             hand_check_fields(
                 "V2.3.4",
                 &sv_manifest::HandCheck {
+                    reviewer: None,
                     on: Some("2026-10-03".into()),
                     ..hand.clone()
                 },
@@ -1318,6 +1327,7 @@ mod tests {
             hand_check_fields(
                 "V2.3.4",
                 &sv_manifest::HandCheck {
+                    reviewer: None,
                     by: Some("ai-tool".into()),
                     ..hand.clone()
                 },
@@ -1325,6 +1335,7 @@ mod tests {
             hand_check_fields(
                 "V2.3.4",
                 &sv_manifest::HandCheck {
+                    reviewer: None,
                     how: Some("One browser booked it.".into()),
                     ..hand.clone()
                 },
