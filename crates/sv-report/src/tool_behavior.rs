@@ -64,6 +64,10 @@ pub enum Kind {
     GuardEdited,
     /// A command that destroys work or steps around a guard.
     Command,
+    /// A package the tool installed that no lockfile in the app holds.
+    PackageInstalled,
+    /// A secret the secrets scan found, in a file the tool wrote.
+    SecretWritten,
 }
 
 impl Kind {
@@ -74,6 +78,8 @@ impl Kind {
             Kind::TestsTouched => "Tests skipped or removed",
             Kind::GuardEdited => "A guard edited",
             Kind::Command => "A command worth a look",
+            Kind::PackageInstalled => "A package no lockfile holds",
+            Kind::SecretWritten => "A secret in a file the tool wrote",
         }
     }
 }
