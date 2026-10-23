@@ -45,3 +45,7 @@ and the bill of materials, says the findings are being gone through, and no long
 files; that goes first, ahead of the triage, and the owner publishes it with **Actions → Site**. The triage that follows
 is this item's own. **Claimed, 23 October 2026,** for both. The files stay in the repository, where they are public
 too: whether they come off `main` is put to the owner, since the history keeps them either way.
+
+**First part, 23 October 2026:** stackvet.dev's "StackVet checks itself" is a summary, read from
+`docs/website/self-assessment/summary.md`, with the bill of materials; the finding-by-finding files are removed from
+`main` (ADR-132, Later). What remains is the triage itself, and the page refreshed after it.
