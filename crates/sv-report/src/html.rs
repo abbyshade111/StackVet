@@ -262,11 +262,45 @@ pub fn page(report: &Report) -> String {
         "<p class=\"headline\">{}</p>\n",
         escape(&crate::bluf::headline(report))
     ));
+    // The things the headline counts, named under it before anything else (backlog 0635).
+    let (worst, rest) = crate::bluf::worst_findings(report);
+    if !worst.is_empty() {
+        b.push_str(&format!(
+            "<p class=\"note\">{}</p>\n",
+            crate::bluf::WORST_LEAD
+        ));
+        b.push_str("<ul class=\"worst\">\n");
+        for f in worst {
+            b.push_str(&format!(
+                "<li><strong>{}</strong> <span class=\"sev sev-{}\">{}</span> \
+                 <code>{}</code></li>\n",
+                escape(&f.title),
+                escape(f.severity.name()),
+                escape(f.severity.name()),
+                escape(&f.rule_id)
+            ));
+        }
+        if rest > 0 {
+            b.push_str(&format!(
+                "<li class=\"note\">{}</li>\n",
+                escape(&crate::bluf::more_line(rest, "in security.md"))
+            ));
+        }
+        b.push_str("</ul>\n");
+    }
     if let Some(line) = crate::baseline_line(report) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
     }
-    if let Some(line) = crate::build_loop_line(report) {
-        b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
+    // The build record in short: what a person needs first, and the rest folded away (backlog 0635).
+    if let Some((lead, details)) = crate::build_loop_lines(report) {
+        b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&lead)));
+        if !details.is_empty() {
+            b.push_str(&format!(
+                "<details class=\"note\"><summary>How this record is kept, and what else it says</summary>\
+                 <p>{}</p></details>\n",
+                escape(&details)
+            ));
+        }
     }
     if let Some(line) = crate::went_same_line(report) {
         b.push_str(&format!(
@@ -300,35 +334,19 @@ pub fn page(report: &Report) -> String {
     if let Some(line) = crate::advisories_line(report) {
         b.push_str(&format!("<p class=\"note\">{}</p>\n", escape(&line)));
     }
-    let (worst, rest) = crate::bluf::worst_findings(report);
-    if !worst.is_empty() {
-        b.push_str("<ul class=\"worst\">\n");
-        for f in worst {
+    b.push_str(&glance(report));
+    // The bars' legend carries every count of what applies, with its words, so the same counts are not listed again
+    // under them (backlog 0635); with nothing that applies there is no bar, and the list says so.
+    if report.counts.applicable == 0 {
+        b.push_str("<p>Of the requirements that apply to this app:</p>\n<ul class=\"tally\">\n");
+        for (label, n) in crate::bluf::counted(report) {
             b.push_str(&format!(
-                "<li><strong>{}</strong> <span class=\"sev sev-{}\">{}</span> \
-                 <code>{}</code></li>\n",
-                escape(&f.title),
-                escape(f.severity.name()),
-                escape(f.severity.name()),
-                escape(&f.rule_id)
-            ));
-        }
-        if rest > 0 {
-            b.push_str(&format!(
-                "<li class=\"note\">… and {rest} more, in security.md, worst first</li>\n"
+                "<li><strong>{n}</strong> — {}</li>\n",
+                escape(&label)
             ));
         }
         b.push_str("</ul>\n");
     }
-    b.push_str(&glance(report));
-    b.push_str("<p>Of the requirements that apply to this app:</p>\n<ul class=\"tally\">\n");
-    for (label, n) in crate::bluf::counted(report) {
-        b.push_str(&format!(
-            "<li><strong>{n}</strong> — {}</li>\n",
-            escape(&label)
-        ));
-    }
-    b.push_str("</ul>\n");
     b.push_str(&format!(
         "<p class=\"note\">{}</p>\n",
         escape(&crate::bluf::held_to(report))
@@ -1683,16 +1701,24 @@ mod tests {
     }
 
     #[test]
-    fn the_bars_open_the_short_version_before_its_tally() {
+    fn the_bars_open_the_short_version_and_their_counts_are_not_listed_again() {
         let r = counted(|c| {
             c.applicable = 2;
             c.not_verified = 2;
         });
         let page = page(&r);
         let bars = page.find("class=\"glance\"").expect("no bars on the page");
-        let tally = page.find("Of the requirements that apply").unwrap();
         let bluf = page.find("class=\"bluf\"").unwrap();
-        assert!(bluf < bars && bars < tally);
+        assert!(bluf < bars);
+        // The legend carries the count; the list under the bars is gone (backlog 0635).
+        assert!(
+            page.contains("<strong>2</strong> not verified by anything</li>"),
+            "the count is in the bars' legend"
+        );
+        assert!(
+            !page.contains("Of the requirements that apply"),
+            "the same counts listed twice"
+        );
     }
 
     fn report(undecided: bool, elsewhere: bool, excluded: bool) -> Report {

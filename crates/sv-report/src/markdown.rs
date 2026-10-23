@@ -214,11 +214,38 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
     // The short version, before any of the explaining. See `crate::bluf`.
     out.push_str("## The short version\n\n");
     out.push_str(&format!("{}\n\n", crate::bluf::headline(report)));
+    // The things the headline counts, named under it before anything else (backlog 0635).
+    let (worst, rest) = crate::bluf::worst_findings(report);
+    if !worst.is_empty() {
+        out.push_str(&format!("{}\n\n", crate::bluf::WORST_LEAD));
+        for f in worst {
+            out.push_str(&format!(
+                "- **{}** — {} ({})\n",
+                cell(&f.title),
+                cell(f.severity.name()),
+                cell(&f.rule_id)
+            ));
+        }
+        if rest > 0 {
+            out.push_str(&format!(
+                "- {}\n",
+                crate::bluf::more_line(rest, if pdf { "below" } else { "in security.md" })
+            ));
+        }
+        out.push('\n');
+    }
     if let Some(line) = crate::baseline_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
-    if let Some(line) = crate::build_loop_line(report) {
-        out.push_str(&format!("{}\n\n", inert(&line)));
+    // The build record in short, and its details in a paragraph of their own (backlog 0635).
+    if let Some((lead, details)) = crate::build_loop_lines(report) {
+        out.push_str(&format!("{}\n\n", inert(&lead)));
+        if !details.is_empty() {
+            out.push_str(&format!(
+                "*How this record is kept, and what else it says:* {}\n\n",
+                inert(&details)
+            ));
+        }
     }
     if let Some(line) = crate::went_same_line(report) {
         out.push_str(&format!("**{}**\n\n", inert(&line)));
@@ -231,24 +258,6 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
     out.push_str(&format!("{}\n\n", crate::sarif_line(report)));
     if let Some(line) = crate::advisories_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
-    }
-    let (worst, rest) = crate::bluf::worst_findings(report);
-    if !worst.is_empty() {
-        for f in worst {
-            out.push_str(&format!(
-                "- **{}** — {} ({})\n",
-                cell(&f.title),
-                cell(f.severity.name()),
-                cell(&f.rule_id)
-            ));
-        }
-        if rest > 0 {
-            out.push_str(&format!(
-                "- … and {rest} more, {}, worst first\n",
-                if pdf { "below" } else { "in security.md" }
-            ));
-        }
-        out.push('\n');
     }
     out.push_str("Of the requirements that apply to this app:\n\n");
     for (label, n) in crate::bluf::counted(report) {
