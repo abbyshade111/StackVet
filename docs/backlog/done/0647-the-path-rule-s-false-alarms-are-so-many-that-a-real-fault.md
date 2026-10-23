@@ -1,6 +1,6 @@
 # The path rule's false alarms are so many that a real fault among them would be missed, and test code is read unevenly
 
-**Status:** claimed by claude/0647, 23 October 2026
+**Status:** done, 23 October 2026
 
 From the triage of StackVet's findings on its own repository (backlog 0633, 23 October 2026). The owner's word, 23 October 2026, asked how to handle the 269 *A file is opened at a path built from a value*
 findings (`ast.file-path-from-value`, V5.3.2, low confidence) on StackVet's own code: "leave them counted for now as
@@ -27,3 +27,8 @@ To do: find out what would let the path rule tell a path that comes from outside
 languages it reads (a request value reaching the call, as the rule already reads for some, or a value the app built
 itself), and what that would cost in findings it would then miss; settle how every check treats test code, the same
 way; and bring the answers to the owner before building. Then make StackVet's report on itself again.
+
+**Done, 23 October 2026.** What was found and the choices are `docs/design/0394-the-path-rule-s-false-alarms-and-how-test-code-is-read-23.md`. The owner's answer: "A: read the source (Recommended)"
+for the path rule, and for test code all three: "One reading for all checks", "Weak-key check labels, not skips", and
+"SBOM skips test lockfiles". Built as 0653 (ADR-138), 0654 (ADR-139, with 0652 in it), 0655 (ADR-137, Later), and 0656
+(ADR-140), in that order, before 0648.
