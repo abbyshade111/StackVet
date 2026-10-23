@@ -265,6 +265,15 @@ fn looks_like_placeholder(value: &str) -> bool {
     {
         return true;
     }
+    // `{seed:INVITE}`: a value `sv run` fills in from what the app's seed printed (ADR-124), whole, its name as
+    // `sv run` reads a seed's names. The owner's Cursor build drew a medium finding at its own invite line until 22
+    // October 2026 (backlog 0638). `{seed:INVITE}x9Q2` has text of its own, and is still judged.
+    if let Some(name) = v.strip_prefix("{seed:").and_then(|r| r.strip_suffix('}'))
+        && name.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_')
+        && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+    {
+        return true;
+    }
     let lower = v.to_lowercase();
     const MARKERS: &[&str] = &[
         "example",
@@ -1438,3 +1447,6 @@ mod code_names_tests;
 
 #[cfg(test)]
 mod test_passphrase_tests;
+
+#[cfg(test)]
+mod seed_placeholder_tests;
