@@ -301,9 +301,18 @@ fn the_counts_add_up_to_what_applies_in_every_format() {
         "compliance.md's chapter table:\n{chapters}"
     );
 
-    // report.html: the same three.
-    let tally = between(&html, "<ul class=\"tally\">\n", "</ul>");
-    let listed = leading_numbers(tally.lines(), "<li><strong>");
+    // report.html: the same three. Its short version gives the counts of what applies in the legend of its first
+    // bar, not again as a list under it (backlog 0635).
+    let tally = between(&html, "<ul class=\"key\">", "</ul>");
+    let listed: Vec<usize> = tally
+        .split("<strong>")
+        .skip(1)
+        .map(|item| numbers(item)[0])
+        .collect();
+    assert!(
+        !html.contains("<ul class=\"tally\">"),
+        "report.html lists the bars' counts again"
+    );
     assert_eq!(listed.len(), 8, "report.html, the short version:\n{tally}");
     assert_eq!(
         listed.iter().sum::<usize>(),
