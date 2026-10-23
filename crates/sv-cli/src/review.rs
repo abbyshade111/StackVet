@@ -46,6 +46,11 @@ pub(crate) fn findings_without_entries(app_dir: &Path) -> String {
             "The last report in {} lists {n} findings that count.",
             folder.display()
         ),
+        // No folder is no report yet, said as that, not as a folder without sv's marker (backlog 0636).
+        Err(_) if std::fs::symlink_metadata(&folder).is_err() => {
+            "No report has been written for this app yet, so there are no findings to count."
+                .to_owned()
+        }
         Err(why) => format!(
             "No report sv can show it wrote was read in {} to count from: {why}.",
             folder.display()
