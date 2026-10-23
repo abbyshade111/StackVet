@@ -1724,6 +1724,7 @@ fn a_check_made_by_hand_is_read_from_the_manifest_and_reported() {
     let key = key.for_app(&sv_check::seal::App::of(&root.join("app")).unwrap());
     let seal = |result: &str, how: &str| {
         let check = sv_manifest::HandCheck {
+            reviewer: None,
             result: result.into(),
             on: Some(today.clone()),
             by: Some("owner".into()),

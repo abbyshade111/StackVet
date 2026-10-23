@@ -1616,6 +1616,10 @@ pub struct HandCheck {
     /// What was done and what was seen, in a sentence.
     #[serde(default)]
     pub how: Option<String>,
+    /// For AC.4.1, a review of the code an AI tool wrote: whether the reviewer was `someone-else` or `the-requester`,
+    /// the person who asked the tool for the code, whom the requirement does not count (ADR-133). `sv review` asks it.
+    #[serde(default)]
+    pub reviewer: Option<String>,
     /// A person confirming a check the AI tool made. See `sv-check::confirm`.
     #[serde(default)]
     pub confirmed: Option<Confirmed>,

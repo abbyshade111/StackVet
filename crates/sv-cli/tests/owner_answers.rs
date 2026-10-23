@@ -40,6 +40,7 @@ fn an_owners_answer_is_theirs_only_as_recorded_and_not_changed_since() {
     let padlock = "Opened the live site; the padlock shows a trusted certificate.";
     let booked = "Two browsers tried to book one slot, and the second was refused.";
     let hand = |how: &str| sv_manifest::HandCheck {
+        reviewer: None,
         result: "done".into(),
         on: Some(today.clone()),
         by: Some("owner".into()),

@@ -123,6 +123,7 @@ fn app_with_every_status(name: &str) -> PathBuf {
     ));
     let padlock = "Opened the live site; the padlock shows a trusted certificate.";
     let hand = sv_manifest::HandCheck {
+        reviewer: None,
         result: "done".into(),
         on: Some(today.clone()),
         by: Some("owner".into()),

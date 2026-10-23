@@ -214,6 +214,7 @@ pub(super) fn tick_checklist(app_dir: &Path, asking: &mut super::Asking<'_>) -> 
         if !hand.is_empty() {
             for id in &hand {
                 let mut entry = sv_manifest::HandCheck {
+                    reviewer: None,
                     result: "done".to_owned(),
                     on: Some(today.show()),
                     by: Some(sv_check::design::OWNER.to_owned()),
