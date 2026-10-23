@@ -1,6 +1,6 @@
 # Trial the nine draft prompts in docs/prompts/drafts.md, after the git-history check (0258)
 
-**Status:** partly done: group A (12 October 2026) and the second loop trial (12 and 13 October) gave no reading for drafts 8, 10, 12, 17, 18, 19, 20, and 22; the process drafts (1 to 7, 9, 14, 23) and those needing another brief (11, 13, 15, 16, 21) each wait on the owner's yes and a budget
+**Status:** done, 22 October 2026
 
 The nine drafts in `docs/prompts/drafts.md` (design entry 0368, from the Cursor build) are written but not tested, and
 none is served by `sv`. Each draft names what its trial would measure. The trial needs the owner's yes and a budget,
@@ -43,3 +43,7 @@ and kept evidence read. Haiku 5.5 and Sonnet 5.5 by exact id; a budget of $50; n
 and its tools are written and merged before any build. Draft 17's own trial waits for the accounts brief's controls.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): `docs/prompts/drafts.md` now holds twenty-three drafts, not nine; ADR-109 is accepted (12 October); draft 17's trial ran in the second loop trial, with no reading, and `drafts.md` does not yet say so beside it. No draft is in `data/prompts.json`.
+
+**Closed, 22 October 2026,** at the owner's word: "0257 can be closed, those trials happened a while ago." The trials
+this item planned were made, and what they found is in their own records; the drafts the status line named as waiting
+on a yes and a budget are not to be trialled under this item.
