@@ -66,7 +66,114 @@ iac = true                    # the CI workflow files above are in the repositor
 # which requirements apply to `sv`.
 not-the-app = ["crates/*/tests", "examples", "tools", "docs"]
 
+# The tests' folders left out of the checks, at the owner's asking on 23 October 2026 ("can we run the report without
+# including the test folder(s)?"). They hold `sv`'s tests and the deliberately vulnerable fixture apps those tests check,
+# not code `sv` runs. Until the owner confirms this in `sv review`, they are read as `not-the-app` above; once
+# confirmed, no finding there counts except a key or password, which counts wherever it is (ADR-099).
+[[left-out]]
+folder = "crates/*/tests"
+why = "sv's own tests and the deliberately vulnerable fixture apps they check, which are not code sv runs"
+
 [capabilities.ai]
 # `sv` has no AI feature of its own. It tests other apps' AI features with a test model it runs itself,
 # and it is an MCP server that AI coding tools call; it does not reach tools over MCP.
 enabled = false
+
+# Findings on StackVet's own code set aside for the owner to confirm (backlog 0633, 23 October 2026). Each is the AI
+# tool's proposal and counts for nothing until the owner reads the code and records it with `sv review`.
+
+[[finding-review]]
+rule = "ast.sql-built-by-hand"
+file = "crates/sv-run/assets/oidc-provider.mjs"
+fingerprint = "v2-33511db0dfdd5d2a"
+verdict = "false-alarm"
+why = "Line 99 records each request the test sign-in provider receives, in memory: `query` is an object key holding the array of the query string's parameter names, from new Set(...). No database is used and no SQL is built; the rule matched the key's name (backlog 0647)."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "secrets.credential-assignment"
+file = "crates/sv-check/src/signed_in/signin.rs"
+fingerprint = "v2-c88e201337c61754"
+verdict = "false-alarm"
+why = "A wrong password on purpose: the account-reveal check signs in with it to the app under test, inside its fenced container, to see whether the answer differs for an account that exists and one that does not. It is a sentence of words, opens no account anywhere, and is meant to be refused."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "secrets.credential-assignment"
+file = "crates/sv-check/src/signed_in/signin.rs"
+fingerprint = "v2-57c1cc31a3bfed11"
+verdict = "false-alarm"
+why = "The password of an account that does not exist (`nobody.` and a test user's name), sent by the guessing-limit check to the app under test, inside its fenced container, when the app has no sign-up. It is words, opens no account anywhere, and is meant to be refused."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "secrets.credential-assignment"
+file = "crates/sv-check/src/signed_in/signin.rs"
+fingerprint = "v2-b6d0df2846532909"
+verdict = "false-alarm"
+why = "A wrong password on purpose: the guessing-limit check sends it, again and again, to the app under test inside its fenced container, to see whether the app slows or stops the guesses. It is a sentence of words, opens no account anywhere, and is meant to be refused."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "secrets.credential-assignment"
+file = "crates/sv-check/src/signed_in/signin.rs"
+fingerprint = "v2-4e5d85e2bc877583"
+verdict = "false-alarm"
+why = "The password of an account that does not exist (`sv-log-nobody-` with a run tag, at example.test), sent by the logging check to the app under test inside its fenced container, so a failed sign-in is written to the app's log. It opens no account anywhere and is meant to be refused."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "secrets.credential-assignment"
+file = "data/breached-password-evidence.json"
+fingerprint = "v2-789e8ddd626edc20"
+verdict = "false-alarm"
+why = "A list of passwords published in known breaches, kept as data so the breached-password check can try them against the app under test and see them refused (V6.2.12). They are public by definition, belong to no account of StackVet's, and the file exists to hold exactly such values."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "semgrep.typescript.react.security.react-insecure-request.react-insecure-request"
+file = "crates/sv-run/assets/browser-driver.mjs"
+fingerprint = "v2-e3e6add3149d8ed7"
+verdict = "false-alarm"
+why = "Not React: the browser driver runs in Node inside the fenced network and asks the headless browser's own DevTools port, on the same network, for its version over plain HTTP, as DevTools only offers. No user data travels and nothing leaves the fence."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "ast.unauthenticated-encryption"
+file = "crates/sv-check/src/ssh_format.rs"
+fingerprint = "v2-960fa456a8e584c0"
+verdict = "false-alarm"
+why = "This locks and unlocks `sv review`'s own Ed25519 signing key in the format `ssh-keygen` writes (bcrypt-pbkdf, then AES-256-CTR, from OpenSSH's PROTOCOL.key), so `ssh-keygen` can read the key and check its seals. The format is OpenSSH's and has no tag of its own, but a changed file or a wrong passphrase is refused: the unlocked private part must be the key the public part names (line 327)."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "ast.weak-hash-function"
+file = "crates/sv-check/src/git.rs"
+fingerprint = "v2-8e9fea3a655e6a84"
+verdict = "false-alarm"
+why = "This computes git's object names, which git defines as the SHA-1 (or, in a SHA-256 repository, the SHA-256) of the object's header and content, to find a file's blob in the repository. It is an identifier git chose, not a protection: nothing is signed, stored as a secret, or trusted because of it."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "ast.weak-key-generation"
+file = "crates/sv-check/src/weak_keys.rs"
+fingerprint = "v2-89615f4064a463be"
+verdict = "false-alarm"
+why = "The weak-key check's own pattern for a 192-bit curve (`secp192r1`, `prime192v1`, `P-192`), a regular expression it matches against other apps' code. No key is made here; the curve's name is the text the check looks for."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "secrets.credential-assignment"
+file = "crates/sv-check/src/secrets.rs"
+fingerprint = "v2-f251967223d823ea"
+verdict = "false-alarm"
+why = "A doc comment quoting what a trial app kept in its own code on 14 October 2026, `INVITE_FOR_STACKVET = \"stackvet-test-invite\"`, to explain why the invite-code rule exists. It is an example in a comment, not a code that opens anything of StackVet's, and no app uses it now."
+by = "ai-tool"
+
+[[finding-review]]
+rule = "secrets.credential-assignment"
+file = "crates/sv-check/src/secrets.rs"
+fingerprint = "v2-8f23f11c621f9947"
+verdict = "false-alarm"
+why = "A comment quoting a trial app's error message, `WRONG_PASSWORD = \"Your current password isn't right.\"`, to explain why a sentence under a credential's name is reported low. It is a message shown to people, in a comment, and no password of any account."
+by = "ai-tool"

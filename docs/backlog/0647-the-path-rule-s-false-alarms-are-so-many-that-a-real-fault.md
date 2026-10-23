@@ -15,6 +15,10 @@ What is known:
 - **Test code is read unevenly.** A finding in test code counts and is said to be in test code (ADR-023), but the
   weak-key check skips test files altogether (`weak_keys.rs`, `is_test_path`), and Rust test modules that are files of
   their own are not read as test code at all (backlog 0644).
+- **The bill of materials reads test fixtures as what the app ships.** StackVet's report on itself of 23 October 2026
+  says its list is not complete (`sbom.incomplete`) because it read the sample lockfiles under
+  `crates/sv-scan/tests/fixtures` (a `go.sum`, several `package-lock.json`, an unpinned `requirements.txt`) as if
+  StackVet shipped them. A fixture's lockfile is not what the app installs. Left counted in 0633 meanwhile.
 - **The database-query rule's `{ key: value }` alternative** (`ast.sql-built-by-hand`) flags any object key named
   like a query call (`query: [...]` in `crates/sv-run/assets/oidc-provider.mjs`), whatever the value; an array cannot
   be SQL text. Set aside for the owner to confirm in 0633 meanwhile.
