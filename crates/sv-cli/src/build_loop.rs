@@ -757,7 +757,16 @@ pub fn summarize(bytes: &[u8]) -> BuildLoop {
             summary.first = Some(line.time.clone());
         }
         summary.last = Some(line.time);
-        if line.counts.is_some() {
+        // A check of the app is a `stackvet_check` call, or `stackvet_write_report`, which checks it in full. A design
+        // brief (`stackvet_before`) or the preflight also comes back with counts, and was counted as a check until 23
+        // October 2026, so the record of the owner's Cursor build said 15 checks for 13, and its "first check" was a
+        // brief made before any code (backlog 0640). They stay among the calls.
+        let is_check = matches!(
+            line.tool.as_str(),
+            "stackvet_check" | "stackvet_write_report"
+        );
+        let counts = line.counts.filter(|_| is_check);
+        if counts.is_some() {
             // What the first and the last check found, when the line kept all of it.
             let kept = line.fingerprints.clone().filter(|_| !line.fingerprints_cut);
             if summary.checks == 0 {
@@ -766,7 +775,7 @@ pub fn summarize(bytes: &[u8]) -> BuildLoop {
             }
             summary.last_fingerprints = kept;
         }
-        if let Some(counts) = line.counts {
+        if let Some(counts) = counts {
             summary.checks += 1;
             if summary.first_counts.is_none() {
                 summary.first_counts = Some(counts);
@@ -777,6 +786,8 @@ pub fn summarize(bytes: &[u8]) -> BuildLoop {
     summary
 }
 
+#[cfg(test)]
+mod checks_counted_tests;
 #[cfg(test)]
 mod fingerprint_tests;
 #[cfg(test)]

@@ -1,6 +1,6 @@
 # The build record counts design briefs and the preflight as checks of the app
 
-**Status:** claimed by claude/0640, 22 October 2026
+**Status:** done, 23 October 2026
 
 Found in the said-versus-did reading of the owner's Cursor build of 22 October 2026 (backlog 0373; the app and its records are on the owner's drive), checked against the record before filing.
 
@@ -16,3 +16,9 @@ checks.
 
 **Claimed, 22 October 2026,** at the owner's word ("Please continue with 0638 and the other items filed today and outside
 the roadmap"), with 0638, each to be built in a pull request of its own.
+
+**Done, 23 October 2026** (ADR-084, Later): the record counts as a check only a `stackvet_check` call, or
+`stackvet_write_report`, which checks the app in full (an existing test showed it records counts too, and it is a
+check by any reading); the first and the last check are of those. Briefs and the preflight stay among the calls. Left
+as it was: saying them apart in the report ("4 briefs before building, 1 preflight"), which would add a field to the
+sealed `report.json`; the calls' total already holds them.
