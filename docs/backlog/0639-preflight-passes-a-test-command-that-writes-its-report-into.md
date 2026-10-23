@@ -1,6 +1,6 @@
 # Preflight passes a test command that writes its report into the read-only app folder, and the report calls the crash failing tests
 
-**Status:** open
+**Status:** claimed by claude/0639, 22 October 2026
 
 Found in the said-versus-did reading of the owner's Cursor build of 22 October 2026 (backlog 0373; the app and its records are on the owner's drive), checked against the record before filing.
 
@@ -16,3 +16,6 @@ To do: preflight says so when the test command names a report path outside `/sv-
 `--reporter-options`, and the like); `sv init`'s comment gives the `/sv-reports` path; and when the test run ends on
 a read-only file system error, the report says the tests could not write their report, not that they failed. Tests
 for each.
+
+**Claimed, 22 October 2026,** at the owner's word ("Please continue with 0638 and the other items filed today and outside
+the roadmap"), with 0638, each to be built in a pull request of its own.

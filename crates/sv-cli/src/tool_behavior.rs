@@ -91,6 +91,25 @@ pub fn read(
         earlier,
         &now,
     );
+    // The bill of materials is read again only when the tool installed something, to say which no lockfile holds.
+    let installs_something = done.as_deref().unwrap_or_default().iter().any(
+        |d| matches!(d, crate::hook_record::Done::Ran { command, .. } if !installed(command).is_empty()),
+    );
+    let components = if installs_something {
+        sv_check::sbom::build(app_dir).components
+    } else {
+        Vec::new()
+    };
+    let added = installs_and_secrets(
+        commits.as_ref().map(|(c, _)| c.as_slice()),
+        done.as_deref(),
+        &components,
+        &report.findings,
+    );
+    t.seen.extend(added);
+    t.seen.sort_by_key(|s| s.kind);
+    t.more += t.seen.len().saturating_sub(MOST_LINES);
+    t.seen.truncate(MOST_LINES);
     t.at_commit = sv_check::git::head_commit(app_dir);
     t.commits_read = commits.as_ref().map(|(c, from_found)| {
         let n = c.len();
@@ -138,11 +157,241 @@ pub fn read(
             "findings that went away, since this folder held no earlier report that sv can show it wrote".to_owned(),
         );
     }
-    t.not_seen.push(
-        "packages installed that no lockfile holds, which this section does not look for yet (backlog 0630)"
-            .to_owned(),
-    );
     t
+}
+
+/// What the tool installed that no lockfile in the app holds, and the secrets the secrets scan found in files the tool
+/// wrote (backlog 0630, ADR-131, Later): from the hook record's commands and file writes, and the commits an AI coding
+/// tool made. A secret is named by its finding, never by its value.
+pub fn installs_and_secrets(
+    commits: Option<&[Commit]>,
+    done: Option<&[crate::hook_record::Done]>,
+    components: &[sv_check::sbom::Component],
+    findings: &[sv_check::Finding],
+) -> Vec<Seen> {
+    let done = done.unwrap_or_default();
+    let mut seen = Vec::new();
+    let mut named: Vec<(String, String)> = Vec::new();
+    for d in done {
+        let crate::hook_record::Done::Ran { at, command } = d else {
+            continue;
+        };
+        for (ecosystem, name) in installed(command) {
+            let key = package_key(ecosystem, &name);
+            if named.contains(&key) {
+                continue;
+            }
+            named.push(key.clone());
+            let in_the_list: Vec<&sv_check::sbom::Component> = components
+                .iter()
+                .filter(|c| package_key(&c.ecosystem, &c.name) == key)
+                .collect();
+            if in_the_list
+                .iter()
+                .any(|c| c.source == sv_check::sbom::VersionSource::Locked)
+            {
+                continue;
+            }
+            let held = if in_the_list.is_empty() {
+                "and no lockfile or manifest in the app names it"
+            } else {
+                "and a manifest names it, but no lockfile in the app pins its version"
+            };
+            seen.push(Seen {
+                kind: Kind::PackageInstalled,
+                what: format!(
+                    "{} {name} was installed ({command}), {held}",
+                    kind_of_package(ecosystem)
+                ),
+                place: format!("the hook record, {at}"),
+            });
+        }
+    }
+    let tools: Vec<&Commit> = commits
+        .unwrap_or_default()
+        .iter()
+        .filter(|c| c.tool.is_some())
+        .collect();
+    let mut placed: Vec<(String, usize)> = Vec::new();
+    for f in findings
+        .iter()
+        .filter(|f| f.secret.is_some() || f.rule_id.starts_with("secrets."))
+    {
+        let file = &f.location.file;
+        if placed.contains(&(file.clone(), f.location.line)) {
+            continue;
+        }
+        let wrote = done.iter().find_map(|d| match d {
+            crate::hook_record::Done::Wrote { at, file: w } if w == file => Some(at),
+            _ => None,
+        });
+        let place = match wrote {
+            Some(at) => format!("the hook record, {at}"),
+            None => match tools
+                .iter()
+                .rev()
+                .find(|c| c.files.iter().any(|(_, p)| p == file))
+            {
+                Some(c) => place_of(c),
+                None => continue,
+            },
+        };
+        placed.push((file.clone(), f.location.line));
+        seen.push(Seen {
+            kind: Kind::SecretWritten,
+            what: format!(
+                "\"{}\" ({}) at {file}:{}, in a file the tool wrote",
+                f.title, f.rule_id, f.location.line
+            ),
+            place,
+        });
+    }
+    seen
+}
+
+/// The packages a command installs, each with its ecosystem as the bill of materials names it, when the command is a
+/// package manager's install: `pip install`, `npm install`, `cargo add`, and their kin. What it installs from a file, a
+/// folder, or an address is not a package name, and a word the hook record cut short or a key it cut out is left out.
+pub fn installed(command: &str) -> Vec<(&'static str, String)> {
+    // A command the hook record cut short ends "… (N more characters)": the word the cut fell in is not a name.
+    let whole = command.split('…').next().unwrap_or_default();
+    let cut = whole.len() < command.len();
+    let mut out = Vec::new();
+    let parts: Vec<&str> = whole
+        .split(['|', ';', '&'])
+        .filter(|p| !p.trim().is_empty())
+        .collect();
+    for (n, part) in parts.iter().enumerate() {
+        let mut words: Vec<&str> = part
+            .split_whitespace()
+            .map(|w| w.trim_matches(|c| c == '"' || c == '\''))
+            .collect();
+        if cut && n + 1 == parts.len() {
+            words.pop();
+        }
+        if words.first() == Some(&"sudo") {
+            words.remove(0);
+        }
+        let (ecosystem, rest): (&'static str, &[&str]) = match words.as_slice() {
+            ["pip" | "pip3", "install", rest @ ..]
+            | ["python" | "python3", "-m", "pip", "install", rest @ ..]
+            | ["uv", "pip", "install", rest @ ..]
+            | ["uv" | "poetry", "add", rest @ ..]
+            | ["pipenv", "install", rest @ ..] => ("Python", rest),
+            ["npm" | "pnpm", "install" | "i" | "add", rest @ ..]
+            | ["yarn" | "bun", "add", rest @ ..] => ("npm", rest),
+            ["cargo", "add", rest @ ..] => ("Rust", rest),
+            ["gem", "install", rest @ ..] | ["bundle", "add", rest @ ..] => ("Ruby", rest),
+            ["composer", "require", rest @ ..] => ("PHP", rest),
+            ["go", "get", rest @ ..] => ("Go", rest),
+            _ => continue,
+        };
+        let mut value_next = false;
+        for word in rest {
+            if value_next {
+                value_next = false;
+                continue;
+            }
+            if word.starts_with('-') {
+                // An option whose value follows it: a requirements file, a folder, an index, a version.
+                value_next = !word.contains('=')
+                    && matches!(
+                        *word,
+                        "-r" | "--requirement"
+                            | "-c"
+                            | "--constraint"
+                            | "-e"
+                            | "--editable"
+                            | "-t"
+                            | "--target"
+                            | "-i"
+                            | "--index-url"
+                            | "--extra-index-url"
+                            | "--prefix"
+                            | "--root"
+                            | "--registry"
+                            | "-F"
+                            | "--features"
+                            | "--vers"
+                            | "--path"
+                            | "--git"
+                            | "--branch"
+                            | "--tag"
+                            | "--rev"
+                            | "--group"
+                            | "-G"
+                    );
+                continue;
+            }
+            if let Some(name) = package_name(ecosystem, word) {
+                out.push((ecosystem, name));
+            }
+        }
+    }
+    out
+}
+
+/// The name in one word of an install command, without its version or extras; `None` for a file, a folder, an
+/// address, or a key the hook record cut out.
+fn package_name(ecosystem: &str, word: &str) -> Option<String> {
+    let not_a_name = word.is_empty()
+        || word.starts_with('.')
+        || word.starts_with('/')
+        || word.starts_with('~')
+        || word.contains("://")
+        || word.contains("[redacted")
+        || word.starts_with("git+")
+        || word.starts_with("file:")
+        || [".txt", ".whl", ".tar.gz", ".zip", ".tgz", ".gem", ".toml"]
+            .iter()
+            .any(|e| word.ends_with(e));
+    if not_a_name {
+        return None;
+    }
+    let name = match ecosystem {
+        // `@scope/name@1.2.3`, `name@^1`
+        "npm" => match word.strip_prefix('@') {
+            Some(scoped) => format!("@{}", scoped.split('@').next().unwrap_or_default()),
+            None => word.split('@').next().unwrap_or_default().to_owned(),
+        },
+        // `name[extra]==1.2`, `name>=1`, `name @ url`
+        "Python" => word
+            .split(['=', '<', '>', '!', '~', ';', '[', '@'])
+            .next()
+            .unwrap_or_default()
+            .to_owned(),
+        // `vendor/name:^1.0`
+        "PHP" => word.split(':').next().unwrap_or_default().to_owned(),
+        // `name@1.2`, `module/path@v1`
+        _ => word.split('@').next().unwrap_or_default().to_owned(),
+    };
+    let ok = !name.is_empty()
+        && (ecosystem == "npm" || ecosystem == "Go" || ecosystem == "PHP" || !name.contains('/'));
+    ok.then_some(name)
+}
+
+/// A package's ecosystem and name, the name in the form its package manager compares names in.
+fn package_key(ecosystem: &str, name: &str) -> (String, String) {
+    let name = match ecosystem {
+        // PEP 503: case, `_`, and `.` do not tell two Python packages apart.
+        "Python" => name.to_lowercase().replace(['_', '.'], "-"),
+        "PHP" | "Ruby" => name.to_lowercase(),
+        _ => name.to_owned(),
+    };
+    (ecosystem.to_owned(), name)
+}
+
+/// What a package is called in its ecosystem, for a line of the section.
+fn kind_of_package(ecosystem: &str) -> &'static str {
+    match ecosystem {
+        "Python" => "the Python package",
+        "npm" => "the npm package",
+        "Rust" => "the Rust crate",
+        "Ruby" => "the Ruby gem",
+        "PHP" => "the PHP package",
+        "Go" => "the Go module",
+        _ => "the package",
+    }
 }
 
 /// The fingerprints a report still holds: each finding's own and its earlier ones, and those of findings a person set

@@ -1140,6 +1140,8 @@ pub mod before_live;
 pub mod hook_record;
 pub mod tool_behavior;
 #[cfg(test)]
+mod tool_behavior_installs_tests;
+#[cfg(test)]
 mod tool_behavior_tests;
 
 #[cfg(test)]
