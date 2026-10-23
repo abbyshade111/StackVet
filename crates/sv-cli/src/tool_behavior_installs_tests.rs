@@ -161,19 +161,27 @@ fn a_secret_is_a_line_only_in_a_file_the_tool_wrote() {
         secret_finding("written_by_a_person.py", 1),
     ];
     let seen = installs_and_secrets(Some(&[commit]), Some(&done), &[], &findings);
-    assert_eq!(seen.len(), 2, "{seen:#?}");
-    assert!(seen.iter().all(|s| s.kind == Kind::SecretWritten));
-    assert_eq!(
-        seen[0].what,
-        "\"AWS access key ID found in a file\" (secrets.aws-access-key) at config.py:3, in a file the tool wrote"
+    // The messages say what failed in words: a test of how secrets are told is no place to print what it found.
+    assert!(
+        seen.len() == 2,
+        "two lines, one per file the tool wrote, not {}",
+        seen.len()
     );
-    assert_eq!(seen[0].place, "the hook record, 2026-10-22T18:20:00Z");
+    assert!(seen.iter().all(|s| s.kind == Kind::SecretWritten));
+    assert!(
+        seen[0].what
+            == "\"AWS access key ID found in a file\" (secrets.aws-access-key) at config.py:3, in a file the tool wrote",
+        "the first line names the finding by its title, rule, file, and line"
+    );
+    assert!(
+        seen[0].place == "the hook record, 2026-10-22T18:20:00Z",
+        "the first line is placed at the hook record's write"
+    );
     assert!(
         seen[1]
             .place
             .starts_with("commit 01234567 \"Add settings\", by Cursor"),
-        "{}",
-        seen[1].place
+        "the second line is placed at the AI tool's commit"
     );
     // A secret found in a file nothing shows the tool writing is the secrets scan's finding, and no line here.
     assert!(
