@@ -1,6 +1,6 @@
 # The roadmap is retired, and the backlog folder alone says what is left and in what order
 
-**Status:** claimed by claude/0633-triage, 23 October 2026
+**Status:** done, 23 October 2026
 
 Filed 23 October 2026 at the owner's word: "we can stop using the roadmap now and go back to just relying on the
 backlog folder".
@@ -18,3 +18,9 @@ To do:
   lowest-numbered open item, unclaimed, whose text names no item it comes after that is not done yet (the owner's order
   of 23 October 2026 is written on 0648, 0649, 0650, and 0626 that way), checked against `main` first.
 - A Later entry on ADR-061 records it, with the owner's word.
+
+**Done, 23 October 2026** (ADR-061, Later). The roadmap's table and its changes are out of `docs/BACKLOG.md`, which
+says where they went and how a session now chooses; `tools/backlog.py` lost its `roadmap` command, its check, and the
+row updates in `claim` and `done`; the roadmap's test and the docs page's "Roadmap" column are gone; `CLAUDE.md`,
+`docs/ARCHITECTURE.md`, and `docs/README.md` say the backlog folder is what is left. With no word from the owner, a
+session takes the lowest-numbered open, unclaimed item, unless its text says it comes after one not done yet.
