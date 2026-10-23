@@ -29,3 +29,12 @@ it should, and stops firing where it should not), and make test fixtures in `src
 cause; write a `[[finding-review]]` entry for each false alarm that remains, for the owner to confirm with
 `sv review` (an AI tool's entry never counts until then); then make the report again as
 `docs/website/self-assessment/README.md` says, and replace the files there.
+
+**The owner's word, 23 October 2026:** "when you get to 0633, can you include consideration of whether the full
+stackvet report should be included on stackvet.dev? Looking through it this morning, I'm thinking things like
+vulnerabilities shouldn't be advertised." So this item also decides, with the owner, what of StackVet's report on
+itself the site shows: the live site serves `docs/website/self-assessment/` as it is (fix-now.md, compliance.md,
+your-decisions.md, not-examined.md, before-going-live.md, low-findings.md, seen.json, sbom.cdx.json), each finding with
+its file and line in StackVet's own code. Among the choices: a summary only (the counts, what was not examined, and
+that the findings are being gone through), the full files behind a note, or the files after triage with what is a real
+fault fixed first. Until then the files stay as they are, unless the owner asks for them to come down sooner.
