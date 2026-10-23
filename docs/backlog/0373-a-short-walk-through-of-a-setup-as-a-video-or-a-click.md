@@ -1,6 +1,6 @@
 # A short walk-through of a setup, as a video or a click-through slide show
 
-**Status:** partly done: the walk-through of a setup, for *Watch the walk-through*, once the owner has screenshots of one
+**Status:** claimed by claude/0373-start-with-build, 22 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -29,3 +29,8 @@ later, since the setup was not screenshotted. What remains is that walk-through 
 Two corrections to the claim above, from reading the material: the screenshots are 28, not 31 (the other three image
 files are icons inside a Python library in the app's folder); and the chat began with the owner's own request to
 connect StackVet, not with a prompt from `docs/prompts/setup.md`.
+
+**The owner's word, 22 October 2026:** "we can get rid of the 'coming later' for the video, I want to just start
+with the walkthrough for now." Claimed again to finish it that way: the home page's "Want to see it first?" and its
+*Watch the walk-through* lead to *How a build goes*, nothing is shown as coming, and the walk-through of a setup is
+left for later, not a condition of going live.
