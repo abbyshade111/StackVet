@@ -2051,7 +2051,8 @@ fn a_ruby_load_on_something_that_is_not_a_deserialiser_is_not_reported() {
         ("ast.shell-command", "swift", "func f() { system(\"ls\") }", false),
         ("ast.shell-command", "go", "func f(c string) { exec.Command(\"sh\", \"-c\", c).Run() }", true),
         ("ast.shell-command", "go", "func f(ctx context.Context, c string) { exec.CommandContext(ctx, \"bash\", \"-c\", c).Run() }", true),
-        ("ast.shell-command", "go", "func f(name string) { exec.Command(name).Run() }", true),
+        // A program started with its arguments as a list runs no shell (ADR-135).
+        ("ast.shell-command", "go", "func f(name string) { exec.Command(name).Run() }", false),
         ("ast.shell-command", "go", "func f() { exec.Command(\"sh\", \"-c\", \"ls -la\").Run() }", false),
         ("ast.shell-command", "go", "func f(b string) { exec.Command(\"git\", \"log\", b).Run() }", false),
         ("ast.sql-built-by-hand", "dart", "Future f(String n) => db.rawQuery(\"select * from notes where name = '$n'\");", true),
@@ -2217,7 +2218,8 @@ fn a_ruby_load_on_something_that_is_not_a_deserialiser_is_not_reported() {
         ("ast.shell-command", "rust", "fn f(c: &str) { Command::new(\"sh\").arg(\"-c\").arg(c).output(); }", true),
         ("ast.shell-command", "rust", "fn f(c: &str) { Command::new(\"/bin/bash\").args([\"-c\", c]).status(); }", true),
         ("ast.shell-command", "rust", "fn f(c: &str) { std::process::Command::new(\"sh\").args(&[\"-c\", c]).spawn(); }", true),
-        ("ast.shell-command", "rust", "fn f(exe: &str) { Command::new(exe).spawn(); }", true),
+        // A program started with its arguments as a list runs no shell (ADR-135).
+        ("ast.shell-command", "rust", "fn f(exe: &str) { Command::new(exe).spawn(); }", false),
         ("ast.shell-command", "rust", "fn f() { Command::new(\"sh\").arg(\"-c\").arg(\"ls -la\").output(); }", false),
         ("ast.shell-command", "rust", "fn f() { Command::new(\"sh\").args([\"-c\", \"ls -la\"]).output(); }", false),
         ("ast.shell-command", "rust", "fn f() { Command::new(\"bash\").args(&[\"-c\", \"date\"]).output(); }", false),
