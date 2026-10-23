@@ -67,35 +67,81 @@ static NAME_ALONE: LazyLock<Regex> = LazyLock::new(|| {
 static VALUE_ZERO: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"^value:\s*["']?0["']?\s*$"#).expect("a fixed pattern"));
 
-/// The switches written in code or on a command line, with what each does.
-static SWITCHES: LazyLock<Vec<(Regex, &'static str, &'static str)>> = LazyLock::new(|| {
+/// The switches written in code or on a command line, with what each does, and the programming languages it runs in
+/// (`None`: a command-line flag, which any file can pass). A switch written for one language is text in a file of
+/// another, as a Rust string naming Python's is, so it is not read there; a file of no programming language of its own
+/// (a shell script, a Dockerfile, a notebook, a configuration file) can run either, and is read (ADR-137).
+type Switch = (
+    Regex,
+    &'static str,
+    &'static str,
+    Option<&'static [&'static str]>,
+);
+static SWITCHES: LazyLock<Vec<Switch>> = LazyLock::new(|| {
     [
         (
             r"\bssl\._create_default_https_context\s*=\s*(?:ssl\.)?_create_unverified_context\b",
             "`ssl._create_default_https_context = ssl._create_unverified_context`",
             "Python's standard library then connects without checking certificates by default",
+            Some(&["python"][..]),
         ),
         (
             r"\bhttps\.globalAgent\.options\.rejectUnauthorized\s*=\s*false\b",
             "`https.globalAgent.options.rejectUnauthorized = false`",
             "Node.js then accepts any certificate on every connection made through its default agent",
+            Some(&["javascript", "typescript"][..]),
         ),
         (
             r#"--unsafely-ignore-certificate-errors(?:\s|$|["',\]])"#,
             "`--unsafely-ignore-certificate-errors` with no list of addresses",
             "Deno then accepts any certificate from any server",
+            None,
         ),
     ]
     .into_iter()
-    .map(|(pattern, what, does)| (Regex::new(pattern).expect("a fixed pattern"), what, does))
+    .map(|(pattern, what, does, runs_in)| {
+        (Regex::new(pattern).expect("a fixed pattern"), what, does, runs_in)
+    })
     .collect()
 });
 
 /// Files of prose, where a setting is described rather than made.
 const PROSE: &[&str] = &["md", "markdown", "rst", "txt", "adoc"];
 
-/// A line that is a comment in the languages and formats these settings are written in.
-fn commented(line: &str) -> bool {
+/// The programming languages `sv` reads that are languages of their own: a file in one runs only that language's code.
+/// Shell is left out, since a script runs other languages' lines (`python -c "..."`), and so are pages, notebooks,
+/// and templates, which hold scripts of other languages.
+const PROGRAMMING: &[&str] = &[
+    "javascript",
+    "typescript",
+    "python",
+    "java",
+    "kotlin",
+    "go",
+    "rust",
+    "ruby",
+    "php",
+    "csharp",
+    "c",
+    "dart",
+    "swift",
+    "cpp",
+    "objc",
+];
+
+/// Whether a switch that runs in `runs_in` can run in a file of `language`.
+fn can_run(runs_in: Option<&[&str]>, language: Option<&str>) -> bool {
+    match (runs_in, language) {
+        (Some(runs_in), Some(language)) if PROGRAMMING.contains(&language) => {
+            runs_in.contains(&language)
+        }
+        _ => true,
+    }
+}
+
+/// A line that is a comment in the languages and formats these settings are written in. The weak-key check reads
+/// comments the same way (ADR-137).
+pub(crate) fn commented(line: &str) -> bool {
     let t = line.trim_start();
     ["#", "//", "/*", "*", ";", "<!--", "REM ", "rem "]
         .iter()
@@ -104,7 +150,11 @@ fn commented(line: &str) -> bool {
 
 /// Each switch-off in `text`: the line it is on (counted from `first_line`), what was written, and
 /// what it does.
-fn switches_in(text: &str, first_line: usize) -> Vec<(usize, String, &'static str)> {
+fn switches_in(
+    text: &str,
+    first_line: usize,
+    language: Option<&str>,
+) -> Vec<(usize, String, &'static str)> {
     let mut out = Vec::new();
     let mut named: Option<&str> = None;
     for (i, line) in text.lines().enumerate() {
@@ -142,7 +192,10 @@ fn switches_in(text: &str, first_line: usize) -> Vec<(usize, String, &'static st
             out.push((number, format!("`{name}` set to `0`"), does));
             continue;
         }
-        if let Some((_, what, does)) = SWITCHES.iter().find(|(re, ..)| re.is_match(line)) {
+        if let Some((_, what, does, _)) = SWITCHES
+            .iter()
+            .find(|(re, _, _, runs_in)| can_run(*runs_in, language) && re.is_match(line))
+        {
             out.push((number, (*what).to_owned(), *does));
         }
     }
@@ -167,13 +220,13 @@ pub fn check(listing: &Listing, report: &mut ConfigReport) {
         match entry.read_text() {
             Ok(text) => {
                 read += 1;
-                here = switches_in(&text, 1);
+                here = switches_in(&text, 1, entry.language);
             }
             // A file larger than 2 MB is read in pieces; a setting is one line, or two.
             Err(Unread::TooLarge) => {
                 let pieces = entry.in_pieces(1024 * 1024, 4096, |piece| {
                     let own = &piece.text[..piece.keep.end];
-                    for (line, what, does) in switches_in(own, piece.first_line) {
+                    for (line, what, does) in switches_in(own, piece.first_line, entry.language) {
                         let start_of_own = piece.text[..piece.keep.start].lines().count();
                         if line >= piece.first_line + start_of_own
                             && !here.iter().any(|(l, ..)| *l == line)
@@ -270,6 +323,10 @@ fn finding(file: &str, line: usize, what: &str, does: &str) -> Finding {
             .into(),
     })
 }
+
+#[cfg(test)]
+#[path = "cert_checks_language_tests.rs"]
+mod language_tests;
 
 #[cfg(test)]
 mod tests {

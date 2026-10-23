@@ -1,6 +1,6 @@
 # The weak-key check reads comments, and the certificate check reads one language's switch-off inside another language's text
 
-**Status:** claimed by claude/0633-triage, 23 October 2026
+**Status:** done, 23 October 2026
 
 From the triage of StackVet's findings on its own repository (backlog 0633, 23 October 2026). Two checks of StackVet's own read text that cannot do what they look for:
 
@@ -16,3 +16,9 @@ From the triage of StackVet's findings on its own repository (backlog 0633, 23 O
 To do: skip comment lines in the weak-key check as the certificate check does; read each language's switch-off only in
 files of that language or of no programming language of their own; and test both, with the cases that must still
 fire (a key made in code, a switch-off in a `.py` file and in a shell script's `python -c`). ADR-137, proposed.
+
+**Done, 23 October 2026** (ADR-137, accepted). The weak-key check skips a match whose line is a comment, as the
+certificate check does. The certificate check reads Python's switch-off only where Python can run, and Node's only where
+JavaScript can: not in a file of another programming language, where it is text, and still in shell scripts,
+Dockerfiles, notebooks, pages, and configuration files. Deno's flag is read everywhere, as before. Tests:
+`crates/sv-check/src/cert_checks_language_tests.rs` and `crates/sv-check/src/weak_keys/comment_tests.rs`.
