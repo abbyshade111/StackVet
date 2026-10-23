@@ -31,7 +31,7 @@ script, style sheet, font, or image is fetched from anywhere, and the type falls
 Hyperlegible is not installed. It writes only into a folder it marks as its own, inside the repository only under
 `exports/`, and never through a link.
 
-It also writes `_headers`, the response headers Cloudflare sends with every page (the owner chose Cloudflare on 22
+It also writes `.assetsignore`, the folders' own markers that Cloudflare is not to upload, and `_headers`, the response headers Cloudflare sends with every page (the owner chose Cloudflare on 22
 October 2026, ADR-132): a content security policy that lets a page run only the scripts this build wrote into it, by
 their hashes, and load nothing from anywhere else, with the headers that stop other sites framing a page, guessing a
 file's type, or being told where a reader came from.
@@ -578,6 +578,9 @@ def build(out):
                        markdown_page(SELF / name, "StackVet's report on itself", commit, 1))
     framework_pages.build(out / "standards", home="../index.html")
     write_text(out / "_headers", headers(out))
+    # What Cloudflare is not to upload when the site is deployed (deploy/stackvet.dev/wrangler.jsonc): the markers
+    # that say these folders are this tool's own, which are for this repository, not for a reader.
+    write_text(out / ".assetsignore", f"{MARK}\nstandards/{framework_pages.MARK}\n")
     print(f"wrote {out}: " + ", ".join(pages) + ", the report files, and standards/")
 
 

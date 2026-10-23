@@ -272,6 +272,17 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         "a note on the page's words is shown"
     );
 
+    // The folders' own markers are not uploaded with the site (deploy/stackvet.dev/wrangler.jsonc).
+    let ignore = read(".assetsignore");
+    assert_eq!(
+        ignore,
+        ".stackvet-site\nstandards/.stackvet-framework-pages\n"
+    );
+    assert!(
+        dir.join(".stackvet-site").is_file()
+            && dir.join("standards/.stackvet-framework-pages").is_file()
+    );
+
     // The headers Cloudflare sends: every inline script a page carries is allowed by its hash, and nothing else.
     let headers = read("_headers");
     let policy = headers
