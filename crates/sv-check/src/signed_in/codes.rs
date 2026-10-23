@@ -661,9 +661,9 @@ impl<'a> EmailCode<'a> {
                         ids.to_owned(),
                         format!(
                             "Signing in with an emailed code: the account made for it, {}, {NOT_MADE}, \
-                             so it was most likely not made. The sign-up form may need a value \
-                             stackvet.toml does not carry, such as an invite code.",
-                            account.user
+                             so it was most likely not made. {}",
+                            account.user,
+                            requests::sign_up_value_note(signup)
                         ),
                     ));
                     return None;

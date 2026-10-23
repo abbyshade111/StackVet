@@ -134,6 +134,8 @@ health = "/"              # a path that returns 200 once the app is up
 #   print it as a `NAME=value` line (`echo "INVITE=$FAMILY_INVITE_CODE"`, or one the seed makes),
 #   and cite it in the form as `{seed:NAME}` (the invite field given `{seed:INVITE}`). Never write the
 #   value itself here: `sv` reads it inside the fence when the seed runs, and writes it nowhere.
+#   A value that works once, as an invite code often does: print one per account, `INVITE_1=…`,
+#   `INVITE_2=…`, and on, and each sign-up takes the next; the report says when it ran short.
 # login  = { path = "/login",  form = { email = "{user}", password = "{password}", csrf_token = "{csrf}" } }
 # logout = { path = "/logout", form = { csrf_token = "{csrf}" } }
 # end-other-sessions = { path = "/account/sessions/end", form = { password = "{password}", csrf_token = "{csrf}" } }
