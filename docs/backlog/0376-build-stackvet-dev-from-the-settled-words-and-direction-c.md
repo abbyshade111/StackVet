@@ -1,6 +1,6 @@
 # Build stackvet.dev from the settled words and direction C
 
-**Status:** partly done: publishing to Cloudflare (a deploy from GitHub with a token the owner makes, and stackvet.app's redirect rule); going live, after backlog 0373 and the owner's word
+**Status:** partly done: publishing to Cloudflare (a deploy from GitHub with a token the owner makes, and stackvet.app's redirect rule); going live, at the owner's word
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -52,3 +52,6 @@ page, with a VS Code line on How StackVet works. The build writes the `_headers`
 publishing (a GitHub Actions job that builds with `tools/website.py` and deploys, with a Cloudflare token the owner
 makes and stores as a secret, which is the owner's to do; and a redirect rule on stackvet.app's zone), and going live,
 after the walk-through (backlog 0373) and the owner's word.
+
+**22 October 2026:** the walk-through (backlog 0373) is done as the build's, at the owner's word, so going live waits
+only on publishing and the owner's word.

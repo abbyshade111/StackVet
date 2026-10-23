@@ -24,8 +24,8 @@ an hour, from the first decisions (about 6:03) to reading the report together (6
 *From a real build in Cursor, with the Grok 4.6 model, on 22 October 2026. The screenshots are the owner's, in the
 order they were taken; the username in two of them is covered.*
 
-- The setup before it (connecting StackVet, from 5:51 to 6:03) has no screenshots, so it is not shown: the
-  walk-through of a setup is still to be made (backlog 0373).
+- The setup before it (connecting StackVet, from 5:51 to 6:03) has no screenshots, so it is not shown. A
+  walk-through of a setup is left for later, at the owner's word (backlog 0373).
 
 ## The app takes shape
 

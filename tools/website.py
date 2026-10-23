@@ -76,7 +76,6 @@ BUTTONS = {
     "Get started": "#get-started",
     "See how a build goes": "how-a-build-goes.html",  # backlog 0373
     "Open the setup prompts": f"{GITHUB}/blob/main/docs/prompts/setup.md",
-    "Watch the walk-through": None,  # backlog 0373
     "Read the guide": f"{GITHUB}/blob/main/docs/GETTING-STARTED.md",
 }
 
@@ -608,7 +607,9 @@ def self_test():
     assert tried_in("**Tried so far:** in Cursor and in VS Code with GitHub Copilot, on a Mac, on 14") == \
         "Cursor and VS Code with GitHub Copilot"
     assert 'href="#get-started"' in buttons("Buttons: *Get started*, *See how a build goes* (not yet made).")
-    assert "coming" in buttons("Button: *Watch the walk-through*.")
+    BUTTONS["A page not made yet"] = None
+    assert "coming" in buttons("Button: *A page not made yet*."), "a button for what is not made is shown as coming"
+    del BUTTONS["A page not made yet"]
     chat = conversation("> **You:** I want\n> an app.\n> **Your AI tool asks:** Who sees it?", "An example")
     assert 'class="turn you"' in chat and "I want an app." in chat and 'class="turn asks"' in chat
     assert 'class="badge found"' in status_lines("| | |\n|---|---|\n| needs attention | Too quick. |")
