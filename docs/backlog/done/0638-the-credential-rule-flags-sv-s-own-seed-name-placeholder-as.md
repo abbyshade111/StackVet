@@ -1,6 +1,6 @@
 # The credential rule flags sv's own {seed:NAME} placeholder as a code written into the code
 
-**Status:** claimed by claude/0638-seed-placeholder, 22 October 2026
+**Status:** done, 22 October 2026
 
 Found in the said-versus-did reading of the owner's Cursor build of 22 October 2026 (backlog 0373; the app and its records are on the owner's drive), checked against the record before filing.
 
@@ -21,3 +21,8 @@ rule still fires on a real code beside it, and that `{seed:INVITE}x9Q2` (text of
 fix is narrow: a whole value of the form `{seed:NAME}`, with NAME as `sv run` reads a seed's names (a letter or `_`,
 then letters, digits, and `_`), is a blank; anything else beside it is still judged. No record is owed: what counts as
 a placeholder is a check's precision, not what counts as evidence.
+
+**Done, 22 October 2026.** `looks_like_placeholder` in `crates/sv-check/src/secrets.rs` takes a whole value
+`{seed:NAME}`, its name as `sv run` reads a seed's names, as a blank, so the credential rule no longer reports `sv`'s
+own placeholder; text beside it, or a name `sv run` would not read, is still judged. Tests:
+`crates/sv-check/src/secrets/seed_placeholder_tests.rs`, both of which fail with the change taken out.
