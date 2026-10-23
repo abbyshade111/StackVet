@@ -182,7 +182,7 @@ source files, and in two tests:
 | [ADR-133](ADR-133.md) | AC.4.1 credits a review by hand only when the reviewer is not the person who asked for the code (accepted, 23 October 2026) |
 | [ADR-134](ADR-134.md) | A seed may print numbered values, and each sign-up takes the next one unused (accepted, 23 October 2026) |
 | [ADR-135](ADR-135.md) | A program started with its arguments as a list, and no shell, is not a shell command built from a value (accepted, 23 October 2026) |
-| [ADR-136](ADR-136.md) | A Rust module that is compiled only for tests is read as test code (proposed, 23 October 2026) |
+| [ADR-136](ADR-136.md) | A Rust module that is compiled only for tests is read as test code (accepted, 23 October 2026) |
 | [ADR-137](ADR-137.md) | A check that reads code for a setting does not read it in a comment, or in a file of another programming language (proposed, 23 October 2026) |
 
 ## Names in the records

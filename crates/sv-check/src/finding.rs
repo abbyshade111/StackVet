@@ -382,9 +382,14 @@ impl Finding {
 /// Marks the findings that sit inside Rust test code in a file that is otherwise the app's own: a
 /// `#[cfg(test)]` module, a `#[test]` function, or a file that starts `#![cfg(test)]`. Rust keeps its
 /// unit tests in the same file as the code they test, so the file's name cannot say which is which.
+///
+/// A module that is a file of its own is test code when the file that declares it puts it under `#[cfg(test)]`, which
+/// is read from that file (backlog 0644, ADR-136). Marking says where a finding is; it never stops one counting.
 pub fn mark_rust_test_code(app_dir: &std::path::Path, findings: &mut [Finding]) {
     let mut read: std::collections::HashMap<String, Vec<(usize, usize)>> =
         std::collections::HashMap::new();
+    let mut modules = rust_modules::TestModules::default();
+    let mut whole: std::collections::HashMap<String, bool> = std::collections::HashMap::new();
     for f in findings {
         if !f.location.file.ends_with(".rs") {
             continue;
@@ -394,9 +399,13 @@ pub fn mark_rust_test_code(app_dir: &std::path::Path, findings: &mut [Finding]) 
                 .map(|source| rust_test_lines(&source))
                 .unwrap_or_default()
         });
-        f.marked_test_code |= lines
-            .iter()
-            .any(|(first, last)| (*first..=*last).contains(&f.location.line));
+        let test_module = *whole
+            .entry(f.location.file.clone())
+            .or_insert_with(|| modules.is_test_module(app_dir, &f.location.file));
+        f.marked_test_code |= test_module
+            || lines
+                .iter()
+                .any(|(first, last)| (*first..=*last).contains(&f.location.line));
     }
 }
 
@@ -690,6 +699,8 @@ pub(crate) fn reads_code(f: &Finding) -> bool {
     ];
     f.location.line > 0 && !ELSEWHERE.iter().any(|p| f.rule_id.starts_with(p))
 }
+
+mod rust_modules;
 
 #[cfg(test)]
 mod quoted_tests;

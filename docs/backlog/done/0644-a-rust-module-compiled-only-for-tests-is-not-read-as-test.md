@@ -1,6 +1,6 @@
 # A Rust module compiled only for tests is not read as test code when it is a file of its own
 
-**Status:** claimed by claude/0633-triage, 23 October 2026
+**Status:** done, 23 October 2026
 
 From the triage of StackVet's findings on its own repository (backlog 0633, 23 October 2026). 142 of the 269 path findings, and the 9 test passwords in `crates/sv-check/src/signed_in/fake_app.rs`, are in
 files Rust compiles only for its tests, and the report did not say so beside them.
@@ -16,3 +16,9 @@ its file is a module some `#[cfg(test)]` declaration in the app pulls in (by `#[
 beside the declaring file), so the report says so beside it, and the rules that are information in test code
 (ADR-091, backlog 0529) read it so. Test code still counts: this only says where the finding is. Test that each form
 is read, and that a module without `#[cfg(test)]` is not. ADR-136, proposed.
+
+**Done, 23 October 2026** (ADR-136, accepted). A finding in a Rust file is marked as in test code when a file beside it
+or above it declares that file as a module under `#[cfg(test)]`, by `#[path]` or as `name.rs` or `name/mod.rs`, as Rust
+finds them, or declares it inside a module that is already test code. The reports then say so beside it, and the rules
+that are information in test code read it that way; it still counts. Tests:
+`crates/sv-check/src/finding/rust_modules_tests.rs`.
