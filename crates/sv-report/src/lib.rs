@@ -1775,8 +1775,6 @@ pub fn test_output_intro(t: &sv_check::suite::FailingOutput) -> String {
             "The app's own tests had not finished after {after}, the most a test run may take, \
              and were stopped. {what}{redacted}"
         ),
-        // The shell's own code for a program it could not find: most often the test runner, not installed where the
-        // app runs (backlog 0532).
         // Writing into the app's folder, read-only while it runs: most often a test report written beside the code
         // rather than under /sv-reports (backlog 0639). Not a failing test, and not a passing one.
         None if t.exit_code != 0 && RunStatus::wrote_into_read_only(&t.text) => format!(
@@ -1787,6 +1785,8 @@ pub fn test_output_intro(t: &sv_check::suite::FailingOutput) -> String {
              writes its report. {what}{redacted}",
             t.exit_code
         ),
+        // The shell's own code for a program it could not find: most often the test runner, not installed where the
+        // app runs (backlog 0532).
         None if t.exit_code == 127 => format!(
             "The app's own tests could not start when `sv` ran them (exit 127, the shell's code for a program it \
              could not find): most often the test runner is not installed where the app runs. `sv preflight` says \
