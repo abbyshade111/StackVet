@@ -1,0 +1,18 @@
+// stackvet.dev on Cloudflare, as a Worker of static files only (backlog 0376; ADR-132, Later). What it serves is
+// exports/site/, which tools/website.py builds from the repository; .github/workflows/site.yml builds and deploys it,
+// and only when the owner starts it. No script runs on Cloudflare: there is no "main".
+{
+  "name": "stackvet-dev",
+  "compatibility_date": "2026-10-22",
+  "assets": {
+    "directory": "../../exports/site",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  // The owner's address. Cloudflare makes its DNS record and certificate on the first deploy; stackvet.app is sent
+  // here by a redirect rule on its own zone, which the owner adds.
+  "routes": [{ "pattern": "stackvet.dev", "custom_domain": true }],
+  // No second address on workers.dev, and no preview addresses: the site is at stackvet.dev only.
+  "workers_dev": false,
+  "preview_urls": false
+}

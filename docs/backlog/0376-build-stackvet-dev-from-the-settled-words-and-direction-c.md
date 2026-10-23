@@ -1,6 +1,6 @@
 # Build stackvet.dev from the settled words and direction C
 
-**Status:** claimed by claude/0376-deploy, 22 October 2026
+**Status:** partly done: going live, at the owner's word: the owner starts `.github/workflows/site.yml` and adds stackvet.app's redirect rule
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -65,3 +65,8 @@ owner starts is going live. The redirect rule on stackvet.app stays the owner's 
 
 **Record, proposed:** a Later entry on ADR-132 (the deploy, its new dependency on `cloudflare/wrangler-action`, what
 it uploads, and that only the owner starts it), made accepted in the pull request that builds it.
+
+**The deploy, written 22 October 2026** (ADR-132, Later): `.github/workflows/site.yml` builds the site and publishes it
+to Cloudflare at stackvet.dev when the owner starts it from the Actions tab, and only then; a check job with no secret
+reads the deploy without publishing on pull requests that change the site. What remains is the owner's: starting it,
+which is going live, and the redirect rule on stackvet.app.
