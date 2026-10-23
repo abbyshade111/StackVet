@@ -377,9 +377,9 @@ pub(super) fn brute_force_check(
                         "Whether the app resists password guessing: the sign-up this check needs, \
                          for an account of its own to guess at, answered {}, and signing in as \
                          that account did not open the first private page stackvet.toml lists, so \
-                         the account was not made. The sign-up form may need a value stackvet.toml \
-                         does not carry, such as an invite code. No wrong password was sent.",
-                        status(&answer)
+                         the account was not made. {} No wrong password was sent.",
+                        status(&answer),
+                        requests::sign_up_value_note(signup)
                     ),
                 ));
                 return;

@@ -155,6 +155,8 @@ pub(super) fn sign_up_only(
         ..Default::default()
     };
     let mut session = Session::default();
+    // Each sign-up takes the next numbered value the seed printed, when it printed them (ADR-134).
+    requests::next_sign_up();
     send_template(
         http,
         &format!("signup-{who}"),

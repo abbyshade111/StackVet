@@ -27,6 +27,8 @@ pub(super) struct Values<'a> {
 thread_local! {
     static SEED_VALUES: std::cell::RefCell<BTreeMap<String, String>> =
         const { std::cell::RefCell::new(BTreeMap::new()) };
+    /// How many sign-ups this run has sent: the next numbered value a sign-up takes (ADR-134).
+    static SIGN_UPS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 /// Sets the seed's values for the run on this thread, and back when dropped.
@@ -34,6 +36,7 @@ pub(crate) struct SeedValues(pub(super) BTreeMap<String, String>);
 
 impl SeedValues {
     pub(crate) fn set(values: &BTreeMap<String, String>) -> SeedValues {
+        SIGN_UPS.with(|n| n.set(0));
         SeedValues(SEED_VALUES.with(|c| c.replace(values.clone())))
     }
 }
@@ -44,20 +47,83 @@ impl Drop for SeedValues {
     }
 }
 
-/// `text` with each `{seed:NAME}` the seed printed put in its place. A name it did not print is left as written, so
-/// the app refuses it and the refusal is quoted (backlog 0599).
+/// A sign-up is about to be sent: the numbered seed values move on by one (ADR-134), so each account the run makes takes
+/// a value of its own, as an app whose invite codes work once needs.
+pub(super) fn next_sign_up() {
+    SIGN_UPS.with(|n| n.set(n.get() + 1));
+}
+
+/// `text` with each `{seed:NAME}` the seed printed put in its place. When the seed printed numbered values, `NAME_1`,
+/// `NAME_2`, and on, `{seed:NAME}` is the one for this sign-up, the first for the first (ADR-134); when it printed none,
+/// it is `NAME`, whichever sign-up it is. A name it did not print, or a sign-up past the numbered values it printed, is
+/// left as written, so the app refuses it and the refusal is quoted (backlog 0599).
 pub(super) fn fill_seed(text: &str) -> String {
     if !text.contains("{seed:") {
         return text.to_owned();
     }
+    let sign_up = SIGN_UPS.with(|n| n.get()).max(1);
     SEED_VALUES.with(|values| {
         let values = values.borrow();
         let mut out = text.to_owned();
-        for (name, value) in values.iter() {
-            out = out.replace(&format!("{{seed:{name}}}"), value);
+        for name in cited(text) {
+            let numbered = values.contains_key(&format!("{name}_1"));
+            let value = if numbered {
+                values.get(&format!("{name}_{sign_up}"))
+            } else {
+                values.get(&name)
+            };
+            if let Some(value) = value {
+                out = out.replace(&format!("{{seed:{name}}}"), value);
+            }
         }
         out
     })
+}
+
+/// Why an account a check signed up was most likely not made, for the report (backlog 0637, ADR-134): when the sign-up
+/// form cites a value the seed printed, that the value may work once, and how to give one per account; when it cites
+/// none, that the form may need a value stackvet.toml does not carry.
+pub(crate) fn sign_up_value_note(signup: &RequestTemplate) -> String {
+    let names = seed_names(signup);
+    let Some(name) = names.first() else {
+        return "The sign-up form may need a value stackvet.toml does not carry, such as an invite code.".to_owned();
+    };
+    let (numbered, sign_ups) = SEED_VALUES.with(|values| {
+        let values = values.borrow();
+        let numbered = (1..)
+            .take_while(|n| values.contains_key(&format!("{name}_{n}")))
+            .count();
+        (numbered, SIGN_UPS.with(|n| n.get()))
+    });
+    if numbered == 0 {
+        format!(
+            "The sign-up form cites `{{seed:{name}}}`, one value the seed printed, and this run signs several accounts \
+             up with it: a value that works once, as an invite code often does, lets only the first in. Have the seed \
+             print one for each account, `{name}_1=…`, `{name}_2=…`, and on, and each sign-up takes the next."
+        )
+    } else {
+        format!(
+            "The seed printed {numbered} numbered `{name}_` value{} and this run made {sign_ups} sign-ups, so those \
+             past them went without one. Have the seed print more.",
+            if numbered == 1 { "" } else { "s" }
+        )
+    }
+}
+
+/// The names `{seed:NAME}` cites in `text`, once each.
+fn cited(text: &str) -> Vec<String> {
+    let mut names = Vec::new();
+    let mut rest = text;
+    while let Some(start) = rest.find("{seed:") {
+        rest = &rest[start + "{seed:".len()..];
+        let Some(end) = rest.find('}') else { break };
+        let name = rest[..end].to_owned();
+        if !names.contains(&name) {
+            names.push(name);
+        }
+        rest = &rest[end..];
+    }
+    names
 }
 
 /// The names `{seed:NAME}` cites in `template`, in order and once each.
@@ -406,3 +472,7 @@ pub(crate) fn send_filled(
 ) -> Option<ProbeResponse> {
     send_template(http, id, t, &Values::default(), session, pages).0
 }
+
+#[cfg(test)]
+#[path = "seed_numbered_tests.rs"]
+mod seed_numbered_tests;

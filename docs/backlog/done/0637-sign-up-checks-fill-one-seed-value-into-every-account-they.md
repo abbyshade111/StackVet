@@ -1,6 +1,6 @@
 # Sign-up checks fill one seed value into every account they make, so a one-use invite code fails all but the first
 
-**Status:** claimed by claude/0637, 23 October 2026
+**Status:** done, 23 October 2026
 
 Found in the owner's Cursor build of 22 October 2026 (backlog 0373), read in the app's folder on the owner's drive. The
 app is invite-only, and its invites work once: `app.py` records who used one (line 637) and refuses one already used
@@ -27,3 +27,9 @@ report handled it as it should: it waited as asked, then said which checks a ref
 to change in StackVet for that.
 
 **Claimed, 23 October 2026,** at the owner's answer ("Numbered values"). **Record, proposed:** ADR-134.
+
+**Done, 23 October 2026** (ADR-134, accepted). A seed may print `INVITE_1=…`, `INVITE_2=…`, and on, and each sign-up
+the run sends takes the next; with no numbered values, `{seed:INVITE}` is `INVITE` for every sign-up, as before. Where
+an account could not be made, the report now says, for a form that cites a seed value, that it may work once and how to
+print one per account, or how many numbered values there were for how many sign-ups. The starter manifest says how.
+Tests: `crates/sv-check/src/signed_in/seed_numbered_tests.rs`.

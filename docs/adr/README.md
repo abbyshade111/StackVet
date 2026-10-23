@@ -180,7 +180,7 @@ source files, and in two tests:
 | [ADR-131](ADR-131.md) | The report says what the AI coding tool did that is worth a look, as information that decides nothing (accepted, 21 October 2026) |
 | [ADR-132](ADR-132.md) | stackvet.dev is built from the repository first, and where it is hosted is chosen after (accepted, 22 October 2026) |
 | [ADR-133](ADR-133.md) | AC.4.1 credits a review by hand only when the reviewer is not the person who asked for the code (proposed, 23 October 2026) |
-| [ADR-134](ADR-134.md) | A seed may print numbered values, and each sign-up takes the next one unused (proposed, 23 October 2026) |
+| [ADR-134](ADR-134.md) | A seed may print numbered values, and each sign-up takes the next one unused (accepted, 23 October 2026) |
 
 ## Names in the records
 
