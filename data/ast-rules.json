@@ -124,8 +124,8 @@
       "looksFor": "a command line built from a value and handed to a shell to run",
       "looksForIn": {
         "shell": "sh, bash, or another shell asked to run (-c) a command built from a variable",
-        "rust": "a shell (sh, bash, zsh, or dash, named in the code) given a command built from a value through `.arg(\"-c\").arg(...)` or `.args([\"-c\", ...])`, and any program, however it is named, given `-c` and then a value the same way; `Command::new(value)` without `-c` starts that program with its arguments as a list and no shell, so it is not reported (ADR-135)",
-        "go": "a shell (sh, bash, zsh, or dash, named in the code) given a command built from a value, as `exec.Command(\"sh\", \"-c\", value)` or `exec.CommandContext(ctx, \"bash\", \"-c\", value)`, and any program, however it is named, given `-c` and then a value the same way; `exec.Command(value, ...)` without `-c` starts that program with its arguments as a list and no shell, so it is not reported (ADR-135)"
+        "rust": "a program given `-c` and then a command built from a value, through `.arg(\"-c\").arg(...)` or `.args([\"-c\", ...])`, whether the program is a shell written out (`sh`, `bash`, `zsh`, `dash`) or a value; `Command::new(value)` with no `-c` starts that program with its arguments as a list and no shell, and is not read as a shell command",
+        "go": "a program given `-c` and then a command built from a value, as `exec.Command(\"sh\", \"-c\", value)` or `exec.CommandContext(ctx, shell, \"-c\", value)`, whether the program is a shell written out (`sh`, `bash`, `zsh`, `dash`) or a value; `exec.Command(value, ...)` with no `-c` starts that program with its arguments as a list and no shell, and is not read as a shell command"
       },
       "inPart": true
     },
