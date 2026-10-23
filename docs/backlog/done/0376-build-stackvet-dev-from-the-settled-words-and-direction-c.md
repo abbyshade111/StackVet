@@ -1,6 +1,6 @@
 # Build stackvet.dev from the settled words and direction C
 
-**Status:** partly done: going live, at the owner's word: the owner starts `.github/workflows/site.yml` and adds stackvet.app's redirect rule
+**Status:** done, 22 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -70,3 +70,27 @@ it uploads, and that only the owner starts it), made accepted in the pull reques
 to Cloudflare at stackvet.dev when the owner starts it from the Actions tab, and only then; a check job with no secret
 reads the deploy without publishing on pull requests that change the site. What remains is the owner's: starting it,
 which is going live, and the redirect rule on stackvet.app.
+
+**Done, 23 October 2026 (UTC; the evening of 22 October, the owner's time): stackvet.dev is live.** The owner reviewed
+and merged the deploy (#2232), set its account secret right after the first run refused it (an account ID with a
+character it may not hold), and started **Actions → Site**: the second run uploaded 58 files and attached stackvet.dev
+as the Worker's custom domain (version `e81470b8-c3aa-4c29-bab7-8c9d0b589d59`). Its last step, asking stackvet.dev
+for its first page, failed: Cloudflare's Bot Fight Mode was on in the stackvet.dev zone and answered every request
+that was not a browser with a challenge (`cf-mitigated: challenge`; the zone's firewall events named it), the
+runner's and `curl`'s alike. The owner turned it off. Then, checked from the session's computer:
+
+- stackvet.dev answers 200 with the site's headers: the content security policy with its one script's hash,
+  `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, the permissions
+  policy, and `Cross-Origin-Opener-Policy: same-origin`;
+- every one of the 58 files the site serves answers 200 (after Cloudflare's redirect of `.html` pages to the same
+  address without it), and the folders' markers and `_headers` answer 404;
+- in a browser, every screenshot of *How a build goes* loads, the policy blocks what the site did not write (the
+  browser's own errors quote it), and the standards pages' one script runs (the level filter);
+- stackvet.app, www.stackvet.app, and www.stackvet.dev each redirect to stackvet.dev keeping the path, by the
+  owner's redirect rules.
+
+The managed rules the zone keeps were seen blocking a scanner's requests for `/wp-config.php` the same hour; they are
+separate from Bot Fight Mode and stay on.
+
+The owner then started **Actions → Site** once more, with Bot Fight Mode off: every step passed, its last one finding
+"stackvet.dev answers, with its content security policy." (version `a4eac745-aa3f-4fca-ad75-6c0384331bd6`, 02:14 UTC).
