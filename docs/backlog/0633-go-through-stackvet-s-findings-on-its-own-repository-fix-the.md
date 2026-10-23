@@ -49,3 +49,22 @@ too: whether they come off `main` is put to the owner, since the history keeps t
 **First part, 23 October 2026:** stackvet.dev's "StackVet checks itself" is a summary, read from
 `docs/website/self-assessment/summary.md`, with the bill of materials; the finding-by-finding files are removed from
 `main` (ADR-132, Later). What remains is the triage itself, and the page refreshed after it.
+
+**Triage, 23 October 2026.** Every group was read against the code:
+
+- **Rules that are wrong, each now an item of its own:** the shell-command rule on Rust and Go (16, backlog 0643); Rust
+  modules compiled only for tests not read as test code (backlog 0644); the weak-key check reading comments (9) and the
+  certificate check reading one language's switch-off in another's text (2) (backlog 0645).
+- **A fault the rules missed:** the stale test report is removed through a shell, with its path in quotes (backlog 0646).
+- **By design, set aside for the owner to confirm in `sv review`,** each as a proposed `[[finding-review]]` entry that
+  counts for nothing until then: git's SHA-1 object names (`git.rs`); OpenSSH's own key encryption, which `sv` must read
+  as written (`ssh_format.rs`); the list of known breached passwords (`data/breached-password-evidence.json`); the
+  passwords `sv` gives the accounts it makes in the app it checks (`signed_in/signin.rs`); the doc comments that quote a
+  trial app's invite code and message (`secrets.rs`); a Semgrep React rule on the browser driver, which is not React; the
+  `{ query: [...] }` object key in the test sign-in provider; and the app's own test command run through `sh -c`.
+- **The 269 path findings stay counted,** at the owner's word: "leave them counted for now as recommended, but add a
+  backlog item for after this one to investigate how we can fix the excessive false positives and issue with test
+  code, because otherwise actual issues will get overlooked." That is backlog 0647.
+
+What remains here: the `[[finding-review]]` entries, after 0643 to 0646 land; then the report made again and the page
+refreshed.
