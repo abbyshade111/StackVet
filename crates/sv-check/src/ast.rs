@@ -2641,6 +2641,9 @@ mod shell_list_tests;
 mod macro_args_tests;
 
 #[cfg(test)]
+mod cors_rust_tests;
+
+#[cfg(test)]
 mod path_from_request_tests;
 
 #[cfg(test)]

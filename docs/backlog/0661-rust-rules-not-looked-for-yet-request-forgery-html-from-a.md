@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-cors, 24 October 2026
+**Status:** partly done: nine rules still to teach Rust: template-built-from-value, insecure-random-for-code, request-body-passed-whole, account-found-by-provider-email, hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -36,3 +36,14 @@ html_escape::encode_text(&name))` is safe and `format!("<p>{name}</p>")` is not.
 `crates/sv-check/src/ast/html_tests.rs`, and a fault and its safe form in `examples/rust-notes`, whose V1.2.1 now
 needs attention. Broken on purpose: with the `format!` reading off, the four escaped forms and the example's safe line
 went red; with the inline-name check off, `format!("<p>{n}</p>")` went unfound. A template's own `|safe` is not read.
+
+**`cors-any-origin-with-credentials` built, 24 October 2026.** tower-http's `CorsLayer::very_permissive()`, or a
+`CorsLayer` given `AllowOrigin::mirror_request()` with `allow_credentials(true)`, and actix-cors's `Cors::permissive()`,
+or `allow_any_origin()` with `supports_credentials()`, in either order in one chain. tower-http's `Any` with
+credentials is not reported: tower-http refuses it when the app starts, so it never serves a request. Only a call
+whose own method is a CORS one is matched, so a `Router::new()…layer(…)` around the chain is not a second finding.
+Nine witnesses in `crates/sv-check/src/ast/tests.rs`, a one-finding test in
+`crates/sv-check/src/ast/cors_rust_tests.rs`, and a fault and its safe form in `examples/rust-notes`, whose V3.4.2 now
+needs attention. Broken on purpose: with the Rust pattern emptied, the five found witnesses and the example's fault went
+red; with the method-name restriction loosened, the one-finding test saw a second finding at the router's line. No
+decision record: one more language for a rule that only ever reports, with nothing new in how it reads.

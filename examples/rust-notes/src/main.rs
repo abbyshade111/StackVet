@@ -5,12 +5,15 @@
 mod notes;
 
 use axum::extract::{Path, Query};
+use axum::http::HeaderValue;
 use axum::response::{Html, Redirect};
 use axum::Router;
 use std::process::Command;
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::services::ServeDir;
 
 const JWKS_URL: &str = "https://login.example.com/.well-known/jwks.json";
+const OWN_SITE: &str = "https://notes.example.com";
 
 // Reading a file at a path a request chose, and at one written out.
 async fn download(Path(name): Path<String>) -> String {
@@ -134,6 +137,16 @@ async fn greeting(q: Query<Greeting>) -> Html<String> {
 
 async fn greeting_escaped(q: Query<Greeting>) -> Html<String> {
     Html(format!("<h1>Hello, {}</h1>", html_escape::encode_text(&q.name))) // sv:safe html-from-value
+}
+
+// Cross-site settings: one that lets every site call the app with its visitors' cookies, and one that names the
+// app's own site (backlog 0661).
+fn cors_any_site() -> CorsLayer {
+    CorsLayer::new().allow_origin(AllowOrigin::mirror_request()).allow_credentials(true) // sv:fault cors-any-origin-with-credentials
+}
+
+fn cors_own_site() -> CorsLayer {
+    CorsLayer::new().allow_origin(OWN_SITE.parse::<HeaderValue>().unwrap()).allow_credentials(true) // sv:safe cors-any-origin-with-credentials
 }
 
 #[cfg(test)]
