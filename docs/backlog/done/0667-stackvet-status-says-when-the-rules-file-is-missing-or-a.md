@@ -1,6 +1,6 @@
 # stackvet_status says when the rules file is missing, or a tool will not see it, and how sv rules fixes it
 
-**Status:** claimed by claude/0667-status-rules, 24 October 2026
+**Status:** done, 24 October 2026
 
 Found 24 October 2026, at the owner's question whether the MCP server should direct AI tools to the rules when they
 connect. It already does, in part: its instructions tell a connected tool to call `stackvet_guidance` before writing
@@ -36,3 +36,11 @@ To do:
 **Claimed 24 October 2026.** The plan: one more line in `sv doctor`'s answers (`crate::doctor::answers`), which
 `stackvet_status` already gives in its words and its structured answer, so the server's answer gains no new field;
 and a dated Later entry on ADR-066.
+
+**Built 24 October 2026** (ADR-066 and ADR-144, Later, 24 October 2026). `sv doctor`, and so `stackvet_status`, gives
+one more answer, "rules for the AI tool": not ready with no `AGENTS.md`, with no section of `sv`'s rules in it, or
+with a `CLAUDE.md` that does not bring it in, each saying `sv rules` fixes it; can't tell when `AGENTS.md` is a link;
+ready otherwise, with the Codex, Aider, and Cline notes passed on. It writes nothing, quotes no file, and says nothing
+of whether the rules are the newest. The server's structured answer already carried the doctor's lines, so it gains no
+field. `crates/sv-cli/src/doctor/rules_tests.rs` holds it, each case showing the folder unchanged; each check was
+broken on purpose and watched go red, and making the answer write a file failed five of its six cases.
