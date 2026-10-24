@@ -2030,7 +2030,8 @@
         "go": "(call_expression function: [(identifier) @fn (selector_expression field: (field_identifier) @fn)] arguments: (argument_list) @arg) @hit",
         "php": "[(member_call_expression name: (name) @fn arguments: (arguments) @arg) (scoped_call_expression name: (name) @fn arguments: (arguments) @arg) (assignment_expression left: (subscript_expression) @fn right: (_) @arg)] @hit",
         "java": "(method_invocation name: (identifier) @fn arguments: (argument_list) @arg) @hit",
-        "csharp": "(invocation_expression function: [(identifier) @fn (member_access_expression name: (identifier) @fn)] arguments: (argument_list) @arg) @hit"
+        "csharp": "(invocation_expression function: [(identifier) @fn (member_access_expression name: (identifier) @fn)] arguments: (argument_list) @arg) @hit",
+        "rust": "(call_expression function: [(identifier) @fn (field_expression field: (field_identifier) @fn) (scoped_identifier name: (identifier) @fn)]\n                 arguments: (arguments) @arg) @hit"
       },
       "functionPatterns": {
         "python": "^(filter_by|filter|get|get_or_create|update_or_create|find_one|find|where|execute|select|get_by_email|get_user_by_email|find_by_email|find_user_by_email|user_by_email)$|^session\\s*\\[\\s*['\"](user|user_?id|uid|account|account_?id|current_user|username|id)['\"]\\s*\\]$",
@@ -2040,7 +2041,8 @@
         "go": "^(Where|First|Find|FindOne|Take|QueryRow|QueryRowContext|Query|QueryContext|Get|GetUserByEmail|FindUserByEmail|FindByEmail|UserByEmail|GetByEmail)$",
         "php": "^(where|firstWhere|firstOrCreate|firstOrNew|updateOrCreate|findOneBy|findBy|execute|query|whereEmail)$|^\\$_SESSION\\s*\\[\\s*['\"](user|user_?id|uid|account_?id|username|id)['\"]\\s*\\]$",
         "java": "^(findByEmail|findOneByEmail|findByEmailIgnoreCase|findFirstByEmail|getByEmail|findUserByEmail|query|queryForObject|queryForList)$",
-        "csharp": "^(FindByEmailAsync|FindByEmail|FirstOrDefault|FirstOrDefaultAsync|SingleOrDefault|SingleOrDefaultAsync|Where|Find|FindAsync)$"
+        "csharp": "^(FindByEmailAsync|FindByEmail|FirstOrDefault|FirstOrDefaultAsync|SingleOrDefault|SingleOrDefaultAsync|Where|Find|FindAsync)$",
+        "rust": "^(bind|eq|filter|find_by_email|find_user_by_email|get_by_email|get_user_by_email|user_by_email)$"
       },
       "argumentPatterns": {
         "python": "(?i)\\b(userinfo|user_info|id_?token(_?claims)?|idinfo|claims|oidc_?user|decoded_?token)['\"]?\\]?\\s*(\\[\\s*['\"]email['\"]\\s*\\]|\\.get\\(\\s*['\"]email['\"])",
@@ -2050,17 +2052,20 @@
         "go": "(?i)\\b(userinfo|user_?info|id_?token(_?claims)?|claims)\\s*\\.\\s*email\\b",
         "php": "(?i)\\$\\w*(social|google|github|facebook|microsoft|provider|oauth|oidc|external)\\w*\\s*->\\s*(getemail\\s*\\(\\s*\\)|email\\b)|socialite::driver\\([^)]*\\)\\s*(->\\s*stateless\\(\\s*\\)\\s*)?->\\s*user\\(\\s*\\)\\s*->\\s*(getemail\\(\\s*\\)|email\\b)|\\$(userinfo|user_info|claims|id_?token)\\s*(\\[\\s*['\"]email['\"]|->\\s*email\\b)",
         "java": "(?i)\\b(get)?(oidc_?user|oauth2_?user|principal|id_?token|claims|user_?info)(\\s*\\(\\s*\\))?\\s*\\.\\s*(getemail\\s*\\(\\s*\\)|getattribute\\s*\\(\\s*\"email\"\\s*\\)|getclaim(asstring)?\\s*\\(\\s*\"email\"\\s*\\))",
-        "csharp": "(?i)\\bprincipal\\s*\\??\\.\\s*(findfirstvalue|findfirst)\\s*\\(\\s*(claimtypes\\s*\\.\\s*email|\"email\")"
+        "csharp": "(?i)\\bprincipal\\s*\\??\\.\\s*(findfirstvalue|findfirst)\\s*\\(\\s*(claimtypes\\s*\\.\\s*email|\"email\")",
+        "rust": "(?i)\\b(userinfo|user_?info|id_?token(_?claims)?|claims)\\s*(\\.\\s*email\\b(\\s*\\(\\s*\\))?|\\[\\s*\"email\"\\s*\\])"
       },
       "looksFor": "a lookup of an account (`filter_by`, `findUnique`, `find_by`, `Where`, `FindByEmailAsync`, `findByEmail`, and their like) given the email address a sign-in provider sent, and, in Python, JavaScript, TypeScript, Ruby, and PHP, that address stored as the session's user (`session[\"user\"]`, `req.session.userId`, `$_SESSION['user_id']`); either written in place or through a name the same function sets to it, the session included (`s = req.session`, then `s.user`). Finding none credits nothing: a lookup through a helper, or a value set in another function, is not followed",
       "nothingToFind": {
         "kotlin": "No sign-in provider library in common use for Kotlin is looked for here. An account looked up by the email address a provider sent is not found.",
-        "rust": "No sign-in provider library in common use for Rust is looked for here. An account looked up by the email address a provider sent is not found.",
         "swift": "No sign-in provider library in common use for Swift is looked for here. An account looked up by the email address a provider sent is not found.",
         "dart": "No sign-in provider library in common use for Dart is looked for here. An account looked up by the email address a provider sent is not found.",
         "c": "No sign-in provider library in common use for C is looked for here. An account looked up by the email address a provider sent is not found.",
         "cpp": "No sign-in provider library in common use for C++ is looked for here. An account looked up by the email address a provider sent is not found.",
         "shell": "A shell script does not handle a sign-in provider's answer, so there is no account lookup to look for."
+      },
+      "looksForIn": {
+        "rust": "sqlx's `bind`, diesel's and sea-orm's `eq`, and an app's own `find_user_by_email` and its like, given the email address a provider sent: the `openidconnect` crate's `claims.email()`, or a user-info answer's `userinfo.email` or `userinfo[\"email\"]`, directly or through a name set from it; a query inside sqlx's own `query!` macro is not read"
       }
     },
     {

@@ -183,6 +183,18 @@ async fn save_profile_fields(Json(body): Json<Profile>) {
     diesel::insert_into(profiles::table).values(&picked).execute(&mut conn()).ok(); // sv:safe request-body-passed-whole
 }
 
+// After "Sign in with" a provider: finding the account by the email address the provider sent, which can pass to
+// someone else, and by the provider's own id for the person (backlog 0661).
+async fn account_by_provider_email(claims: CoreIdTokenClaims, pool: &SqlitePool) -> Option<User> {
+    let email = claims.email()?.as_str().to_owned();
+    sqlx::query_as::<_, User>("select * from users where email = ?").bind(email).fetch_optional(pool).await.ok()? // sv:fault account-found-by-provider-email
+}
+
+async fn account_by_provider_subject(claims: CoreIdTokenClaims, pool: &SqlitePool) -> Option<User> {
+    let subject = claims.subject().as_str().to_owned();
+    sqlx::query_as::<_, User>("select * from users where sub = ?").bind(subject).fetch_optional(pool).await.ok()? // sv:safe account-found-by-provider-email
+}
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).

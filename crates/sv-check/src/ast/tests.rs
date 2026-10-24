@@ -3015,6 +3015,13 @@ fn a_ruby_load_on_something_that_is_not_a_deserialiser_is_not_reported() {
         ("ast.account-found-by-provider-email", "go", "package m\nfunc callback() { email := userInfo.Email\n row := db.QueryRow(\"SELECT id FROM users WHERE email = $1\", email) }", true),
         ("ast.account-found-by-provider-email", "go", "package m\nfunc callback() { var claims struct{ Subject string }\n idToken.Claims(&claims)\n db.Where(\"sub = ?\", claims.Subject).First(&user) }", false),
         ("ast.account-found-by-provider-email", "go", "package m\nfunc login(r *http.Request) { email := r.FormValue(\"email\")\n row := db.QueryRow(\"SELECT id FROM users WHERE email = $1\", email) }", false),
+        // Rust (backlog 0661): the `openidconnect` crate's claims, or a user-info answer, looked up by its email address.
+        ("ast.account-found-by-provider-email", "rust", "async fn callback(claims: CoreIdTokenClaims) { let email = claims.email().unwrap().as_str(); let user = sqlx::query_as::<_, User>(\"select * from users where email = $1\").bind(email).fetch_one(&pool).await; }", true),
+        ("ast.account-found-by-provider-email", "rust", "fn callback(userinfo: UserInfo) { let found = users::table.filter(users::email.eq(&userinfo.email)).first::<User>(&mut conn()); }", true),
+        ("ast.account-found-by-provider-email", "rust", "fn callback(user_info: serde_json::Value) { let user = find_user_by_email(&db, user_info[\"email\"].as_str().unwrap()); }", true),
+        ("ast.account-found-by-provider-email", "rust", "async fn callback(claims: CoreIdTokenClaims) { let user = sqlx::query_as::<_, User>(\"select * from users where sub = $1\").bind(claims.subject().as_str()).fetch_one(&pool).await; }", false),
+        ("ast.account-found-by-provider-email", "rust", "async fn login(Form(f): Form<Login>) { let user = sqlx::query_as::<_, User>(\"select * from users where email = $1\").bind(&f.email).fetch_one(&pool).await; }", false),
+        ("ast.account-found-by-provider-email", "rust", "fn welcome(claims: CoreIdTokenClaims) { send_mail(claims.email().unwrap().as_str(), \"Welcome\"); }", false),
         ("ast.account-found-by-provider-email", "php", "<?php\nfunction callback() { $user = User::where('email', Socialite::driver('google')->user()->getEmail())->first(); }", true),
         ("ast.account-found-by-provider-email", "php", "<?php\nfunction callback() { $googleUser = Socialite::driver('google')->user();\n $email = $googleUser->getEmail();\n $user = User::firstOrCreate(['email' => $email]); }", true),
         ("ast.account-found-by-provider-email", "php", "<?php\nfunction callback() { $googleUser = Socialite::driver('google')->user();\n $user = User::where('google_id', $googleUser->getId())->first(); }", false),
