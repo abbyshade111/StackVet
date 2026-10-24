@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** partly done: seven rules still to teach Rust: request-body-passed-whole, account-found-by-provider-email, hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
+**Status:** partly done: six rules still to teach Rust: account-found-by-provider-email, hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -64,3 +64,11 @@ in a function so named (the names Go's form reads). Rust's usual generators (`ra
 kept in a variable is not in the other languages. Eight witnesses in `crates/sv-check/src/ast/tests.rs`, and a fault
 and its safe form in `examples/rust-notes`, whose V11.5.1 now needs attention. Broken on purpose: with the Rust module
 pattern emptied, the four found witnesses and the example's fault went red. No decision record, as for the CORS rule.
+
+**`request-body-passed-whole` built, 24 October 2026** (ADR-138, Later). diesel's `values` and `set`, and sea-orm's
+`from_json` and `set_from_json`, given a `Json` or `Form` extractor's whole body, directly or through a name. A new
+rule option, `argumentNamesWhole` (`data/README.md`), follows a name only when the argument is that name, so a struct
+or tuple built from the body's fields is the safe form it is; in JavaScript the rule now also finds the body passed
+through a name. Eight Rust cases and two JavaScript ones in `crates/sv-check/src/ast/body_whole_tests.rs`, and a fault
+and its safe form in `examples/rust-notes`, whose V15.3.3 now needs attention. Broken on purpose: with
+`argumentNamesWhole` off, the two Rust safe forms and the JavaScript one (as JavaScript and TypeScript) were reported.

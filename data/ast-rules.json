@@ -2471,12 +2471,14 @@
       "queries": {
         "python": "(call function: [(identifier) @fn (attribute attribute: (identifier) @fn)]\n      arguments: (argument_list (dictionary_splat) @arg)) @hit",
         "javascript": "[(call_expression function: (member_expression property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (new_expression constructor: (identifier) @fn\n                 arguments: (arguments . (_) @arg))] @hit",
-        "typescript": "[(call_expression function: (member_expression property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (new_expression constructor: (identifier) @fn\n                 arguments: (arguments . (_) @arg))] @hit"
+        "typescript": "[(call_expression function: (member_expression property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (new_expression constructor: (identifier) @fn\n                 arguments: (arguments . (_) @arg))] @hit",
+        "rust": "[(call_expression function: (field_expression field: (field_identifier) @fn)\n                   arguments: (arguments . (_) @arg))\n (call_expression function: (scoped_identifier name: (identifier) @fn)\n                   arguments: (arguments . (_) @arg))] @hit"
       },
       "functionPatterns": {
         "python": "^(create|update|get_or_create|update_or_create|[A-Z]\\w*)$",
         "javascript": "^(create|update|build|bulkCreate|upsert|insert|insertOne|findByIdAndUpdate|findOneAndUpdate|updateOne|updateMany|[A-Z]\\w*)$",
-        "typescript": "^(create|update|build|bulkCreate|upsert|insert|insertOne|findByIdAndUpdate|findOneAndUpdate|updateOne|updateMany|[A-Z]\\w*)$"
+        "typescript": "^(create|update|build|bulkCreate|upsert|insert|insertOne|findByIdAndUpdate|findOneAndUpdate|updateOne|updateMany|[A-Z]\\w*)$",
+        "rust": "^(values|set|from_json|set_from_json)$"
       },
       "argumentPositions": {
         "javascript": {
@@ -2489,13 +2491,15 @@
       "argumentPatterns": {
         "python": "^\\*\\*\\s*request\\.(json|data|form|POST|get_json\\(\\s*\\))(\\.dict\\(\\s*\\))?$",
         "javascript": "^((req|request)\\.body|ctx\\.request\\.body)$|^\\{\\s*data\\s*:\\s*((req|request)\\.body|ctx\\.request\\.body)\\s*,?\\s*\\}$",
-        "typescript": "^((req|request)\\.body|ctx\\.request\\.body)$|^\\{\\s*data\\s*:\\s*((req|request)\\.body|ctx\\.request\\.body)\\s*,?\\s*\\}$"
+        "typescript": "^((req|request)\\.body|ctx\\.request\\.body)$|^\\{\\s*data\\s*:\\s*((req|request)\\.body|ctx\\.request\\.body)\\s*,?\\s*\\}$",
+        "rust": "^&?(axum::extract::|axum::|actix_web::web::|web::|extract::)?(Json|Form)\\s*<"
       },
       "looksFor": "the whole request body handed to a create or update as it came, rather than the fields the action may change",
       "looksForIn": {
         "python": "a model built or saved from the whole of Flask's or Django's request data spread into it (`User(**request.json)`, `.objects.create(**request.data)`, `.update(**request.get_json())`)",
         "javascript": "a model's `create`, `update`, `build`, `bulkCreate`, `upsert`, or `insert`, Mongoose's `findByIdAndUpdate`, `findOneAndUpdate`, `updateOne`, and `updateMany`, a model built with `new`, and Prisma's `data: req.body`, each given Express's or Koa's whole request body (`req.body`, `ctx.request.body`)",
-        "typescript": "a model's `create`, `update`, `build`, `bulkCreate`, `upsert`, or `insert`, Mongoose's `findByIdAndUpdate`, `findOneAndUpdate`, `updateOne`, and `updateMany`, a model built with `new`, and Prisma's `data: req.body`, each given Express's or Koa's whole request body (`req.body`, `ctx.request.body`)"
+        "typescript": "a model's `create`, `update`, `build`, `bulkCreate`, `upsert`, or `insert`, Mongoose's `findByIdAndUpdate`, `findOneAndUpdate`, `updateOne`, and `updateMany`, a model built with `new`, and Prisma's `data: req.body`, each given Express's or Koa's whole request body (`req.body`, `ctx.request.body`)",
+        "rust": "diesel's `values(…)` and `set(…)`, and sea-orm's `from_json` and `set_from_json`, given the whole body of a request read by Axum's or Actix's `Json` or `Form` extractor (`Json(body): Json<NewUser>`), directly or through a name set from it; a struct built field by field from the body is the safe form"
       },
       "nothingToFind": {
         "go": "Not looked for in Go yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in Go credits nothing either way.",
@@ -2504,13 +2508,15 @@
         "java": "Not looked for in Java yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in Java credits nothing either way.",
         "kotlin": "Not looked for in Kotlin yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in Kotlin credits nothing either way.",
         "csharp": "Not looked for in C# yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in C# credits nothing either way.",
-        "rust": "Not looked for in Rust yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in Rust credits nothing either way.",
         "swift": "Not looked for in Swift yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in Swift credits nothing either way.",
         "dart": "Not looked for in Dart yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in Dart credits nothing either way.",
         "c": "Not looked for in C yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in C credits nothing either way.",
         "cpp": "Not looked for in C++ yet: the whole request body handed to a create or update. The rule only ever reports, so finding none in C++ credits nothing either way.",
         "shell": "Shell scripts save no records this rule can speak to."
-      }
+      },
+      "argumentNamesRead": true,
+      "argumentNamesDepth": 2,
+      "argumentNamesWhole": true
     },
     {
       "id": "ast.request-parameter-source-merged",

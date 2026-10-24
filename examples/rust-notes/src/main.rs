@@ -5,6 +5,8 @@
 mod notes;
 
 use axum::extract::{Path, Query};
+use axum::Json;
+use diesel::prelude::*;
 use axum::http::HeaderValue;
 use axum::response::{Html, Redirect};
 use axum::Router;
@@ -168,6 +170,17 @@ fn sign_in_code_guessable() -> u32 {
 fn sign_in_code_secure() -> u32 {
     let sign_in_code = rand::random::<u32>() % 900_000 + 100_000; // sv:safe insecure-random-for-code
     sign_in_code
+}
+
+// Saving a profile from the whole request body, so a `role` the form never shows is saved too, and from the fields
+// the form may change (backlog 0661).
+async fn save_profile(Json(body): Json<Profile>) {
+    diesel::insert_into(profiles::table).values(&body).execute(&mut conn()).ok(); // sv:fault request-body-passed-whole
+}
+
+async fn save_profile_fields(Json(body): Json<Profile>) {
+    let picked = Profile { name: body.name, bio: body.bio, role: Role::Member };
+    diesel::insert_into(profiles::table).values(&picked).execute(&mut conn()).ok(); // sv:safe request-body-passed-whole
 }
 
 #[cfg(test)]

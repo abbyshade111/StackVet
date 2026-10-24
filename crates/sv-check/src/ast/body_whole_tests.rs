@@ -29,6 +29,15 @@ fn reported(language: &str, file: &str, source: &str) -> bool {
 }
 
 const JAVASCRIPT: &[(&str, bool)] = &[
+    // The body through a name (backlog 0661, `argumentNamesWhole`); a field picked out of it is not the body.
+    (
+        "app.post('/u', async (req, res) => { const body = req.body; res.json(await User.create(body)); });",
+        true,
+    ),
+    (
+        "app.post('/u', async (req, res) => { const body = req.body; res.json(await User.create(body.name)); });",
+        false,
+    ),
     (
         "app.post('/u', async (req, res) => res.json(await User.create(req.body)));",
         true,
@@ -117,6 +126,44 @@ const PYTHON: &[(&str, bool)] = &[
     ),
 ];
 
+// Rust (backlog 0661): diesel's `values` and `set`, and sea-orm's `from_json`, given the whole body an Axum or Actix
+// `Json` or `Form` extractor read.
+const RUST: &[(&str, bool)] = &[
+    (
+        "async fn create(Json(body): Json<NewUser>) { diesel::insert_into(users::table).values(&body).execute(&mut conn()).unwrap(); }\n",
+        true,
+    ),
+    (
+        "async fn update(Path(id): Path<i32>, Json(changes): Json<UserChanges>) { diesel::update(users::table.find(id)).set(&changes).execute(&mut conn()).unwrap(); }\n",
+        true,
+    ),
+    (
+        "async fn create(web::Json(body): web::Json<serde_json::Value>) { let user = user::ActiveModel::from_json(body).unwrap(); user.insert(&db()).await.unwrap(); }\n",
+        true,
+    ),
+    (
+        "async fn create(Form(form): Form<NewUser>) { let new = form; diesel::insert_into(users::table).values(&new).execute(&mut conn()).unwrap(); }\n",
+        true,
+    ),
+    // The fields picked out, the owner set by the app; a value the app built; a query's own filter.
+    (
+        "async fn create(Json(body): Json<NewUser>) { let new = NewUser { name: body.name, email: body.email, role: Role::Member }; diesel::insert_into(users::table).values(&new).execute(&mut conn()).unwrap(); }\n",
+        false,
+    ),
+    (
+        "async fn create(Json(body): Json<NewUser>) { diesel::insert_into(users::table).values((users::name.eq(&body.name), users::email.eq(&body.email))).execute(&mut conn()).unwrap(); }\n",
+        false,
+    ),
+    (
+        "fn seed() { diesel::insert_into(users::table).values(&default_admin()).execute(&mut conn()).unwrap(); }\n",
+        false,
+    ),
+    (
+        "async fn show(Query(q): Query<Find>) { let _ = map.values(); let _ = headers.set(&q); }\n",
+        false,
+    ),
+];
+
 #[test]
 fn the_whole_body_saved_is_reported_and_the_fields_picked_out_are_not() {
     let mut wrong = Vec::new();
@@ -124,6 +171,7 @@ fn the_whole_body_saved_is_reported_and_the_fields_picked_out_are_not() {
         ("javascript", "app.js", JAVASCRIPT),
         ("typescript", "app.ts", JAVASCRIPT),
         ("python", "views.py", PYTHON),
+        ("rust", "src/main.rs", RUST),
     ] {
         for (source, expected) in cases {
             if reported(language, file, source) != *expected {
