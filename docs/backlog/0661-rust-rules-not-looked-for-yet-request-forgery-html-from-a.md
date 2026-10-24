@@ -96,8 +96,11 @@ with the Rust query removed, the rules refused to load. No decision record, as f
 (`user.backup_codes = …`) or set where the struct is made (`Mfa { recovery_codes: … }`), given codes straight from a
 generator (`rand::random`, `thread_rng()`, `rand::rng()`, `OsRng`, `Uuid::new_v4`, `fastrand`, `nanoid!`), with no
 hashing on the line. Seven Rust cases in `crates/sv-check/src/ast/backup_codes_tests.rs`, and a fault and its safe
-form in `examples/rust-notes`. The example's report has the finding; V6.5.2 is not among the requirements the example
-is held to, so its snapshot is unchanged. Broken on purpose: with the hashing exception off, a code made and hashed on
+form in `examples/rust-notes`. The example now names `bcrypt`, so `sv` reads it as an app that stores
+passwords, and its snapshot gains that scope's 55 requirements: V6.5.2 needs attention, from this fault, with V6.5.3
+(the guessable sign-in code) and V11.4.2 and V11.4.4 (the example's weak password key derivation), and 51 more are not
+verified, as nothing here checks them; no verdict already in the snapshot changed (a first push left the snapshot
+unchanged, as the dependency was added after the last local run, and CI caught it). Broken on purpose: with the hashing exception off, a code made and hashed on
 one line and the example's safe form were reported (a first try had no case that needed the exception, and nothing
 went red); with the generator pattern emptied, the found cases and the example's fault went red. No decision record,
 as for the CORS rule.
