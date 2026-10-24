@@ -946,6 +946,12 @@ fn outside_tools(
         );
         sv_check::adapters::set_apart_other_languages(adapters, &mut found);
         sv_check::logged_ids::set_apart_logged_ids(app_dir, &mut found);
+        sv_check::adapters::set_apart_listening_in_container(
+            &mut found,
+            [&manifest.stack.run.image, &manifest.stack.run.start]
+                .iter()
+                .all(|f| f.as_deref().is_some_and(|v| !v.trim().is_empty())),
+        );
         findings.extend(found);
         tool_verified = outcome.verified;
         tool_verified.extend(escaping);

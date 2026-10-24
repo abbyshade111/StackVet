@@ -20,7 +20,8 @@ Per app, the things to fix and the findings in all: Cursor build 9 of 20; the ot
   across 8 apps; nothing else passes 5.
 - **The noisiest outside rules are already listed apart.** Semgrep's Django rule `django-no-csrf-token` fired 36 times
   in 5 apps, none of which uses Django, on forms that each carry a CSRF token field; the report already sets such a
-  finding apart as a rule for another framework (backlog 0521), and still counts it. Semgrep's Flask rule
+  finding apart as a rule for another framework (backlog 0521), where it decides nothing, which is right for a
+  Django rule in an app with no Django (this entry said "still counts it" until corrected the same day). Semgrep's Flask rule
   `direct-use-of-jinja2` fired 21 times in one FastAPI app that turns escaping on (`select_autoescape`); set apart the
   same way.
 - **Bandit's B108 (a fixed path under `/tmp`) is right to report.** Every one is a database or data folder defaulting to

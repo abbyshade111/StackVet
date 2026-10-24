@@ -1821,7 +1821,10 @@ pub fn apart_named(apart: &[&sv_check::Finding]) -> String {
         f.worth_a_look()
             || matches!(
                 f.outranked,
-                Some(sv_check::finding::Outranked::CheckedWhileRunning { .. })
+                Some(
+                    sv_check::finding::Outranked::CheckedWhileRunning { .. }
+                        | sv_check::finding::Outranked::ListensInContainer
+                )
             )
     });
     let not_held_to = apart
@@ -2274,6 +2277,8 @@ fn reading_line(r: &seen::Reading) -> String {
 }
 
 #[cfg(test)]
+mod listens_in_container_tests;
+#[cfg(test)]
 mod read_only_tests;
 #[cfg(test)]
 mod what_was_seen_tests;
@@ -2389,6 +2394,13 @@ pub fn finding_notes(f: &sv_check::Finding) -> Vec<String> {
              in the tables. The rule matches its text wherever it is, a comment included.",
             list_and(&languages.iter().map(|l| language_name(l)).collect::<Vec<_>>())
         )),
+        Some(sv_check::finding::Outranked::ListensInContainer) => notes.push(
+            "Worth a look: stackvet.toml runs this app in a container, where it must listen on every address to be \
+             reached, as `sv preflight` says, so it is listed apart from the things to fix. It still counts. Outside a \
+             container the same line puts the app on the local network: run it there behind a firewall, or listen \
+             on 127.0.0.1 when it is not in a container."
+                .to_owned(),
+        ),
         Some(sv_check::finding::Outranked::LogsOnlyIds { names }) => notes.push(format!(
             "The rule fires when a log message mentions a password, token, secret, or key, whatever is logged. \
              `sv` read the line: it logs only {}, which {} an id, and nothing named for a secret, so it is listed \
@@ -2903,6 +2915,12 @@ pub fn mark_outranked(
     manual_only: &BTreeSet<String>,
 ) {
     use sv_check::finding::{Outranked, is_svs_own};
+    // Set when the outside tools ran, from stackvet.toml's `[stack.run]` (backlog 0658): put back below on a finding
+    // nothing else here sets apart, since being about a requirement not held to, or one checked while running, says more.
+    let in_container: Vec<bool> = findings
+        .iter()
+        .map(|f| matches!(f.outranked, Some(Outranked::ListensInContainer)))
+        .collect();
     for f in findings.iter_mut() {
         // Set when the outside tools ran, from the app's package lists, which are not here to read again.
         if matches!(
@@ -2946,6 +2964,11 @@ pub fn mark_outranked(
                 .map(|v| v.check_id.clone())
                 .unwrap_or_default();
             f.outranked = Some(Outranked::CheckedWhileRunning { check });
+        }
+    }
+    for (f, was) in findings.iter_mut().zip(in_container) {
+        if was && f.outranked.is_none() {
+            f.outranked = Some(Outranked::ListensInContainer);
         }
     }
 }

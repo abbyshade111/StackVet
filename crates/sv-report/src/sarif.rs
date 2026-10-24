@@ -90,6 +90,11 @@ pub fn render(report: &Report) -> String {
                 Some(sv_check::finding::Outranked::LogsOnlyIds { names }) => {
                     result["properties"]["logsOnlyIds"] = json!(names);
                 }
+                // Listed apart and still counted (backlog 0658), so only worth a look.
+                Some(sv_check::finding::Outranked::ListensInContainer) => {
+                    result["properties"]["worthALook"] = json!(true);
+                    result["properties"]["listensInContainer"] = json!(true);
+                }
                 None => {}
             }
             if !f.fingerprint.is_empty() {
