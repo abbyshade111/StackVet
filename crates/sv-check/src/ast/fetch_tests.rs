@@ -128,6 +128,59 @@ const GO: &[(&str, bool)] = &[
     ),
 ];
 
+// Rust (backlog 0661): Axum's and Actix's extractors are the request's input, and `reqwest`, a client, and the `http`
+// crate's request builder are the outgoing request.
+const RUST: &[(&str, bool)] = &[
+    (
+        "async fn h(Query(q): Query<Fetch>) -> String { reqwest::get(&q.url).await.unwrap().text().await.unwrap() }\n",
+        true,
+    ),
+    (
+        "async fn h(q: Query<Fetch>) { let url = q.url.clone(); let _ = reqwest::blocking::get(url); }\n",
+        true,
+    ),
+    (
+        "async fn h(State(s): State<App>, Json(body): Json<Hook>) { let _ = s.client.post(&body.callback).send().await; }\n",
+        true,
+    ),
+    (
+        "async fn h(client: Client, Path(target): Path<String>) { let _ = client.request(Method::GET, &target).send().await; }\n",
+        true,
+    ),
+    (
+        "async fn h(web::Query(q): web::Query<Fetch>) { let _ = http::Request::builder().uri(&q.url).body(()); }\n",
+        true,
+    ),
+    // Inside a macro's arguments (backlog 0660).
+    (
+        "async fn h(Query(q): Query<Fetch>) { println!(\"{:?}\", reqwest::get(&q.url).await); }\n",
+        true,
+    ),
+    // The app's own address, and a fixed host with the request choosing only the path.
+    (
+        "async fn h(Query(q): Query<Fetch>) { let _ = reqwest::get(\"https://api.example.com/status\").await; }\n",
+        false,
+    ),
+    (
+        "async fn h(Path(id): Path<u32>) { let _ = reqwest::get(&format!(\"https://api.example.com/users/{id}\")).await; }\n",
+        false,
+    ),
+    (
+        "async fn h(State(s): State<App>) { let _ = s.client.get(&s.settings.api_base).send().await; }\n",
+        false,
+    ),
+    // The method is `request`'s first argument, and it is not the address.
+    (
+        "async fn h(client: Client, Path(m): Path<String>) { let _ = client.request(m.parse().unwrap(), \"https://api.example.com/x\").send().await; }\n",
+        false,
+    ),
+    // A request's own header map read with `get` is not an outgoing request.
+    (
+        "async fn h(headers: HeaderMap, Query(q): Query<Fetch>) { let _ = headers.get(&q.name); }\n",
+        false,
+    ),
+];
+
 #[test]
 fn an_address_from_the_request_is_reported_and_one_the_app_chose_is_not() {
     let mut wrong = Vec::new();
@@ -136,6 +189,7 @@ fn an_address_from_the_request_is_reported_and_one_the_app_chose_is_not() {
         ("javascript", "app.js", JAVASCRIPT),
         ("typescript", "app.ts", JAVASCRIPT),
         ("go", "main.go", GO),
+        ("rust", "src/main.rs", RUST),
     ] {
         for (source, expected) in cases {
             if reported(language, file, source) != *expected {

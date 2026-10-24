@@ -115,6 +115,18 @@ fn encrypted_socket() {
     let _ = connect_async("wss://chat.example.com/ws"); // sv:safe plaintext-websocket-url
 }
 
+// A link preview that fetches whatever address the request names, and one that asks the app's own preview service
+// by id (backlog 0661).
+async fn link_preview(q: Query<Preview>) -> String {
+    let url = q.url.clone();
+    reqwest::get(url).await.map(|_| String::new()).unwrap_or_default() // sv:fault fetch-address-from-request
+}
+
+async fn link_preview_by_id(Path(id): Path<u32>) -> String {
+    let _ = reqwest::get(&format!("https://preview.example.com/links/{id}")).await; // sv:safe fetch-address-from-request
+    String::new()
+}
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).
