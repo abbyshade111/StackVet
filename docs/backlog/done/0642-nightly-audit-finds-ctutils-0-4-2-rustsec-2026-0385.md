@@ -1,6 +1,6 @@
 # Nightly: Audit finds ctutils 0.4.2: RUSTSEC-2026-0385
 
-**Status:** open
+**Status:** done, 24 October 2026
 
 Recorded by the nightly CI routine on 23 October 2026. The Audit workflow did not run in the last 26 hours (it runs
 on Mondays and when `Cargo.lock` changes), so the routine ran its steps itself, in its cloud session, on `main` at
@@ -27,3 +27,8 @@ The "medium" is `sv`'s placeholder: the advisory carries no CVSS vector `sv` can
   requirement allows it, and check that the Audit workflow passes; Dependabot may open the same update. Before
   deciding it does not matter, read the advisory: whether `sv` uses the affected comparisons on a secret is the
   question. This routine records; it fixes nothing.
+
+**Done, 24 October 2026.** `cargo update -p ctutils --precise 0.4.4`: `ctutils` moved from 0.4.2 to 0.4.4, OSV's fix for
+RUSTSEC-2026-0385, and nothing else in `Cargo.lock` changed. A move of pinned versions owes the decision records no
+line (ADR-128). It builds with `--locked`, and `sv-check`'s tests, the crate that reaches `ctutils` through `digest`,
+pass. The pull request's Audit run is the check that the advisory is gone.
