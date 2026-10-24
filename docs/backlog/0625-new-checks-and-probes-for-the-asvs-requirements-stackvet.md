@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** open
+**Status:** partly done: the twelve parts, built in the order the plan below gives; the first is under way
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -11,7 +11,7 @@ for backlog 0507.
 
 1. **Stock default credentials in connection addresses and compose files** (V13.2.3, L2): static, finding only; the
    fix backlog 0431 offered. Small.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-1, 24 October 2026
 2. **LaTeX started with shell escape** (V1.2.8, L2): static, finding only. Small.
    **Part status:** open
 3. **TURN relay settings** (V17.1.1, V17.1.2): static, from the coturn file, crediting in part. Small to medium.
@@ -47,3 +47,35 @@ for backlog 0507.
     **Part status:** open
 
 Already filed elsewhere: V10.5.3 is backlog 0620.
+
+**The plan, 24 October 2026, at the owner's word** ("yes, write the plan into 0625 and start Phase A"). Checked
+against `main` that day: every requirement in the twelve parts still reads "No check yet" in `docs/REQUIREMENTS.md`,
+so none is overtaken. Level 3 is no longer waiting: backlog 0507 made it an opt-in (`[app] level = 3`, ADR-130), so
+the level-3 parts can appear in a report, for an app that asks for level 3. The design entry's warning that V15.4's
+`never` rule would be wrong at level 3 is not a live fault: a level-3 copy of `examples/flask-booking`, run that day,
+shows V15.4.1 to V15.4.4 as not verified, not as not applying.
+
+Each part is built as the Rust rules of backlog 0661 were: a claim of the part; a decision record first, as proposed,
+where the part changes what `sv` runs or sends, adds a stackvet.toml entry, or credits anything; then the build, with
+a test that breaks what it guards, regenerated coverage, and the example snapshots run after the last edit. One build
+pull request at a time. In this order:
+
+- *Phase A, static rules that only ever report, no record:* the stock default credentials (the first part), then
+  LaTeX with shell escape (the second).
+- *Phase B, a settings check that credits in part, with a record:* the TURN relay settings (the third).
+- *Phase C, sign-in providers and authorization servers:* the server's own metadata and its settings (the sixth part,
+  one record, two pull requests), the cheap first step the others build on; then tokens with too little scope or for
+  another person with the same email (the fifth, a record, since its `resource-server` condition moves V10.3.1); then
+  the authorization-server probe set (the seventh, a record for its test-client entry in stackvet.toml, built in four
+  pull requests: redirect matching and code reuse; PKCE and refresh reuse; client authentication and response mode;
+  PAR and sign-out without a hint).
+- *Phase D:* malformed signaling messages (the fourth, a record for its new stackvet.toml entry); CodeQL's C/C++ suite
+  (the eighth, a record, since it changes what `sv` runs).
+- *Phase E, level-3 only:* the static rules of the twelfth part (no record), then the upload probes (the ninth), the
+  response and caching probes (the tenth), and the signed-in flow probes (the eleventh), each with a record. Whether
+  these are worth building now, with most apps held to level 1 or 2, is for the owner to say when Phase D is done.
+
+About thirty build pull requests in all. **The owner's word on the eighth part, 24 October 2026:** "I approve of
+fetching CodeQL's C/C++ pack, that's fine." That fetch is a change to what `sv` connects to, so its record (ADR-111,
+whose exception is Semgrep fetching its rules, and `docs/ARCHITECTURE.md`'s fence) is written with the part's claim,
+quoting these words. The owner asked for more about the seventh part's test client before deciding on it.
