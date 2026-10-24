@@ -1,6 +1,6 @@
 # stackvet_status says when the rules file is missing, or a tool will not see it, and how sv rules fixes it
 
-**Status:** open
+**Status:** claimed by claude/0667-status-rules, 24 October 2026
 
 Found 24 October 2026, at the owner's question whether the MCP server should direct AI tools to the rules when they
 connect. It already does, in part: its instructions tell a connected tool to call `stackvet_guidance` before writing
@@ -32,3 +32,7 @@ To do:
   answer says what is missing in each, and writes nothing (the folder's files are byte-for-byte the same after). Break
   each check on purpose and watch the test go red.
 - **What it is worth:** nothing, as evidence. Whether the rules file is there changes no requirement's status.
+
+**Claimed 24 October 2026.** The plan: one more line in `sv doctor`'s answers (`crate::doctor::answers`), which
+`stackvet_status` already gives in its words and its structured answer, so the server's answer gains no new field;
+and a dated Later entry on ADR-066.
