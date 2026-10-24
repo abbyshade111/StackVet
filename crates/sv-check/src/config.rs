@@ -84,18 +84,21 @@ impl ConfigReport {
 pub fn check_dir(app_dir: &Path) -> ConfigReport {
     let listing = sv_scan::files::Listing::of(app_dir);
     let bill_of_materials = crate::sbom::build_in(&listing);
+    let inventory = crate::sbom::build_app_in(&listing, &[]);
     static NONE: std::sync::LazyLock<crate::secrets::SecretRules> =
         std::sync::LazyLock::new(crate::secrets::SecretRules::none);
     let rules = crate::secrets::SecretRules::shared().unwrap_or(&NONE);
-    check_dir_in(&listing, &bill_of_materials, rules)
+    check_dir_in(&listing, &bill_of_materials, &inventory.left_out, rules)
 }
 
 /// `check_dir`, with the app's files and its bill of materials already made, so `sv report` walks
-/// the folder once and builds the bill once. `rules` are the credential rules, which mask a key in the app's own text
-/// a note quotes.
+/// the folder once and builds the bill once. `left_out` is what the inventory of what the app ships left out
+/// (`sbom::build_app_in`): the pinning check, which asks the inventory's question, leaves it out too (backlog 0657,
+/// ADR-140, Later). `rules` are the credential rules, which mask a key in the app's own text a note quotes.
 pub fn check_dir_in(
     listing: &sv_scan::files::Listing,
     bill_of_materials: &crate::sbom::Sbom,
+    left_out: &[String],
     rules: &crate::secrets::SecretRules,
 ) -> ConfigReport {
     let app_dir = listing.root.as_path();
@@ -114,7 +117,7 @@ pub fn check_dir_in(
     report.record(AI_COMMITS_OFF_MERGE, ai_commits_off_merge(app_dir, rules));
     report.record(
         "config.versions-pinned",
-        versions_pinned(listing, bill_of_materials),
+        versions_pinned(listing, bill_of_materials, left_out),
     );
     crate::launch::check(listing, &mut report);
     crate::cert_checks::check(listing, &mut report);
@@ -775,18 +778,35 @@ fn env_not_ignored_finding(file: &str, description: String) -> Finding {
 fn versions_pinned(
     listing: &sv_scan::files::Listing,
     bill_of_materials: &crate::sbom::Sbom,
+    left_out: &[String],
 ) -> Outcome {
     let app_dir = listing.root.as_path();
+    // What the inventory left out is a test's or a sample's own, not what the app installs (backlog 0657, ADR-140,
+    // Later): a project counts as left out by its manifest or its lockfile.
+    let left = |path: &str| left_out.iter().any(|l| l == path);
+    let mut set_aside = 0usize;
     // A `setup.py` or `setup.cfg` with no lockfile beside it, and a requirements file under another
     // name, are judged as projects of their own (deep review H9); before, an app declared there
     // alone had "no package manifest".
     let detected: Vec<_> = sv_scan::ecosystems::detect_in(listing)
         .into_iter()
         .chain(sv_scan::ecosystems::declared_elsewhere_in(listing))
+        .filter(|e| {
+            let out = left(&e.manifest) || e.lockfile.as_deref().is_some_and(left);
+            set_aside += usize::from(out);
+            !out
+        })
         .collect();
     // Dependency files in an ecosystem `sv` does not read (gap analysis, item 2). Before they were
     // found, a .NET app was told it had no package manifest.
-    let unread_files = sv_scan::ecosystems::unread_declarations_in(listing);
+    let unread_files: Vec<_> = sv_scan::ecosystems::unread_declarations_in(listing)
+        .into_iter()
+        .filter(|u| {
+            let out = left(&u.path);
+            set_aside += usize::from(out);
+            !out
+        })
+        .collect();
     let unread_named = || {
         unread_files
             .iter()
@@ -800,6 +820,19 @@ fn versions_pinned(
                 "This app declares its dependencies in {}, which `sv` does not read, so whether \
                  their versions are pinned is not known.",
                 unread_named()
+            ));
+        }
+        if set_aside > 0 {
+            return Outcome::NotAssessed(format!(
+                "Every package manifest found is in test code or in a folder named as not the app ({}), a test's or a \
+                 sample's own and not what the app installs, so there is nothing of the app's whose versions could \
+                 be pinned. If this app installs dependencies some other way, that is not something `sv` can see.",
+                left_out
+                    .iter()
+                    .take(3)
+                    .map(|l| format!("`{l}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
             ));
         }
         return Outcome::NotAssessed(
@@ -1136,6 +1169,10 @@ fn security_contact(files: &[PathBuf]) -> Outcome {
 }
 
 #[cfg(test)]
+#[path = "config_pinning_left_out_tests.rs"]
+mod pinning_left_out_tests;
+
+#[cfg(test)]
 #[path = "config_ai_tests.rs"]
 mod ai_tests;
 
@@ -1176,7 +1213,7 @@ mod tests {
         fs::write(dir.join("poetry.lock"), "this is not a lockfile\n").unwrap();
         let pinned = |dir: &std::path::Path| {
             let listing = sv_scan::files::Listing::of(dir);
-            versions_pinned(&listing, &crate::sbom::build_in(&listing))
+            versions_pinned(&listing, &crate::sbom::build_in(&listing), &[])
         };
         let outcome = pinned(&dir);
 

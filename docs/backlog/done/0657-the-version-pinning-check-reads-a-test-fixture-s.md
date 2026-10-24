@@ -1,6 +1,6 @@
 # The version-pinning check reads a test fixture's requirements as what the app installs
 
-**Status:** claimed by claude/0657, 23 October 2026
+**Status:** done, 23 October 2026
 
 Found 23 October 2026, after backlog 0656 (ADR-140). With the inventory of what StackVet ships complete, its own report
 still holds V15.1.2 at "needs attention", for one finding of `config.versions-pinned`:
@@ -20,3 +20,7 @@ inventory's own question, and the recommendation was that it read the inventory,
 0656. The owner: "yes, go with your recommendation for 0657". So the pinning check leaves out the lockfiles and
 manifests the inventory leaves out (test code, and folders named as not the app), and names them; the
 known-vulnerability checks still read every lockfile. A Later entry on ADR-140.
+
+**Done, 23 October 2026** (ADR-140, Later). The pinning check leaves out the projects the inventory leaves out, through
+`check_dir_in`'s new `left_out`, and says so when nothing of the app's own is left. Test:
+`crates/sv-check/src/config_pinning_left_out_tests.rs`.
