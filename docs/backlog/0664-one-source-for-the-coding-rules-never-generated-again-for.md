@@ -1,6 +1,6 @@
 # One source for the coding rules, never generated again for each tool, and why
 
-**Status:** open
+**Status:** claimed by claude/0664-one-source, 24 October 2026
 
 Found 24 October 2026, reading Wiz's open-source rules files
 (https://github.com/wiz-sec-public/secure-rules-files, commit `04101f88`, 23 December 2025). Their generator
@@ -33,3 +33,6 @@ copied, reworded, or kept as a test file in this repository. What a rule says (t
 given untrusted data, say) is a fact, not Wiz's expression, and every line is written in this project's own words,
 credited the way `data/prompts.json` credits the Cloud Security Alliance's guide: an `inspired_by` naming the source,
 with none of its text. A requirement is cited only after its text is read.
+
+**Claimed 24 October 2026.** The plan: a dated Later entry on ADR-017, and a test in `crates/sv-cli/tests/` that
+renders every place the coding rules and the framework lines go and holds each to the same rules.
