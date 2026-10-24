@@ -28,7 +28,8 @@
         "swift": "[(call_expression (navigation_expression suffix: (navigation_suffix suffix: (simple_identifier) @fn))\n                 (call_suffix (value_arguments . (value_argument) @arg)))\n (call_expression (simple_identifier) @fn (call_suffix (value_arguments . (value_argument) @arg)))] @hit",
         "csharp": "(invocation_expression\n   function: (member_access_expression expression: (identifier) @mod\n                                       name: (identifier) @fn)\n   arguments: (argument_list . (argument (_) @arg))) @hit",
         "kotlin": "(call_expression (navigation_expression (_) (identifier) @fn)\n                 (value_arguments . (value_argument (_) @arg))) @hit",
-        "shell": "(command name: (command_name) @fn . argument: (_) @arg) @hit"
+        "shell": "(command name: (command_name) @fn . argument: (_) @arg) @hit",
+        "rust": "[(call_expression function: (field_expression value: (_) @mod field: (field_identifier) @fn)\n                   arguments: (arguments . (_) @arg))\n (call_expression function: (generic_function function: (field_expression value: (_) @mod field: (field_identifier) @fn))\n                   arguments: (arguments . (_) @arg))] @hit"
       },
       "functionPatterns": {
         "python": "^(eval|exec|compile)$",
@@ -41,27 +42,35 @@
         "swift": "^(evaluateScript|evaluateJavaScript|callAsyncJavaScript|NSExpression)$",
         "csharp": "^(EvaluateAsync|RunAsync|Evaluate|Run|Create)$",
         "kotlin": "^eval$",
-        "shell": "^eval$"
+        "shell": "^eval$",
+        "rust": "^(eval|eval_expression|eval_with_scope|eval_expression_with_scope|run|run_with_scope|compile|compile_expression|compile_with_scope|load|execute_script)$"
       },
       "modulePatterns": {
         "dart": "^Isolate$",
-        "csharp": "^CSharpScript$"
+        "csharp": "^CSharpScript$",
+        "rust": "(?i)(engine|rhai|lua|context|js_?runtime|deno|interpreter)"
       },
       "safeArgumentPatterns": {
         "dart": "^Uri\\.(parse|file)\\(\\s*('[^'$]*'|\"[^\"$]*\")\\s*\\)$",
-        "shell": "^\"?\\$\\((ssh-agent|brew shellenv|pyenv init|rbenv init|nodenv init|direnv hook|opam env|conda shell)[^$`]*\\)\"?$"
+        "shell": "^\"?\\$\\((ssh-agent|brew shellenv|pyenv init|rbenv init|nodenv init|direnv hook|opam env|conda shell)[^$`]*\\)\"?$",
+        "rust": "^&?(boa_engine::)?Source::from_bytes\\(\\s*b?\""
       },
       "nothingToFind": {
         "c": "C has no way to run a string as C. A shell command is the shell-command rule's, and an embedded interpreter such as Lua is not looked for.",
         "go": "Go has no built-in way to run a string as code. An embedded interpreter such as yaegi would be one, and is not looked for.",
-        "rust": "Rust has no built-in way to run a string as code. An embedded interpreter such as rhai would be one, and is not looked for.",
         "cpp": "C++ has no way to run a string as C++ code. A shell command is the shell-command rule's, and an embedded interpreter such as Lua is not looked for."
       },
       "looksFor": "code built from a value and handed to something that runs it, such as eval",
       "looksForIn": {
-        "shell": "eval given something other than fixed text"
+        "shell": "eval given something other than fixed text",
+        "rust": "an embedded interpreter given code that is not fixed text: rhai's `Engine` (`eval`, `eval_expression`, `eval_with_scope`, `run`, `compile`), mlua's `lua.load(…)`, boa's `context.eval(…)`, and deno_core's `execute_script`, on a receiver named for the engine; a script loaded from a file, or an interpreter not named here, is not seen"
       },
-      "inPart": true
+      "inPart": true,
+      "argumentPositions": {
+        "rust": {
+          "^(eval_with_scope|eval_expression_with_scope|run_with_scope|compile_with_scope|execute_script)$": 1
+        }
+      }
     },
     {
       "id": "ast.shell-command",
