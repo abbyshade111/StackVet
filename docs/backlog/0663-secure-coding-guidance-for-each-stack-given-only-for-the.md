@@ -1,6 +1,6 @@
 # Secure-coding guidance for each stack, given only for the stack sv detects
 
-**Status:** open
+**Status:** claimed by claude/0663-stack-guidance, 24 October 2026
 
 Found 24 October 2026, reading Wiz's open-source rules files
 (https://github.com/wiz-sec-public/secure-rules-files, commit `04101f88`, 23 December 2025). They hold, for nine
@@ -35,3 +35,6 @@ copied, reworded, or kept as a test file in this repository. What a rule says (t
 given untrusted data, say) is a fact, not Wiz's expression, and every line is written in this project's own words,
 credited the way `data/prompts.json` credits the Cloud Security Alliance's guide: an `inspired_by` naming the source,
 with none of its text. A requirement is cited only after its text is read.
+
+**Claimed 24 October 2026, with ADR-143 proposed** (the plan: `data/stack-guidance.json`, frameworks recognized by
+the packages an app lists, each line tied to an existing check and carrying its citations).
