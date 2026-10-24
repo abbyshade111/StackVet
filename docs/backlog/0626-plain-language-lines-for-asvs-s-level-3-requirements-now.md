@@ -1,6 +1,6 @@
 # Plain-language lines for ASVS's level-3 requirements, now that an app can be held to level 3
 
-**Status:** open
+**Status:** claimed by claude/0626, 24 October 2026
 
 Filed 21 October 2026, while 0507's catalogs were opened to level 3. Severity: low (a level-3 requirement in a report
 shows the standard's words with no plain line beside them).
