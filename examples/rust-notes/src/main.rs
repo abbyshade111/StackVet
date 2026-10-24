@@ -210,6 +210,16 @@ fn save_backup_codes_hashed(account: &mut Account) {
 const PASSWORD_EXPIRY_DAYS: u32 = 90; // sv:fault password-expiry-enforced
 const PASSWORD_MIN_LENGTH: usize = 12; // sv:safe password-expiry-enforced
 
+// A model downloaded by name, which takes whatever was uploaded last, and one pinned to the commit that was tested
+// (backlog 0661). Written as calls in the code, with no crate added, so no scope changes.
+fn tagging_model_latest(api: &Api) -> ApiRepo {
+    api.model("distilbert/distilbert-base-uncased".to_string()) // sv:fault model-download-not-pinned
+}
+
+fn tagging_model_pinned(api: &Api) -> ApiRepo {
+    api.repo(Repo::with_revision("distilbert/distilbert-base-uncased".to_string(), RepoType::Model, "0123456789abcdef0123456789abcdef01234567".to_string())) // sv:safe model-download-not-pinned
+}
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).

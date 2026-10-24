@@ -2533,6 +2533,13 @@ fn a_ruby_load_on_something_that_is_not_a_deserialiser_is_not_reported() {
         ("ast.model-download-not-pinned", "python", "m = AutoModel.from_pretrained(settings.model_dir)", false),
         ("ast.model-download-not-pinned", "javascript", "const p = await pipeline('sentiment-analysis', 'Xenova/distilbert');", true),
         ("ast.model-download-not-pinned", "javascript", "const p = await pipeline('sentiment-analysis', 'Xenova/distilbert', { revision: '0123456789abcdef0123456789abcdef01234567' });", false),
+        // Rust (backlog 0661): the `hf-hub` crate, by name or pinned to a commit.
+        ("ast.model-download-not-pinned", "rust", "fn load() { let repo = Api::new().unwrap().model(\"BAAI/bge-small-en\".to_string()); }", true),
+        ("ast.model-download-not-pinned", "rust", "fn load(api: &Api) { let repo = api.repo(Repo::model(\"sentence-transformers/all-MiniLM-L6-v2\".to_string())); }", true),
+        ("ast.model-download-not-pinned", "rust", "fn load(api: &Api) { let repo = api.repo(Repo::new(\"mistralai/Mistral-7B\".to_string(), RepoType::Model)); }", true),
+        ("ast.model-download-not-pinned", "rust", "fn load(api: &Api) { let repo = api.repo(Repo::with_revision(\"BAAI/bge-small-en\".to_string(), RepoType::Model, \"0123456789abcdef0123456789abcdef01234567\".to_string())); }", false),
+        ("ast.model-download-not-pinned", "rust", "fn load(name: String) { let repo = Api::new().unwrap().model(name); }", false),
+        ("ast.model-download-not-pinned", "rust", "fn make() { let user = User::new(\"ada/lovelace\".to_string()); }", false),
         ("ast.model-download-not-pinned", "typescript", "const p = await pipeline('sentiment-analysis', 'Xenova/distilbert');", true),
         ("ast.model-download-not-pinned", "typescript", "const p = await pipeline('sentiment-analysis', 'Xenova/distilbert', { revision: '0123456789abcdef0123456789abcdef01234567' });", false),
         // Hosted models asked for by a name that moves.
