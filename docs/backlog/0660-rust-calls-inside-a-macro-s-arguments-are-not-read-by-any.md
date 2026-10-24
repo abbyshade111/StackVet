@@ -1,6 +1,6 @@
 # Rust calls inside a macro's arguments are not read by any rule
 
-**Status:** open
+**Status:** claimed by claude/0660, 24 October 2026
 
 Found 24 October 2026, building backlog 0649's Rust example. `format!("{:x}", md5::compute(b))` is not found by the
 weak-hash rule: tree-sitter's Rust grammar keeps a macro's arguments as an unparsed run of tokens (`token_tree`), so
