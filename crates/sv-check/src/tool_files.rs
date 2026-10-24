@@ -78,15 +78,15 @@ pub fn plan(app_dir: &Path) -> Plan {
             if path.exists() {
                 has_claude_file = true;
                 plan.notes.push(format!(
-                    "Claude Code: {folder} is a link to somewhere else, so `sv` did not write into \
-                     {file}; add the line `{import}` to it yourself."
+                    "Claude Code: {folder} is a link to somewhere else, so `sv rules` does not write \
+                     into {file}; add the line `{import}` to it yourself."
                 ));
             }
             continue;
         }
         if is_link(&path) {
             plan.notes.push(format!(
-                "Claude Code: {file} is a link, so `sv` did not write into it. If it points at \
+                "Claude Code: {file} is a link, so `sv rules` does not write into it. If it points at \
                  AGENTS.md, Claude Code reads the rules through it; if not, add the line `{import}` \
                  to the file it points at."
             ));

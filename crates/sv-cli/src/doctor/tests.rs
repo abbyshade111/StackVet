@@ -62,6 +62,15 @@ fn a_folder_set_up_all_the_way_is_ready_on_every_line_and_nothing_more_is_claime
     let dir = folder("ready");
     git_init(&dir);
     std::fs::write(dir.join("stackvet.toml"), RUNS).unwrap();
+    std::fs::write(
+        dir.join("AGENTS.md"),
+        format!(
+            "{}\nThe rules.\n{}\n",
+            sv_frameworks::names::RULES_BEGIN,
+            sv_frameworks::names::RULES_END
+        ),
+    )
+    .unwrap();
     let lines = ask(&dir, false, &docker_ok);
     std::fs::remove_dir_all(&dir).ok();
     for topic in [
@@ -69,6 +78,7 @@ fn a_folder_set_up_all_the_way_is_ready_on_every_line_and_nothing_more_is_claime
         "git",
         "stackvet.toml",
         "how to start the app",
+        "rules for the AI tool",
         "Docker",
     ] {
         assert_eq!(state(&lines, topic).0, State::Ready, "{topic}: {lines:?}");
@@ -103,7 +113,10 @@ fn an_empty_folder_is_not_ready_and_says_what_to_do_for_each() {
         said.contains("not found"),
         "Docker's own reason is kept: {said}"
     );
-    assert!(text(&dir, &lines).contains("3 things above are not ready yet"));
+    let (rules, said) = state(&lines, "rules for the AI tool");
+    assert_eq!(rules, State::NotReady);
+    assert!(said.contains("sv rules"), "{said}");
+    assert!(text(&dir, &lines).contains("4 things above are not ready yet"));
 }
 
 #[test]
