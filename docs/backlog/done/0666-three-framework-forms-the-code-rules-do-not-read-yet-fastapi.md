@@ -1,6 +1,6 @@
 # Three framework forms the code rules do not read yet: FastAPI's CORS setting, sqlx's queries, and Gin's redirect
 
-**Status:** claimed by claude/0666-framework-forms, 24 October 2026
+**Status:** done, 24 October 2026
 
 Found 24 October 2026, building backlog 0663. Every line in `data/stack-guidance.json` must carry a fault, written in
 its framework, that the code rule it names reports (`crates/sv-check/tests/stack_guidance.rs`). Three lines were
@@ -12,18 +12,26 @@ rule, not in the advice, and each line goes back into `data/stack-guidance.json`
    calling site's own address when a request carries cookies, so every site can call the app as its visitor. Not
    looked for. Teach the Python query `add_middleware(CORSMiddleware, ...)` with both arguments, and the safe form
    with a list of sites.
-   **Part status:** claimed by claude/0666-framework-forms, 24 October 2026
+   **Part status:** done, 24 October 2026
 
 2. **sqlx's query functions, in Rust.** `ast.sql-built-by-hand` reads a method call such as rusqlite's
    `conn.execute(&format!(...))`, but not a function called by its path: `sqlx::query(&format!(...))`,
    `sqlx::query_as(...)`, which most Axum and Actix apps use. Teach the Rust query a scoped call whose last name is
    `query`, `query_as`, or `query_scalar`, given a `format!`.
-   **Part status:** claimed by claude/0666-framework-forms, 24 October 2026
+   **Part status:** done, 24 October 2026
 
 3. **Gin's redirect, in Go.** `ast.open-redirect` reads net/http's `http.Redirect(w, r, address, code)`, whose address
    is the third argument. Gin's `c.Redirect(code, address)` has two, so `c.Redirect(302, c.Query("to"))` is not
    found. Teach the Go query Gin's form (and Echo's `c.Redirect(code, url)`), with a fixed path as the safe form.
-   **Part status:** claimed by claude/0666-framework-forms, 24 October 2026
+   **Part status:** done, 24 October 2026
 
 Each part: a fault and its safe form in the rule's tests, the line put back in `data/stack-guidance.json` with its
 fault, and the rule broken on purpose to watch the stack-guidance test go red.
+
+**Built 24 October 2026.** The CORS rule reads Starlette's and FastAPI's `CORSMiddleware` (by `add_middleware` or
+`Middleware`) given `allow_origins=["*"]` or `allow_origin_regex=".*"` with `allow_credentials=True`; the SQL rule
+reads a query function called by its path in Rust (`sqlx::query`, `sqlx::query_as::<_, T>`, `sqlx::query_scalar`);
+the redirect rule reads Gin's and Echo's `c.Redirect(code, address)` on a context named `c` or `ctx`. Each rule's
+`looksFor` or `looksForIn` says so, and what it still does not read. `crates/sv-check/src/ast/framework_forms_tests.rs`
+holds each fault and its safe form; the three lines are back in `data/stack-guidance.json`, 29 in all. Broken on
+purpose: each rule's change undone on its own turned its own test and its framework's line red, and nothing else.

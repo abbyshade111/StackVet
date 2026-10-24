@@ -2660,6 +2660,9 @@ mod macro_args_tests;
 mod cors_rust_tests;
 
 #[cfg(test)]
+mod framework_forms_tests;
+
+#[cfg(test)]
 mod path_from_request_tests;
 
 #[cfg(test)]

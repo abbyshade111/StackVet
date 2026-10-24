@@ -167,6 +167,20 @@
       },
       "lines": [
         {
+          "line": "Never combine `allow_origins=[\"*\"]` with `allow_credentials=True` in `CORSMiddleware`; list the sites that may call the app.",
+          "checks": [
+            "ast.cors-any-origin-with-credentials"
+          ],
+          "faults": [
+            {
+              "check": "ast.cors-any-origin-with-credentials",
+              "language": "python",
+              "file": "main.py",
+              "code": "from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\napp = FastAPI()\napp.add_middleware(CORSMiddleware, allow_origins=[\"*\"], allow_credentials=True)\n"
+            }
+          ]
+        },
+        {
           "line": "Never build a `FileResponse` path from a request value; look the file up by an id the app chose.",
           "checks": [
             "ast.file-path-from-request",
@@ -421,6 +435,20 @@
           ]
         },
         {
+          "line": "Bind values in SQL (`sqlx::query(\"... $1\").bind(x)`), never with `format!`.",
+          "checks": [
+            "ast.sql-built-by-hand"
+          ],
+          "faults": [
+            {
+              "check": "ast.sql-built-by-hand",
+              "language": "rust",
+              "file": "src/db.rs",
+              "code": "async fn find(pool: &sqlx::PgPool, who: &str) {\n    sqlx::query(&format!(\"SELECT * FROM notes WHERE owner = '{}'\", who)).fetch_all(pool).await;\n}\n"
+            }
+          ]
+        },
+        {
           "line": "Never let tower-http's `CorsLayer` echo back whatever site calls (`AllowOrigin::mirror_request()`, or `very_permissive()`) together with credentials; list the sites that may call the app.",
           "checks": [
             "ast.cors-any-origin-with-credentials"
@@ -470,6 +498,20 @@
               "language": "go",
               "file": "main.go",
               "code": "package main\nimport (\n\t\"database/sql\"\n\t\"fmt\"\n)\nfunc find(db *sql.DB, who string) {\n\tdb.Query(fmt.Sprintf(\"SELECT * FROM notes WHERE owner = '%s'\", who))\n}\n"
+            }
+          ]
+        },
+        {
+          "line": "Never `c.Redirect` to an address from the request; redirect to a path the app chose.",
+          "checks": [
+            "ast.open-redirect"
+          ],
+          "faults": [
+            {
+              "check": "ast.open-redirect",
+              "language": "go",
+              "file": "main.go",
+              "code": "package main\nimport \"github.com/gin-gonic/gin\"\nfunc back(c *gin.Context) {\n\tc.Redirect(302, c.Query(\"to\"))\n}\n"
             }
           ]
         }
