@@ -11,6 +11,16 @@ for backlog 0507.
 
 1. **Stock default credentials in connection addresses and compose files** (V13.2.3, L2): static, finding only; the
    fix backlog 0431 offered. Small.
+   Built 24 October 2026: two findings-only pattern rules in `data/secret-rules.json`,
+   `secrets.default-credential-address` (a database or broker address whose user and password are both stock
+   defaults, such as postgres:postgres or guest:guest) and `secrets.default-credential-setting` (a database or
+   broker image's password setting given one, in a compose or settings file). They cite V13.2.3, and V13.3.1 and
+   SBD-AC-05 too, as a password written into the code; each finding says a default kept only for a test copy is
+   fine if the real service has its own. Pattern rules can now be findings-only (`findingsOnly`), so a clean
+   secrets scan does not claim V13.2.3, and `tools/coverage.py` reads them so: V13.2.3 is "Can only be found
+   failing". Tests in `crates/sv-check/src/secrets/default_credentials_tests.rs`, with the defaults built from
+   pieces. Broken on purpose: without the findings-only filter, a clean scan offered V13.2.3; with the patterns
+   emptied, the found cases went red; and before `coverage.py` knew the flag, the page said "Can be checked".
    **Part status:** done, 24 October 2026
 2. **LaTeX started with shell escape** (V1.2.8, L2): static, finding only. Small.
    **Part status:** open
