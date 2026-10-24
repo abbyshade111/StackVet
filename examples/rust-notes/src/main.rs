@@ -195,6 +195,16 @@ async fn account_by_provider_subject(claims: CoreIdTokenClaims, pool: &SqlitePoo
     sqlx::query_as::<_, User>("select * from users where sub = ?").bind(subject).fetch_optional(pool).await.ok()? // sv:safe account-found-by-provider-email
 }
 
+// Saving a person's backup codes as they were made, which anyone reading the database can use, and saving only a
+// hash of each (backlog 0661).
+fn save_backup_codes(account: &mut Account) {
+    account.backup_codes = (0..10).map(|_| rand::random::<u64>().to_string()).collect(); // sv:fault backup-codes-stored-plain
+}
+
+fn save_backup_codes_hashed(account: &mut Account) {
+    account.backup_codes = (0..10).map(|_| bcrypt::hash(rand::random::<u64>().to_string(), 12).unwrap()).collect(); // sv:safe backup-codes-stored-plain
+}
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).

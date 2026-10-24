@@ -102,3 +102,43 @@ fn codes_saved_straight_from_a_generator_are_found_and_hashed_ones_are_not() {
         );
     }
 }
+
+#[test]
+fn rust_codes_saved_straight_from_a_generator_are_found_and_hashed_ones_are_not() {
+    // Backlog 0661: a field assigned, or set where the struct is made.
+    check(
+        "rust",
+        "src/mfa.rs",
+        &[
+            (
+                "fn enroll(user: &mut User) { user.backup_codes = (0..10).map(|_| rand::random::<u64>().to_string()).collect(); }",
+                true,
+            ),
+            (
+                "fn enroll(id: i64) -> Mfa { Mfa { user_id: id, recovery_codes: (0..10).map(|_| Uuid::new_v4().to_string()).collect() } }",
+                true,
+            ),
+            (
+                "fn enroll(user: &mut User) { user.backup_codes = (0..10).map(|_| rand::thread_rng().sample_iter(&Alphanumeric).take(10).map(char::from).collect()).collect(); }",
+                true,
+            ),
+            (
+                "fn enroll(user: &mut User, codes: &[String]) { user.backup_codes = codes.iter().map(|c| argon2.hash_password(c.as_bytes(), &salt).unwrap().to_string()).collect(); }",
+                false,
+            ),
+            // Made and hashed on the same line: only the hash is saved.
+            (
+                "fn enroll(user: &mut User) { user.backup_codes = (0..10).map(|_| bcrypt::hash(rand::random::<u64>().to_string(), 12).unwrap()).collect(); }",
+                false,
+            ),
+            (
+                "fn enroll(user: &mut User) { user.session_id = Uuid::new_v4().to_string(); }",
+                false,
+            ),
+            (
+                "fn show(user: &User) { let backup_codes = user.backup_codes.clone(); print(backup_codes); }",
+                false,
+            ),
+        ],
+    );
+}
