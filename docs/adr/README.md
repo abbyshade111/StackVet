@@ -193,7 +193,7 @@ source files, and in two tests:
 | [ADR-144](ADR-144.md) | `sv rules` adds a one-line import of `AGENTS.md` to the app's own `CLAUDE.md`, and says which tools still will not see the rules (accepted, 24 October 2026) |
 | [ADR-145](ADR-145.md) | The dynamic-code rule reads Rust's embedded interpreters, and a clean Rust app is credited in part (accepted, 24 October 2026) |
 | [ADR-146](ADR-146.md) | The TURN relay's own settings file is read, and a relay that refuses internal addresses is credited in part (accepted, 24 October 2026) |
-| [ADR-147](ADR-147.md) | An authorization server's own published details, and its lifetime settings, are read (proposed, 24 October 2026) |
+| [ADR-147](ADR-147.md) | An authorization server's own published details, and its lifetime settings, are read (accepted for the published details, 24 October 2026; the settings check proposed) |
 
 ## Names in the records
 

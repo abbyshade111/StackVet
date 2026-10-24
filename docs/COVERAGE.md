@@ -53,7 +53,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 197 (57%) | 134 (39%) | 11 | 99 | 38 |
+| OWASP ASVS 5.0 | 345 | 200 (58%) | 136 (39%) | 11 | 99 | 35 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -65,12 +65,12 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 59 | 45 | 18 | 1 | 6 | 40 | 20 | 13 | 3 |
-| L2 | 183 | 115 | 78 | 34 | 0 | 21 | 57 | 25 | 22 | 2 |
-| L3 | 92 | 23 | 11 | 5 | 0 | 8 | 2 | 6 | 3 | 3 |
+| L2 | 183 | 117 | 79 | 34 | 0 | 23 | 57 | 25 | 22 | 2 |
+| L3 | 92 | 24 | 12 | 5 | 0 | 9 | 2 | 6 | 3 | 3 |
 
-63 of the 197 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+64 of the 200 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-63 of the 134 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+65 of the 136 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
 With nothing beyond plain `sv check`, 57 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
@@ -103,7 +103,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V7 Session Management | 19 | 15 | 13 | 0 | 3 | 1 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 7 | 1 |
 | V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 | 0 |
-| V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 11 | 15 |
+| V10 OAuth and OIDC | 36 | 13 | 10 | 0 | 11 | 12 |
 | V11 Cryptography | 24 | 14 | 7 | 0 | 8 | 2 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 0 | 1 |
 | V13 Configuration | 21 | 12 | 3 | 1 | 8 | 0 |
@@ -176,7 +176,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V17.1.1 | L2 | Reads the code: `config.turn-relay-reaches-reserved-addresses` |
 | V17.1.2 | L3 | Reads the code: `config.turn-relay-unlimited` |
 
-### Settled by asking the running app (127)
+### Settled by asking the running app (130)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -274,10 +274,13 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V10.2.2 | L2 | Signed in: `probe.oidc-issuer-not-checked` |
 | V10.3.1 | L2 | Signed in: `probe.oidc-access-token-audience-not-checked` |
 | V10.4.4 | L1 | Reads the code: `config.retired-grant-enabled`; The running app: `probe.retired-grants-offered` (sv only ever as a finding: `config.retired-grant-enabled`, `probe.retired-grants-offered`) |
+| V10.4.6 | L2 | The running app: `probe.authorization-server-plain-pkce` (sv only ever as a finding: `probe.authorization-server-plain-pkce`) |
+| V10.4.16 | L3 | The running app: `probe.authorization-server-weak-client-auth` |
 | V10.5.1 | L2 | Signed in: `probe.oidc-nonce-not-checked` |
 | V10.5.2 | L2 | Reads the code: `ast.account-found-by-provider-email`; Signed in: `probe.oidc-user-keyed-on-email` (sv only ever as a finding: `ast.account-found-by-provider-email`) |
 | V10.5.4 | L2 | Signed in: `probe.oidc-audience-not-checked` |
 | V10.5.5 | L2 | Signed in: `probe.oidc-logout-token-not-checked` |
+| V10.6.1 | L2 | The running app: `probe.authorization-server-implicit-flow` |
 | V13.1.1 | L2 | Signed in: `probe.undeclared-outside-service` (sv only ever as a finding: `probe.undeclared-outside-service`) |
 | V13.2.4 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V13.4.1 | L1 | The running app: `probe.source-control-exposed` |

@@ -194,6 +194,10 @@ RUST_CHECKS = {
     "probe.reflected-json-unescaped": ("running", ["V1.2.3"]),
     "probe.opener-policy-missing": ("running", ["V3.4.8"]),
     "probe.csp-no-report": ("running", ["V3.4.7"]),
+    # An authorization server's own published details (backlog 0625, part 6; ADR-147).
+    "probe.authorization-server-weak-client-auth": ("running", ["V10.4.16"]),
+    "probe.authorization-server-implicit-flow": ("running", ["V10.6.1"]),
+    "probe.authorization-server-plain-pkce": ("running", ["V10.4.6"]),
     "probe.content-type": ("running", ["V4.1.1"]),
     "probe.source-control-exposed": ("running", ["V13.4.1"]),
     "probe.private-page-anonymous": ("signed-in", ["V8.2.1"]),
@@ -421,6 +425,8 @@ RUST_FINDINGS_ONLY = {
     "probe.app-token-placeholder-key",
     "config.retired-grant-enabled",
     "config.model-file-can-run-code",
+    # Not listing `plain` is not requiring PKCE (ADR-147).
+    "probe.authorization-server-plain-pkce",
     # A setting made on the server itself is in no file.
     "config.certificate-checks-off",
     # A rules file or migration with none of these shapes may still let one user reach another's data.
@@ -634,6 +640,9 @@ def framework(path):
 # read it from: checks that only ever credit a requirement, and the configuration checks built
 # differently. Every other check's words are read from the code or data where the check is defined.
 DESCRIBED = {
+    "probe.authorization-server-weak-client-auth": "The authorization server's own published details (`/.well-known/oauth-authorization-server`, `/.well-known/openid-configuration`) listing only key-based client authentication (`private_key_jwt`, mutual TLS) for the token address; what it says it accepts, not what each client is set to",
+    "probe.authorization-server-implicit-flow": "The OpenID provider's own published details listing only `code`, `id_token`, and `code id_token` as response types, no implicit flow; what it says it offers, not what it does when asked for another",
+    "probe.authorization-server-plain-pkce": "The authorization server's own published details listing `plain` among the PKCE methods it accepts",
     "config.turn-relay-reaches-reserved-addresses": "A TURN relay's own settings (`turnserver.conf`, or a coturn service's flags in a compose file) refusing every reserved range (the private, shared, link-local, and IPv6 local ranges), broadcast addresses, and loopback; the file is read, not the running relay",
     "config.turn-relay-unlimited": "A TURN relay's own settings setting `user-quota` and `total-quota` above 0, so one user cannot open connections without limit; the file is read, not the running relay",
     "config.last-resort-error-handler": "A last-resort error handler defined in the app's code (Node's `process.on('uncaughtException')`, Express's four-argument error middleware, a handler for every `Exception` in Flask or FastAPI, Django's `handler500`, `rescue_from StandardError`, `@ControllerAdvice`, `UseExceptionHandler`, Go's `recover()`), shown as supporting evidence; that it catches every unhandled exception is not something files show",
@@ -794,6 +803,8 @@ FINDINGS_ONLY = defaultdict(set)
 RUST_IN_PART |= {"config.versions-pinned", "sbom"}
 # The TURN relay's settings file is read, never the running relay (ADR-146).
 RUST_IN_PART |= {"config.turn-relay-reaches-reserved-addresses", "config.turn-relay-unlimited"}
+# What the server says it accepts, not what each client is set to (ADR-147).
+RUST_IN_PART |= {"probe.authorization-server-weak-client-auth", "probe.authorization-server-implicit-flow"}
 # Backlog 0430: every other check whose each credit is marked in part where it is made (`.in_part()`, or
 # `.in_part_if` on a condition that always holds for it), each with its reason beside that credit in the code.
 # Until then they were printed as able to mark a requirement *checked*. `--credits` holds this list to the
