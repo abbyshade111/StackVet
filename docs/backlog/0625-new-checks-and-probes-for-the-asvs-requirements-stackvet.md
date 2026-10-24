@@ -48,7 +48,7 @@ for backlog 0507.
    **Part status:** open
 6. **Authorization-server metadata and settings** (V10.4.16, V10.6.1; V10.4.3, V10.4.8): one read of the app's own
    `/.well-known` documents, and a settings check for django-oauth-toolkit and node-oidc-provider. Medium.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-6, 24 October 2026
 7. **Authorization-server probes with an owner-declared test client** (V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10,
    V10.4.12, V10.4.13, V10.6.2): redirect address, code reuse, PKCE, refresh reuse, client authentication, response
    mode, PAR, sign-out without a hint. Large.
