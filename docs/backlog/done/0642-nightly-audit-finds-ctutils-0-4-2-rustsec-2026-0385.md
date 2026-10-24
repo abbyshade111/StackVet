@@ -1,6 +1,6 @@
 # Nightly: Audit finds ctutils 0.4.2: RUSTSEC-2026-0385
 
-**Status:** claimed by claude/0642, 24 October 2026
+**Status:** done, 24 October 2026
 
 Recorded by the nightly CI routine on 23 October 2026. The Audit workflow did not run in the last 26 hours (it runs
 on Mondays and when `Cargo.lock` changes), so the routine ran its steps itself, in its cloud session, on `main` at
@@ -29,3 +29,8 @@ The "medium" is `sv`'s placeholder: the advisory carries no CVSS vector `sv` can
   question. This routine records; it fixes nothing.
 
 Seen again on 24 October 2026: Audit (the Audit workflow did not run in the last 26 hours, so the routine ran its steps in its cloud session), on `main` at commit `bb87b7b` (pull request #2269): `sv audit` compared 92 packages against 2,969 advisory records and exited 1, the same single finding, `ctutils` 0.4.2, RUSTSEC-2026-0385; `Cargo.lock` still holds 0.4.2.
+
+**Done, 24 October 2026.** `cargo update -p ctutils --precise 0.4.4`: `ctutils` moved from 0.4.2 to 0.4.4, OSV's fix for
+RUSTSEC-2026-0385, and nothing else in `Cargo.lock` changed; `fuzz/Cargo.lock` moves the same way, as `fuzz_lock.rs` holds it to the workspace's versions. A move of pinned versions owes the decision records no
+line (ADR-128). It builds with `--locked`, and `sv-check`'s tests, the crate that reaches `ctutils` through `digest`,
+pass. The pull request's Audit run is the check that the advisory is gone.
