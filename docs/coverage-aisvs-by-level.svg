@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 934 210" width="934" height="210" role="img" aria-labelledby="t d" font-family="Atkinson Hyperlegible, -apple-system, Segoe UI, sans-serif">
+<title id="t">AISVS 1.0 by level: what a check can reach</title>
+<desc id="d">Level 1: 51 requirements, 16 can be credited, 8 can only be found failing, 0 a check helps, a person decides, 11 the owner answers, 16 no check yet; Level 2: 95 requirements, 10 can be credited, 10 can only be found failing, 0 a check helps, a person decides, 5 the owner answers, 70 no check yet; Level 3: 45 requirements, 1 can be credited, 1 can only be found failing, 0 a check helps, a person decides, 0 the owner answers, 43 no check yet. The same counts are the table in docs/COVERAGE.md.</desc>
+<style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}.none{fill:#182A23;stroke:#3B4842}}</style>
+<defs><pattern id="owner" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="none" width="6" height="6"/><rect width="2.5" height="6" fill="#5470C0"/></pattern></defs>
+<rect class="bg" width="934" height="210"/>
+<text class="ink" x="12" y="28" font-size="18" font-weight="700">AISVS 1.0 by level: what a check can reach</text>
+<rect fill="#3A9470" x="12" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="32" y="58" font-size="13">can be credited</text>
+<rect fill="#D9692B" x="149" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="169" y="58" font-size="13">can only be found failing</text>
+<rect fill="#5470C0" x="356" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="376" y="58" font-size="13">a check helps, a person decides</text>
+<rect fill="url(#owner)" x="605" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="625" y="58" font-size="13">the owner answers</text>
+<rect class="none" x="756" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="776" y="58" font-size="13">no check yet</text>
+<text class="soft" x="692" y="82" font-size="12">counts, in the key's order</text>
+<text class="ink" x="12" y="109" font-size="13">Level 1</text>
+<rect fill="#3A9470" x="300.0" y="96" width="62.0" height="18" rx="2"><title>Level 1: 16 can be credited</title></rect>
+<rect fill="#D9692B" x="364.0" y="96" width="30.0" height="18" rx="2"><title>Level 1: 8 can only be found failing</title></rect>
+<rect fill="url(#owner)" x="396.0" y="96" width="42.0" height="18" rx="2"><title>Level 1: 11 the owner answers</title></rect>
+<rect class="none" x="440.0" y="96" width="62.0" height="18" rx="2"><title>Level 1: 16 no check yet</title></rect>
+<text class="soft" x="692" y="109" font-size="13">16 · 8 · 0 · 11 · 16  of 51</text>
+<text class="ink" x="12" y="135" font-size="13">Level 2</text>
+<rect fill="#3A9470" x="300.0" y="122" width="38.0" height="18" rx="2"><title>Level 2: 10 can be credited</title></rect>
+<rect fill="#D9692B" x="340.0" y="122" width="38.0" height="18" rx="2"><title>Level 2: 10 can only be found failing</title></rect>
+<rect fill="url(#owner)" x="380.0" y="122" width="18.0" height="18" rx="2"><title>Level 2: 5 the owner answers</title></rect>
+<rect class="none" x="400.0" y="122" width="278.0" height="18" rx="2"><title>Level 2: 70 no check yet</title></rect>
+<text class="soft" x="692" y="135" font-size="13">10 · 10 · 0 · 5 · 70  of 95</text>
+<text class="ink" x="12" y="161" font-size="13">Level 3</text>
+<rect fill="#3A9470" x="300.0" y="148" width="2.0" height="18" rx="2"><title>Level 3: 1 can be credited</title></rect>
+<rect fill="#D9692B" x="304.0" y="148" width="2.0" height="18" rx="2"><title>Level 3: 1 can only be found failing</title></rect>
+<rect class="none" x="308.0" y="148" width="170.0" height="18" rx="2"><title>Level 3: 43 no check yet</title></rect>
+<text class="soft" x="692" y="161" font-size="13">1 · 1 · 0 · 0 · 43  of 45</text>
+<text class="soft" x="12" y="196" font-size="12">Drawn by tools/coverage.py from the checks' own citations, with docs/COVERAGE.md; a bar is as long as its requirements.</text>
+</svg>
