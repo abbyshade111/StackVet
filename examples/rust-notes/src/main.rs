@@ -158,6 +158,18 @@ fn shared_note_page_fixed(ctx: &tera::Context) -> String {
     tera::Tera::one_off("<h1>{{ title }}</h1>", ctx, true).unwrap_or_default() // sv:safe template-built-from-value
 }
 
+// A sign-in code made with a generator that can be predicted, and one made with the generator built for secrets
+// (backlog 0661).
+fn sign_in_code_guessable() -> u32 {
+    let sign_in_code = fastrand::u32(100_000..1_000_000); // sv:fault insecure-random-for-code
+    sign_in_code
+}
+
+fn sign_in_code_secure() -> u32 {
+    let sign_in_code = rand::random::<u32>() % 900_000 + 100_000; // sv:safe insecure-random-for-code
+    sign_in_code
+}
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).

@@ -10,7 +10,9 @@ publish = false
 axum = "0.7"
 tokio = { version = "1", features = ["full"] }
 rusqlite = "0.31"
+fastrand = "2"
 md5 = "0.7"
+rand = "0.8"
 sha1 = "0.10"
 sha2 = "0.10"
 tera = "1"

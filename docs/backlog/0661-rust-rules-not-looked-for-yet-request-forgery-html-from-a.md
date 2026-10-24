@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-random, 24 October 2026
+**Status:** partly done: seven rules still to teach Rust: request-body-passed-whole, account-found-by-provider-email, hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -56,3 +56,11 @@ app's own templates. Nine witnesses in `crates/sv-check/src/ast/tests.rs`, and a
 `examples/rust-notes`, whose V1.3.7 now needs attention. Broken on purpose: without the second-argument setting, two
 found cases went unfound and a fixed one was reported; with the Rust pattern emptied, the five found witnesses and the
 example's fault went red. No decision record, as for the CORS rule.
+
+**`insecure-random-for-code` built, 24 October 2026.** The `fastrand` crate's functions and rand's `SmallRng` used
+where it is made, whose value is given a name that says it is a sign-in, reset, verification, or backup code, or made
+in a function so named (the names Go's form reads). Rust's usual generators (`rand::random`, `thread_rng()`,
+`StdRng`) are built for secrets and are not reported; a `SmallRng` kept in a variable is not followed, as a generator
+kept in a variable is not in the other languages. Eight witnesses in `crates/sv-check/src/ast/tests.rs`, and a fault
+and its safe form in `examples/rust-notes`, whose V11.5.1 now needs attention. Broken on purpose: with the Rust module
+pattern emptied, the four found witnesses and the example's fault went red. No decision record, as for the CORS rule.
