@@ -1,0 +1,125 @@
+//! A small notes service, written to show what StackVet's Rust rules find (backlog 0649). It is read, never built or
+//! run. Each fault is on a line marked `// sv:fault <rule>`, and its safe form on one marked `// sv:safe <rule>`; the
+//! test in `crates/sv-check/tests/rust_example.rs` holds each rule to the first and never the second.
+
+mod notes;
+
+use axum::extract::{Path, Query};
+use axum::response::Redirect;
+use axum::Router;
+use std::process::Command;
+use tower_http::services::ServeDir;
+
+const JWKS_URL: &str = "https://login.example.com/.well-known/jwks.json";
+
+// Reading a file at a path a request chose, and at one written out.
+async fn download(Path(name): Path<String>) -> String {
+    std::fs::read_to_string(&name).unwrap_or_default() // sv:fault file-path-from-request
+}
+
+async fn about() -> String {
+    std::fs::read_to_string("about.txt").unwrap_or_default() // sv:safe file-path-from-request
+}
+
+// Sending a person on to an address the request named, and to one of the app's own.
+async fn after_sign_in(q: Query<Next>) -> Redirect {
+    Redirect::to(&q.next) // sv:fault open-redirect
+}
+
+async fn after_sign_out() -> Redirect {
+    Redirect::to("/login") // sv:safe open-redirect
+}
+
+// Running a shell on a command built from a value, and a program with its arguments as a list.
+fn export(command: &str) {
+    Command::new("sh").arg("-c").arg(command).output().ok(); // sv:fault shell-command
+}
+
+fn version(program: &str) {
+    Command::new(program).arg("--version").output().ok(); // sv:safe shell-command
+}
+
+// Serving the app's own folder, and a folder of its assets.
+fn routes() -> Router {
+    Router::new().nest_service("/", ServeDir::new(".")) // sv:fault static-files-from-app-folder
+}
+
+fn asset_routes() -> Router {
+    Router::new().nest_service("/assets", ServeDir::new("assets")) // sv:safe static-files-from-app-folder
+}
+
+// Connecting to the database as its administrator, and as the app's own account.
+const ADMIN_DATABASE: &str = "postgres://postgres@localhost/notes"; // sv:fault database-as-superuser
+const APP_DATABASE: &str = "postgres://notes_app@localhost/notes"; // sv:safe database-as-superuser
+
+// Which model answers: one that moves with each release, and one fixed.
+fn latest_model() -> &'static str {
+    "mistral-small-latest" // sv:fault floating-model-name
+}
+
+fn fixed_model() -> &'static str {
+    "mistral-small-2503" // sv:safe floating-model-name
+}
+
+// The sign-in tokens: their keys, their audience, their signature, and what a failure to read one means.
+async fn keys_named_by_the_token(header: Header) {
+    let _ = reqwest::get(header.jku.unwrap()).await; // sv:fault token-key-source-from-token
+}
+
+async fn keys_of_our_own() {
+    let _ = reqwest::get(JWKS_URL).await; // sv:safe token-key-source-from-token
+}
+
+fn audience_off() {
+    let mut v = Validation::new(Algorithm::RS256);
+    v.validate_aud = false; // sv:fault token-audience-not-checked
+}
+
+fn audience_on() {
+    let mut v = Validation::new(Algorithm::RS256);
+    v.set_audience(&["notes"]); // sv:safe token-audience-not-checked
+}
+
+fn signature_off() {
+    let mut v = Validation::new(Algorithm::HS256);
+    v.insecure_disable_signature_validation(); // sv:fault token-signature-not-checked
+}
+
+fn signature_on(t: &str, k: &DecodingKey) {
+    let _ = decode::<Claims>(t, k, &Validation::new(Algorithm::HS256)); // sv:safe token-signature-not-checked
+}
+
+fn verify_lenient(t: &str) -> bool {
+    decode::<Claims>(t, &KEY, &V).map(|_| true).unwrap_or(true) // sv:fault check-passes-on-error
+}
+
+fn verify_strict(t: &str) -> bool {
+    decode::<Claims>(t, &KEY, &V).map(|_| true).unwrap_or(false) // sv:safe check-passes-on-error
+}
+
+// A signature compared with `==`, and in constant time.
+fn signed_equal(sig: &[u8]) -> bool {
+    mac.finalize().into_bytes().as_slice() == sig // sv:fault digest-compared-with-equals
+}
+
+fn signed_checked(sig: &[u8]) -> bool {
+    mac.verify_slice(sig).is_ok() // sv:safe digest-compared-with-equals
+}
+
+// A live connection in plain text, and an encrypted one.
+fn plain_socket() {
+    let _ = connect_async("ws://chat.example.com/ws"); // sv:fault plaintext-websocket-url
+}
+
+fn encrypted_socket() {
+    let _ = connect_async("wss://chat.example.com/ws"); // sv:safe plaintext-websocket-url
+}
+
+#[cfg(test)]
+mod tests {
+    // In test code: still found, and listed apart (ADR-023).
+    #[test]
+    fn a_digest() {
+        let _ = md5::compute(b"fixture"); // sv:test weak-hash-function
+    }
+}
