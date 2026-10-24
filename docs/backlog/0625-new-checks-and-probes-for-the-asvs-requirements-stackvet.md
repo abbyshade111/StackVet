@@ -23,7 +23,7 @@ for backlog 0507.
    emptied, the found cases went red; and before `coverage.py` knew the flag, the page said "Can be checked".
    **Part status:** done, 24 October 2026
 2. **LaTeX started with shell escape** (V1.2.8, L2): static, finding only. Small.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-2, 24 October 2026
 3. **TURN relay settings** (V17.1.1, V17.1.2): static, from the coturn file, crediting in part. Small to medium.
    **Part status:** open
 4. **Malformed signaling messages, then a normal one** (V17.3.2, L2): probe. Medium.
