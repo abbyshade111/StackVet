@@ -1081,6 +1081,14 @@
     "finding_only": false
    }
   ],
+  "V1.2.8": [
+   {
+    "id": "ast.latex-shell-escape",
+    "run": "Reads the code",
+    "looks_for": "LaTeX is started with shell escape turned on",
+    "finding_only": true
+   }
+  ],
   "V1.2.9": [
    {
     "id": "codeql-javascript",

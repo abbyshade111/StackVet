@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: eleven parts, built in the order the plan below gives; the second (LaTeX with shell escape) is next
+**Status:** partly done: ten parts, built in the order the plan below gives; Phase B, the TURN relay settings (the third), is next
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -23,7 +23,14 @@ for backlog 0507.
    emptied, the found cases went red; and before `coverage.py` knew the flag, the page said "Can be checked".
    **Part status:** done, 24 October 2026
 2. **LaTeX started with shell escape** (V1.2.8, L2): static, finding only. Small.
-   **Part status:** open
+   Built 24 October 2026: `ast.latex-shell-escape`, a code rule that only ever reports. pdflatex, xelatex,
+   lualatex, or latexmk started with `-shell-escape`, `--shell-escape`, or `-enable-write18`, through Python's
+   `subprocess` and `os.system`, PyLaTeX's `generate_pdf(compiler_args=...)`, Node's `child_process`, or a shell
+   script; `-no-shell-escape` is not reported. Every other language says it is not looked for there yet, and
+   credits nothing either way. Thirteen witnesses in `crates/sv-check/src/ast/tests.rs`. V1.2.8 is "Can only be found
+   failing". Broken on purpose: without the boundary before the dashes, both `-no-shell-escape` cases were
+   reported; with the program names emptied, the seven found cases went unfound.
+   **Part status:** done, 24 October 2026
 3. **TURN relay settings** (V17.1.1, V17.1.2): static, from the coturn file, crediting in part. Small to medium.
    **Part status:** open
 4. **Malformed signaling messages, then a normal one** (V17.3.2, L2): probe. Medium.
