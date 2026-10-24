@@ -1,6 +1,6 @@
 # Plain-language lines for ASVS's level-3 requirements, now that an app can be held to level 3
 
-**Status:** claimed by claude/0626, 24 October 2026
+**Status:** done, 24 October 2026
 
 Filed 21 October 2026, while 0507's catalogs were opened to level 3. Severity: low (a level-3 requirement in a report
 shows the standard's words with no plain line beside them).
@@ -18,3 +18,11 @@ requirements (assuming level 3) that don't have it yet". On that day, all 92 of 
 and every other requirement had one.
 
 **Order,** at the owner's word of 23 October 2026: after 0650.
+
+**Built, 24 October 2026.** A plain line for each of the 92, written from its requirement's own words and read
+against them, in the standard's order in `data/plain-requirements.json`; a term a person may not know is explained
+where it first comes (Subresource Integrity, sender-constrained tokens, TURN, SRTP). The exemption in
+`crates/sv-report/tests/plain_requirements.rs` is gone, and its setup now asserts level-3 requirements were loaded.
+Broken on purpose: with V17.2.8's line removed and V6.3.6's replaced by words it shares none of, both tests went red,
+each naming its requirement. As with the others, the test proves a line exists and shares words, not that it is
+faithful; that rests on the reading.

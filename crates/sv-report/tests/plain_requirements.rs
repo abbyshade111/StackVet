@@ -4,7 +4,7 @@
 //! requirement asks something else. So, as `crates/sv-check/tests/notes.rs` holds the questions:
 //! 1. every id is a requirement that exists;
 //! 2. every line shares words with its requirement's own text, the weak overlap the citations use;
-//! 3. every requirement has a line but ASVS's level-3 ones, still to be written, so none is missing one by accident.
+//! 3. every requirement has a line, ASVS's level-3 ones included since backlog 0626, so none is missing one by accident.
 //!
 //! None of this proves a line is faithful: each was written from the requirement's text and read against it.
 
@@ -47,10 +47,11 @@ fn every_line_names_a_requirement_that_exists_and_shares_words_with_it() {
 }
 
 #[test]
-fn every_requirement_but_asvs_level_three_has_a_line() {
+fn every_requirement_has_a_line() {
     let frameworks = frameworks();
     let plain = plain();
-    // The setup: each framework's requirements are loaded, so a missing line cannot hide behind a missing framework.
+    // The setup: each framework's requirements are loaded, level 3 among ASVS's, so a missing line cannot hide behind
+    // a missing framework or level.
     for prefix in ["V", "C", "AC.", "SBD-"] {
         assert!(
             frameworks
@@ -60,10 +61,16 @@ fn every_requirement_but_asvs_level_three_has_a_line() {
             "the setup: no {prefix} requirements"
         );
     }
+    assert!(
+        frameworks
+            .requirements
+            .values()
+            .any(|r| r.id.starts_with('V') && r.level >= 3),
+        "the setup: no ASVS level-3 requirements"
+    );
     let mut missing: Vec<&String> = frameworks
         .requirements
         .values()
-        .filter(|r| !(r.id.starts_with('V') && r.level >= 3))
         .map(|r| &r.id)
         .filter(|id| !plain.plain.contains_key(*id))
         .collect();
