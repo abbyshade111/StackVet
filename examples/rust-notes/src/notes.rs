@@ -72,6 +72,17 @@ pub fn note_line(out: &mut String, path: &str) {
     assert!(std::write!(out, "{path}").is_ok()); // sv:safe file-path-from-value
 }
 
+// Hiding a note's text with XOR by hand, which anyone can undo, and with a library's authenticated cipher
+// (backlog 0661).
+pub fn encrypt_note(text: &[u8]) -> Vec<u8> { // sv:fault hand-rolled-cryptography
+    text.iter().map(|b| b ^ 0x5a).collect()
+}
+
+// The rule reports at the function's name, so both marks are on that line.
+pub fn encrypt_note_sealed(key: &[u8], text: &[u8]) -> Vec<u8> { // sv:safe hand-rolled-cryptography
+    openssl::symm::encrypt(Cipher::aes_256_gcm(), key, None, text).unwrap_or_default()
+}
+
 #[cfg(test)]
 #[path = "notes_tests.rs"]
 mod tests;

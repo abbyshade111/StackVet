@@ -101,3 +101,35 @@ fn javascript_xor_in_an_encrypt_function_is_found_and_a_library_call_is_not() {
         );
     }
 }
+
+#[test]
+fn rust_xor_in_an_encrypt_function_is_found_and_a_library_call_is_not() {
+    // Backlog 0661: a free function and a method alike; `^` in a format string's alignment (`{:^8}`) is not XOR.
+    check(
+        "rust",
+        "src/crypt.rs",
+        |code| format!("{code}\n"),
+        &[
+            (
+                "fn encrypt(data: &[u8], key: &[u8]) -> Vec<u8> { data.iter().enumerate().map(|(i, b)| b ^ key[i % key.len()]).collect() }",
+                true,
+            ),
+            (
+                "impl Vault { fn obfuscate(&self, out: &mut [u8]) { for b in out.iter_mut() { *b ^= self.key; } } }",
+                true,
+            ),
+            (
+                "fn encrypt(key: &Key<Aes256Gcm>, nonce: &Nonce, data: &[u8]) -> Vec<u8> { Aes256Gcm::new(key).encrypt(nonce, data).unwrap() }",
+                false,
+            ),
+            (
+                "fn checksum(data: &[u8]) -> u8 { data[0] ^ data[1] }",
+                false,
+            ),
+            (
+                "fn encrypt_label(name: &str) -> String { format!(\"{name:^8}\") }",
+                false,
+            ),
+        ],
+    );
+}
