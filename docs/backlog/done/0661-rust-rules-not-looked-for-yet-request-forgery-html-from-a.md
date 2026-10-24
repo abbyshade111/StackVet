@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-eval, 24 October 2026
+**Status:** done, 24 October 2026
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -125,3 +125,14 @@ pattern emptied, the three found witnesses and the example's fault went red. No 
 **The last rule, `dynamic-code-execution`, claimed 24 October 2026 with ADR-145 proposed.** Unlike the eleven before
 it, it credits V1.3.2 in part on a clean run, so teaching it Rust changes what a clean Rust-only app's report says;
 the record says how and why.
+
+**`dynamic-code-execution` built, 24 October 2026** (ADR-145, accepted). rhai's `Engine` (`eval`, `eval_expression`,
+`eval_with_scope`, `run`, `compile`, generic forms included), mlua's `lua.load`, boa's `context.eval`, and deno_core's
+`execute_script`, on a receiver named for the engine, given code that is not fixed text. The Rust "nothing to find"
+entry is gone, so a clean Rust-only app is now credited V1.3.2 in part, saying what it looked for. Ten witnesses in
+`crates/sv-check/src/ast/tests.rs`, both halves of the decision in `crates/sv-check/tests/clean_rust_dynamic_code.rs`,
+and a fault and its safe form in `examples/rust-notes`, whose V1.3.2 now needs attention. Broken on purpose: with the
+rule as it was on `main`, both clean-claim tests failed.
+
+**All twelve rules done, 24 October 2026.** Of the 42 code rules, 30 now read Rust; the twelve that do not have a reason
+each (`nothingToFind`).

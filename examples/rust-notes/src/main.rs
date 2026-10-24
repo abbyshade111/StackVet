@@ -220,6 +220,16 @@ fn tagging_model_pinned(api: &Api) -> ApiRepo {
     api.repo(Repo::with_revision("distilbert/distilbert-base-uncased".to_string(), RepoType::Model, "0123456789abcdef0123456789abcdef01234567".to_string())) // sv:safe model-download-not-pinned
 }
 
+// A note's formula run as a script exactly as the person typed it, and a fixed script given only numbers
+// (backlog 0661, ADR-145).
+fn note_formula(engine: &rhai::Engine, formula: &str) -> i64 {
+    engine.eval::<i64>(formula).unwrap_or_default() // sv:fault dynamic-code-execution
+}
+
+fn note_total(engine: &rhai::Engine) -> i64 {
+    engine.eval::<i64>("40 + 2").unwrap_or_default() // sv:safe dynamic-code-execution
+}
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).
