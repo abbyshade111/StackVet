@@ -72,6 +72,8 @@ mod marker_tests;
 #[cfg(test)]
 mod old_names_tests;
 #[cfg(test)]
+mod one_source_tests;
+#[cfg(test)]
 mod outside_or_missing_tests;
 #[cfg(test)]
 mod prompts_twice_tests;
