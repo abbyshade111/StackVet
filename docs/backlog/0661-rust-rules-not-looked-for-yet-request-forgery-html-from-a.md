@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-html, 24 October 2026
+**Status:** partly done: ten rules still to teach Rust: cors-any-origin-with-credentials, template-built-from-value, insecure-random-for-code, request-body-passed-whole, account-found-by-provider-email, hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -29,3 +29,10 @@ methods, and the `http` crate's request builder, given an Axum or Actix extracto
 `argumentNamesDepth` is 2 for every language. `crates/sv-check/src/ast/fetch_tests.rs` holds eleven Rust cases, and
 `examples/rust-notes/src/main.rs` a fault and its safe form. Broken on purpose: with the Rust request-input pattern
 emptied, all six found cases and the example's fault went red.
+
+**`html-from-value` built, 24 October 2026** (ADR-142, Later). Axum's `Html(…)` and Actix's HTML `.body(…)`, given
+HTML built there with `format!` or `+`; a `format!` is read piece by piece, so `format!("<p>{}</p>",
+html_escape::encode_text(&name))` is safe and `format!("<p>{name}</p>")` is not. Twelve Rust cases in
+`crates/sv-check/src/ast/html_tests.rs`, and a fault and its safe form in `examples/rust-notes`, whose V1.2.1 now
+needs attention. Broken on purpose: with the `format!` reading off, the four escaped forms and the example's safe line
+went red; with the inline-name check off, `format!("<p>{n}</p>")` went unfound. A template's own `|safe` is not read.

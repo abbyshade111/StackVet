@@ -231,6 +231,10 @@ pub(super) fn safe_in_every_piece(
     let pieces: Vec<tree_sitter::Node> = match node.kind() {
         "binary_expression" | "binary_operator" if operator == Some("+") => named(),
         "parenthesized_expression" => named(),
+        // Rust's `&value` is the value (backlog 0661).
+        "reference_expression" => named(),
+        // Rust's `format!("<p>{}</p>", value)`, its arguments a run of tokens the grammar leaves unread.
+        "macro_invocation" => return format_pieces_safe(node, source, pattern),
         // `${…}` holds its expression; the text between them is fixed.
         "template_string" => named()
             .into_iter()
@@ -256,6 +260,110 @@ pub(super) fn safe_in_every_piece(
         && pieces
             .into_iter()
             .all(|piece| safe_in_every_piece(piece, source, pattern, fixed))
+}
+
+/// Whether Rust's `format!(…)` is safe piece by piece (backlog 0661): its format string is fixed text, a name written
+/// inside it (`{name}`) is a value nothing vouches for, and each argument after it is fixed text or matches `pattern`,
+/// a named one (`name = value`) by its value. Any other macro is judged by its text as a whole.
+fn format_pieces_safe(node: tree_sitter::Node, source: &[u8], pattern: &regex::Regex) -> bool {
+    let text = |from: usize, to: usize| std::str::from_utf8(&source[from..to]).unwrap_or("");
+    let name = node
+        .child_by_field_name("macro")
+        .map(|n| text(n.start_byte(), n.end_byte()))
+        .unwrap_or("");
+    if !matches!(
+        name,
+        "format" | "std::format" | "format_args" | "std::format_args"
+    ) {
+        return pattern.is_match(text(node.start_byte(), node.end_byte()));
+    }
+    let mut cursor = node.walk();
+    let Some(tokens) = node
+        .children(&mut cursor)
+        .find(|c| c.kind() == "token_tree")
+    else {
+        return false;
+    };
+    // The arguments, split at the commas between them; the first and last tokens are the delimiters.
+    let mut cursor = tokens.walk();
+    let inner: Vec<tree_sitter::Node> = tokens.children(&mut cursor).collect();
+    let inner = inner.get(1..inner.len().saturating_sub(1)).unwrap_or(&[]);
+    let mut pieces = Vec::new();
+    let mut span: Option<(usize, usize)> = None;
+    for token in inner {
+        if token.kind() == "," {
+            pieces.extend(span.take());
+            continue;
+        }
+        let (from, _) = span.unwrap_or((token.start_byte(), 0));
+        span = Some((from, token.end_byte()));
+    }
+    pieces.extend(span);
+    let pieces: Vec<&str> = pieces
+        .into_iter()
+        .map(|(from, to)| text(from, to).trim())
+        .collect();
+    let Some((template, values)) = pieces.split_first() else {
+        return false;
+    };
+    // The names given as `name = value`, which `{name}` in the string stands for.
+    let named: Vec<&str> = values
+        .iter()
+        .filter_map(|piece| {
+            let value = named_value(piece);
+            (value.len() < piece.len()).then(|| piece[..piece.find('=').unwrap_or(0)].trim())
+        })
+        .collect();
+    if !(template.starts_with('"') || template.starts_with("r\"") || template.starts_with("r#"))
+        || names_a_value(template, &named)
+    {
+        return false;
+    }
+    values.iter().all(|piece| {
+        let value = named_value(piece);
+        value.starts_with('"') || value.parse::<f64>().is_ok() || pattern.is_match(value)
+    })
+}
+
+/// Whether a format string names a value from outside it, `{name}` or `{name:?}` with no `name = …` among its
+/// arguments, rather than only `{}`, `{0}`, `{{`, or a named argument.
+fn names_a_value(template: &str, named: &[&str]) -> bool {
+    let bytes = template.as_bytes();
+    let mut at = 0;
+    while at < bytes.len() {
+        if bytes[at] == b'{' {
+            if bytes.get(at + 1) == Some(&b'{') {
+                at += 2;
+                continue;
+            }
+            let name: String = template[at + 1..]
+                .chars()
+                .take_while(|c| c.is_ascii_alphanumeric() || *c == '_')
+                .collect();
+            if name
+                .chars()
+                .next()
+                .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+                && !named.contains(&name.as_str())
+            {
+                return true;
+            }
+        }
+        at += 1;
+    }
+    false
+}
+
+/// A named format argument's value: `escape(x)` from `name = escape(x)`; any other piece as it is.
+fn named_value(piece: &str) -> &str {
+    let name_end = piece
+        .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_'))
+        .unwrap_or(piece.len());
+    let rest = piece[name_end..].trim_start();
+    match rest.strip_prefix('=') {
+        Some(value) if name_end > 0 && !value.starts_with('=') => value.trim(),
+        _ => piece,
+    }
 }
 
 /// The values a choice can give; `None` when the node is not a choice between values, and none at

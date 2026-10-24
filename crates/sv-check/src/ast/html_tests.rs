@@ -82,6 +82,20 @@ fn a_value_put_on_the_page_as_html_is_reported_and_text_or_an_escaped_value_is_n
         ("ruby", "app/helpers/bio_helper.rb", "def bio(user)\n  raw(sanitize(user.bio))\nend\n", false),
         ("ruby", "app/helpers/bio_helper.rb", "def bio\n  \"<b>Hi</b>\".html_safe\nend\n", false),
         ("ruby", "app/helpers/bio_helper.rb", "def bio(user)\n  user.html_safe?\nend\n", false),
+        // Rust (backlog 0661): Axum's `Html(…)` and Actix's HTML `.body(…)`, given HTML built there from a value.
+        ("rust", "src/main.rs", "async fn hi(Query(q): Query<Hi>) -> Html<String> { Html(format!(\"<h1>Hello {}</h1>\", q.name)) }\n", true),
+        ("rust", "src/main.rs", "async fn hi(Query(q): Query<Hi>) -> Html<String> { Html(format!(\"<h1>Hello {name}</h1>\", name = q.name)) }\n", true),
+        ("rust", "src/main.rs", "fn hi(name: &str) -> Html<String> { let n = name; Html(format!(\"<p>{n}</p>\")) }\n", true),
+        ("rust", "src/main.rs", "fn hi(name: &str) -> axum::response::Html<String> { axum::response::Html(\"<p>\".to_owned() + name) }\n", true),
+        ("rust", "src/main.rs", "async fn hi(q: web::Query<Hi>) -> HttpResponse { HttpResponse::Ok().content_type(\"text/html\").body(format!(\"<p>{}</p>\", q.name)) }\n", true),
+        ("rust", "src/main.rs", "fn hi(name: &str) -> Html<String> { Html(format!(\"<h1>Hello {}</h1>\", html_escape::encode_text(name))) }\n", false),
+        ("rust", "src/main.rs", "fn hi(name: &str) -> Html<String> { Html(format!(\"<p>{x}</p>\", x = encode_text(name))) }\n", false),
+        ("rust", "src/main.rs", "fn hi(bio: &str) -> Html<String> { Html(format!(\"<div>{}</div>\", ammonia::clean(bio))) }\n", false),
+        ("rust", "src/main.rs", "fn hi() -> Html<&'static str> { Html(\"<h1>Hello</h1>\") }\n", false),
+        ("rust", "src/main.rs", "fn hi(count: u32) -> Html<String> { Html(format!(\"<p>{}</p>\", 3)) }\n", false),
+        // A page a template made, which escapes, is not HTML joined by hand; nor is a plain-text body.
+        ("rust", "src/main.rs", "fn hi(page: HiTemplate) -> Html<String> { Html(page.render().unwrap()) }\n", false),
+        ("rust", "src/main.rs", "async fn hi(q: web::Query<Hi>) -> HttpResponse { HttpResponse::Ok().content_type(\"text/plain\").body(format!(\"{}\", q.name)) }\n", false),
     ];
     let mut wrong = Vec::new();
     for (language, file, source, expected) in cases {

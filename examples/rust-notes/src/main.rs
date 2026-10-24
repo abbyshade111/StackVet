@@ -5,7 +5,7 @@
 mod notes;
 
 use axum::extract::{Path, Query};
-use axum::response::Redirect;
+use axum::response::{Html, Redirect};
 use axum::Router;
 use std::process::Command;
 use tower_http::services::ServeDir;
@@ -125,6 +125,15 @@ async fn link_preview(q: Query<Preview>) -> String {
 async fn link_preview_by_id(Path(id): Path<u32>) -> String {
     let _ = reqwest::get(&format!("https://preview.example.com/links/{id}")).await; // sv:safe fetch-address-from-request
     String::new()
+}
+
+// A greeting page that puts a name from the request into HTML as it came, and one that escapes it first.
+async fn greeting(q: Query<Greeting>) -> Html<String> {
+    Html(format!("<h1>Hello, {}</h1>", q.name)) // sv:fault html-from-value
+}
+
+async fn greeting_escaped(q: Query<Greeting>) -> Html<String> {
+    Html(format!("<h1>Hello, {}</h1>", html_escape::encode_text(&q.name))) // sv:safe html-from-value
 }
 
 #[cfg(test)]

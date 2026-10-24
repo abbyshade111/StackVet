@@ -2285,7 +2285,8 @@
         "javascript": "(assignment_expression left: (member_expression property: (property_identifier) @fn) @mod right: (_) @arg) @hit\n(augmented_assignment_expression left: (member_expression property: (property_identifier) @fn) @mod right: (_) @arg) @hit\n(call_expression function: (member_expression property: (property_identifier) @fn) @mod arguments: (arguments . (_) @arg)) @hit\n(jsx_attribute (property_identifier) @fn (jsx_expression (object (pair key: (property_identifier) @mod value: (_) @arg)))) @hit",
         "typescript": "(assignment_expression left: (member_expression property: (property_identifier) @fn) @mod right: (_) @arg) @hit\n(augmented_assignment_expression left: (member_expression property: (property_identifier) @fn) @mod right: (_) @arg) @hit\n(call_expression function: (member_expression property: (property_identifier) @fn) @mod arguments: (arguments . (_) @arg)) @hit",
         "go": "(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn) arguments: (argument_list . (_) @arg)) @hit",
-        "ruby": "[(call method: (identifier) @fn arguments: (argument_list . (_) @arg)) (call receiver: (_) @arg method: (identifier) @fn !arguments)] @hit"
+        "ruby": "[(call method: (identifier) @fn arguments: (argument_list . (_) @arg)) (call receiver: (_) @arg method: (identifier) @fn !arguments)] @hit",
+        "rust": "[(call_expression function: [(identifier) @fn @mod (scoped_identifier name: (identifier) @fn) @mod]\n                   arguments: (arguments . (_) @arg))\n (call_expression function: (field_expression value: (_) @mod field: (field_identifier) @fn)\n                   arguments: (arguments . (_) @arg))] @hit"
       },
       "jsxQuery": "(jsx_attribute (property_identifier) @fn (jsx_expression (object (pair key: (property_identifier) @mod value: (_) @arg)))) @hit",
       "functionPatterns": {
@@ -2293,12 +2294,14 @@
         "javascript": "^(innerHTML|outerHTML|insertAdjacentHTML|write|writeln|send|end|dangerouslySetInnerHTML)$",
         "typescript": "^(innerHTML|outerHTML|insertAdjacentHTML|write|writeln|send|end|dangerouslySetInnerHTML)$",
         "go": "^HTML$",
-        "ruby": "^(raw|html_safe)$"
+        "ruby": "^(raw|html_safe)$",
+        "rust": "^(Html|body)$"
       },
       "modulePatterns": {
         "javascript": "(?s)^(__html|.+\\.(innerHTML|outerHTML|insertAdjacentHTML)|((window|globalThis)\\.)?document\\.(write|writeln)|(res|response)\\.(send|end))$",
         "typescript": "(?s)^(__html|.+\\.(innerHTML|outerHTML|insertAdjacentHTML)|((window|globalThis)\\.)?document\\.(write|writeln)|(res|response)\\.(send|end))$",
-        "go": "^template$"
+        "go": "^template$",
+        "rust": "(?s)^((axum::)?(response::)?Html$|.*(content_type\\(\\s*\"text/html|ContentType::html\\(\\)))"
       },
       "argumentPositions": {
         "javascript": {
@@ -2321,7 +2324,8 @@
         "javascript": "(?s)^((DOMPurify|dompurify|purify)\\.sanitize|sanitizeHtml|sanitizeHTML|escapeHtml|escapeHTML|escape|he\\.(encode|escape)|(_|lodash)\\.escape|filterXSS|xss)\\(.*\\)$",
         "typescript": "(?s)^((DOMPurify|dompurify|purify)\\.sanitize|sanitizeHtml|sanitizeHTML|escapeHtml|escapeHTML|escape|he\\.(encode|escape)|(_|lodash)\\.escape|filterXSS|xss)\\(.*\\)$",
         "go": "(?s)^(template\\.HTMLEscapeString|html\\.EscapeString)\\(.*\\)$",
-        "ruby": "(?s)^(sanitize|h|html_escape|ERB::Util\\.(html_escape|h)|CGI\\.escapeHTML|Rack::Utils\\.escape_html)\\(.*\\)$"
+        "ruby": "(?s)^(sanitize|h|html_escape|ERB::Util\\.(html_escape|h)|CGI\\.escapeHTML|Rack::Utils\\.escape_html)\\(.*\\)$",
+        "rust": "(?s)^&?((html_escape|ammonia|v_htmlescape|askama|maud)::)?(encode_text|encode_safe|encode_double_quoted_attribute|encode_quoted_attribute|escape|clean)\\(.*\\)$"
       },
       "looksFor": "a value put on the page as HTML without escaping: in JavaScript and TypeScript, React's `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, and Express's `res.send` or `res.end` of HTML joined to a value; in Python, `Markup(…)` and `mark_safe(…)` around a value; in Go, `template.HTML(…)` of a value; in Ruby, `raw(…)` and `.html_safe` on a value. HTML built in one place and sent in another, a template's own `| safe` or `{!! !!}`, and Vue's `v-html` are not looked for, so finding none credits nothing",
       "nothingToFind": {
@@ -2332,9 +2336,14 @@
         "java": "Not looked for in Java yet: a servlet writing a value to its response, and `th:utext` in Thymeleaf. The rule only ever reports, so finding none in Java credits nothing either way.",
         "kotlin": "Not looked for in Kotlin yet: a value written into a response as HTML. The rule only ever reports, so finding none in Kotlin credits nothing either way.",
         "php": "Not looked for in PHP yet: `echo` or `print` of a value into a page, and Blade's `{!! !!}`. The rule only ever reports, so finding none in PHP credits nothing either way.",
-        "rust": "Not looked for in Rust yet: `Html(format!(…))` and a template's `|safe`. The rule only ever reports, so finding none in Rust credits nothing either way.",
         "shell": "Shell scripts build no web pages this rule can speak to.",
         "swift": "Not looked for in Swift yet: a value written into a response as HTML, and a web view's `loadHTMLString`. The rule only ever reports, so finding none in Swift credits nothing either way."
+      },
+      "argumentPatterns": {
+        "rust": "(?s)^&?(std::)?format!\\(|\\+"
+      },
+      "looksForIn": {
+        "rust": "Axum's `Html(…)` and Actix's `.body(…)` on a response whose content type is HTML, given HTML built right there from a value, with `format!` or `+`; a value escaped first (`html_escape::encode_text`, `ammonia::clean`) is safe, and a template's own `|safe`, inside the template file, is not read"
       }
     },
     {
