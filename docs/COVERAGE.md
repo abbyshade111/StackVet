@@ -9,6 +9,12 @@ The ASVS tables by chapter and by level below, drawn as bars from the same count
 
 ![ASVS 5.0 by level: what a check can reach](coverage-by-level.svg)
 
+The same bars for AISVS 1.0 by level and for the Secure by Design checklist by domain:
+
+![AISVS 1.0 by level: what a check can reach](coverage-aisvs-by-level.svg)
+
+![Secure by Design checklist by domain: what a check can reach](coverage-sbd-by-domain.svg)
+
 ## How to read this
 
 - **Can settle**: at least one check can mark the requirement *checked* or *needs attention*.

@@ -21,7 +21,9 @@ The compliance engine, the scanners, the container runner, the checks and the re
 built is listed in `docs/backlog/` (one file per item; `docs/BACKLOG.md` is its guide and roadmap), and the reports say plainly which parts of an app nothing has examined. Which
 requirements of ASVS, AISVS, and the Secure by Design checklist any check can speak to at all, and what
 each check needs to run, is counted in `docs/COVERAGE.md`, and drawn as one bar per ASVS chapter in
-[`docs/coverage-by-chapter.svg`](docs/coverage-by-chapter.svg) (by level: [`docs/coverage-by-level.svg`](docs/coverage-by-level.svg)). `docs/REQUIREMENTS.md` lists every ASVS and AISVS requirement by level and
+[`docs/coverage-by-chapter.svg`](docs/coverage-by-chapter.svg) (by level: [`docs/coverage-by-level.svg`](docs/coverage-by-level.svg)); AISVS by level is
+[`docs/coverage-aisvs-by-level.svg`](docs/coverage-aisvs-by-level.svg), and the Secure by Design checklist by domain
+[`docs/coverage-sbd-by-domain.svg`](docs/coverage-sbd-by-domain.svg). `docs/REQUIREMENTS.md` lists every ASVS and AISVS requirement by level and
 family, with the checks that speak to each.
 
 ### The commands
