@@ -223,12 +223,15 @@ fn what_the_report_reads(app_dir: &Path) -> Vec<Option<Vec<u8>>> {
 /// Reads one line from the terminal without showing what is typed: a passphrase. Where the terminal cannot
 /// be told to stop showing it (Windows, until StackVet can ask its console), the person is told before typing.
 fn hidden(input: &mut dyn BufRead, out: &mut dyn Write, prompt: &str) -> Result<Option<String>> {
-    let shown = quiet::hide_typing();
-    if !quiet::CAN_HIDE {
-        writeln!(out, "{}", quiet::CANNOT_HIDE)?;
-    }
-    let line = ask(input, out, prompt)?;
-    drop(shown);
+    // The typing is hidden for this block alone, and shown again before the line below; on Windows there is
+    // nothing to hide, and nothing to drop (backlog 0628).
+    let line = {
+        let _shown = quiet::hide_typing();
+        if !quiet::CAN_HIDE {
+            writeln!(out, "{}", quiet::CANNOT_HIDE)?;
+        }
+        ask(input, out, prompt)?
+    };
     writeln!(out)?;
     Ok(line)
 }

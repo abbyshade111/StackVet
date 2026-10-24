@@ -28,6 +28,8 @@ use serde::Deserialize;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+// Only the Unix locator resolves the program's path (backlog 0628).
+#[cfg(unix)]
 use sv_frameworks::paths::Canonical;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -944,6 +946,8 @@ pub fn is_installed(adapter: &Adapter) -> bool {
 /// (the review of 8 October 2026, item 4). So the program is found here first, and refused when it
 /// is inside the app or reachable only through a relative entry.
 #[derive(Debug, Clone, PartialEq, Eq)]
+// Only the Unix locator makes the variants other than `At`; elsewhere the program is run by name (backlog 0628).
+#[cfg_attr(not(unix), allow(dead_code))]
 enum Located {
     /// At this path, outside the app.
     At(PathBuf),
@@ -2673,6 +2677,8 @@ impl PrivateFolder {
                     .build_hasher()
                     .finish()
             ));
+            // Its mode is set under `#[cfg(unix)]` alone (backlog 0628).
+            #[cfg_attr(not(unix), allow(unused_mut))]
             let mut builder = std::fs::DirBuilder::new();
             #[cfg(unix)]
             std::os::unix::fs::DirBuilderExt::mode(&mut builder, 0o700);
