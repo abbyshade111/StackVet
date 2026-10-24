@@ -113,6 +113,9 @@ RUST_CHECKS = {
     # The TURN relay's own settings file, read in part (backlog 0625, part 3; ADR-146).
     "config.turn-relay-reaches-reserved-addresses": ("static", ["V17.1.1"]),
     "config.turn-relay-unlimited": ("static", ["V17.1.2"]),
+    # An authorization server's own lifetime settings (backlog 0625, part 6; ADR-147).
+    "config.authorization-code-long-lived": ("static", ["V10.4.3"]),
+    "config.refresh-token-never-expires": ("static", ["V10.4.8"]),
     "config.certificate-checks-off": ("static", ["V12.3.2", "V12.3.4"]),
     "config.firebase-rules-open": ("static", ["V8.2.2", "V8.2.1"]),
     "config.supabase-table-without-rls": ("static", ["V8.2.2", "V8.2.1"]),
@@ -640,6 +643,8 @@ def framework(path):
 # read it from: checks that only ever credit a requirement, and the configuration checks built
 # differently. Every other check's words are read from the code or data where the check is defined.
 DESCRIBED = {
+    "config.authorization-code-long-lived": "django-oauth-toolkit's `AUTHORIZATION_CODE_EXPIRE_SECONDS` or node-oidc-provider's `ttl.AuthorizationCode` (60 seconds when left at the default) at a minute or less, which meets every level; a setting, not the server's behavior",
+    "config.refresh-token-never-expires": "django-oauth-toolkit's `REFRESH_TOKEN_EXPIRE_SECONDS` set, with rotation off, or node-oidc-provider's default rotation, which stops once a refresh token has lived a year; a setting, not the server's behavior",
     "probe.authorization-server-weak-client-auth": "The authorization server's own published details (`/.well-known/oauth-authorization-server`, `/.well-known/openid-configuration`) listing only key-based client authentication (`private_key_jwt`, mutual TLS) for the token address; what it says it accepts, not what each client is set to",
     "probe.authorization-server-implicit-flow": "The OpenID provider's own published details listing only `code`, `id_token`, and `code id_token` as response types, no implicit flow; what it says it offers, not what it does when asked for another",
     "probe.authorization-server-plain-pkce": "The authorization server's own published details listing `plain` among the PKCE methods it accepts",
@@ -805,6 +810,8 @@ RUST_IN_PART |= {"config.versions-pinned", "sbom"}
 RUST_IN_PART |= {"config.turn-relay-reaches-reserved-addresses", "config.turn-relay-unlimited"}
 # What the server says it accepts, not what each client is set to (ADR-147).
 RUST_IN_PART |= {"probe.authorization-server-weak-client-auth", "probe.authorization-server-implicit-flow"}
+# A setting, not the server's behavior (ADR-147).
+RUST_IN_PART |= {"config.authorization-code-long-lived", "config.refresh-token-never-expires"}
 # Backlog 0430: every other check whose each credit is marked in part where it is made (`.in_part()`, or
 # `.in_part_if` on a condition that always holds for it), each with its reason beside that credit in the code.
 # Until then they were printed as able to mark a requirement *checked*. `--credits` holds this list to the

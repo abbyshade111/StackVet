@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: nine parts, built in the order the plan below gives; Phase C, the server's own metadata and settings (the sixth), is next
+**Status:** partly done: eight parts, built in the order the plan below gives; the fifth (tokens with too little scope, or for another person with the same email) is next
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -56,7 +56,13 @@ for backlog 0507.
    is a finding against V10.4.6, never a credit. Seven tests in `crates/sv-check/src/as_metadata/tests.rs`. Broken on
    purpose: without RFC 8414's default, the details that list no methods were not reported; with the response types
    always allowed, the implicit flow went unfound. The settings half is the next pull request.
-   **Part status:** claimed by claude/0625-6, 24 October 2026
+   The settings built 24 October 2026 (ADR-147): `crates/sv-check/src/as_settings.rs` reads django-oauth-toolkit's
+   `OAUTH2_PROVIDER` and node-oidc-provider's configuration. A code over ten minutes is a finding against V10.4.3, and
+   one of a minute or less is credited in part; a django-oauth-toolkit refresh limit left unset or `None` (never
+   expires, its default) and node-oidc-provider's `rotateRefreshToken: true` are findings against V10.4.8. Six tests in
+   `crates/sv-check/src/as_settings/tests.rs`. Broken on purpose: with an unset limit read as one, the defaults test
+   went red; with the one-minute line at ten, the five-minute code was credited.
+   **Part status:** done, 24 October 2026
 7. **Authorization-server probes with an owner-declared test client** (V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10,
    V10.4.12, V10.4.13, V10.6.2): redirect address, code reuse, PKCE, refresh reuse, client authentication, response
    mode, PAR, sign-out without a hint. Large.
