@@ -76,9 +76,10 @@ fn each_rust_rule_finds_its_fault_and_leaves_its_safe_form_in_an_app_shaped_like
                 wrong.push(format!("{rule} reported the safe form at {file}:{line}"))
             }
             ("test", None) => wrong.push(format!("{rule} missed the test code at {file}:{line}")),
-            // Known not to be read yet (backlog 0660): found, it is no longer missed, and the marker should become `fault`.
+            // Known not to be read yet (as calls in macros were until backlog 0660): found, it is no longer missed,
+            // and the marker should become `fault`.
             ("missed", Some(_)) => wrong.push(format!(
-                "{rule} now finds {file}:{line}, held as missed: make its marker `sv:fault` and close backlog 0660"
+                "{rule} now finds {file}:{line}, held as missed: make its marker `sv:fault` and close the item that held it"
             )),
             ("test", Some(f)) if !f.in_test_code() => {
                 wrong.push(format!("{rule} at {file}:{line} was not read as test code"))
