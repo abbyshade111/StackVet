@@ -84,6 +84,7 @@ pub mod outbound_rules;
 pub mod test_support;
 pub mod tool_files;
 pub mod totp;
+pub mod turn_relay;
 pub mod verified;
 pub mod weak_keys;
 pub mod workflows;

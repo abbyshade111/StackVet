@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: ten parts, built in the order the plan below gives; Phase B, the TURN relay settings (the third), is next
+**Status:** partly done: nine parts, built in the order the plan below gives; Phase C, the server's own metadata and settings (the sixth), is next
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -32,7 +32,15 @@ for backlog 0507.
    reported; with the program names emptied, the seven found cases went unfound.
    **Part status:** done, 24 October 2026
 3. **TURN relay settings** (V17.1.1, V17.1.2): static, from the coturn file, crediting in part. Small to medium.
-   **Part status:** claimed by claude/0625-3, 24 October 2026
+   Built 24 October 2026 (ADR-146): `crates/sv-check/src/turn_relay.rs` reads every `turnserver.conf`, and a coturn
+   service's `command` flags in a compose file. V17.1.1 is credited in part when the settings refuse every reserved
+   range (0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 169.254.0.0/16, 172.16.0.0/12, 192.168.0.0/16, fc00::/7, fe80::/10),
+   with `no-multicast-peers` set and `allow-loopback-peers` not; an `allowed-peer-ip` inside a range undoes it. V17.1.2
+   is credited in part when `user-quota` and `total-quota` are both above 0. Either short is a finding that says what;
+   no relay settings say nothing. Six tests in `crates/sv-check/src/turn_relay/tests.rs`. Broken on purpose: with the
+   range coverage always yes, the test that takes out each range went red; with `allowed-peer-ip` ignored, the test
+   of an address let back in went red.
+   **Part status:** done, 24 October 2026
 4. **Malformed signaling messages, then a normal one** (V17.3.2, L2): probe. Medium.
    **Part status:** open
 5. **Access tokens with too little scope, and for another person with the same email** (V10.3.2, V10.3.3, L2): probe,
