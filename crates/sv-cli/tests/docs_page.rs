@@ -151,8 +151,9 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
         index.contains(&counts) && index.contains("backlog-board.html"),
         "the index links the board"
     );
-    // Every item once: a table row per item and three header rows, so an item filed under two headings, or
-    // under none, is caught by the count alone.
+    // Every item once: a table row per item and four header rows, so an item filed under two headings, or
+    // under none, is caught by the count alone. Each heading holds an item today (the on-hold folder too, since
+    // backlog 0650), so each has its table.
     let total: usize = counts
         .split(' ')
         .next()
@@ -161,19 +162,24 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
         .expect("the summary starts with the count");
     assert_eq!(
         board.matches("<tr>").count(),
-        total + 3,
+        total + 4,
         "one row per item, plus a header row per table"
     );
-    // Three headings in this order, and each item under the right one: the first open item the tool lists is
-    // under "Still to come", and the first claimed one under "Being worked on".
+    // Four headings in this order, and each item under the right one: the first open item the tool lists is
+    // under "Still to come", the first claimed one under "Being worked on", and the first held one under "On hold".
     let at = |needle: &str| {
         board
             .find(needle)
             .unwrap_or_else(|| panic!("{needle:?} is on the board"))
     };
-    let (working, coming, done) = (at("Being worked on"), at("Still to come"), at(">Done <"));
+    let (working, coming, holding, done) = (
+        at("Being worked on"),
+        at("Still to come"),
+        at(">On hold <"),
+        at(">Done <"),
+    );
     assert!(
-        working < coming && coming < done,
+        working < coming && coming < holding && holding < done,
         "the headings are in order"
     );
     let first_title = |flag: &str| -> String {
@@ -194,7 +200,11 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
             .collect::<Vec<_>>()
             .join(" ")
     };
-    for (flag, from, to) in [("--open", coming, done), ("--claimed", working, coming)] {
+    for (flag, from, to) in [
+        ("--open", coming, holding),
+        ("--claimed", working, coming),
+        ("--hold", holding, done),
+    ] {
         let title = first_title(flag);
         let word = title
             .rsplit(' ')
