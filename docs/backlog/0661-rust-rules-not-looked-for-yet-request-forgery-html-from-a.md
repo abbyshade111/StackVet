@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** partly done: three rules still to teach Rust: password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
+**Status:** partly done: two rules still to teach Rust: model-download-not-pinned and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -104,3 +104,11 @@ unchanged, as the dependency was added after the last local run, and CI caught i
 one line and the example's safe form were reported (a first try had no case that needed the exception, and nothing
 went red); with the generator pattern emptied, the found cases and the example's fault went red. No decision record,
 as for the CORS rule.
+
+**`password-expiry-enforced` built, 24 October 2026.** A Rust `const`, `static`, `let`, a field set where a struct is
+made, or one assigned, whose name says passwords expire or must be changed on a schedule, with the names the other
+languages read (`PASSWORD_EXPIRY_DAYS`, `password_max_age`, `force_password_change`); a struct's field declared with
+only a type sets nothing and is not read. Nine Rust cases in `crates/sv-check/src/ast/password_expiry_tests.rs`, and a
+fault and its safe form in `examples/rust-notes`, with no new dependency, whose V6.2.10 now needs attention. Broken on
+purpose: with the Rust name pattern emptied, the found cases and the example's fault went red. No decision record, as
+for the CORS rule.
