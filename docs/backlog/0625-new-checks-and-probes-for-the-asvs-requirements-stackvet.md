@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: the twelve parts, built in the order the plan below gives; the first is under way
+**Status:** partly done: eleven parts, built in the order the plan below gives; the second (LaTeX with shell escape) is next
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -11,7 +11,17 @@ for backlog 0507.
 
 1. **Stock default credentials in connection addresses and compose files** (V13.2.3, L2): static, finding only; the
    fix backlog 0431 offered. Small.
-   **Part status:** claimed by claude/0625-1, 24 October 2026
+   Built 24 October 2026: two findings-only pattern rules in `data/secret-rules.json`,
+   `secrets.default-credential-address` (a database or broker address whose user and password are both stock
+   defaults, such as postgres:postgres or guest:guest) and `secrets.default-credential-setting` (a database or
+   broker image's password setting given one, in a compose or settings file). They cite V13.2.3, and V13.3.1 and
+   SBD-AC-05 too, as a password written into the code; each finding says a default kept only for a test copy is
+   fine if the real service has its own. Pattern rules can now be findings-only (`findingsOnly`), so a clean
+   secrets scan does not claim V13.2.3, and `tools/coverage.py` reads them so: V13.2.3 is "Can only be found
+   failing". Tests in `crates/sv-check/src/secrets/default_credentials_tests.rs`, with the defaults built from
+   pieces. Broken on purpose: without the findings-only filter, a clean scan offered V13.2.3; with the patterns
+   emptied, the found cases went red; and before `coverage.py` knew the flag, the page said "Can be checked".
+   **Part status:** done, 24 October 2026
 2. **LaTeX started with shell escape** (V1.2.8, L2): static, finding only. Small.
    **Part status:** open
 3. **TURN relay settings** (V17.1.1, V17.1.2): static, from the coturn file, crediting in part. Small to medium.

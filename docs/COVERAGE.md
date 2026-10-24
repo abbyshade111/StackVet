@@ -53,7 +53,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 193 (56%) | 132 (38%) | 11 | 99 | 42 |
+| OWASP ASVS 5.0 | 345 | 194 (56%) | 132 (38%) | 11 | 99 | 41 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -65,14 +65,14 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 59 | 45 | 18 | 1 | 6 | 40 | 20 | 13 | 3 |
-| L2 | 183 | 112 | 77 | 31 | 0 | 21 | 57 | 25 | 22 | 2 |
+| L2 | 183 | 113 | 77 | 32 | 0 | 21 | 57 | 25 | 22 | 2 |
 | L3 | 92 | 22 | 10 | 4 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-61 of the 193 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+62 of the 194 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 61 of the 132 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 53 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
+With nothing beyond plain `sv check`, 54 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -106,7 +106,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V10 OAuth and OIDC | 36 | 10 | 8 | 0 | 11 | 15 |
 | V11 Cryptography | 24 | 14 | 7 | 0 | 8 | 2 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 0 | 1 |
-| V13 Configuration | 21 | 11 | 3 | 1 | 8 | 1 |
+| V13 Configuration | 21 | 12 | 3 | 1 | 8 | 0 |
 | V14 Data Protection | 13 | 4 | 2 | 2 | 5 | 2 |
 | V15 Secure Coding and Architecture | 21 | 13 | 7 | 0 | 8 | 0 |
 | V16 Security Logging and Error Handling | 17 | 13 | 11 | 1 | 3 | 0 |
@@ -114,7 +114,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 ## ASVS 5.0 requirement by requirement
 
-### Settled by reading the code (53)
+### Settled by reading the code (54)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -160,6 +160,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V12.3.2 | L2 | Reads the code: `config.certificate-checks-off`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `config.certificate-checks-off`) |
 | V12.3.4 | L2 | Reads the code: `config.certificate-checks-off` (sv only ever as a finding: `config.certificate-checks-off`) |
 | V13.2.2 | L2 | Reads the code: `ast.database-as-superuser` (sv only ever as a finding: `ast.database-as-superuser`) |
+| V13.2.3 | L2 | Reads the code: `secrets.default-credential-address`, `secrets.default-credential-setting` (sv only ever as a finding: `secrets.default-credential-address`, `secrets.default-credential-setting`) |
 | V13.2.4 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V13.3.2 | L2 | Reads the code: `config.workflow-hands-out-all-secrets` (sv only ever as a finding: `config.workflow-hands-out-all-secrets`) |
 | V13.4.2 | L2 | Reads the code: `ast.debug-mode-on`; The running app: `probe.error-detail-leak`, `probe.development-console-open`; Outside tools: `bandit`, `gosec`, `semgrep`; Outside tools you turn on: `codeql-python` (gosec only ever as a finding: `G108`; sv only ever as a finding: `ast.debug-mode-on`, `probe.development-console-open`) |
@@ -352,7 +353,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V6.3.4 | L2 | Reads the code: `config.sign-in-pathway-not-listed` (sv only ever as a finding: `config.sign-in-pathway-not-listed`) |
 | V8.3.1 | L1 | Signed in: `probe.admin-page-ordinary-user`, `probe.admin-action-ordinary-user`, `probe.role-field-trusted`, `probe.email-change-role-trusted` (sv only ever as a finding: `probe.email-change-role-trusted`, `probe.role-field-trusted`) |
 | V12.2.2 | L1 | Your own live site: `probe.certificate-not-trusted` |
-| V13.3.1 | L2 | Reads the code: `secrets.anthropic-key`, `secrets.openai-key`, `secrets.huggingface-token`, `secrets.aws-access-key` and 22 more; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` (sv only ever as a finding: `config.secret-under-public-name`, `secrets.credential-assignment`, `secrets.password-in-url`) |
+| V13.3.1 | L2 | Reads the code: `secrets.anthropic-key`, `secrets.openai-key`, `secrets.huggingface-token`, `secrets.aws-access-key` and 24 more; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep` (sv only ever as a finding: `config.secret-under-public-name`, `secrets.credential-assignment`, `secrets.default-credential-address`, `secrets.default-credential-setting`, `secrets.password-in-url`) |
 | V14.2.2 | L2 | Signed in: `probe.private-page-shared-cache` (sv only ever as a finding: `probe.private-page-shared-cache`) |
 | V14.2.3 | L2 | Signed in: `probe.account-details-sent-elsewhere` (sv only ever as a finding: `probe.account-details-sent-elsewhere`) |
 | V16.5.4 | L3 | Reads the code: `config.last-resort-error-handler`; The running app: `probe.app-stopped-during-questions` (sv only ever as a finding: `probe.app-stopped-during-questions`) |

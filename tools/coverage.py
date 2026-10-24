@@ -974,6 +974,10 @@ def evidence():
     for rule in load(ROOT / "data/secret-rules.json")["rules"]:
         for q in rule["requirementIds"]:
             ev[q]["static"].append(rule["id"])
+            # A findings-only pattern rule (the stock default credentials, backlog 0625) is left out of what a clean
+            # secrets scan claims, so it can only find its requirements failing.
+            if rule.get("findingsOnly"):
+                FINDINGS_ONLY[q].add(("sv", rule["id"]))
     for adapter in load(ROOT / "data/adapters.json")["adapters"]:
         # A tool the owner turns on is counted apart, so the counts say what a default run reaches (ADR-115).
         tier = "opt-in" if adapter.get("opt_in") else "tools"
