@@ -1,6 +1,6 @@
 # Two tests in moved.rs canonicalize the expected data folder after deleting it, and fail on macOS when the temporary folder is under /var
 
-**Status:** open
+**Status:** claimed by claude/0631, 24 October 2026
 
 Filed 21 October 2026 at the owner's word ("yes, file the macOS path test fix"), found while building backlog 0324's
 fourth split. Severity: low (a test fault on macOS only; CI runs on Linux, where both pass).
