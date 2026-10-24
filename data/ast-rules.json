@@ -2782,6 +2782,57 @@
         "shell": "Shell scripts are not read for backup codes: a script does not keep an app's sign-in codes.",
         "swift": "Backup codes saved straight from a random generator are not looked for in Swift yet."
       }
+    },
+    {
+      "id": "ast.latex-shell-escape",
+      "title": "LaTeX is started with shell escape turned on",
+      "severity": "high",
+      "confidence": "medium",
+      "requirementIds": [
+        "V1.2.8"
+      ],
+      "cwe": [
+        "CWE-78"
+      ],
+      "findingsOnly": true,
+      "description": "The app starts a LaTeX program (pdflatex, xelatex, lualatex, or latexmk) with shell escape turned on (`-shell-escape`, `--shell-escape`, or `-enable-write18`), which lets a document run commands on the server with `\\write18`.",
+      "impact": "If any part of a document the app compiles comes from a person (a name, a note, an uploaded file), they can write a command into it that the server runs, with the app's permissions: reading its files and secrets, or changing them.",
+      "fix": "Take the shell-escape option out: LaTeX runs commands only when it is given. If a package really needs it, compile only documents the app writes itself, never text a person sent, and run LaTeX in a container of its own with no network and no access to the app's files.",
+      "queries": {
+        "python": "[(call function: (attribute attribute: (identifier) @fn)) (call function: (identifier) @fn)] @hit @arg",
+        "javascript": "[(call_expression function: (identifier) @fn) (call_expression function: (member_expression property: (property_identifier) @fn))] @hit @arg",
+        "typescript": "[(call_expression function: (identifier) @fn) (call_expression function: (member_expression property: (property_identifier) @fn))] @hit @arg",
+        "shell": "(command name: (command_name) @fn) @hit @arg"
+      },
+      "functionPatterns": {
+        "python": "^(run|call|check_call|check_output|Popen|system|popen|getoutput|generate_pdf)$",
+        "javascript": "^(exec|execSync|execFile|execFileSync|spawn|spawnSync)$",
+        "typescript": "^(exec|execSync|execFile|execFileSync|spawn|spawnSync)$",
+        "shell": "^((/usr)?(/local)?/bin/)?((pdf|xe|lua)?latex|latexmk)$"
+      },
+      "argumentPatterns": {
+        "python": "(?s)\\b(pdf|xe|lua)?latex(mk)?\\b.*(^|[\\s\"'`,\\[(])-{1,2}(shell-escape|enable-write18)\\b|(?s)\\bcompiler_args\\s*=.*(^|[\\s\"'`,\\[(])-{1,2}(shell-escape|enable-write18)\\b",
+        "javascript": "(?s)\\b(pdf|xe|lua)?latex(mk)?\\b.*(^|[\\s\"'`,\\[(])-{1,2}(shell-escape|enable-write18)\\b",
+        "typescript": "(?s)\\b(pdf|xe|lua)?latex(mk)?\\b.*(^|[\\s\"'`,\\[(])-{1,2}(shell-escape|enable-write18)\\b",
+        "shell": "(^|[\\s\"'`,\\[(])-{1,2}(shell-escape|enable-write18)\\b"
+      },
+      "looksFor": "a LaTeX program (pdflatex, xelatex, lualatex, latexmk) started with `-shell-escape`, `--shell-escape`, or `-enable-write18`, through Python's `subprocess` and `os.system`, PyLaTeX's `generate_pdf(compiler_args=...)`, Node's `child_process`, or a shell script; `-no-shell-escape` turns it off and is not reported. An allowlist of LaTeX commands cannot be seen, so finding none credits nothing",
+      "nothingToFind": {
+        "c": "Not looked for in C yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in C credits nothing either way.",
+        "cpp": "Not looked for in C++ yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in C++ credits nothing either way.",
+        "csharp": "Not looked for in C# yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in C# credits nothing either way.",
+        "dart": "Not looked for in Dart yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in Dart credits nothing either way.",
+        "go": "Not looked for in Go yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in Go credits nothing either way.",
+        "java": "Not looked for in Java yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in Java credits nothing either way.",
+        "kotlin": "Not looked for in Kotlin yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in Kotlin credits nothing either way.",
+        "php": "Not looked for in PHP yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in PHP credits nothing either way.",
+        "ruby": "Not looked for in Ruby yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in Ruby credits nothing either way.",
+        "rust": "Not looked for in Rust yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in Rust credits nothing either way.",
+        "swift": "Not looked for in Swift yet: a LaTeX program started with shell escape. The rule only ever reports, so finding none in Swift credits nothing either way."
+      },
+      "looksForIn": {
+        "shell": "`pdflatex`, `xelatex`, `lualatex`, or `latexmk` run in a script with `-shell-escape`, `--shell-escape`, or `-enable-write18`; `-no-shell-escape` is not reported"
+      }
     }
   ]
 }

@@ -53,7 +53,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 194 (56%) | 132 (38%) | 11 | 99 | 41 |
+| OWASP ASVS 5.0 | 345 | 195 (57%) | 132 (38%) | 11 | 99 | 40 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -65,14 +65,14 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 59 | 45 | 18 | 1 | 6 | 40 | 20 | 13 | 3 |
-| L2 | 183 | 113 | 77 | 32 | 0 | 21 | 57 | 25 | 22 | 2 |
+| L2 | 183 | 114 | 77 | 33 | 0 | 21 | 57 | 25 | 22 | 2 |
 | L3 | 92 | 22 | 10 | 4 | 0 | 8 | 2 | 6 | 3 | 3 |
 
-62 of the 194 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+63 of the 195 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 61 of the 132 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 54 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
+With nothing beyond plain `sv check`, 55 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -94,7 +94,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 | Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| V1 Encoding and Sanitization | 30 | 21 | 17 | 0 | 6 | 3 |
+| V1 Encoding and Sanitization | 30 | 22 | 17 | 0 | 6 | 2 |
 | V2 Validation and Business Logic | 13 | 4 | 3 | 2 | 6 | 1 |
 | V3 Web Frontend Security | 31 | 24 | 20 | 0 | 4 | 3 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 5 | 1 |
@@ -114,13 +114,14 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 ## ASVS 5.0 requirement by requirement
 
-### Settled by reading the code (54)
+### Settled by reading the code (55)
 
 | Requirement | Level | Checks |
 |---|---|---|
 | V1.2.1 | L1 | Reads the code: `ast.html-from-value`; The running app: `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`; Signed in: `probe.stored-unencoded`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B701`, `B702`, `B703`, `B704`; gosec only ever as a finding: `G203`; sv only ever as a finding: `ast.html-from-value`, `probe.ai-reply-html-unencoded`, `probe.reflected-unencoded`, `probe.stored-unencoded`) |
 | V1.2.4 | L1 | Reads the code: `ast.sql-built-by-hand`; Signed in: `probe.sql-injection`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B610`, `B611`; sv only ever as a finding: `probe.sql-injection`) |
 | V1.2.5 | L1 | Reads the code: `ast.shell-command`, `ast.shell-command-backticks`, `ast.shell-command-shell-true`; Outside tools: `bandit`, `gosec`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (bandit only ever as a finding: `B601`; sv only ever as a finding: `ast.shell-command-shell-true`) |
+| V1.2.8 | L2 | Reads the code: `ast.latex-shell-escape` (sv only ever as a finding: `ast.latex-shell-escape`) |
 | V1.3.1 | L1 | Reads the code: `config.rich-text-without-sanitizer` (sv only ever as a finding: `config.rich-text-without-sanitizer`) |
 | V1.3.2 | L1 | Reads the code: `ast.dynamic-code-execution`; Outside tools: `bandit`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V1.3.6 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere`; Outside tools: `gosec`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
