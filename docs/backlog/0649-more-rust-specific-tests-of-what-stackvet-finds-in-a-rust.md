@@ -1,6 +1,6 @@
 # More Rust-specific tests of what StackVet finds in a Rust app
 
-**Status:** open
+**Status:** claimed by claude/0649, 24 October 2026
 
 Filed 23 October 2026 at the owner's word, after the triage of StackVet's findings on its own repository (backlog
 0633): "look at adding additional rust-specific testing". That triage found three rules reading Rust wrongly: the
