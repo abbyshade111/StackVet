@@ -1,6 +1,6 @@
 # One source for the coding rules, never generated again for each tool, and why
 
-**Status:** claimed by claude/0664-one-source, 24 October 2026
+**Status:** done, 24 October 2026
 
 Found 24 October 2026, reading Wiz's open-source rules files
 (https://github.com/wiz-sec-public/secure-rules-files, commit `04101f88`, 23 December 2025). Their generator
@@ -36,3 +36,11 @@ with none of its text. A requirement is cited only after its text is read.
 
 **Claimed 24 October 2026.** The plan: a dated Later entry on ADR-017, and a test in `crates/sv-cli/tests/` that
 renders every place the coding rules and the framework lines go and holds each to the same rules.
+
+**Built 24 October 2026** (ADR-017, Later, 24 October 2026). The reason is written down: the rules and the framework
+lines come from one hand-written file each, and every place a tool reads them is a rendering of it, never a copy
+written again or generated for one tool. `crates/sv-cli/src/mcp/one_source_tests.rs` holds it for the guidance's words
+and structured answer, the `AGENTS.md` section, and every feature's brief, on the `flask-booking` example: each rule
+given is in all of them and none left out is in any. Broken on purpose three ways, each red with the missing rule or
+line named and green once put back: one rule dropped from the `AGENTS.md` rendering, one from each brief, and the
+framework lines dropped from the guidance's words.
