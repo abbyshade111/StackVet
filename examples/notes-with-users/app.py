@@ -1,7 +1,8 @@
 """A small notes app with accounts, written to show what `sv run` asks a signed-in user.
 
 Standard library only, because the app runs inside a network fence with nothing to install from.
-Data lives in /tmp: the app's own folder is mounted read-only while `sv` runs it.
+Data lives in a `data` folder beside the app, or wherever NOTES_DB says: the app's own folder is mounted read-only
+while `sv` runs it, so its stackvet.toml points the copy `sv` runs at /tmp with `env` (backlog 0659).
 """
 
 import hashlib
@@ -15,7 +16,10 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs
 
-DB = os.environ.get("NOTES_DB", "/tmp/notes.db")
+DB = os.environ.get(
+    "NOTES_DB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "notes.db")
+)
+os.makedirs(os.path.dirname(DB), exist_ok=True)
 # The 3000 most common passwords, refused at sign-up (ASVS V6.2.4). Length is the only other rule:
 # at least 8 characters (V6.2.1; 15 is the recommendation), and nothing about which kinds of character
 # a password must contain (V6.2.5).

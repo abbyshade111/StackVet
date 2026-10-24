@@ -38,6 +38,13 @@ health = "/"              # a path that returns 200 once the app is up
 # graphql = "/graphql"      # where it answers GraphQL, if it does
 # websocket = "/ws"         # where it accepts WebSocket connections, if it does
 # websockets = ["/ws", "/chat"]  # several, in place of `websocket`; one named is checked in part only
+# env = { DATABASE_PATH = "/tmp/app.db" }  # set only in the copy of the app `sv` runs: see below
+#   `env`: the app's folder is read-only while `sv` runs it, and its container can write only /tmp.
+#   Keep where the app writes its data configurable by an environment variable, with the default
+#   the real app should use (its own data folder, never /tmp, which every user of a machine can
+#   write and a restart empties), and point the copy `sv` runs at /tmp here. Never a password,
+#   key, or token: a name that says it holds one is refused, and a value that must not be
+#   written here is printed by `seed` and cited as `{seed:NAME}`.
 #   `install = true`: the app runs with no network and a read-only folder, so `build` cannot install
 #   packages. With `install = true`, `sv` installs them first, in a separate container that is
 #   given only requirements.txt (every line pinned, `name==1.2.3`), package.json with
@@ -111,7 +118,8 @@ health = "/"              # a path that returns 200 once the app is up
 # Optional: how to sign in, so `sv run` can check what a signed-in user can reach — other users'
 # data, admin pages, whether logging out really ends the session. Leave it out and all of that is
 # reported as "not assessed"; to use it, remove the `#` from the line above as well as from each key. `sv` makes two ordinary accounts, A and B, with fresh passwords.
-# The app's folder is read-only while `sv` runs it, so keep its data somewhere like /tmp.
+# The app's folder is read-only while `sv` runs it: point its data at /tmp with the `env` setting
+# above, under the run section, and keep the app's own default elsewhere.
 # `sv` signs in up to 62 times in one run, all from one address, a few of them on purpose with a
 # wrong password, and last of all the wrong passwords of the guessing check (`failed-sign-ins`
 # under [policy], plus two). An app should limit sign-in attempts. The copy `sv` runs must keep

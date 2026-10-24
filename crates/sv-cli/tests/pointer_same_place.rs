@@ -1,7 +1,7 @@
 //! Backlog 0562: a refusal written as its log line and then its answer (`event(..., status=403)` above `send(403, ...)`)
 //! is one place a question points at, not two; a refusal further down is still a place of its own. In the pointer's
-//! second reading `examples/notes-with-users` said "and 2 more places", one of them app.py:210, the answer under
-//! the log line at :209 already shown.
+//! second reading `examples/notes-with-users` said "and 2 more places", one of them app.py:214, the answer under
+//! the log line at :213 already shown.
 
 use serde_json::Value;
 use std::process::Command;
@@ -85,7 +85,7 @@ fn a_refusal_and_its_log_line_are_one_place_and_one_further_down_is_another() {
 
 #[test]
 fn the_example_app_says_one_more_place_the_owner_scoped_update() {
-    // The item's own case: notes-with-users shows 241, 209, and 316, and the one more is the update at :336 that moves
+    // The item's own case: notes-with-users shows 245, 213, and 320, and the one more is the update at :340 that moves
     // a person's notes to their new email, a query by owner.
     let example = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../examples/notes-with-users/app.py");
@@ -93,14 +93,14 @@ fn the_example_app_says_one_more_place_the_owner_scoped_update() {
     assert!(
         source
             .lines()
-            .nth(335)
+            .nth(339)
             .is_some_and(|l| l.contains("where owner = ?")),
-        "the setup: app.py:336 is the update"
+        "the setup: app.py:340 is the update"
     );
     let (lines, more) = pointed(&source);
-    assert_eq!(lines, [241, 209, 316], "{lines:?}");
+    assert_eq!(lines, [245, 213, 320], "{lines:?}");
     assert_eq!(
         more, 1,
-        "app.py:210 is the refusal at :209, not a place of its own"
+        "app.py:214 is the refusal at :213, not a place of its own"
     );
 }

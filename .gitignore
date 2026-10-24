@@ -24,3 +24,6 @@ stackvet-report/
 
 # Spreadsheets and other files built on request from this repository's data, for reading outside it
 /exports/
+
+# The notes example keeps its data beside it when run by hand (backlog 0659).
+examples/notes-with-users/data/

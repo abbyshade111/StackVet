@@ -36,46 +36,46 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
         // 34 lines, no authorization code; its payment's success link is an address written into the code (backlog
         // 0496).
         ("flask-booking", &["locate.outside-addresses app.py:32"]),
-        // Inline checks: the admin page refused with a 403 and an `authorization-refused` event (209, 210), each note
-        // read only with its owner (241). The other 403s refuse a forged form (`if self.forged(...)`) or a wrong
-        // password (`hash_password(...)`), and are left out by `unless` (backlog 0518). 316 and 336 delete and move a
+        // Inline checks: the admin page refused with a 403 and an `authorization-refused` event (213, 214), each note
+        // read only with its owner (245). The other 403s refuse a forged form (`if self.forged(...)`) or a wrong
+        // password (`hash_password(...)`), and are left out by `unless` (backlog 0518). 320 and 340 delete and move a
         // person's own notes by owner.
         (
             "notes-with-users",
             &[
                 // Its password hashing names its algorithm, `"sha256"` (backlog 0611).
-                "locate.algorithm-names app.py:45",
+                "locate.algorithm-names app.py:49",
                 // Every query the app sends its database, for the hand check on cleaning input (backlog 0488).
-                "locate.dangerous-places app.py:34",
-                "locate.dangerous-places app.py:37",
                 "locate.dangerous-places app.py:38",
-                "locate.dangerous-places app.py:58",
-                "locate.dangerous-places app.py:64",
-                "locate.dangerous-places app.py:207",
-                "locate.dangerous-places app.py:240",
-                "locate.dangerous-places app.py:258",
-                "locate.dangerous-places app.py:268",
-                "locate.dangerous-places app.py:284",
-                "locate.dangerous-places app.py:298",
-                "locate.dangerous-places app.py:310",
-                "locate.dangerous-places app.py:316",
-                "locate.dangerous-places app.py:317",
-                "locate.dangerous-places app.py:319",
-                "locate.dangerous-places app.py:325",
-                "locate.dangerous-places app.py:335",
-                "locate.dangerous-places app.py:336",
-                "locate.dangerous-places app.py:337",
-                "locate.dangerous-places app.py:343",
-                "locate.dangerous-places app.py:353",
-                "locate.dangerous-places app.py:360",
+                "locate.dangerous-places app.py:41",
+                "locate.dangerous-places app.py:42",
+                "locate.dangerous-places app.py:62",
+                "locate.dangerous-places app.py:68",
+                "locate.dangerous-places app.py:211",
+                "locate.dangerous-places app.py:244",
+                "locate.dangerous-places app.py:262",
+                "locate.dangerous-places app.py:272",
+                "locate.dangerous-places app.py:288",
+                "locate.dangerous-places app.py:302",
+                "locate.dangerous-places app.py:314",
+                "locate.dangerous-places app.py:320",
+                "locate.dangerous-places app.py:321",
+                "locate.dangerous-places app.py:323",
+                "locate.dangerous-places app.py:329",
+                "locate.dangerous-places app.py:339",
+                "locate.dangerous-places app.py:340",
+                "locate.dangerous-places app.py:341",
+                "locate.dangerous-places app.py:347",
+                "locate.dangerous-places app.py:357",
+                "locate.dangerous-places app.py:364",
                 "locate.dangerous-places seed.py:16",
                 // Its password hashing, 200,000 rounds of PBKDF2 (backlog 0498).
-                "locate.heavy-work app.py:45",
-                "locate.owner-checks app.py:241",
-                "locate.owner-checks app.py:316",
-                "locate.owner-checks app.py:336",
-                "locate.refusals app.py:209",
-                "locate.refusals app.py:210",
+                "locate.heavy-work app.py:49",
+                "locate.owner-checks app.py:245",
+                "locate.owner-checks app.py:320",
+                "locate.owner-checks app.py:340",
+                "locate.refusals app.py:213",
+                "locate.refusals app.py:214",
             ],
         ),
         // Notes are kept by account (`notes.get(s.user)`), with no 403 and no owner compared: nothing to point at,

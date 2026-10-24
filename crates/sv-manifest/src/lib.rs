@@ -245,6 +245,12 @@ pub struct RunSection {
     pub test_time_limit: Option<u64>,
     #[serde(default)]
     pub health: Option<String>,
+    /// Environment variables set for the copy of the app `sv` runs, and only for it: `env = { DATABASE_PATH =
+    /// "/tmp/app.db" }`, so the app keeps its own default for where its data lives and `sv`'s copy, whose folder is
+    /// read-only, writes under `/tmp` (backlog 0659, ADR-141). A name that says it holds a credential, or one `sv`
+    /// sets itself, is refused before the run.
+    #[serde(default)]
+    pub env: std::collections::BTreeMap<String, String>,
     /// How to sign in, so the probes can ask what a signed-in user can do and not only what
     /// somebody who has not signed in can. Absent means authorization and sessions are reported as
     /// not assessed, which is what they always were.
