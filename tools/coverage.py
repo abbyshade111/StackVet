@@ -110,6 +110,9 @@ RUST_CHECKS = {
     "config.client-tech-unsupported": ("static", ["V3.7.1"]),
     "config.retired-grant-enabled": ("static", ["V10.4.4"]),
     "config.model-file-can-run-code": ("static", ["C4.1.2"]),
+    # The TURN relay's own settings file, read in part (backlog 0625, part 3; ADR-146).
+    "config.turn-relay-reaches-reserved-addresses": ("static", ["V17.1.1"]),
+    "config.turn-relay-unlimited": ("static", ["V17.1.2"]),
     "config.certificate-checks-off": ("static", ["V12.3.2", "V12.3.4"]),
     "config.firebase-rules-open": ("static", ["V8.2.2", "V8.2.1"]),
     "config.supabase-table-without-rls": ("static", ["V8.2.2", "V8.2.1"]),
@@ -631,6 +634,8 @@ def framework(path):
 # read it from: checks that only ever credit a requirement, and the configuration checks built
 # differently. Every other check's words are read from the code or data where the check is defined.
 DESCRIBED = {
+    "config.turn-relay-reaches-reserved-addresses": "A TURN relay's own settings (`turnserver.conf`, or a coturn service's flags in a compose file) refusing every reserved range (the private, shared, link-local, and IPv6 local ranges), broadcast addresses, and loopback; the file is read, not the running relay",
+    "config.turn-relay-unlimited": "A TURN relay's own settings setting `user-quota` and `total-quota` above 0, so one user cannot open connections without limit; the file is read, not the running relay",
     "config.last-resort-error-handler": "A last-resort error handler defined in the app's code (Node's `process.on('uncaughtException')`, Express's four-argument error middleware, a handler for every `Exception` in Flask or FastAPI, Django's `handler500`, `rescue_from StandardError`, `@ControllerAdvice`, `UseExceptionHandler`, Go's `recover()`), shown as supporting evidence; that it catches every unhandled exception is not something files show",
     "config.template-engine-escapes": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was read; in part, since HTML put together by hand and output to other interpreters are not seen",
     "ast.weak-key-generation": "A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3",
@@ -787,6 +792,8 @@ FINDINGS_ONLY = defaultdict(set)
 # a pinned lockfile and a complete bill of materials are the inventory, and the repositories are not read
 # (backlog 0307).
 RUST_IN_PART |= {"config.versions-pinned", "sbom"}
+# The TURN relay's settings file is read, never the running relay (ADR-146).
+RUST_IN_PART |= {"config.turn-relay-reaches-reserved-addresses", "config.turn-relay-unlimited"}
 # Backlog 0430: every other check whose each credit is marked in part where it is made (`.in_part()`, or
 # `.in_part_if` on a condition that always holds for it), each with its reason beside that credit in the code.
 # Until then they were printed as able to mark a requirement *checked*. `--credits` holds this list to the

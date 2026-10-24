@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 132 can be checked, 63 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 40 with no check yet.
+345 requirements: 134 can be checked, 63 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 38 with no check yet.
 
 ### Level 1 (70 requirements, 45 can be checked, 14 can only be found failing)
 
@@ -190,7 +190,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 77 can be checked, 37 can only be found failing)
+### Level 2 (183 requirements, 78 can be checked, 37 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -452,7 +452,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 | Requirement | Coverage | Checks |
 |---|---|---|
-| **V17.1.1** Verify that the Traversal Using Relays around NAT (TURN) service only allows access to IP addresses that are not reserved for special purposes (e.g., internal networks, broadcast, loopback). Note that this applies to both IPv4 and IPv6 addresses. | No check yet | – |
+| **V17.1.1** Verify that the Traversal Using Relays around NAT (TURN) service only allows access to IP addresses that are not reserved for special purposes (e.g., internal networks, broadcast, loopback). Note that this applies to both IPv4 and IPv6 addresses. | Can be checked | Reads the code: `config.turn-relay-reaches-reserved-addresses`, looks for: A TURN relay's own settings (`turnserver.conf`, or a coturn service's flags in a compose file) refusing every reserved range (the private, shared, link-local, and IPv6 local ranges), broadcast addresses, and loopback; the file is read, not the running relay (only ever in part) |
 | **V17.2.1** Verify that the key for the Datagram Transport Layer Security (DTLS) certificate is managed and protected based on the documented policy for management of cryptographic keys. | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.media-server`) |
 | **V17.2.2** Verify that the media server is configured to use and support approved Datagram Transport Layer Security (DTLS) cipher suites and a secure protection profile for the DTLS Extension for establishing keys for the Secure Real-time Transport Protocol (DTLS-SRTP). | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.media-server`) |
 | **V17.2.3** Verify that Secure Real-time Transport Protocol (SRTP) authentication is checked at the media server to prevent Real-time Transport Protocol (RTP) injection attacks from leading to either a Denial of Service condition or audio or video media insertion into media streams. | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.media-server`) |
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 10 can be checked, 12 can only be found failing)
+### Level 3 (92 requirements, 11 can be checked, 12 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -628,7 +628,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 | Requirement | Coverage | Checks |
 |---|---|---|
-| **V17.1.2** Verify that the Traversal Using Relays around NAT (TURN) service is not susceptible to resource exhaustion when legitimate users attempt to open a large number of ports on the TURN server. | No check yet | – |
+| **V17.1.2** Verify that the Traversal Using Relays around NAT (TURN) service is not susceptible to resource exhaustion when legitimate users attempt to open a large number of ports on the TURN server. | Can be checked | Reads the code: `config.turn-relay-unlimited`, looks for: A TURN relay's own settings setting `user-quota` and `total-quota` above 0, so one user cannot open connections without limit; the file is read, not the running relay (only ever in part) |
 | **V17.2.5** Verify that the media server is able to continue processing incoming media traffic during a flood of Secure Real-time Transport Protocol (SRTP) packets from legitimate users. | The owner answers | Asked of the owner: a design question |
 | **V17.2.6** Verify that the media server is not susceptible to the "ClientHello" Race Condition vulnerability in Datagram Transport Layer Security (DTLS) by checking if the media server is publicly known to be vulnerable or by performing the race condition test. | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.media-server`) |
 | **V17.2.7** Verify that any audio or video recording mechanisms associated with the media server are able to continue processing incoming media traffic during a flood of Secure Real-time Transport Protocol (SRTP) packets from legitimate users. | The owner answers | Asked of the owner: a design question |

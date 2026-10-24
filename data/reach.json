@@ -531,6 +531,12 @@
   ],
   "V16.5.2": [
    "running"
+  ],
+  "V17.1.1": [
+   "static"
+  ],
+  "V17.1.2": [
+   "static"
   ]
  },
  "tools_languages": {
@@ -3917,6 +3923,22 @@
     "run": "The running app",
     "looks_for": "Anyone who sends the same request can stop the app for everyone, as often as they like, and the error that did it may never reach the logs.",
     "finding_only": true
+   }
+  ],
+  "V17.1.1": [
+   {
+    "id": "config.turn-relay-reaches-reserved-addresses",
+    "run": "Reads the code",
+    "looks_for": "A TURN relay's own settings (`turnserver.conf`, or a coturn service's flags in a compose file) refusing every reserved range (the private, shared, link-local, and IPv6 local ranges), broadcast addresses, and loopback; the file is read, n...",
+    "finding_only": false
+   }
+  ],
+  "V17.1.2": [
+   {
+    "id": "config.turn-relay-unlimited",
+    "run": "Reads the code",
+    "looks_for": "A TURN relay's own settings setting `user-quota` and `total-quota` above 0, so one user cannot open connections without limit; the file is read, not the running relay",
+    "finding_only": false
    }
   ],
   "C2.1.2": [

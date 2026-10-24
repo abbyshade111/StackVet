@@ -130,6 +130,7 @@ pub fn check_dir_in(
     crate::hosted_rules::check(listing, &mut report);
     crate::public_keys::check(listing, &mut report);
     crate::model_files::check(listing, &mut report);
+    crate::turn_relay::check(listing, &mut report);
     let workflows = crate::workflows::check(app_dir);
     report.findings.extend(workflows.findings);
     report.passed.extend(workflows.passed);
