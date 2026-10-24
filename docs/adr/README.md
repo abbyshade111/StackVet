@@ -190,6 +190,7 @@ source files, and in two tests:
 | [ADR-141](ADR-141.md) | stackvet.toml sets environment variables for the copy of the app `sv` runs, and the starter stops putting the app's data under /tmp (accepted, 24 October 2026) |
 | [ADR-142](ADR-142.md) | The code rules read the calls inside Rust's standard macros, and a clean result in Rust says so (accepted, 24 October 2026) |
 | [ADR-143](ADR-143.md) | The coding rules carry a few lines for each framework the app's package lists name, each tied to the check that catches its fault (accepted, 24 October 2026) |
+| [ADR-144](ADR-144.md) | `sv rules` adds a one-line import of `AGENTS.md` to the app's own `CLAUDE.md`, and says which tools still will not see the rules (proposed, 24 October 2026) |
 
 ## Names in the records
 

@@ -1,6 +1,6 @@
 # The coding rules reach each AI tool's own instruction file, not only AGENTS.md
 
-**Status:** open
+**Status:** claimed by claude/0665-tool-files, 24 October 2026
 
 Found 24 October 2026, reading Wiz's open-source rules files
 (https://github.com/wiz-sec-public/secure-rules-files, commit `04101f88`, 23 December 2025), which are written for
@@ -31,3 +31,7 @@ copied, reworded, or kept as a test file in this repository. What a rule says (t
 given untrusted data, say) is a fact, not Wiz's expression, and every line is written in this project's own words,
 credited the way `data/prompts.json` credits the Cloud Security Alliance's guide: an `inspired_by` naming the source,
 with none of its text. A requirement is cited only after its text is read.
+
+**Claimed 24 October 2026, with ADR-144 proposed.** Each tool's documentation was read that day (the table is in
+ADR-144). Claude Code reads `AGENTS.md` only when the app has no `CLAUDE.md`, so the plan is a marked `@AGENTS.md`
+import in a `CLAUDE.md` that is already there, and a note for each tool that still will not see the rules.
