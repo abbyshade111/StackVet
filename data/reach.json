@@ -399,6 +399,9 @@
   "V10.3.1": [
    "signed-in"
   ],
+  "V10.4.16": [
+   "running"
+  ],
   "V10.5.1": [
    "signed-in"
   ],
@@ -410,6 +413,9 @@
   ],
   "V10.5.5": [
    "signed-in"
+  ],
+  "V10.6.1": [
+   "running"
   ],
   "V11.2.3": [
    "tools",
@@ -2785,6 +2791,22 @@
     "finding_only": true
    }
   ],
+  "V10.4.6": [
+   {
+    "id": "probe.authorization-server-plain-pkce",
+    "run": "The running app",
+    "looks_for": "The authorization server's own published details listing `plain` among the PKCE methods it accepts",
+    "finding_only": true
+   }
+  ],
+  "V10.4.16": [
+   {
+    "id": "probe.authorization-server-weak-client-auth",
+    "run": "The running app",
+    "looks_for": "The authorization server's own published details (`/.well-known/oauth-authorization-server`, `/.well-known/openid-configuration`) listing only key-based client authentication (`private_key_jwt`, mutual TLS) for the token address; what it...",
+    "finding_only": false
+   }
+  ],
   "V10.5.1": [
    {
     "id": "probe.oidc-nonce-not-checked",
@@ -2820,6 +2842,14 @@
     "id": "probe.oidc-logout-token-not-checked",
     "run": "Signed in",
     "looks_for": "A token that is not a proper logout token ends a person's session, so another kind of token from the same provider (an ID token, say) can be posted to the logout address to sign people out at will.",
+    "finding_only": false
+   }
+  ],
+  "V10.6.1": [
+   {
+    "id": "probe.authorization-server-implicit-flow",
+    "run": "The running app",
+    "looks_for": "The OpenID provider's own published details listing only `code`, `id_token`, and `code id_token` as response types, no implicit flow; what it says it offers, not what it does when asked for another",
     "finding_only": false
    }
   ],

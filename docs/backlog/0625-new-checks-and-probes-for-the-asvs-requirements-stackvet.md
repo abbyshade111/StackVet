@@ -48,6 +48,14 @@ for backlog 0507.
    **Part status:** open
 6. **Authorization-server metadata and settings** (V10.4.16, V10.6.1; V10.4.3, V10.4.8): one read of the app's own
    `/.well-known` documents, and a settings check for django-oauth-toolkit and node-oidc-provider. Medium.
+   The published details built 24 October 2026 (ADR-147): two read-only requests to the app's own copy,
+   `/.well-known/oauth-authorization-server` and `/.well-known/openid-configuration`, read by
+   `crates/sv-check/src/as_metadata.rs`. Weak client authentication (or none listed, which RFC 8414 reads as
+   `client_secret_basic`) is a finding against V10.4.16, and only key-based methods are credited in part; a response
+   type holding `token` is a finding against V10.6.1, and only the allowed types are credited in part; `plain` PKCE
+   is a finding against V10.4.6, never a credit. Seven tests in `crates/sv-check/src/as_metadata/tests.rs`. Broken on
+   purpose: without RFC 8414's default, the details that list no methods were not reported; with the response types
+   always allowed, the implicit flow went unfound. The settings half is the next pull request.
    **Part status:** claimed by claude/0625-6, 24 October 2026
 7. **Authorization-server probes with an owner-declared test client** (V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10,
    V10.4.12, V10.4.13, V10.6.2): redirect address, code reuse, PKCE, refresh reuse, client authentication, response

@@ -286,6 +286,7 @@ pub fn requests(health_path: &str) -> Vec<ProbeRequest> {
         headers: Vec::new(),
         body: None,
     }))
+    .chain(crate::as_metadata::requests())
     .chain(EXPOSED_PATHS.iter().map(|path| ProbeRequest {
         id: exposed_id(path),
         method: "GET".into(),
@@ -513,6 +514,7 @@ pub fn evaluate(responses: &[ProbeResponse]) -> Vec<Finding> {
     out.extend(version_disclosed(responses));
     out.extend(opener_policy(responses));
     out.extend(csp_reporting(&policy_answers(responses)));
+    out.extend(crate::as_metadata::evaluate(responses));
     out.sort_by(|a, b| {
         a.severity
             .cmp(&b.severity)
@@ -618,6 +620,12 @@ fn name_credits(credits: Vec<crate::Verified>) -> Vec<crate::Verified> {
                 id if id == GRAPHQL_AMOUNT.rule_id => vec!["graphql-aliases".to_owned()],
                 // Named where it is credited, one pair of handshakes for each path that held (ADR-118).
                 id if id == WS_ORIGIN.rule_id => credit.evidence.clone(),
+                // The published details' answers, named where each is credited (ADR-147).
+                id if id == crate::as_metadata::CLIENT_AUTH
+                    || id == crate::as_metadata::IMPLICIT =>
+                {
+                    credit.evidence.clone()
+                }
                 _ => Vec::new(),
             };
             credit.with_evidence(ids)
@@ -854,6 +862,9 @@ fn verified_unnamed(responses: &[ProbeResponse], routes: &[String]) -> Vec<crate
             .in_part(),
         );
     }
+    // What an authorization server says about itself (backlog 0625, part 6; ADR-147).
+    let published = crate::as_metadata::verified(responses, &out);
+    out.extend(published);
     out
 }
 

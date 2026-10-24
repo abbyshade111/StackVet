@@ -767,6 +767,8 @@ fn the_suite_asks_what_it_says_it_asks() {
             + CONSOLES.len()
             + 3
             + 2
+            // An authorization server's published details (backlog 0625, part 6; ADR-147).
+            + crate::as_metadata::ASKED.len()
     );
     // A body that does not parse, to the health path and the root (ADR-056), signed out.
     for path in ["/healthz", "/"] {
