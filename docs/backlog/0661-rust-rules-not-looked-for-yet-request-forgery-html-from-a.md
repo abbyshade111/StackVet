@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** partly done: four rules still to teach Rust: backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
+**Status:** partly done: three rules still to teach Rust: password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -91,3 +91,13 @@ read, except that `^` after a colon is a format string's centering (`{name:^8}`)
 form in `examples/rust-notes`, whose V11.2.1 now needs attention. Broken on purpose: without the colon rule the
 centering case was reported; with the Rust name pattern emptied, the found case and the example's fault went red; and
 with the Rust query removed, the rules refused to load. No decision record, as for the CORS rule.
+
+**`backup-codes-stored-plain` built, 24 October 2026.** A Rust field named for backup or recovery codes, assigned
+(`user.backup_codes = …`) or set where the struct is made (`Mfa { recovery_codes: … }`), given codes straight from a
+generator (`rand::random`, `thread_rng()`, `rand::rng()`, `OsRng`, `Uuid::new_v4`, `fastrand`, `nanoid!`), with no
+hashing on the line. Seven Rust cases in `crates/sv-check/src/ast/backup_codes_tests.rs`, and a fault and its safe
+form in `examples/rust-notes`. The example's report has the finding; V6.5.2 is not among the requirements the example
+is held to, so its snapshot is unchanged. Broken on purpose: with the hashing exception off, a code made and hashed on
+one line and the example's safe form were reported (a first try had no case that needed the exception, and nothing
+went red); with the generator pattern emptied, the found cases and the example's fault went red. No decision record,
+as for the CORS rule.

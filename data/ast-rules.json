@@ -2733,22 +2733,26 @@
       "queries": {
         "python": "[(assignment left: (attribute attribute: (identifier) @fn) right: (_) @arg) (keyword_argument name: (identifier) @fn value: (_) @arg)] @hit",
         "javascript": "[(assignment_expression left: (member_expression property: (property_identifier) @fn) right: (_) @arg) (pair key: (property_identifier) @fn value: (_) @arg)] @hit",
-        "typescript": "[(assignment_expression left: (member_expression property: (property_identifier) @fn) right: (_) @arg) (pair key: (property_identifier) @fn value: (_) @arg)] @hit"
+        "typescript": "[(assignment_expression left: (member_expression property: (property_identifier) @fn) right: (_) @arg) (pair key: (property_identifier) @fn value: (_) @arg)] @hit",
+        "rust": "[(assignment_expression left: (field_expression field: (field_identifier) @fn) right: (_) @arg)\n (field_initializer field: (field_identifier) @fn value: (_) @arg)] @hit"
       },
       "functionPatterns": {
         "python": "(?i)^(backup|recovery|lookup)_?(codes?|secrets?)$",
         "javascript": "(?i)^(backup|recovery|lookup)(codes?|secrets?)$",
-        "typescript": "(?i)^(backup|recovery|lookup)(codes?|secrets?)$"
+        "typescript": "(?i)^(backup|recovery|lookup)(codes?|secrets?)$",
+        "rust": "(?i)^(backup|recovery|lookup)_?(codes?|secrets?)$"
       },
       "argumentPatterns": {
         "python": "(secrets\\.(token_hex|token_urlsafe|token_bytes|choice|randbelow)|random\\.(choice|choices|randint|random|sample)|uuid\\.?uuid4|uuid4\\(|os\\.urandom)",
         "javascript": "(crypto\\.(randomBytes|randomUUID|getRandomValues|randomInt)|randomBytes\\(|randomUUID\\(|nanoid\\(|Math\\.random)",
-        "typescript": "(crypto\\.(randomBytes|randomUUID|getRandomValues|randomInt)|randomBytes\\(|randomUUID\\(|nanoid\\(|Math\\.random)"
+        "typescript": "(crypto\\.(randomBytes|randomUUID|getRandomValues|randomInt)|randomBytes\\(|randomUUID\\(|nanoid\\(|Math\\.random)",
+        "rust": "(rand::(random|thread_rng|rng)\\b|thread_rng\\(|OsRng|Uuid::new_v4|uuid::Uuid::new_v4|fastrand::|nanoid!|Alphanumeric|getrandom)"
       },
       "safeArgumentPatterns": {
         "python": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|make_password|crypt\\(|digest)",
         "javascript": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)",
-        "typescript": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)"
+        "typescript": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)",
+        "rust": "(?i)(hash|bcrypt|argon2|scrypt|pbkdf2|crypt\\(|digest)"
       },
       "nothingToFind": {
         "c": "Backup codes saved straight from a random generator are not looked for in C yet.",
@@ -2760,7 +2764,6 @@
         "kotlin": "Backup codes saved straight from a random generator are not looked for in Kotlin yet.",
         "php": "Backup codes saved straight from a random generator are not looked for in PHP yet.",
         "ruby": "Backup codes saved straight from a random generator are not looked for in Ruby yet.",
-        "rust": "Backup codes saved straight from a random generator are not looked for in Rust yet.",
         "shell": "Shell scripts are not read for backup codes: a script does not keep an app's sign-in codes.",
         "swift": "Backup codes saved straight from a random generator are not looked for in Swift yet."
       }
