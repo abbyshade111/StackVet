@@ -2642,19 +2642,20 @@
       "queries": {
         "python": "[(assignment left: (identifier) @fn) (assignment left: (attribute attribute: (identifier) @fn)) (keyword_argument name: (identifier) @fn)] @hit",
         "javascript": "[(variable_declarator name: (identifier) @fn) (pair key: (property_identifier) @fn) (assignment_expression left: (member_expression property: (property_identifier) @fn))] @hit",
-        "typescript": "[(variable_declarator name: (identifier) @fn) (pair key: (property_identifier) @fn) (assignment_expression left: (member_expression property: (property_identifier) @fn))] @hit"
+        "typescript": "[(variable_declarator name: (identifier) @fn) (pair key: (property_identifier) @fn) (assignment_expression left: (member_expression property: (property_identifier) @fn))] @hit",
+        "rust": "[(const_item name: (identifier) @fn) (static_item name: (identifier) @fn)\n (let_declaration pattern: (identifier) @fn) (field_initializer field: (field_identifier) @fn)\n (assignment_expression left: (field_expression field: (field_identifier) @fn))] @hit"
       },
       "functionPatterns": {
         "python": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$",
         "javascript": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$",
-        "typescript": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$"
+        "typescript": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$",
+        "rust": "(?i)^(password|passwd|pwd)_?(expir\\w*|max_?age\\w*|rotation\\w*|rotate\\w*|valid_?days|lifetime\\w*|age_?days|change_?interval\\w*)$|^(force|require|must)_?password_?(change|reset|rotation)\\w*$"
       },
       "looksFor": "a setting or field written into the code whose name says passwords expire after a time or must be changed on a schedule (`PASSWORD_EXPIRY_DAYS`, `password_max_age`, `forcePasswordChange`); a policy set in a hosting console or an identity provider is not read, so finding none credits nothing",
       "nothingToFind": {
         "go": "A setting for passwords that expire is not looked for in Go yet.",
         "csharp": "A setting for passwords that expire is not looked for in C# yet.",
         "kotlin": "A setting for passwords that expire is not looked for in Kotlin yet.",
-        "rust": "A setting for passwords that expire is not looked for in Rust yet.",
         "c": "A setting for passwords that expire is not looked for in C yet.",
         "cpp": "A setting for passwords that expire is not looked for in C++ yet.",
         "ruby": "A setting for passwords that expire is not looked for in Ruby yet.",

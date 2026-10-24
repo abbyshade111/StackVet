@@ -205,6 +205,11 @@ fn save_backup_codes_hashed(account: &mut Account) {
     account.backup_codes = (0..10).map(|_| bcrypt::hash(rand::random::<u64>().to_string(), 12).unwrap()).collect(); // sv:safe backup-codes-stored-plain
 }
 
+// A rule that makes passwords expire on a schedule, which leads people to weaker ones, and the length rule beside it
+// (backlog 0661).
+const PASSWORD_EXPIRY_DAYS: u32 = 90; // sv:fault password-expiry-enforced
+const PASSWORD_MIN_LENGTH: usize = 12; // sv:safe password-expiry-enforced
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).
