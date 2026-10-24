@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-model, 24 October 2026
+**Status:** partly done: one rule still to teach Rust: dynamic-code-execution, which credits V1.3.2 in part on a clean run, so teaching it Rust changes what a clean Rust app's report concludes, and wants a decision record
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -112,3 +112,12 @@ only a type sets nothing and is not read. Nine Rust cases in `crates/sv-check/sr
 fault and its safe form in `examples/rust-notes`, with no new dependency, whose V6.2.10 now needs attention. Broken on
 purpose: with the Rust name pattern emptied, the found cases and the example's fault went red. No decision record, as
 for the CORS rule.
+
+**`model-download-not-pinned` built, 24 October 2026.** The `hf-hub` crate's `api.model("org/name")`,
+`Repo::model("org/name")`, and `Repo::new("org/name", RepoType::Model)`, which take whatever was uploaded last;
+`Repo::with_revision` with a commit hash is the pinned form. Six witnesses in `crates/sv-check/src/ast/tests.rs`, and a
+fault and its safe form in `examples/rust-notes`, whose report has the finding; C6.1.3 is not among the requirements
+the example is held to, so its snapshot is unchanged. A first draft named the example's functions for embeddings, and
+the word alone made `sv` read the example as an app doing retrieval, switching on eleven AISVS requirements its
+`stackvet.toml` had switched off; the functions are named for tagging instead. Broken on purpose: with the Rust
+pattern emptied, the three found witnesses and the example's fault went red. No decision record, as for the CORS rule.
