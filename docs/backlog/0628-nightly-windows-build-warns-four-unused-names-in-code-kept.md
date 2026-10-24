@@ -1,6 +1,6 @@
 # Nightly: Windows build warns: four unused names in code kept for Unix
 
-**Status:** open
+**Status:** claimed by claude/0628, 24 October 2026
 
 Recorded by the nightly CI routine on 21 October 2026. No test failed: the scheduled Windows run on `main` passed,
 4,095 tests in 323 groups with none failing, on `1eb7c5e`
