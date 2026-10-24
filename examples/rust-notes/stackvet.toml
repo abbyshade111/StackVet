@@ -1,0 +1,10 @@
+manifest-version = 1
+
+# A small notes service in Rust, for StackVet's tests to read (backlog 0649). It is never started.
+[app]
+name = "Rust notes"
+audience = "customers"
+deployment = "internet"
+
+[stack]
+languages = ["rust"]
