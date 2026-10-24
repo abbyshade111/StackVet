@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** open
+**Status:** partly done: eleven parts, built in the order the plan below gives; the second (LaTeX with shell escape) is next
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -11,7 +11,7 @@ for backlog 0507.
 
 1. **Stock default credentials in connection addresses and compose files** (V13.2.3, L2): static, finding only; the
    fix backlog 0431 offered. Small.
-   **Part status:** open
+   **Part status:** done, 24 October 2026
 2. **LaTeX started with shell escape** (V1.2.8, L2): static, finding only. Small.
    **Part status:** open
 3. **TURN relay settings** (V17.1.1, V17.1.2): static, from the coturn file, crediting in part. Small to medium.

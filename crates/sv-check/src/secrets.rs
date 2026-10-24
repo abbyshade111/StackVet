@@ -35,6 +35,11 @@ pub struct PatternRule {
     pub description: String,
     pub impact: String,
     pub fix: String,
+    /// When true, the rule only ever reports: a clean scan does not count it among what it was evidence for. A
+    /// stock default password (`postgres:postgres@`) in the code says the requirement is not met; none in the code
+    /// says nothing about the one used in production (backlog 0625, part 1).
+    #[serde(default)]
+    pub findings_only: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -73,7 +78,7 @@ impl SecretRules {
         self.rules.iter().map(|(rule, _)| rule)
     }
 
-    /// Every requirement any credential rule is about, deduplicated.
+    /// Every requirement any credential rule is about, deduplicated, but a findings-only rule's.
     ///
     /// The union is right here and would be wrong for a per-rule claim: a scan that found no
     /// credentials of *any* listed shape is one piece of evidence about keeping credentials out of
@@ -82,6 +87,7 @@ impl SecretRules {
         let mut ids: Vec<&str> = self
             .rules
             .iter()
+            .filter(|(rule, _)| !rule.findings_only)
             .flat_map(|(rule, _)| rule.requirement_ids.iter().map(String::as_str))
             .collect();
         ids.sort_unstable();
@@ -1450,3 +1456,6 @@ mod test_passphrase_tests;
 
 #[cfg(test)]
 mod seed_placeholder_tests;
+
+#[cfg(test)]
+mod default_credentials_tests;

@@ -3193,6 +3193,20 @@
     "finding_only": true
    }
   ],
+  "V13.2.3": [
+   {
+    "id": "secrets.default-credential-address",
+    "run": "Reads the code",
+    "looks_for": "A service is reached with a stock default user name and password",
+    "finding_only": true
+   },
+   {
+    "id": "secrets.default-credential-setting",
+    "run": "Reads the code",
+    "looks_for": "A database or broker is set up with a stock default password",
+    "finding_only": true
+   }
+  ],
   "V13.2.4": [
    {
     "id": "ast.fetch-address-from-request",
@@ -3333,6 +3347,18 @@
     "run": "Reads the code",
     "looks_for": "xAI API key found in a file",
     "finding_only": false
+   },
+   {
+    "id": "secrets.default-credential-address",
+    "run": "Reads the code",
+    "looks_for": "A service is reached with a stock default user name and password",
+    "finding_only": true
+   },
+   {
+    "id": "secrets.default-credential-setting",
+    "run": "Reads the code",
+    "looks_for": "A database or broker is set up with a stock default password",
+    "finding_only": true
    },
    {
     "id": "config.secrets-file-committed",
