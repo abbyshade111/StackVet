@@ -53,6 +53,9 @@ REACH_OUT = ROOT / "data" / "reach.json"
 # The two tables a picture reads best from, drawn from the same counts (backlog 0483).
 CHAPTER_SVG = ROOT / "docs" / "coverage-by-chapter.svg"
 LEVEL_SVG = ROOT / "docs" / "coverage-by-level.svg"
+# The same picture for the other two frameworks: AISVS by level, and Secure by Design by domain.
+AISVS_LEVEL_SVG = ROOT / "docs" / "coverage-aisvs-by-level.svg"
+SBD_DOMAIN_SVG = ROOT / "docs" / "coverage-sbd-by-domain.svg"
 
 # What each kind of check needs before it can run at all.
 TIERS = [
@@ -1413,6 +1416,9 @@ def main():
     w("The ASVS tables by chapter and by level below, drawn as bars from the same counts:\n")
     w("![ASVS 5.0 by chapter: what a check can reach](coverage-by-chapter.svg)\n")
     w("![ASVS 5.0 by level: what a check can reach](coverage-by-level.svg)\n")
+    w("The same bars for AISVS 1.0 by level and for the Secure by Design checklist by domain:\n")
+    w("![AISVS 1.0 by level: what a check can reach](coverage-aisvs-by-level.svg)\n")
+    w("![Secure by Design checklist by domain: what a check can reach](coverage-sbd-by-domain.svg)\n")
     w("## How to read this\n")
     w("- **Can settle**: at least one check can mark the requirement *checked* or *needs attention*.")
     w("  A check is almost always about part of a requirement: a clean result is one automated check")
@@ -1463,6 +1469,7 @@ def main():
     w(summary_row("AISVS Appendix C", list(appendix)))
     w(summary_row("Secure by Design checklist 0.5.0", sbd_ids))
     w("")
+
 
     # ---- ASVS by level and kind
     w("## ASVS 5.0 by level\n")
@@ -1724,8 +1731,24 @@ def main():
         reqs = [q for q, v in asvs.items() if v["level"] == level]
         s_, c_, p_, o_ = (sum(f(q) for q in reqs) for f in (settles, credited, supports_only, owner_only))
         level_rows.append((f"Level {level}", c_, s_ - c_, p_, o_, len(reqs) - s_ - p_ - o_))
+    aisvs_rows = []
+    for level in sorted({v["level"] for v in aisvs.values()}):
+        reqs = [q for q, v in aisvs.items() if v["level"] == level]
+        s_, c_, p_, o_ = (sum(f(q) for q in reqs) for f in (settles, credited, supports_only, owner_only))
+        aisvs_rows.append((f"Level {level}", c_, s_ - c_, p_, o_, len(reqs) - s_ - p_ - o_))
+    # Secure by Design by domain, counted as the summary row counts it: a person answers every control, helped
+    # by a check when one speaks to the control or to an ASVS requirement the crosswalk pairs it with.
+    sbd_rows = []
+    for d in sbd["checklistDomains"]:
+        reqs = [f"SBD-{c['id']}" for c in d["controls"]]
+        p_ = sum(supports_only(q) or sbd_supported(q) for q in reqs)
+        o_ = sum(owner_only(q) and not sbd_supported(q) for q in reqs)
+        sbd_rows.append((f"{d['id']} {d['name']}", 0, 0, p_, o_, len(reqs) - p_ - o_))
     charts = ((CHAPTER_SVG, coverage_svg("ASVS 5.0 by chapter: what a check can reach", chapter_rows)),
-              (LEVEL_SVG, coverage_svg("ASVS 5.0 by level: what a check can reach", level_rows)))
+              (LEVEL_SVG, coverage_svg("ASVS 5.0 by level: what a check can reach", level_rows)),
+              (AISVS_LEVEL_SVG, coverage_svg("AISVS 1.0 by level: what a check can reach", aisvs_rows)),
+              (SBD_DOMAIN_SVG, coverage_svg("Secure by Design checklist by domain: what a check can reach",
+                                            sbd_rows)))
     if check:
         for path, want in ((OUT, text), (LIST_OUT, listing_text), (REACH_OUT, reach_text)) + charts:
             current = path.read_text(encoding="utf-8") if path.exists() else ""
@@ -1738,8 +1761,8 @@ def main():
     write_text(REACH_OUT, reach_text)
     for path, svg in charts:
         write_text(path, svg)
-    print(f"wrote {OUT.relative_to(ROOT)}, {LIST_OUT.relative_to(ROOT)}, {REACH_OUT.relative_to(ROOT)}, "
-          f"{CHAPTER_SVG.relative_to(ROOT)} and {LEVEL_SVG.relative_to(ROOT)}")
+    print(f"wrote {OUT.relative_to(ROOT)}, {LIST_OUT.relative_to(ROOT)}, {REACH_OUT.relative_to(ROOT)}, and "
+          + ", ".join(str(path.relative_to(ROOT)) for path, _ in charts))
 
 
 # How each coverage status reads in the list, in words a person who is not a programmer reads easily.

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 934 262" width="934" height="262" role="img" aria-labelledby="t d" font-family="Atkinson Hyperlegible, -apple-system, Segoe UI, sans-serif">
+<title id="t">Secure by Design checklist by domain: what a check can reach</title>
+<desc id="d">A Architecture &amp; Service Design: 8 requirements, 0 can be credited, 0 can only be found failing, 1 a check helps, a person decides, 7 the owner answers, 0 no check yet; B Data Management &amp; Protection: 6 requirements, 0 can be credited, 0 can only be found failing, 1 a check helps, a person decides, 5 the owner answers, 0 no check yet; C Reliability &amp; Resilience: 8 requirements, 0 can be credited, 0 can only be found failing, 4 a check helps, a person decides, 4 the owner answers, 0 no check yet; D Access Control &amp; Secure Communication: 7 requirements, 0 can be credited, 0 can only be found failing, 4 a check helps, a person decides, 3 the owner answers, 0 no check yet; E Monitoring, Testing &amp; Incident Readiness: 7 requirements, 0 can be credited, 0 can only be found failing, 2 a check helps, a person decides, 5 the owner answers, 0 no check yet. The same counts are the table in docs/COVERAGE.md.</desc>
+<style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}.none{fill:#182A23;stroke:#3B4842}}</style>
+<defs><pattern id="owner" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="none" width="6" height="6"/><rect width="2.5" height="6" fill="#5470C0"/></pattern></defs>
+<rect class="bg" width="934" height="262"/>
+<text class="ink" x="12" y="28" font-size="18" font-weight="700">Secure by Design checklist by domain: what a check can reach</text>
+<rect fill="#3A9470" x="12" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="32" y="58" font-size="13">can be credited</text>
+<rect fill="#D9692B" x="149" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="169" y="58" font-size="13">can only be found failing</text>
+<rect fill="#5470C0" x="356" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="376" y="58" font-size="13">a check helps, a person decides</text>
+<rect fill="url(#owner)" x="605" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="625" y="58" font-size="13">the owner answers</text>
+<rect class="none" x="756" y="46" width="14" height="14" rx="2"/>
+<text class="soft" x="776" y="58" font-size="13">no check yet</text>
+<text class="soft" x="692" y="82" font-size="12">counts, in the key's order</text>
+<text class="ink" x="12" y="109" font-size="13">A Architecture &amp; Service Design</text>
+<rect fill="#5470C0" x="300.0" y="96" width="45.5" height="18" rx="2"><title>A Architecture &amp; Service Design: 1 a check helps, a person decides</title></rect>
+<rect fill="url(#owner)" x="347.5" y="96" width="330.5" height="18" rx="2"><title>A Architecture &amp; Service Design: 7 the owner answers</title></rect>
+<text class="soft" x="692" y="109" font-size="13">0 · 0 · 1 · 7 · 0  of 8</text>
+<text class="ink" x="12" y="135" font-size="13">B Data Management &amp; Protection</text>
+<rect fill="#5470C0" x="300.0" y="122" width="45.5" height="18" rx="2"><title>B Data Management &amp; Protection: 1 a check helps, a person decides</title></rect>
+<rect fill="url(#owner)" x="347.5" y="122" width="235.5" height="18" rx="2"><title>B Data Management &amp; Protection: 5 the owner answers</title></rect>
+<text class="soft" x="692" y="135" font-size="13">0 · 0 · 1 · 5 · 0  of 6</text>
+<text class="ink" x="12" y="161" font-size="13">C Reliability &amp; Resilience</text>
+<rect fill="#5470C0" x="300.0" y="148" width="188.0" height="18" rx="2"><title>C Reliability &amp; Resilience: 4 a check helps, a person decides</title></rect>
+<rect fill="url(#owner)" x="490.0" y="148" width="188.0" height="18" rx="2"><title>C Reliability &amp; Resilience: 4 the owner answers</title></rect>
+<text class="soft" x="692" y="161" font-size="13">0 · 0 · 4 · 4 · 0  of 8</text>
+<text class="ink" x="12" y="187" font-size="13">D Access Control &amp; Secure Communication</text>
+<rect fill="#5470C0" x="300.0" y="174" width="188.0" height="18" rx="2"><title>D Access Control &amp; Secure Communication: 4 a check helps, a person decides</title></rect>
+<rect fill="url(#owner)" x="490.0" y="174" width="140.5" height="18" rx="2"><title>D Access Control &amp; Secure Communication: 3 the owner answers</title></rect>
+<text class="soft" x="692" y="187" font-size="13">0 · 0 · 4 · 3 · 0  of 7</text>
+<text class="ink" x="12" y="213" font-size="13">E Monitoring, Testing &amp; Incident Readiness</text>
+<rect fill="#5470C0" x="300.0" y="200" width="93.0" height="18" rx="2"><title>E Monitoring, Testing &amp; Incident Readiness: 2 a check helps, a person decides</title></rect>
+<rect fill="url(#owner)" x="395.0" y="200" width="235.5" height="18" rx="2"><title>E Monitoring, Testing &amp; Incident Readiness: 5 the owner answers</title></rect>
+<text class="soft" x="692" y="213" font-size="13">0 · 0 · 2 · 5 · 0  of 7</text>
+<text class="soft" x="12" y="248" font-size="12">Drawn by tools/coverage.py from the checks' own citations, with docs/COVERAGE.md; a bar is as long as its requirements.</text>
+</svg>
