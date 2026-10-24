@@ -1,6 +1,6 @@
 # Nightly: Audit finds ctutils 0.4.2: RUSTSEC-2026-0385
 
-**Status:** open
+**Status:** claimed by claude/0642, 24 October 2026
 
 Recorded by the nightly CI routine on 23 October 2026. The Audit workflow did not run in the last 26 hours (it runs
 on Mondays and when `Cargo.lock` changes), so the routine ran its steps itself, in its cloud session, on `main` at
