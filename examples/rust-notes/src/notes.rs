@@ -29,10 +29,10 @@ pub fn fingerprint_md5(b: &[u8]) -> String {
     format!("{digest:x}")
 }
 
-// The same hash made inside a macro's arguments: Rust's grammar keeps a macro's arguments as unread tokens, so no rule
-// sees the call there yet (backlog 0660). Held as known, so the day it is read, the test says so.
+// The same hash made inside a macro's arguments, which Rust's grammar keeps as unread tokens: the standard macros'
+// are read as calls (backlog 0660), so it is found there too.
 pub fn fingerprint_in_a_macro(b: &[u8]) -> String {
-    format!("{:x}", md5::compute(b)) // sv:missed weak-hash-function
+    format!("{:x}", md5::compute(b)) // sv:fault weak-hash-function
 }
 
 pub fn fingerprint_sha256(b: &[u8]) -> Vec<u8> {
@@ -59,6 +59,17 @@ pub fn key_weak(pw: &[u8], salt: &[u8], key: &mut [u8]) {
 
 pub fn key_strong(pw: &[u8], salt: &[u8], key: &mut [u8]) {
     pbkdf2::pbkdf2_hmac::<Sha256>(pw, salt, 600_000, key); // sv:safe weak-password-key-derivation
+}
+
+// Two macros deep is read as well; and a macro written as a path, `std::write!`, is never itself read as the file
+// call `std::fs::write` would be, with `out` as the path.
+pub fn fingerprint_nested(b: &[u8]) -> String {
+    format!("{}", format_args!("{:x}", md5::compute(b))) // sv:fault weak-hash-function
+}
+
+pub fn note_line(out: &mut String, path: &str) {
+    use std::fmt::Write as _;
+    assert!(std::write!(out, "{path}").is_ok()); // sv:safe file-path-from-value
 }
 
 #[cfg(test)]

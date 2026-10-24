@@ -33,6 +33,7 @@ use tree_sitter::{Language, Node, Parser, Query, QueryCapture, QueryCursor, Stre
 mod fixed;
 mod followed;
 mod html;
+mod macro_args;
 mod templates;
 pub(crate) use fixed::*;
 pub use html::*;
@@ -888,6 +889,36 @@ pub struct ParameterDestination {
 /// compiled against it; everything else about it — the patterns, the coverage it counts towards — is
 /// TypeScript's.
 pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str) -> FileRead {
+    let mut read = read_parsed(rules, language, relative, source, None);
+    // The calls inside Rust's standard macros (`format!`, `println!`, `vec!`, and the like), read from a copy of
+    // the file with each written as a call, at the same lines (backlog 0660).
+    if language == "rust"
+        && !read.parse_error
+        && let Some(copy) = macro_args::rewrite(source)
+    {
+        let inside = read_parsed(rules, language, relative, &copy.source, Some(&copy));
+        read.findings.extend(inside.findings);
+        read.findings.sort_by(|a, b| {
+            a.location
+                .line
+                .cmp(&b.location.line)
+                .then_with(|| a.rule_id.cmp(&b.rule_id))
+        });
+        read.findings
+            .dedup_by(|a, b| a.rule_id == b.rule_id && a.location.line == b.location.line);
+    }
+    read
+}
+
+/// `read_file` on one text; with `within`, the copy of a Rust file whose standard macros are written as calls, only
+/// what lies inside their arguments is kept.
+fn read_parsed(
+    rules: &AstRules,
+    language: &str,
+    relative: &str,
+    source: &str,
+    within: Option<&macro_args::Rewritten>,
+) -> FileRead {
     let unread = FileRead {
         findings: Vec::new(),
         parse_error: true,
@@ -1195,6 +1226,9 @@ pub fn read_file(rules: &AstRules, language: &str, relative: &str, source: &str)
                 .map(|c| c.node)
                 .or_else(|| m.captures().first().map(|c| c.node));
             let Some(node) = node else { continue };
+            if within.is_some_and(|copy| !copy.holds(node)) {
+                continue;
+            }
             // A destination that is the enclosing function's parameter is whatever its callers
             // pass; `scan_listing` looks them up once every file is read.
             if compiled.rule.says_when_checked
@@ -2399,6 +2433,14 @@ fn clean_rules(rules: &AstRules, scan: &AstScan) -> Vec<crate::Verified> {
                     format!("{files} (the calls it reads: {})", and_list(&names))
                 };
             }
+            // Where a rule looks in Rust includes the standard macros' arguments, and not the app's own macros
+            // (backlog 0660).
+            if *language == "rust" {
+                files = match files.strip_suffix(')') {
+                    Some(open) => format!("{open}; {})", macro_args::SAID),
+                    None => format!("{files} ({})", macro_args::SAID),
+                };
+            }
             let phrase = rule
                 .and_then(|r| r.looks_for_in.get(*language))
                 .or(rule.map(|r| &r.looks_for))
@@ -2594,6 +2636,9 @@ mod tests;
 
 #[cfg(test)]
 mod shell_list_tests;
+
+#[cfg(test)]
+mod macro_args_tests;
 
 #[cfg(test)]
 mod path_from_request_tests;
