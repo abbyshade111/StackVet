@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-"""The backlog, one file per item (docs/adr/ADR-061.md): what is open, claimed, done, or partly done, and the
+"""The backlog, one file per item (docs/adr/ADR-061.md): what is open, claimed, done, partly done, or on hold, and the
 commands that keep it so.
 
 Each item is a file under docs/backlog/, named by a four-digit number and its title made into a file name
 (`0150-one-file-per-backlog-item-with-a-status-line.md`), whose first line is `# ` and the title, which the code and
 the documents cite (`BACKLOG, "title"`) and which is never changed once written, and whose third line is the status,
-in one of four forms:
+in one of five forms:
 
     **Status:** open
     **Status:** claimed by <session>, <date>
     **Status:** done, <date>
     **Status:** partly done: <what remains>
+    **Status:** on hold: <what it waits on>
 
 The rest is the item's text, its numbered parts included. A part is a line `N. **Its title.**` and the indented lines
-under it, and has a status line of its own among them, in the same four forms (backlog 0228; ADR-061, Later, 9
+under it, and has a status line of its own among them, in the same five forms (backlog 0228; ADR-061, Later, 9
 October 2026):
 
     1. **A finding.** What is wrong, and what to do.
@@ -24,7 +25,8 @@ set from that line alone, never from the prose. A note written at the item's end
 part; `--check` fails when one names a part ("**Part 1, item 3 claimed", "**Items 3 and 7 done") that the part's own
 line disagrees with, when a part has no line, and when an item is `done` with a part that is not, or `open` with one
 begun. A done item's file is under docs/backlog/done/, the rest beside it, so the folder lists live work alone (backlog
-0228, part 6); `done` moves an item there and rewrites any path to it in the repository, and `tidy` puts every item where
+0228, part 6), one on hold under docs/backlog/hold/ (backlog 0650), so what is beside them is what is left to fix;
+`done` and `hold` move an item there and rewrites any path to it in the repository, and `tidy` puts every item where
 its status says. `--check` warns, without failing, of a live item past 300 lines (part 8). The numbers keep the order the items stood
 in the old single file when it was split on 8 October 2026, and are an identity, not a date; two pull requests open
 at once may take the same number, which harms nothing. docs/BACKLOG.md holds the rules, and no item and no list
@@ -40,6 +42,7 @@ of items: a list every item adds a line to would bring back the conflicts this l
     python3 tools/backlog.py claim 0226.3 --by <session>        # the same for part 3 of item 0226
     python3 tools/backlog.py done 0150                # sets `done, <today>`; with --remains "..." sets `partly done: ...`
     python3 tools/backlog.py done 0226.3              # the same for a part
+    python3 tools/backlog.py hold 0375 --waits "..."  # sets `on hold: ...` and moves it under hold/; a claim moves it back
     python3 tools/backlog.py convert                  # gives every part with no status line one, once (run on 9 October 2026)
     python3 tools/backlog.py tidy                     # puts each item's file under done/ or beside it, as its status says
     python3 tools/backlog.py show 0150                # prints the item
@@ -83,12 +86,15 @@ BACKLOG = ROOT / "docs" / "BACKLOG.md"
 # A done item's file moves here, keeping its number and name, so the folder above holds only live work (backlog 0228,
 # part 6). Everything that reads items reads both.
 DONE_DIR = "done"
+# An item that waits on something a session cannot do here (hardware not to hand, the owner's word, a recurrence
+# upstream) lives here, so what is beside `done/` and `hold/` is what is left to fix (backlog 0650; ADR-061, Later).
+HOLD_DIR = "hold"
 # An item past this many lines is named by --check as one to split, a warning and not a failure (backlog 0228, part 8).
 LONG_ITEM = 300
 
 NAME = re.compile(r"^(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 STATUS = re.compile(r"^\*\*Status:\*\* (?P<text>.+?)[ \t]*$", re.M)
-FORMS = re.compile(r"^(open|claimed by [^,\n]+, \S.*|done, \S.*|partly done: \S.*)$")
+FORMS = re.compile(r"^(open|claimed by [^,\n]+, \S.*|done, \S.*|partly done: \S.*|on hold: \S.*)$")
 ITEM = re.compile(r"(?=^- (?:~~)?\*\*)", re.M)
 TITLE = re.compile(r"^- (?:~~)?\*\*(.*?)\*\*(?:~~)?", re.S)
 PART = re.compile(r"^\s{0,5}(\d+)\.\s(.*?)(?=^\s{0,5}\d+\.\s|\Z)", re.S | re.M)
@@ -96,7 +102,7 @@ DONE = re.compile(r"\*\*(Done|Built|Fixed|Mended|Written|Answered|Settled)\b")
 NOT_DONE = re.compile(r"\b(Not done|not done|Not built|not built|left for|still open|remains open|Not yet)\b")
 CLAIMED = re.compile(r"\*\*Claimed\b")
 # A numbered part: `N. **Its title.**` at the start of a line, and the lines under it that are blank or indented. Its
-# status is a line of its own among them, in an item's four forms (ADR-061, Later, 9 October 2026; backlog 0228).
+# status is a line of its own among them, in an item's five forms (ADR-061, Later, 9 October 2026; backlog 0228).
 PART_HEAD = re.compile(r"^ {0,5}(\d+)\. \*\*")
 PART_STATUS = re.compile(r"^[ \t]+\*\*Part status:\*\* (?P<text>.+?)[ \t]*$", re.M)
 # A note at an item's end naming parts: "**Part 1, item 3 claimed", "**Part 1, items 9 and 10 claimed", "**Items 3 and
@@ -129,10 +135,19 @@ def marker_counts(text):
 
 
 def kind_of(status_text):
-    """The kind of a status in one of the four forms: open, claimed, partly done, or done; None otherwise."""
+    """The kind of a status in one of the five forms: open, claimed, partly done, on hold, or done; None otherwise."""
     if not status_text or not FORMS.match(status_text):
         return None
-    return "partly done" if status_text.startswith("partly") else status_text.split(" ", 1)[0].rstrip(",")
+    return form_kind(status_text)
+
+
+def form_kind(text):
+    """The kind of a status already known to be in one of the forms."""
+    if text.startswith("partly"):
+        return "partly done"
+    if text.startswith("on hold"):
+        return "on hold"
+    return text.split(" ", 1)[0].rstrip(",")
 
 
 class Part:
@@ -204,7 +219,7 @@ class Item:
         self.status_text = s.group("text") if s else None
         self.kind = None
         if self.status_text and FORMS.match(self.status_text):
-            self.kind = "partly done" if self.status_text.startswith("partly") else self.status_text.split(" ", 1)[0].rstrip(",")
+            self.kind = form_kind(self.status_text)
         self.body = text[s.end():] if s else text
         self.parts = parts_of(self.body)
         self.counts = part_counts(self.parts)
@@ -242,18 +257,23 @@ class Item:
     def set_status(self, text):
         self.text = STATUS.sub(lambda _: f"**Status:** {text}", self.text, count=1)
         write_text(self.path, self.text)
-        self.status_text, self.kind = text, ("partly done" if text.startswith("partly") else text.split(" ", 1)[0].rstrip(","))
+        self.status_text, self.kind = text, form_kind(text)
 
 
 def items(folder=FOLDER):
     """Every item, live and done, in number order."""
-    paths = list(folder.glob("*.md")) + list((folder / DONE_DIR).glob("*.md"))
+    paths = list(folder.glob("*.md")) + list((folder / DONE_DIR).glob("*.md")) + list((folder / HOLD_DIR).glob("*.md"))
     return [Item(p) for p in sorted(paths, key=lambda p: p.name)]
 
 
 def where_for(folder, item):
-    """The file an item belongs in: under `done/` when it is done, beside the others when it is not."""
-    return (folder / DONE_DIR if item.kind == "done" else folder) / item.path.name
+    """The file an item belongs in: under `done/` when it is done, under `hold/` when it is on hold, beside the others
+    when it is neither."""
+    return place_for(folder, item.kind) / item.path.name
+
+
+def place_for(folder, kind):
+    return {"done": folder / DONE_DIR, "on hold": folder / HOLD_DIR}.get(kind, folder)
 
 
 def root_of(folder):
@@ -323,7 +343,7 @@ def text_of(title, status, body):
 
 def write(folder, number, title, status, body):
     """Writes an item, under `done/` when its status is done."""
-    place = folder / DONE_DIR if kind_of(status) == "done" else folder
+    place = place_for(folder, kind_of(status))
     place.mkdir(parents=True, exist_ok=True)
     path = place / f"{number:04d}-{_named(title)}.md"
     write_text(path, text_of(title, status, body))
@@ -441,7 +461,7 @@ def part_problems(item):
         if part.status_text is None:
             found.append(f"{item.path.name}, part {part.number}, has no `**Part status:**` line")
         elif part.kind is None:
-            found.append(f"{item.path.name}, part {part.number}: the status {part.status_text!r} is in none of the four forms")
+            found.append(f"{item.path.name}, part {part.number}: the status {part.status_text!r} is in none of the five forms")
         if part.lines > 1:
             # The board reads only the first, so a stale claim a merge left above a later line hides it (0226, part 13,
             # on 10 October 2026).
@@ -470,7 +490,8 @@ def part_problems(item):
 def problems(backlog, folder):
     found = []
     titles = {}
-    paths = [p for p in folder.glob("*") if p.name != DONE_DIR] + list((folder / DONE_DIR).glob("*"))
+    paths = ([p for p in folder.glob("*") if p.name not in (DONE_DIR, HOLD_DIR)] + list((folder / DONE_DIR).glob("*"))
+             + list((folder / HOLD_DIR).glob("*")))
     for path in sorted(paths, key=lambda p: p.name):
         if path.name.startswith("."):
             continue
@@ -484,11 +505,11 @@ def problems(backlog, folder):
         if not item.status_text:
             found.append(f"{path.name} has no `**Status:**` line")
         elif not item.kind:
-            found.append(f"{path.name}: the status {item.status_text!r} is in none of the four forms")
+            found.append(f"{path.name}: the status {item.status_text!r} is in none of the five forms")
         found.extend(part_problems(item))
         if item.kind and where_for(folder, item) != item.path:
-            found.append(f"{path.name} is {item.kind} and in the wrong folder: a done item belongs under {DONE_DIR}/, and only "
-                         f"a done one (`backlog.py tidy` puts each where its status says)")
+            found.append(f"{path.name} is {item.kind} and in the wrong folder: a done item belongs under {DONE_DIR}/, one "
+                         f"on hold under {HOLD_DIR}/, and only those (`backlog.py tidy` puts each where its status says)")
         if item.title in titles:
             found.append(f"{path.name} and {titles[item.title]} share the title {item.title!r}")
         titles[item.title] = path.name
@@ -521,7 +542,7 @@ def summary(found):
     by = {}
     for i in found:
         by[i.kind or "?"] = by.get(i.kind or "?", 0) + 1
-    print(f"{len(found)} items: " + ", ".join(f"{by.get(k, 0)} {k}" for k in ("open", "claimed", "partly done", "done")))
+    print(f"{len(found)} items: " + ", ".join(f"{by.get(k, 0)} {k}" for k in ("open", "claimed", "partly done", "on hold", "done")))
 
 
 STALE_DAYS = 14
@@ -542,11 +563,12 @@ def held_by(text):
 
 def board_rows(found, now):
     """The board's lists, read from the status lines alone (never the prose): what is claimed, as an item or a
-    numbered part of one; what is partly done and what remains; what is open; what is done, latest first; and any
+    numbered part of one; what is partly done and what remains; what is open; what is on hold and what it waits on;
+    what is done, latest first; and any
     item with no readable status line. A claim is flagged for the owner to check when no session is named, when it
     names no date, or when it is older than STALE_DAYS, since a claim left by a session that has ended is the usual
     way two sessions end up on one item."""
-    progress, partly, open_, done, unread = [], [], [], [], []
+    progress, partly, open_, held, done, unread = [], [], [], [], [], []
 
     def claim_row(label, title, text):
         day = date_in(text)
@@ -569,6 +591,8 @@ def board_rows(found, now):
             partly.append((i, i.status_text[len("partly done: "):]))
         elif i.kind == "open":
             open_.append(i)
+        elif i.kind == "on hold":
+            held.append((i, i.status_text[len("on hold: "):]))
         else:
             unread.append(i)
         for p in i.parts:
@@ -576,7 +600,7 @@ def board_rows(found, now):
                 title = re.sub(r"^\d+\.\s*|\*\*", "", p.head)[:110]
                 progress.append(claim_row(f"{i.number:04d}.{p.number}", title, p.status_text))
     done.sort(key=lambda pair: pair[0], reverse=True)
-    return progress, partly, open_, [i for _, i in done], unread
+    return progress, partly, open_, held, [i for _, i in done], unread
 
 
 def table(headers, rows):
@@ -589,9 +613,9 @@ def table(headers, rows):
 
 def board_markdown(found, now):
     """The board as Markdown: the counts, then each list, read from the items' status lines by `board_rows`."""
-    progress, partly, open_, done, unread = board_rows(found, now)
+    progress, partly, open_, held, done, unread = board_rows(found, now)
     counts = f"{len(found)} items: " + ", ".join(
-        f"{sum(1 for i in found if i.kind == k)} {k}" for k in ("open", "claimed", "partly done", "done"))
+        f"{sum(1 for i in found if i.kind == k)} {k}" for k in ("open", "claimed", "partly done", "on hold", "done"))
     flagged = sum(1 for row in progress if row[4])
     parts = [
         f"# StackVet backlog board, {now.day} {now.strftime('%B %Y')}",
@@ -613,6 +637,11 @@ def board_markdown(found, now):
         "",
         table(["Item", "What"], [(f"{i.number:04d}", i.title) for i in open_]),
         "",
+        f"## On hold, with what each waits on ({len(held)})",
+        "",
+        table(["Item", "What", "Waits on"], [(f"{i.number:04d}", i.title, waits) for i, waits in held])
+        if held else "Nothing is on hold.",
+        "",
         f"## Done, latest {BOARD_DONE} of {len(done)}",
         "",
         table(["Item", "What", "Done"], [
@@ -630,7 +659,7 @@ def board_html(found, now):
     sent. Its colors follow the reader's light or dark setting."""
     import html
 
-    progress, partly, open_, done, unread = board_rows(found, now)
+    progress, partly, open_, held, done, unread = board_rows(found, now)
 
     def section(title, headers, rows, empty):
         if not rows:
@@ -642,7 +671,7 @@ def board_html(found, now):
 
     counts = "".join(
         f"<span class=\"chip {k.replace(' ', '-')}\">{sum(1 for i in found if i.kind == k)} {html.escape(k)}</span>"
-        for k in ("open", "claimed", "partly done", "done"))
+        for k in ("open", "claimed", "partly done", "on hold", "done"))
     sections = [
         section(f"In progress ({len(progress)})", ["Item", "What", "Held by", "Since", "To check"], progress,
                 "Nothing is claimed."),
@@ -650,6 +679,8 @@ def board_html(found, now):
                 [(f"{i.number:04d}", i.title, remains) for i, remains in partly], "Nothing is partly done."),
         section(f"Open, not started ({len(open_)})", ["Item", "What"],
                 [(f"{i.number:04d}", i.title) for i in open_], "Nothing is open."),
+        section(f"On hold, with what each waits on ({len(held)})", ["Item", "What", "Waits on"],
+                [(f"{i.number:04d}", i.title, waits) for i, waits in held], "Nothing is on hold."),
         section(f"Done, latest {BOARD_DONE} of {len(done)}", ["Item", "What", "Done"],
                 [(f"{i.number:04d}", i.title, date_in(i.status_text) or "not recorded")
                  for i in done[:BOARD_DONE]], "Nothing is done yet."),
@@ -786,7 +817,7 @@ rules
         write_text((folder / "0013-twin.md"), "# A done item\n\n**Status:** open\n")
         found = problems(backlog, folder)
         for want in ("notes.md is not named", "0010-untitled.md does not open", "has no `**Status:**` line",
-                     "is in none of the four forms", "share the title"):
+                     "is in none of the five forms", "share the title"):
             assert any(want in p for p in found), (want, found)
         assert _named("One file per backlog item, with a status line.") == "one-file-per-backlog-item-with-a-status-line"
     # Parts (backlog 0228): each has its own line, set by claim and done, and the check holds them to it.
@@ -822,7 +853,7 @@ rules
         # A part with no line, or one in no form, and an item whose own status disagrees with its parts.
         text = item.path.read_text(encoding="utf-8")
         write_text(item.path, text.replace("   **Part status:** claimed by alpha, 9 October 2026", "   **Part status:** soon"))
-        assert any("is in none of the four forms" in p for p in part_problems(find(folder, "1")))
+        assert any("is in none of the five forms" in p for p in part_problems(find(folder, "1")))
         write_text(item.path, text.replace("\n   **Part status:** claimed by alpha, 9 October 2026", ""))
         assert any("has no `**Part status:**` line" in p for p in part_problems(find(folder, "1")))
         write_text(item.path, text.replace("partly done: two findings", "done, 9 October 2026"))
@@ -869,6 +900,22 @@ rules
         # A new item takes the number after the highest, done ones counted.
         write_text(folder / DONE_DIR / "0009-old.md", "# Old\n\n**Status:** done, 1 October 2026\n")
         assert new(folder, "Newer").name == "0010-newer.md"
+        # On hold (backlog 0650): `hold` moves an item under hold/ and rewrites its paths; a claim brings it back;
+        # a done item is not held; the check names a held item left beside the others, and `tidy` moves it.
+        assert hold(folder, "1", "a Windows computer") is True
+        assert (folder / HOLD_DIR / "0001-a-thing.md").exists() and not (folder / "0001-a-thing.md").exists()
+        assert "backlog/hold/0001-a-thing.md" in cites.read_text(encoding="utf-8")
+        assert find(folder, "1").kind == "on hold" and problems(root / "NONE.md", folder) == []
+        rows = board_rows(items(folder), datetime.date(2026, 10, 24))
+        assert [(i.number, waits) for i, waits in rows[3]] == [(1, "a Windows computer")], rows[3]
+        assert "## On hold, with what each waits on (1)" in board_markdown(items(folder), datetime.date(2026, 10, 24))
+        assert claim(folder, "1", "alpha", "24 October 2026") is True
+        assert (folder / "0001-a-thing.md").exists(), "a held item taken up is live again"
+        assert "backlog/0001-a-thing.md" in cites.read_text(encoding="utf-8")
+        assert hold(folder, "9", "nothing") is False, "a done item is not held"
+        write_text(folder / "0001-a-thing.md", find(folder, "1").text.replace("claimed by alpha, 24 October 2026", "on hold: x"))
+        assert any("in the wrong folder" in p for p in problems(root / "NONE.md", folder))
+        assert [i.path.parent.name for i, _ in tidy(folder)] == [HOLD_DIR] and problems(root / "NONE.md", folder) == []
         write_text(folder / "0011-long.md", "# Long\n\n**Status:** open\n\n" + "a line\n" * (LONG_ITEM + 1))
         assert any("0011-long.md is" in w for w in warnings(folder)) and problems(root / "NONE.md", folder) == []
     print("backlog self-test: ok")
@@ -904,7 +951,28 @@ def claim(folder, key, session, date):
         print(f"{item.path.name} is {item.status_text}; a claim by another session is refused")
         return False
     item.set_status(f"claimed by {session}, {date}")
+    # A held item taken up is live again, beside the others.
+    rewritten = moved(folder, item)
     print(f"{item.path.name}: {item.status_text}")
+    for path in rewritten:
+        print(f"  rewrote its path in {path}")
+    return True
+
+
+def hold(folder, key, waits):
+    """Puts an item on hold, with what it waits on, and moves it under hold/. Parts are not held: a part that waits
+    is said in the item's `partly done:` line."""
+    if "." in key:
+        raise SystemExit(f"{key!r}: an item is held, not a part")
+    item = find(folder, key)
+    if item.kind == "done":
+        print(f"{item.path.name} is done; nothing to hold")
+        return False
+    item.set_status(f"on hold: {waits}")
+    rewritten = moved(folder, item)
+    print(f"{item.path.name}: {item.status_text}, now in {HOLD_DIR}/")
+    for path in rewritten:
+        print(f"  rewrote its path in {path}")
     return True
 
 
@@ -1006,15 +1074,17 @@ def main(argv):
     import argparse
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("command", nargs="?", default="list",
-                        choices=["list", "summary", "board", "new", "claim", "done", "show", "move", "convert", "tidy"])
+                        choices=["list", "summary", "board", "new", "claim", "done", "hold", "show", "move", "convert", "tidy"])
     parser.add_argument("args", nargs="*")
     parser.add_argument("--open", action="store_true")
     parser.add_argument("--claimed", action="store_true")
     parser.add_argument("--done", action="store_true")
     parser.add_argument("--partly", action="store_true")
+    parser.add_argument("--hold", action="store_true")
     parser.add_argument("--by", help="the session making a claim")
     parser.add_argument("--date", default=today())
     parser.add_argument("--remains", help="with done: what remains, making the item partly done")
+    parser.add_argument("--waits", help="with hold: what the item waits on")
     parser.add_argument(
         "--html",
         nargs="?",
@@ -1036,7 +1106,7 @@ def main(argv):
             print(f"warning: {w}")
         return 1 if found else 0
     if a.command == "list":
-        only = "open" if a.open else "claimed" if a.claimed else "done" if a.done else "partly done" if a.partly else None
+        only = "open" if a.open else "claimed" if a.claimed else "done" if a.done else "partly done" if a.partly else "on hold" if a.hold else None
         found = items()
         show_list(found, only)
         print()
@@ -1063,6 +1133,8 @@ def main(argv):
         return 0 if claim(FOLDER, a.args[0], a.by, a.date) else 1
     if a.command == "done" and len(a.args) == 1:
         return 0 if mark_done(FOLDER, a.args[0], a.date, a.remains) else 1
+    if a.command == "hold" and len(a.args) == 1 and a.waits:
+        return 0 if hold(FOLDER, a.args[0], a.waits) else 1
     if a.command == "show" and len(a.args) == 1:
         print(find(FOLDER, a.args[0]).text)
         return 0

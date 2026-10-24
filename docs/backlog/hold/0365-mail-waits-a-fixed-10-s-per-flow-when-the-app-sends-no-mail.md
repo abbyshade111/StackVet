@@ -1,6 +1,6 @@
 # mail() waits a fixed 10 s per flow when the app sends no mail
 
-**Status:** open
+**Status:** on hold: a real report's timings, to show the fixed wait costs enough to change (the owner, 24 October 2026)
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim. From the efficiency review of 12 October 2026 (backlog 0335), area: sv run speed. Severity: low. Verified against the code by the reviewing session before filing.
 

@@ -45,8 +45,11 @@ SECTIONS = [
     ("Prompts", lambda p: p.startswith("docs/prompts/") or p == "docs/PROMPTS.md"),
     # The backlog, one item per file (docs/adr/ADR-061.md), and the design record, one entry per file (ADR-060),
     # apart from the long documents beside them.
-    # Done items have a folder of their own (backlog 0228, part 6), and a section after the live ones.
-    ("Backlog, item by item", lambda p: p.startswith("docs/backlog/") and not p.startswith("docs/backlog/done/")),
+    # Done items have a folder of their own (backlog 0228, part 6), and held ones another (backlog 0650), each a
+    # section after the live ones.
+    ("Backlog, item by item", lambda p: p.startswith("docs/backlog/")
+     and not p.startswith(("docs/backlog/done/", "docs/backlog/hold/"))),
+    ("Backlog, on hold", lambda p: p.startswith("docs/backlog/hold/")),
     ("Backlog, done", lambda p: p.startswith("docs/backlog/done/")),
     ("Design record, entry by entry", lambda p: p.startswith("docs/design/")),
     ("Design, plans, and coverage", lambda p: p.startswith("docs/")),
@@ -360,11 +363,12 @@ def counts_line(found):
     by = {}
     for i in found:
         by[i.kind or "?"] = by.get(i.kind or "?", 0) + 1
-    return f"{len(found)} items: " + ", ".join(f"{by.get(k, 0)} {k}" for k in ("open", "claimed", "partly done", "done"))
+    return f"{len(found)} items: " + ", ".join(f"{by.get(k, 0)} {k}" for k in ("open", "claimed", "partly done", "on hold", "done"))
 
 
 def board(docs):
-    """The backlog at a glance: the counts, then every item under still to come, being worked on, or done."""
+    """The backlog at a glance: the counts, then every item under being worked on, still to come, on hold,
+    or done."""
     tool = backlog_tool()
     found = tool.items(ROOT / "docs" / "backlog")
     groups = [
@@ -372,6 +376,8 @@ def board(docs):
          [i for i in found if i.kind in ("claimed", "partly done")]),
         ("Still to come", "Open, and nobody's yet. The lowest number comes first, after any item it says it comes after.",
          [i for i in found if i.kind == "open"]),
+        ("On hold", "Waiting on something a session cannot do here; each status line says what.",
+         [i for i in found if i.kind == "on hold"]),
         ("Done", "Newest first.", sorted([i for i in found if i.kind == "done"], key=lambda i: -(i.number or 0))),
     ]
     body = ["<h1>The backlog at a glance</h1>",

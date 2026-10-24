@@ -1,6 +1,6 @@
 # Podman's gateway: whether rootless networking, a newer netavark, or a rule sv adds keeps a container from the computer; and the Mac half
 
-**Status:** open
+**Status:** on hold: a Linux computer with Podman, or the owner trying Podman on a Mac
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 

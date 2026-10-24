@@ -1,6 +1,6 @@
 # `sv connect --docker` on Windows, so StackVet can run in Docker there too
 
-**Status:** open
+**Status:** on hold: a Windows computer to try it on, and the owner's word (ADR-108)
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 

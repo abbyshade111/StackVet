@@ -77,7 +77,8 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
 - **The backlog folder says what comes next** (the roadmap was retired on 23 October 2026, at the owner's word). With
   no word from the owner, take the lowest-numbered open item that is unclaimed, unless its text says it comes after an
   item that is not done yet (an `**Order,** ... after NNNN.` line). Check it against `main` first: some are overtaken
-  and want a done note, not a build.
+  and want a done note, not a build. An item that waits on something a session cannot do here (hardware, the owner's
+  word, a paid trial) goes on hold, `backlog.py hold NNNN --waits "..."`, which moves it under `docs/backlog/hold/`.
 - **Claim a backlog item before starting it, in a pull request of its own, and merge that before building:** a claim
   only on a branch, or in a message, is invisible. `python3 tools/backlog.py` claims, finishes, adds, and lists items
   (its top says how); a review files each finding as an item of its own. A new test goes in a sibling test file, not at

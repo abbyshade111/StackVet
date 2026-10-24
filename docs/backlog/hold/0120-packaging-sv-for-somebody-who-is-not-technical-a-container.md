@@ -1,6 +1,6 @@
 # Packaging `sv` for somebody who is not technical: a container now, a download later
 
-**Status:** partly done: Scoop not yet tried by hand on a Windows computer, nor Homebrew on Linux; the Homebrew formula is still head-only, until the owner tags a release newer than v0.1.0 and the formula is pinned to it
+**Status:** on hold: Scoop tried by hand on a Windows computer and Homebrew on Linux, and a release tag newer than v0.1.0 from the owner
 
 **The
 owner's decision, 26 September 2026: build the container now, and keep the downloadable program

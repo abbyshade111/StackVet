@@ -1,6 +1,6 @@
 # Helping someone who is not technical start and keep using sv
 
-**Status:** partly done: part 4 not yet measured (the drafts trial and the second loop trial of 12 and 13 October ran without it), so it goes into the next paid trial; part 8 is the owner's to arrange; the report prompt (part 5) is untried in any AI tool; nothing has been tried by someone who is not technical
+**Status:** on hold: the next paid trial (part 4), part 8, which the owner arranges, and someone who is not technical to try it
 
 Asked for by the owner on 8 October 2026: "consider the best way to help someone non-technical start and use sv.
 One thought is to turn the getting started guide into a prompt so the AI tool can walk the person through the
