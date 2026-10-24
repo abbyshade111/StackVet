@@ -3,8 +3,9 @@
 //!
 //! Setting up, a person finds out what is missing one failure at a time. This answers in plain
 //! sentences, one line each: which `sv` this is and where its data is, whether the folder is in git,
-//! whether `stackvet.toml` is there and reads, whether it says how to start the app, and whether
-//! Docker can start it, which is what `sv report --run` needs.
+//! whether `stackvet.toml` is there and reads, whether it says how to start the app, whether the
+//! rules for the AI coding tool are where each tool reads them, and whether Docker can start it,
+//! which is what `sv report --run` needs.
 //!
 //! # What it cannot say
 //!
@@ -185,6 +186,8 @@ pub fn answers(app_dir: &std::path::Path, asked: &Asked) -> Vec<Line> {
         },
     });
 
+    lines.push(rules_for_the_tool(app_dir));
+
     lines.push(if asked.in_container {
         line(
             "Docker",
@@ -217,6 +220,59 @@ pub fn answers(app_dir: &std::path::Path, asked: &Asked) -> Vec<Line> {
         lines.push(line("on Windows", State::CannotTell, WINDOWS_RUN_UNTRIED));
     }
     lines
+}
+
+/// Whether the app's folder holds `sv`'s rules for the AI coding tool where each tool reads them
+/// (backlog 0667). It reads and never writes: `sv rules`, run by the person, writes them (ADR-066,
+/// ADR-144). It names files by their fixed names alone, never a folder's or a file's own text, and
+/// says nothing about whether the rules are the newest, which it cannot tell without choosing them
+/// again for the app.
+fn rules_for_the_tool(app_dir: &std::path::Path) -> Line {
+    const TOPIC: &str = "rules for the AI tool";
+    let agents = app_dir.join("AGENTS.md");
+    if std::fs::symlink_metadata(&agents).is_ok_and(|m| m.file_type().is_symlink()) {
+        return line(
+            TOPIC,
+            State::CannotTell,
+            "AGENTS.md is a link to somewhere else, and `sv` does not read through a link, so \
+             whether it holds StackVet's rules can't be told.",
+        );
+    }
+    let Ok(text) = std::fs::read_to_string(&agents) else {
+        return line(
+            TOPIC,
+            State::NotReady,
+            "There is no AGENTS.md, so an AI coding tool is not given StackVet's rules, nor told \
+             to stop when StackVet is not connected. `sv rules` writes them into it.",
+        );
+    };
+    if !text.contains(sv_frameworks::names::RULES_BEGIN)
+        && !text.contains(sv_frameworks::names::OLD_RULES_BEGIN)
+    {
+        return line(
+            TOPIC,
+            State::NotReady,
+            "AGENTS.md has no section of StackVet's rules for the AI coding tool. `sv rules` adds \
+             it after what is there, which it leaves as it was.",
+        );
+    }
+    let plan = sv_check::tool_files::plan(app_dir);
+    let mut said = "AGENTS.md holds StackVet's rules for the AI coding tool.".to_owned();
+    let state = match &plan.claude {
+        Some(sv_check::tool_files::Claude::Import { file, .. }) => {
+            said.push_str(&format!(
+                " But this project has {file}, which does not bring AGENTS.md in, so Claude Code \
+                 does not see the rules. `sv rules` adds the line that does."
+            ));
+            State::NotReady
+        }
+        _ => State::Ready,
+    };
+    for note in &plan.notes {
+        said.push(' ');
+        said.push_str(note);
+    }
+    line(TOPIC, state, said)
 }
 
 /// The answers as the terminal prints them.
@@ -253,6 +309,10 @@ pub fn text_quoting(folder: &str, lines: &[Line], quote: &dyn Fn(&str) -> String
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+#[path = "doctor/rules_tests.rs"]
+mod rules_tests;
 
 #[cfg(test)]
 #[path = "doctor/windows_tests.rs"]

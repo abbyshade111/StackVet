@@ -4,11 +4,12 @@
 use super::tests::{call, scratch_app, sv_own_words, text};
 use super::*;
 
-const TOPICS: [&str; 5] = [
+const TOPICS: [&str; 6] = [
     "sv",
     "git",
     "stackvet.toml",
     "how to start the app",
+    "rules for the AI tool",
     "Docker",
 ];
 
@@ -33,7 +34,7 @@ fn the_status_answers_each_question_and_credits_nothing() {
     assert_eq!(result["isError"], false, "{result}");
     let lines = result["structuredContent"]["lines"].as_array().unwrap();
     let topics: Vec<&str> = lines.iter().map(|l| l["topic"].as_str().unwrap()).collect();
-    // A copy built for Windows answers a sixth: the checks that start the app are untried there (backlog 0510, 0517).
+    // A copy built for Windows answers a seventh: the checks that start the app are untried there (backlog 0510, 0517).
     let mut expected = TOPICS.to_vec();
     if cfg!(windows) {
         expected.push("on Windows");
@@ -44,9 +45,12 @@ fn the_status_answers_each_question_and_credits_nothing() {
         assert_eq!(line["state"], "cannot-tell", "{line}");
     }
     // The example's stackvet.toml reads and names an image and a start command: the setup worked.
+    // The example has no AGENTS.md, so the rules for the AI tool are not ready, and the answer says how to
+    // write them (backlog 0667).
     for (topic, state) in [
         ("stackvet.toml", "ready"),
         ("how to start the app", "ready"),
+        ("rules for the AI tool", "not-ready"),
     ] {
         let line = lines.iter().find(|l| l["topic"] == topic).unwrap();
         assert_eq!(line["state"], state, "{line}");
