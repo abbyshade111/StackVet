@@ -1000,6 +1000,42 @@ fn cmd_rules(args: &[String]) -> Result<()> {
             None => "",
         }
     );
+    // Claude Code reads AGENTS.md only when the app has no CLAUDE.md, so a CLAUDE.md the app already
+    // has gets a marked import of it, and each tool that will still not see the rules is named
+    // (ADR-144).
+    let plan = sv_check::tool_files::plan(&app_dir);
+    match &plan.claude {
+        Some(sv_check::tool_files::Claude::Import { file, import }) => {
+            let (dir, name) = match file.rsplit_once('/') {
+                Some((folder, name)) => (app_dir.join(folder), name),
+                None => (app_dir.clone(), *file),
+            };
+            let path = dir.join(name);
+            let existing = std::fs::read_to_string(&path)
+                .with_context(|| format!("reading {}", path.display()))?;
+            let section = sv_check::tool_files::claude_section(import);
+            match found.rules.into_agents_file(Some(&existing), &section) {
+                Ok(text) => {
+                    if text != existing {
+                        write_without_following(&dir, name, text.as_bytes())?;
+                    }
+                    println!(
+                        "Added the line `{import}` to {}, between sv's markers, so Claude Code reads \
+                         the rules too; the rest of the file is unchanged.",
+                        path.display()
+                    );
+                }
+                Err(e) => println!("{} was left as it was: {e}.", path.display()),
+            }
+        }
+        Some(sv_check::tool_files::Claude::AlreadyImports { file }) => println!(
+            "{file} already brings in AGENTS.md, so Claude Code reads the rules; it was left as it was."
+        ),
+        None => {}
+    }
+    for note in &plan.notes {
+        println!("{note}");
+    }
     if !found.filtered {
         println!(
             "There is no stackvet.toml yet, so every rule is included. Run `sv rules` again once \

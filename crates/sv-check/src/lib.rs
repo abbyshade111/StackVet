@@ -82,6 +82,7 @@ pub mod text;
 pub mod outbound_rules;
 #[doc(hidden)]
 pub mod test_support;
+pub mod tool_files;
 pub mod totp;
 pub mod verified;
 pub mod weak_keys;

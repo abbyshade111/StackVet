@@ -1,6 +1,6 @@
 # The coding rules reach each AI tool's own instruction file, not only AGENTS.md
 
-**Status:** claimed by claude/0665-tool-files, 24 October 2026
+**Status:** done, 24 October 2026
 
 Found 24 October 2026, reading Wiz's open-source rules files
 (https://github.com/wiz-sec-public/secure-rules-files, commit `04101f88`, 23 December 2025), which are written for
@@ -35,3 +35,10 @@ with none of its text. A requirement is cited only after its text is read.
 **Claimed 24 October 2026, with ADR-144 proposed.** Each tool's documentation was read that day (the table is in
 ADR-144). Claude Code reads `AGENTS.md` only when the app has no `CLAUDE.md`, so the plan is a marked `@AGENTS.md`
 import in a `CLAUDE.md` that is already there, and a note for each tool that still will not see the rules.
+
+**Built 24 October 2026** (ADR-144, accepted). `sv rules` puts a marked `@AGENTS.md` import (`@../AGENTS.md` from
+`.claude/`) into a `CLAUDE.md` the app already has, never creates one, never copies the rules, and never writes
+through a link to the file or to `.claude`. It names Claude Code with only a `CLAUDE.local.md`, Codex with an
+`AGENTS.override.md`, Aider with an `.aider.conf.yml` that does not read `AGENTS.md`, and Cline when `.clinerules` is
+there, and leaves each of those files alone. `crates/sv-check/src/tool_files.rs` plans it;
+`crates/sv-cli/tests/rules_tool_files.rs` holds it, and each of its guards was broken on purpose and watched go red.
