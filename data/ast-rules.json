@@ -154,7 +154,7 @@
         "java": "(method_invocation name: (identifier) @fn\n                   arguments: (argument_list . (_) @arg)) @hit",
         "csharp": "[(invocation_expression function: (member_access_expression name: (identifier) @fn)\n                       arguments: (argument_list . (argument (_) @arg)))\n (invocation_expression function: (member_access_expression name: (generic_name (identifier) @fn))\n                       arguments: (argument_list . (argument (_) @arg)))\n (invocation_expression function: (identifier) @fn\n                       arguments: (argument_list . (argument (_) @arg)))\n (object_creation_expression type: (identifier) @fn\n                            arguments: (argument_list . (argument (_) @arg)))\n (assignment_expression left: (member_access_expression name: (identifier) @fn) right: (_) @arg)\n (assignment_expression left: (identifier) @fn right: (_) @arg)] @hit",
         "kotlin": "[(call_expression (navigation_expression (_) (identifier) @fn)\n                  (value_arguments . (value_argument (_) @arg)))\n (call_expression (identifier) @fn (value_arguments . (value_argument (_) @arg)))] @hit",
-        "rust": "(call_expression function: (field_expression field: (field_identifier) @fn)\n                 arguments: (arguments . (_) @arg)) @hit",
+        "rust": "(call_expression function: (field_expression field: (field_identifier) @fn)\n                 arguments: (arguments . (_) @arg)) @hit\n(call_expression function: [(scoped_identifier name: (identifier) @fn) (generic_function function: (scoped_identifier name: (identifier) @fn))]\n                 arguments: (arguments . (_) @arg)) @hit",
         "c": "(call_expression function: (identifier) @fn\n                 arguments: (argument_list . (_) @arg)) @hit",
         "dart": "(call_expression function: (member_expression property: (identifier) @fn)\n                 arguments: (arguments . (_) @arg)) @hit",
         "swift": "[(call_expression (simple_identifier) @fn (call_suffix (value_arguments . (value_argument) . (value_argument) @arg)))\n (call_expression (navigation_expression suffix: (navigation_suffix suffix: (simple_identifier) @fn))\n                 (call_suffix (value_arguments . (value_argument) @arg)))] @hit",
@@ -171,7 +171,7 @@
         "java": "^(executeQuery|executeUpdate|execute|executeLargeUpdate|createQuery|createNativeQuery|addBatch|prepareStatement|prepareCall|query|queryForObject|queryForList|queryForMap|queryForRowSet|queryForStream|update|batchUpdate)$",
         "csharp": "^(CommandText|ExecuteReader|ExecuteNonQuery|ExecuteScalar|FromSqlRaw|ExecuteSqlRaw|ExecuteSqlRawAsync|SqlCommand|SqliteCommand|NpgsqlCommand|MySqlCommand|OracleCommand|OleDbCommand|OdbcCommand|Query|QueryAsync|QueryFirst|QueryFirstAsync|QueryFirstOrDefault|QueryFirstOrDefaultAsync|QuerySingle|QuerySingleAsync|QuerySingleOrDefault|QuerySingleOrDefaultAsync|QueryMultiple|QueryMultipleAsync|Execute|ExecuteAsync|ExecuteScalarAsync)$",
         "kotlin": "^(rawQuery|execSQL|executeQuery|executeUpdate|executeLargeUpdate|addBatch|createQuery|createNativeQuery|prepareStatement|prepareCall)$",
-        "rust": "^(execute|query|query_row|query_map|prepare|batch_execute)$",
+        "rust": "^(execute|query|query_as|query_scalar|query_row|query_map|prepare|batch_execute)$",
         "c": "^(sqlite3_exec|mysql_query|mysql_real_query|PQexec)$",
         "dart": "^(rawQuery|rawInsert|rawUpdate|rawDelete|execute|mappedResultsQuery|customSelect|customStatement|customUpdate|customInsert|prepare)$",
         "swift": "^(sqlite3_exec|sqlite3_prepare|sqlite3_prepare_v2|sqlite3_prepare_v3|execute|executeQuery|executeUpdate|executeStatements)$",
@@ -188,7 +188,8 @@
       },
       "looksFor": "a database query, sent through the usual database libraries' query calls, joined together from text and values rather than sent with its values kept separate",
       "looksForIn": {
-        "shell": "psql, mysql, sqlite3, or a similar client given a query built from a variable"
+        "shell": "psql, mysql, sqlite3, or a similar client given a query built from a variable",
+        "rust": "a query method such as rusqlite's `execute`, or sqlx's `sqlx::query`, `query_as`, or `query_scalar`, given text built from a value (a `format!` with a value in it); the `query!` macros, which check their query when the app is built, are not read"
       },
       "argumentPositions": {
         "go": {
@@ -831,7 +832,7 @@
         "python": "(call function: (identifier) @fn arguments: (argument_list . (_) @arg)) @hit",
         "javascript": "(call_expression function: (member_expression object: (identifier) property: (property_identifier) @fn) @mod\n                 arguments: (arguments . (_) @arg)) @hit\n(call_expression function: (member_expression object: (identifier) property: (property_identifier) @fn) @mod\n                 arguments: (arguments . (number) . (_) @arg)) @hit\n(call_expression function: (member_expression object: (member_expression) property: (property_identifier) @fn) @mod\n                 arguments: (arguments . (_) @arg)) @hit\n(call_expression function: (identifier) @fn @mod\n                 arguments: (arguments . (_) @arg)) @hit\n(call_expression function: (identifier) @fn @mod\n                 arguments: (arguments . (number) . (_) @arg)) @hit\n(assignment_expression left: (member_expression property: (property_identifier) @fn) @mod\n                       right: (_) @arg) @hit",
         "typescript": "(call_expression function: (member_expression object: (identifier) property: (property_identifier) @fn) @mod\n                 arguments: (arguments . (_) @arg)) @hit\n(call_expression function: (member_expression object: (identifier) property: (property_identifier) @fn) @mod\n                 arguments: (arguments . (number) . (_) @arg)) @hit\n(call_expression function: (member_expression object: (member_expression) property: (property_identifier) @fn) @mod\n                 arguments: (arguments . (_) @arg)) @hit\n(call_expression function: (identifier) @fn @mod\n                 arguments: (arguments . (_) @arg)) @hit\n(call_expression function: (identifier) @fn @mod\n                 arguments: (arguments . (number) . (_) @arg)) @hit\n(assignment_expression left: (member_expression property: (property_identifier) @fn) @mod\n                       right: (_) @arg) @hit",
-        "go": "(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn)\n                 arguments: (argument_list . (_) . (_) . (_) @arg)) @hit",
+        "go": "(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn)\n                 arguments: (argument_list . (_) . (_) . (_) @arg)) @hit\n(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn)\n                 arguments: (argument_list . (_) . (_) @arg .)) @hit",
         "php": "(function_call_expression function: (name) @fn\n                          arguments: (arguments . (argument (_) @arg))) @hit",
         "ruby": "(call method: (identifier) @fn arguments: (argument_list . (_) @arg)) @hit",
         "java": "(method_invocation name: (identifier) @fn arguments: (argument_list . (_) @arg)) @hit",
@@ -864,7 +865,7 @@
       "modulePatterns": {
         "javascript": "^((res|response|reply|ctx)\\.redirect|(res|response)\\.location|(NextResponse|Response)\\.redirect|redirect|permanentRedirect|((window|document|self|top)\\.)?location(\\.href|\\.assign)?|(window|document|self|top)\\.location\\.replace)$",
         "typescript": "^((res|response|reply|ctx)\\.redirect|(res|response)\\.location|(NextResponse|Response)\\.redirect|redirect|permanentRedirect|((window|document|self|top)\\.)?location(\\.href|\\.assign)?|(window|document|self|top)\\.location\\.replace)$",
-        "go": "^http$",
+        "go": "^(http|c|ctx)$",
         "dart": "(^|\\.)(Response|response|res)$",
         "rust": "(^|::)Redirect$",
         "c": "(?i)^\"\\s*location\\s*:",
@@ -888,6 +889,7 @@
       },
       "looksFor": "a redirect to a destination built from a value",
       "looksForIn": {
+        "go": "net/http's `http.Redirect(w, r, address, code)`, and Gin's or Echo's `c.Redirect(code, address)` on a context named `c` or `ctx`, as their own documentation names it; a context under another name is not read",
         "shell": "only a Location header printed with echo or printf from a variable, the way a CGI script redirects",
         "c": "only a Location header printed with printf or a similar call from a value, the way a CGI program redirects",
         "php": "a Location header set with header() from a value",
@@ -1926,7 +1928,7 @@
         "rust": "[(call_expression function: (field_expression field: (field_identifier) @mod))\n (call_expression function: (scoped_identifier name: (identifier) @mod))] @fn @hit"
       },
       "functionPatterns": {
-        "python": "^(CORS|cross_origin)$",
+        "python": "^(CORS|cross_origin|add_middleware|Middleware)$",
         "javascript": "^(cors|register)$",
         "typescript": "^(cors|register)$",
         "java": "(?s)((allowedOriginPatterns|addAllowedOriginPattern|setAllowedOriginPatterns)\\(\\s*((List\\.of|Arrays\\.asList)\\(\\s*)?\"\\*\"|originPatterns\\s*=\\s*\"\\*\").*((allowCredentials|setAllowCredentials)\\(\\s*true\\s*\\)|allowCredentials\\s*=\\s*\"true\")|((allowCredentials|setAllowCredentials)\\(\\s*true\\s*\\)|allowCredentials\\s*=\\s*\"true\").*((allowedOriginPatterns|addAllowedOriginPattern|setAllowedOriginPatterns)\\(\\s*((List\\.of|Arrays\\.asList)\\(\\s*)?\"\\*\"|originPatterns\\s*=\\s*\"\\*\")",
@@ -1934,14 +1936,14 @@
         "rust": "(?s)^(tower_http::cors::)?CorsLayer::very_permissive\\(\\)$|^(actix_cors::)?Cors::permissive\\(\\)$|(mirror_request\\(\\)|allow_any_origin\\(\\)).*(allow_credentials\\(\\s*true\\s*\\)|supports_credentials\\(\\))|(allow_credentials\\(\\s*true\\s*\\)|supports_credentials\\(\\)).*(mirror_request\\(\\)|allow_any_origin\\(\\))"
       },
       "argumentPatterns": {
-        "python": "\\bsupports_credentials\\s*=\\s*True\\b",
+        "python": "\\bsupports_credentials\\s*=\\s*True\\b|(?s:^\\(\\s*CORSMiddleware\\b.*((\\ballow_origins\\s*=\\s*\\[\\s*[\"']\\*[\"']\\s*\\]|\\ballow_origin_regex\\s*=\\s*r?[\"']\\.\\*[\"']).*\\ballow_credentials\\s*=\\s*True\\b|\\ballow_credentials\\s*=\\s*True\\b.*(\\ballow_origins\\s*=\\s*\\[\\s*[\"']\\*[\"']\\s*\\]|\\ballow_origin_regex\\s*=\\s*r?[\"']\\.\\*[\"'])))",
         "javascript": "(?s)\\borigin\\s*:\\s*(true|/\\.\\*/)\\s*[,}].*\\bcredentials\\s*:\\s*true\\b|\\bcredentials\\s*:\\s*true\\b.*\\borigin\\s*:\\s*(true|/\\.\\*/)\\s*[,}]",
         "typescript": "(?s)\\borigin\\s*:\\s*(true|/\\.\\*/)\\s*[,}].*\\bcredentials\\s*:\\s*true\\b|\\bcredentials\\s*:\\s*true\\b.*\\borigin\\s*:\\s*(true|/\\.\\*/)\\s*[,}]"
       },
       "safeArgumentPatterns": {
         "python": "\\b(origins|resources)\\s*="
       },
-      "looksFor": "CORS settings in the code that accept every origin and also allow credentials: flask-cors without a list of origins (Python), `origin: true` or `/.*/` with `credentials: true` (Express, Fastify), `allowedOriginPatterns(\"*\")` or `originPatterns = \"*\"` with credentials (Spring), and `SetIsOriginAllowed(_ => true)` with `AllowCredentials()` (ASP.NET Core); a list of origins built at run time, or headers set by hand, is not looked for, so finding none credits nothing",
+      "looksFor": "CORS settings in the code that accept every origin and also allow credentials: flask-cors without a list of origins, and Starlette's or FastAPI's `CORSMiddleware` given `allow_origins=[\"*\"]` or `allow_origin_regex=\".*\"` with `allow_credentials=True` (Python), `origin: true` or `/.*/` with `credentials: true` (Express, Fastify), `allowedOriginPatterns(\"*\")` or `originPatterns = \"*\"` with credentials (Spring), and `SetIsOriginAllowed(_ => true)` with `AllowCredentials()` (ASP.NET Core); a list of origins built at run time, or headers set by hand, is not looked for, so finding none credits nothing",
       "nothingToFind": {
         "go": "Go's CORS libraries (`rs/cors`, `gin-contrib/cors`) take a function or a list that cannot be told to hold every site from one file in the common case, so they are not looked for yet.",
         "ruby": "`rack-cors` refuses `origins '*'` with `credentials: true` when the app starts, so that pair cannot run; an origin block that lets every site in is not looked for yet.",
