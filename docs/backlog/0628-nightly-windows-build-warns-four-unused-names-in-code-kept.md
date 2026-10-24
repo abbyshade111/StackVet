@@ -22,3 +22,5 @@ Whether the Windows workflow should also fail on warnings is a separate question
 it fixes nothing.
 
 Seen again on 23 October 2026: Windows (scheduled), run <https://github.com/abbyshade111/StackVet/actions/runs/39932434655>, commit `3970e3b`. The same four warnings (adapters.rs lines 31, 951, and 2658; review.rs line 226); 4,179 tests passed, 0 failed.
+
+Seen again on 24 October 2026: Windows (scheduled), run <https://github.com/abbyshade111/StackVet/actions/runs/40080492823>, commit `125d516`. The same four warnings, two of them moved down by later changes (adapters.rs lines 31, 951, and 2676; review.rs line 231); 4,233 tests passed, 0 failed.

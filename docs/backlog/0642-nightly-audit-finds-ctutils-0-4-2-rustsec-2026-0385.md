@@ -27,3 +27,5 @@ The "medium" is `sv`'s placeholder: the advisory carries no CVSS vector `sv` can
   requirement allows it, and check that the Audit workflow passes; Dependabot may open the same update. Before
   deciding it does not matter, read the advisory: whether `sv` uses the affected comparisons on a secret is the
   question. This routine records; it fixes nothing.
+
+Seen again on 24 October 2026: Audit (the Audit workflow did not run in the last 26 hours, so the routine ran its steps in its cloud session), on `main` at commit `bb87b7b` (pull request #2269): `sv audit` compared 92 packages against 2,969 advisory records and exited 1, the same single finding, `ctutils` 0.4.2, RUSTSEC-2026-0385; `Cargo.lock` still holds 0.4.2.
