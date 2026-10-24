@@ -41,6 +41,7 @@ The requirements themselves, as published. Read by `sv-frameworks` and counted b
 | `design-questions.json` | `sv-check`, `sv-cli` | The design questions answered in `stackvet.toml`. An optional `whyNotChecked` says in plain words why nothing `sv` does can check the requirement, shown beside the question (backlog 0490). |
 | `human-checks.json` | `sv-check`, `sv-cli` | How to check by hand what no automated check can settle. |
 | `coding-rules.json` | `sv-check`, `sv-cli` | Rules the AI coding tool follows while it writes the app. |
+| `stack-guidance.json` | `sv-check`, `sv-cli` | A few lines for each web framework, given after the coding rules when the app's package lists name it, each naming the code rule that finds its fault, with that fault written in the framework for the test alone (ADR-143). |
 | `prompts.json` | `sv-check`, `sv-cli`, `tools/coverage.py`; `docs/PROMPTS.md` is written from it by hand | Prompts for the AI coding tool, each with the check that shows whether it worked and the result of trying it. |
 | `design-prompts.json` | `sv-check`, `sv-cli`, `tools/coverage.py`; `docs/prompts/design-time.md` is written from it by hand | Design-time prompts from the Secure by Design checklist, in `prompts.json`'s shape, with the checklist controls each helps a person answer. |
 | `design-decisions.json` | `sv-check`, `sv-cli` | The sections of `design-decisions.md` that count toward a Secure by Design control, read as the security notes are, each with the heading its design-time prompt writes and what a written section does not show. |

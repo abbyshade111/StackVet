@@ -71,6 +71,7 @@ pub mod sign_in_paths;
 pub mod signed;
 pub mod signed_in;
 mod ssh_format;
+pub mod stack_guidance;
 pub mod stand_in;
 pub mod suite;
 pub mod template_escaping;

@@ -1,6 +1,6 @@
 # Secure-coding guidance for each stack, given only for the stack sv detects
 
-**Status:** claimed by claude/0663-stack-guidance, 24 October 2026
+**Status:** done, 24 October 2026
 
 Found 24 October 2026, reading Wiz's open-source rules files
 (https://github.com/wiz-sec-public/secure-rules-files, commit `04101f88`, 23 December 2025). They hold, for nine
@@ -38,3 +38,10 @@ with none of its text. A requirement is cited only after its text is read.
 
 **Claimed 24 October 2026, with ADR-143 proposed** (the plan: `data/stack-guidance.json`, frameworks recognized by
 the packages an app lists, each line tied to an existing check and carrying its citations).
+
+**Built 24 October 2026** (ADR-143, accepted). `data/stack-guidance.json` holds 26 lines for Flask, Django, FastAPI,
+Express, React, Ruby on Rails, Axum, and Gin; `crates/sv-check/src/stack_guidance.rs` finds a framework by a package the
+app declares and refuses a line naming a code rule `sv` lacks or a check with no fault for it; and
+`crates/sv-check/tests/stack_guidance.rs` holds every line's fault to the rule it names. The lines follow the coding
+rules in `sv rules` and `stackvet_guidance` (which also names the frameworks found), and `sv brief` points to them.
+The test dropped three lines whose rule does not read the framework's form: backlog 0666.
