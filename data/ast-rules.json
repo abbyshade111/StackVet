@@ -2678,29 +2678,31 @@
       ],
       "description": "A function whose name says it encrypts, decrypts, or hides data combines bytes with XOR (`^`) itself rather than calling a cryptography library. XOR with a key written into the code, or repeated, is a cipher anyone can undo.",
       "impact": "Whatever the function protects can be read by anyone who has a little of it and a few minutes: a repeated XOR key falls to well-known methods, and the key is usually in the code anyway.",
-      "fix": "Use a well-known library's authenticated encryption instead, such as `cryptography.fernet.Fernet` in Python, or `crypto.createCipheriv('aes-256-gcm', ...)` in Node, with a key kept in a setting, never in the code.",
+      "fix": "Use a well-known library's authenticated encryption instead, such as `cryptography.fernet.Fernet` in Python, or `crypto.createCipheriv('aes-256-gcm', ...)` in Node, or the `aes-gcm` crate's `Aes256Gcm` in Rust, with a key kept in a setting, never in the code.",
       "findingsOnly": true,
       "queries": {
         "python": "(function_definition name: (identifier) @fn body: (block) @arg) @hit",
         "javascript": "[(function_declaration name: (identifier) @fn body: (statement_block) @arg) (method_definition name: (property_identifier) @fn body: (statement_block) @arg)] @hit",
-        "typescript": "[(function_declaration name: (identifier) @fn body: (statement_block) @arg) (method_definition name: (property_identifier) @fn body: (statement_block) @arg)] @hit"
+        "typescript": "[(function_declaration name: (identifier) @fn body: (statement_block) @arg) (method_definition name: (property_identifier) @fn body: (statement_block) @arg)] @hit",
+        "rust": "(function_item name: (identifier) @fn body: (block) @arg) @hit"
       },
       "functionPatterns": {
         "python": "(?i)^_*(encrypt|decrypt|cipher|decipher|encode_?secret|decode_?secret|obfuscate|deobfuscate|scramble|unscramble|xor_?(encrypt|cipher))\\w*$",
         "javascript": "(?i)^_*(encrypt|decrypt|cipher|decipher|encode_?secret|decode_?secret|obfuscate|deobfuscate|scramble|unscramble|xor_?(encrypt|cipher))\\w*$",
-        "typescript": "(?i)^_*(encrypt|decrypt|cipher|decipher|encode_?secret|decode_?secret|obfuscate|deobfuscate|scramble|unscramble|xor_?(encrypt|cipher))\\w*$"
+        "typescript": "(?i)^_*(encrypt|decrypt|cipher|decipher|encode_?secret|decode_?secret|obfuscate|deobfuscate|scramble|unscramble|xor_?(encrypt|cipher))\\w*$",
+        "rust": "(?i)^_*(encrypt|decrypt|cipher|decipher|encode_?secret|decode_?secret|obfuscate|deobfuscate|scramble|unscramble|xor_?(encrypt|cipher))\\w*$"
       },
       "argumentPatterns": {
         "python": "[^\\^]\\^=?[^\\^]",
         "javascript": "[^\\^]\\^=?[^\\^]",
-        "typescript": "[^\\^]\\^=?[^\\^]"
+        "typescript": "[^\\^]\\^=?[^\\^]",
+        "rust": "[^\\^:]\\^=?[^\\^]"
       },
       "looksFor": "a function whose name says it encrypts, decrypts, or hides data, and whose body combines values with XOR (`^`) itself; hand-rolled cryptography written another way is not looked for, so finding none credits nothing",
       "nothingToFind": {
         "go": "Hand-rolled encryption is not looked for in Go yet.",
         "csharp": "Hand-rolled encryption is not looked for in C# yet.",
         "kotlin": "Hand-rolled encryption is not looked for in Kotlin yet.",
-        "rust": "Hand-rolled encryption is not looked for in Rust yet.",
         "c": "Hand-rolled encryption is not looked for in C yet.",
         "cpp": "Hand-rolled encryption is not looked for in C++ yet.",
         "ruby": "Hand-rolled encryption is not looked for in Ruby yet.",

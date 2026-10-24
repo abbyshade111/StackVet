@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-crypto, 24 October 2026
+**Status:** partly done: four rules still to teach Rust: backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -83,3 +83,11 @@ provider, and its snapshot gains that scope's requirements: V10.5.2 needs attent
 (OAuth and OIDC, V10.x, with V6.8.x, V7.1.3, and V7.6.x) are not verified, as nothing here checks them. Broken on
 purpose: with the Rust pattern emptied, the three found witnesses and the example's fault went red. No decision record,
 as for the CORS rule.
+
+**`hand-rolled-cryptography` built, 24 October 2026.** A Rust function or method whose name says it encrypts,
+decrypts, or hides data, and whose body uses XOR (`^` or `^=`) itself, with the names and the XOR the other languages
+read, except that `^` after a colon is a format string's centering (`{name:^8}`), not XOR. The rule's fix now names the
+`aes-gcm` crate for Rust. Five Rust cases in `crates/sv-check/src/ast/hand_rolled_tests.rs`, and a fault and its safe
+form in `examples/rust-notes`, whose V11.2.1 now needs attention. Broken on purpose: without the colon rule the
+centering case was reported; with the Rust name pattern emptied, the found case and the example's fault went red; and
+with the Rust query removed, the rules refused to load. No decision record, as for the CORS rule.
