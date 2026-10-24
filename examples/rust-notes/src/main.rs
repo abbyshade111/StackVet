@@ -149,6 +149,15 @@ fn cors_own_site() -> CorsLayer {
     CorsLayer::new().allow_origin(OWN_SITE.parse::<HeaderValue>().unwrap()).allow_credentials(true) // sv:safe cors-any-origin-with-credentials
 }
 
+// A template made from the request's own text, and one written out with the value passed in as data (backlog 0661).
+fn shared_note_page(q: Query<Shared>, ctx: &tera::Context) -> String {
+    tera::Tera::one_off(&q.layout, ctx, true).unwrap_or_default() // sv:fault template-built-from-value
+}
+
+fn shared_note_page_fixed(ctx: &tera::Context) -> String {
+    tera::Tera::one_off("<h1>{{ title }}</h1>", ctx, true).unwrap_or_default() // sv:safe template-built-from-value
+}
+
 #[cfg(test)]
 mod tests {
     // In test code: still found, and listed apart (ADR-023).
