@@ -399,6 +399,12 @@
   "V10.3.1": [
    "signed-in"
   ],
+  "V10.4.3": [
+   "static"
+  ],
+  "V10.4.8": [
+   "static"
+  ],
   "V10.4.16": [
    "running"
   ],
@@ -2777,6 +2783,14 @@
     "finding_only": false
    }
   ],
+  "V10.4.3": [
+   {
+    "id": "config.authorization-code-long-lived",
+    "run": "Reads the code",
+    "looks_for": "django-oauth-toolkit's `AUTHORIZATION_CODE_EXPIRE_SECONDS` or node-oidc-provider's `ttl.AuthorizationCode` (60 seconds when left at the default) at a minute or less, which meets every level; a setting, not the server's behavior",
+    "finding_only": false
+   }
+  ],
   "V10.4.4": [
    {
     "id": "config.retired-grant-enabled",
@@ -2797,6 +2811,14 @@
     "run": "The running app",
     "looks_for": "The authorization server's own published details listing `plain` among the PKCE methods it accepts",
     "finding_only": true
+   }
+  ],
+  "V10.4.8": [
+   {
+    "id": "config.refresh-token-never-expires",
+    "run": "Reads the code",
+    "looks_for": "django-oauth-toolkit's `REFRESH_TOKEN_EXPIRE_SECONDS` set, with rotation off, or node-oidc-provider's default rotation, which stops once a refresh token has lived a year; a setting, not the server's behavior",
+    "finding_only": false
    }
   ],
   "V10.4.16": [

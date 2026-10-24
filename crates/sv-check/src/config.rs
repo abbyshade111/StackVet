@@ -127,6 +127,7 @@ pub fn check_dir_in(
     crate::weak_keys::check(listing, &mut report);
     crate::client_tech::check(listing, bill_of_materials, &mut report);
     crate::grants::check(listing, bill_of_materials, &mut report);
+    crate::as_settings::check(listing, bill_of_materials, &mut report);
     crate::hosted_rules::check(listing, &mut report);
     crate::public_keys::check(listing, &mut report);
     crate::model_files::check(listing, &mut report);

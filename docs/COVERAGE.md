@@ -53,7 +53,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 200 (58%) | 136 (39%) | 11 | 99 | 35 |
+| OWASP ASVS 5.0 | 345 | 202 (59%) | 138 (40%) | 11 | 99 | 33 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -64,15 +64,15 @@ A requirement reached by more than one kind of check is counted under each.
 
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
-| L1 | 70 | 59 | 45 | 18 | 1 | 6 | 40 | 20 | 13 | 3 |
-| L2 | 183 | 117 | 79 | 34 | 0 | 23 | 57 | 25 | 22 | 2 |
+| L1 | 70 | 60 | 46 | 19 | 1 | 6 | 40 | 20 | 13 | 3 |
+| L2 | 183 | 118 | 80 | 35 | 0 | 23 | 57 | 25 | 22 | 2 |
 | L3 | 92 | 24 | 12 | 5 | 0 | 9 | 2 | 6 | 3 | 3 |
 
-64 of the 200 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+64 of the 202 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-65 of the 136 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+67 of the 138 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 57 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
+With nothing beyond plain `sv check`, 59 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -103,7 +103,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V7 Session Management | 19 | 15 | 13 | 0 | 3 | 1 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 7 | 1 |
 | V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 | 0 |
-| V10 OAuth and OIDC | 36 | 13 | 10 | 0 | 11 | 12 |
+| V10 OAuth and OIDC | 36 | 15 | 12 | 0 | 11 | 10 |
 | V11 Cryptography | 24 | 14 | 7 | 0 | 8 | 2 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 0 | 1 |
 | V13 Configuration | 21 | 12 | 3 | 1 | 8 | 0 |
@@ -114,7 +114,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 ## ASVS 5.0 requirement by requirement
 
-### Settled by reading the code (57)
+### Settled by reading the code (59)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -144,7 +144,9 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V9.1.3 | L1 | Reads the code: `ast.token-key-source-from-token`; Signed in: `probe.app-token-key-source-followed` (sv only ever as a finding: `ast.token-key-source-from-token`, `probe.app-token-key-source-followed`) |
 | V9.2.3 | L2 | Reads the code: `ast.token-audience-not-checked` (sv only ever as a finding: `ast.token-audience-not-checked`) |
 | V10.1.1 | L2 | Reads the code: `ast.token-in-browser-storage`; Signed in: `probe.token-in-browser-storage` (sv only ever as a finding: `ast.token-in-browser-storage`, `probe.token-in-browser-storage`) |
+| V10.4.3 | L1 | Reads the code: `config.authorization-code-long-lived` |
 | V10.4.4 | L1 | Reads the code: `config.retired-grant-enabled`; The running app: `probe.retired-grants-offered` (sv only ever as a finding: `config.retired-grant-enabled`, `probe.retired-grants-offered`) |
+| V10.4.8 | L2 | Reads the code: `config.refresh-token-never-expires` |
 | V10.5.2 | L2 | Reads the code: `ast.account-found-by-provider-email`; Signed in: `probe.oidc-user-keyed-on-email` (sv only ever as a finding: `ast.account-found-by-provider-email`) |
 | V11.2.1 | L2 | Reads the code: `ast.hand-rolled-cryptography` (sv only ever as a finding: `ast.hand-rolled-cryptography`) |
 | V11.2.4 | L3 | Reads the code: `ast.digest-compared-with-equals` (sv only ever as a finding: `ast.digest-compared-with-equals`) |
@@ -364,13 +366,13 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V14.2.3 | L2 | Signed in: `probe.account-details-sent-elsewhere` (sv only ever as a finding: `probe.account-details-sent-elsewhere`) |
 | V16.5.4 | L3 | Reads the code: `config.last-resort-error-handler`; The running app: `probe.app-stopped-during-questions` (sv only ever as a finding: `probe.app-stopped-during-questions`) |
 
-### Level 1 with no check at all (8)
+### Level 1 with no check at all (7)
 
 Where a new check would do the most good. Which of them apply to an app depends on what the app is (`data/knowledge/applicability.json`):
 
 - Every app (3): V2.1.1, V8.1.1, V15.1.1
 - Only where the answer to "Does the app have sign-in, with accounts, passwords, or sessions?" is yes (1): V6.1.1
-- Only where the answer to "Does the app run an OAuth authorization server or OpenID provider of its own?" is yes (4): V10.4.1, V10.4.2, V10.4.3, V10.4.5
+- Only where the answer to "Does the app run an OAuth authorization server or OpenID provider of its own?" is yes (3): V10.4.1, V10.4.2, V10.4.5
 
 ## AISVS 1.0 by chapter
 
