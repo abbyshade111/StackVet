@@ -71,6 +71,9 @@ pub enum CannotRun {
     /// with an optional query of the same and `=&`. It is asked of the app and written into the
     /// report, so anything else is refused before the run (backlog 0312).
     BadHealth { path: String, why: String },
+    /// A variable under `[stack.run] env` that `sv` does not set for the app (backlog 0659, ADR-141): not a variable
+    /// name, one `sv` sets itself, or one whose name says it holds a credential, which the manifest must not carry.
+    BadEnv { name: String, why: String },
     /// The backend is there but refused.
     BackendFailed { detail: String },
     /// The app was started and never became healthy. `loopback` is the loopback address its start
@@ -114,6 +117,7 @@ impl CannotRun {
             CannotRun::NoRunCommand { .. } => "stackvet.toml does not say how to run it",
             CannotRun::BadImage { .. } => "the image named is not one Docker reads",
             CannotRun::BadHealth { .. } => "the health path named is not a plain path",
+            CannotRun::BadEnv { .. } => "a variable under `[stack.run] env` cannot be set",
             CannotRun::BackendFailed { .. } => "the container backend refused",
             CannotRun::NeverReady { .. } => "it started and never answered",
             CannotRun::AppFolderUnseen { .. } => "its folder arrived empty in the container",
@@ -150,6 +154,12 @@ impl CannotRun {
                  reads as one ({image:?}: {why}), so the app was not started and everything that \
                  needs it running is reported as not assessed. Name the image as Docker does, \
                  `python:3.12-slim` or `registry.example.com/team/app:1.0`."
+            ),
+            CannotRun::BadEnv { name, why } => format!(
+                "stackvet.toml sets `{name}` under `[stack.run] env`, and {why}, so the app was not started and \
+                 everything that needs it running is reported as not assessed. `env` is for settings the copy `sv` runs \
+                 needs, such as where it keeps its data (`DATABASE_PATH = \"/tmp/app.db\"`). A value that must not be \
+                 written in stackvet.toml is printed by the seed and cited as `{{seed:NAME}}`."
             ),
             CannotRun::BadHealth { path, why } => format!(
                 "stackvet.toml names a health path under `[stack.run]` that is not a plain path \
@@ -542,6 +552,8 @@ impl Eq for OnStep {}
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RunPlan {
     pub image: String,
+    /// `[stack.run] env`, checked: set in the app's container alone (backlog 0659, ADR-141).
+    pub env: Vec<(String, String)>,
     pub build: Option<String>,
     pub start: String,
     pub test: Option<String>,
@@ -635,8 +647,10 @@ impl RunPlan {
                 why,
             });
         }
+        let env = run_env(manifest)?;
         Ok(RunPlan {
             image,
+            env,
             build: non_empty(&run.build),
             start: start.expect("checked above"),
             test: non_empty(&run.test),
@@ -689,6 +703,94 @@ fn health_path_problem(path: &str) -> Option<String> {
     }
     None
 }
+
+/// The names `sv` sets in the app's container itself, which `[stack.run] env` cannot replace: the port, the installed
+/// packages' paths, and the addresses of the helpers it starts (`docker.rs`).
+const SET_BY_SV: &[&str] = &[
+    "PORT",
+    "PATH",
+    "PYTHONPATH",
+    "NODE_PATH",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_URL",
+    "OIDC_ISSUER",
+    "OIDC_CLIENT_ID",
+    "OIDC_CLIENT_SECRET",
+];
+
+/// `[stack.run] env`, checked (backlog 0659, ADR-141): each name a variable name, none `sv` sets itself (`SET_BY_SV`,
+/// any `SV_`, and the variables the manifest names for the test model and the MCP server), and none whose name says
+/// it holds a credential. A value that looks like a key is the secrets scan's to find, as anywhere in stackvet.toml.
+fn run_env(manifest: &Manifest) -> Result<Vec<(String, String)>, CannotRun> {
+    // Plain checks, without a pattern library: `sv-run` needs none otherwise.
+    let is_name = |n: &str| {
+        n.chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+            && n.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+    };
+    const CREDENTIAL: &[&str] = &[
+        "KEY",
+        "SECRET",
+        "TOKEN",
+        "PASSWORD",
+        "PASSWD",
+        "PASS",
+        "CREDENTIAL",
+        "AUTH",
+        "PRIVATE",
+        "COOKIE",
+        "SALT",
+    ];
+    let run = &manifest.stack.run;
+    let named: Vec<&str> = run
+        .ai
+        .iter()
+        .flat_map(|ai| {
+            ai.base_url_env
+                .iter()
+                .map(String::as_str)
+                .chain(ai.mcp_url_env.as_deref())
+        })
+        .chain(run.mcp_server.iter().filter_map(|m| m.token_env.as_deref()))
+        .collect();
+    let mut out = Vec::new();
+    for (name, value) in &run.env {
+        let refuse = |why: &str| {
+            Err(CannotRun::BadEnv {
+                name: name.clone(),
+                why: why.to_owned(),
+            })
+        };
+        if !is_name(name) {
+            return refuse(
+                "that is not a variable name (letters, digits, and `_`, not starting with a digit)",
+            );
+        }
+        let upper = name.to_ascii_uppercase();
+        if SET_BY_SV.contains(&upper.as_str())
+            || upper.starts_with("SV_")
+            || named.contains(&name.as_str())
+        {
+            return refuse("`sv` sets that variable itself, for its run of the app");
+        }
+        if CREDENTIAL.iter().any(|word| upper.contains(word)) {
+            return refuse(
+                "its name says it holds a credential, which stackvet.toml must not carry",
+            );
+        }
+        if value.contains('\0') || value.contains('\n') {
+            return refuse("its value holds a line break or a NUL");
+        }
+        out.push((name.clone(), value.clone()));
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+#[path = "env_tests.rs"]
+mod env_tests;
 
 /// An empty string in a manifest is the template's placeholder, not an answer.
 fn non_empty(field: &Option<String>) -> Option<String> {

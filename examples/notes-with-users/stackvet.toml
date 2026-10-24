@@ -22,6 +22,8 @@ languages = ["python"]
 [stack.run]
 image = "python:3.12-slim"
 start = "python app.py"
+# The app keeps its data beside it; the copy `sv` runs, whose folder is read-only, keeps it in /tmp.
+env = { NOTES_DB = "/tmp/notes.db" }
 health = "/"
 
 [stack.run.users]

@@ -187,7 +187,7 @@ source files, and in two tests:
 | [ADR-138](ADR-138.md) | The path rule reads where a value came from: a path built from a request is a thing to fix (accepted, 23 October 2026) |
 | [ADR-139](ADR-139.md) | One reading of test code for every check (accepted, 23 October 2026) |
 | [ADR-140](ADR-140.md) | The bill of materials leaves out lockfiles in test code and in folders named as not the app (accepted, 23 October 2026) |
-| [ADR-141](ADR-141.md) | stackvet.toml sets environment variables for the copy of the app `sv` runs, and the starter stops putting the app's data under /tmp (proposed, 23 October 2026) |
+| [ADR-141](ADR-141.md) | stackvet.toml sets environment variables for the copy of the app `sv` runs, and the starter stops putting the app's data under /tmp (accepted, 24 October 2026) |
 
 ## Names in the records
 

@@ -849,7 +849,12 @@ impl DockerBackend {
             Some(build) => format!("cd /app && {build} && {}", plan.start),
             None => format!("cd /app && {}", plan.start),
         };
+        // stackvet.toml's `[stack.run] env`, checked when the plan was made: the app's container alone (ADR-141).
+        let manifest_env: Vec<String> = plan.env.iter().map(|(k, v)| format!("{k}={v}")).collect();
         let mut args: Vec<&str> = app_args(&app, &network, &mount, &port_env);
+        for pair in &manifest_env {
+            args.extend(["-e", pair.as_str()]);
+        }
         // The app's own name lookups go to the name server, when it runs (ADR-085).
         if let Some(address) = &name_server_dns {
             args.extend(["--dns", address.as_str()]);

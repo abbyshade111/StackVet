@@ -699,6 +699,7 @@ pub fn of(app_dir: &Path) -> anyhow::Result<Found> {
     items.extend(build_installs(&manifest));
     items.extend(test_runner::item(&manifest, app_dir));
     items.extend(test_runner::report_path_item(&manifest));
+    items.extend(data_folder::item(&manifest, &source));
     Ok((
         sorted(items),
         ahead(&manifest, &source),
@@ -850,6 +851,8 @@ fn installer_in(build: &str) -> Option<String> {
 }
 
 mod test_runner;
+
+mod data_folder;
 
 #[cfg(test)]
 mod build_install_tests;

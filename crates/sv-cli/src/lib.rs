@@ -220,7 +220,9 @@ fn run_gap_reason(why: &sv_run::CannotRun) -> sv_report::GapReason {
         } => GapReason::Stopped,
         CannotRun::NoBackend { .. } => GapReason::NotInstalled,
         CannotRun::NoRunCommand { .. } => GapReason::NotAsked,
-        CannotRun::BadImage { .. } | CannotRun::BadHealth { .. } => GapReason::CouldNotRead,
+        CannotRun::BadImage { .. } | CannotRun::BadHealth { .. } | CannotRun::BadEnv { .. } => {
+            GapReason::CouldNotRead
+        }
         CannotRun::BackendFailed { .. }
         | CannotRun::NeverReady { .. }
         | CannotRun::AppFolderUnseen { .. }

@@ -1,6 +1,6 @@
 # The starter tells the AI tool to keep the app's data under /tmp, and the app ships with /tmp as its default
 
-**Status:** claimed by claude/0659, 23 October 2026
+**Status:** done, 24 October 2026
 
 Found 23 October 2026, when the owner asked whether StackVet itself makes the trial apps prone to their findings.
 Backlog 0648's survey found Bandit's B108 (a fixed path under `/tmp`) 12 times in 8 of 12 apps, each a data folder or a
@@ -26,3 +26,9 @@ To do, at the owner's word ("yes, file it as 0659 and build it after 0658 please
   preflight's line both ways. ADR-141, proposed.
 
 **Order,** at the owner's word of 23 October 2026: after 0658.
+
+**Done, 24 October 2026** (ADR-141, accepted). `[stack.run] env` sets variables in the app's container for `sv`'s run;
+a name `sv` sets itself, one that says it holds a credential, or one that is not a variable name is refused before the
+run, with a plain message. The starter now says to keep the app's data folder configurable, with a default of its own,
+and to point `sv`'s copy at /tmp with `env`; `sv preflight` names a path under /tmp in the app's own code and says how
+to move it. Tests: `crates/sv-run/src/env_tests.rs` and `crates/sv-cli/src/preflight/data_folder_tests.rs`.
