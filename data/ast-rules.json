@@ -1858,7 +1858,8 @@
         "typescript": "(call_expression function: (member_expression object: (identifier) @mod property: (property_identifier) @fn) arguments: (arguments . (_) @arg)) @hit",
         "ruby": "(call receiver: [(constant) (scope_resolution)] @mod method: (identifier) @fn arguments: (argument_list . (_) @arg)) @hit",
         "php": "(member_call_expression name: (name) @fn arguments: (arguments . (argument (_) @arg))) @hit",
-        "csharp": "(invocation_expression function: (member_access_expression expression: (identifier) @mod name: (identifier) @fn) arguments: (argument_list . (argument (_) @arg))) @hit"
+        "csharp": "(invocation_expression function: (member_access_expression expression: (identifier) @mod name: (identifier) @fn) arguments: (argument_list . (argument (_) @arg))) @hit",
+        "rust": "[(call_expression function: (scoped_identifier path: (_) @mod name: (identifier) @fn)\n                   arguments: (arguments . (_) @arg))\n (call_expression function: (field_expression value: (_) @mod field: (field_identifier) @fn)\n                   arguments: (arguments . (_) @arg))] @hit"
       },
       "functionPatterns": {
         "python": "^(render_template_string|from_string)$",
@@ -1866,7 +1867,8 @@
         "typescript": "^(render|compile|template|renderString)$",
         "ruby": "^(new|parse)$",
         "php": "^createTemplate$",
-        "csharp": "^(Parse|Compile)$"
+        "csharp": "^(Parse|Compile)$",
+        "rust": "^(one_off|render_str|add_raw_template|template_from_str|template_from_named_str|add_template|render_template|register_template_string)$"
       },
       "modulePatterns": {
         "javascript": "^(ejs|Handlebars|handlebars|pug|_|lodash|nunjucks)$",
@@ -1879,12 +1881,22 @@
         "go": "Go's `template.Parse` cannot be told from `url.Parse` and the other `Parse` methods by name in one file, and Go's templates run no code the app did not give them, so a template built from a value is not looked for.",
         "java": "No call that builds a template from text is looked for in Java yet. A template read from the app's own files is not looked for in any language: only one made from text in the code, where the text can be told apart from a value.",
         "kotlin": "No call that builds a template from text is looked for in Kotlin yet. A template read from the app's own files is not looked for in any language: only one made from text in the code, where the text can be told apart from a value.",
-        "rust": "No call that builds a template from text is looked for in Rust yet. A template read from the app's own files is not looked for in any language: only one made from text in the code, where the text can be told apart from a value.",
         "dart": "No call that builds a template from text is looked for in Dart yet. A template read from the app's own files is not looked for in any language: only one made from text in the code, where the text can be told apart from a value.",
         "swift": "No call that builds a template from text is looked for in Swift yet. A template read from the app's own files is not looked for in any language: only one made from text in the code, where the text can be told apart from a value.",
         "c": "C has no common template engine this rule can speak to.",
         "cpp": "C++ has no common template engine this rule can speak to.",
         "shell": "Shell scripts build no page templates this rule can speak to."
+      },
+      "argumentPositions": {
+        "rust": {
+          "^(add_raw_template|template_from_named_str|add_template|register_template_string)$": 1
+        }
+      },
+      "safeArgumentPatterns": {
+        "rust": "(?s)^&?((std::)?include_str!\\(|(std::)?fs::read_to_string\\(\\s*\")"
+      },
+      "looksForIn": {
+        "rust": "Tera's `Tera::one_off`, `render_str`, and `add_raw_template`, minijinja's `render_str`, `template_from_str`, `template_from_named_str`, and `add_template`, and Handlebars' `render_template` and `register_template_string`, given template text that is not fixed in the code; `include_str!` and a file read at a path written out are the app's own templates"
       }
     },
     {

@@ -2945,6 +2945,16 @@ fn a_ruby_load_on_something_that_is_not_a_deserialiser_is_not_reported() {
         ("ast.template-built-from-value", "csharp", "class A { string M() { return Template.Parse(\"Hello {{ name }}\").Render(); } }", false),
         ("ast.template-built-from-value", "csharp", "class A { int M(string input) { return int.Parse(input); } }", false),
         ("ast.template-built-from-value", "csharp", "class A { DateTime M(string input) { return DateTime.Parse(input); } }", false),
+        // Rust (backlog 0661): Tera, minijinja, and Handlebars given template text that is not fixed in the code.
+        ("ast.template-built-from-value", "rust", "fn hi(name: &str, ctx: &Context) -> String { Tera::one_off(&format!(\"<h1>Hello {name}</h1>\"), ctx, true).unwrap() }", true),
+        ("ast.template-built-from-value", "rust", "fn page(env: &Environment, src: &str) -> String { env.render_str(src, ()).unwrap() }", true),
+        ("ast.template-built-from-value", "rust", "fn page(tera: &mut Tera, body: String) { tera.add_raw_template(\"page\", &body).unwrap(); }", true),
+        ("ast.template-built-from-value", "rust", "fn page(hb: &Handlebars, q: Query<P>) -> String { hb.render_template(&q.template, &()).unwrap() }", true),
+        ("ast.template-built-from-value", "rust", "fn page(env: &mut Environment, src: String) { env.add_template_owned(\"x\", src).ok(); env.add_template(\"page\", &src).unwrap(); }", true),
+        ("ast.template-built-from-value", "rust", "fn hi(ctx: &Context) -> String { Tera::one_off(\"<h1>Hello {{ name }}</h1>\", ctx, true).unwrap() }", false),
+        ("ast.template-built-from-value", "rust", "fn page(tera: &mut Tera) { tera.add_raw_template(\"page\", include_str!(\"page.html\")).unwrap(); }", false),
+        ("ast.template-built-from-value", "rust", "fn page(env: &mut Environment, name: String) { env.add_template(&name, \"<p>{{ x }}</p>\").unwrap(); }", false),
+        ("ast.template-built-from-value", "rust", "fn page(hb: &mut Handlebars) { hb.register_template_string(\"page\", std::fs::read_to_string(\"templates/page.hbs\").unwrap()).unwrap(); }", false),
         // Cross-origin settings that let any site in with credentials (gap analysis, item 11).
         ("ast.cors-any-origin-with-credentials", "python", "app = Flask(__name__)\nCORS(app, supports_credentials=True)", true),
         ("ast.cors-any-origin-with-credentials", "python", "app = Flask(__name__)\nflask_cors.CORS(app, supports_credentials=True)", true),

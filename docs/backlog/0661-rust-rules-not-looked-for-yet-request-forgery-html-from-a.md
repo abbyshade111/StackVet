@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-template, 24 October 2026
+**Status:** partly done: eight rules still to teach Rust: insecure-random-for-code, request-body-passed-whole, account-found-by-provider-email, hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -47,3 +47,12 @@ Nine witnesses in `crates/sv-check/src/ast/tests.rs`, a one-finding test in
 needs attention. Broken on purpose: with the Rust pattern emptied, the five found witnesses and the example's fault went
 red; with the method-name restriction loosened, the one-finding test saw a second finding at the router's line. No
 decision record: one more language for a rule that only ever reports, with nothing new in how it reads.
+
+**`template-built-from-value` built, 24 October 2026.** Tera's `Tera::one_off`, `render_str`, and
+`add_raw_template`, minijinja's `render_str`, `template_from_str`, `template_from_named_str`, and `add_template`, and
+Handlebars' `render_template` and `register_template_string`, given template text not fixed in the code; where a
+name comes first, the text is the second argument. `include_str!` and a file read at a path written out are the
+app's own templates. Nine witnesses in `crates/sv-check/src/ast/tests.rs`, and a fault and its safe form in
+`examples/rust-notes`, whose V1.3.7 now needs attention. Broken on purpose: without the second-argument setting, two
+found cases went unfound and a fixed one was reported; with the Rust pattern emptied, the five found witnesses and the
+example's fault went red. No decision record, as for the CORS rule.
