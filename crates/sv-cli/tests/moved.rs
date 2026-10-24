@@ -51,6 +51,12 @@ fn a_copy_of_sv_reads_the_data_beside_it_and_checks_an_app_with_it() {
     std::fs::create_dir_all(&home).unwrap();
     std::fs::copy(env!("CARGO_BIN_EXE_sv"), home.join("sv")).unwrap();
     copy_tree(&repository_data(), &home.join("data"));
+    // Resolved while it is there (backlog 0631): on a Mac the temporary folder is behind `/var`, a link to
+    // `/private/var`, and `sv` names the folder it resolved. A fallback to the path as written is how this hid.
+    let expected = home
+        .join("data")
+        .canonical()
+        .expect("the setup: the copied data folder resolves");
     std::fs::create_dir_all(root.join("bin")).unwrap();
     std::os::unix::fs::symlink(home.join("sv"), root.join("bin/sv")).unwrap();
     let linked = root.join("bin/sv");
@@ -67,11 +73,7 @@ fn a_copy_of_sv_reads_the_data_beside_it_and_checks_an_app_with_it() {
     let chosen = data_line(&linked, Some(&repository_data()));
     std::fs::remove_dir_all(&root).ok();
 
-    assert_eq!(
-        Path::new(&said),
-        home.join("data").canonical().unwrap_or(home.join("data")),
-        "the copy read some other data"
-    );
+    assert_eq!(Path::new(&said), expected, "the copy read some other data");
     assert!(
         checked.status.code().is_some_and(|c| c < 3),
         "the copy could not check an app: {}",
@@ -398,6 +400,11 @@ fn the_install_script_puts_sv_and_its_data_in_a_folder_of_their_own() {
     };
     let first = install();
     let home = root.join("share/stackvet");
+    // Resolved while it is there (backlog 0631), as in the test above.
+    let expected = home
+        .join("data")
+        .canonical()
+        .expect("the setup: the installed data folder resolves");
     let said = data_line(&root.join("bin/sv"), None);
     // Again, as after pulling a newer sv: the same link, and the data replaced whole.
     std::fs::write(home.join("data/left-over.json"), "{}").unwrap();
@@ -411,10 +418,7 @@ fn the_install_script_puts_sv_and_its_data_in_a_folder_of_their_own() {
     std::fs::remove_dir_all(&root).ok();
 
     assert!(first.status.success(), "{first:?}");
-    assert_eq!(
-        Path::new(&said),
-        home.join("data").canonical().unwrap_or(home.join("data"))
-    );
+    assert_eq!(Path::new(&said), expected);
     assert!(again.status.success(), "{again:?}");
     assert!(!left_over, "an older install's data was kept");
     assert!(!refused.status.success(), "{refused:?}");

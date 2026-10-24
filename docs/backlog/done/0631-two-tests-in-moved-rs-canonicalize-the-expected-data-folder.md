@@ -1,6 +1,6 @@
 # Two tests in moved.rs canonicalize the expected data folder after deleting it, and fail on macOS when the temporary folder is under /var
 
-**Status:** open
+**Status:** done, 24 October 2026
 
 Filed 21 October 2026 at the owner's word ("yes, file the macOS path test fix"), found while building backlog 0324's
 fourth split. Severity: low (a test fault on macOS only; CI runs on Linux, where both pass).
@@ -34,3 +34,10 @@ Colima shares the Mac's temporary folder (`--mount /private/var/folders:w`, whic
 does not exist: "bind source path does not exist: /var/folders/…/Notes: 2026, app". Before that mount the test found
 no folder to share and took its no-backend path, so it never ran here. The fix is the same: canonicalize the folder
 once it is made, and assert it did.
+
+**Built, 24 October 2026.** Both `moved.rs` tests resolve the expected data folder while it exists, before the scratch
+folder is removed, and assert that it resolved (`expect`, no fallback to the path as written); the mount test
+resolves the folder it made the same way. Run outside the sandbox, with the Mac's own temporary folder under
+`/var/folders/…` and a container backend up: all three pass. Broken on purpose, by running `main`'s versions: the two
+`moved.rs` tests failed ("the copy read some other data"), and the mount test failed with "bind source path does not
+exist: /var/folders/…/Notes: 2026, app", the three failures this item recorded.
