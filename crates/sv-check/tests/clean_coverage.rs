@@ -1467,6 +1467,7 @@ fn a_complete_bill_of_materials_says_so_and_an_empty_one_does_not() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![locked("flask", "3.0.0", "Python")],
         unread: vec![],
     };
@@ -1481,6 +1482,7 @@ fn a_complete_bill_of_materials_says_so_and_an_empty_one_does_not() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![],
         unread: vec![],
     };
@@ -1501,6 +1503,7 @@ fn an_unread_ecosystem_stops_the_bill_of_materials_claiming_anything() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![locked("flask", "3.0.0", "Python")],
         unread: vec![("npm".into(), "package-lock.json could not be read".into())],
     };
@@ -1516,6 +1519,7 @@ fn the_advisory_comparison_claims_nothing_unless_it_really_covered_the_app() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![locked("flask", "3.0.0", "Python")],
         unread: vec![],
     };
@@ -1542,6 +1546,7 @@ fn the_advisory_comparison_claims_nothing_unless_it_really_covered_the_app() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![],
         unread: vec![],
     };
@@ -1555,6 +1560,7 @@ fn the_advisory_comparison_claims_nothing_unless_it_really_covered_the_app() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![
             locked("flask", "3.0.0", "Python"),
             locked("left-pad", "1.0.0", "npm"),
@@ -1570,6 +1576,7 @@ fn the_advisory_comparison_claims_nothing_unless_it_really_covered_the_app() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![locked("flask", "3.0.0", "Python")],
         unread: vec![("npm".into(), "no lockfile".into())],
     };
@@ -1587,6 +1594,7 @@ fn a_version_that_cannot_be_compared_stops_the_claim() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![locked("flask", "not-a-version", "Python")],
         unread: vec![],
     };

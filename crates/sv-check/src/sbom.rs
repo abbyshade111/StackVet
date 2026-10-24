@@ -77,6 +77,9 @@ pub struct Sbom {
     /// The lockfiles the listed packages were read from, so a clean comparison can say where its
     /// list came from (deep review, improvement 2).
     pub lockfiles: Vec<String>,
+    /// Lockfiles and manifests not read because they are in test code or in a folder named as not the app
+    /// (backlog 0656, ADR-140): a test fixture's lockfile is not what the app installs. Said in `what_was_read`.
+    pub left_out: Vec<String>,
 }
 
 /// A project whose manifest asks for something other than what its lockfile has.
@@ -231,14 +234,44 @@ impl Sbom {
             .collect();
         let lockfiles: Vec<String> = self.lockfiles.iter().map(|l| format!("`{l}`")).collect();
         let ecosystems = crate::ast::and_list(&ecosystems);
-        if lockfiles.is_empty() {
+        let read = if lockfiles.is_empty() {
             ecosystems
         } else {
             format!(
                 "{ecosystems}, read from {}",
                 crate::ast::and_list(&lockfiles)
             )
+        };
+        if self.left_out.is_empty() {
+            return read;
         }
+        let shown: Vec<String> = self
+            .left_out
+            .iter()
+            .take(3)
+            .map(|l| format!("`{l}`"))
+            .collect();
+        let more = self.left_out.len().saturating_sub(shown.len());
+        format!(
+            "{read}; {} in test code or in folders named as not the app {} left out, as a test's or a sample's \
+             own and not what the app installs ({}{})",
+            count(
+                self.left_out.len(),
+                "lockfile or manifest",
+                "lockfiles and manifests"
+            ),
+            if self.left_out.len() == 1 {
+                "was"
+            } else {
+                "were"
+            },
+            crate::ast::and_list(&shown),
+            if more > 0 {
+                format!(", and {more} more")
+            } else {
+                String::new()
+            }
+        )
     }
 }
 
@@ -247,20 +280,65 @@ pub fn build(app_dir: &Path) -> Sbom {
     build_in(&sv_scan::files::Listing::of(app_dir))
 }
 
+/// The inventory of what the app ships (V15.1.2): `build_in` over the app's own code, with the lockfiles and manifests
+/// in test code and in the folders stackvet.toml names as not the app (`[repository] not-the-app`) left out and named
+/// in `left_out` (backlog 0656, ADR-140), since a fixture's or a sample's lockfile is not what the app installs. The
+/// known-vulnerability checks read `build_in`'s whole list instead, so a sample's vulnerable package is still found and
+/// listed apart.
+pub fn build_app_in(listing: &sv_scan::files::Listing, not_the_app: &[String]) -> Sbom {
+    let (ours, theirs) = listing.split(not_the_app);
+    let mut sbom = read_listing(&ours, &|path| ours.is_test_code(path));
+    let elsewhere = build_in(&theirs);
+    sbom.left_out.extend(elsewhere.lockfiles);
+    sbom.left_out.extend(elsewhere.left_out);
+    sbom.left_out.extend(
+        sv_scan::ecosystems::unread_declarations_in(&theirs)
+            .into_iter()
+            .map(|u| u.path),
+    );
+    for eco in sv_scan::ecosystems::detect_in(&theirs) {
+        if eco.lockfile.is_none() {
+            sbom.left_out.push(eco.manifest);
+        }
+    }
+    sbom.left_out.sort();
+    sbom.left_out.dedup();
+    sbom
+}
+
 /// `build`, from a listing already made. `sv report` builds one bill of materials and hands it to
 /// the lockfile check and the report; it used to build it twice, and `sv check` three times.
 pub fn build_in(listing: &sv_scan::files::Listing) -> Sbom {
+    read_listing(listing, &|_| false)
+}
+
+/// The packages in `listing`'s lockfiles and manifests, but those `leave_out` says, which are named in `left_out`.
+fn read_listing(listing: &sv_scan::files::Listing, leave_out: &dyn Fn(&str) -> bool) -> Sbom {
     let app_dir = listing.root.as_path();
     let mut sbom = Sbom::default();
+    let test = |path: &str| leave_out(path);
     for eco in sv_scan::ecosystems::detect_in(listing) {
+        if test(&eco.manifest) || eco.lockfile.as_deref().is_some_and(test) {
+            sbom.left_out
+                .push(eco.lockfile.clone().unwrap_or_else(|| eco.manifest.clone()));
+            continue;
+        }
         read_ecosystem(app_dir, &eco, &mut sbom);
     }
     for declaration in sv_scan::ecosystems::python_declarations_in(listing) {
+        if test(&declaration.path) {
+            sbom.left_out.push(declaration.path.clone());
+            continue;
+        }
         read_declaration(app_dir, &declaration, &mut sbom);
     }
     // Dependencies in an ecosystem `sv` does not read (gap analysis, item 2): named, so the list is
     // not taken for complete and V15.2.1 is not credited on the rest.
     for unread in sv_scan::ecosystems::unread_declarations_in(listing) {
+        if test(&unread.path) {
+            sbom.left_out.push(unread.path.clone());
+            continue;
+        }
         sbom.unread
             .push((unread.name.to_owned(), unread_reason(&unread)));
     }
@@ -770,3 +848,6 @@ mod runs_on_tests;
 
 #[cfg(test)]
 mod runs_on_stdlib_tests;
+
+#[cfg(test)]
+mod left_out_tests;

@@ -31,8 +31,11 @@ pub struct StaticScan {
     pub listing: sv_scan::files::Listing,
     /// Its languages and frameworks, and the folders the manifest sets apart as applied (ADR-031).
     pub scan_report: sv_scan::ScanReport,
-    /// The packages it ships, read from manifests and lockfiles; no network.
+    /// The packages in every manifest and lockfile in the folder; no network. What the known-vulnerability checks read.
     pub bill_of_materials: sv_check::sbom::Sbom,
+    /// The packages the app itself ships: the same, with test code's and the folders set apart left out (ADR-140).
+    /// What the inventory's completeness (V15.1.2) and the published `sbom.cdx.json` are read from.
+    pub inventory: sv_check::sbom::Sbom,
     pub secrets: sv_check::secrets::SecretScan,
     pub config: sv_check::config::ConfigReport,
     pub code: sv_check::ast::AstScan,
@@ -84,6 +87,9 @@ impl StaticScan {
         let bill_of_materials = keep(&mut crashed, "bill_of_materials", || {
             sv_check::sbom::build_in(&listing)
         });
+        let inventory = keep(&mut crashed, "bill_of_materials", || {
+            sv_check::sbom::build_app_in(&listing, &scan_report.not_the_app)
+        });
         starting(3);
         let secrets = keep(&mut crashed, "secrets", || {
             sv_check::secrets::scan_listing(loaded.secret_rules, &listing)
@@ -108,6 +114,7 @@ impl StaticScan {
             listing,
             scan_report,
             bill_of_materials,
+            inventory,
             secrets,
             config,
             code,
@@ -132,9 +139,7 @@ impl StaticScan {
     pub fn findings(&self) -> Vec<sv_check::Finding> {
         let mut findings = self.secrets.findings.clone();
         findings.extend(self.config.findings.iter().cloned());
-        findings.extend(sv_check::sbom::incompleteness_finding(
-            &self.bill_of_materials,
-        ));
+        findings.extend(sv_check::sbom::incompleteness_finding(&self.inventory));
         findings.extend(self.code.findings.iter().cloned());
         findings
     }
@@ -143,9 +148,7 @@ impl StaticScan {
     /// of materials.
     pub fn passed(&self) -> Vec<sv_check::Verified> {
         let mut passed = self.config.passed.clone();
-        passed.extend(sv_check::sbom::completeness_verified(
-            &self.bill_of_materials,
-        ));
+        passed.extend(sv_check::sbom::completeness_verified(&self.inventory));
         passed
     }
 

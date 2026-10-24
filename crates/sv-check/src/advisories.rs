@@ -1249,6 +1249,7 @@ mod tests {
             lockfiles: Vec::new(),
             components,
             unread: Vec::new(),
+            left_out: Vec::new(),
         }
     }
 
@@ -2161,6 +2162,7 @@ mod deadline_tests {
             passed_over: Vec::new(),
             disagreements: Vec::new(),
             lockfiles: Vec::new(),
+            left_out: Vec::new(),
             components: vec![Component {
                 name: "lodash".into(),
                 version: "4.17.15".into(),
