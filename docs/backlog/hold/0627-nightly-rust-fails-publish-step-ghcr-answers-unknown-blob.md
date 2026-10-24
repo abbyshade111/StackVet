@@ -1,6 +1,6 @@
 # Nightly: Rust fails: publish step, GHCR answers unknown blob
 
-**Status:** open
+**Status:** on hold: the GHCR "unknown blob" answer coming back; one failure is not worth a change
 
 Recorded by the nightly CI routine on 21 October 2026. No test failed: the Rust workflow's push run on `main` for
 commit `920ff99` (pull request #2158, "Claim backlog 0618 and 0619, with ADR-129 proposed", a backlog claim with no

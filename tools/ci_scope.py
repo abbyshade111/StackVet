@@ -4,7 +4,7 @@
 Until 12 October 2026 the required `test` check ran the whole suite, about a quarter of an hour, on every pull
 request. A claim, one changed line in one backlog item, waited as long as a build, and the build waited on the claim.
 A pull request that changes nothing but backlog items (Markdown files directly in `docs/backlog/` or
-`docs/backlog/done/`) now runs only the tests that read them. From 14 October 2026 the coordination board and its
+`docs/backlog/done/`, and from 24 October 2026 `docs/backlog/hold/`) now runs only the tests that read them. From 14 October 2026 the coordination board and its
 waiting files counted as backlog items too; the board and its test, `coordination.rs`, were removed on 20 October 2026,
 and with nothing on the short path reading them, a change under `docs/coordination/` runs everything again (ADR-104,
 Later). Anything else, an empty list included, runs everything.
@@ -21,8 +21,8 @@ or no paths at all print `true`.
 import re
 import sys
 
-# A backlog item, open or done, and nothing deeper: a folder inside either is not one the tools read.
-BACKLOG_ITEM = re.compile(r"docs/backlog/(done/)?[^/]+\.md")
+# A backlog item, live, done, or on hold, and nothing deeper: a folder inside one is not one the tools read.
+BACKLOG_ITEM = re.compile(r"docs/backlog/(done/|hold/)?[^/]+\.md")
 
 
 def needs_everything(paths):
@@ -44,6 +44,8 @@ def self_test():
         (["docs/backlog/notes.txt"], True),
         (["docs/backlog/sub/0001-a.md"], True),
         (["docs/backlog/done/sub/0001-a.md"], True),
+        (["docs/backlog/hold/0375-a.md", "docs/backlog/0001-b.md"], False),
+        (["docs/backlog/hold/sub/0001-a.md"], True),
         (["docs/backlogs/0001-a.md"], True),
         (["xdocs/backlog/0001-a.md"], True),
         (["docs/backlog/0001-a.md.bak"], True),

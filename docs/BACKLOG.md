@@ -18,11 +18,13 @@ holds or that is done. A message to another session is not a claim. When the wor
 done <number>` marks it, or `done <number> --remains "..."` when part of it stays open; a note of what was built goes
 in the item's text, as before, and the design entry holds the detail. A new item is `python3 tools/backlog.py new
 "Its title"`, which writes an open file numbered one past the highest; two pull requests open at once may take the
-same number, which harms nothing. An item's numbered parts each have a status line of their own (`**Part status:**`, in the same four
-forms), set with `python3 tools/backlog.py claim 0226.3 --by <session>` and `done 0226.3`, and read by the board from
+same number, which harms nothing. An item's numbered parts each have a status line of their own (`**Part status:**`, in the same
+forms, on hold apart), set with `python3 tools/backlog.py claim 0226.3 --by <session>` and `done 0226.3`, and read by the board from
 that line alone; a note of what was built still goes in the part's text. The item's status says `partly done` with
-what remains, and `--check` holds the two to each other (backlog 0228). A done item's file is in `docs/backlog/done/`, so the folder itself lists only live work:
-`done` moves it there and rewrites any path to it. **A review writes each finding as an item of its own**
+what remains, and `--check` holds the two to each other (backlog 0228). A done item's file is in `docs/backlog/done/`, and one on hold
+(`**Status:** on hold: <what it waits on>`, for an item that waits on hardware, the owner's word, or a paid trial) is
+in `docs/backlog/hold/`, so the folder itself lists only what is left to fix: `done` and `hold NNNN --waits "..."` move
+an item there and rewrite any path to it, and `claim` brings a held one back (backlog 0650). **A review writes each finding as an item of its own**
 (`backlog.py new`), and keeps its write-up in one item that lists them by number, so two sessions working on two
 findings never write to one file; `--check` warns of a live item past 300 lines as one to split. `python3 tools/backlog.py list --open`
 prints every open item, `summary` the counts, and `--check` holds the layout. A branch written before the split

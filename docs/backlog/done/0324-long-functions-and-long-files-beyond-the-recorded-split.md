@@ -1,6 +1,6 @@
 # Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150
 
-**Status:** partly done: nine files are still over 3,000 lines (signed_in/fake_app.rs 3,898, the test fake, whose answer is 2,021 lines; sv-report/src/lib.rs 3,665; sv-cli/src/assemble.rs 3,561; signed_in/sessions.rs 3,510; sv-manifest/src/lib.rs 3,455; sv-cli/src/review.rs 3,300; ai.rs 3,279; signed_in/uploads.rs 3,166; signed_in/passwords.rs 3,133), two too_many_arguments allows are left (review_then_report, whose three arguments go to report_again::write_again first, and the test helper sealed), and run_note_details is held by no test, since none can make a RunOutcome and RunPlan yet
+**Status:** done, 24 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim. From the deep review of 12 October 2026 (backlog 0277), area: code quality. Severity: low. Verified against the code by the reviewing session before filing.
 
@@ -135,3 +135,9 @@ word, the app's own tests, `sv check`'s unread lines, and `sv probe`'s result), 
 guard per check now reads the late signed-in checks it would otherwise have lost. What remains is on the
 status line: splitting the nine long files further moves less with each split, and is left for a session with nothing
 else ahead of it.
+
+**Done, the owner's word, 24 October 2026** (the backlog review, 0650): "0324 can be marked done (this has been
+completed), but there should be a new weekly check for long files to split moving forward". What the status line
+listed before (nine files over 3,000 lines, two `too_many_arguments` allows, `run_note_details` untested) is not
+carried over as owed work: the weekly check, backlog 0662, names what is long each week, so a file that grows is
+found when it grows rather than kept on a list here.

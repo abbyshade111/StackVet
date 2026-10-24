@@ -2,7 +2,7 @@
 """The numbers two pull requests can both take, seen before either merges (backlog 0265; ADR-061, Later).
 
 Three kinds of file are numbered, and each number belongs to one file: decision records (docs/adr/ADR-NNN.md),
-backlog items (docs/backlog/NNNN-*.md, done/ included), and design entries (docs/design/NNNN-*.md). Each session takes
+backlog items (docs/backlog/NNNN-*.md, done/ and hold/ included), and design entries (docs/design/NNNN-*.md). Each session takes
 the next number from what it can see, so two open pull requests could take the same one, and only the second to merge
 found out, when `main` was merged in and the two files met. Two files with different names and one number do not even
 conflict in git: on 12 October 2026 two design entries numbered 0376 merged side by side.
@@ -37,7 +37,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 KINDS = {
     "adr": re.compile(r"^docs/adr/ADR-(\d{3})\.md$"),
-    "backlog": re.compile(r"^docs/backlog/(?:done/)?(\d{4})-[^/]+\.md$"),
+    "backlog": re.compile(r"^docs/backlog/(?:done/|hold/)?(\d{4})-[^/]+\.md$"),
     "design": re.compile(r"^docs/design/(\d{4})-[^/]+\.md$"),
 }
 FOLDERS = ["docs/adr", "docs/backlog", "docs/design"]
@@ -163,9 +163,9 @@ def next_free(kind):
 
 def self_test():
     paths = ["docs/adr/ADR-099.md", "docs/adr/README.md", "docs/backlog/0265-a.md", "docs/backlog/done/0249-b.md",
-             "docs/design/0376-x.md", "docs/design/0376-y.md", "docs/adr/ADR-99.md", "docs/backlog/0265-a.txt"]
+             "docs/backlog/hold/0375-c.md", "docs/design/0376-x.md", "docs/design/0376-y.md", "docs/adr/ADR-99.md", "docs/backlog/0265-a.txt"]
     got = numbered(paths)
-    assert set(got) == {("adr", 99), ("backlog", 265), ("backlog", 249), ("design", 376)}, got
+    assert set(got) == {("adr", 99), ("backlog", 265), ("backlog", 249), ("backlog", 375), ("design", 376)}, got
     assert got[("design", 376)] == ["docs/design/0376-x.md", "docs/design/0376-y.md"]
     me = {"number": 20, "created_at": "2026-10-12T10:00:00Z"}
     head = numbered(["docs/adr/ADR-104.md", "docs/design/0377-mine.md"])
