@@ -229,6 +229,11 @@ pub enum Outranked {
     /// Semgrep's rule for credentials written to a log, on a logger call whose every logged value is an id, named
     /// here: its message mentions a secret, and the line logs none (backlog 0583; ADR-111, Later). It decides nothing.
     LogsOnlyIds { names: Vec<String> },
+    /// Bandit's B104, an app listening on every address, in an app stackvet.toml runs in a container (`[stack.run]`),
+    /// where `sv preflight` tells it to listen on every address, since that is the only way to be reached there
+    /// (backlog 0658; ADR-111, Later). Unlike the others, it still counts: outside a container the same line puts the
+    /// app on the local network, so it is worth a look, not nothing.
+    ListensInContainer,
 }
 
 /// Semgrep rules whose findings are listed apart as "worth a look" (Semgrep follow-up 5, the owner's

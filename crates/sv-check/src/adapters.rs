@@ -2282,6 +2282,24 @@ pub fn set_apart_other_frameworks(
     }
 }
 
+/// Bandit's rule for listening on every address (`0.0.0.0`, `::`).
+pub const LISTENS_EVERYWHERE: &str = "bandit.B104";
+
+/// Lists apart Bandit's B104 in an app stackvet.toml runs in a container, as worth a look (backlog 0658; ADR-111,
+/// Later): `sv preflight` tells such an app to listen on every address, which is how it is reached in the container.
+/// It still counts. Not when another tool also found the line, or the finding is already set apart.
+pub fn set_apart_listening_in_container(findings: &mut [crate::Finding], runs_in_container: bool) {
+    if !runs_in_container {
+        return;
+    }
+    for f in findings.iter_mut() {
+        if f.rule_id == LISTENS_EVERYWHERE && f.outranked.is_none() && f.also_reported_by.is_empty()
+        {
+            f.outranked = Some(crate::finding::Outranked::ListensInContainer);
+        }
+    }
+}
+
 /// Lists apart each outside tool's finding from a rule written for some languages, in a file none of their parsers
 /// reads (backlog 0615; ADR-111, Later): Semgrep's insecure-WebSocket rule is a text pattern, and matched `ws://` in
 /// Rust comments. Only a rule that names its languages and no files of its own (`targets`: Rails's template rules are
@@ -2688,6 +2706,9 @@ mod presence_tests;
 
 #[cfg(test)]
 mod rule_page_tests;
+
+#[cfg(test)]
+mod listens_in_container_tests;
 
 #[cfg(all(test, unix))]
 mod stand_in_tests;
