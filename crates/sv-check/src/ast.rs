@@ -206,6 +206,12 @@ pub struct AstRule {
     /// value reaching `open` (backlog 0653, ADR-138).
     #[serde(default)]
     pub argument_names_depth: Option<u8>,
+    /// When true, `argumentNamesRead` follows only an argument that is itself a name (`body`, `&body`, `body.0`,
+    /// `body.into_inner()`, `**data`), at each step, never a name inside a larger value: the whole of what the name
+    /// holds is passed, not a field of it (backlog 0661). `values(&body)` passes the whole request body;
+    /// `values(&NewUser { name: body.name, .. })` passes the fields picked out of it.
+    #[serde(default)]
+    pub argument_names_whole: bool,
     /// When true, `functionPatterns` also matches through a name: the name a `@fn` begins with
     /// (`s` in `s.user` or `s["user"]`) read as what the function around it sets it to.
     ///
@@ -1160,6 +1166,7 @@ fn read_parsed(
                                     pattern,
                                     language == "shell",
                                     compiled.rule.argument_names_depth.unwrap_or(1),
+                                    compiled.rule.argument_names_whole,
                                 )
                             }) => {}
                     _ => continue,
@@ -1549,10 +1556,19 @@ fn name_set_to(
     pattern: &regex::Regex,
     whole_file: bool,
     depth: u8,
+    whole: bool,
 ) -> bool {
     let text = |n: tree_sitter::Node| n.utf8_text(source).unwrap_or("");
-    // The names in the argument, `$` left off PHP's.
+    // The names in the argument, `$` left off PHP's; with `whole`, the one name the argument is.
     let mut names = BTreeSet::new();
+    let arg = if whole {
+        match fixed::the_name_it_is(arg, source) {
+            Some(name) => name,
+            None => return false,
+        }
+    } else {
+        arg
+    };
     let mut stack = vec![arg];
     while let Some(node) = stack.pop() {
         // A name after a dot (`u.email`) or a keyword's own name (`email=` in Python) is a field
@@ -1605,7 +1621,7 @@ fn name_set_to(
                 && (pattern.is_match(text(value))
                     || (depth > 1
                         && value.id() != arg.id()
-                        && name_set_to(value, source, pattern, whole_file, depth - 1)))
+                        && name_set_to(value, source, pattern, whole_file, depth - 1, whole)))
             {
                 return true;
             }

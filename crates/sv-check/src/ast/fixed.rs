@@ -1387,3 +1387,45 @@ pub(super) fn collect_bindings<'a>(
         collect_bindings(child, source, out);
     }
 }
+
+/// The name an argument is, seen through what passes the whole of it on: `&body`, `*body`, `body.0`,
+/// `body.into_inner()`, `body.clone()`, Python's `**data`, and parentheses; `None` when it is anything else, such as
+/// a field of it (`body.name`) or a value built from it (backlog 0661, `argumentNamesWhole`).
+pub(super) fn the_name_it_is<'t>(
+    node: tree_sitter::Node<'t>,
+    source: &[u8],
+) -> Option<tree_sitter::Node<'t>> {
+    let mut node = node;
+    loop {
+        node = match node.kind() {
+            "identifier" => return Some(node),
+            "reference_expression" => node.child_by_field_name("value")?,
+            "unary_expression" | "parenthesized_expression" | "dictionary_splat" | "list_splat" => {
+                node.named_child(0)?
+            }
+            "field_expression"
+                if node
+                    .child_by_field_name("field")
+                    .is_some_and(|f| f.kind() == "integer_literal") =>
+            {
+                node.child_by_field_name("value")?
+            }
+            "call_expression" => {
+                let function = node.child_by_field_name("function")?;
+                let method = function.child_by_field_name("field")?;
+                let arguments = node.child_by_field_name("arguments")?;
+                if function.kind() != "field_expression"
+                    || !matches!(
+                        method.utf8_text(source).ok()?,
+                        "into_inner" | "clone" | "to_owned"
+                    )
+                    || arguments.named_child_count() > 0
+                {
+                    return None;
+                }
+                function.child_by_field_name("value")?
+            }
+            _ => return None,
+        };
+    }
+}
