@@ -79,3 +79,36 @@ fn an_expiry_setting_is_found_and_other_password_settings_are_not() {
         );
     }
 }
+
+#[test]
+fn a_rust_expiry_setting_is_found_and_other_password_settings_are_not() {
+    // Backlog 0661: a constant, a static, a `let`, a field set where a struct is made, and one assigned.
+    check(
+        "rust",
+        "src/policy.rs",
+        |code| format!("{code}\n"),
+        &[
+            ("const PASSWORD_EXPIRY_DAYS: u32 = 90;", true),
+            (
+                "static PASSWORD_MAX_AGE: Duration = Duration::from_secs(90 * 24 * 3600);",
+                true,
+            ),
+            (
+                "fn policy() -> Policy { Policy { password_rotation_days: 30, min_length: 12 } }",
+                true,
+            ),
+            (
+                "fn sign_in(user: &mut User) { user.force_password_change = true; }",
+                true,
+            ),
+            ("fn f() { let password_lifetime = days(90); }", true),
+            ("const PASSWORD_MIN_LENGTH: usize = 12;", false),
+            (
+                "fn f(user: &mut User) { user.password_changed_at = now(); }",
+                false,
+            ),
+            ("const PASSWORD_RESET_TIMEOUT: u64 = 3600;", false),
+            ("struct Policy { password_expiry_days: u32 }", false),
+        ],
+    );
+}
