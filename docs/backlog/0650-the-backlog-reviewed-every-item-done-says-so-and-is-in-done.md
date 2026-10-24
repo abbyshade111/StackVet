@@ -1,6 +1,6 @@
 # The backlog reviewed: every item done says so and is in done/, and every item on hold is in a folder of its own
 
-**Status:** open
+**Status:** claimed by claude/0650, 24 October 2026
 
 Filed 23 October 2026 at the owner's word: "review what is left in the backlog - for anything done, make sure the
 status says so and move to the done folder, for anything on hold, move to a new folder called "hold" or something like
