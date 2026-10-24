@@ -18,6 +18,7 @@ fn a_fully_locked_bill_of_materials_produces_no_gap() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![
             component("npm", "react", sbom::VersionSource::Locked),
             component("npm", "express", sbom::VersionSource::Locked),
@@ -36,6 +37,7 @@ fn an_unread_ecosystem_is_reported_as_empty_and_a_declared_one_is_not() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![component("Python", "flask", sbom::VersionSource::Declared)],
         unread: vec![(
             "npm".to_owned(),
@@ -71,6 +73,7 @@ fn one_ecosystem_being_unreadable_says_nothing_about_another_that_was_read() {
         passed_over: Vec::new(),
         disagreements: Vec::new(),
         lockfiles: Vec::new(),
+        left_out: Vec::new(),
         components: vec![
             component("Python", "flask", sbom::VersionSource::Declared),
             component("Rust", "serde", sbom::VersionSource::Locked),

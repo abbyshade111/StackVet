@@ -1865,7 +1865,7 @@ fn cmd_sbom(path: Option<PathBuf>) -> Result<()> {
     if !app_dir.is_dir() {
         bail!("{} is not a folder", app_dir.display());
     }
-    let sbom = sbom::build(&app_dir);
+    let listing = sv_scan::files::Listing::of(&app_dir);
     // What the app runs on, as `sv report` lists it (backlog 0402), from stackvet.toml when there is one. No digest:
     // the app is not started here.
     let manifest = sv_manifest::locate(&app_dir)
@@ -1875,8 +1875,16 @@ fn cmd_sbom(path: Option<PathBuf>) -> Result<()> {
             let text = std::fs::read_to_string(&located.path).ok()?;
             sv_manifest::Manifest::parse(&text, &located.path).ok()
         });
+    // What the app itself ships, as `sv report` writes it (ADR-140): test code's and the set-apart folders' lockfiles
+    // left out, with the list as resolved, so one that would set apart all the app's code is not used (ADR-031).
+    let set_apart = manifest
+        .as_ref()
+        .map(sv_manifest::Manifest::set_apart)
+        .unwrap_or_default();
+    let (folders, _, _) = sv_scan::not_the_app_in(&listing, &set_apart);
+    let sbom = sbom::build_app_in(&listing, &folders);
     let runs_on = sbom::runs_on(
-        &sv_scan::files::Listing::of(&app_dir),
+        &listing,
         manifest
             .as_ref()
             .map(|m| m.app.name.as_str())
@@ -1894,6 +1902,12 @@ fn cmd_sbom(path: Option<PathBuf>) -> Result<()> {
         sbom.components.len(),
         if sbom.components.len() == 1 { "" } else { "s" }
     );
+    if !sbom.left_out.is_empty() {
+        eprintln!(
+            "Left out, as a test's or a sample's own and not what the app installs: {}.",
+            sbom.left_out.join(", ")
+        );
+    }
     // Said before the verdict on completeness, which it does not change: the list is a full
     // reading of one lockfile, and this says which one.
     for passed in &sbom.passed_over {

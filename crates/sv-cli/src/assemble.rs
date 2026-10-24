@@ -359,7 +359,7 @@ pub fn assemble_report_saying(
     // against V15.1.2, complete is evidence for it, and exactly one of the two says anything. The
     // report used to read only its gaps, so a lockfile it could take nothing from was left to the
     // lockfile check, which saw a lockfile and passed it.
-    findings.extend(sbom::incompleteness_finding(&static_scan.bill_of_materials));
+    findings.extend(sbom::incompleteness_finding(&static_scan.inventory));
     findings.extend(static_scan.code.findings.iter().cloned());
     // A way into the app the code shows that the owner's list of sign-in pathways does not name (backlog 0491; ADR-123).
     // With no list, nothing is compared.
@@ -448,7 +448,7 @@ pub fn assemble_report_saying(
     // fails closed on its own coverage, so the list is short on an app `sv` could not read fully —
     // which is the honest shape for it to have.
     let mut verified = static_scan.config.passed.clone();
-    verified.extend(sbom::completeness_verified(&static_scan.bill_of_materials));
+    verified.extend(sbom::completeness_verified(&static_scan.inventory));
     verified.extend(static_scan.secrets.verified.iter().cloned());
     verified.extend(static_scan.code.verified.iter().cloned());
     verified.extend(run.probe_verified.iter().cloned());
@@ -556,6 +556,7 @@ fn advisories(scene: &Scene, examined: &mut Vec<sv_report::Examined>) -> Result<
         listing,
         scan_report,
         bill_of_materials,
+        inventory: _,
         secrets,
         config,
         code,
@@ -830,6 +831,7 @@ fn outside_tools(
         listing,
         scan_report,
         bill_of_materials,
+        inventory: _,
         secrets,
         config,
         code,
@@ -1083,6 +1085,7 @@ fn running_app(
         listing,
         scan_report,
         bill_of_materials,
+        inventory: _,
         secrets,
         config,
         code,
@@ -1619,6 +1622,7 @@ fn what_was_not_read(
         listing,
         scan_report,
         bill_of_materials,
+        inventory: _,
         secrets,
         config,
         code,
@@ -1980,6 +1984,7 @@ fn requirements_for_tests(
         listing,
         scan_report,
         bill_of_materials,
+        inventory: _,
         secrets,
         config,
         code,
@@ -2064,6 +2069,7 @@ fn the_owners_word(
         listing,
         scan_report,
         bill_of_materials,
+        inventory: _,
         secrets,
         config,
         code,
@@ -2772,6 +2778,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         listing,
         scan_report,
         bill_of_materials,
+        inventory,
         secrets,
         config,
         code,
@@ -3082,8 +3089,9 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     report.sbom = Some(sv_report::SbomFile {
         // With what the app runs on beside its packages (backlog 0402): the app, its image, and its language with the
         // modules of its own library the code imports.
+        // What the app itself ships (ADR-140): test code's and the set-apart folders' lockfiles left out.
         json: serde_json::to_string_pretty(&sbom::to_cyclonedx_with(
-            bill_of_materials,
+            inventory,
             &sbom::runs_on(
                 listing,
                 &manifest.app.name,

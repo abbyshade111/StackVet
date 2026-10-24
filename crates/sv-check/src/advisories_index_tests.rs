@@ -22,6 +22,7 @@ fn sbom_of(components: Vec<Component>) -> Sbom {
         lockfiles: Vec::new(),
         components,
         unread: Vec::new(),
+        left_out: Vec::new(),
     }
 }
 
