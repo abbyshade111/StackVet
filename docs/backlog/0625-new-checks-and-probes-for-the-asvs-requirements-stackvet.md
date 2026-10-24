@@ -32,7 +32,7 @@ for backlog 0507.
    reported; with the program names emptied, the seven found cases went unfound.
    **Part status:** done, 24 October 2026
 3. **TURN relay settings** (V17.1.1, V17.1.2): static, from the coturn file, crediting in part. Small to medium.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-3, 24 October 2026
 4. **Malformed signaling messages, then a normal one** (V17.3.2, L2): probe. Medium.
    **Part status:** open
 5. **Access tokens with too little scope, and for another person with the same email** (V10.3.2, V10.3.3, L2): probe,
