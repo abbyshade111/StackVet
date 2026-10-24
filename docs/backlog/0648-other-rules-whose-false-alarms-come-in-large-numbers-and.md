@@ -1,6 +1,6 @@
 # Other rules whose false alarms come in large numbers, and whether they can be fixed as the path rule's are
 
-**Status:** open
+**Status:** claimed by claude/0648, 23 October 2026
 
 Filed 23 October 2026 at the owner's word, after the triage of StackVet's findings on its own repository (backlog
 0633): "investigate other high volume false positives like this one to see if those can be fixed as well". The path
