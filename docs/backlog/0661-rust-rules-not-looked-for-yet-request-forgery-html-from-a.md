@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** partly done: one rule still to teach Rust: dynamic-code-execution, which credits V1.3.2 in part on a clean run, so teaching it Rust changes what a clean Rust app's report concludes, and wants a decision record
+**Status:** claimed by claude/0661-eval, 24 October 2026
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -121,3 +121,7 @@ the example is held to, so its snapshot is unchanged. A first draft named the ex
 the word alone made `sv` read the example as an app doing retrieval, switching on eleven AISVS requirements its
 `stackvet.toml` had switched off; the functions are named for tagging instead. Broken on purpose: with the Rust
 pattern emptied, the three found witnesses and the example's fault went red. No decision record, as for the CORS rule.
+
+**The last rule, `dynamic-code-execution`, claimed 24 October 2026 with ADR-145 proposed.** Unlike the eleven before
+it, it credits V1.3.2 in part on a clean run, so teaching it Rust changes what a clean Rust-only app's report says;
+the record says how and why.

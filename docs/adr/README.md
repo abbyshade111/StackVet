@@ -191,6 +191,7 @@ source files, and in two tests:
 | [ADR-142](ADR-142.md) | The code rules read the calls inside Rust's standard macros, and a clean result in Rust says so (accepted, 24 October 2026) |
 | [ADR-143](ADR-143.md) | The coding rules carry a few lines for each framework the app's package lists name, each tied to the check that catches its fault (accepted, 24 October 2026) |
 | [ADR-144](ADR-144.md) | `sv rules` adds a one-line import of `AGENTS.md` to the app's own `CLAUDE.md`, and says which tools still will not see the rules (accepted, 24 October 2026) |
+| [ADR-145](ADR-145.md) | The dynamic-code rule reads Rust's embedded interpreters, and a clean Rust app is credited in part (proposed, 24 October 2026) |
 
 ## Names in the records
 
