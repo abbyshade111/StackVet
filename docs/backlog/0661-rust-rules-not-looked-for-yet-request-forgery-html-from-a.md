@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661-email, 24 October 2026
+**Status:** partly done: five rules still to teach Rust: hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -72,3 +72,14 @@ or tuple built from the body's fields is the safe form it is; in JavaScript the 
 through a name. Eight Rust cases and two JavaScript ones in `crates/sv-check/src/ast/body_whole_tests.rs`, and a fault
 and its safe form in `examples/rust-notes`, whose V15.3.3 now needs attention. Broken on purpose: with
 `argumentNamesWhole` off, the two Rust safe forms and the JavaScript one (as JavaScript and TypeScript) were reported.
+
+**`account-found-by-provider-email` built, 24 October 2026.** sqlx's `bind`, diesel's and sea-orm's `eq`, and an app's
+own `find_user_by_email` and its like, given the email address a provider sent: the `openidconnect` crate's
+`claims.email()`, or a user-info answer's `userinfo.email` or `userinfo["email"]`, directly or through a name. A query
+written inside sqlx's own `query!` macro is not read (backlog 0660 reads the standard macros only), and the rule's Rust
+words say so. Six witnesses in `crates/sv-check/src/ast/tests.rs`, and a fault and its safe form in
+`examples/rust-notes`. The example now names `openidconnect`, so `sv` reads it as an app that signs people in through a
+provider, and its snapshot gains that scope's requirements: V10.5.2 needs attention, from the fault, and eighteen more
+(OAuth and OIDC, V10.x, with V6.8.x, V7.1.3, and V7.6.x) are not verified, as nothing here checks them. Broken on
+purpose: with the Rust pattern emptied, the three found witnesses and the example's fault went red. No decision record,
+as for the CORS rule.
