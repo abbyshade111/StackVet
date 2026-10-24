@@ -1907,14 +1907,16 @@
         "javascript": "[(call_expression function: (identifier) @fn arguments: (arguments (object) @arg)) (call_expression function: (member_expression property: (property_identifier) @fn) arguments: (arguments (_) (object) @arg))] @hit",
         "typescript": "[(call_expression function: (identifier) @fn arguments: (arguments (object) @arg)) (call_expression function: (member_expression property: (property_identifier) @fn) arguments: (arguments (_) (object) @arg))] @hit",
         "java": "[(method_declaration) (annotation)] @fn @hit",
-        "csharp": "(invocation_expression) @fn @hit"
+        "csharp": "(invocation_expression) @fn @hit",
+        "rust": "[(call_expression function: (field_expression field: (field_identifier) @mod))\n (call_expression function: (scoped_identifier name: (identifier) @mod))] @fn @hit"
       },
       "functionPatterns": {
         "python": "^(CORS|cross_origin)$",
         "javascript": "^(cors|register)$",
         "typescript": "^(cors|register)$",
         "java": "(?s)((allowedOriginPatterns|addAllowedOriginPattern|setAllowedOriginPatterns)\\(\\s*((List\\.of|Arrays\\.asList)\\(\\s*)?\"\\*\"|originPatterns\\s*=\\s*\"\\*\").*((allowCredentials|setAllowCredentials)\\(\\s*true\\s*\\)|allowCredentials\\s*=\\s*\"true\")|((allowCredentials|setAllowCredentials)\\(\\s*true\\s*\\)|allowCredentials\\s*=\\s*\"true\").*((allowedOriginPatterns|addAllowedOriginPattern|setAllowedOriginPatterns)\\(\\s*((List\\.of|Arrays\\.asList)\\(\\s*)?\"\\*\"|originPatterns\\s*=\\s*\"\\*\")",
-        "csharp": "(?s)SetIsOriginAllowed\\(\\s*\\(?\\s*\\w*\\s*\\)?\\s*=>\\s*true\\s*\\).*AllowCredentials\\(\\s*\\)|AllowCredentials\\(\\s*\\).*SetIsOriginAllowed\\(\\s*\\(?\\s*\\w*\\s*\\)?\\s*=>\\s*true\\s*\\)"
+        "csharp": "(?s)SetIsOriginAllowed\\(\\s*\\(?\\s*\\w*\\s*\\)?\\s*=>\\s*true\\s*\\).*AllowCredentials\\(\\s*\\)|AllowCredentials\\(\\s*\\).*SetIsOriginAllowed\\(\\s*\\(?\\s*\\w*\\s*\\)?\\s*=>\\s*true\\s*\\)",
+        "rust": "(?s)^(tower_http::cors::)?CorsLayer::very_permissive\\(\\)$|^(actix_cors::)?Cors::permissive\\(\\)$|(mirror_request\\(\\)|allow_any_origin\\(\\)).*(allow_credentials\\(\\s*true\\s*\\)|supports_credentials\\(\\))|(allow_credentials\\(\\s*true\\s*\\)|supports_credentials\\(\\)).*(mirror_request\\(\\)|allow_any_origin\\(\\))"
       },
       "argumentPatterns": {
         "python": "\\bsupports_credentials\\s*=\\s*True\\b",
@@ -1930,12 +1932,17 @@
         "ruby": "`rack-cors` refuses `origins '*'` with `credentials: true` when the app starts, so that pair cannot run; an origin block that lets every site in is not looked for yet.",
         "php": "No setting that lets every site in with credentials is looked for in PHP yet. A list of allowed sites built at run time is not looked for in any language: whether it holds every site cannot be told from one file.",
         "kotlin": "Spring's CORS settings in Kotlin are not read yet: only the Java spellings are.",
-        "rust": "No setting that lets every site in with credentials is looked for in Rust yet. A list of allowed sites built at run time is not looked for in any language: whether it holds every site cannot be told from one file.",
         "dart": "No setting that lets every site in with credentials is looked for in Dart yet. A list of allowed sites built at run time is not looked for in any language: whether it holds every site cannot be told from one file.",
         "swift": "No setting that lets every site in with credentials is looked for in Swift yet. A list of allowed sites built at run time is not looked for in any language: whether it holds every site cannot be told from one file.",
         "c": "C has no common web framework whose CORS settings this rule can speak to.",
         "cpp": "C++ has no common web framework whose CORS settings this rule can speak to.",
         "shell": "Shell scripts set no CORS policy this rule can speak to."
+      },
+      "modulePatterns": {
+        "rust": "^(allow_credentials|supports_credentials|allow_origin|allow_any_origin|very_permissive|permissive)$"
+      },
+      "looksForIn": {
+        "rust": "tower-http's `CorsLayer::very_permissive()`, or a `CorsLayer` given `AllowOrigin::mirror_request()` with `allow_credentials(true)`, and actix-cors's `Cors::permissive()`, or `allow_any_origin()` with `supports_credentials()`, in one chain of calls; a list of allowed sites built at run time is not read"
       }
     },
     {
