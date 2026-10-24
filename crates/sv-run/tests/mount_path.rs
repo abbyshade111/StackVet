@@ -4,6 +4,7 @@
 
 use std::path::Path;
 use std::process::Command;
+use sv_frameworks::paths::Canonical;
 use sv_run::Backend;
 use sv_run::docker::{DockerBackend, read_only_bind};
 
@@ -30,6 +31,11 @@ fn docker_mounts_a_folder_whose_name_holds_a_colon_and_a_comma() {
     let app = root.join("Notes: 2026, app");
     std::fs::remove_dir_all(&root).ok();
     std::fs::create_dir_all(&app).unwrap();
+    // The folder's real place (backlog 0631): on a Mac the temporary folder is behind `/var`, a link to
+    // `/private/var`, and a container backend that shares the Mac's folders shares them where they really are.
+    let app = app
+        .canonical()
+        .expect("the setup: the made folder resolves");
     std::fs::write(app.join("marker.txt"), "found it\n").unwrap();
     let docker = |mount: &[&str]| {
         Command::new("docker")
