@@ -623,6 +623,12 @@ pub fn markdown_with(brief: &Brief, fence: &sv_report::fence::Fence) -> String {
     for r in &brief.rules {
         out.push_str(&format!("- {} (`{}`)\n", r.rule, r.topic));
     }
+    // The brief is built from the report, not the app's package lists, so it points to where the
+    // framework lines are given rather than reading the lists a second time (ADR-143).
+    out.push_str(
+        "\n`stackvet_guidance` (`sv rules`) also gives a few lines for each framework the app's \
+         package lists name, each with the check that looks for its mistake.\n",
+    );
 
     out.push_str("\n## 4. Tests to write\n\n");
     if brief.waiting {

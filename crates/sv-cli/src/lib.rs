@@ -1247,12 +1247,27 @@ pub fn coding_rules_for(app_dir: &Path) -> Result<RulesForApp> {
         .map(|r| r.id.clone())
         .collect();
     let withheld = rules.rules.len() - given.len();
+    // The lines for the frameworks the app's package lists name (ADR-143), read whether or not
+    // stackvet.toml is there: a package list is a file, and naming a framework is a fact about it.
+    let ast_rules = sv_check::ast::AstRules::load(&ast_rules_path())?;
+    let guidance =
+        sv_check::stack_guidance::StackGuidance::load(&stack_guidance_path(), &ast_rules)?;
+    let listing = sv_scan::files::Listing::of(app_dir);
+    let found = guidance.found(&sv_scan::deps::read_in(&listing));
+    let frameworks = found.iter().map(|f| f.framework.id.clone()).collect();
+    let stacks = guidance.markdown(&found, &sv_scan::deps::unread_in(&listing));
     Ok(RulesForApp {
         filtered: excluded.is_some(),
         rules,
         given,
         withheld,
+        frameworks,
+        stacks,
     })
+}
+
+pub fn stack_guidance_path() -> PathBuf {
+    sv_frameworks::data::file("stack-guidance.json")
 }
 
 /// The library's prompts for one requirement, or all of them, as Markdown, and the ones chosen.
@@ -1561,6 +1576,10 @@ pub struct RulesForApp {
     pub withheld: usize,
     /// Whether stackvet.toml was there to filter by. Without it every rule is given.
     pub filtered: bool,
+    /// The ids of the frameworks the app's package lists name (ADR-143).
+    pub frameworks: Vec<String>,
+    /// The lines for those frameworks, as Markdown, given after the rules for the whole app.
+    pub stacks: String,
 }
 
 impl RulesForApp {
@@ -1571,8 +1590,14 @@ impl RulesForApp {
             .iter()
             .filter(|r| self.given.contains(&r.id) && topic.is_none_or(|t| r.topic == t))
             .collect();
-        self.rules
-            .markdown(&given, if topic.is_none() { self.withheld } else { 0 })
+        match topic {
+            Some(_) => self.rules.markdown(&given, 0),
+            None => format!(
+                "{}\n{}",
+                self.rules.markdown(&given, self.withheld),
+                self.stacks
+            ),
+        }
     }
 
     /// Every rule given, as `sv rules` writes them into `AGENTS.md`.
@@ -1583,7 +1608,11 @@ impl RulesForApp {
             .iter()
             .filter(|r| self.given.contains(&r.id))
             .collect();
-        self.rules.agents_markdown(&given, self.withheld)
+        format!(
+            "{}\n{}",
+            self.rules.agents_markdown(&given, self.withheld),
+            self.stacks
+        )
     }
 }
 

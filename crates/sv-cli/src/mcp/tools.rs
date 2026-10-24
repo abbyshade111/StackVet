@@ -433,6 +433,9 @@ impl Server {
                 "prompts": prompts.iter().map(|p| json!({ "id": p.id, "title": p.title, "text": p.prompt })).collect::<Vec<_>>(),
                 "leftOut": if topic.is_none() { found.withheld } else { 0 },
                 "filteredBySecurevibeToml": found.filtered,
+                // The frameworks the app's package lists name, whose lines the text gives with no
+                // topic asked for (ADR-143).
+                "frameworks": found.frameworks,
                 "attribution": {
                     "title": a.title, "authors": a.authors, "url": a.url,
                     "license": a.license, "licenseUrl": a.license_url, "changes": a.changes,

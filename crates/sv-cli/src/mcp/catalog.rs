@@ -240,6 +240,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                 ) },
                 "leftOut": count,
                 "filteredBySecurevibeToml": { "type": "boolean" },
+                "frameworks": strings,
                 "attribution": object(
                     json!({ "title": string, "authors": string, "url": string, "license": string, "licenseUrl": string, "changes": string }),
                     &["title", "authors", "url", "license", "licenseUrl", "changes"],
@@ -250,6 +251,7 @@ pub(super) fn output_schema(tool: &str) -> Option<Value> {
                 "prompts",
                 "leftOut",
                 "filteredBySecurevibeToml",
+                "frameworks",
                 "attribution",
             ],
         ),

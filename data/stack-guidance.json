@@ -1,0 +1,479 @@
+{
+  "_comment": "A few lines for each web framework, given to the AI coding tool after the coding rules when the app's package lists name the framework (ADR-143, backlog 0663). Every line is written in this project's own words and names the code rules (data/ast-rules.json) that find the fault it guards against; a line carries those rules' requirements as its citations, so nothing here cites on its own. Each line has at least one `faults` entry: a few lines of that framework's code with the fault, which the named rule must report (crates/sv-check/tests/stack_guidance.rs); they are for the test alone and are never shown. The choice of topics was inspired by Wiz's secure rules files (https://github.com/wiz-sec-public/secure-rules-files, CC BY-NC-ND 4.0); none of their text is here. Worth nothing as evidence: no requirement changes status because a line was given.",
+  "credit": "These lines are StackVet's own. The choice of topics was inspired by Wiz's [secure rules files](https://github.com/wiz-sec-public/secure-rules-files); none of their text is used.",
+  "frameworks": [
+    {
+      "id": "flask",
+      "name": "Flask",
+      "packages": {
+        "Python": [
+          "flask"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Let Jinja escape every value: put HTML in template files and pass values to `render_template`. Never use `|safe`, `Markup(...)`, or `render_template_string` on anything that came from a request.",
+          "checks": [
+            "ast.html-from-value",
+            "ast.template-built-from-value"
+          ],
+          "faults": [
+            {
+              "check": "ast.html-from-value",
+              "language": "python",
+              "file": "app.py",
+              "code": "from markupsafe import Markup\nfrom flask import request\ndef show():\n    return Markup(request.args[\"bio\"])\n"
+            },
+            {
+              "check": "ast.template-built-from-value",
+              "language": "python",
+              "file": "app.py",
+              "code": "from flask import render_template_string, request\ndef hello():\n    return render_template_string(request.args[\"page\"])\n"
+            }
+          ]
+        },
+        {
+          "line": "Serve a stored file with `send_from_directory` and a folder of your own; never pass a name from the request to `open` or `send_file`.",
+          "checks": [
+            "ast.file-path-from-request"
+          ],
+          "faults": [
+            {
+              "check": "ast.file-path-from-request",
+              "language": "python",
+              "file": "app.py",
+              "code": "from flask import request, send_file\ndef download():\n    return send_file(request.args[\"name\"])\n"
+            }
+          ]
+        },
+        {
+          "line": "Never switch off CSRF protection (`WTF_CSRF_ENABLED = False`). Flask has none of its own: add Flask-WTF's `CSRFProtect` for every form that changes something (`sv` does not check that it was added).",
+          "checks": [
+            "ast.csrf-protection-off"
+          ],
+          "faults": [
+            {
+              "check": "ast.csrf-protection-off",
+              "language": "python",
+              "file": "config.py",
+              "code": "WTF_CSRF_ENABLED = False\n"
+            }
+          ]
+        },
+        {
+          "line": "Never switch on debug mode in the code (`app.run(debug=True)`): its error page lets anyone who reaches it run code on the server.",
+          "checks": [
+            "ast.debug-mode-on"
+          ],
+          "faults": [
+            {
+              "check": "ast.debug-mode-on",
+              "language": "python",
+              "file": "app.py",
+              "code": "from flask import Flask\napp = Flask(__name__)\napp.run(debug=True)\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "django",
+      "name": "Django",
+      "packages": {
+        "Python": [
+          "django"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Let templates escape every value; never use `mark_safe`, `|safe`, or `{% autoescape off %}` on anything a user wrote.",
+          "checks": [
+            "ast.html-from-value"
+          ],
+          "faults": [
+            {
+              "check": "ast.html-from-value",
+              "language": "python",
+              "file": "views.py",
+              "code": "from django.utils.safestring import mark_safe\ndef bio(request):\n    return mark_safe(request.GET[\"bio\"])\n"
+            }
+          ]
+        },
+        {
+          "line": "Query through the ORM. Where raw SQL is needed (`raw`, `extra`, `cursor.execute`), pass values as parameters, never in an f-string or `%`.",
+          "checks": [
+            "ast.sql-built-by-hand"
+          ],
+          "faults": [
+            {
+              "check": "ast.sql-built-by-hand",
+              "language": "python",
+              "file": "views.py",
+              "code": "from django.db import connection\ndef find(request):\n    with connection.cursor() as cursor:\n        cursor.execute(f\"SELECT * FROM notes WHERE owner = '{request.GET['who']}'\")\n"
+            }
+          ]
+        },
+        {
+          "line": "Never mark a view `@csrf_exempt` that a signed-in person's browser can reach, and keep `CsrfViewMiddleware` in `MIDDLEWARE` (`sv` does not check that it is still there).",
+          "checks": [
+            "ast.csrf-protection-off"
+          ],
+          "faults": [
+            {
+              "check": "ast.csrf-protection-off",
+              "language": "python",
+              "file": "views.py",
+              "code": "from django.views.decorators.csrf import csrf_exempt\n@csrf_exempt\ndef save(request):\n    pass\n"
+            }
+          ]
+        },
+        {
+          "line": "Set `DEBUG = False` in the settings the app runs with; read it from the environment if development needs it on.",
+          "checks": [
+            "ast.debug-mode-on"
+          ],
+          "faults": [
+            {
+              "check": "ast.debug-mode-on",
+              "language": "python",
+              "file": "settings.py",
+              "code": "DEBUG = True\n"
+            }
+          ]
+        },
+        {
+          "line": "Before redirecting to a `next` address from the request, check it with `url_has_allowed_host_and_scheme`.",
+          "checks": [
+            "ast.open-redirect"
+          ],
+          "faults": [
+            {
+              "check": "ast.open-redirect",
+              "language": "python",
+              "file": "views.py",
+              "code": "from django.shortcuts import redirect\ndef after_login(request):\n    return redirect(request.GET[\"next\"])\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fastapi",
+      "name": "FastAPI",
+      "packages": {
+        "Python": [
+          "fastapi"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Never build a `FileResponse` path from a request value; look the file up by an id the app chose.",
+          "checks": [
+            "ast.file-path-from-request",
+            "ast.file-path-from-value"
+          ],
+          "faults": [
+            {
+              "check": "ast.file-path-from-request",
+              "language": "python",
+              "file": "main.py",
+              "code": "from fastapi import Request\nfrom fastapi.responses import FileResponse\ndef download(request: Request):\n    return FileResponse(request.query_params[\"name\"])\n"
+            },
+            {
+              "check": "ast.file-path-from-value",
+              "language": "python",
+              "file": "main.py",
+              "code": "from fastapi.responses import FileResponse\ndef download(name: str):\n    return FileResponse(\"files/\" + name)\n"
+            }
+          ]
+        },
+        {
+          "line": "Pass values to SQL as parameters (SQLAlchemy's `text()` with bound values, or the ORM), never in an f-string.",
+          "checks": [
+            "ast.sql-built-by-hand"
+          ],
+          "faults": [
+            {
+              "check": "ast.sql-built-by-hand",
+              "language": "python",
+              "file": "main.py",
+              "code": "from sqlalchemy import text\ndef find(db, who: str):\n    return db.execute(text(f\"SELECT * FROM notes WHERE owner = '{who}'\"))\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "express",
+      "name": "Express",
+      "packages": {
+        "npm": [
+          "express"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Never call `cors({ origin: true, credentials: true })` or reflect the request's `Origin` with credentials; list the sites that may call the app.",
+          "checks": [
+            "ast.cors-any-origin-with-credentials"
+          ],
+          "faults": [
+            {
+              "check": "ast.cors-any-origin-with-credentials",
+              "language": "javascript",
+              "file": "server.js",
+              "code": "const cors = require('cors');\napp.use(cors({ origin: true, credentials: true }));\n"
+            }
+          ]
+        },
+        {
+          "line": "Never pass a name from `req.params` or `req.query` to `res.sendFile` or `fs`; look the file up by an id the app chose.",
+          "checks": [
+            "ast.file-path-from-request"
+          ],
+          "faults": [
+            {
+              "check": "ast.file-path-from-request",
+              "language": "javascript",
+              "file": "server.js",
+              "code": "app.get('/f', (req, res) => {\n  res.sendFile(req.query.name);\n});\n"
+            }
+          ]
+        },
+        {
+          "line": "Never `res.redirect` to an address from the request; redirect to a path the app chose.",
+          "checks": [
+            "ast.open-redirect"
+          ],
+          "faults": [
+            {
+              "check": "ast.open-redirect",
+              "language": "javascript",
+              "file": "server.js",
+              "code": "app.get('/go', (req, res) => {\n  res.redirect(req.query.to);\n});\n"
+            }
+          ]
+        },
+        {
+          "line": "Serve static files from a folder of their own (`express.static('public')`), never from the folder the server's code is in.",
+          "checks": [
+            "ast.static-files-from-app-folder"
+          ],
+          "faults": [
+            {
+              "check": "ast.static-files-from-app-folder",
+              "language": "javascript",
+              "file": "server.js",
+              "code": "const express = require('express');\nconst app = express();\napp.use(express.static(__dirname));\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "react",
+      "name": "React",
+      "packages": {
+        "npm": [
+          "react"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Let React escape values by writing them as `{value}`; never put text from a user or a server into `dangerouslySetInnerHTML`.",
+          "checks": [
+            "ast.html-from-value"
+          ],
+          "faults": [
+            {
+              "check": "ast.html-from-value",
+              "language": "javascript",
+              "file": "Bio.jsx",
+              "code": "export function Bio({ bio }) {\n  return <div dangerouslySetInnerHTML={{ __html: bio }} />;\n}\n"
+            }
+          ]
+        },
+        {
+          "line": "Never keep a sign-in token or a password in `localStorage` or `sessionStorage`, where any script on the page can read it; let the server set an `HttpOnly` cookie.",
+          "checks": [
+            "ast.token-in-browser-storage",
+            "ast.password-in-browser-storage"
+          ],
+          "faults": [
+            {
+              "check": "ast.token-in-browser-storage",
+              "language": "javascript",
+              "file": "auth.js",
+              "code": "export function saveLogin(res) {\n  localStorage.setItem('token', res.token);\n}\n"
+            },
+            {
+              "check": "ast.password-in-browser-storage",
+              "language": "javascript",
+              "file": "login.js",
+              "code": "export function remember(form) {\n  localStorage.setItem('password', form.password);\n}\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rails",
+      "name": "Ruby on Rails",
+      "packages": {
+        "Ruby": [
+          "rails"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Let ERB escape every value; never call `html_safe` or `raw` on anything a user wrote.",
+          "checks": [
+            "ast.html-from-value"
+          ],
+          "faults": [
+            {
+              "check": "ast.html-from-value",
+              "language": "ruby",
+              "file": "app/helpers/bio_helper.rb",
+              "code": "def bio(user)\n  user.bio.html_safe\nend\n"
+            }
+          ]
+        },
+        {
+          "line": "Keep forgery protection on; never `skip_forgery_protection` on a controller a signed-in person's browser can reach.",
+          "checks": [
+            "ast.csrf-protection-off"
+          ],
+          "faults": [
+            {
+              "check": "ast.csrf-protection-off",
+              "language": "ruby",
+              "file": "app/controllers/notes_controller.rb",
+              "code": "class NotesController < ApplicationController\n  skip_forgery_protection\nend\n"
+            }
+          ]
+        },
+        {
+          "line": "Give Active Record values as parameters (`where(owner: x)` or `where(\"owner = ?\", x)`), never inside `#{}` in the SQL.",
+          "checks": [
+            "ast.sql-built-by-hand"
+          ],
+          "faults": [
+            {
+              "check": "ast.sql-built-by-hand",
+              "language": "ruby",
+              "file": "app/models/note.rb",
+              "code": "class Note < ApplicationRecord\n  def self.for(who)\n    find_by_sql(\"SELECT * FROM notes WHERE owner = '#{who}'\")\n  end\nend\n"
+            }
+          ]
+        },
+        {
+          "line": "Never `redirect_to` an address from `params`; redirect to a path the app chose.",
+          "checks": [
+            "ast.open-redirect"
+          ],
+          "faults": [
+            {
+              "check": "ast.open-redirect",
+              "language": "ruby",
+              "file": "app/controllers/sessions_controller.rb",
+              "code": "class SessionsController < ApplicationController\n  def create\n    redirect_to params[:back]\n  end\nend\n"
+            }
+          ]
+        },
+        {
+          "line": "Never read outside data with `Marshal.load` or `YAML.load`; use JSON, or `YAML.safe_load`.",
+          "checks": [
+            "ast.unsafe-deserialization"
+          ],
+          "faults": [
+            {
+              "check": "ast.unsafe-deserialization",
+              "language": "ruby",
+              "file": "app/controllers/import_controller.rb",
+              "code": "class ImportController < ApplicationController\n  def create\n    Marshal.load(request.body.read)\n  end\nend\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "axum",
+      "name": "Axum",
+      "packages": {
+        "Rust": [
+          "axum"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Render pages with a template engine that escapes (Askama, or Tera with escaping on); never return `Html(format!(...))` with a value in it.",
+          "checks": [
+            "ast.html-from-value"
+          ],
+          "faults": [
+            {
+              "check": "ast.html-from-value",
+              "language": "rust",
+              "file": "src/main.rs",
+              "code": "use axum::response::Html;\nasync fn hello(name: String) -> Html<String> {\n    Html(format!(\"<h1>{}</h1>\", name))\n}\n"
+            }
+          ]
+        },
+        {
+          "line": "Never let tower-http's `CorsLayer` echo back whatever site calls (`AllowOrigin::mirror_request()`, or `very_permissive()`) together with credentials; list the sites that may call the app.",
+          "checks": [
+            "ast.cors-any-origin-with-credentials"
+          ],
+          "faults": [
+            {
+              "check": "ast.cors-any-origin-with-credentials",
+              "language": "rust",
+              "file": "src/main.rs",
+              "code": "use tower_http::cors::{AllowOrigin, CorsLayer};\nfn cors() -> CorsLayer {\n    CorsLayer::new().allow_origin(AllowOrigin::mirror_request()).allow_credentials(true)\n}\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gin",
+      "name": "Gin",
+      "packages": {
+        "Go": [
+          "github.com/gin-gonic/gin"
+        ]
+      },
+      "lines": [
+        {
+          "line": "Let `html/template` escape values; never wrap text from a user in `template.HTML`.",
+          "checks": [
+            "ast.html-from-value"
+          ],
+          "faults": [
+            {
+              "check": "ast.html-from-value",
+              "language": "go",
+              "file": "main.go",
+              "code": "package main\nimport (\n\t\"html/template\"\n\t\"github.com/gin-gonic/gin\"\n)\nfunc bio(c *gin.Context) {\n\tc.HTML(200, \"bio\", template.HTML(c.Query(\"bio\")))\n}\n"
+            }
+          ]
+        },
+        {
+          "line": "Pass values to `db.Query` and `db.Exec` as `?` or `$1` arguments, never through `fmt.Sprintf`.",
+          "checks": [
+            "ast.sql-built-by-hand"
+          ],
+          "faults": [
+            {
+              "check": "ast.sql-built-by-hand",
+              "language": "go",
+              "file": "main.go",
+              "code": "package main\nimport (\n\t\"database/sql\"\n\t\"fmt\"\n)\nfunc find(db *sql.DB, who string) {\n\tdb.Query(fmt.Sprintf(\"SELECT * FROM notes WHERE owner = '%s'\", who))\n}\n"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

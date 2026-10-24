@@ -189,7 +189,7 @@ source files, and in two tests:
 | [ADR-140](ADR-140.md) | The bill of materials leaves out lockfiles in test code and in folders named as not the app (accepted, 23 October 2026) |
 | [ADR-141](ADR-141.md) | stackvet.toml sets environment variables for the copy of the app `sv` runs, and the starter stops putting the app's data under /tmp (accepted, 24 October 2026) |
 | [ADR-142](ADR-142.md) | The code rules read the calls inside Rust's standard macros, and a clean result in Rust says so (accepted, 24 October 2026) |
-| [ADR-143](ADR-143.md) | The coding rules carry a few lines for each framework the app's package lists name, each tied to the check that catches its fault (proposed, 24 October 2026) |
+| [ADR-143](ADR-143.md) | The coding rules carry a few lines for each framework the app's package lists name, each tied to the check that catches its fault (accepted, 24 October 2026) |
 
 ## Names in the records
 
