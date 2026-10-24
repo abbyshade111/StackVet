@@ -1,6 +1,6 @@
 # Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more
 
-**Status:** claimed by claude/0661, 24 October 2026
+**Status:** partly done: eleven rules still to teach Rust: html-from-value, cors-any-origin-with-credentials, template-built-from-value, insecure-random-for-code, request-body-passed-whole, account-found-by-provider-email, hand-rolled-cryptography, backup-codes-stored-plain, password-expiry-enforced, model-download-not-pinned, and dynamic-code-execution
 
 Found 24 October 2026, building backlog 0649. Of the 42 code rules, 18 read Rust and 24 say why not
 (`nothingToFind`). Three of those are really nothing to find in Rust (a model loaded with pickle; a switch that turns
@@ -23,3 +23,9 @@ To do: teach each a Rust query, with a fault and its safe form added to `example
 first, request forgery first. Each becomes a part of this item as it is taken.
 
 **Order:** after 0660.
+
+**`fetch-address-from-request` built, 24 October 2026** (ADR-138, Later). Its Rust query reads `reqwest`, a client's
+methods, and the `http` crate's request builder, given an Axum or Actix extractor, directly or through two names; its
+`argumentNamesDepth` is 2 for every language. `crates/sv-check/src/ast/fetch_tests.rs` holds eleven Rust cases, and
+`examples/rust-notes/src/main.rs` a fault and its safe form. Broken on purpose: with the Rust request-input pattern
+emptied, all six found cases and the example's fault went red.

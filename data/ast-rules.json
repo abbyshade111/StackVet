@@ -2355,48 +2355,58 @@
       "fix": "Do not let a request choose the address. Keep a short list of the hosts the app may fetch from and look the request's choice up in it, or take only an id and build the address from the app's own settings. Where any public address must be allowed, resolve it first and refuse private and loopback addresses, and do not follow redirects.",
       "literalArgumentIsSafe": true,
       "argumentNamesRead": true,
+      "argumentNamesDepth": 2,
       "queries": {
         "python": "[(call function: (attribute object: (identifier) @mod attribute: (identifier) @fn)\n        arguments: (argument_list . (_) @arg))\n (call function: (identifier) @fn @mod\n        arguments: (argument_list . (_) @arg))] @hit",
         "javascript": "[(call_expression function: (member_expression object: (identifier) @mod property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (call_expression function: (identifier) @fn @mod\n                  arguments: (arguments . (_) @arg))] @hit",
         "typescript": "[(call_expression function: (member_expression object: (identifier) @mod property: (property_identifier) @fn)\n                  arguments: (arguments . (_) @arg))\n (call_expression function: (identifier) @fn @mod\n                  arguments: (arguments . (_) @arg))] @hit",
-        "go": "(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn)\n                 arguments: (argument_list . (_) @arg)) @hit"
+        "go": "(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn)\n                 arguments: (argument_list . (_) @arg)) @hit",
+        "rust": "[(call_expression function: (scoped_identifier path: (_) @mod name: (identifier) @fn)\n                   arguments: (arguments . (_) @arg))\n (call_expression function: (field_expression value: (_) @mod field: (field_identifier) @fn)\n                   arguments: (arguments . (_) @arg))] @hit"
       },
       "functionPatterns": {
         "python": "^(get|post|put|patch|delete|head|options|request|stream|urlopen)$",
         "javascript": "^(fetch|axios|got|get|post|put|patch|delete|head|request)$",
         "typescript": "^(fetch|axios|got|get|post|put|patch|delete|head|request)$",
-        "go": "^(Get|Post|Head|PostForm|NewRequest|NewRequestWithContext)$"
+        "go": "^(Get|Post|Head|PostForm|NewRequest|NewRequestWithContext)$",
+        "rust": "^(get|post|put|patch|delete|head|request|uri)$"
       },
       "modulePatterns": {
         "python": "^(requests|httpx|urlopen)$",
         "javascript": "^(fetch|axios|got|http|https|ky|superagent|needle)$",
         "typescript": "^(fetch|axios|got|http|https|ky|superagent|needle)$",
-        "go": "^http$"
+        "go": "^http$",
+        "rust": "(^|::)(reqwest|blocking|Request)$|(?i)(client|http)|Request::builder\\(\\)$"
       },
       "argumentPositions": {
         "go": {
           "^NewRequest$": 1,
           "^NewRequestWithContext$": 2
+        },
+        "rust": {
+          "^request$": 1
         }
       },
       "safeArgumentPatterns": {
         "python": "^f?[\"']https?://[^/{\"'\\s]+/",
         "javascript": "^[`\"']https?://[^/$`\"'\\s]+/",
         "typescript": "^[`\"']https?://[^/$`\"'\\s]+/",
-        "go": "^\"https?://[^/\"\\s]+/"
+        "go": "^\"https?://[^/\"\\s]+/",
+        "rust": "^&?(format!\\()?\"https?://[^/{\"\\s]+/"
       },
       "argumentPatterns": {
         "python": "\\brequest\\.(args|form|values|json|data|GET|POST|query_params|headers)\\b|\\brequest\\.get_json\\(",
         "javascript": "\\b(req|request)\\.(query|body|params|headers)\\b|\\bctx\\.(query|params|request\\.(body|query))\\b|\\bsearchParams\\.get\\(",
         "typescript": "\\b(req|request)\\.(query|body|params|headers)\\b|\\bctx\\.(query|params|request\\.(body|query))\\b|\\bsearchParams\\.get\\(",
-        "go": "\\.URL\\.Query\\(\\)|\\.(FormValue|PostFormValue|Query|QueryParam|Param|DefaultQuery)\\(|\\bmux\\.Vars\\("
+        "go": "\\.URL\\.Query\\(\\)|\\.(FormValue|PostFormValue|Query|QueryParam|Param|DefaultQuery)\\(|\\bmux\\.Vars\\(",
+        "rust": "^&?(axum::extract::|actix_web::web::|web::|extract::)?((Path|Query|Form|Json|RawQuery)\\s*<|Multipart\\b)|\\b(req|request)\\.(uri|match_info|query_string|body|headers)\\(\\)"
       },
       "looksFor": "an outgoing request whose address is read straight from the incoming request, or from a name set from it in the same function",
       "looksForIn": {
         "python": "`requests` and `httpx` calls (`get`, `post`, and the rest) and `urlopen`, given a value from Flask's, Django's, or FastAPI's request (`request.args`, `request.form`, `request.json`, `request.GET`, `request.query_params`, and the like)",
         "javascript": "`fetch`, `axios`, `got`, Node's `http` and `https`, `ky`, `superagent`, and `needle`, given a value from Express's or Koa's request (`req.query`, `req.body`, `req.params`, `ctx.query`) or a URL's `searchParams`",
         "typescript": "`fetch`, `axios`, `got`, Node's `http` and `https`, `ky`, `superagent`, and `needle`, given a value from Express's or Koa's request (`req.query`, `req.body`, `req.params`, `ctx.query`) or a URL's `searchParams`",
-        "go": "`net/http`'s `Get`, `Post`, `Head`, `PostForm`, `NewRequest`, and `NewRequestWithContext`, given a value from the request's query or form (`r.URL.Query()`, `r.FormValue`) or a router's parameters (`mux.Vars`, Gin's and Echo's `Query` and `Param`)"
+        "go": "`net/http`'s `Get`, `Post`, `Head`, `PostForm`, `NewRequest`, and `NewRequestWithContext`, given a value from the request's query or form (`r.URL.Query()`, `r.FormValue`) or a router's parameters (`mux.Vars`, Gin's and Echo's `Query` and `Param`)",
+        "rust": "`reqwest`'s `get`, `post`, and the rest, a client's (`client.get(…)`, and `client.request(method, …)` with the address second), and the `http` crate's `Request::get(…)` or `Request::builder().uri(…)`, given a handler's extractor parameter (`Query`, `Path`, `Form`, or `Json` in Axum or Actix: `Query(q): Query<Params>`) or the request's `uri()`, directly or through a name set from it in the same function"
       },
       "nothingToFind": {
         "ruby": "Not looked for in Ruby yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in Ruby credits nothing either way.",
@@ -2404,7 +2414,6 @@
         "java": "Not looked for in Java yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in Java credits nothing either way.",
         "kotlin": "Not looked for in Kotlin yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in Kotlin credits nothing either way.",
         "csharp": "Not looked for in C# yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in C# credits nothing either way.",
-        "rust": "Not looked for in Rust yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in Rust credits nothing either way.",
         "swift": "Not looked for in Swift yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in Swift credits nothing either way.",
         "dart": "Not looked for in Dart yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in Dart credits nothing either way.",
         "c": "Not looked for in C yet: an outgoing request whose address is taken from the incoming one. The rule only ever reports, so finding none in C credits nothing either way.",
