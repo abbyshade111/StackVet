@@ -171,15 +171,21 @@ pub fn run(services: &dyn Services, plan: &Plan, probes: &[ProbeRequest]) -> Out
     //     it (`Patient`); until 8 October 2026 these three took the app's answers as they came.
     out.oidc = plan.oidc.map(|section| {
         begin("signing in through the test provider");
+        // A browser too, when the run has one: the storage left after signing out of this way in (backlog 0629).
+        let browser = plan.users.is_some_and(|u| u.browser.is_some());
         let mut http = services.http(
             Target::App,
             With {
                 provider: true,
+                browser,
                 ..With::default()
             },
         );
         let mut patient = Patient::within(http.as_mut(), &spent);
         let mut out = crate::oidc::run(&mut patient, section);
+        if browser {
+            crate::oidc::browser_storage(&mut patient, section, &mut out);
+        }
         patient.settle(&mut out);
         out
     });
@@ -460,6 +466,8 @@ mod progress_tests;
 
 #[cfg(test)]
 mod issued_keep_out_tests;
+#[cfg(test)]
+mod oidc_browser_tests;
 #[cfg(test)]
 mod seed_keep_out_tests;
 

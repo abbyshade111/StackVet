@@ -344,3 +344,39 @@ fn the_access_tokens_sv_asks_for_are_for_whom_it_assumes() {
     // A `who` the provider does not know is refused rather than ignored.
     assert_eq!(mint("aud=self&who=somebody").status, 400);
 }
+
+#[test]
+fn in_refuse_mode_every_sign_in_is_declined_until_another_mode_is_set() {
+    if Command::new("node").arg("--version").output().is_err() {
+        println!("no Node on this computer, so the provider script cannot be run");
+        return;
+    }
+    let (_server, port) = start().expect("the provider started and answered its health address");
+    let authorize = || {
+        call(
+            port,
+            "GET",
+            &format!("/authorize?client_id={CLIENT_ID}&redirect_uri={BACK}&state=s1&nonce=n1"),
+            &[],
+            "",
+        )
+    };
+    assert_eq!(set_mode(port, oidc::REFUSE).status, 200);
+    // Twice: unlike the other modes, it is not used up by one sign-in (backlog 0629).
+    for _ in 0..2 {
+        let to = authorize();
+        assert_eq!(to.status, 302, "{}", to.body);
+        let back = to.location.expect("sent back to the app");
+        assert!(back.starts_with(BACK), "{back}");
+        assert_eq!(
+            param(&back, "error").as_deref(),
+            Some("access_denied"),
+            "{back}"
+        );
+        assert_eq!(param(&back, "state").as_deref(), Some("s1"), "{back}");
+        assert!(param(&back, "code").is_none(), "{back}");
+    }
+    // Back to normal, a sign-in works again.
+    assert_eq!(set_mode(port, oidc::NORMAL).status, 200);
+    assert_eq!(sign_in(port).claims["nonce"], "n1");
+}

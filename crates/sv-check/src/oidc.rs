@@ -34,7 +34,10 @@ use sv_manifest::OidcSection;
 const IDS: &str = "V10.1.2, V10.2.1, V7.6.2, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2, V10.3.1, V10.3.2, V10.3.3";
 
 mod session;
+mod storage;
 mod tokens;
+
+pub(crate) use storage::browser_storage;
 
 const CROSS_SESSION: Rule = Rule {
     rule_id: "probe.oidc-sign-in-from-another-session",

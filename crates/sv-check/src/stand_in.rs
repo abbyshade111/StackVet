@@ -77,8 +77,10 @@ pub mod oidc {
     pub const WRONG_TOKEN_ISS: &str = "wrong-token-iss";
     pub const OTHER_PERSON: &str = "other-person";
     pub const NEW_EMAIL: &str = "new-email";
+    /// Every sign-in refused until another mode is set, as a person who declines (backlog 0629).
+    pub const REFUSE: &str = "refuse";
     /// Every mode the provider takes, in the order its script lists them.
-    pub const MODES: [&str; 9] = [
+    pub const MODES: [&str; 10] = [
         NORMAL,
         WRONG_NONCE,
         WRONG_AUD,
@@ -88,5 +90,6 @@ pub mod oidc {
         WRONG_TOKEN_ISS,
         OTHER_PERSON,
         NEW_EMAIL,
+        REFUSE,
     ];
 }

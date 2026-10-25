@@ -18,6 +18,9 @@
 //   wrong-token-iss  an ID token whose `iss` claim names another provider
 //   other-person     a different person (another `sub`) who has the same email address
 //   new-email        the same person (the same `sub`) after their email address changed
+//   refuse       every sign-in refused, as a person who declines does: `/authorize` sends the browser back with
+//                `error=access_denied` and no code. Not used up: it lasts until another mode is set (backlog 0629,
+//                where a real browser, signed out, must not be signed straight back in).
 //
 // Two more, which make a token on request rather than at the next sign-in (backlog 0500, ADR-127):
 //   `POST /_sv/access-token` with `aud=self` or `aud=other`: a signed access token for this app's client, or for a
@@ -130,6 +133,13 @@ http
       const q = url.searchParams;
       const redirect = q.get('redirect_uri');
       if (q.get('client_id') !== CLIENT_ID || !redirect) return json(res, 400, { error: 'invalid_request' });
+      if (mode === 'refuse') {
+        const back = new URL(redirect);
+        back.searchParams.set('error', 'access_denied');
+        if (q.get('state') !== null) back.searchParams.set('state', q.get('state'));
+        res.writeHead(302, { location: back.toString() });
+        return res.end();
+      }
       const code = b64url(crypto.randomBytes(24));
       codes.set(code, {
         redirect,
@@ -254,7 +264,7 @@ http
       const wanted = new URLSearchParams(await body(req)).get('mode');
       const modes = [
         'normal', 'wrong-nonce', 'wrong-aud', 'unsigned', 'wrong-key', 'wrong-iss', 'wrong-token-iss',
-        'other-person', 'new-email',
+        'other-person', 'new-email', 'refuse',
       ];
       if (!modes.includes(wanted)) {
         return json(res, 400, { error: 'unknown mode' });
