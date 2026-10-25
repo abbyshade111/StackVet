@@ -294,3 +294,49 @@ fn the_provider_does_to_each_token_what_sv_assumes_each_mode_does() {
     assert_eq!(moved.claims["sub"], normal.claims["sub"]);
     assert_ne!(moved.claims["email"], normal.claims["email"]);
 }
+
+/// The claims of a signed token, from its middle part.
+fn claims_of(token: &str) -> serde_json::Value {
+    let payload = token.split('.').nth(1).expect("a token in three parts");
+    serde_json::from_slice(&unbase64url(payload)).expect("the claims are JSON")
+}
+
+#[test]
+fn the_access_tokens_sv_asks_for_are_for_whom_it_assumes() {
+    // Backlog 0625, part 5, ADR-148: the access token for the other person who shares the email address, and the
+    // email claim every access token carries, which V10.3.3's probe rests on.
+    if Command::new("node").arg("--version").output().is_err() {
+        println!("no Node on this computer, so the provider script cannot be run");
+        return;
+    }
+    let (_server, port) = start().expect("the provider started and answered its health address");
+    let mint = |form: &str| {
+        call(
+            port,
+            "POST",
+            oidc::ACCESS_TOKEN,
+            &[(
+                "Content-Type",
+                "application/x-www-form-urlencoded".to_owned(),
+            )],
+            form,
+        )
+    };
+    let token = |form: &str| {
+        let answer = mint(form);
+        assert_eq!(answer.status, 200, "{form}: {}", answer.body);
+        let body: serde_json::Value = serde_json::from_str(&answer.body).expect("JSON");
+        body["token"].as_str().expect("a token").to_owned()
+    };
+    let first = token("aud=self");
+    let other = token(&format!("aud=self&who={}", oidc::OTHER_SUBJECT));
+    for t in [&first, &other] {
+        assert!(signed_by_published_key(port, t));
+        assert_eq!(claims_of(t)["aud"], CLIENT_ID);
+        assert_eq!(claims_of(t)["email"], "sv-oidc-user@example.test");
+    }
+    assert_eq!(claims_of(&first)["sub"], "sv-oidc-user");
+    assert_eq!(claims_of(&other)["sub"], "sv-oidc-other-person");
+    // A `who` the provider does not know is refused rather than ignored.
+    assert_eq!(mint("aud=self&who=somebody").status, 400);
+}

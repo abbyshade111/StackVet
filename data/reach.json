@@ -399,6 +399,9 @@
   "V10.3.1": [
    "signed-in"
   ],
+  "V10.3.3": [
+   "signed-in"
+  ],
   "V10.4.3": [
    "static"
   ],
@@ -2780,6 +2783,14 @@
     "id": "probe.oidc-access-token-audience-not-checked",
     "run": "Signed in",
     "looks_for": "An access token the sign-in provider issued for any other service opens the app: whoever runs that service, or anyone who gets one of its tokens, can use the app as the person the token names.",
+    "finding_only": false
+   }
+  ],
+  "V10.3.3": [
+   {
+    "id": "probe.oidc-access-token-user-keyed-on-email",
+    "run": "Signed in",
+    "looks_for": "A different person who has the same email address at the sign-in provider gets the first person's data through the app's API: an address can be given to someone else, or chosen by whoever signs up first.",
     "finding_only": false
    }
   ],
