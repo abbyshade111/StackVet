@@ -373,6 +373,14 @@ impl Ask<'_> {
     }
 }
 
+/// Whether an answer is the server refusing: any answer but a crash, a limiter's, or none (ADR-021), that does not
+/// send the browser on with a code or hand over a token. Read only where neither of those was found.
+fn refused(answer: &Option<ProbeResponse>) -> bool {
+    answer.as_ref().is_some_and(|r| {
+        r.status < 500 && rate_limited(r).is_none() && !(200..300).contains(&r.status)
+    })
+}
+
 /// The access token in a token answer, when it is a 2xx with one.
 fn access_token(answer: &Option<ProbeResponse>) -> Option<String> {
     let answer = answer.as_ref().filter(|r| (200..300).contains(&r.status))?;
@@ -440,6 +448,7 @@ fn variants(registered: &str) -> Vec<(&'static str, String)> {
 /// V10.4.1: each changed address asked for, and the registered one asked again after.
 fn redirect_check(http: &mut dyn Http, ask: &Ask, out: &mut Outcome) {
     let mut taken = Vec::new();
+    let mut unread = Vec::new();
     let mut ids = Vec::new();
     for (i, (what, address)) in variants(&ask.client.redirect).into_iter().enumerate() {
         let id = format!("oauth-authorize-changed-{}", i + 1);
@@ -449,14 +458,21 @@ fn redirect_check(http: &mut dyn Http, ask: &Ask, out: &mut Outcome) {
             .filter(|r| (300..400).contains(&r.status))
             .and_then(|r| r.header("location"))
             .is_some_and(|to| to.starts_with(&address));
+        // A crash, or a limiter's answer, is not the server refusing (ADR-021).
+        let not_a_refusal = !sent_there && !refused(&answer);
         out.steps.push(format!(
             "asked for a sign-in code with {what}: {}",
             if sent_there {
                 "the server sent the browser there".to_owned()
+            } else if not_a_refusal {
+                format!("no refusal to read ({})", status(&answer))
             } else {
                 format!("refused ({})", status(&answer))
             }
         ));
+        if not_a_refusal {
+            unread.push(what);
+        }
         if let Some(code) = answer
             .as_ref()
             .and_then(|r| r.header("location"))
@@ -485,6 +501,17 @@ fn redirect_check(http: &mut dyn Http, ask: &Ask, out: &mut Outcome) {
                     .map(|(what, address)| format!("{address} ({what})"))
                     .collect::<Vec<_>>()
                     .join(", ")
+            ),
+        ));
+        return;
+    }
+    if !unread.is_empty() {
+        out.not_assessed.push((
+            REDIRECT.to_owned(),
+            format!(
+                "Asked for a sign-in code with {}, the authorization server gave no answer that can be read as a \
+                 refusal (it crashed, did not answer, or was limiting requests), so nothing was concluded.",
+                unread.join(", and with ")
             ),
         ));
         return;
@@ -558,10 +585,7 @@ fn code_check(http: &mut dyn Http, ask: &Ask, secret: Option<&str>, code: &str, 
         ));
         return;
     }
-    if !again
-        .as_ref()
-        .is_some_and(|r| (400..500).contains(&r.status))
-    {
+    if !refused(&again) {
         out.not_assessed.push((
             CODE.to_owned(),
             format!(

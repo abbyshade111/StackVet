@@ -27,6 +27,10 @@ struct Faults {
     stops_after_a_change: bool,
     /// Publishes no details about itself, as an app that is no authorization server.
     publishes_nothing: bool,
+    /// Crashes on a redirect address it does not take, rather than refusing it.
+    crashes_on_a_change: bool,
+    /// Answers a code sent a second time with a limiter's 429.
+    limits_the_second: bool,
 }
 
 const REGISTERED: &str = "http://localhost/callback";
@@ -144,6 +148,9 @@ impl Server {
             return answer(&request.id, 400, &[], "temporarily unavailable");
         }
         if query.get("client_id").map(String::as_str) != Some(CLIENT) || !self.takes(&redirect) {
+            if self.faults.crashes_on_a_change {
+                return answer(&request.id, 500, &[], "Internal Server Error");
+            }
             return answer(&request.id, 400, &[], "invalid redirect_uri");
         }
         if self.faults.consent {
@@ -182,6 +189,9 @@ impl Server {
         };
         if s256(form.get("code_verifier")?) != challenge {
             return answer(&request.id, 400, &[], r#"{"error":"invalid_grant"}"#);
+        }
+        if used && self.faults.limits_the_second {
+            return answer(&request.id, 429, &[("retry-after", "1")], "");
         }
         if used && !self.faults.code_twice {
             if !self.faults.keeps_tokens {
@@ -407,6 +417,52 @@ fn refusals_from_a_server_that_then_refuses_the_registered_address_too_credit_no
     assert!(
         o.not_assessed.iter().any(|(ids, why)| ids == "V10.4.1"
             && why.starts_with("After the changed redirect addresses were refused")),
+        "{:?}",
+        o.not_assessed
+    );
+}
+
+#[test]
+fn a_crash_on_a_changed_redirect_address_is_not_a_refusal() {
+    let (o, _) = run_with_client(
+        Faults {
+            crashes_on_a_change: true,
+            ..Default::default()
+        },
+        Some(&client()),
+    );
+    assert!(
+        credited(&o, REDIRECT_NOT_EXACT.rule_id).is_none(),
+        "{:?}",
+        o.verified
+    );
+    assert!(
+        o.not_assessed.iter().any(|(ids, why)| ids == "V10.4.1"
+            && why.contains("no answer that can be read as a refusal")),
+        "{:?}",
+        o.not_assessed
+    );
+}
+
+#[test]
+fn a_limiter_on_the_second_exchange_is_not_a_refusal() {
+    let (o, _) = run_with_client(
+        Faults {
+            limits_the_second: true,
+            ..Default::default()
+        },
+        Some(&client()),
+    );
+    assert!(
+        credited(&o, CODE_REUSED.rule_id).is_none(),
+        "{:?}",
+        o.verified
+    );
+    assert!(found(&o, CODE_REUSED.rule_id).is_none());
+    assert!(
+        o.not_assessed
+            .iter()
+            .any(|(ids, why)| ids == "V10.4.2" && why.contains("answered 429")),
         "{:?}",
         o.not_assessed
     );
