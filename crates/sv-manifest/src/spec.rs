@@ -76,7 +76,9 @@ health = "/"              # a path that returns 200 once the app is up
 # registers one test client in the copy of the app `sv` runs, set to skip the consent page, and
 # prints its secret as a `NAME=value` line; `sv` signs the first test user in and asks the server
 # what it does with a changed redirect address and a sign-in code used twice (V10.4.1, V10.4.2).
-# With django-oauth-toolkit, the seed makes an `Application` with `skip_authorization=True`.
+# With django-oauth-toolkit, the seed makes an `Application` with `skip_authorization=True`. Left out,
+# `sv` registers a client of its own if the server publishes a registration address, but a client
+# registered that way usually meets the consent page, which `sv` does not click through.
 # id = "sv-test"
 # redirect = "http://localhost/callback"   # one redirect address registered for the client
 # secret = "{seed:CLIENT_SECRET}"          # printed by the seed; never the secret itself

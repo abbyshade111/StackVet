@@ -2176,6 +2176,8 @@ mod oauth_client_par_tests;
 #[cfg(test)]
 mod oauth_client_pkce_tests;
 #[cfg(test)]
+mod oauth_client_register_tests;
+#[cfg(test)]
 mod oauth_client_tests;
 #[cfg(test)]
 mod owner_field_tests;

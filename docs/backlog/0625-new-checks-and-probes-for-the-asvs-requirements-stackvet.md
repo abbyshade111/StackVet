@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: six parts remain: the seventh is under way (ADR-151), then the twelfth; the fourth is held at the owner's word, and the ninth, tenth, and eleventh wait at the owner's word (Phase E, part 12 only)
+**Status:** partly done: five parts remain: the twelfth is next; the fourth is held at the owner's word, and the ninth, tenth, and eleventh wait at the owner's word (Phase E, part 12 only)
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -108,8 +108,13 @@ for backlog 0507.
    first, and a server that takes only pushed ones) and `oauth_client/logout.rs` (V10.6.2: a sign-out with no hint and
    with a forged one). The note for a first request that gave no code now names all eight requirements, not two. Nine
    tests in `oauth_client_par_tests.rs`. Broken on purpose, one at a time, each of the eight guards turned a test red,
-   two of them only after tests were added for them. Left: dynamic registration.
-   **Part status:** claimed by claude/0625-7, 24 October 2026
+   two of them only after tests were added for them.
+   The fifth pull request built 25 October 2026, and ADR-151 accepted with it: with no `[stack.run.oauth-client]`
+   and a published `registration_endpoint`, `sv` registers a client of its own and runs every check with it, its
+   secret blanked with the rest. Four tests in `oauth_client_register_tests.rs`. Broken on purpose: with no
+   registration tried, three went red; with the secret, or the management token, left out of the blanking, and with
+   the consent-page note left off, one each.
+   **Part status:** done, 25 October 2026
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
    Built 24 October 2026 (ADR-150): a `codeql-cpp` adapter in `data/adapters.json`, turned on with the other CodeQL
    adapters. Its database is made with `--build-mode=none`, so none of the app's build scripts run, and the bundle's

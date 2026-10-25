@@ -80,49 +80,42 @@ pub(super) fn authorization_server_checks(
     let not_assessed = |out: &mut Outcome, why: String| {
         out.not_assessed.push((ALL.to_owned(), why));
     };
-    let Some(client) = client else {
-        // Said only to an app that answers as an authorization server: to every other app with signed-in pages, a
-        // test client means nothing.
-        if published(http).is_none() {
-            return;
-        }
-        not_assessed(
-            out,
-            "stackvet.toml declares no test client for the app's own authorization server, so what it does with \
-             wrong redirect addresses, reused codes and refresh tokens, missing PKCE or client authentication, other \
-             response modes, requests not pushed first, and sign-outs without a hint was not asked. If other apps sign their users in \
-             through this one, have the seed register a client in the copy `sv` runs, set to skip the consent page, \
-             and add `[stack.run.oauth-client]` with its `id`, `redirect`, and `secret = \"{seed:NAME}\"`."
-                .to_owned(),
-        );
-        return;
-    };
-    let secret = match client.secret.as_deref() {
-        None => None,
-        Some(written) if !is_seed_value(written) => {
-            // Never repeated: it may be a real key.
-            not_assessed(
-                out,
-                "The test client's `secret` under `[stack.run.oauth-client]` is written into stackvet.toml, which is \
-                 committed, so it was not used. Have the seed print it as a `NAME=value` line and write \
-                 `secret = \"{seed:NAME}\"`."
-                    .to_owned(),
-            );
-            return;
-        }
-        Some(cited) => {
-            let filled = fill_seed(cited);
-            if filled.contains("{seed:") {
-                not_assessed(
-                    out,
-                    format!(
-                        "The test client's `secret` is {cited}, and the seed printed no value of that name, so the \
-                         client could not be used."
-                    ),
-                );
+    // A client `sv` registers itself, when stackvet.toml declares none and the server takes registrations.
+    let registered;
+    let (client, secret, by_itself) = match client {
+        Some(client) => match declared_secret(client) {
+            Ok(secret) => (client, secret, false),
+            Err(why) => {
+                not_assessed(out, why);
                 return;
             }
-            Some(filled)
+        },
+        None => {
+            // Said only to an app that answers as an authorization server: to every other app with signed-in pages,
+            // a test client means nothing.
+            let Some(details) = published(http) else {
+                return;
+            };
+            match register(http, &details, out) {
+                Ok((client, secret)) => {
+                    registered = client;
+                    (&registered, secret, true)
+                }
+                Err(why) => {
+                    not_assessed(
+                        out,
+                        format!(
+                            "stackvet.toml declares no test client for the app's own authorization server, and {why} \
+                             So what it does with wrong redirect addresses, reused codes and refresh tokens, missing \
+                             PKCE or client authentication, other response modes, requests not pushed first, and \
+                             sign-outs without a hint was not asked. Have the seed register a client in the copy `sv` \
+                             runs, set to skip the consent page, and add `[stack.run.oauth-client]` with its `id`, \
+                             `redirect`, and `secret = \"{{seed:NAME}}\"`."
+                        ),
+                    );
+                    return;
+                }
+            }
         }
     };
     let details = published(http);
@@ -163,6 +156,14 @@ pub(super) fn authorization_server_checks(
     let first = match ask.code(http, "oauth-authorize", &client.redirect) {
         Ok(code) => code,
         Err(why) => {
+            let why = if by_itself {
+                format!(
+                    "`sv` registered a test client of its own, as stackvet.toml declares none, and a client registered \
+                     that way usually meets the consent page. {why}"
+                )
+            } else {
+                why
+            };
             out.not_assessed.push((ALL_BUT_PAR.to_owned(), why));
             // A server that takes only pushed requests refuses this one, as V10.4.13 asks.
             par::when_refused(http, &ask, secret.as_deref(), out);
@@ -185,6 +186,108 @@ pub(super) fn authorization_server_checks(
     response_mode::response_mode_check(http, &ask, out);
     // Last, since it may end the person's session at the server.
     logout::logout_check(http, &ask, out);
+}
+
+/// The declared client's secret, filled from what the seed printed; why it cannot be used, when it cannot.
+fn declared_secret(client: &OauthClientSection) -> Result<Option<String>, String> {
+    match client.secret.as_deref() {
+        None => Ok(None),
+        // Never repeated: it may be a real key.
+        Some(written) if !is_seed_value(written) => Err(
+            "The test client's `secret` under `[stack.run.oauth-client]` is written into stackvet.toml, which is \
+             committed, so it was not used. Have the seed print it as a `NAME=value` line and write \
+             `secret = \"{seed:NAME}\"`."
+                .to_owned(),
+        ),
+        Some(cited) => {
+            let filled = fill_seed(cited);
+            if filled.contains("{seed:") {
+                return Err(format!(
+                    "The test client's `secret` is {cited}, and the seed printed no value of that name, so the \
+                     client could not be used."
+                ));
+            }
+            Ok(Some(filled))
+        }
+    }
+}
+
+/// The redirect address of the client `sv` registers itself: never followed, so it need lead nowhere.
+const REGISTERED_REDIRECT: &str = "http://localhost/sv-callback";
+
+/// RFC 7591: a confidential client registered at the server's published `registration_endpoint`, in the copy of the
+/// app the run started. Its secret, and the token to manage it, are blanked from the record with what the server
+/// issues. Why none could be registered, in words that follow "and", when none could.
+fn register(
+    http: &mut dyn Http,
+    details: &serde_json::Map<String, serde_json::Value>,
+    out: &mut Outcome,
+) -> Result<(OauthClientSection, Option<String>), String> {
+    let Some(path) = details
+        .get("registration_endpoint")
+        .and_then(serde_json::Value::as_str)
+        .map(|a| strip_origin(a).to_owned())
+    else {
+        return Err("the server publishes no registration address (`registration_endpoint`) for `sv` to register one \
+                    of its own with."
+            .to_owned());
+    };
+    let answer = http.send(&ProbeRequest {
+        id: "oauth-register".to_owned(),
+        method: "POST".to_owned(),
+        path: path.clone(),
+        headers: vec![
+            ("Content-Type".to_owned(), "application/json".to_owned()),
+            ("Accept".to_owned(), "application/json".to_owned()),
+        ],
+        body: Some(
+            serde_json::json!({
+                "client_name": "sv test client",
+                "redirect_uris": [REGISTERED_REDIRECT],
+                "grant_types": ["authorization_code", "refresh_token"],
+                "response_types": ["code"],
+                "token_endpoint_auth_method": "client_secret_basic",
+            })
+            .to_string()
+            .into_bytes(),
+        ),
+    });
+    let given = answer
+        .as_ref()
+        .filter(|r| (200..300).contains(&r.status))
+        .and_then(|r| serde_json::from_str::<serde_json::Value>(&r.body).ok());
+    let Some(id) = given
+        .as_ref()
+        .and_then(|v| v.get("client_id")?.as_str().map(str::to_owned))
+    else {
+        return Err(format!(
+            "its registration address, {path}, answered {} without a client id, so `sv` could not register one of \
+             its own (the server may take registrations only with an initial access token, which `sv` does not \
+             have).",
+            status(&answer)
+        ));
+    };
+    let field = |name: &str| {
+        given
+            .as_ref()
+            .and_then(|v| v.get(name)?.as_str().map(str::to_owned))
+    };
+    let secret = field("client_secret");
+    out.issued.extend(secret.iter().cloned());
+    out.issued.extend(field("registration_access_token"));
+    out.steps.push(format!(
+        "registered a test client of `sv`'s own at {path}, as stackvet.toml declares none ({}, a {} client)",
+        status(&answer),
+        if secret.is_some() { "confidential" } else { "public" }
+    ));
+    Ok((
+        OauthClientSection {
+            id,
+            redirect: REGISTERED_REDIRECT.to_owned(),
+            ..Default::default()
+        },
+        secret,
+    ))
 }
 
 /// Whether the entry's secret is a value the seed prints, and nothing else.
