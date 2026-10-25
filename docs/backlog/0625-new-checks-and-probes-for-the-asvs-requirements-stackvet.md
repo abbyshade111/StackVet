@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: seven parts, built in the order the plan below gives; the seventh (the authorization-server probe set) waits on the owner's word on its test client, so the fourth (malformed signaling messages) is next
+**Status:** partly done: six parts, built in the order the plan below gives; the fourth is held at the owner's word, and the seventh waits on the owner's word on its test client, so the eighth (CodeQL's C/C++ suite) is next
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -42,7 +42,14 @@ for backlog 0507.
    of an address let back in went red.
    **Part status:** done, 24 October 2026
 4. **Malformed signaling messages, then a normal one** (V17.3.2, L2): probe. Medium.
-   **Part status:** claimed by claude/0625-4, 24 October 2026
+   Held 24 October 2026, at the owner's word ("Hold part 4"), when the build turned out larger than planned. Built
+   on the branch `claude/0625-4`: the optional `signaling = { path, message, answer }` entry under `[stack.run]`,
+   the probe's three connections and what they conclude, and WebSocket frames that match RFC 6455's own example.
+   A test against a real WebSocket server (aiohttp) found that a server reads frames sent in the same packet as the
+   handshake as a second HTTP request: a client must wait for the server's `101` before sending them. Both of the
+   sidecar's ways of sending a request (the `nc -e` script and the exec session) send it whole, so both must learn
+   to wait, and a Docker test should run the real sidecar against a real WebSocket server. ADR-149 stays proposed.
+   **Part status:** partly done: held at the owner's word, 24 October 2026: the probe, its frames, and a real-server test are on the branch claude/0625-4 (commit 435664d0); it waits on the sidecar learning to send a WebSocket handshake, wait for the server's 101, and only then send the frames, in both its ways of sending (the nc -e script and the exec session), with a Docker test against a real WebSocket server
 5. **Access tokens with too little scope, and for another person with the same email** (V10.3.2, V10.3.3, L2): probe,
    from the stand-in provider. Medium.
    V10.3.3 built 24 October 2026 (ADR-148): the test provider mints an access token for a different person who has
