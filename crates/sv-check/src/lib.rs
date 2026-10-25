@@ -88,6 +88,7 @@ pub mod tool_files;
 pub mod totp;
 pub mod turn_relay;
 pub mod verified;
+pub mod weak_key_exchange;
 pub mod weak_keys;
 pub mod workflows;
 pub(crate) mod yaml;

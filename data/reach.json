@@ -3217,6 +3217,14 @@
     "finding_only": true
    }
   ],
+  "V11.6.2": [
+   {
+    "id": "ast.weak-key-exchange",
+    "run": "Reads the code",
+    "looks_for": "A key exchange the code sets up with parameters no longer safe: a Diffie-Hellman prime under 2048 bits, a small built-in group, or an elliptic curve under 192 bits",
+    "finding_only": true
+   }
+  ],
   "V12.1.1": [
    {
     "id": "semgrep",

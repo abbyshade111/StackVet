@@ -125,6 +125,7 @@ pub fn check_dir_in(
     crate::rich_text::check(listing, bill_of_materials, &mut report);
     crate::last_resort::check(listing, &mut report);
     crate::weak_keys::check(listing, &mut report);
+    crate::weak_key_exchange::check(listing, &mut report);
     crate::client_tech::check(listing, bill_of_materials, &mut report);
     crate::grants::check(listing, bill_of_materials, &mut report);
     crate::as_settings::check(listing, bill_of_materials, &mut report);

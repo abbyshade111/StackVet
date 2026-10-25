@@ -107,6 +107,8 @@ RUST_CHECKS = {
     "config.sign-in-pathway-not-listed": ("static", ["V6.3.4"]),
     "config.session-timeout-differs-from-policy": ("static", ["V7.1.1"]),
     "ast.weak-key-generation": ("static", ["V11.6.1"]),
+    # A Diffie-Hellman prime under 2048 bits, a small built-in group, or a curve under 192 bits (backlog 0625, part 12).
+    "ast.weak-key-exchange": ("static", ["V11.6.2"]),
     "config.client-tech-unsupported": ("static", ["V3.7.1"]),
     "config.retired-grant-enabled": ("static", ["V10.4.4"]),
     "config.model-file-can-run-code": ("static", ["C4.1.2"]),
@@ -419,6 +421,8 @@ RUST_FINDINGS_ONLY = {
     "config.session-timeout-differs-from-policy",
     # No weak key made in the code says nothing of keys made elsewhere, or of signing and seeding (backlog 0494).
     "ast.weak-key-generation",
+    # No weak exchange set up in the code says nothing of one a library or a server's settings make (0625, part 12).
+    "ast.weak-key-exchange",
     # A refusal of TLS 1.0 and 1.1 is half of V12.1.1; the other half, the newest version preferred,
     # is not something curl reports reliably, so a refusal is said and not credited.
     "probe.old-tls-accepted",
@@ -666,6 +670,7 @@ DESCRIBED = {
     "config.turn-relay-unlimited": "A TURN relay's own settings setting `user-quota` and `total-quota` above 0, so one user cannot open connections without limit; the file is read, not the running relay",
     "config.last-resort-error-handler": "A last-resort error handler defined in the app's code (Node's `process.on('uncaughtException')`, Express's four-argument error middleware, a handler for every `Exception` in Flask or FastAPI, Django's `handler500`, `rescue_from StandardError`, `@ControllerAdvice`, `UseExceptionHandler`, Go's `recover()`), shown as supporting evidence; that it catches every unhandled exception is not something files show",
     "config.template-engine-escapes": "The template engine escapes what it writes by itself (Django, Jinja2 under Flask, React, Vue, EJS, Mustache), every outside-tool rule that reads it switched off ran and found nothing, and every language and package list in the app was read; in part, since HTML put together by hand and output to other interpreters are not seen",
+    "ast.weak-key-exchange": "A key exchange the code sets up with parameters no longer safe: a Diffie-Hellman prime under 2048 bits, a small built-in group, or an elliptic curve under 192 bits",
     "ast.weak-key-generation": "A key the code makes with a method or a size no longer approved: an RSA key under 2048 bits, a DSA key, a key on a 192-bit curve, or an RSA public exponent of 3",
     "config.session-timeout-differs-from-policy": "A session lifetime the code sets (SESSION_COOKIE_AGE, PERMANENT_SESSION_LIFETIME, an Express session's maxAge) longer than the one stackvet.toml's policy states",
     "config.sign-in-pathway-not-listed": "A way into the app the code shows (a sign-in route, a Passport strategy, an API key read by header) that the list of sign-in pathways in stackvet.toml does not name",

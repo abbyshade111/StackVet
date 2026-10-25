@@ -141,6 +141,12 @@ for backlog 0507.
     Built in four pull requests, each rule only ever a finding, so no record (the plan's Phase E): weak key-exchange
     parameters first, the same shape as `weak_keys.rs` (V11.6.1); then the one-time code checked against a time from
     the request; then email as a sign-in factor; then the DOM-clobbering patterns, the largest.
+    The first built 25 October 2026: `crates/sv-check/src/weak_key_exchange.rs`, "ast.weak-key-exchange" (V11.6.2), run
+    with the other configuration checks: a Diffie-Hellman prime under 2048 bits (Python's `dh.generate_parameters`,
+    Node's `createDiffieHellman`, Java's key generators, Ruby's `OpenSSL::PKey::DH`, `openssl dhparam`), Node's
+    `modp1`, `modp2`, and `modp5` groups, and Node's `createECDH` on a curve under 192 bits. A 192-bit curve is left to
+    `weak_keys.rs`, which reads it wherever it is named, so one line is not reported twice. Six tests; broken on
+    purpose, the size read, the comment skip, the groups, the curves, and the hookup each turned a test red.
     **Part status:** claimed by claude/0625-12, 25 October 2026
 
 Already filed elsewhere: V10.5.3 is backlog 0620.
