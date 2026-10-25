@@ -1,6 +1,6 @@
 # A weekly check that names the long files and functions to split
 
-**Status:** open
+**Status:** claimed by claude/0662, 25 October 2026
 **Asked for by the owner, 24 October 2026**, when 0324 (long functions and files beyond the recorded split) was marked
 done: "there should be a new weekly check for long files to split moving forward". 0324 was a list written once and
 checked by hand three times, and each time the files on it had grown; a check that runs each week finds a file as
@@ -25,3 +25,8 @@ and ADR-104 name the workflows).
 **Done when.** The job runs on its schedule and by hand, its list matches a count made another way on today's `main`,
 a test holds the counting on a small file made to be long, and breaking the count (a threshold read wrong) turns that
 test red.
+
+**Decided in the claim, 25 October 2026 (ADR-152, proposed).** The owner's word on where the list goes: "Run summary
+only". A function's length is read by its braces, in a Python script, strings and comments skipped. The job runs
+Mondays at 09:00 UTC and by hand, with read-only permissions, and never fails.
+
