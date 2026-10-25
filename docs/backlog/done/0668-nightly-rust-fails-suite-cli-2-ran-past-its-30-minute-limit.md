@@ -1,6 +1,6 @@
 # Nightly: Rust fails: suite (cli-2) ran past its 30-minute limit and was cancelled
 
-**Status:** claimed by claude/0668, 25 October 2026
+**Status:** done, 25 October 2026
 
 Recorded by the nightly CI routine on 25 October 2026. The Rust workflow's push run on `main` for commit `489f3f3`
 (pull request #2308, "Claim 0666", a change to backlog items only) ended red on 24 October 2026:
@@ -31,4 +31,9 @@ Recorded by the nightly CI routine on 25 October 2026. The Rust workflow's push 
 is stopped in time for its log to upload, and the step says so in an error line. Rust's test runner already prints
 "has been running for over 60 seconds" with a test's name, so the log then names it. Recorded as a dated Later entry on
 ADR-106, which governs the suite's parts, in the pull request that builds it.
+
+**Built 25 October 2026** (ADR-106, Later): the suite's Tests step writes each part's commands to a script and runs it
+under `timeout --kill-after=1m 25m`; a part stopped by it ends with an error line naming why, and its log uploads. The
+step's shell, run as written: a missing part ended 1, a hang stopped at a short limit ended 124 with the error line, a
+pass ended 0, and a failing test's 101 came through.
 

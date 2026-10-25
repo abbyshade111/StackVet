@@ -231,24 +231,32 @@ jobs:
             --format '{{.Actor.Attributes.image}}' > "$RUNNER_TEMP/started-images.txt" &
           watching=$!
           set +e
-          (
-            set -e
-            case "$PART" in
-              rest)
-                cargo test --workspace --exclude sv-cli --exclude sv-check
-                cargo test -p sv-cli --lib --bins
-                cargo test -p sv-cli --doc
-                ;;
-              check)
-                python3 -m pip install --require-hashes -r tools/py7zr-requirements.txt
-                cargo test -p sv-check
-                ;;
-              cli-1) cargo test -p sv-cli $(python3 tools/ci_shards.py args 1 2) ;;
-              cli-2) cargo test -p sv-cli $(python3 tools/ci_shards.py args 2 2) ;;
-              *) echo "::error::no such part: $PART"; exit 1 ;;
-            esac
-          )
+          cat > "$RUNNER_TEMP/part.sh" <<'PART'
+          set -e
+          case "$PART" in
+            rest)
+              cargo test --workspace --exclude sv-cli --exclude sv-check
+              cargo test -p sv-cli --lib --bins
+              cargo test -p sv-cli --doc
+              ;;
+            check)
+              python3 -m pip install --require-hashes -r tools/py7zr-requirements.txt
+              cargo test -p sv-check
+              ;;
+            cli-1) cargo test -p sv-cli $(python3 tools/ci_shards.py args 1 2) ;;
+            cli-2) cargo test -p sv-cli $(python3 tools/ci_shards.py args 2 2) ;;
+            *) echo "::error::no such part: $PART"; exit 1 ;;
+          esac
+          PART
+          # Five minutes under the job's limit, so a part that hangs is stopped while the job can still upload
+          # its log, which then names the test: Rust's runner prints "has been running for over 60 seconds" for
+          # each one still going (backlog 0668; ADR-106, Later). Until 25 October 2026 a hang ran into the job's
+          # limit, and GitHub kept no log of the cancelled job.
+          timeout --kill-after=1m "${PART_LIMIT:-25m}" bash "$RUNNER_TEMP/part.sh"
           status=$?
+          if [ "$status" = 124 ] || [ "$status" = 137 ]; then
+            echo "::error::the $PART tests ran past ${PART_LIMIT:-25m} and were stopped: the last \"has been running for over 60 seconds\" line above names the test that did not finish"
+          fi
           kill "$watching" 2>/dev/null
           echo "Images the $PART tests started containers from, with how many containers:"
           sort "$RUNNER_TEMP/started-images.txt" | uniq -c | sort -rn
