@@ -153,6 +153,16 @@ for backlog 0507.
     the value read from the request or a name set from it. Four tests in `ast/otp_time_tests.rs`; broken on purpose,
     the request values, the keyword, the names followed, Go's argument position, and the function names each turned
     a test red.
+    The third built 25 October 2026 (V6.3.6), `crates/sv-check/src/email_sign_in.rs`, in two halves, each only ever a
+    finding: "config.email-sign-in-package", a dependency made for signing in by email (django-sesame,
+    django-magiclink, drfpasswordless, passport-magic-link, npm's and Ruby's passwordless, Magic's SDKs,
+    devise-passwordless, laravel-passwordless-login), placed at the line of the dependency file that names it; and
+    "config.email-code-sign-in", stackvet.toml's `email-code` entry, placed at its line. Packages that offer email
+    among many ways in (NextAuth's email provider, django-allauth) are not read. A finding in the signed-in suite, where
+    the emailed code is shown to sign in, was tried first and left out: the suite's fake app signs in by email to test
+    V6.5.1 and V6.6.2, which allow it below level 3, and 34 tests of a correct app would each have had to expect it.
+    Five tests; broken on purpose, the ecosystem compare, the names made plain, the entry read, its line, and the
+    hookup each turned a test red.
     **Part status:** claimed by claude/0625-12, 25 October 2026
 
 Already filed elsewhere: V10.5.3 is backlog 0620.

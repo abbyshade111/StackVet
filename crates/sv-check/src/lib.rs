@@ -31,6 +31,7 @@ pub mod cvss4;
 mod cvss4_tables;
 pub mod decisions;
 pub mod design;
+pub mod email_sign_in;
 pub mod encoding;
 pub mod fetch;
 pub mod finding;

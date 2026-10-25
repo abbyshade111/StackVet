@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 148 can be checked, 66 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 21 with no check yet.
+345 requirements: 148 can be checked, 67 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 20 with no check yet.
 
 ### Level 1 (70 requirements, 49 can be checked, 14 can only be found failing)
 
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 14 can be checked, 14 can only be found failing)
+### Level 3 (92 requirements, 14 can be checked, 15 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -519,7 +519,7 @@ decided per app, from its `stackvet.toml` and its code.
 | Requirement | Coverage | Checks |
 |---|---|---|
 | **V6.3.5** Verify that users are notified of suspicious authentication attempts (successful or unsuccessful). This may include authentication attempts from an unusual location or client, partially successful authentication (only one of multiple factors), an authentication attempt after a long period of inactivity or a successful authentication after several unsuccessful attempts. | No check yet | – |
-| **V6.3.6** Verify that email is not used as either a single-factor or multi-factor authentication mechanism. | No check yet | – |
+| **V6.3.6** Verify that email is not used as either a single-factor or multi-factor authentication mechanism. | Can only be found failing | Reads the code: `config.email-sign-in-package`, looks for: A package the app depends on whose purpose is signing people in with a link or a code sent by email (found failing only)<br>Reads the code: `config.email-code-sign-in`, looks for: An `email-code` entry in stackvet.toml, the owner saying the app signs people in with a code or link it emails (found failing only) |
 | **V6.3.7** Verify that users are notified after updates to authentication details, such as credential resets or modification of the username or email address. | Can be checked | Signed in: `probe.password-change-notified`, if it fails: Somebody who takes over an account and changes its password does so without the account holder being told, so they find out only when they cannot sign in. (credited only, and only ever in part) |
 | **V6.3.8** Verify that valid users cannot be deduced from failed authentication challenges, such as by basing on error messages, HTTP response codes, or different response times. Registration and forgot password functionality must also have this protection. | Can only be found failing | Signed in: `probe.reset-reveals-account`, if it fails: Anybody can find out whether an email address has an account, which is where guessing passwords and targeted phishing begin. (found failing only)<br>Signed in: `probe.signin-reveals-account`, if it fails: Anybody can find out whether an email address has an account by trying to sign in with it, which is where guessing passwords and targeted phishing begin. (found failing only)<br>Signed in: `probe.signup-reveals-account`, if it fails: Anybody can find out whether an email address has an account by trying to sign up with it, which is where guessing passwords and targeted phishing begin. (found failing only) |
 | **V6.4.5** Verify that renewal instructions for authentication mechanisms which expire are sent with enough time to be carried out before the old authentication mechanism expires, configuring automated reminders if necessary. | The owner answers | Asked of the owner: a design question |

@@ -2247,6 +2247,20 @@
     "finding_only": true
    }
   ],
+  "V6.3.6": [
+   {
+    "id": "config.email-sign-in-package",
+    "run": "Reads the code",
+    "looks_for": "A package the app depends on whose purpose is signing people in with a link or a code sent by email",
+    "finding_only": true
+   },
+   {
+    "id": "config.email-code-sign-in",
+    "run": "Reads the code",
+    "looks_for": "An `email-code` entry in stackvet.toml, the owner saying the app signs people in with a code or link it emails",
+    "finding_only": true
+   }
+  ],
   "V6.3.7": [
    {
     "id": "probe.password-change-notified",
