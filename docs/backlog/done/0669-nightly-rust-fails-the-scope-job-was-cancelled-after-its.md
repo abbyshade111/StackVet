@@ -1,6 +1,6 @@
 # Nightly: Rust fails: the scope job was cancelled after its steps had finished
 
-**Status:** open
+**Status:** done, 25 October 2026
 
 Recorded by the nightly CI routine on 25 October 2026. The Rust workflow's push run on `main` for commit `d8e1d03`
 (pull request #2302, "Claim 0665", a change to backlog items only) ended red on 24 October 2026:
@@ -20,3 +20,9 @@ Recorded by the nightly CI routine on 25 October 2026. The Rust workflow's push 
 - **What to do:** nothing in the code, unless it happens again. If it does, the run's "Re-run failed jobs" button is
   the check: a job that passes on a re-run with nothing changed was the runner's. This routine records; it fixes
   nothing.
+
+**Checked 25 October 2026, and done with no build.** Not seen again: none of the 40 Rust runs on `main` before that
+day's merge of #2352 failed or was cancelled, in this way or another. As the item says, there is nothing in the code
+to change unless it comes back, and the run's "Re-run failed jobs" button is the check if it does. A new item is the
+way to bring it back, should it.
+
