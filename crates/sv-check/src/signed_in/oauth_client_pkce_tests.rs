@@ -2,7 +2,8 @@
 //! client (backlog 0625, part 7; ADR-151): each way of letting it through is found, a server that holds to both is
 //! credited in part, and an answer that is no refusal, or a client the requirement is not about, concludes nothing.
 
-use super::oauth_client::*;
+use super::oauth_client::pkce::PKCE_NOT_REQUIRED;
+use super::oauth_client::refresh::REFRESH_REPLAYED;
 use super::oauth_client_fake::*;
 use super::*;
 

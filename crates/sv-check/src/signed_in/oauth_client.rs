@@ -13,14 +13,9 @@ use super::*;
 use sha2::{Digest, Sha256};
 use sv_manifest::OauthClientSection;
 
-mod pkce;
-mod refresh;
-
-// The rules the tests read.
-#[cfg(test)]
-pub(super) use pkce::PKCE_NOT_REQUIRED;
-#[cfg(test)]
-pub(super) use refresh::REFRESH_REPLAYED;
+// Seen by the signed-in suite's tests, which read their rules.
+pub(super) mod pkce;
+pub(super) mod refresh;
 
 pub(super) const REDIRECT_NOT_EXACT: Rule = Rule {
     rule_id: "probe.oauth-redirect-not-exact",
