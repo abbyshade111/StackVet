@@ -23,7 +23,7 @@ fn answer(host: Option<HostPaths>, root: &Path, request: &str) -> String {
 fn a_windows_path_is_read_inside_and_the_answer_names_the_folder_in_windows_form() {
     let root = std::env::temp_dir().join(format!("sv-mcp-host-paths-{}", std::process::id()));
     std::fs::create_dir_all(&root).unwrap();
-    let root = root.canonicalize().unwrap();
+    let root = sv_frameworks::paths::canonical(&root).unwrap();
     let inside = root.display().to_string();
     // A folder that is not there, under the Windows root: refused, with the root named.
     let request = r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"stackvet_status","arguments":{"path":"C:\\Users\\you\\app\\nowhere-sv"}}}"#;
@@ -49,7 +49,7 @@ fn a_windows_path_is_read_inside_and_the_answer_names_the_folder_in_windows_form
 fn a_folder_named_by_its_windows_path_is_found_under_the_root() {
     let root = std::env::temp_dir().join(format!("sv-mcp-host-paths-found-{}", std::process::id()));
     std::fs::create_dir_all(root.join("sub")).unwrap();
-    let root = root.canonicalize().unwrap();
+    let root = sv_frameworks::paths::canonical(&root).unwrap();
     let inside = root.display().to_string();
     let request = r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"stackvet_status","arguments":{"path":"C:\\Users\\you\\app\\sub"}}}"#;
     let told = answer(
