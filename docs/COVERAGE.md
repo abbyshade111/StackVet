@@ -53,7 +53,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 204 (59%) | 140 (41%) | 11 | 99 | 31 |
+| OWASP ASVS 5.0 | 345 | 205 (59%) | 140 (41%) | 11 | 99 | 30 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -65,14 +65,14 @@ A requirement reached by more than one kind of check is counted under each.
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 60 | 46 | 19 | 1 | 6 | 40 | 20 | 13 | 3 |
-| L2 | 183 | 120 | 82 | 35 | 0 | 23 | 59 | 25 | 22 | 2 |
+| L2 | 183 | 121 | 82 | 35 | 0 | 23 | 59 | 25 | 23 | 2 |
 | L3 | 92 | 24 | 12 | 5 | 0 | 9 | 2 | 6 | 3 | 3 |
 
-64 of the 204 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+65 of the 205 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 69 of the 140 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 59 ASVS requirements can be settled. 26 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 5 only CodeQL reaches (V1.2.2, V1.2.9, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
+With nothing beyond plain `sv check`, 59 ASVS requirements can be settled. 27 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 6 only CodeQL reaches (V1.2.2, V1.2.9, V1.4.2, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -94,7 +94,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 | Chapter | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| V1 Encoding and Sanitization | 30 | 22 | 17 | 0 | 6 | 2 |
+| V1 Encoding and Sanitization | 30 | 23 | 17 | 0 | 6 | 1 |
 | V2 Validation and Business Logic | 13 | 4 | 3 | 2 | 6 | 1 |
 | V3 Web Frontend Security | 31 | 24 | 20 | 0 | 4 | 3 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 5 | 1 |
@@ -321,7 +321,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 |---|---|---|
 | V15.2.1 | L1 | Known vulnerabilities: `advisories`; Outside tools: `brakeman` |
 
-### Settled only by an outside tool (26)
+### Settled only by an outside tool (27)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -333,6 +333,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V1.3.10 | L2 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-ruby` |
 | V1.3.12 | L3 | Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V1.4.1 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `insecure-use-gets-fn`, `insecure-use-strcat-fn`, `insecure-use-string-copy-fn`) |
+| V1.4.2 | L2 | Outside tools you turn on: `codeql-cpp` (codeql-cpp only ever as a finding: `cpp/bad-addition-overflow-check`, `cpp/comparison-with-wider-type`, `cpp/integer-multiplication-cast-to-long`, `cpp/signed-overflow-check`, `cpp/uncontrolled-allocation-size`, `cpp/uncontrolled-arithmetic`, `cpp/unsigned-difference-expression-compared-zero`) |
 | V1.4.3 | L2 | Outside tools: `semgrep` (semgrep only ever as a finding: `double-free`, `use-after-free`) |
 | V1.5.1 | L1 | Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
 | V3.3.1 | L1 | Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` |
