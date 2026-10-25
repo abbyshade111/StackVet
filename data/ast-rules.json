@@ -2473,6 +2473,76 @@
       }
     },
     {
+      "id": "ast.otp-time-from-request",
+      "title": "A one-time code is checked against a time the request sent",
+      "severity": "medium",
+      "confidence": "medium",
+      "requirementIds": [
+        "V6.5.8"
+      ],
+      "cwe": [
+        "CWE-807"
+      ],
+      "findingsOnly": true,
+      "description": "The app checks a one-time sign-in code against a time it read from the request, rather than from its own clock, so whoever sends the request chooses which moment the code is checked for.",
+      "impact": "An old code, seen once over someone's shoulder, in a screenshot, or in a log, works again for anyone who sends it with the time it was made, and the code's short life protects nothing.",
+      "fix": "Check the code against the server's own clock: leave the time out (pyotp's `verify(code)`, speakeasy's `verify` without `time`, `totp.Validate`), and keep the server's clock right with NTP.",
+      "argumentNamesRead": true,
+      "argumentNamesDepth": 2,
+      "queries": {
+        "python": "(call function: (attribute attribute: (identifier) @fn)\n      arguments: (argument_list (keyword_argument name: (identifier) @kw value: (_) @arg))) @hit",
+        "javascript": "(call_expression function: (member_expression property: (property_identifier) @fn)\n                 arguments: (arguments (object (pair key: (property_identifier) @kw value: (_) @arg)))) @hit",
+        "typescript": "(call_expression function: (member_expression property: (property_identifier) @fn)\n                 arguments: (arguments (object (pair key: (property_identifier) @kw value: (_) @arg)))) @hit",
+        "go": "(call_expression function: (selector_expression operand: (identifier) @mod field: (field_identifier) @fn)\n                 arguments: (argument_list . (_) @arg)) @hit"
+      },
+      "functionPatterns": {
+        "python": "^verify$",
+        "javascript": "^(verify|verifyDelta)$",
+        "typescript": "^(verify|verifyDelta)$",
+        "go": "^(ValidateCustom|GenerateCodeCustom)$"
+      },
+      "modulePatterns": {
+        "go": "^(totp|hotp)$"
+      },
+      "keywordPatterns": {
+        "python": "^for_time$",
+        "javascript": "^(time|epoch|timestamp)$",
+        "typescript": "^(time|epoch|timestamp)$"
+      },
+      "argumentPositions": {
+        "go": {
+          "^ValidateCustom$": 2,
+          "^GenerateCodeCustom$": 1
+        }
+      },
+      "argumentPatterns": {
+        "python": "\\brequest\\.(args|form|values|json|data|GET|POST|query_params|headers)\\b|\\brequest\\.get_json\\(",
+        "javascript": "\\b(req|request)\\.(query|body|params|headers)\\b|\\bctx\\.(query|params|request\\.(body|query))\\b|\\bsearchParams\\.get\\(",
+        "typescript": "\\b(req|request)\\.(query|body|params|headers)\\b|\\bctx\\.(query|params|request\\.(body|query))\\b|\\bsearchParams\\.get\\(",
+        "go": "\\.URL\\.Query\\(\\)|\\.(FormValue|PostFormValue|Query|QueryParam|Param|DefaultQuery)\\(|\\bmux\\.Vars\\("
+      },
+      "looksFor": "a one-time code checked against a time read straight from the request, or from a name set from it in the same function",
+      "looksForIn": {
+        "python": "pyotp's `verify` given `for_time=` from Flask's, Django's, or FastAPI's request (`request.form`, `request.json`, `request.GET`, and the like)",
+        "javascript": "speakeasy's `totp.verify` and `verifyDelta` given `time` (or `epoch` or `timestamp`) from Express's or Koa's request (`req.body`, `req.query`, `ctx.request.body`)",
+        "typescript": "speakeasy's `totp.verify` and `verifyDelta` given `time` (or `epoch` or `timestamp`) from Express's or Koa's request (`req.body`, `req.query`, `ctx.request.body`)",
+        "go": "pquerna/otp's `totp.ValidateCustom` and `GenerateCodeCustom` given a time made from the request's query or form (`r.FormValue`, `r.URL.Query()`)"
+      },
+      "nothingToFind": {
+        "ruby": "Not looked for in Ruby yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in Ruby credits nothing either way.",
+        "php": "Not looked for in PHP yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in PHP credits nothing either way.",
+        "java": "Not looked for in Java yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in Java credits nothing either way.",
+        "kotlin": "Not looked for in Kotlin yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in Kotlin credits nothing either way.",
+        "csharp": "Not looked for in C# yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in C# credits nothing either way.",
+        "swift": "Not looked for in Swift yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in Swift credits nothing either way.",
+        "dart": "Not looked for in Dart yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in Dart credits nothing either way.",
+        "c": "Not looked for in C yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in C credits nothing either way.",
+        "cpp": "Not looked for in C++ yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in C++ credits nothing either way.",
+        "rust": "Not looked for in Rust yet: a one-time code checked against a time the request sent. The rule only ever reports, so finding none in Rust credits nothing either way.",
+        "shell": "Shell scripts check no one-time codes this rule can speak to."
+      }
+    },
+    {
       "id": "ast.request-body-passed-whole",
       "title": "The whole request body is saved as it came",
       "severity": "high",

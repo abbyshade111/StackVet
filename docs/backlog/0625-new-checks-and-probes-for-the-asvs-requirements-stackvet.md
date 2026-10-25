@@ -147,6 +147,12 @@ for backlog 0507.
     `modp1`, `modp2`, and `modp5` groups, and Node's `createECDH` on a curve under 192 bits. A 192-bit curve is left to
     `weak_keys.rs`, which reads it wherever it is named, so one line is not reported twice. Six tests; broken on
     purpose, the size read, the comment skip, the groups, the curves, and the hookup each turned a test red.
+    The second built 25 October 2026: "ast.otp-time-from-request" in `data/ast-rules.json` (V6.5.8): a one-time code
+    checked against a time from the request, in pyotp's `verify(…, for_time=…)`, speakeasy's `totp.verify` and
+    `verifyDelta` with `time`, `epoch`, or `timestamp`, and pquerna/otp's `ValidateCustom` and `GenerateCodeCustom`,
+    the value read from the request or a name set from it. Four tests in `ast/otp_time_tests.rs`; broken on purpose,
+    the request values, the keyword, the names followed, Go's argument position, and the function names each turned
+    a test red.
     **Part status:** claimed by claude/0625-12, 25 October 2026
 
 Already filed elsewhere: V10.5.3 is backlog 0620.

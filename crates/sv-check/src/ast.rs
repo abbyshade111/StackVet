@@ -2677,6 +2677,8 @@ mod body_whole_tests;
 mod fetch_tests;
 #[cfg(test)]
 mod html_tests;
+#[cfg(test)]
+mod otp_time_tests;
 
 #[cfg(test)]
 mod orm_raw_tests;
