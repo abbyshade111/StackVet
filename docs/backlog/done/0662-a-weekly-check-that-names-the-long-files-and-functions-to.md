@@ -1,6 +1,6 @@
 # A weekly check that names the long files and functions to split
 
-**Status:** claimed by claude/0662, 25 October 2026
+**Status:** done, 25 October 2026
 **Asked for by the owner, 24 October 2026**, when 0324 (long functions and files beyond the recorded split) was marked
 done: "there should be a new weekly check for long files to split moving forward". 0324 was a list written once and
 checked by hand three times, and each time the files on it had grown; a check that runs each week finds a file as
@@ -36,6 +36,7 @@ governs existed.
 **Built 25 October 2026** (ADR-152): `tools/long_files.py`, `.github/workflows/long-files.yml`, and its test
 `crates/sv-cli/tests/long_files.rs`. On `main` that day the script's fourteen files over 3,000 lines matched `wc -l`,
 and two of its 116 long functions were checked by their closing braces. Broken on purpose: either limit read as "at
-or over", the braces in strings and comments counted, and a test module not marked each turned the test red. Left
-before it is done: the job run by hand from the Actions tab once this is on `main`, and its list compared with the
-count above.
+or over", the braces in strings and comments counted, and a test module not marked each turned the test red. Run by hand
+from the Actions tab on 25 October 2026, once it was on `main`
+(<https://github.com/abbyshade111/StackVet/actions/runs/40224997909>): it passed, and the 134 lines of its list in
+the run's summary were the same, line for line, as the script's on `main` here.

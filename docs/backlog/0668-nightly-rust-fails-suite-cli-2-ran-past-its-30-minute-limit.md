@@ -1,6 +1,6 @@
 # Nightly: Rust fails: suite (cli-2) ran past its 30-minute limit and was cancelled
 
-**Status:** open
+**Status:** claimed by claude/0668, 25 October 2026
 
 Recorded by the nightly CI routine on 25 October 2026. The Rust workflow's push run on `main` for commit `489f3f3`
 (pull request #2308, "Claim 0666", a change to backlog items only) ended red on 24 October 2026:
@@ -24,3 +24,11 @@ Recorded by the nightly CI routine on 25 October 2026. The Rust workflow's push 
   (for instance, `timeout` around `cargo test` set a few minutes under the job's limit, so the log is uploaded), which
   is a change to the workflow and wants its own decision. A test that waits on Docker or on a child process with no
   limit of its own is the first place to look. This routine records; it fixes nothing.
+
+**Plan, 25 October 2026, with the claim.** Not seen again in the 40 Rust runs on `main` before that day's merge of
+#2352, but a hang that leaves no log stays unfixable when it comes back. So the suite's Tests step in
+`.github/workflows/rust.yml` runs its tests under `timeout 25m`, five minutes under the job's limit: a part that hangs
+is stopped in time for its log to upload, and the step says so in an error line. Rust's test runner already prints
+"has been running for over 60 seconds" with a test's name, so the log then names it. Recorded as a dated Later entry on
+ADR-106, which governs the suite's parts, in the pull request that builds it.
+
