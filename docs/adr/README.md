@@ -194,6 +194,7 @@ source files, and in two tests:
 | [ADR-145](ADR-145.md) | The dynamic-code rule reads Rust's embedded interpreters, and a clean Rust app is credited in part (accepted, 24 October 2026) |
 | [ADR-146](ADR-146.md) | The TURN relay's own settings file is read, and a relay that refuses internal addresses is credited in part (accepted, 24 October 2026) |
 | [ADR-147](ADR-147.md) | An authorization server's own published details, and its lifetime settings, are read (accepted, 24 October 2026) |
+| [ADR-148](ADR-148.md) | The test provider mints access tokens for another person and with less scope, and the app's API is asked about both (proposed, 24 October 2026) |
 
 ## Names in the records
 
