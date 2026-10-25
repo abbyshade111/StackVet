@@ -4,8 +4,8 @@
 //! An app other apps sign their users in through is asked what it does when a client sends what it should refuse: a
 //! redirect address that is not the registered one (V10.4.1), a sign-in code sent a second time (V10.4.2), a code asked
 //! for without PKCE or with its `plain` method, and exchanged with the wrong verifier (V10.4.6), a refresh token used
-//! twice (V10.4.5), a code exchanged without the client's secret (V10.4.10), and a code asked to come back another way
-//! (V10.4.12). The first test user is signed in, and the client is one the seed registered in the copy of the
+//! twice (V10.4.5), a code exchanged without the client's secret (V10.4.10), a code asked to come back another way
+//! (V10.4.12), a code given for a request not pushed first (V10.4.13), and a sign-out with no hint (V10.6.2). The first test user is signed in, and the client is one the seed registered in the copy of the
 //! app the run started, set to skip the consent page. Each question is asked only once the normal case is shown
 //! working: the registered address answered with a code, and a code exchanged for a token. A refusal is credited in
 //! part, since one client, one person, and a sample of wrong requests are asked.
@@ -16,6 +16,8 @@ use sv_manifest::OauthClientSection;
 
 // Seen by the signed-in suite's tests, which read their rules.
 pub(super) mod client_auth;
+pub(super) mod logout;
+pub(super) mod par;
 pub(super) mod pkce;
 pub(super) mod refresh;
 pub(super) mod response_mode;
@@ -45,6 +47,12 @@ pub(super) const CODE_REUSED: Rule = Rule {
 const REDIRECT: &str = "V10.4.1";
 const CODE: &str = "V10.4.2";
 
+/// Every requirement the test client is asked about, for what stops them all.
+pub(super) const ALL: &str =
+    "V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10, V10.4.12, V10.4.13, V10.6.2";
+/// The same, but V10.4.13, which a server that takes only pushed requests is asked by `par` instead.
+const ALL_BUT_PAR: &str = "V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10, V10.4.12, V10.6.2";
+
 /// Where a person's address goes when the server sends the browser on: never a real site.
 const ELSEWHERE: &str = "sv-redirect.invalid";
 
@@ -56,6 +64,10 @@ struct Server {
     authorize: String,
     token: String,
     introspect: Option<String>,
+    /// RFC 9126's pushed authorization request address.
+    par: Option<String>,
+    /// OpenID Connect's sign-out address for a client to send the person to (RP-Initiated Logout).
+    end_session: Option<String>,
 }
 
 pub(super) fn authorization_server_checks(
@@ -66,7 +78,7 @@ pub(super) fn authorization_server_checks(
     out: &mut Outcome,
 ) {
     let not_assessed = |out: &mut Outcome, why: String| {
-        out.not_assessed.push((format!("{REDIRECT}, {CODE}"), why));
+        out.not_assessed.push((ALL.to_owned(), why));
     };
     let Some(client) = client else {
         // Said only to an app that answers as an authorization server: to every other app with signed-in pages, a
@@ -76,8 +88,9 @@ pub(super) fn authorization_server_checks(
         }
         not_assessed(
             out,
-            "stackvet.toml declares no test client for the app's own authorization server, so what it does with a \
-             changed redirect address and a sign-in code used twice was not asked. If other apps sign their users in \
+            "stackvet.toml declares no test client for the app's own authorization server, so what it does with \
+             wrong redirect addresses, reused codes and refresh tokens, missing PKCE or client authentication, other \
+             response modes, requests not pushed first, and sign-outs without a hint was not asked. If other apps sign their users in \
              through this one, have the seed register a client in the copy `sv` runs, set to skip the consent page, \
              and add `[stack.run.oauth-client]` with its `id`, `redirect`, and `secret = \"{seed:NAME}\"`."
                 .to_owned(),
@@ -150,10 +163,13 @@ pub(super) fn authorization_server_checks(
     let first = match ask.code(http, "oauth-authorize", &client.redirect) {
         Ok(code) => code,
         Err(why) => {
-            not_assessed(out, why);
+            out.not_assessed.push((ALL_BUT_PAR.to_owned(), why));
+            // A server that takes only pushed requests refuses this one, as V10.4.13 asks.
+            par::when_refused(http, &ask, secret.as_deref(), out);
             return;
         }
     };
+    par::not_pushed_taken(&ask, out);
     out.issued.push(first.clone());
     out.steps.push(format!(
         "the authorization server sent the browser back to the test client's redirect address with a sign-in code ({})",
@@ -167,6 +183,8 @@ pub(super) fn authorization_server_checks(
     refresh::refresh_check(http, &ask, secret.as_deref(), out);
     client_auth::client_auth_check(http, &ask, secret.as_deref(), out);
     response_mode::response_mode_check(http, &ask, out);
+    // Last, since it may end the person's session at the server.
+    logout::logout_check(http, &ask, out);
 }
 
 /// Whether the entry's secret is a value the seed prints, and nothing else.
@@ -214,6 +232,8 @@ fn server(
             .or_else(|| field("authorization_endpoint"))?,
         token: client.token.clone().or_else(|| field("token_endpoint"))?,
         introspect: field("introspection_endpoint"),
+        par: field("pushed_authorization_request_endpoint"),
+        end_session: field("end_session_endpoint"),
     })
 }
 
@@ -442,6 +462,18 @@ impl Ask<'_> {
         body: &str,
         secret: Option<&str>,
     ) -> Option<ProbeResponse> {
+        self.post_form(http, id, &self.server.token, body, secret)
+    }
+
+    /// A form posted to `path`, the client's secret in HTTP Basic when it has one.
+    fn post_form(
+        &self,
+        http: &mut dyn Http,
+        id: &str,
+        path: &str,
+        body: &str,
+        secret: Option<&str>,
+    ) -> Option<ProbeResponse> {
         let mut headers = vec![
             (
                 "Content-Type".to_owned(),
@@ -459,7 +491,7 @@ impl Ask<'_> {
         http.send(&ProbeRequest {
             id: id.to_owned(),
             method: "POST".to_owned(),
-            path: self.server.token.clone(),
+            path: path.to_owned(),
             headers,
             body: Some(body.as_bytes().to_vec()),
         })

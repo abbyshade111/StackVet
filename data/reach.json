@@ -429,6 +429,9 @@
   "V10.4.12": [
    "signed-in"
   ],
+  "V10.4.13": [
+   "signed-in"
+  ],
   "V10.4.16": [
    "running"
   ],
@@ -446,6 +449,9 @@
   ],
   "V10.6.1": [
    "running"
+  ],
+  "V10.6.2": [
+   "signed-in"
   ],
   "V11.2.3": [
    "tools",
@@ -2915,6 +2921,14 @@
     "finding_only": false
    }
   ],
+  "V10.4.13": [
+   {
+    "id": "probe.oauth-code-without-par",
+    "run": "Signed in",
+    "looks_for": "An authorization request is read from the sign-in link itself, where anyone who makes the link can change what it asks for, rather than from what the client sent the server directly and authenticated.",
+    "finding_only": false
+   }
+  ],
   "V10.4.16": [
    {
     "id": "probe.authorization-server-weak-client-auth",
@@ -2966,6 +2980,14 @@
     "id": "probe.authorization-server-implicit-flow",
     "run": "The running app",
     "looks_for": "The OpenID provider's own published details listing only `code`, `id_token`, and `code id_token` as response types, no implicit flow; what it says it offers, not what it does when asked for another",
+    "finding_only": false
+   }
+  ],
+  "V10.6.2": [
+   {
+    "id": "probe.oidc-logout-without-hint",
+    "run": "Signed in",
+    "looks_for": "Any page a person visits can sign them out of every app that signs in through this one, again and again, by sending their browser to the sign-out address.",
     "finding_only": false
    }
   ],

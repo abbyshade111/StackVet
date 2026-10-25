@@ -66,6 +66,22 @@ pub(super) struct Faults {
     pub(super) crashes_on_response_mode: bool,
     /// Refuses every authorization request once one has named a response mode.
     pub(super) stops_after_response_mode: bool,
+    /// Publishes a pushed authorization request address.
+    pub(super) publishes_par: bool,
+    /// Takes authorization requests only when pushed first (and publishes the address).
+    pub(super) requires_par: bool,
+    /// Signs the person out for a sign-out request with no `id_token_hint`.
+    pub(super) logs_out_without_hint: bool,
+    /// Signs the person out for a sign-out request with any `id_token_hint`.
+    pub(super) takes_forged_hint: bool,
+    /// Publishes no sign-out address.
+    pub(super) no_end_session: bool,
+    /// Answers authorization requests with a page once a sign-out request has come.
+    pub(super) unclear_after_logout: bool,
+    /// Crashes, rather than refusing, on an authorization request not pushed first.
+    pub(super) crashes_unpushed: bool,
+    /// Refuses even a pushed request's `request_uri` at the authorization address.
+    pub(super) refuses_pushed_too: bool,
 }
 
 pub(super) const REGISTERED: &str = "http://localhost/callback";
@@ -92,6 +108,12 @@ pub(super) struct Server {
     unauthenticated_seen: bool,
     /// An authorization request has named a response mode.
     mode_seen: bool,
+    /// The person's session at the server has ended.
+    pub(super) logged_out: bool,
+    /// A sign-out request has come.
+    logout_seen: bool,
+    /// Each pushed request's parameters, by its `request_uri`.
+    pushed: BTreeMap<String, BTreeMap<String, String>>,
     /// A changed redirect address has been asked for.
     pub(super) changed: bool,
 }
@@ -165,6 +187,9 @@ impl Server {
             wrong_verifier_seen: false,
             unauthenticated_seen: false,
             mode_seen: false,
+            logged_out: false,
+            logout_seen: false,
+            pushed: BTreeMap::new(),
             given: 0,
             sent: Vec::new(),
             changed: false,
@@ -185,10 +210,31 @@ impl Server {
     }
 
     fn authorize(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
-        if header(request, "cookie") != Some("session=s1") {
+        if header(request, "cookie") != Some("session=s1") || self.logged_out {
             return answer(&request.id, 302, &[("location", "/login")], "");
         }
-        let query = params(request.path.split_once('?')?.1);
+        if self.faults.unclear_after_logout && self.logout_seen {
+            return answer(&request.id, 200, &[], "<p>Something went wrong.</p>");
+        }
+        let mut query = params(request.path.split_once('?')?.1);
+        if let Some(uri) = query.get("request_uri").cloned() {
+            if self.faults.refuses_pushed_too {
+                return answer(&request.id, 400, &[], "invalid request_uri");
+            }
+            let Some(pushed) = self.pushed.get(&uri).cloned() else {
+                return answer(&request.id, 400, &[], "invalid request_uri");
+            };
+            query = pushed;
+        } else if self.faults.crashes_unpushed {
+            return answer(&request.id, 500, &[], "Internal Server Error");
+        } else if self.faults.requires_par {
+            return answer(
+                &request.id,
+                400,
+                &[],
+                "pushed authorization request required",
+            );
+        }
         let redirect = query.get("redirect_uri")?.clone();
         self.changed |= redirect != REGISTERED;
         if self.faults.stops_after_a_change && self.changed {
@@ -367,6 +413,51 @@ impl Server {
         )
     }
 
+    /// RFC 9126: the request's parameters kept, and a `request_uri` for them given back.
+    fn push(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
+        let basic = format!("Basic {}", base64_of(&format!("{CLIENT}:{}", secret())));
+        match header(request, "authorization") {
+            Some(sent) if sent == basic => {}
+            None if self.faults.public => {}
+            _ => return answer(&request.id, 401, &[], r#"{"error":"invalid_client"}"#),
+        }
+        let form = params(std::str::from_utf8(request.body.as_deref()?).ok()?);
+        let uri = format!(
+            "urn:ietf:params:oauth:request_uri:{}",
+            self.pushed.len() + 1
+        );
+        self.pushed.insert(uri.clone(), form);
+        answer(
+            &request.id,
+            201,
+            &[],
+            &format!(r#"{{"request_uri":"{uri}","expires_in":60}}"#),
+        )
+    }
+
+    /// RP-Initiated Logout: with no hint, a page asking the person; with a hint, the hint checked, which no hint
+    /// `sv` makes passes.
+    fn logout(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
+        self.logout_seen = true;
+        let hint = request
+            .path
+            .split_once('?')
+            .map(|(_, q)| params(q))
+            .and_then(|q| q.get("id_token_hint").cloned());
+        let ends = match hint {
+            None => self.faults.logs_out_without_hint,
+            Some(_) => self.faults.takes_forged_hint,
+        };
+        if ends {
+            self.logged_out = true;
+            return answer(&request.id, 302, &[("location", "/")], "");
+        }
+        match hint {
+            None => answer(&request.id, 200, &[], "<form method=post>Sign out?</form>"),
+            Some(_) => answer(&request.id, 400, &[], "invalid id_token_hint"),
+        }
+    }
+
     fn introspect(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
         let form = params(std::str::from_utf8(request.body.as_deref()?).ok()?);
         let active = self
@@ -410,11 +501,23 @@ impl Http for Server {
                 "",
             ),
             ("GET", "/.well-known/openid-configuration") if !self.faults.publishes_nothing => {
-                let introspection = if self.faults.introspects {
+                let mut introspection = if self.faults.introspects {
                     r#","introspection_endpoint":"http://app:8000/o/introspect""#
                 } else {
                     ""
-                };
+                }
+                .to_owned();
+                if self.faults.publishes_par
+                    || self.faults.requires_par
+                    || self.faults.crashes_unpushed
+                {
+                    introspection.push_str(
+                        r#","pushed_authorization_request_endpoint":"http://app:8000/o/par""#,
+                    );
+                }
+                if !self.faults.no_end_session {
+                    introspection.push_str(r#","end_session_endpoint":"http://app:8000/o/logout""#);
+                }
                 answer(
                     &request.id,
                     200,
@@ -427,6 +530,8 @@ impl Http for Server {
             ("GET", "/o/authorize") => self.authorize(request),
             ("POST", "/o/token") => self.exchange(request),
             ("POST", "/o/introspect") => self.introspect(request),
+            ("POST", "/o/par") => self.push(request),
+            ("GET", "/o/logout") => self.logout(request),
             _ => answer(&request.id, 404, &[], ""),
         }
     }
