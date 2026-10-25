@@ -37,4 +37,8 @@ date,version,tests_level,tests_level_measure,tests_level_first_parent,tests_adde
 2026-10-16,sv,4204,#[test] lines at the last commit that day on main's own line,4204,124,b8b4094,b8b4094,,0,0,,0,0,0,6173,2673,17086,stackvet,since the cut-off
 2026-10-19,sv,4204,#[test] lines at the last commit that day on main's own line,4204,0,83b5492,83b5492,,0,0,,0,0,0,0,0,0,stackvet,since the cut-off
 2026-10-20,sv,4251,#[test] lines at the last commit that day on main's own line,4251,47,1eb7c5e,1eb7c5e,,0,0,,0,0,0,4201,1449,1142,stackvet,since the cut-off
-2026-10-21,sv,4283,#[test] lines at the last commit that day on main's own line,4283,32,3c7c534,3c7c534,,0,0,,0,0,0,1809,1015,223,stackvet,since the cut-off
+2026-10-21,sv,4300,#[test] lines at the last commit that day on main's own line,4300,49,32dcb61,32dcb61,,0,0,,0,0,0,2928,1352,6315,stackvet,since the cut-off
+2026-10-22,sv,4335,#[test] lines at the last commit that day on main's own line,4335,35,3970e3b,3970e3b,,0,0,,0,0,0,3512,1491,2601,stackvet,since the cut-off
+2026-10-23,sv,4385,#[test] lines at the last commit that day on main's own line,4385,50,aaece6c,aaece6c,,0,0,,0,0,0,3166,1789,712,stackvet,since the cut-off
+2026-10-24,sv,4479,#[test] lines at the last commit that day on main's own line,4479,94,2d63c16,2d63c16,,0,0,,0,0,0,6895,3397,797,stackvet,since the cut-off
+2026-10-25,sv,4539,#[test] lines at the last commit that day on main's own line,4539,60,f77d475,f77d475,,0,0,,0,0,0,3223,1377,1643,stackvet,since the cut-off
