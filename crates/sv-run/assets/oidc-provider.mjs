@@ -24,7 +24,8 @@
 //                client that does not exist, as `{ "token": ... }`. `/userinfo` answers for either, as a real
 //                provider's does; `/introspect` says which client each was issued to. With `who=other-person`, the
 //                token is for a different subject who has the test person's email address (V10.3.3, ADR-148); every
-//                access token carries the `email` claim, as many providers' do.
+//                access token carries the `email` claim, as many providers' do. With `scope=…`, the token grants
+//                that scope rather than the full one (V10.3.2).
 //   `POST /_sv/logout-token` with `variant=good`, `wrong-typ`, `no-events`, or `with-nonce`: a signed OIDC
 //                back-channel logout token for the test person, correct or wrong in that one way.
 //   `POST /_sv/id-token`: a signed ID token for the test person and this app's client, as `{ "token": ... }`, the
@@ -210,12 +211,14 @@ http
       const who = form.get('who');
       if (who !== null && who !== 'other-person') return json(res, 400, { error: 'who is other-person or left out' });
       const sub = who === 'other-person' ? 'sv-oidc-other-person' : 'sv-oidc-user';
+      // `scope=…`: the scope the token grants, the full one when left out (V10.3.2, ADR-148).
+      const scope = form.get('scope') || 'openid email profile';
       const client = aud === 'self' ? CLIENT_ID : 'some-other-service';
       const now = Math.floor(Date.now() / 1000);
       const token = signed(
         { alg: 'RS256', typ: 'at+jwt', kid: KID },
         {
-          iss: ISSUER, sub, aud: client, client_id: client, scope: 'openid email profile',
+          iss: ISSUER, sub, aud: client, client_id: client, scope,
           email: 'sv-oidc-user@example.test', iat: now, exp: now + 300, jti: b64url(crypto.randomBytes(12)),
         },
       );

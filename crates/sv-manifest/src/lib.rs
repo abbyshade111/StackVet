@@ -475,6 +475,19 @@ pub struct OidcSection {
     /// Left out, whether signing out ends this way in is not assessed.
     #[serde(default)]
     pub logout: Option<RequestTemplate>,
+    /// A route of the app's API that takes a provider's access token only when it carries `scope`, read with `GET`
+    /// (V10.3.2; backlog 0625, part 5; ADR-148). With it, a token without that scope is sent there and must be
+    /// refused. Left out, V10.3.2 is not asked.
+    #[serde(default)]
+    pub scoped: Option<ScopedRoute>,
+}
+
+/// `scoped` under `[stack.run.oidc]`: a route, and the scope an access token needs to be taken there.
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ScopedRoute {
+    pub path: String,
+    pub scope: String,
 }
 
 /// One request the probes make on the app's behalf: how to sign up, sign in, or create something.

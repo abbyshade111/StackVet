@@ -241,6 +241,8 @@ RUST_CHECKS = {
     "probe.oidc-access-token-audience-not-checked": ("signed-in", ["V10.3.1"]),
     # An access token for another person who shares the email address (backlog 0625, part 5; ADR-148).
     "probe.oidc-access-token-user-keyed-on-email": ("signed-in", ["V10.3.3"]),
+    # An access token without the scope a route stackvet.toml names needs (backlog 0625, part 5; ADR-148).
+    "probe.oidc-access-token-scope-not-checked": ("signed-in", ["V10.3.2"]),
     "probe.oidc-id-token-taken-as-access-token": ("signed-in", ["V9.2.2"]),
     "probe.oidc-logout-token-not-checked": ("signed-in", ["V10.5.5"]),
     "probe.sign-out-control-hidden": ("signed-in", ["V7.4.4"]),
@@ -878,6 +880,7 @@ RUST_IN_PART |= {
     "probe.no-hsts",
     "probe.oidc-access-token-audience-not-checked",
     "probe.oidc-access-token-user-keyed-on-email",
+    "probe.oidc-access-token-scope-not-checked",
     "probe.oidc-audience-not-checked",
     "probe.oidc-id-token-taken-as-access-token",
     "probe.oidc-issuer-not-checked",

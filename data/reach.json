@@ -399,6 +399,9 @@
   "V10.3.1": [
    "signed-in"
   ],
+  "V10.3.2": [
+   "signed-in"
+  ],
   "V10.3.3": [
    "signed-in"
   ],
@@ -2783,6 +2786,14 @@
     "id": "probe.oidc-access-token-audience-not-checked",
     "run": "Signed in",
     "looks_for": "An access token the sign-in provider issued for any other service opens the app: whoever runs that service, or anyone who gets one of its tokens, can use the app as the person the token names.",
+    "finding_only": false
+   }
+  ],
+  "V10.3.2": [
+   {
+    "id": "probe.oidc-access-token-scope-not-checked",
+    "run": "Signed in",
+    "looks_for": "An access token that was not granted the scope a route needs is taken there anyway, so a client the person allowed only to read, say, can also do what the route does, and the scopes the person agreed to limit nothing.",
     "finding_only": false
    }
   ],

@@ -57,7 +57,8 @@ pub fn marker(kind: &str, tag: &str) -> String {
 pub mod oidc {
     pub const MODE: &str = "/_sv/mode";
     /// Mints an access token, `aud=self` for this app or `aud=other` for another service (ADR-127); with
-    /// `who=other-person`, for a different subject who has the test person's email address (V10.3.3, ADR-148).
+    /// `who=other-person`, for a different subject who has the test person's email address (V10.3.3, ADR-148); and
+    /// with `scope=…`, granting that scope rather than the full one (V10.3.2).
     pub const ACCESS_TOKEN: &str = "/_sv/access-token";
     /// The `who` that asks for a token for the other person who shares the email address.
     pub const OTHER_SUBJECT: &str = "other-person";

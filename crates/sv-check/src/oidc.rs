@@ -31,8 +31,7 @@ use crate::signed_in::{Http, Outcome, Rule, Session, finding, get, ok, send_fill
 use crate::stand_in::oidc as idp;
 use sv_manifest::OidcSection;
 
-const IDS: &str =
-    "V10.1.2, V10.2.1, V7.6.2, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2, V10.3.1, V10.3.3";
+const IDS: &str = "V10.1.2, V10.2.1, V7.6.2, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2, V10.3.1, V10.3.2, V10.3.3";
 
 mod session;
 mod tokens;
@@ -615,6 +614,7 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
         // Tokens the provider makes on request (backlog 0500, ADR-127).
         tokens::access_token_audience(http, section, &mut out);
         tokens::access_token_subject(http, section, &mut out);
+        tokens::access_token_scope(http, section, &mut out);
         tokens::id_token_as_access(http, section, &mut out);
         tokens::backchannel_logout(http, section, &mut out);
         // The session this way of signing in leaves, checked as the form's is (backlog 0232, part B).
@@ -627,7 +627,7 @@ pub fn run(http: &mut dyn Http, section: &OidcSection) -> Outcome {
                 .to_owned(),
         ));
         out.not_assessed.push((
-            "V10.3.1, V10.3.3, V10.5.5".to_owned(),
+            "V10.3.1, V10.3.2, V10.3.3, V10.5.5".to_owned(),
             "An ordinary sign-in stopped working partway through, so no token the provider makes on request was \
              sent."
                 .to_owned(),
@@ -1089,6 +1089,7 @@ mod tests {
             shows: None,
             backchannel_logout: None,
             logout: None,
+            scoped: None,
         }
     }
 

@@ -33,6 +33,17 @@ pub(super) const SUBJECT: Rule = Rule {
           `email`, and keep the email address only for writing to them.",
 };
 
+pub(super) const SCOPE: Rule = Rule {
+    rule_id: "probe.oidc-access-token-scope-not-checked",
+    requirement_ids: &["V10.3.2"],
+    cwe: &["CWE-285"],
+    impact: "An access token that was not granted the scope a route needs is taken there anyway, so a client the person \
+             allowed only to read, say, can also do what the route does, and the scopes the person agreed to limit \
+             nothing.",
+    fix: "Before the route acts, check that the access token's `scope` (or the provider's introspection answer) holds \
+          the scope the route needs, and refuse it otherwise, as well as checking whose token it is.",
+};
+
 pub(super) const ID_AS_ACCESS: Rule = Rule {
     rule_id: "probe.oidc-id-token-taken-as-access-token",
     requirement_ids: &["V9.2.2"],
@@ -198,6 +209,121 @@ pub(super) fn access_token_subject(http: &mut dyn Http, section: &OidcSection, o
         );
     }
     crate::verified::unless_credited(SUBJECT.rule_id, &out.verified);
+}
+
+/// A form value with the characters a form gives a meaning to written as it encodes them.
+fn form_value(value: &str) -> String {
+    value
+        .replace('%', "%25")
+        .replace('&', "%26")
+        .replace('+', "%2B")
+        .replace('=', "%3D")
+        .replace(' ', "+")
+}
+
+/// Whether `path` takes `token`, sent as a bearer token with no cookie, read with `GET`.
+fn route_takes(http: &mut dyn Http, path: &str, token: &str, id: &str) -> bool {
+    ok(&http.send(&ProbeRequest {
+        id: id.to_owned(),
+        method: "GET".to_owned(),
+        path: path.to_owned(),
+        headers: vec![("Authorization".to_owned(), format!("Bearer {token}"))],
+        body: None,
+    }))
+}
+
+/// V10.3.2 (backlog 0625, part 5; ADR-148): an access token without the scope a route needs, sent to the route
+/// stackvet.toml names with that scope (`scoped`). Asked only when a token with the scope is taken there: a route
+/// that takes none of the provider's tokens shows nothing. Taken without it is a finding; refused, with the token that
+/// has it taken before and after, is credited in part.
+pub(super) fn access_token_scope(http: &mut dyn Http, section: &OidcSection, out: &mut Outcome) {
+    let not_assessed =
+        |out: &mut Outcome, why: String| out.not_assessed.push(("V10.3.2".to_owned(), why));
+    let Some(scoped) = &section.scoped else {
+        not_assessed(
+            out,
+            "stackvet.toml names no route that needs a scope, so whether the app's API checks a token's scope was not \
+             asked. Add `scoped = { path = \"…\", scope = \"…\" }` under `[stack.run.oidc]`, a route that takes the \
+             provider's access token only with that scope, and it will be."
+                .to_owned(),
+        );
+        return;
+    };
+    let base = "openid email profile";
+    let with = mint(
+        http,
+        idp::ACCESS_TOKEN,
+        &format!(
+            "aud=self&scope={}",
+            form_value(&format!("{base} {}", scoped.scope))
+        ),
+        "oidc-access-token-scoped",
+    );
+    let without = mint(
+        http,
+        idp::ACCESS_TOKEN,
+        &format!("aud=self&scope={}", form_value(base)),
+        "oidc-access-token-unscoped",
+    );
+    let (Some(with), Some(without)) = (with, without) else {
+        not_assessed(
+            out,
+            "The test provider did not hand over the access tokens, so nothing was sent to the route.".to_owned(),
+        );
+        return;
+    };
+    if !route_takes(http, &scoped.path, &with, "oidc-scoped-with") {
+        not_assessed(
+            out,
+            format!(
+                "{} did not take an access token that has the scope `{}`, so it does not take the provider's tokens \
+                 there, and whether it checks their scope could not be seen.",
+                scoped.path, scoped.scope
+            ),
+        );
+        return;
+    }
+    let took = route_takes(http, &scoped.path, &without, "oidc-scoped-without");
+    out.steps.push(format!(
+        "sent {} an access token with the scope `{}`, which it took, and one without it, which it {}",
+        scoped.path,
+        scoped.scope,
+        if took { "took too" } else { "refused" }
+    ));
+    if took {
+        out.findings.push(finding(
+            &SCOPE,
+            "A route takes an access token that was not granted the scope it needs",
+            Severity::High,
+            format!(
+                "Sent as a bearer token with no cookie, an access token without the scope `{}` was taken at {}, which \
+                 stackvet.toml says needs it.",
+                scoped.scope, scoped.path
+            ),
+        ));
+    } else if route_takes(http, &scoped.path, &with, "oidc-scoped-with-again") {
+        out.verified.push(
+            crate::Verified::new(
+                SCOPE.rule_id,
+                SCOPE.requirement_ids,
+                format!(
+                    "an access token without the scope `{}`, sent to {}, refused, where one with it was taken before and \
+                     after",
+                    scoped.scope, scoped.path
+                ),
+            )
+            // One route, and one scope; `sub` and `authorization_details` are V10.3.3's and not asked here.
+            .in_part(),
+        );
+    } else {
+        not_assessed(
+            out,
+            "The route refused the token without the scope, but then refused the one with it as well, so the refusal may \
+             not have been about the scope."
+                .to_owned(),
+        );
+    }
+    crate::verified::unless_credited(SCOPE.rule_id, &out.verified);
 }
 
 /// V10.3.1: an access token for another service, sent where one for this app opens the private page.
@@ -501,3 +627,7 @@ mod tests;
 #[cfg(test)]
 #[path = "subject_tests.rs"]
 mod subject_tests;
+
+#[cfg(test)]
+#[path = "scope_tests.rs"]
+mod scope_tests;
