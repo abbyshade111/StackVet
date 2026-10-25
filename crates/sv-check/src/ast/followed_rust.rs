@@ -1,7 +1,7 @@
 //! Rust's safe forms for the path rules (backlog 0653; ADR-138, Later): a path every part of which is fixed in the app's
 //! own code, as `followed.rs` reads Python's. A path is fixed when it is written out (a string, a raw string), a
 //! constant (`ROOT`, as the other languages' patterns read a name in capitals), a compile-time macro
-//! (`env!("CARGO_MANIFEST_DIR")`), `Path::new` or `PathBuf::from` of a fixed path, a fixed path's `.join` (and the
+//! (`env!` of the crate's folder), `Path::new` or `PathBuf::from` of a fixed path, a fixed path's `.join` (and the
 //! methods like it) of fixed paths, a reference to one, or a name the function sets only to fixed paths and never sets
 //! again. Anything else, a parameter among them, is not, so the call is judged as before.
 
