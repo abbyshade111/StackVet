@@ -1529,6 +1529,20 @@
     "finding_only": true
    }
   ],
+  "V3.2.3": [
+   {
+    "id": "ast.dom-clobbering-fallback",
+    "run": "Reads the code",
+    "looks_for": "Browser code reads a global with a fallback, which a page's own elements can take over",
+    "finding_only": true
+   },
+   {
+    "id": "ast.document-global-stored",
+    "run": "Reads the code",
+    "looks_for": "Browser code stores a value of its own on the document object",
+    "finding_only": true
+   }
+  ],
   "V3.3.1": [
    {
     "id": "brakeman",

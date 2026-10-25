@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 148 can be checked, 67 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 20 with no check yet.
+345 requirements: 148 can be checked, 68 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 19 with no check yet.
 
 ### Level 1 (70 requirements, 49 can be checked, 14 can only be found failing)
 
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 14 can be checked, 15 can only be found failing)
+### Level 3 (92 requirements, 14 can be checked, 16 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -482,7 +482,7 @@ decided per app, from its `stackvet.toml` and its code.
 | Requirement | Coverage | Checks |
 |---|---|---|
 | **V3.1.1** Verify that application documentation states the expected security features that browsers using the application must support (such as HTTPS, HTTP Strict Transport Security (HSTS), Content Security Policy (CSP), and other relevant HTTP security mechanisms). It must also define how the application must behave when some of these features are not available (such as warning the user or blocking access). | The owner answers | Asked of the owner: a section in the security notes |
-| **V3.2.3** Verify that the application avoids DOM clobbering when using client-side JavaScript by employing explicit variable declarations, performing strict type checking, avoiding storing global variables on the document object, and implementing namespace isolation. | No check yet | – |
+| **V3.2.3** Verify that the application avoids DOM clobbering when using client-side JavaScript by employing explicit variable declarations, performing strict type checking, avoiding storing global variables on the document object, and implementing namespace isolation. | Can only be found failing | Reads the code: `ast.dom-clobbering-fallback`, looks for: Browser code reads a global with a fallback, which a page's own elements can take over (found failing only)<br>Reads the code: `ast.document-global-stored`, looks for: Browser code stores a value of its own on the document object (found failing only) |
 | **V3.3.5** Verify that when the application writes a cookie, the cookie name and value length combined are not over 4096 bytes. Overly large cookies will not be stored by the browser and therefore not sent with requests, preventing the user from using application functionality which relies on that cookie. | Can be checked | The running app: `probe.cookie-too-large`, if it fails: A browser keeps no cookie longer than 4096 bytes, name and value together: it drops it without a word, and whatever the app keeps in it (a session, a cart, a choice) is gone on the next page, for that person only. (only ever in part) |
 | **V3.4.7** Verify that the Content-Security-Policy header field specifies a location to report violations. | Can be checked | The running app: `probe.csp-no-report`, if it fails: A Content-Security-Policy with nowhere to report blocks an attack silently: nobody learns it was tried, or that the policy is breaking a real page. |
 | **V3.4.8** Verify that all HTTP responses that initiate a document rendering (such as responses with Content-Type text/html), include the Cross‑Origin‑Opener‑Policy header field with the same-origin directive or the same-origin-allow-popups directive as required. This prevents attacks that abuse shared access to Window objects, such as tabnabbing and frame counting. | Can be checked | The running app: `probe.opener-policy-missing`, if it fails: Without it, a page the app's page opens — or one that opened it — keeps a handle to its window, which cross-window attacks use to steer it or to learn about it. |

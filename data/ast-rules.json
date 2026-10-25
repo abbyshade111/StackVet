@@ -2543,6 +2543,102 @@
       }
     },
     {
+      "id": "ast.dom-clobbering-fallback",
+      "title": "Browser code reads a global with a fallback, which a page's own elements can take over",
+      "severity": "low",
+      "confidence": "low",
+      "requirementIds": [
+        "V3.2.3"
+      ],
+      "cwe": [
+        "CWE-79"
+      ],
+      "findingsOnly": true,
+      "description": "The app's browser code reads a property of `window` or `document` that the browser does not define, and falls back to a default when it is missing (`window.config || {}`). An element on the page with that `id` or `name`, which anyone who can add markup to the page can write, then stands in for it: DOM clobbering.",
+      "impact": "Markup that is otherwise harmless, an `<a id=\"config\" href=\"…\">` in a comment or a profile, can change what the page's own scripts read, and through that where they load code from or what they trust.",
+      "fix": "Declare the app's settings as a variable of its own (`const config = …` in a module), not a property of `window` or `document`; check what was read is of the expected type (`typeof window.config === 'object' && !(window.config instanceof Element)`); and keep the app's names in a namespace no element can take.",
+      "queries": {
+        "javascript": "(binary_expression left: (member_expression object: (identifier) @mod property: (property_identifier) @arg)\n                   operator: [\"||\" \"??\"]) @hit",
+        "typescript": "(binary_expression left: (member_expression object: (identifier) @mod property: (property_identifier) @arg)\n                   operator: [\"||\" \"??\"]) @hit"
+      },
+      "modulePatterns": {
+        "javascript": "^(window|document)$",
+        "typescript": "^(window|document)$"
+      },
+      "safeArgumentPatterns": {
+        "javascript": "^([A-Z]\\w*|(webkit|moz|ms|o)[A-Z]\\w*|location|localStorage|sessionStorage|indexedDB|navigator|history|document|fetch|crypto|performance|console|screen|innerWidth|innerHeight|outerWidth|outerHeight|devicePixelRatio|scrollX|scrollY|pageXOffset|pageYOffset|matchMedia|requestAnimationFrame|cancelAnimationFrame|requestIdleCallback|cancelIdleCallback|setTimeout|setInterval|clearTimeout|clearInterval|queueMicrotask|getComputedStyle|getSelection|opener|parent|top|frames|name|origin|isSecureContext|caches|speechSynthesis|visualViewport|customElements|trustedTypes|event|body|head|documentElement|cookie|title|readyState|referrer|domain|activeElement|hidden|visibilityState|fullscreenElement|currentScript|defaultView|scrollingElement|characterSet|compatMode|dir|designMode|forms|images|links|scripts|styleSheets|fonts|implementation|lastModified|contentType|pointerLockElement|pictureInPictureElement|timeline|all)$",
+        "typescript": "^([A-Z]\\w*|(webkit|moz|ms|o)[A-Z]\\w*|location|localStorage|sessionStorage|indexedDB|navigator|history|document|fetch|crypto|performance|console|screen|innerWidth|innerHeight|outerWidth|outerHeight|devicePixelRatio|scrollX|scrollY|pageXOffset|pageYOffset|matchMedia|requestAnimationFrame|cancelAnimationFrame|requestIdleCallback|cancelIdleCallback|setTimeout|setInterval|clearTimeout|clearInterval|queueMicrotask|getComputedStyle|getSelection|opener|parent|top|frames|name|origin|isSecureContext|caches|speechSynthesis|visualViewport|customElements|trustedTypes|event|body|head|documentElement|cookie|title|readyState|referrer|domain|activeElement|hidden|visibilityState|fullscreenElement|currentScript|defaultView|scrollingElement|characterSet|compatMode|dir|designMode|forms|images|links|scripts|styleSheets|fonts|implementation|lastModified|contentType|pointerLockElement|pictureInPictureElement|timeline|all)$"
+      },
+      "looksFor": "a property of `window` or `document` the browser does not define, read with a fallback (`window.config || {}`, `document.settings ?? defaults`)",
+      "looksForIn": {
+        "javascript": "browser JavaScript: `window.X || …` and `document.X ?? …` where `X` is not one of the browser's own properties",
+        "typescript": "browser TypeScript: `window.X || …` and `document.X ?? …` where `X` is not one of the browser's own properties"
+      },
+      "nothingToFind": {
+        "c": "C does not run in a browser, so DOM clobbering cannot happen in it.",
+        "cpp": "C++ does not run in a browser, so DOM clobbering cannot happen in it.",
+        "csharp": "C# does not run in a browser, so DOM clobbering cannot happen in it.",
+        "dart": "Dart does not run in a browser, so DOM clobbering cannot happen in it.",
+        "go": "Go does not run in a browser, so DOM clobbering cannot happen in it.",
+        "java": "Java does not run in a browser, so DOM clobbering cannot happen in it.",
+        "kotlin": "Kotlin does not run in a browser, so DOM clobbering cannot happen in it.",
+        "php": "PHP does not run in a browser, so DOM clobbering cannot happen in it.",
+        "python": "Python does not run in a browser, so DOM clobbering cannot happen in it.",
+        "ruby": "Ruby does not run in a browser, so DOM clobbering cannot happen in it.",
+        "rust": "Rust does not run in a browser, so DOM clobbering cannot happen in it.",
+        "swift": "Swift does not run in a browser, so DOM clobbering cannot happen in it.",
+        "shell": "Shell scripts do not run in a browser, so DOM clobbering cannot happen in them."
+      }
+    },
+    {
+      "id": "ast.document-global-stored",
+      "title": "Browser code stores a value of its own on the document object",
+      "severity": "low",
+      "confidence": "low",
+      "requirementIds": [
+        "V3.2.3"
+      ],
+      "cwe": [
+        "CWE-79"
+      ],
+      "findingsOnly": true,
+      "description": "The app's browser code sets a property of `document` that the browser does not define (`document.currentUser = …`), keeping a value of its own where the page's elements live. V3.2.3 asks for no global variables stored on the document object.",
+      "impact": "A named element on the page can stand for that property before the script sets it, or wherever another script reads it first, so what the app reads back may be markup someone else wrote.",
+      "fix": "Keep the value in a variable of the app's own, in a module or a closure, and pass it to what needs it, rather than storing it on `document`.",
+      "queries": {
+        "javascript": "(assignment_expression left: (member_expression object: (identifier) @mod property: (property_identifier) @arg)) @hit",
+        "typescript": "(assignment_expression left: (member_expression object: (identifier) @mod property: (property_identifier) @arg)) @hit"
+      },
+      "modulePatterns": {
+        "javascript": "^document$",
+        "typescript": "^document$"
+      },
+      "safeArgumentPatterns": {
+        "javascript": "^(cookie|title|body|dir|designMode|domain|location|on[a-z]+)$",
+        "typescript": "^(cookie|title|body|dir|designMode|domain|location|on[a-z]+)$"
+      },
+      "looksFor": "a property of `document` the browser does not define, set by the app's code (`document.currentUser = …`)",
+      "looksForIn": {
+        "javascript": "browser JavaScript: `document.X = …` where `X` is not one the browser lets a page set (`cookie`, `title`, `body`, `dir`, `designMode`, `domain`, `location`, and the `on…` event handlers)",
+        "typescript": "browser TypeScript: `document.X = …` where `X` is not one the browser lets a page set (`cookie`, `title`, `body`, `dir`, `designMode`, `domain`, `location`, and the `on…` event handlers)"
+      },
+      "nothingToFind": {
+        "c": "C does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "cpp": "C++ does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "csharp": "C# does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "dart": "Dart does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "go": "Go does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "java": "Java does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "kotlin": "Kotlin does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "php": "PHP does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "python": "Python does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "ruby": "Ruby does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "rust": "Rust does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "swift": "Swift does not run in a browser, so storing a value on the document object cannot happen in it.",
+        "shell": "Shell scripts do not run in a browser, so storing a value on the document object cannot happen in them."
+      }
+    },
+    {
       "id": "ast.request-body-passed-whole",
       "title": "The whole request body is saved as it came",
       "severity": "high",
