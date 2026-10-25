@@ -2,15 +2,25 @@
 //! ADR-151).
 //!
 //! An app other apps sign their users in through is asked what it does when a client sends what it should refuse: a
-//! redirect address that is not the registered one (V10.4.1), and a sign-in code sent a second time (V10.4.2). The
-//! first test user is signed in, and the client is one the seed registered in the copy of the app the run started,
-//! set to skip the consent page. Each question is asked only once the normal case is shown working: the registered
-//! address answered with a code, and a code exchanged for a token. A refusal is credited in part, since one client, one
-//! person, and a sample of wrong requests are asked.
+//! redirect address that is not the registered one (V10.4.1), a sign-in code sent a second time (V10.4.2), a code asked
+//! for without PKCE or with its `plain` method, and exchanged with the wrong verifier (V10.4.6), and a refresh token
+//! used twice (V10.4.5). The first test user is signed in, and the client is one the seed registered in the copy of the
+//! app the run started, set to skip the consent page. Each question is asked only once the normal case is shown
+//! working: the registered address answered with a code, and a code exchanged for a token. A refusal is credited in
+//! part, since one client, one person, and a sample of wrong requests are asked.
 
 use super::*;
 use sha2::{Digest, Sha256};
 use sv_manifest::OauthClientSection;
+
+mod pkce;
+mod refresh;
+
+// The rules the tests read.
+#[cfg(test)]
+pub(super) use pkce::PKCE_NOT_REQUIRED;
+#[cfg(test)]
+pub(super) use refresh::REFRESH_REPLAYED;
 
 pub(super) const REDIRECT_NOT_EXACT: Rule = Rule {
     rule_id: "probe.oauth-redirect-not-exact",
@@ -154,6 +164,9 @@ pub(super) fn authorization_server_checks(
 
     redirect_check(http, &ask, out);
     code_check(http, &ask, secret.as_deref(), &first, out);
+    // Each with codes of its own, after the reused code, whose refusal may have revoked what it gave.
+    pkce::pkce_check(http, &ask, secret.as_deref(), out);
+    refresh::refresh_check(http, &ask, secret.as_deref(), out);
 }
 
 /// Whether the entry's secret is a value the seed prints, and nothing else.
@@ -267,13 +280,45 @@ struct Ask<'a> {
     verifier: &'a str,
 }
 
+/// How an authorization request carries PKCE (RFC 7636).
+#[derive(Clone, Copy)]
+enum Pkce {
+    /// The S256 challenge, as a client should send it.
+    S256,
+    /// The verifier itself, as `plain`.
+    Plain,
+    /// No challenge at all.
+    Left,
+}
+
 impl Ask<'_> {
     /// The authorization request, for `redirect`, with PKCE's S256 challenge.
     fn authorize(&self, http: &mut dyn Http, id: &str, redirect: &str) -> Option<ProbeResponse> {
+        self.authorize_with(http, id, redirect, Pkce::S256)
+    }
+
+    /// The authorization request, for `redirect`, carrying PKCE as `pkce` says.
+    fn authorize_with(
+        &self,
+        http: &mut dyn Http,
+        id: &str,
+        redirect: &str,
+        pkce: Pkce,
+    ) -> Option<ProbeResponse> {
         let scope = self.client.scope.as_deref().unwrap_or("openid");
+        let challenge = match pkce {
+            Pkce::S256 => format!(
+                "&code_challenge={}&code_challenge_method=S256",
+                challenge(self.verifier)
+            ),
+            Pkce::Plain => format!(
+                "&code_challenge={}&code_challenge_method=plain",
+                self.verifier
+            ),
+            Pkce::Left => String::new(),
+        };
         let path = format!(
-            "{}{}response_type=code&client_id={}&redirect_uri={}&scope={}&state={id}&code_challenge={}\
-             &code_challenge_method=S256",
+            "{}{}response_type=code&client_id={}&redirect_uri={}&scope={}&state={id}{challenge}",
             self.server.authorize,
             if self.server.authorize.contains('?') {
                 '&'
@@ -283,9 +328,19 @@ impl Ask<'_> {
             encoded(&self.client.id),
             encoded(redirect),
             encoded(scope),
-            challenge(self.verifier),
         );
         http.send(&get(id, &path, self.session))
+    }
+
+    /// The code an answer sends the browser back to the registered address with, when it does.
+    fn code_in(&self, answer: &Option<ProbeResponse>) -> Option<String> {
+        answer
+            .as_ref()
+            .filter(|r| (300..400).contains(&r.status))
+            .and_then(|r| r.header("location"))
+            .filter(|to| to.starts_with(&self.client.redirect))
+            .and_then(|to| query_value(to, "code"))
+            .map(str::to_owned)
     }
 
     /// A code for the registered address, or why none came, in words for the report.
@@ -342,6 +397,39 @@ impl Ask<'_> {
         code: &str,
         secret: Option<&str>,
     ) -> Option<ProbeResponse> {
+        self.exchange_with(http, id, code, secret, self.verifier)
+    }
+
+    /// The token request for `code`, with `verifier` as the PKCE verifier.
+    fn exchange_with(
+        &self,
+        http: &mut dyn Http,
+        id: &str,
+        code: &str,
+        secret: Option<&str>,
+        verifier: &str,
+    ) -> Option<ProbeResponse> {
+        self.token_request(
+            http,
+            id,
+            &format!(
+                "grant_type=authorization_code&code={}&redirect_uri={}&client_id={}&code_verifier={verifier}",
+                encoded(code),
+                encoded(&self.client.redirect),
+                encoded(&self.client.id),
+            ),
+            secret,
+        )
+    }
+
+    /// A request to the token address with `body`, the client's secret in HTTP Basic when it has one.
+    fn token_request(
+        &self,
+        http: &mut dyn Http,
+        id: &str,
+        body: &str,
+        secret: Option<&str>,
+    ) -> Option<ProbeResponse> {
         let mut headers = vec![
             (
                 "Content-Type".to_owned(),
@@ -361,14 +449,7 @@ impl Ask<'_> {
             method: "POST".to_owned(),
             path: self.server.token.clone(),
             headers,
-            body: Some(format!(
-                "grant_type=authorization_code&code={}&redirect_uri={}&client_id={}&code_verifier={}",
-                encoded(code),
-                encoded(&self.client.redirect),
-                encoded(&self.client.id),
-                self.verifier
-            )
-            .into_bytes()),
+            body: Some(body.as_bytes().to_vec()),
         })
     }
 }

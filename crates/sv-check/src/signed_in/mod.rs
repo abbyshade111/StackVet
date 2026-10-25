@@ -2168,6 +2168,10 @@ mod no_signup_right_password_tests;
 #[cfg(test)]
 mod non_ascii_tests;
 #[cfg(test)]
+mod oauth_client_fake;
+#[cfg(test)]
+mod oauth_client_pkce_tests;
+#[cfg(test)]
 mod oauth_client_tests;
 #[cfg(test)]
 mod owner_field_tests;

@@ -53,7 +53,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 207 (60%) | 142 (41%) | 11 | 99 | 28 |
+| OWASP ASVS 5.0 | 345 | 208 (60%) | 144 (42%) | 11 | 99 | 27 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -64,13 +64,13 @@ A requirement reached by more than one kind of check is counted under each.
 
 | Level | Requirements | Can settle | Can be credited | Reads the code | Known vulnerabilities | The running app | Signed in | Outside tools | Outside tools you turn on | Your own live site |
 |---|---|---|---|---|---|---|---|---|---|---|
-| L1 | 70 | 62 | 48 | 19 | 1 | 6 | 42 | 20 | 13 | 3 |
-| L2 | 183 | 121 | 82 | 35 | 0 | 23 | 59 | 25 | 23 | 2 |
+| L1 | 70 | 63 | 49 | 19 | 1 | 6 | 43 | 20 | 13 | 3 |
+| L2 | 183 | 121 | 83 | 35 | 0 | 23 | 60 | 25 | 23 | 2 |
 | L3 | 92 | 24 | 12 | 5 | 0 | 9 | 2 | 6 | 3 | 3 |
 
-65 of the 207 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+64 of the 208 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
-71 of the 142 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
+73 of the 144 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
 With nothing beyond plain `sv check`, 59 ASVS requirements can be settled. 27 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 6 only CodeQL reaches (V1.2.2, V1.2.9, V1.4.2, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
@@ -103,7 +103,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V7 Session Management | 19 | 15 | 13 | 0 | 3 | 1 |
 | V8 Authorization | 13 | 4 | 2 | 1 | 7 | 1 |
 | V9 Self-contained Tokens | 7 | 6 | 4 | 0 | 1 | 0 |
-| V10 OAuth and OIDC | 36 | 19 | 16 | 0 | 11 | 6 |
+| V10 OAuth and OIDC | 36 | 20 | 18 | 0 | 11 | 5 |
 | V11 Cryptography | 24 | 14 | 7 | 0 | 8 | 2 |
 | V12 Secure Communication | 12 | 10 | 6 | 1 | 0 | 1 |
 | V13 Configuration | 21 | 12 | 3 | 1 | 8 | 0 |
@@ -178,7 +178,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V17.1.1 | L2 | Reads the code: `config.turn-relay-reaches-reserved-addresses` |
 | V17.1.2 | L3 | Reads the code: `config.turn-relay-unlimited` |
 
-### Settled by asking the running app (134)
+### Settled by asking the running app (135)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -280,7 +280,8 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V10.4.1 | L1 | Signed in: `probe.oauth-redirect-not-exact` |
 | V10.4.2 | L1 | Signed in: `probe.oauth-code-reused` |
 | V10.4.4 | L1 | Reads the code: `config.retired-grant-enabled`; The running app: `probe.retired-grants-offered` (sv only ever as a finding: `config.retired-grant-enabled`, `probe.retired-grants-offered`) |
-| V10.4.6 | L2 | The running app: `probe.authorization-server-plain-pkce` (sv only ever as a finding: `probe.authorization-server-plain-pkce`) |
+| V10.4.5 | L1 | Signed in: `probe.oauth-refresh-token-replayed` |
+| V10.4.6 | L2 | The running app: `probe.authorization-server-plain-pkce`; Signed in: `probe.oauth-pkce-not-required` (sv only ever as a finding: `probe.authorization-server-plain-pkce`) |
 | V10.4.16 | L3 | The running app: `probe.authorization-server-weak-client-auth` |
 | V10.5.1 | L2 | Signed in: `probe.oidc-nonce-not-checked` |
 | V10.5.2 | L2 | Reads the code: `ast.account-found-by-provider-email`; Signed in: `probe.oidc-user-keyed-on-email` (sv only ever as a finding: `ast.account-found-by-provider-email`) |
@@ -371,13 +372,12 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V14.2.3 | L2 | Signed in: `probe.account-details-sent-elsewhere` (sv only ever as a finding: `probe.account-details-sent-elsewhere`) |
 | V16.5.4 | L3 | Reads the code: `config.last-resort-error-handler`; The running app: `probe.app-stopped-during-questions` (sv only ever as a finding: `probe.app-stopped-during-questions`) |
 
-### Level 1 with no check at all (5)
+### Level 1 with no check at all (4)
 
 Where a new check would do the most good. Which of them apply to an app depends on what the app is (`data/knowledge/applicability.json`):
 
 - Every app (3): V2.1.1, V8.1.1, V15.1.1
 - Only where the answer to "Does the app have sign-in, with accounts, passwords, or sessions?" is yes (1): V6.1.1
-- Only where the answer to "Does the app run an OAuth authorization server or OpenID provider of its own?" is yes (1): V10.4.5
 
 ## AISVS 1.0 by chapter
 

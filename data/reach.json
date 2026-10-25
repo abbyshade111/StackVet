@@ -414,6 +414,12 @@
   "V10.4.3": [
    "static"
   ],
+  "V10.4.5": [
+   "signed-in"
+  ],
+  "V10.4.6": [
+   "signed-in"
+  ],
   "V10.4.8": [
    "static"
   ],
@@ -2857,12 +2863,26 @@
     "finding_only": true
    }
   ],
+  "V10.4.5": [
+   {
+    "id": "probe.oauth-refresh-token-replayed",
+    "run": "Signed in",
+    "looks_for": "A refresh token copied from a person's phone or browser keeps giving whoever has it new access tokens for that person, for as long as the refresh token lives, even after the real app has used it.",
+    "finding_only": false
+   }
+  ],
   "V10.4.6": [
    {
     "id": "probe.authorization-server-plain-pkce",
     "run": "The running app",
     "looks_for": "The authorization server's own published details listing `plain` among the PKCE methods it accepts",
     "finding_only": true
+   },
+   {
+    "id": "probe.oauth-pkce-not-required",
+    "run": "Signed in",
+    "looks_for": "A sign-in code caught on its way back to the app, by another app on the person's phone or from a log, can be exchanged for tokens by whoever caught it, since nothing ties the code to the client that asked for it.",
+    "finding_only": false
    }
   ],
   "V10.4.8": [

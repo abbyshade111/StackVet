@@ -2,324 +2,11 @@
 //! address matched by its start, or a code taken twice, is found; refused, with the normal case working, is credited
 //! in part; and every way of not getting that far is said, crediting nothing.
 
-use super::fake_app::{accounts, users};
+use super::fake_app::accounts;
 use super::oauth_client::*;
+use super::oauth_client_fake::*;
 use super::*;
-use sha2::{Digest, Sha256};
-use std::collections::{BTreeMap, BTreeSet};
-
-/// How the fake server goes wrong.
-#[derive(Default, Clone, Copy)]
-struct Faults {
-    /// Takes any redirect address that starts with the registered one.
-    prefix_match: bool,
-    /// Takes any redirect address whose host starts with the registered one's.
-    host_start_match: bool,
-    /// Gives tokens for a code already used.
-    code_twice: bool,
-    /// Refuses a code used twice, but leaves the first token active.
-    keeps_tokens: bool,
-    /// Shows a consent page rather than answering with a code.
-    consent: bool,
-    /// Publishes an introspection address.
-    introspects: bool,
-    /// Refuses every sign-in code once a changed redirect address has been asked for.
-    stops_after_a_change: bool,
-    /// Publishes no details about itself, as an app that is no authorization server.
-    publishes_nothing: bool,
-    /// Crashes on a redirect address it does not take, rather than refusing it.
-    crashes_on_a_change: bool,
-    /// Answers a code sent a second time with a limiter's 429.
-    limits_the_second: bool,
-}
-
-const REGISTERED: &str = "http://localhost/callback";
-const CLIENT: &str = "sv-test";
-
-/// The client's secret, made at run time so no file holds one.
-fn secret() -> String {
-    ["cl", "ient-", "pw-", "7Qx2"].concat()
-}
-
-struct Server {
-    faults: Faults,
-    /// Each code given, with its PKCE challenge, and whether it was used.
-    codes: BTreeMap<String, (String, bool)>,
-    /// The tokens given for each code, and whether each is still active.
-    active: BTreeMap<String, bool>,
-    given: usize,
-    sent: Vec<ProbeRequest>,
-    /// A changed redirect address has been asked for.
-    changed: bool,
-}
-
-fn answer(id: &str, status: u16, headers: &[(&str, &str)], body: &str) -> Option<ProbeResponse> {
-    Some(ProbeResponse {
-        id: id.to_owned(),
-        status,
-        headers: headers
-            .iter()
-            .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
-            .collect(),
-        body: body.to_owned(),
-    })
-}
-
-fn decoded(value: &str) -> String {
-    let bytes = value.as_bytes();
-    let mut out = Vec::new();
-    let mut i = 0;
-    while i < bytes.len() {
-        if bytes[i] == b'%' && i + 2 < bytes.len() {
-            out.push(u8::from_str_radix(&value[i + 1..i + 3], 16).unwrap());
-            i += 3;
-        } else {
-            out.push(bytes[i]);
-            i += 1;
-        }
-    }
-    String::from_utf8(out).unwrap()
-}
-
-fn params(text: &str) -> BTreeMap<String, String> {
-    text.split('&')
-        .filter_map(|p| p.split_once('='))
-        .map(|(k, v)| (k.to_owned(), decoded(v)))
-        .collect()
-}
-
-fn header<'a>(request: &'a ProbeRequest, name: &str) -> Option<&'a str> {
-    request
-        .headers
-        .iter()
-        .find(|(k, _)| k.eq_ignore_ascii_case(name))
-        .map(|(_, v)| v.as_str())
-}
-
-fn s256(verifier: &str) -> String {
-    let digest = Sha256::digest(verifier.as_bytes());
-    const A: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    let mut out = String::new();
-    for chunk in digest.chunks(3) {
-        let n = chunk
-            .iter()
-            .enumerate()
-            .fold(0u32, |n, (i, b)| n | (u32::from(*b) << (16 - 8 * i)));
-        for i in 0..=chunk.len() {
-            out.push(A[((n >> (18 - 6 * i)) & 63) as usize] as char);
-        }
-    }
-    out
-}
-
-impl Server {
-    fn new(faults: Faults) -> Self {
-        Server {
-            faults,
-            codes: BTreeMap::new(),
-            active: BTreeMap::new(),
-            given: 0,
-            sent: Vec::new(),
-            changed: false,
-        }
-    }
-
-    fn takes(&self, redirect: &str) -> bool {
-        redirect == REGISTERED
-            || (self.faults.prefix_match && redirect.starts_with(REGISTERED))
-            || (self.faults.host_start_match && redirect.starts_with("http://localhost"))
-    }
-
-    fn token(&mut self) -> String {
-        self.given += 1;
-        let token = format!("tok{}{}", self.given, "x".repeat(8));
-        self.active.insert(token.clone(), true);
-        token
-    }
-
-    fn authorize(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
-        if header(request, "cookie") != Some("session=s1") {
-            return answer(&request.id, 302, &[("location", "/login")], "");
-        }
-        let query = params(request.path.split_once('?')?.1);
-        let redirect = query.get("redirect_uri")?.clone();
-        self.changed |= redirect != REGISTERED;
-        if self.faults.stops_after_a_change && self.changed {
-            return answer(&request.id, 400, &[], "temporarily unavailable");
-        }
-        if query.get("client_id").map(String::as_str) != Some(CLIENT) || !self.takes(&redirect) {
-            if self.faults.crashes_on_a_change {
-                return answer(&request.id, 500, &[], "Internal Server Error");
-            }
-            return answer(&request.id, 400, &[], "invalid redirect_uri");
-        }
-        if self.faults.consent {
-            return answer(
-                &request.id,
-                200,
-                &[],
-                "<form>Allow sv-test to see your account?</form>",
-            );
-        }
-        self.given += 1;
-        let code = format!("code{}{}", self.given, "c".repeat(8));
-        self.codes
-            .insert(code.clone(), (query.get("code_challenge")?.clone(), false));
-        let to = format!(
-            "{redirect}{}code={code}&state={}",
-            if redirect.contains('?') { '&' } else { '?' },
-            query.get("state")?
-        );
-        answer(&request.id, 302, &[("location", &to)], "")
-    }
-
-    fn exchange(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
-        let basic = format!(
-            "Basic {}",
-            // `sv-test:client-pw-7Qx2`, in base64.
-            base64_of(&format!("{CLIENT}:{}", secret()))
-        );
-        if header(request, "authorization") != Some(basic.as_str()) {
-            return answer(&request.id, 401, &[], r#"{"error":"invalid_client"}"#);
-        }
-        let form = params(std::str::from_utf8(request.body.as_deref()?).ok()?);
-        let code = form.get("code")?.clone();
-        let Some((challenge, used)) = self.codes.get(&code).cloned() else {
-            return answer(&request.id, 400, &[], r#"{"error":"invalid_grant"}"#);
-        };
-        if s256(form.get("code_verifier")?) != challenge {
-            return answer(&request.id, 400, &[], r#"{"error":"invalid_grant"}"#);
-        }
-        if used && self.faults.limits_the_second {
-            return answer(&request.id, 429, &[("retry-after", "1")], "");
-        }
-        if used && !self.faults.code_twice {
-            if !self.faults.keeps_tokens {
-                self.active.values_mut().for_each(|a| *a = false);
-            }
-            return answer(&request.id, 400, &[], r#"{"error":"invalid_grant"}"#);
-        }
-        self.codes.insert(code, (challenge, true));
-        let access = self.token();
-        let refresh = self.token();
-        answer(
-            &request.id,
-            200,
-            &[],
-            &format!(
-                r#"{{"access_token":"{access}","refresh_token":"{refresh}","token_type":"Bearer"}}"#
-            ),
-        )
-    }
-
-    fn introspect(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
-        let form = params(std::str::from_utf8(request.body.as_deref()?).ok()?);
-        let active = self
-            .active
-            .get(form.get("token")?)
-            .copied()
-            .unwrap_or(false);
-        answer(&request.id, 200, &[], &format!(r#"{{"active":{active}}}"#))
-    }
-}
-
-fn base64_of(text: &str) -> String {
-    const A: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut out = String::new();
-    for chunk in text.as_bytes().chunks(3) {
-        let n = chunk
-            .iter()
-            .enumerate()
-            .fold(0u32, |n, (i, b)| n | (u32::from(*b) << (16 - 8 * i)));
-        for i in 0..=chunk.len() {
-            out.push(A[((n >> (18 - 6 * i)) & 63) as usize] as char);
-        }
-        out.push_str(&"=".repeat(3 - chunk.len()));
-    }
-    out
-}
-
-impl Http for Server {
-    fn send(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
-        self.sent.push(request.clone());
-        let path = request.path.split('?').next().unwrap_or("");
-        match (request.method.as_str(), path) {
-            ("GET", "/login") => answer(&request.id, 200, &[], "<form method=post></form>"),
-            ("POST", "/login") => answer(
-                &request.id,
-                303,
-                &[
-                    ("location", "/"),
-                    ("set-cookie", "session=s1; Path=/; HttpOnly"),
-                ],
-                "",
-            ),
-            ("GET", "/.well-known/openid-configuration") if !self.faults.publishes_nothing => {
-                let introspection = if self.faults.introspects {
-                    r#","introspection_endpoint":"http://app:8000/o/introspect""#
-                } else {
-                    ""
-                };
-                answer(
-                    &request.id,
-                    200,
-                    &[],
-                    &format!(
-                        r#"{{"issuer":"http://app:8000","authorization_endpoint":"http://app:8000/o/authorize","token_endpoint":"http://app:8000/o/token"{introspection}}}"#
-                    ),
-                )
-            }
-            ("GET", "/o/authorize") => self.authorize(request),
-            ("POST", "/o/token") => self.exchange(request),
-            ("POST", "/o/introspect") => self.introspect(request),
-            _ => answer(&request.id, 404, &[], ""),
-        }
-    }
-}
-
-fn client() -> sv_manifest::OauthClientSection {
-    sv_manifest::OauthClientSection {
-        id: CLIENT.into(),
-        redirect: REGISTERED.into(),
-        secret: Some("{seed:CLIENT_SECRET}".into()),
-        ..Default::default()
-    }
-}
-
-fn plain_users() -> UsersSection {
-    let mut u = users();
-    u.login = Some(RequestTemplate {
-        method: "POST".into(),
-        path: "/login".into(),
-        form: [("email", "{user}"), ("password", "{password}")]
-            .iter()
-            .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
-            .collect(),
-        json: BTreeMap::new(),
-    });
-    u
-}
-
-/// The checks against a server with `faults`, the seed having printed the client's secret.
-fn run_with_client(
-    faults: Faults,
-    client: Option<&sv_manifest::OauthClientSection>,
-) -> (Outcome, Server) {
-    let values: BTreeMap<String, String> = [("CLIENT_SECRET".to_owned(), secret())].into();
-    let _seed = SeedValues::set(&values);
-    let mut server = Server::new(faults);
-    let mut out = Outcome::default();
-    authorization_server_checks(&mut server, &plain_users(), &accounts(), client, &mut out);
-    (out, server)
-}
-
-fn credited<'a>(o: &'a Outcome, rule: &str) -> Option<&'a crate::Verified> {
-    o.verified.iter().find(|v| v.check_id == rule)
-}
-
-fn found<'a>(o: &'a Outcome, rule: &str) -> Option<&'a Finding> {
-    o.findings.iter().find(|f| f.rule_id == rule)
-}
+use std::collections::BTreeSet;
 
 #[test]
 fn a_server_that_compares_redirect_addresses_whole_and_refuses_a_used_code_is_credited_in_part() {
@@ -595,14 +282,31 @@ fn a_secret_the_seed_did_not_print_is_said_so() {
 
 #[test]
 fn every_code_and_token_the_server_gave_is_listed_for_blanking() {
-    let (o, server) = run_with_client(Faults::default(), Some(&client()));
+    // A public client, so the refresh tokens' check runs too and its tokens are counted.
+    let (o, server) = run_with_client(
+        Faults {
+            public: true,
+            ..Default::default()
+        },
+        Some(&public_client()),
+    );
     let issued: BTreeSet<&str> = o.issued.iter().map(String::as_str).collect();
-    // Two codes (the first, and the one asked after the changed addresses) and the first exchange's two tokens.
-    assert_eq!(issued.len(), 4, "{issued:?}");
+    // The setup: every check got as far as its codes and tokens, refresh tokens among them: five codes (the first, the
+    // one after the changed addresses, the wrong verifier's, the one after it, and the refresh check's) and eight tokens.
+    assert!(
+        server.codes.len() >= 5 && server.active.len() >= 8,
+        "{:?}",
+        o.not_assessed
+    );
     for code in server.codes.keys() {
         assert!(issued.contains(code.as_str()), "{code} not listed");
     }
     for token in server.active.keys() {
         assert!(issued.contains(token.as_str()), "{token} not listed");
     }
+    assert_eq!(
+        issued.len(),
+        server.codes.len() + server.active.len(),
+        "{issued:?}"
+    );
 }

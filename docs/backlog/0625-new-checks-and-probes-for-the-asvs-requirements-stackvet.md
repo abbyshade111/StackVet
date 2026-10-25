@@ -94,8 +94,13 @@ for backlog 0507.
    redirect read, the gate after the changed addresses, the second exchange's read, the introspection answer, the
    blanking, the list of what was issued, the refusal of a written-down secret, the note to an app that is no
    authorization server, and the reading of a crash or a limiter's answer as no refusal (ADR-021); each turned its
-   own test red. Left: PKCE and refresh reuse, client authentication and
-   response mode, PAR and sign-out without a hint, then dynamic registration.
+   own test red.
+   The second pull request built 25 October 2026: `oauth_client/pkce.rs` (V10.4.6: a code asked for with no PKCE
+   challenge and with `plain`, and one exchanged with the wrong verifier) and `oauth_client/refresh.rs` (V10.4.5, for a
+   public client: a used refresh token sent again, and the newer one after it). The fake server moved to
+   `oauth_client_fake.rs`; ten tests in `oauth_client_pkce_tests.rs`. Broken on purpose, one at a time, each of the
+   eight guards turned its own test red. Left: client authentication and response mode, PAR and sign-out without a
+   hint, then dynamic registration.
    **Part status:** claimed by claude/0625-7, 24 October 2026
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
    Built 24 October 2026 (ADR-150): a `codeql-cpp` adapter in `data/adapters.json`, turned on with the other CodeQL
