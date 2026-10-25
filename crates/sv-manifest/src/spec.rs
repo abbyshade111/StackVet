@@ -38,6 +38,9 @@ health = "/"              # a path that returns 200 once the app is up
 # graphql = "/graphql"      # where it answers GraphQL, if it does
 # websocket = "/ws"         # where it accepts WebSocket connections, if it does
 # websockets = ["/ws", "/chat"]  # several, in place of `websocket`; one named is checked in part only
+# signaling = { path = "/ws", message = '{"type":"ping"}', answer = "pong" }   # only for video or voice calls
+#   (WebRTC): the signaling WebSocket, a message it answers, and a word in the answer; malformed messages are sent
+#   there, and the normal one must still be answered after them (V17.3.2)
 # env = { DATABASE_PATH = "/tmp/app.db" }  # set only in the copy of the app `sv` runs: see below
 #   `env`: the app's folder is read-only while `sv` runs it, and its container can write only /tmp.
 #   Keep where the app writes its data configurable by an environment variable, with the default

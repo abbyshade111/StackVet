@@ -298,6 +298,8 @@ pub fn anonymous_requests(
         plan.graphql.as_deref(),
         &plan.websockets,
     ));
+    // The signaling WebSocket's messages (V17.3.2, ADR-149).
+    requests.extend(sv_check::signaling::requests(plan.signaling.as_ref()));
     requests.extend(sv_check::running::requests(
         &admin_pages(plan),
         private_files,
@@ -328,6 +330,11 @@ pub fn running_app_evidence(
         probes::evaluate_api(&outcome.probe_responses, plan.public_api, &plan.websockets);
     findings.extend(api_findings);
     verified.extend(api_verified);
+    let (signaling_findings, signaling_verified, signaling_not_assessed) =
+        sv_check::signaling::evaluate(&outcome.probe_responses, plan.signaling.as_ref(), &verified);
+    findings.extend(signaling_findings);
+    verified.extend(signaling_verified);
+    not_assessed.extend(signaling_not_assessed);
     not_assessed.extend(api_not_assessed);
     let more = sv_check::running::evaluate(
         &outcome.probe_responses,

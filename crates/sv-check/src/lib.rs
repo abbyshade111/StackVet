@@ -82,6 +82,7 @@ pub mod text;
 // Built always, not only for this crate's tests, so the tests of `sv-run` and `sv-cli` write their
 // programs the same way (backlog 0501); nothing in `sv` calls it.
 pub mod outbound_rules;
+pub mod signaling;
 #[doc(hidden)]
 pub mod test_support;
 pub mod tool_files;

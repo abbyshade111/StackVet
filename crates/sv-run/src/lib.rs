@@ -583,6 +583,8 @@ pub struct RunPlan {
     pub graphql: Option<String>,
     /// Every WebSocket path, from `websockets` or the one `websocket` (ADR-118).
     pub websockets: Vec<String>,
+    /// The signaling WebSocket and its normal message, when stackvet.toml names them (V17.3.2, ADR-149).
+    pub signaling: Option<sv_manifest::Signaling>,
     /// Whether other programs are meant to use this app's API, as stackvet.toml claims it.
     /// Introspection is allowed for an API meant for others and not otherwise (V4.3.2), so the
     /// answer to that question depends on this one, and silence here leaves it unanswered.
@@ -671,6 +673,7 @@ impl RunPlan {
             fetch: run.fetch.clone(),
             graphql: run.graphql.clone(),
             websockets: run.websocket_paths(),
+            signaling: run.signaling.clone(),
             public_api: manifest.capabilities.public_api,
             slow: false,
             on_step: None,

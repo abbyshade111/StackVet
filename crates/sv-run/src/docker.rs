@@ -2151,6 +2151,9 @@ mod gateway_tests;
 mod at_once_tests;
 
 #[cfg(test)]
+mod websocket_frames_tests;
+
+#[cfg(test)]
 mod backend_tests;
 
 #[cfg(test)]

@@ -186,6 +186,24 @@ pub(super) fn request_bytes(
         .headers
         .iter()
         .any(|(name, _)| name.eq_ignore_ascii_case("host"));
+    // A WebSocket handshake that carries messages is written as a client writes one: HTTP/1.1, its own `Connection`,
+    // and the frames straight after the headers, with no `Content-Length` (ADR-149). Every other request is as before.
+    let upgrade = request.headers.iter().any(|(name, value)| {
+        name.eq_ignore_ascii_case("upgrade") && value.eq_ignore_ascii_case("websocket")
+    });
+    if upgrade && let Some(frames) = &request.body {
+        let mut raw = format!("{} {} HTTP/1.1\r\n", request.method, request.path);
+        if !own_host {
+            raw.push_str(&format!("Host: {host}\r\n"));
+        }
+        for (name, value) in &request.headers {
+            raw.push_str(&format!("{name}: {value}\r\n"));
+        }
+        let mut raw = raw.into_bytes();
+        raw.extend_from_slice(b"\r\n");
+        raw.extend_from_slice(frames);
+        return Some(raw);
+    }
     let mut raw = if own_host {
         format!(
             "{} {} HTTP/1.0\r\nConnection: close\r\n",

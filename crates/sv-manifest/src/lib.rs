@@ -268,6 +268,11 @@ pub struct RunSection {
     /// beside it.
     #[serde(default)]
     pub websockets: Vec<String>,
+    /// The app's WebRTC signaling WebSocket, a message it answers when all is well, and a word its answer holds
+    /// (V17.3.2; backlog 0625, part 4; ADR-149). With it, malformed messages are sent there, and the normal one must
+    /// still be answered after them. Left out, V17.3.2 is not asked.
+    #[serde(default)]
+    pub signaling: Option<Signaling>,
     /// How the app signs people in through another service ("Sign in with Google"), so the run
     /// can point it at a test provider of `sv`'s own and see what it accepts.
     #[serde(default)]
@@ -480,6 +485,15 @@ pub struct OidcSection {
     /// refused. Left out, V10.3.2 is not asked.
     #[serde(default)]
     pub scoped: Option<ScopedRoute>,
+}
+
+/// `signaling` under `[stack.run]`: the signaling WebSocket's path, a normal message, and a word its answer holds.
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct Signaling {
+    pub path: String,
+    pub message: String,
+    pub answer: String,
 }
 
 /// `scoped` under `[stack.run.oidc]`: a route, and the scope an access token needs to be taken there.
