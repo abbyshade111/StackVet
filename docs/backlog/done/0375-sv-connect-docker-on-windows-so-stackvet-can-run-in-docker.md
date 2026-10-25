@@ -1,6 +1,6 @@
 # `sv connect --docker` on Windows, so StackVet can run in Docker there too
 
-**Status:** claimed by claude/0375, 25 October 2026
+**Status:** done, 25 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -52,4 +52,15 @@ wire (`crates/sv-cli/src/mcp/host_paths.rs`). Tested here with Windows paths giv
 
 What would show it working: steps 4 and 5 as said. Anything else, the exact message is what to bring back. This item
 is done once the try works.
+
+**Tried by the owner on Windows, 25 October 2026, and done.** On the owner's Windows 11 computer, with Docker Desktop
+4.96.3 running Linux containers through WSL 2, the trial build of `sv.exe` (the Release workflow run by hand on `main`,
+run 40239755347) and the published image, both commit `b12e7558`. `sv connect claude --docker
+"C:\Users\...\DockerDesktop\resources\bin\docker.exe"` in `examples\flask-booking` wrote `-v
+C:\sv-try\...\flask-booking:/c/sv-try/.../flask-booking`, `-e SV_HOST_FOLDER=C:\sv-try\...\flask-booking`, and `--root
+/c/sv-try/.../flask-booking`. In Claude Code, `stackvet_status` named its root `C:\sv-try\...\flask-booking`, and a report
+gave back all fourteen of its files as `C:\sv-try\...\stackvet-report\...` paths; `report.html` opened. Before the try,
+Docker Desktop on that computer would not start: the Hyper-V Host Compute Service (`vmcompute`) was missing although
+the Virtual Machine Platform feature read Enabled, and `DISM /Online /Cleanup-Image /RestoreHealth`, with the feature
+turned off and on again, put it back. That was the computer's, not StackVet's.
 
