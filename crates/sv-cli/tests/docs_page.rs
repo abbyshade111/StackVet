@@ -151,18 +151,24 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
         index.contains(&counts) && index.contains("backlog-board.html"),
         "the index links the board"
     );
-    // Every item once: a table row per item and four header rows, so an item filed under two headings, or
-    // under none, is caught by the count alone. Each heading holds an item today (the on-hold folder too, since
-    // backlog 0650), so each has its table.
+    // Every item once: a table row per item and a header row per table, so an item filed under two headings, or
+    // under none, is caught by the count alone. A heading with no item has no table and says "None." (until 25
+    // October 2026 this counted four header rows, and failed the day no item was claimed).
     let total: usize = counts
         .split(' ')
         .next()
         .unwrap()
         .parse()
         .expect("the summary starts with the count");
+    let tables = board.matches("<table>").count();
+    assert_eq!(
+        tables + board.matches("<p>None.</p>").count(),
+        4,
+        "each of the four headings has a table or says None."
+    );
     assert_eq!(
         board.matches("<tr>").count(),
-        total + 4,
+        total + tables,
         "one row per item, plus a header row per table"
     );
     // Four headings in this order, and each item under the right one: the first open item the tool lists is
@@ -182,7 +188,8 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
         working < coming && coming < holding && holding < done,
         "the headings are in order"
     );
-    let first_title = |flag: &str| -> String {
+    // The first item of a kind, or `None` when there is none, which the list says with its count line alone.
+    let first_title = |flag: &str| -> Option<String> {
         let list = Command::new("python3")
             .arg("-I")
             .arg(repo().join("tools/backlog.py"))
@@ -194,24 +201,39 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
             .next()
             .unwrap_or_default()
             .to_owned();
+        if !line
+            .split_whitespace()
+            .next()
+            .is_some_and(|n| n.len() == 4 && n.bytes().all(|b| b.is_ascii_digit()))
+        {
+            return None;
+        }
         // The list prints the number, the kind, the parts, the sessions, then the title, cut at 80 characters.
-        line.split_whitespace()
-            .skip(1)
-            .collect::<Vec<_>>()
-            .join(" ")
+        Some(
+            line.split_whitespace()
+                .skip(1)
+                .collect::<Vec<_>>()
+                .join(" "),
+        )
     };
     for (flag, from, to) in [
         ("--open", coming, holding),
         ("--claimed", working, coming),
         ("--hold", holding, done),
     ] {
-        let title = first_title(flag);
+        let section = &board[from..to];
+        let Some(title) = first_title(flag) else {
+            assert!(
+                section.contains("<p>None.</p>"),
+                "no {flag} item, and its heading says None."
+            );
+            continue;
+        };
         let word = title
             .rsplit(' ')
             .find(|w| w.len() > 5)
             .unwrap_or(&title)
             .to_owned();
-        let section = &board[from..to];
         assert!(
             section.contains(&word) || section.contains(&title.replace('`', "")),
             "the first {flag} item ({title:?}) is under its heading"
