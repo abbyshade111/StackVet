@@ -1,6 +1,6 @@
 # The path rule reads where a value came from: a path built from a request is a thing to fix, and any other value is listed apart
 
-**Status:** partly done: Rust's safe forms: a name followed back to fixed text, and a join under a constant (ADR-138, Not built)
+**Status:** claimed by claude/0653, 25 October 2026
 
 From the owner's answer of 23 October 2026 to backlog 0647's choices ("A: read the source", and all three test-code fixes); the design entry is `docs/design/0394-the-path-rule-s-false-alarms-and-how-test-code-is-read-23.md`.
 
@@ -24,3 +24,9 @@ worth a look in those languages, still counted. On StackVet's own code the thing
 of materials, backlog 0656), with the same 31 requirements needing attention. Tests:
 `crates/sv-check/src/ast/path_from_request_tests.rs` and `crates/sv-check/src/finding/path_apart_tests.rs`. What remains
 is Rust's safe forms, which matter less now that Rust's other-value path findings are listed apart.
+
+**Claimed 25 October 2026 for what remained:** Rust's safe forms for `ast.file-path-from-value`, as ADR-138 left them
+("Not built"): a path given as a name the same function or file sets only to fixed text, and a join under a constant
+(`Path::new(ROOT).join("data")`, `PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("x")`). Each form found by a test
+first, built only where the rule still reports it today; recorded as a dated Later entry on ADR-138.
+
