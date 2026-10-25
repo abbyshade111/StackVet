@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 148 can be checked, 64 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 23 with no check yet.
+345 requirements: 148 can be checked, 65 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 22 with no check yet.
 
 ### Level 1 (70 requirements, 49 can be checked, 14 can only be found failing)
 
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 14 can be checked, 12 can only be found failing)
+### Level 3 (92 requirements, 14 can be checked, 13 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -571,7 +571,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V11.3.4** Verify that nonces, initialization vectors, and other single-use numbers are not used for more than one encryption key and data-element pair. The method of generation must be appropriate for the algorithm being used. | Can only be found failing | Outside tools: gosec, 1 rule, its rules look for: an encryption IV or nonce fixed in the code, so it is reused (found failing only)<br>Outside tools: semgrep, 2 rules, its rules look for: an AES-GCM encryption nonce fixed in the code, so it is reused for every message; an encryption IV fixed in the code, so it is reused for every message (found failing only) |
 | **V11.3.5** Verify that any combination of an encryption algorithm and a MAC algorithm is operating in encrypt-then-MAC mode. | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.hmac`) |
 | **V11.5.2** Verify that the random number generation mechanism in use is designed to work securely, even under heavy demand. | No check yet | – |
-| **V11.6.2** Verify that approved cryptographic algorithms are used for key exchange (such as Diffie-Hellman) with a focus on ensuring that key exchange mechanisms use secure parameters. This will prevent attacks on the key establishment process which could lead to adversary-in-the-middle attacks or cryptographic breaks. | No check yet | – |
+| **V11.6.2** Verify that approved cryptographic algorithms are used for key exchange (such as Diffie-Hellman) with a focus on ensuring that key exchange mechanisms use secure parameters. This will prevent attacks on the key establishment process which could lead to adversary-in-the-middle attacks or cryptographic breaks. | Can only be found failing | Reads the code: `ast.weak-key-exchange`, looks for: A key exchange the code sets up with parameters no longer safe: a Diffie-Hellman prime under 2048 bits, a small built-in group, or an elliptic curve under 192 bits (found failing only) |
 | **V11.7.1** Verify that full memory encryption is in use that protects sensitive data while it is in use, preventing access by unauthorized users or processes. | The owner answers | Asked of the owner: a design question |
 | **V11.7.2** Verify that data minimization ensures the minimal amount of data is exposed during processing, and ensure that data is encrypted immediately after use or as soon as feasible. | The owner answers | Asked of the owner: a design question |
 
