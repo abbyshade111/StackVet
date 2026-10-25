@@ -1,0 +1,36 @@
+# The Rust files and functions long enough to split, listed each week in this run's summary (backlog 0662; ADR-152).
+#
+# Asked for by the owner on 24 October 2026, when the hand-made list of backlog 0324 was marked done: "there should be
+# a new weekly check for long files to split moving forward". It runs `tools/long_files.py`, which lists every Rust file
+# in `crates/` over 3,000 lines and every function over 150, largest first, with test code apart; the two numbers are
+# kept in the script, which its test reads too.
+#
+# It only reports. It never fails, writes nothing to the repository (read-only permissions, no issue, no commit), and
+# files no backlog item: a file on the list is work a session takes the normal way. The owner chose, on 25 October 2026,
+# that the list goes in the run's summary alone ("Run summary only").
+#
+# Mondays at 09:00 UTC, after the CodeQL, audit, and fuzz runs, and by hand from the Actions tab. Every step is pinned
+# to an exact commit fingerprint, as in rust.yml.
+
+name: Long files
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Mondays, 09:00 UTC, after the fuzz run at 08:00.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: List the long files and functions
+        # Python 3 comes with the runner; the script needs nothing else. Its list goes to this run's summary.
+        run: python3 -I tools/long_files.py
