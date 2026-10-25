@@ -45,7 +45,7 @@ for backlog 0507.
    **Part status:** open
 5. **Access tokens with too little scope, and for another person with the same email** (V10.3.2, V10.3.3, L2): probe,
    from the stand-in provider. Medium.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-5, 24 October 2026
 6. **Authorization-server metadata and settings** (V10.4.16, V10.6.1; V10.4.3, V10.4.8): one read of the app's own
    `/.well-known` documents, and a settings check for django-oauth-toolkit and node-oidc-provider. Medium.
    The published details built 24 October 2026 (ADR-147): two read-only requests to the app's own copy,
