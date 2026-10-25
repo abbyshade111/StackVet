@@ -197,7 +197,7 @@ source files, and in two tests:
 | [ADR-148](ADR-148.md) | The test provider mints access tokens for another person and with less scope, and the app's API is asked about both (accepted, 24 October 2026) |
 | [ADR-149](ADR-149.md) | Malformed messages are sent to the app's signaling WebSocket, and a normal one after them must still be answered (proposed, 24 October 2026) |
 | [ADR-150](ADR-150.md) | CodeQL's C/C++ suite reads an app's C and C++ code without building it, for integer overflows (V1.4.2) (accepted, 24 October 2026) |
-| [ADR-151](ADR-151.md) | An authorization server is asked, through a test client the owner declares, whether it holds to what OAuth asks of it (proposed, 24 October 2026) |
+| [ADR-151](ADR-151.md) | An authorization server is asked, through a test client the owner declares, whether it holds to what OAuth asks of it (accepted, 25 October 2026) |
 
 ## Names in the records
 

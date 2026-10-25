@@ -82,12 +82,23 @@ pub(super) struct Faults {
     pub(super) crashes_unpushed: bool,
     /// Refuses even a pushed request's `request_uri` at the authorization address.
     pub(super) refuses_pushed_too: bool,
+    /// Publishes a registration address and registers any client sent to it (RFC 7591).
+    pub(super) registers: bool,
+    /// Publishes a registration address that takes registrations only with an initial access token.
+    pub(super) registration_needs_token: bool,
+    /// Shows a consent page to a client registered at the registration address.
+    pub(super) consent_for_registered: bool,
 }
 
 pub(super) const REGISTERED: &str = "http://localhost/callback";
 pub(super) const CLIENT: &str = "sv-test";
 
 /// The client's secret, made at run time so no file holds one.
+/// The token to manage a registered client, made at run time.
+pub(super) fn registration_token() -> String {
+    ["reg", "-tok-", "9Pz"].concat()
+}
+
 pub(super) fn secret() -> String {
     ["cl", "ient-", "pw-", "7Qx2"].concat()
 }
@@ -114,6 +125,8 @@ pub(super) struct Server {
     logout_seen: bool,
     /// Each pushed request's parameters, by its `request_uri`.
     pushed: BTreeMap<String, BTreeMap<String, String>>,
+    /// The redirect address a client registered at the registration address gave.
+    pub(super) registered_redirect: Option<String>,
     /// A changed redirect address has been asked for.
     pub(super) changed: bool,
 }
@@ -190,6 +203,7 @@ impl Server {
             logged_out: false,
             logout_seen: false,
             pushed: BTreeMap::new(),
+            registered_redirect: None,
             given: 0,
             sent: Vec::new(),
             changed: false,
@@ -197,8 +211,9 @@ impl Server {
     }
 
     fn takes(&self, redirect: &str) -> bool {
-        redirect == REGISTERED
-            || (self.faults.prefix_match && redirect.starts_with(REGISTERED))
+        let registered = self.registered_redirect.as_deref().unwrap_or(REGISTERED);
+        redirect == registered
+            || (self.faults.prefix_match && redirect.starts_with(registered))
             || (self.faults.host_start_match && redirect.starts_with("http://localhost"))
     }
 
@@ -246,7 +261,9 @@ impl Server {
             }
             return answer(&request.id, 400, &[], "invalid redirect_uri");
         }
-        if self.faults.consent {
+        if self.faults.consent
+            || (self.faults.consent_for_registered && self.registered_redirect.is_some())
+        {
             return answer(
                 &request.id,
                 200,
@@ -413,6 +430,27 @@ impl Server {
         )
     }
 
+    /// RFC 7591: the client's redirect address kept, and the one client this server knows given back to it.
+    fn register(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
+        if self.faults.registration_needs_token {
+            return answer(&request.id, 401, &[], r#"{"error":"invalid_token"}"#);
+        }
+        let sent: serde_json::Value = serde_json::from_slice(request.body.as_deref()?).ok()?;
+        let redirect = sent.get("redirect_uris")?.get(0)?.as_str()?.to_owned();
+        self.registered_redirect = Some(redirect);
+        answer(
+            &request.id,
+            201,
+            &[],
+            &serde_json::json!({
+                "client_id": CLIENT,
+                "client_secret": secret(),
+                "registration_access_token": registration_token(),
+            })
+            .to_string(),
+        )
+    }
+
     /// RFC 9126: the request's parameters kept, and a `request_uri` for them given back.
     fn push(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
         let basic = format!("Basic {}", base64_of(&format!("{CLIENT}:{}", secret())));
@@ -515,6 +553,10 @@ impl Http for Server {
                         r#","pushed_authorization_request_endpoint":"http://app:8000/o/par""#,
                     );
                 }
+                if self.faults.registers || self.faults.registration_needs_token {
+                    introspection
+                        .push_str(r#","registration_endpoint":"http://app:8000/o/register""#);
+                }
                 if !self.faults.no_end_session {
                     introspection.push_str(r#","end_session_endpoint":"http://app:8000/o/logout""#);
                 }
@@ -532,6 +574,7 @@ impl Http for Server {
             ("POST", "/o/introspect") => self.introspect(request),
             ("POST", "/o/par") => self.push(request),
             ("GET", "/o/logout") => self.logout(request),
+            ("POST", "/o/register") => self.register(request),
             _ => answer(&request.id, 404, &[], ""),
         }
     }
