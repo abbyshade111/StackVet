@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: six parts remain: the fourth is held at the owner's word, the seventh waits on the owner's word on its test client, and the ninth to the twelfth are Phase E, level 3 only, which waits on the owner's word on whether they are worth building now
+**Status:** partly done: six parts remain: the seventh is under way (ADR-151), then the twelfth; the fourth is held at the owner's word, and the ninth, tenth, and eleventh wait at the owner's word (Phase E, part 12 only)
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -86,7 +86,7 @@ for backlog 0507.
 7. **Authorization-server probes with an owner-declared test client** (V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10,
    V10.4.12, V10.4.13, V10.6.2): redirect address, code reuse, PKCE, refresh reuse, client authentication, response
    mode, PAR, sign-out without a hint. Large.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-7, 24 October 2026
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
    Built 24 October 2026 (ADR-150): a `codeql-cpp` adapter in `data/adapters.json`, turned on with the other CodeQL
    adapters. Its database is made with `--build-mode=none`, so none of the app's build scripts run, and the bundle's
@@ -144,4 +144,7 @@ pull request at a time. In this order:
 About thirty build pull requests in all. **The owner's word on the eighth part, 24 October 2026:** "I approve of
 fetching CodeQL's C/C++ pack, that's fine." That fetch is a change to what `sv` connects to, so its record (ADR-111,
 whose exception is Semgrep fetching its rules, and `docs/ARCHITECTURE.md`'s fence) is written with the part's claim,
-quoting these words. The owner asked for more about the seventh part's test client before deciding on it.
+quoting these words. The owner asked for more about the seventh part's test client before deciding on it. **The owner's word, 24 October 2026, when Phase D was done:** on the seventh part's test client, "Yes, build it"
+(ADR-151, proposed with its claim, five pull requests in place of four, the last for dynamic registration); on Phase E,
+"Part 12 only", so the twelfth part's static rules are built after the seventh, and the ninth, tenth, and eleventh
+wait.
