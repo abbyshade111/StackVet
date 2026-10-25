@@ -1,6 +1,6 @@
 # `sv connect --docker` on Windows, so StackVet can run in Docker there too
 
-**Status:** on hold: a Windows computer to try it on, and the owner's word (ADR-108)
+**Status:** claimed by claude/0375, 25 October 2026
 
 **Was queued on the coordination board** (backlog 0273) until the board was removed on 20 October 2026 (ADR-061, Later); it is now taken the normal way, by a claim.
 
@@ -25,3 +25,10 @@ GitHub's Windows runners have Windows containers alone. The `--run` checks are a
 app's containers themselves, already give Docker the short `C:\` form of a path, and are untried on Windows by hand.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): still nothing built (`crates/sv-cli/src/connect.rs` refuses a `--docker` path that does not start with `/`). It waits on the owner's word to take it up (ADR-108, Later, 12 October 2026), and on a Windows computer with Docker Desktop to try it.
+
+**Reopened at the owner's word, 25 October 2026:** "reopen 0375 to fix the Windows docker issue(s)". Asked how to try
+it, since GitHub's Windows runners have Windows containers alone, the owner chose "Build, you try it": built and
+unit-tested here, with a short guide for the owner to try it on Windows, and this item open until that try confirms
+it. Asked what it covers, the owner chose "connect --docker only": `sv report --run` on Windows is not part of it.
+ADR-153, proposed with this claim, says how.
+
