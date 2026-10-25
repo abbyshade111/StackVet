@@ -53,7 +53,7 @@ What each kind of check needs before it can run:
 
 | Framework | Requirements | Can settle | Can be credited | Supporting only | The owner answers | No check yet |
 |---|---|---|---|---|---|---|
-| OWASP ASVS 5.0 | 345 | 215 (62%) | 148 (43%) | 11 | 99 | 20 |
+| OWASP ASVS 5.0 | 345 | 216 (63%) | 148 (43%) | 11 | 99 | 19 |
 | OWASP AISVS 1.0 | 191 | 46 (24%) | 27 (14%) | 0 | 16 | 129 |
 | AISVS Appendix C | 68 | 3 (4%) | 2 (3%) | 0 | 3 | 62 |
 | Secure by Design checklist 0.5.0 | 36 | 0 (0%) | 0 (0%) | 12 | 24 | 0 |
@@ -66,13 +66,13 @@ A requirement reached by more than one kind of check is counted under each.
 |---|---|---|---|---|---|---|---|---|---|---|
 | L1 | 70 | 63 | 49 | 19 | 1 | 6 | 43 | 20 | 13 | 3 |
 | L2 | 183 | 123 | 85 | 35 | 0 | 23 | 62 | 25 | 23 | 2 |
-| L3 | 92 | 29 | 14 | 8 | 0 | 9 | 4 | 6 | 3 | 3 |
+| L3 | 92 | 30 | 14 | 9 | 0 | 9 | 4 | 6 | 3 | 3 |
 
-67 of the 215 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
+68 of the 216 ASVS requirements that can be settled can only ever be marked *needs attention*: a check can show the control missing, and finding nothing does not show it present, so a clean run credits none of them. They are counted under *Can settle* and not under *Can be credited*, and the kinds of check above count every requirement a check can settle either way.
 
 77 of the 148 ASVS requirements that can be credited can only ever be *checked in part*: every check that credits them tries part of what they ask, so the most a clean run gives them is *checked in part*, never *checked*.
 
-With nothing beyond plain `sv check`, 62 ASVS requirements can be settled. 27 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 6 only CodeQL reaches (V1.2.2, V1.2.9, V1.4.2, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
+With nothing beyond plain `sv check`, 63 ASVS requirements can be settled. 27 can be settled only by an outside tool, almost all by semgrep and CodeQL, and only for the languages their rules are written for. Of those, 6 only CodeQL reaches (V1.2.2, V1.2.9, V1.4.2, V15.3.5, V15.3.6, V16.4.1), and CodeQL runs only when stackvet.toml turns it on (`[tools] codeql = true`), for a use its license allows; without it, they stay not verified.
 
 ## AISVS 1.0 by level
 
@@ -96,7 +96,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 |---|---|---|---|---|---|---|
 | V1 Encoding and Sanitization | 30 | 23 | 17 | 0 | 6 | 1 |
 | V2 Validation and Business Logic | 13 | 4 | 3 | 2 | 6 | 1 |
-| V3 Web Frontend Security | 31 | 24 | 20 | 0 | 4 | 3 |
+| V3 Web Frontend Security | 31 | 25 | 20 | 0 | 4 | 2 |
 | V4 API and Web Service | 16 | 10 | 5 | 0 | 5 | 1 |
 | V5 File Handling | 13 | 8 | 8 | 1 | 2 | 2 |
 | V6 Authentication | 47 | 28 | 16 | 2 | 13 | 4 |
@@ -114,7 +114,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 
 ## ASVS 5.0 requirement by requirement
 
-### Settled by reading the code (62)
+### Settled by reading the code (63)
 
 | Requirement | Level | Checks |
 |---|---|---|
@@ -127,6 +127,7 @@ Every rule a pack loads reads files `sv` hands semgrep: the app's code files, te
 | V1.3.6 | L2 | Reads the code: `ast.fetch-address-from-request`; The running app: `probe.fetch-goes-anywhere`; Outside tools: `gosec`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.fetch-address-from-request`, `probe.fetch-goes-anywhere`) |
 | V1.3.7 | L2 | Reads the code: `ast.template-built-from-value`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python` (sv only ever as a finding: `ast.template-built-from-value`) |
 | V1.5.2 | L2 | Reads the code: `ast.unsafe-deserialization`; Outside tools: `bandit`, `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` |
+| V3.2.3 | L3 | Reads the code: `ast.dom-clobbering-fallback`, `ast.document-global-stored` (sv only ever as a finding: `ast.document-global-stored`, `ast.dom-clobbering-fallback`) |
 | V3.4.2 | L1 | Reads the code: `ast.cors-any-origin-with-credentials`; The running app: `probe.cors-any-origin`; Outside tools: `semgrep`; Outside tools you turn on: `codeql-javascript` (sv only ever as a finding: `ast.cors-any-origin-with-credentials`) |
 | V3.5.1 | L1 | Reads the code: `ast.csrf-protection-off`; Signed in: `probe.cross-site-request-accepted`, `probe.csrf-token-shared`; Outside tools: `brakeman`, `semgrep`; Outside tools you turn on: `codeql-javascript`, `codeql-python`, `codeql-ruby` (sv only ever as a finding: `ast.csrf-protection-off`, `probe.csrf-token-shared`) |
 | V3.7.1 | L2 | Reads the code: `config.client-tech-unsupported` (sv only ever as a finding: `config.client-tech-unsupported`) |

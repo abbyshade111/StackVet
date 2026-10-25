@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: five parts remain: the twelfth is next; the fourth is held at the owner's word, and the ninth, tenth, and eleventh wait at the owner's word (Phase E, part 12 only)
+**Status:** on hold: the owner's word: on part 4 (held at the owner's word on 24 October 2026, the work on branch claude/0625-4), and on parts 9, 10, and 11 (Phase E, which the owner chose to leave for now, building part 12 only); parts 1, 2, 3, 5, 6, 7, 8, and 12 are done
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -163,7 +163,16 @@ for backlog 0507.
     V6.5.1 and V6.6.2, which allow it below level 3, and 34 tests of a correct app would each have had to expect it.
     Five tests; broken on purpose, the ecosystem compare, the names made plain, the entry read, its line, and the
     hookup each turned a test red.
-    **Part status:** claimed by claude/0625-12, 25 October 2026
+    The fourth built 25 October 2026 (V3.2.3), two rules in `data/ast-rules.json`, each only ever a finding at low
+    confidence: "ast.dom-clobbering-fallback", a property of `window` or `document` the browser does not define, read
+    with a `||` or `??` fallback (`window.config || {}`), the shape DOM clobbering takes over; and
+    "ast.document-global-stored", a property the browser does not define set on `document`, which the requirement's
+    text names ("avoiding storing global variables on the document object"). The browser's own properties, names that
+    begin with a capital (constructors, read to see whether the browser has them), and vendor-prefixed names are left
+    alone. Five tests in `ast/dom_clobbering_tests.rs`, each case read as JavaScript and as TypeScript; broken on
+    purpose, each rule's object names and its list of the browser's own names, and the fallback's operators, each
+    turned a test red.
+    **Part status:** done, 25 October 2026
 
 Already filed elsewhere: V10.5.3 is backlog 0620.
 
