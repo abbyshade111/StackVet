@@ -2172,6 +2172,8 @@ mod oauth_client_auth_tests;
 #[cfg(test)]
 mod oauth_client_fake;
 #[cfg(test)]
+mod oauth_client_par_tests;
+#[cfg(test)]
 mod oauth_client_pkce_tests;
 #[cfg(test)]
 mod oauth_client_tests;

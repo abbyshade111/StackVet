@@ -103,8 +103,12 @@ for backlog 0507.
    The third pull request built 25 October 2026: `oauth_client/client_auth.rs` (V10.4.10, for a confidential client: a
    code exchanged with no client authentication and with the wrong secret) and `oauth_client/response_mode.rs`
    (V10.4.12: a code asked to come back in the fragment and by a posted form). Nine tests in
-   `oauth_client_auth_tests.rs`. Broken on purpose, one at a time, each of the eight guards turned a test red. Left: PAR
-   and sign-out without a hint, then dynamic registration.
+   `oauth_client_auth_tests.rs`. Broken on purpose, one at a time, each of the eight guards turned a test red.
+   The fourth pull request built 25 October 2026: `oauth_client/par.rs` (V10.4.13: a code for a request not pushed
+   first, and a server that takes only pushed ones) and `oauth_client/logout.rs` (V10.6.2: a sign-out with no hint and
+   with a forged one). The note for a first request that gave no code now names all eight requirements, not two. Nine
+   tests in `oauth_client_par_tests.rs`. Broken on purpose, one at a time, each of the eight guards turned a test red,
+   two of them only after tests were added for them. Left: dynamic registration.
    **Part status:** claimed by claude/0625-7, 24 October 2026
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
    Built 24 October 2026 (ADR-150): a `codeql-cpp` adapter in `data/adapters.json`, turned on with the other CodeQL

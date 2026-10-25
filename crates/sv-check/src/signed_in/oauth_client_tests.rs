@@ -41,7 +41,12 @@ fn a_server_that_compares_redirect_addresses_whole_and_refuses_a_used_code_is_cr
         "{}",
         code.scope
     );
-    assert!(o.findings.is_empty(), "{:?}", o.findings);
+    // Only the request not pushed first (V10.4.13), which a server that does not require pushed requests always shows.
+    assert!(
+        o.findings.iter().all(|f| f.requirement_ids == ["V10.4.13"]),
+        "{:?}",
+        o.findings
+    );
 }
 
 #[test]
@@ -214,7 +219,11 @@ fn a_consent_page_concludes_nothing_and_says_how_to_skip_it() {
         o.findings
     );
     let (ids, why) = &o.not_assessed[0];
-    assert_eq!(ids, "V10.4.1, V10.4.2");
+    // The first request's refusal says it for all but V10.4.13, which the server's published details answer.
+    assert_eq!(
+        ids,
+        "V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10, V10.4.12, V10.6.2"
+    );
     assert!(
         why.contains("consent page") && why.contains("skip_authorization=True"),
         "{why}"
@@ -234,7 +243,7 @@ fn without_a_test_client_an_authorization_server_is_told_both_were_unasked() {
         server.sent.iter().map(|r| &r.path).collect::<Vec<_>>()
     );
     let (ids, why) = &o.not_assessed[0];
-    assert_eq!(ids, "V10.4.1, V10.4.2");
+    assert_eq!(ids, ALL);
     assert!(why.contains("[stack.run.oauth-client]"), "{why}");
 }
 
