@@ -249,6 +249,8 @@ RUST_CHECKS = {
     "probe.oauth-code-reused": ("signed-in", ["V10.4.2"]),
     "probe.oauth-pkce-not-required": ("signed-in", ["V10.4.6"]),
     "probe.oauth-refresh-token-replayed": ("signed-in", ["V10.4.5"]),
+    "probe.oauth-client-not-authenticated": ("signed-in", ["V10.4.10"]),
+    "probe.oauth-response-mode-not-held": ("signed-in", ["V10.4.12"]),
     "probe.oidc-id-token-taken-as-access-token": ("signed-in", ["V9.2.2"]),
     "probe.oidc-logout-token-not-checked": ("signed-in", ["V10.5.5"]),
     "probe.sign-out-control-hidden": ("signed-in", ["V7.4.4"]),
@@ -824,7 +826,8 @@ RUST_IN_PART |= {"probe.authorization-server-weak-client-auth", "probe.authoriza
 RUST_IN_PART |= {"config.authorization-code-long-lived", "config.refresh-token-never-expires"}
 # One test client, one person, and a sample of wrong requests asked (ADR-151).
 RUST_IN_PART |= {"probe.oauth-redirect-not-exact", "probe.oauth-code-reused", "probe.oauth-pkce-not-required",
-                 "probe.oauth-refresh-token-replayed"}
+                 "probe.oauth-refresh-token-replayed", "probe.oauth-client-not-authenticated",
+                 "probe.oauth-response-mode-not-held"}
 # Backlog 0430: every other check whose each credit is marked in part where it is made (`.in_part()`, or
 # `.in_part_if` on a condition that always holds for it), each with its reason beside that credit in the code.
 # Until then they were printed as able to mark a requirement *checked*. `--credits` holds this list to the

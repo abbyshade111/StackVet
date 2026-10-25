@@ -50,6 +50,22 @@ pub(super) struct Faults {
     pub(super) crashes_without_pkce: bool,
     /// Answers a used refresh token sent again with a limiter's 429.
     pub(super) limits_refresh_replay: bool,
+    /// Exchanges a confidential client's code with no client authentication.
+    pub(super) takes_no_client_auth: bool,
+    /// Exchanges a confidential client's code with any secret.
+    pub(super) takes_any_secret: bool,
+    /// Answers an exchange with no client authentication with a limiter's 429.
+    pub(super) limits_unauthenticated: bool,
+    /// Refuses every exchange once one has come without the right secret.
+    pub(super) stops_after_unauthenticated: bool,
+    /// Sends the code back in the redirect address's fragment when asked to.
+    pub(super) fragment_mode: bool,
+    /// Posts the code to the redirect address from a page's form when asked to.
+    pub(super) form_post_mode: bool,
+    /// Crashes on an authorization request that names a response mode.
+    pub(super) crashes_on_response_mode: bool,
+    /// Refuses every authorization request once one has named a response mode.
+    pub(super) stops_after_response_mode: bool,
 }
 
 pub(super) const REGISTERED: &str = "http://localhost/callback";
@@ -72,6 +88,10 @@ pub(super) struct Server {
     pub(super) sent: Vec<ProbeRequest>,
     /// A code has come with the wrong verifier.
     wrong_verifier_seen: bool,
+    /// An exchange has come without the right secret.
+    unauthenticated_seen: bool,
+    /// An authorization request has named a response mode.
+    mode_seen: bool,
     /// A changed redirect address has been asked for.
     pub(super) changed: bool,
 }
@@ -143,6 +163,8 @@ impl Server {
             active: BTreeMap::new(),
             refresh: BTreeMap::new(),
             wrong_verifier_seen: false,
+            unauthenticated_seen: false,
+            mode_seen: false,
             given: 0,
             sent: Vec::new(),
             changed: false,
@@ -205,15 +227,39 @@ impl Server {
                 return answer(&request.id, 302, &[("location", &to)], "");
             }
         };
+        let mode = query.get("response_mode").map(String::as_str);
+        if mode.is_some() {
+            self.mode_seen = true;
+            if self.faults.crashes_on_response_mode {
+                return answer(&request.id, 500, &[], "Internal Server Error");
+            }
+        } else if self.faults.stops_after_response_mode && self.mode_seen {
+            return answer(&request.id, 400, &[], "temporarily unavailable");
+        }
         self.given += 1;
         let code = format!("code{}{}", self.given, "c".repeat(8));
         self.codes.insert(code.clone(), (pkce, false));
-        let to = format!(
-            "{redirect}{}code={code}&state={}",
-            if redirect.contains('?') { '&' } else { '?' },
-            query.get("state")?
-        );
-        answer(&request.id, 302, &[("location", &to)], "")
+        match mode {
+            Some("fragment") if self.faults.fragment_mode => {
+                let to = format!("{redirect}#code={code}&state={state}");
+                answer(&request.id, 302, &[("location", &to)], "")
+            }
+            Some("form_post") if self.faults.form_post_mode => answer(
+                &request.id,
+                200,
+                &[],
+                &format!(
+                    r#"<form method="post" action="{redirect}"><input type="hidden" name="code" value="{code}"><input type="hidden" name="state" value="{state}"></form>"#
+                ),
+            ),
+            _ => {
+                let to = format!(
+                    "{redirect}{}code={code}&state={state}",
+                    if redirect.contains('?') { '&' } else { '?' },
+                );
+                answer(&request.id, 302, &[("location", &to)], "")
+            }
+        }
     }
 
     fn exchange(&mut self, request: &ProbeRequest) -> Option<ProbeResponse> {
@@ -225,8 +271,18 @@ impl Server {
         // A public client sends no secret; a confidential one must send the right one.
         match header(request, "authorization") {
             Some(sent) if sent == basic => {}
-            None if self.faults.public => {}
-            _ => return answer(&request.id, 401, &[], r#"{"error":"invalid_client"}"#),
+            Some(_) if self.faults.takes_any_secret => {}
+            None if self.faults.public || self.faults.takes_no_client_auth => {}
+            None if self.faults.limits_unauthenticated => {
+                return answer(&request.id, 429, &[("retry-after", "1")], "");
+            }
+            _ => {
+                self.unauthenticated_seen = true;
+                return answer(&request.id, 401, &[], r#"{"error":"invalid_client"}"#);
+            }
+        }
+        if self.faults.stops_after_unauthenticated && self.unauthenticated_seen {
+            return answer(&request.id, 400, &[], r#"{"error":"invalid_grant"}"#);
         }
         let form = params(std::str::from_utf8(request.body.as_deref()?).ok()?);
         if form.get("grant_type").map(String::as_str) == Some("refresh_token") {

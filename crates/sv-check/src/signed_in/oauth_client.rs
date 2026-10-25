@@ -3,8 +3,9 @@
 //!
 //! An app other apps sign their users in through is asked what it does when a client sends what it should refuse: a
 //! redirect address that is not the registered one (V10.4.1), a sign-in code sent a second time (V10.4.2), a code asked
-//! for without PKCE or with its `plain` method, and exchanged with the wrong verifier (V10.4.6), and a refresh token
-//! used twice (V10.4.5). The first test user is signed in, and the client is one the seed registered in the copy of the
+//! for without PKCE or with its `plain` method, and exchanged with the wrong verifier (V10.4.6), a refresh token used
+//! twice (V10.4.5), a code exchanged without the client's secret (V10.4.10), and a code asked to come back another way
+//! (V10.4.12). The first test user is signed in, and the client is one the seed registered in the copy of the
 //! app the run started, set to skip the consent page. Each question is asked only once the normal case is shown
 //! working: the registered address answered with a code, and a code exchanged for a token. A refusal is credited in
 //! part, since one client, one person, and a sample of wrong requests are asked.
@@ -14,8 +15,10 @@ use sha2::{Digest, Sha256};
 use sv_manifest::OauthClientSection;
 
 // Seen by the signed-in suite's tests, which read their rules.
+pub(super) mod client_auth;
 pub(super) mod pkce;
 pub(super) mod refresh;
+pub(super) mod response_mode;
 
 pub(super) const REDIRECT_NOT_EXACT: Rule = Rule {
     rule_id: "probe.oauth-redirect-not-exact",
@@ -162,6 +165,8 @@ pub(super) fn authorization_server_checks(
     // Each with codes of its own, after the reused code, whose refusal may have revoked what it gave.
     pkce::pkce_check(http, &ask, secret.as_deref(), out);
     refresh::refresh_check(http, &ask, secret.as_deref(), out);
+    client_auth::client_auth_check(http, &ask, secret.as_deref(), out);
+    response_mode::response_mode_check(http, &ask, out);
 }
 
 /// Whether the entry's secret is a value the seed prints, and nothing else.
@@ -300,6 +305,18 @@ impl Ask<'_> {
         redirect: &str,
         pkce: Pkce,
     ) -> Option<ProbeResponse> {
+        self.authorize_adding(http, id, redirect, pkce, "")
+    }
+
+    /// The authorization request with `extra` added to its query, already encoded (`&response_mode=fragment`).
+    fn authorize_adding(
+        &self,
+        http: &mut dyn Http,
+        id: &str,
+        redirect: &str,
+        pkce: Pkce,
+        extra: &str,
+    ) -> Option<ProbeResponse> {
         let scope = self.client.scope.as_deref().unwrap_or("openid");
         let challenge = match pkce {
             Pkce::S256 => format!(
@@ -313,7 +330,7 @@ impl Ask<'_> {
             Pkce::Left => String::new(),
         };
         let path = format!(
-            "{}{}response_type=code&client_id={}&redirect_uri={}&scope={}&state={id}{challenge}",
+            "{}{}response_type=code&client_id={}&redirect_uri={}&scope={}&state={id}{challenge}{extra}",
             self.server.authorize,
             if self.server.authorize.contains('?') {
                 '&'

@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 144 can be checked, 64 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 27 with no check yet.
+345 requirements: 146 can be checked, 64 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 25 with no check yet.
 
 ### Level 1 (70 requirements, 49 can be checked, 14 can only be found failing)
 
@@ -190,7 +190,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V15.2.1** Verify that the application only contains components which have not breached the documented update and remediation time frames. | Can be checked | Known vulnerabilities: `advisories`, looks for: Every package the app ships, compared with a local copy of the OSV database of known vulnerabilities<br>Outside tools: brakeman, 2 rules, its rules look for: an end-of-life Rails version: a component past its update and remediation time frames; an end-of-life Ruby version: a component past its update and remediation time frames |
 | **V15.3.1** Verify that the application only returns the required subset of fields from a data object. For example, it should not return an entire data object, as some individual fields should not be accessible to users. | Can only be found failing | Signed in: `probe.record-returns-secret-fields`, if it fails: A record handed back to the browser carries fields nobody outside the server should ever see. Whatever is in them has already left. (found failing only) |
 
-### Level 2 (183 requirements, 83 can be checked, 38 can only be found failing)
+### Level 2 (183 requirements, 84 can be checked, 38 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -343,7 +343,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V10.4.7** Verify that if the authorization server supports unauthenticated dynamic client registration, it mitigates the risk of malicious client applications. It must validate client metadata such as any registered URIs, ensure the user's consent, and warn the user before processing an authorization request with an untrusted client application. | The owner answers | Asked of the owner: a design question |
 | **V10.4.8** Verify that refresh tokens have an absolute expiration, including if sliding refresh token expiration is applied. | Can be checked | Reads the code: `config.refresh-token-never-expires`, looks for: django-oauth-toolkit's `REFRESH_TOKEN_EXPIRE_SECONDS` set, with rotation off, or node-oidc-provider's default rotation, which stops once a refresh token has lived a year; a setting, not the server's behavior (only ever in part) |
 | **V10.4.9** Verify that refresh tokens and reference access tokens can be revoked by an authorized user using the authorization server user interface, to mitigate the risk of malicious clients or stolen tokens. | The owner answers | Asked of the owner: a design question |
-| **V10.4.10** Verify that confidential client is authenticated for client-to-authorized server backchannel requests such as token requests, pushed authorization requests (PAR), and token revocation requests. | No check yet | – |
+| **V10.4.10** Verify that confidential client is authenticated for client-to-authorized server backchannel requests such as token requests, pushed authorization requests (PAR), and token revocation requests. | Can be checked | Signed in: `probe.oauth-client-not-authenticated`, if it fails: Whoever has a sign-in code meant for the app, from a log or a browser's history, can exchange it for tokens without the app's secret, so the secret protects nothing. (only ever in part) |
 | **V10.4.11** Verify that the authorization server configuration only assigns the required scopes to the OAuth client. | The owner answers | Asked of the owner: a check by hand |
 | **V10.5.1** Verify that the client (as the relying party) mitigates ID Token replay attacks. For example, by ensuring that the 'nonce' claim in the ID Token matches the 'nonce' value sent in the authentication request to the OpenID Provider (in OAuth2 refereed to as the authorization request sent to the authorization server). | Can be checked | Signed in: `probe.oidc-nonce-not-checked`, if it fails: An ID token captured from one sign-in can be played back to sign in again. (only ever in part) |
 | **V10.5.2** Verify that the client uniquely identifies the user from ID Token claims, usually the 'sub' claim, which cannot be reassigned to other users (for the scope of an identity provider). | Can be checked | Reads the code: `ast.account-found-by-provider-email`, looks for: An account is found, or a sign-in recorded, by the email address the sign-in provider sent (found failing only)<br>Signed in: `probe.oidc-user-keyed-on-email`, if it fails: The app decides who someone is by their email address at the sign-in provider rather than by the provider's permanent id for them. An email address can pass from one person to another (a reused work address, a provider that lets people choose it), and whoever holds it next is signed in to the first person's account. (only ever in part) |
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 12 can be checked, 12 can only be found failing)
+### Level 3 (92 requirements, 13 can be checked, 12 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -554,7 +554,7 @@ decided per app, from its `stackvet.toml` and its code.
 |---|---|---|
 | **V10.2.3** Verify that the OAuth client only requests the required scopes (or other authorization parameters) in requests to the authorization server. | The owner answers | Asked of the owner: a design question; `sv` shows where to look (`locate.oauth-scopes`) |
 | **V10.3.5** Verify that the resource server prevents the use of stolen access tokens or replay of access tokens (from unauthorized parties) by requiring sender-constrained access tokens, either Mutual TLS for OAuth 2 or OAuth 2 Demonstration of Proof of Possession (DPoP). | The owner answers | Asked of the owner: a design question |
-| **V10.4.12** Verify that for a given client, the authorization server only allows the 'response_mode' value that this client needs to use. For example, by having the authorization server validate this value against the expected values or by using pushed authorization request (PAR) or JWT-secured Authorization Request (JAR). | No check yet | – |
+| **V10.4.12** Verify that for a given client, the authorization server only allows the 'response_mode' value that this client needs to use. For example, by having the authorization server validate this value against the expected values or by using pushed authorization request (PAR) or JWT-secured Authorization Request (JAR). | Can be checked | Signed in: `probe.oauth-response-mode-not-held`, if it fails: A sign-in link can choose how the code comes back, and a way the app was never built for (a fragment a page's scripts can read, or a form posted from another page) can hand the code to something other than the app. (only ever in part) |
 | **V10.4.13** Verify that grant type 'code' is always used together with pushed authorization requests (PAR). | No check yet | – |
 | **V10.4.14** Verify that the authorization server issues only sender-constrained (Proof-of-Possession) access tokens, either with certificate-bound access tokens using mutual TLS (mTLS) or DPoP-bound access tokens (Demonstration of Proof of Possession). | The owner answers | Asked of the owner: a design question |
 | **V10.4.15** Verify that, for a server-side client (which is not executed on the end-user device), the authorization server ensures that the 'authorization_details' parameter value is from the client backend and that the user has not tampered with it. For example, by requiring the usage of pushed authorization request (PAR) or JWT-secured Authorization Request (JAR). | The owner answers | Asked of the owner: a design question |
