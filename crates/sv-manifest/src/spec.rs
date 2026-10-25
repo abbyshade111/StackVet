@@ -68,6 +68,8 @@ health = "/"              # a path that returns 200 once the app is up
 # private = "/account"      # a page only a signed-in person sees
 # backchannel-logout = "/backchannel-logout"   # only if the provider can end sessions here (OIDC back-channel logout)
 # logout = { path = "/logout", form = { csrf_token = "{csrf}" } }   # signs out of a sign-in through the provider (V7.4.1)
+# scoped = { path = "/api/reports", scope = "reports:read" }   # an API route that takes the provider's access token
+#                           # only with this scope; a token without it is sent there and must be refused (V10.3.2)
 
 # [stack.run.ai]
 # Only if the app has a feature that sends what people type to an AI model. For the run, the app is

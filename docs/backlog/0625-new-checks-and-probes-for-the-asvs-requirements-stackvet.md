@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: eight parts, built in the order the plan below gives; the fifth (tokens with too little scope, or for another person with the same email) is next
+**Status:** partly done: seven parts, built in the order the plan below gives; the seventh (the authorization-server probe set) waits on the owner's word on its test client, so the fourth (malformed signaling messages) is next
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -52,7 +52,13 @@ for backlog 0507.
    part. Three tests in `crates/sv-check/src/oidc/subject_tests.rs`, and the provider's contract test runs the script.
    Broken on purpose: with the control skipped, an app that saved nothing was credited; with the script minting the
    other person under the first one's subject, the contract test went red. V10.3.2 is the next pull request.
-   **Part status:** claimed by claude/0625-5, 24 October 2026
+   V10.3.2 built 24 October 2026 (ADR-148): a new optional entry, `scoped = { path, scope }` under
+   `[stack.run.oidc]`, names a route that takes the provider's access token only with that scope; the provider mints
+   one token with it and one without, and the one without taken there is a finding, refused (with the one with it taken
+   before and after) credited in part. Three tests in `crates/sv-check/src/oidc/scope_tests.rs`, and the provider's
+   contract test checks the scope it grants. Broken on purpose: with the token "without" given the scope after all,
+   the credit test went red; with the script ignoring `scope`, the contract test went red.
+   **Part status:** done, 24 October 2026
 6. **Authorization-server metadata and settings** (V10.4.16, V10.6.1; V10.4.3, V10.4.8): one read of the app's own
    `/.well-known` documents, and a settings check for django-oauth-toolkit and node-oidc-provider. Medium.
    The published details built 24 October 2026 (ADR-147): two read-only requests to the app's own copy,

@@ -337,6 +337,10 @@ fn the_access_tokens_sv_asks_for_are_for_whom_it_assumes() {
     }
     assert_eq!(claims_of(&first)["sub"], "sv-oidc-user");
     assert_eq!(claims_of(&other)["sub"], "sv-oidc-other-person");
+    // The full scope when none is asked for, and the one asked for otherwise (V10.3.2).
+    assert_eq!(claims_of(&first)["scope"], "openid email profile");
+    let narrow = token("aud=self&scope=openid+email");
+    assert_eq!(claims_of(&narrow)["scope"], "openid email");
     // A `who` the provider does not know is refused rather than ignored.
     assert_eq!(mint("aud=self&who=somebody").status, 400);
 }
