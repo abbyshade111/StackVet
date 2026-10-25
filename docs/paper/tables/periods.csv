@@ -1,4 +1,4 @@
 period,name,first_commit,first_et,last_commit,last_et,days,commits,commits_on_main,pull_requests_merged,tests_rust_at_end,tests_typescript_at_end,decision_records_added,backlog_items_done,boundary
 v1,version 1,c85c174a2,2026-09-18 09:32,412092da2,2026-09-26 20:46,8,810,327,192,1076,0,0,0,from the first commit of this history to the tag v1-final
-stackvet,StackVet,278575a07,2026-09-26 21:22,3c7c53449,2026-10-21 14:57,21,6058,1920,1915,4285,0,116,469,"from the merge that holds ""Promote sv to the top of the repository; v1 moves to the v1 branch"" to the build; the rename to StackVet (""StackVet step 3: ..."", ADR-062) is inside it"
-all,both,c85c174a2,2026-09-18 09:32,3c7c53449,2026-10-21 14:57,28,6868,2247,2107,4285,0,116,469,every period
+stackvet,StackVet,278575a07,2026-09-26 21:22,f77d47582,2026-10-25 15:20,25,6494,2083,2078,4542,0,138,518,"from the merge that holds ""Promote sv to the top of the repository; v1 moves to the v1 branch"" to the build; the rename to StackVet (""StackVet step 3: ..."", ADR-062) is inside it"
+all,both,c85c174a2,2026-09-18 09:32,f77d47582,2026-10-25 15:20,32,7304,2410,2270,4542,0,138,518,every period

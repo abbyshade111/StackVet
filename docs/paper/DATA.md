@@ -67,8 +67,8 @@ or added since.
 |---|---|---|---|
 | `faults.csv` | 254 rows (255 faults; a row can hold several, `count`) | 366 | read from each backlog item and merge (below) |
 | `corrections.csv` | 76 | 158 | read the same way |
-| `coordination.csv` | 359 | 899 | claims and merges resolved by hand counted from git; pull requests closed unmerged from GitHub; the other kinds read |
-| `tests_by_day.csv` | 23 days | 12 days | git |
+| `coordination.csv` | 359 | 959 | claims and merges resolved by hand counted from git; pull requests closed unmerged from GitHub; the other kinds read |
+| `tests_by_day.csv` | 23 days | 20 days | git |
 
 - **Read, not counted.** The faults and corrections since were compiled on 15 October 2026 by Claude Code sessions,
   each reading a share of the 576 backlog items, the history of `docs/BACKLOG.md` from the cut-off to 8 October (when
@@ -89,7 +89,7 @@ or added since.
   counted this way, 3 October's 15,115 reads 15,069, so the two are near, not the same.
 - **Coordination since.** A claim is a merge to main, named for a claim, that touched only the backlog or the board; a
   merge resolved by hand is a merge of main into a branch whose combined diff has lines that match neither parent, as
-  `COORDINATION.md` counted them (467 since, against 103 to the cut-off, over 1,431 pull requests merged since).
+  `COORDINATION.md` counted them (485 since, against 103 to the cut-off, over 1,755 pull requests merged since, to 25 October).
 
 **The figures redrawn per period** (`docs/paper/`), each beside the figure of the cut-off, which stays as drawn:
 
@@ -112,7 +112,7 @@ where it is one.
 | Figure | Redrawn from | What the periods after its record hold |
 |---|---|---|
 | `figure-timeline-by-period.html` | `days.csv`, `periods.csv` | everything, from git; the milestones since are not chosen (the owner's) |
-| `figure-security-by-period.html` | `reach_history.csv` (164 versions of `COVERAGE.md` on main's own line, from git; 86 to the cut-off, ending at 163, as the cut-off figure has), `requirements.csv` | everything |
+| `figure-security-by-period.html` | `reach_history.csv` (212 versions of `COVERAGE.md` on main's own line, from git; 86 to the cut-off, ending at 163, as the cut-off figure has), `requirements.csv` | everything |
 | `figure-top10-by-period.html` | `cutoff-records/top10.csv` (92 rows), `to-today/faults.csv` | the ledger's `security` and `fail-open` faults, without a category: none is placed through a CWE |
 | `figure-agentic-by-period.html` | `cutoff-records/agentic.csv` (86 rows) | nothing: no fault since is placed against the agentic list |
 | `figure-decisions-by-period.html` | `cutoff-records/decisions.csv` (36 rows), `decision_records.csv` | the decision records added; who proposed and who chose each is not read |

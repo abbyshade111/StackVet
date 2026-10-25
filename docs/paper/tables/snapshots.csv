@@ -1,3 +1,3 @@
 period,commit,sv_folder,crates,rust_files,rust_lines,data_files,outside_tools,ast_rules,v1_program_files,v1_program_lines
 v1,412092da2,agnostic,7,73,61790,14,6,12,629,98679
-stackvet,3c7c53449,(the top),7,972,290878,31,7,41,0,0
+stackvet,f77d47582,(the top),7,1082,309558,32,8,46,0,0

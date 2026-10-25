@@ -90,6 +90,7 @@ item,title,status,done_date,period_done,source
 0229,"What sv saw of the running app, kept beside the report with credentials removed",done,2026-10-10,stackvet,docs/backlog/done/0229-what-sv-saw-of-the-running-app-kept-beside-the-report-with.md
 0230,"Build ADR-083: history that can show a trend (0226, part 3, item C)",done,2026-10-10,stackvet,docs/backlog/done/0230-build-adr-083-history-that-can-show-a-trend-0226-part-3-item.md
 0231,"Build ADR-084: more in the build-loop record (0226, part 3, item D)",done,2026-10-10,stackvet,docs/backlog/done/0231-build-adr-084-more-in-the-build-loop-record-0226-part-3-item.md
+0232,More samples for the checks that rest on one sample (groups A to H),done,2026-10-21,stackvet,docs/backlog/done/0232-more-samples-for-the-checks-that-rest-on-one-sample-groups-a.md
 0233,"Say exactly which data made a report (observability review, part 3, B)",done,2026-10-10,stackvet,docs/backlog/done/0233-say-exactly-which-data-made-a-report-observability-review.md
 0234,"A crash costs one check, not the run (observability review, part 3, F)",done,2026-10-11,stackvet,docs/backlog/done/0234-a-crash-costs-one-check-not-the-run-observability-review.md
 0235,"sv probe exits 2 when it could not reach the address (observability review, part 3, G)",done,2026-10-10,stackvet,docs/backlog/done/0235-sv-probe-exits-2-when-it-could-not-reach-the-address.md
@@ -112,6 +113,7 @@ item,title,status,done_date,period_done,source
 0254,sv review --help says what it records and where the flow is written down,done,2026-10-12,stackvet,docs/backlog/done/0254-sv-review-help-says-what-it-records-and-where-the-flow-is.md
 0255,Report timestamps say which time zone they are in,done,2026-10-12,stackvet,docs/backlog/done/0255-report-timestamps-say-which-time-zone-they-are-in.md
 0256,"The old-name notice says where the new folder is, once, and does not read as an error",done,2026-10-12,stackvet,docs/backlog/done/0256-the-old-name-notice-says-where-the-new-folder-is-once-and.md
+0257,"Trial the nine draft prompts in docs/prompts/drafts.md, after the git-history check (0258)",done,2026-10-22,stackvet,docs/backlog/done/0257-trial-the-nine-draft-prompts-in-docs-prompts-drafts-md-after.md
 0258,"Find pushes to main that skipped the pull-request rule, from the repository history",done,2026-10-11,stackvet,docs/backlog/done/0258-find-pushes-to-main-that-skipped-the-pull-request-rule-from.md
 0259,"Let a reviewer say a test-file information finding is real, so it counts (sv review step, ADR-091)",done,2026-10-11,stackvet,docs/backlog/done/0259-let-a-reviewer-say-a-test-file-information-finding-is-real.md
 0260,"List test-file information findings in full in the markdown and html reports, not only in the headline (ADR-091)",done,2026-10-11,stackvet,docs/backlog/done/0260-list-test-file-information-findings-in-full-in-the-markdown.md
@@ -178,6 +180,7 @@ item,title,status,done_date,period_done,source
 0321,prompt_trial.py has the one shell=True in tools/,done,2026-10-13,stackvet,docs/backlog/done/0321-prompt-trial-py-has-the-one-shell-true-in-tools.md
 0322,"CLAUDE.md says only pwned_passwords.py needs the network, and cvss4_tables.py does not hold its checkout to the pinned commit",done,2026-10-14,stackvet,docs/backlog/done/0322-claude-md-says-only-pwned-passwords-py-needs-the-network-and.md
 0323,An unused dependency in each of two crates,done,2026-10-13,stackvet,docs/backlog/done/0323-an-unused-dependency-in-each-of-two-crates.md
+0324,"Long functions and long files beyond the recorded split: seven files over 3,000 lines and 68 non-test functions over 150",done,2026-10-24,stackvet,docs/backlog/done/0324-long-functions-and-long-files-beyond-the-recorded-split.md
 0325,Small documentation corrections from the review of 12 October 2026: seven wording and count fixes in one pass,done,2026-10-14,stackvet,docs/backlog/done/0325-small-documentation-corrections-from-the-review-of-12.md
 0326,"The name server's builder carries its own copy of the hardening, against ADR-019's record, and the chokepoint test does not cover it",done,2026-10-13,stackvet,docs/backlog/done/0326-the-name-server-s-builder-carries-its-own-copy-of-the.md
 0327,sv probe reads curl's output with no size cap,done,2026-10-13,stackvet,docs/backlog/done/0327-sv-probe-reads-curl-s-output-with-no-size-cap.md
@@ -225,7 +228,9 @@ item,title,status,done_date,period_done,source
 0370,A setup prompt library for people new to building with AI,done,2026-10-14,stackvet,docs/backlog/done/0370-a-setup-prompt-library-for-people-new-to-building-with-ai.md
 0371,"The report, and the prompt that reads it, lead with the most important things to fix",done,2026-10-12,stackvet,docs/backlog/done/0371-the-report-and-the-prompt-that-reads-it-lead-with-the-most.md
 0372,"Each requirement in the report stated in plain language, with checks named in words",done,2026-10-14,stackvet,docs/backlog/done/0372-each-requirement-in-the-report-stated-in-plain-language-with.md
+0373,"A short walk-through of a setup, as a video or a click-through slide show",done,2026-10-22,stackvet,docs/backlog/done/0373-a-short-walk-through-of-a-setup-as-a-video-or-a-click.md
 0374,Confirm the license of every tool and data source the website credits,done,2026-10-14,stackvet,docs/backlog/done/0374-confirm-the-license-of-every-tool-and-data-source-the.md
+0376,Build stackvet.dev from the settled words and direction C,done,2026-10-22,stackvet,docs/backlog/done/0376-build-stackvet-dev-from-the-settled-words-and-direction-c.md
 0377,One report holds both the running app's findings and the outside tools',done,2026-10-14,stackvet,docs/backlog/done/0377-one-report-holds-both-the-running-app-s-findings-and-the.md
 0378,"Each finding shows what StackVet saw: the request and reply, the lines of code, or the tool's own words",done,2026-10-13,stackvet,docs/backlog/done/0378-each-finding-shows-what-stackvet-saw-the-request-and-reply.md
 0379,"An ""Outside tools"" section: which ran, their versions, what each found, read, and skipped",done,2026-10-12,stackvet,docs/backlog/done/0379-an-outside-tools-section-which-ran-their-versions-what-each.md
@@ -345,6 +350,7 @@ item,title,status,done_date,period_done,source
 0493,"The routes and their guards, as the code says them, shown beside the authorization questions",done,2026-10-15,stackvet,docs/backlog/done/0493-the-routes-and-their-guards-as-the-code-says-them-shown.md
 0494,"A cryptographic inventory drafted from what the code shows, and weak key generation reported",done,2026-10-15,stackvet,docs/backlog/done/0494-a-cryptographic-inventory-drafted-from-what-the-code-shows.md
 0495,"mTLS as a derived condition, and a client certificate accepted without a trust check reported",done,2026-10-15,stackvet,docs/backlog/done/0495-mtls-as-a-derived-condition-and-a-client-certificate.md
+0496,"Outside services the code names and the run saw, beside the communication question, and an undeclared one reported",done,2026-10-22,stackvet,docs/backlog/done/0496-outside-services-the-code-names-and-the-run-saw-beside-the.md
 0497,"The personal-data columns the schema shows, and what a signed-in token carries, beside the classification question",done,2026-10-15,stackvet,docs/backlog/done/0497-the-personal-data-columns-the-schema-shows-and-what-a-signed.md
 0498,"A request value read without its source, reported for V15.3.7, and the fix-within-days number counted as the owner's documentation",done,2026-10-16,stackvet,docs/backlog/done/0498-a-request-value-read-without-its-source-reported-for-v15-3-7.md
 0499,"A refused bypass attempt looked for in the app's own log, in part, with the log destinations the code names shown",done,2026-10-15,stackvet,docs/backlog/done/0499-a-refused-bypass-attempt-looked-for-in-the-app-s-own-log-in.md
@@ -424,6 +430,7 @@ item,title,status,done_date,period_done,source
 0574,"The once check's other user may be refused for want of permission, not for losing the race",done,2026-10-15,stackvet,docs/backlog/done/0574-the-once-check-s-other-user-may-be-refused-for-want-of.md
 0575,The forgery check never sends a token from another session with the signed-in user's cookies,done,2026-10-15,stackvet,docs/backlog/done/0575-the-forgery-check-never-sends-a-token-from-another-session.md
 0576,An SVG refused by its extension is not tried again named as a GIF,done,2026-10-15,stackvet,docs/backlog/done/0576-an-svg-refused-by-its-extension-is-not-tried-again-named-as.md
+0577,"The owner's follow-up trial: the same prompts with the harness and the model swapped, to tell which one gamed the check",done,2026-10-21,stackvet,docs/backlog/done/0577-the-owner-s-follow-up-trial-the-same-prompts-with-the.md
 0578,"After sv review, writing the report again without --run overwrites the report that had the running-app evidence",done,2026-10-15,stackvet,docs/backlog/done/0578-after-sv-review-writing-the-report-again-without-run.md
 0579,The Django-rule gate from 0521 did not apply on a Flask app: ten django-no-csrf-token findings in the Opus run's report and in today's rerun,done,2026-10-15,stackvet,docs/backlog/done/0579-the-django-rule-gate-from-0521-did-not-apply-on-a-flask-app.md
 0580,"sv's own question text asks the tool to write `confirmed = { by = ""ai-tool"" }` proposals and `[checked-by-hand]` entries, which prompt 5 now forbids",done,2026-10-15,stackvet,docs/backlog/done/0580-sv-s-own-question-text-asks-the-tool-to-write-confirmed-by.md
@@ -468,4 +475,46 @@ item,title,status,done_date,period_done,source
 0619,"A page for each framework on stackvet.dev, built from the data (20 October 2026)",done,2026-10-20,stackvet,docs/backlog/done/0619-a-page-for-each-framework-on-stackvet-dev-built-from-the.md
 0621,"V7.6.1's check by hand, proposed in backlog 0500 and never written (20 October 2026)",done,2026-10-20,stackvet,docs/backlog/done/0621-v7-6-1-s-check-by-hand-proposed-in-backlog-0500-and-never.md
 0622,The PDF word test fails on main: flask-booking's report.pdf is said to lack the word lt (20 October 2026),done,2026-10-20,stackvet,docs/backlog/done/0622-the-pdf-word-test-fails-on-main-flask-booking-s-report-pdf.md
+0623,"The AI checks keep the prompt StackVet wrote, so What StackVet saw shows what was asked as well as what came back (20 October 2026)",done,2026-10-22,stackvet,docs/backlog/done/0623-the-ai-checks-keep-the-prompt-stackvet-wrote-so-what.md
 0624,"No check splits into the owner answers and no check yet, and a class is shown only where one was set",done,2026-10-20,stackvet,docs/backlog/done/0624-no-check-splits-into-the-owner-answers-and-no-check-yet-and.md
+0626,"Plain-language lines for ASVS's level-3 requirements, now that an app can be held to level 3",done,2026-10-24,stackvet,docs/backlog/done/0626-plain-language-lines-for-asvs-s-level-3-requirements-now.md
+0628,Nightly: Windows build warns: four unused names in code kept for Unix,done,2026-10-24,stackvet,docs/backlog/done/0628-nightly-windows-build-warns-four-unused-names-in-code-kept.md
+0629,"The browser checks sign in through the provider, so storage is seen cleared after that sign-out too",done,2026-10-25,stackvet,docs/backlog/done/0629-the-browser-checks-sign-in-through-the-provider-so-storage.md
+0630,"What the AI coding tool did that is worth a look, read from git and the hook record, as information in the report",done,2026-10-22,stackvet,docs/backlog/done/0630-what-the-ai-coding-tool-did-that-is-worth-a-look-read-from.md
+0631,"Two tests in moved.rs canonicalize the expected data folder after deleting it, and fail on macOS when the temporary folder is under /var",done,2026-10-24,stackvet,docs/backlog/done/0631-two-tests-in-moved-rs-canonicalize-the-expected-data-folder.md
+0632,Nightly: Windows fails: the_second_report_reads_the_tool_s_commit_since_the_first_and_the_record_only_when_asked,done,2026-10-22,stackvet,docs/backlog/done/0632-nightly-windows-fails-the-second-report-reads-the-tool-s.md
+0633,"Go through StackVet's findings on its own repository, fix the rules that are wrong, and set aside the false alarms for the owner to confirm",done,2026-10-23,stackvet,docs/backlog/done/0633-go-through-stackvet-s-findings-on-its-own-repository-fix-the.md
+0634,"sv review says ""Last"" and then asks more: its closing questions should say how many are left",done,2026-10-22,stackvet,docs/backlog/done/0634-sv-review-says-last-and-then-asks-more-its-closing-questions.md
+0635,"The report's opening: one count of things to fix, no ""worst first"" in the headline, and the build record broken up",done,2026-10-22,stackvet,docs/backlog/done/0635-the-report-s-opening-one-count-of-things-to-fix-no-worst.md
+0636,"sv review says a report folder ""holds no marker of sv's"" when no report has been written yet",done,2026-10-23,stackvet,docs/backlog/done/0636-sv-review-says-a-report-folder-holds-no-marker-of-sv-s-when.md
+0637,"Sign-up checks fill one seed value into every account they make, so a one-use invite code fails all but the first",done,2026-10-23,stackvet,docs/backlog/done/0637-sign-up-checks-fill-one-seed-value-into-every-account-they.md
+0638,The credential rule flags sv's own {seed:NAME} placeholder as a code written into the code,done,2026-10-22,stackvet,docs/backlog/done/0638-the-credential-rule-flags-sv-s-own-seed-name-placeholder-as.md
+0639,"Preflight passes a test command that writes its report into the read-only app folder, and the report calls the crash failing tests",done,2026-10-23,stackvet,docs/backlog/done/0639-preflight-passes-a-test-command-that-writes-its-report-into.md
+0640,The build record counts design briefs and the preflight as checks of the app,done,2026-10-23,stackvet,docs/backlog/done/0640-the-build-record-counts-design-briefs-and-the-preflight-as.md
+0641,AC.4.1 is credited as checked by hand when the person who checked is the one who asked for the code,done,2026-10-23,stackvet,docs/backlog/done/0641-ac-4-1-is-credited-as-checked-by-hand-when-the-person-who.md
+0642,Nightly: Audit finds ctutils 0.4.2: RUSTSEC-2026-0385,done,2026-10-24,stackvet,docs/backlog/done/0642-nightly-audit-finds-ctutils-0-4-2-rustsec-2026-0385.md
+0643,"The shell-command rule flags Rust's Command::new and Go's exec.Command, which start a program with no shell",done,2026-10-23,stackvet,docs/backlog/done/0643-the-shell-command-rule-flags-rust-s-command-new-and-go-s.md
+0644,A Rust module compiled only for tests is not read as test code when it is a file of its own,done,2026-10-23,stackvet,docs/backlog/done/0644-a-rust-module-compiled-only-for-tests-is-not-read-as-test.md
+0645,"The weak-key check reads comments, and the certificate check reads one language's switch-off inside another language's text",done,2026-10-23,stackvet,docs/backlog/done/0645-the-weak-key-check-reads-comments-and-the-certificate-check.md
+0646,The step that removes a stale test report runs a shell with the report path in quotes,done,2026-10-23,stackvet,docs/backlog/done/0646-the-step-that-removes-a-stale-test-report-runs-a-shell-with.md
+0647,"The path rule's false alarms are so many that a real fault among them would be missed, and test code is read unevenly",done,2026-10-23,stackvet,docs/backlog/done/0647-the-path-rule-s-false-alarms-are-so-many-that-a-real-fault.md
+0648,"Other rules whose false alarms come in large numbers, and whether they can be fixed as the path rule's are",done,2026-10-23,stackvet,docs/backlog/done/0648-other-rules-whose-false-alarms-come-in-large-numbers-and.md
+0649,More Rust-specific tests of what StackVet finds in a Rust app,done,2026-10-24,stackvet,docs/backlog/done/0649-more-rust-specific-tests-of-what-stackvet-finds-in-a-rust.md
+0650,"The backlog reviewed: every item done says so and is in done/, and every item on hold is in a folder of its own",done,2026-10-24,stackvet,docs/backlog/done/0650-the-backlog-reviewed-every-item-done-says-so-and-is-in-done.md
+0651,"The roadmap is retired, and the backlog folder alone says what is left and in what order",done,2026-10-23,stackvet,docs/backlog/done/0651-the-roadmap-is-retired-and-the-backlog-folder-alone-says.md
+0652,"A Rust module or item under cfg(all(test, ...)) is not read as test code",done,2026-10-23,stackvet,docs/backlog/done/0652-a-rust-module-or-item-under-cfg-all-test-is-not-read-as-test.md
+0654,"One reading of test code for every check, Rust's test modules in src/ included",done,2026-10-23,stackvet,docs/backlog/done/0654-one-reading-of-test-code-for-every-check-rust-s-test-modules.md
+0655,"The weak-key check reports in test code and lists the finding apart, instead of skipping test files",done,2026-10-23,stackvet,docs/backlog/done/0655-the-weak-key-check-reports-in-test-code-and-lists-the.md
+0656,The bill of materials leaves out lockfiles in test folders and folders named as not the app,done,2026-10-23,stackvet,docs/backlog/done/0656-the-bill-of-materials-leaves-out-lockfiles-in-test-folders.md
+0657,The version-pinning check reads a test fixture's requirements as what the app installs,done,2026-10-23,stackvet,docs/backlog/done/0657-the-version-pinning-check-reads-a-test-fixture-s.md
+0658,"Bandit's B104 is worth a look, not a thing to fix, when stackvet.toml runs the app in a container",done,2026-10-23,stackvet,docs/backlog/done/0658-bandit-s-b104-is-worth-a-look-not-a-thing-to-fix-when.md
+0659,"The starter tells the AI tool to keep the app's data under /tmp, and the app ships with /tmp as its default",done,2026-10-24,stackvet,docs/backlog/done/0659-the-starter-tells-the-ai-tool-to-keep-the-app-s-data-under.md
+0660,Rust calls inside a macro's arguments are not read by any rule,done,2026-10-24,stackvet,docs/backlog/done/0660-rust-calls-inside-a-macro-s-arguments-are-not-read-by-any.md
+0661,"Rust rules not looked for yet: request forgery, HTML from a value, CORS with credentials, and nine more",done,2026-10-24,stackvet,docs/backlog/done/0661-rust-rules-not-looked-for-yet-request-forgery-html-from-a.md
+0662,A weekly check that names the long files and functions to split,done,2026-10-25,stackvet,docs/backlog/done/0662-a-weekly-check-that-names-the-long-files-and-functions-to.md
+0663,"Secure-coding guidance for each stack, given only for the stack sv detects",done,2026-10-24,stackvet,docs/backlog/done/0663-secure-coding-guidance-for-each-stack-given-only-for-the.md
+0664,"One source for the coding rules, never generated again for each tool, and why",done,2026-10-24,stackvet,docs/backlog/done/0664-one-source-for-the-coding-rules-never-generated-again-for.md
+0665,"The coding rules reach each AI tool's own instruction file, not only AGENTS.md",done,2026-10-24,stackvet,docs/backlog/done/0665-the-coding-rules-reach-each-ai-tool-s-own-instruction-file.md
+0666,"Three framework forms the code rules do not read yet: FastAPI's CORS setting, sqlx's queries, and Gin's redirect",done,2026-10-24,stackvet,docs/backlog/done/0666-three-framework-forms-the-code-rules-do-not-read-yet-fastapi.md
+0667,"stackvet_status says when the rules file is missing, or a tool will not see it, and how sv rules fixes it",done,2026-10-24,stackvet,docs/backlog/done/0667-stackvet-status-says-when-the-rules-file-is-missing-or-a.md
+0669,Nightly: Rust fails: the scope job was cancelled after its steps had finished,done,2026-10-25,stackvet,docs/backlog/done/0669-nightly-rust-fails-the-scope-job-was-cancelled-after-its.md
