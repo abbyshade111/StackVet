@@ -405,6 +405,12 @@
   "V10.3.3": [
    "signed-in"
   ],
+  "V10.4.1": [
+   "signed-in"
+  ],
+  "V10.4.2": [
+   "signed-in"
+  ],
   "V10.4.3": [
    "static"
   ],
@@ -2810,6 +2816,22 @@
     "id": "probe.oidc-access-token-user-keyed-on-email",
     "run": "Signed in",
     "looks_for": "A different person who has the same email address at the sign-in provider gets the first person's data through the app's API: an address can be given to someone else, or chosen by whoever signs up first.",
+    "finding_only": false
+   }
+  ],
+  "V10.4.1": [
+   {
+    "id": "probe.oauth-redirect-not-exact",
+    "run": "Signed in",
+    "looks_for": "Whoever owns the address the server accepted can have a person's sign-in code, and with it their account in the app that asked, sent to them by a link that starts at the real sign-in page.",
+    "finding_only": false
+   }
+  ],
+  "V10.4.2": [
+   {
+    "id": "probe.oauth-code-reused",
+    "run": "Signed in",
+    "looks_for": "A sign-in code that leaks after use, from a log, a browser's history, or a referrer, still gets tokens for the person it was issued to.",
     "finding_only": false
    }
   ],

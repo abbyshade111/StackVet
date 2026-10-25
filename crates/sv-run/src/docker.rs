@@ -998,6 +998,7 @@ impl DockerBackend {
                 users: plan.users.as_ref(),
                 policy: &plan.policy,
                 oidc: plan.oidc.as_ref(),
+                oauth_client: plan.oauth_client.as_ref(),
                 ai: plan.ai.as_ref(),
                 mcp_server: plan.mcp_server.as_ref(),
                 fetch: plan.fetch.as_ref(),

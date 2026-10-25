@@ -71,6 +71,16 @@ health = "/"              # a path that returns 200 once the app is up
 # scoped = { path = "/api/reports", scope = "reports:read" }   # an API route that takes the provider's access token
 #                           # only with this scope; a token without it is sent there and must be refused (V10.3.2)
 
+# [stack.run.oauth-client]
+# Only if OTHER apps sign their users in through this one (`authorization-server = true`). The seed
+# registers one test client in the copy of the app `sv` runs, set to skip the consent page, and
+# prints its secret as a `NAME=value` line; `sv` signs the first test user in and asks the server
+# what it does with a changed redirect address and a sign-in code used twice (V10.4.1, V10.4.2).
+# With django-oauth-toolkit, the seed makes an `Application` with `skip_authorization=True`.
+# id = "sv-test"
+# redirect = "http://localhost/callback"   # one redirect address registered for the client
+# secret = "{seed:CLIENT_SECRET}"          # printed by the seed; never the secret itself
+
 # [stack.run.ai]
 # Only if the app has a feature that sends what people type to an AI model. For the run, the app is
 # given a test model of `sv`'s own instead of the real service, and must use it: read

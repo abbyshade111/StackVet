@@ -86,6 +86,15 @@ for backlog 0507.
 7. **Authorization-server probes with an owner-declared test client** (V10.4.1, V10.4.2, V10.4.5, V10.4.6, V10.4.10,
    V10.4.12, V10.4.13, V10.6.2): redirect address, code reuse, PKCE, refresh reuse, client authentication, response
    mode, PAR, sign-out without a hint. Large.
+   The first pull request built 24 October 2026 (ADR-151): `[stack.run.oauth-client]` in stackvet.toml, and
+   `crates/sv-check/src/signed_in/oauth_client.rs`, which signs the first test user in and asks the server for a code
+   with the registered redirect address, with three changed ones (V10.4.1), and exchanges the code twice (V10.4.2).
+   The codes and tokens it issues are blanked from the record. Twelve tests in `oauth_client_tests.rs` and one in
+   `script/issued_keep_out_tests.rs`, against a fake authorization server. Broken on purpose, one at a time: the
+   redirect read, the gate after the changed addresses, the second exchange's read, the introspection answer, the
+   blanking, the list of what was issued, the refusal of a written-down secret, and the note to an app that is no
+   authorization server; each turned its own test red. Left: PKCE and refresh reuse, client authentication and
+   response mode, PAR and sign-out without a hint, then dynamic registration.
    **Part status:** claimed by claude/0625-7, 24 October 2026
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
    Built 24 October 2026 (ADR-150): a `codeql-cpp` adapter in `data/adapters.json`, turned on with the other CodeQL

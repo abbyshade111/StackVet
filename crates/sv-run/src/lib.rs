@@ -571,6 +571,8 @@ pub struct RunPlan {
     /// How the app signs in through another service, when stackvet.toml says. The run then
     /// starts a test provider of `sv`'s own and points the app at it.
     pub oidc: Option<sv_manifest::OidcSection>,
+    /// A client registered with the app's own authorization server, when stackvet.toml declares one (ADR-151).
+    pub oauth_client: Option<sv_manifest::OauthClientSection>,
     /// How to talk to the app's AI feature, when stackvet.toml says. The run then starts a test
     /// model of `sv`'s own and points the app at it.
     pub ai: Option<sv_manifest::AiSection>,
@@ -666,6 +668,7 @@ impl RunPlan {
             users: run.users.clone(),
             policy: manifest.policy.clone(),
             oidc: run.oidc.clone(),
+            oauth_client: run.oauth_client.clone(),
             ai: run.ai.clone(),
             mcp_server: run.mcp_server.clone(),
             fetch: run.fetch.clone(),

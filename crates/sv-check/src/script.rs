@@ -25,6 +25,8 @@ pub struct Plan<'a> {
     pub users: Option<&'a UsersSection>,
     pub policy: &'a PolicySection,
     pub oidc: Option<&'a OidcSection>,
+    /// A client registered with the app's own authorization server (ADR-151).
+    pub oauth_client: Option<&'a sv_manifest::OauthClientSection>,
     pub ai: Option<&'a AiSection>,
     pub mcp_server: Option<&'a McpServerSection>,
     pub fetch: Option<&'a FetchSection>,
@@ -298,9 +300,9 @@ fn signed_in(
         users,
         accounts,
         seeded,
-        plan.policy,
-        plan.slow,
+        (plan.policy, plan.slow),
         spent,
+        plan.oauth_client,
     );
     out.exchanges = http.finish();
     crate::signed_in::name_credits(&mut out.verified, &out.exchanges);
@@ -316,8 +318,23 @@ fn signed_in(
     out.log_lines = logged.lines;
     out.log_tail = crate::logs::tail(&log);
     keep_out(&accounts.seed_values, &mut out);
+    keep_out_issued(&mut out);
     out
 }
+
+/// The codes and tokens the app's own authorization server issued (ADR-151) taken out of everything the run writes
+/// down: they work only in the copy of the app the run started, and are keys all the same.
+pub fn keep_out_issued(out: &mut crate::signed_in::Outcome) {
+    let issued: std::collections::BTreeMap<String, String> = std::mem::take(&mut out.issued)
+        .into_iter()
+        .enumerate()
+        .map(|(i, value)| (i.to_string(), value))
+        .collect();
+    blank(&issued, ISSUED_SHOWN, out);
+}
+
+/// What the run writes down in place of a sign-in code or token the app's own authorization server issued.
+pub const ISSUED_SHOWN: &str = "[a code or token the app issued]";
 
 /// What the run writes down: what it shows in place of a value the seed printed.
 pub const SEED_VALUE_SHOWN: &str = "[a value the seed printed]";
@@ -327,6 +344,15 @@ pub const SEED_VALUE_SHOWN: &str = "[a value the seed printed]";
 /// characters is not looked for, since it would match ordinary text.
 pub fn keep_out(
     values: &std::collections::BTreeMap<String, String>,
+    out: &mut crate::signed_in::Outcome,
+) {
+    blank(values, SEED_VALUE_SHOWN, out);
+}
+
+/// Each of `values` taken out of everything the run writes down, with `shown` in its place.
+fn blank(
+    values: &std::collections::BTreeMap<String, String>,
+    shown: &str,
     out: &mut crate::signed_in::Outcome,
 ) {
     let secrets: Vec<&str> = values
@@ -340,7 +366,7 @@ pub fn keep_out(
     let clean = |text: &mut String| {
         for secret in &secrets {
             if text.contains(secret) {
-                *text = text.replace(secret, SEED_VALUE_SHOWN);
+                *text = text.replace(secret, shown);
             }
         }
     };
@@ -432,6 +458,8 @@ fn ai(services: &dyn Services, plan: &Plan, section: &AiSection) -> crate::signe
 #[cfg(test)]
 mod progress_tests;
 
+#[cfg(test)]
+mod issued_keep_out_tests;
 #[cfg(test)]
 mod seed_keep_out_tests;
 
@@ -533,6 +561,7 @@ mod tests {
             users: None,
             policy: &policy,
             oidc: None,
+            oauth_client: None,
             ai: None,
             mcp_server: None,
             fetch: None,
@@ -567,6 +596,7 @@ mod tests {
             users: Some(&users),
             policy: &policy,
             oidc: Some(&oidc),
+            oauth_client: None,
             ai: Some(&ai),
             mcp_server: Some(&mcp),
             fetch: Some(&fetch),
@@ -681,6 +711,7 @@ mod tests {
             users: None,
             policy: &policy,
             oidc: None,
+            oauth_client: None,
             ai: None,
             mcp_server: Some(&mcp),
             fetch: None,
@@ -727,6 +758,7 @@ mod tests {
             users: None,
             policy: &policy,
             oidc: None,
+            oauth_client: None,
             ai: None,
             mcp_server: Some(&mcp),
             fetch: Some(&fetch),
@@ -760,6 +792,7 @@ mod tests {
             users: None,
             policy: &policy,
             oidc: None,
+            oauth_client: None,
             ai: Some(&ai),
             mcp_server: None,
             fetch: None,
