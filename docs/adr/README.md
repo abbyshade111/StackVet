@@ -199,7 +199,7 @@ source files, and in two tests:
 | [ADR-150](ADR-150.md) | CodeQL's C/C++ suite reads an app's C and C++ code without building it, for integer overflows (V1.4.2) (accepted, 24 October 2026) |
 | [ADR-151](ADR-151.md) | An authorization server is asked, through a test client the owner declares, whether it holds to what OAuth asks of it (accepted, 25 October 2026) |
 | [ADR-152](ADR-152.md) | A weekly job lists the long files and functions to split, in its run's summary only (accepted, 25 October 2026) |
-| [ADR-153](ADR-153.md) | `sv connect --docker` works on Windows: a Windows Docker path, the folder at a Linux-style path, and paths handed back in Windows form (proposed, 25 October 2026) |
+| [ADR-153](ADR-153.md) | `sv connect --docker` works on Windows: a Windows Docker path, the folder at a Linux-style path, and paths handed back in Windows form (accepted, 25 October 2026) |
 
 ## Names in the records
 

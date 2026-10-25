@@ -56,6 +56,10 @@ mod check_text;
 mod confine;
 #[cfg(test)]
 mod explain_settle_tests;
+mod host_paths;
+// A Linux container's paths, which a Windows computer's own folders are not.
+#[cfg(all(test, unix))]
+mod host_paths_serve_tests;
 // Every check asks the AI tool to tell the person what it changed (backlog 0401).
 #[cfg(test)]
 mod build_loop_went_same_tests;

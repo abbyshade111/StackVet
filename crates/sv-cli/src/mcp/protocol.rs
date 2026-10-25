@@ -11,14 +11,34 @@ pub(super) const MAX_REQUEST_BYTES: usize = 1 << 20;
 /// Nothing a client sends ends the server or goes unanswered when it carried an id: a line too long
 /// to read, or one that is not UTF-8, gets an error in reply rather than stopping the loop, which is
 /// what `lines()` did with bytes that were not UTF-8.
-pub fn serve(server: &Server, mut input: impl BufRead, output: impl Write) -> Result<()> {
+pub fn serve(server: &Server, input: impl BufRead, output: impl Write) -> Result<()> {
+    // In a Linux container on Windows, the paths in each message in the person's own form (backlog 0375, ADR-153).
+    serve_with(
+        server,
+        input,
+        output,
+        super::host_paths::HostPaths::from_env(&server.root),
+    )
+}
+
+/// `serve`, with the paths' two forms given rather than read from the environment, so a test can give them.
+pub(super) fn serve_with(
+    server: &Server,
+    mut input: impl BufRead,
+    output: impl Write,
+    host: Option<super::host_paths::HostPaths>,
+) -> Result<()> {
     // Written to while a request is being answered (progress), and after it (the answer).
     let output = std::cell::RefCell::new(output);
+    let outward = |text: String| match &host {
+        Some(host) => host.line(&text, true),
+        None => text,
+    };
     let tell = |note: Value| {
         let mut output = output.borrow_mut();
         // A notification that cannot be written is not worth ending the server for; the answer's
         // own write, below, says so if the output is really gone.
-        let _ = writeln!(output, "{note}").and_then(|()| output.flush());
+        let _ = writeln!(output, "{}", outward(note.to_string())).and_then(|()| output.flush());
     };
     loop {
         let mut asked = None;
@@ -37,6 +57,10 @@ pub fn serve(server: &Server, mut input: impl BufRead, output: impl Write) -> Re
             }
             Request::Line(line) if line.trim().is_empty() => None,
             Request::Line(line) => {
+                let line = match &host {
+                    Some(host) => host.line(&line, false),
+                    None => line,
+                };
                 let reply = server.handle_line_telling(&line, &tell);
                 asked = Some(line);
                 reply
@@ -47,7 +71,7 @@ pub fn serve(server: &Server, mut input: impl BufRead, output: impl Write) -> Re
                 eprintln!("{line}");
             }
             let mut output = output.borrow_mut();
-            writeln!(output, "{reply}").context("writing stdout")?;
+            writeln!(output, "{}", outward(reply)).context("writing stdout")?;
             output.flush().context("flushing stdout")?;
         }
     }
