@@ -1110,14 +1110,40 @@ pub(crate) fn sign_out_check(
         );
         return;
     };
+    storage_after_sign_out(http, (&login.path, private, &logout.path), session, "", out);
+}
+
+/// The browser's storage before signing in, signed in with `session`'s cookies on `private`, and after the sign-out
+/// control leading to `logout` is clicked (V14.3.1). `before` is a page of the app's opened with no cookies, whose
+/// storage is set aside. `through` names the way the session was signed in, as words that begin a sentence's clause
+/// ("after a sign-in through the test provider, "), or nothing for the password sign-in. Each way in is credited
+/// apart, and in part (ADR-053, Later).
+pub(crate) fn storage_after_sign_out(
+    http: &mut dyn Http,
+    (before, private, logout): (&str, &str, &str),
+    session: &Session,
+    through: &str,
+    out: &mut Outcome,
+) {
+    const IDS: &str = "V14.3.1";
+    let not_assessed = |out: &mut Outcome, why: &str| {
+        // The password sign-in's words as they were; another way in names itself.
+        let why = if through.is_empty() {
+            format!("In a real browser: {why}")
+        } else {
+            format!("In a real browser, {through}{why}")
+        };
+        out.not_assessed.push((IDS.to_owned(), why));
+    };
+    let private = &private.to_owned();
     let job = Job {
         actions: vec![
-            Action::Goto(login.path.clone()),
+            Action::Goto(before.to_owned()),
             Action::Eval(STORAGE_QUESTION.to_owned()),
             Action::SetCookies(session.browser_cookies()),
             Action::Goto(private.clone()),
             Action::Eval(STORAGE_QUESTION.to_owned()),
-            Action::Act(sign_out_click(&logout.path)),
+            Action::Act(sign_out_click(logout)),
             Action::Eval(STORAGE_QUESTION.to_owned()),
             Action::Goto(private.clone()),
         ],
@@ -1190,7 +1216,7 @@ pub(crate) fn sign_out_check(
         .map(|k| k.as_str())
         .collect();
     out.steps.push(format!(
-        "in the browser, signed in and opened {private}: the app kept {} in its storage; signed out \
+        "in the browser, {through}signed in and opened {private}: the app kept {} in its storage; signed out \
          with its own control: {} left",
         if theirs.is_empty() {
             "nothing".to_owned()
@@ -1205,7 +1231,7 @@ pub(crate) fn sign_out_check(
             "Signing out leaves the signed-in person's data in the browser",
             Severity::Medium,
             format!(
-                "In a real browser, the app kept {} while signed in on {private}, and after \
+                "In a real browser, {through}the app kept {} while signed in on {private}, and after \
                  signing out with its own control {} still there: {}.",
                 theirs.len(),
                 if kept.len() == 1 {
@@ -1231,7 +1257,7 @@ pub(crate) fn sign_out_check(
                 KEPT_AFTER_SIGN_OUT.rule_id,
                 KEPT_AFTER_SIGN_OUT.requirement_ids,
                 format!(
-                    "{} item{} the app kept in the browser's storage while signed in on {private}, \
+                    "{through}{} item{} the app kept in the browser's storage while signed in on {private}, \
                  every one gone after signing out with its own control",
                     theirs.len(),
                     if theirs.len() == 1 { "" } else { "s" }
@@ -1252,6 +1278,7 @@ mod tests {
     mod in_part_tests;
     mod no_text_form_tests;
     mod refused_said_tests;
+    mod storage_wording_tests;
     mod text_forms_tests;
 
     /// How the fake browser's app behaves.

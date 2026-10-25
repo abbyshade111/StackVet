@@ -1,6 +1,6 @@
 # The browser checks sign in through the provider, so storage is seen cleared after that sign-out too
 
-**Status:** claimed by claude/0629, 25 October 2026
+**Status:** done, 25 October 2026
 
 Filed 21 October 2026 from backlog 0232, part F, at the owner's word of the same day. Severity: low (V14.3.1 is
 checked after the password sign-in only).
@@ -24,4 +24,16 @@ cleared is credited in part, apart from the password sign-out's credit, as ADR-0
 choice of 20 October 2026 says both stay ("whole would need every way in signed out, and an API key and a magic link
 cannot be"). Recorded as a dated Later entry on ADR-053 in the pull request that builds it. Without `logout`, or with
 no browser in the run, it is said not assessed, as now.
+
+**Built 25 October 2026** (ADR-053, Later). `crates/sv-check/src/oidc/storage.rs` signs in once more through the test
+provider when the run has a browser, hands the browser that session, and reads its storage before and after the
+sign-out control leading to `[stack.run.oidc] logout`, through the check the password sign-in uses, now
+shared by both ways in. Credited in part and apart, as ADR-053 says. The test provider gained a `refuse`
+mode, set for the browser's job, after a real browser showed the provider signing the person straight back in.
+Tests: three in `oidc/storage/tests.rs`, two in `script/oidc_browser_tests.rs` (the browser asked for only when the run
+has one), one in `browser/tests/storage_wording_tests.rs` (the password sign-in's words kept), and the provider's
+contract test for `refuse`. Broken on purpose, one at a time: the step not called, the browser not asked for, the way
+in left unnamed, an empty session, the wrong sign-out path, the provider not set to refuse, and the password wording's
+colon each turned a test red, the last only after its test was added. Tried end to end in Docker with a real browser on
+two copies of `examples/oidc-notes`: one credited in part, one a finding.
 
