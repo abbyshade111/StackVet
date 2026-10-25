@@ -1,6 +1,6 @@
 # The path rule reads where a value came from: a path built from a request is a thing to fix, and any other value is listed apart
 
-**Status:** claimed by claude/0653, 25 October 2026
+**Status:** done, 25 October 2026
 
 From the owner's answer of 23 October 2026 to backlog 0647's choices ("A: read the source", and all three test-code fixes); the design entry is `docs/design/0394-the-path-rule-s-false-alarms-and-how-test-code-is-read-23.md`.
 
@@ -29,4 +29,8 @@ is Rust's safe forms, which matter less now that Rust's other-value path finding
 ("Not built"): a path given as a name the same function or file sets only to fixed text, and a join under a constant
 (`Path::new(ROOT).join("data")`, `PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("x")`). Each form found by a test
 first, built only where the rule still reports it today; recorded as a dated Later entry on ADR-138.
+
+**Built 25 October 2026** (ADR-138, Later): Rust's safe forms, in `crates/sv-check/src/ast/followed_rust.rs`. Each form
+was first shown still reported by a test, then built. On StackVet's own code, 68 Rust path findings spared and none
+newly reported. Four tests in `ast/rust_safe_path_tests.rs`; six guards broken on purpose, each turning a test red.
 

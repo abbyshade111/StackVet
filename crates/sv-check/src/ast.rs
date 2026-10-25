@@ -32,6 +32,7 @@ use tree_sitter::{Language, Node, Parser, Query, QueryCapture, QueryCursor, Stre
 
 mod fixed;
 mod followed;
+mod followed_rust;
 mod html;
 mod macro_args;
 mod templates;
@@ -1194,6 +1195,14 @@ fn read_parsed(
                 && language == "python"
                 && let (Some(pattern), Some(arg)) = (compiled.safe_argument.get(language), arg_node)
                 && followed::safe_through_names(arg, source.as_bytes(), pattern, &fixed)
+            {
+                continue;
+            }
+            // Rust's: a path every part of which is fixed in the app's own code (backlog 0653; ADR-138, Later).
+            if compiled.rule.safe_names_read
+                && language == "rust"
+                && let Some(arg) = arg_node
+                && followed_rust::fixed_path(arg, source.as_bytes(), &fixed)
             {
                 continue;
             }
@@ -2652,6 +2661,8 @@ mod tests;
 
 #[cfg(test)]
 mod dom_clobbering_tests;
+#[cfg(test)]
+mod rust_safe_path_tests;
 #[cfg(test)]
 mod shell_list_tests;
 
