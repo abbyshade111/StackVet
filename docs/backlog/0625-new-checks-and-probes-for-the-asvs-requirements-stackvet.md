@@ -138,7 +138,10 @@ for backlog 0507.
     **Part status:** open
 12. **Static, finding only** (V6.5.8, V11.6.2, V6.3.6, V3.2.3): a one-time code checked against a time from the request;
     weak key-exchange parameters; email used as a sign-in factor; DOM-clobbering patterns. Small to medium.
-    **Part status:** open
+    Built in four pull requests, each rule only ever a finding, so no record (the plan's Phase E): weak key-exchange
+    parameters first, the same shape as `weak_keys.rs` (V11.6.1); then the one-time code checked against a time from
+    the request; then email as a sign-in factor; then the DOM-clobbering patterns, the largest.
+    **Part status:** claimed by claude/0625-12, 25 October 2026
 
 Already filed elsewhere: V10.5.3 is backlog 0620.
 
