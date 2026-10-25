@@ -12294,6 +12294,103 @@
       ]
     },
     {
+      "id": "codeql-cpp",
+      "name": "CodeQL (C and C++)",
+      "language": "c,cpp",
+      "opt_in": "codeql",
+      "version": {
+        "command": "codeql",
+        "args": [
+          "version",
+          "--format=terse"
+        ]
+      },
+      "prepare": {
+        "command": "codeql",
+        "args": [
+          "database",
+          "create",
+          "{database}",
+          "--language=c-cpp",
+          "--build-mode=none",
+          "--source-root",
+          "{dir}",
+          "--overwrite",
+          "--threads=0"
+        ]
+      },
+      "run": {
+        "command": "codeql",
+        "args": [
+          "database",
+          "analyze",
+          "{database}",
+          "codeql/cpp-queries:codeql-suites/cpp-security-extended.qls",
+          "--format=sarif-latest",
+          "--output",
+          "{output}",
+          "--threads=0"
+        ]
+      },
+      "install": "download the CodeQL bundle from https://github.com/github/codeql-action/releases, unpack it, and put its `codeql` on your PATH",
+      "note": "Reads C and C++ code for integer overflows (V1.4.2) without building it: the database is made with `--build-mode=none`, so none of the app's build scripts run. Runs the C/C++ security-extended suite from the bundle, offline. Exit code 0 is the only finished run. Tried on 24 October 2026 with CodeQL 2.27.2 the way ADR-032 tries a tool (ADR-150): on an app planted with a Makefile, a `configure` script, a `CMakeLists.txt` with an `execute_process`, and a `build.sh`, each writing a mark when run, the database was made in seven seconds with no mark and no program built; without `--build-mode=none` CodeQL began the autobuild that runs them. Its queries found the planted `malloc(count * size)` from a command-line argument. A database made without a build reads the code less fully than a built one, so finding none credits nothing.",
+      "credit_loaded_only": true,
+      "finished_exits": [
+        0
+      ],
+      "rules": {
+        "cpp/integer-multiplication-cast-to-long": {
+          "what": "a multiplication done in a narrow integer type and only then converted to a wider one, so it can overflow first",
+          "requirements": [],
+          "findings_against": [
+            "V1.4.2"
+          ]
+        },
+        "cpp/bad-addition-overflow-check": {
+          "what": "a check for integer addition overflowing that cannot work as written",
+          "requirements": [],
+          "findings_against": [
+            "V1.4.2"
+          ]
+        },
+        "cpp/signed-overflow-check": {
+          "what": "a check for signed integer overflow that relies on the overflow itself, which C leaves undefined",
+          "requirements": [],
+          "findings_against": [
+            "V1.4.2"
+          ]
+        },
+        "cpp/uncontrolled-arithmetic": {
+          "what": "arithmetic on a value from outside the program with no range check, which can overflow",
+          "requirements": [],
+          "findings_against": [
+            "V1.4.2"
+          ]
+        },
+        "cpp/comparison-with-wider-type": {
+          "what": "a loop comparing a narrow counter with a wider bound, so the counter overflows and wraps around before reaching it",
+          "requirements": [],
+          "findings_against": [
+            "V1.4.2"
+          ]
+        },
+        "cpp/uncontrolled-allocation-size": {
+          "what": "an allocation whose size comes from outside the program unchecked, which can overflow or exhaust memory",
+          "requirements": [],
+          "findings_against": [
+            "V1.4.2"
+          ]
+        },
+        "cpp/unsigned-difference-expression-compared-zero": {
+          "what": "an unsigned difference compared with zero, which is never below it, so an integer overflow below zero goes unseen",
+          "requirements": [],
+          "findings_against": [
+            "V1.4.2"
+          ]
+        }
+      }
+    },
+    {
       "id": "codeql-ruby",
       "name": "CodeQL (Ruby)",
       "language": "ruby",

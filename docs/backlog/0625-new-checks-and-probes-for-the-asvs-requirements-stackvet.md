@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** partly done: six parts, built in the order the plan below gives; the fourth is held at the owner's word, and the seventh waits on the owner's word on its test client, so the eighth (CodeQL's C/C++ suite) is next
+**Status:** partly done: six parts remain: the fourth is held at the owner's word, the seventh waits on the owner's word on its test client, and the ninth to the twelfth are Phase E, level 3 only, which waits on the owner's word on whether they are worth building now
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -88,7 +88,14 @@ for backlog 0507.
    mode, PAR, sign-out without a hint. Large.
    **Part status:** open
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
-   **Part status:** claimed by claude/0625-8, 24 October 2026
+   Built 24 October 2026 (ADR-150): a `codeql-cpp` adapter in `data/adapters.json`, turned on with the other CodeQL
+   adapters. Its database is made with `--build-mode=none`, so none of the app's build scripts run, and the bundle's
+   C/C++ security-extended suite (98 queries, measured into `data/codeql-suites.json`) runs over it. Seven
+   integer-overflow queries each cite V1.4.2 as found failing only. The C/C++ queries come in the CodeQL bundle the
+   owner installs, so `sv` fetches nothing new and ADR-111's fence is unchanged. Run end to end on a one-file C app
+   with a planted `malloc(count * size)`: V1.4.2 read "needs attention" from line 8. Broken on purpose: with one rule
+   mapped to a query the suite does not hold, the adapter tests went red.
+   **Part status:** done, 24 October 2026
 9. **Upload probes** (V5.2.5, V5.2.6, V14.2.8): an archive with a link in it, an image huge in pixels, image metadata
    kept. Small to medium.
    **Part status:** open

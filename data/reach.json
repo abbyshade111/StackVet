@@ -1337,6 +1337,14 @@
     "finding_only": true
    }
   ],
+  "V1.4.2": [
+   {
+    "id": "codeql-cpp",
+    "run": "Outside tools you turn on",
+    "looks_for": "a check for integer addition overflowing that cannot work as written; a check for signed integer overflow that relies on the overflow itself, which C leaves undefined; a loop comparing a narrow counter with a wider bound, so the counter ...",
+    "finding_only": true
+   }
+  ],
   "V1.4.3": [
    {
     "id": "semgrep",
