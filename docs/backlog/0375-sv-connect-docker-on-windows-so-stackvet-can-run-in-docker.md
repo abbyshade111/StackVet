@@ -32,3 +32,24 @@ unit-tested here, with a short guide for the owner to try it on Windows, and thi
 it. Asked what it covers, the owner chose "connect --docker only": `sv report --run` on Windows is not part of it.
 ADR-153, proposed with this claim, says how.
 
+**Built 25 October 2026** (ADR-153, accepted): `sv connect --docker` takes Docker's Windows path, mounts the folder at
+`/c/...` and tells the container the Windows one in `SV_HOST_FOLDER`, and the MCP server turns paths both ways at its
+wire (`crates/sv-cli/src/mcp/host_paths.rs`). Tested here with Windows paths given as text; not run on Windows.
+
+**For the owner to try, on a Windows computer with Docker Desktop set to Linux containers:**
+
+1. Install StackVet the Windows way, with Scoop, as `docs/INSTALL.md` says (`scoop bucket add stackvet
+   https://github.com/abbyshade111/scoop-stack-vet`, then `scoop install stackvet/sv`), so a Windows copy writes the
+   settings: only a copy running on Windows reads Docker's Windows path.
+2. Get the image Docker will start: `docker pull ghcr.io/abbyshade111/stackvet-sv`.
+3. Find Docker's full path, `where.exe docker` (for example `C:\Program Files\Docker\Docker\resources\bin\docker.exe`),
+   and in the app's folder write the settings with it:
+   `stackvet connect claude --docker "C:\Program Files\Docker\Docker\resources\bin\docker.exe" > .mcp.json`.
+4. Open `.mcp.json`: its `args` should hold `-v C:\...\app:/c/.../app`, `-e SV_HOST_FOLDER=C:\...\app`, and
+   `--root /c/.../app`.
+5. Open the folder in Claude Code and ask it to run StackVet's status, then a report. The report's links, and the files
+   named in findings, should be `C:\...` paths that open.
+
+What would show it working: steps 4 and 5 as said. Anything else, the exact message is what to bring back. This item
+is done once the try works.
+

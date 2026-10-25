@@ -107,7 +107,34 @@ pub const SERVER_NAME: &str = "stackvet";
 
 /// The program that starts `sv` as an MCP server for `folder`, and its arguments.
 fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
+    command_and_args_on(runner, folder, cfg!(windows))
+}
+
+/// What the container is told the app's folder is on the person's computer, when that is a Windows path (backlog 0375,
+/// ADR-153): the MCP server writes the paths it hands back under it, and reads the ones it is given from it.
+pub const HOST_FOLDER_ENV: &str = "SV_HOST_FOLDER";
+
+/// A Windows folder as a Linux container shows it: the drive letter in lower case, then the rest with `/` for `\`
+/// (`C:\Users\you\app` is `/c/Users/you/app`). `None` for a path that does not start at a drive's root.
+pub fn inside_path(folder: &str) -> Option<String> {
+    if !is_drive_path(folder) {
+        return None;
+    }
+    let drive = folder[..1].to_ascii_lowercase();
+    let rest = folder[2..].replace('\\', "/");
+    let rest = rest.trim_end_matches('/');
+    Some(format!("/{drive}{rest}"))
+}
+
+/// `command_and_args`, with whether this is Windows given, so the Windows settings are tested everywhere.
+fn command_and_args_on(runner: &Runner, folder: &Path, windows: bool) -> (String, Vec<String>) {
     let folder = folder.display().to_string();
+    // On Windows the folder is shown inside the container at a Linux-style path, and the container is told the
+    // Windows one; anywhere else, at its own path, as before.
+    let inside = match runner {
+        Runner::Docker { .. } if windows => inside_path(&folder),
+        _ => None,
+    };
     let (command, args) = match runner {
         Runner::Docker { docker, user, keys } => {
             let mut args = vec![
@@ -118,8 +145,12 @@ fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
                 "--network".to_owned(),
                 "none".to_owned(),
                 "-v".to_owned(),
-                format!("{folder}:{folder}"),
+                format!("{folder}:{}", inside.as_deref().unwrap_or(&folder)),
             ];
+            if inside.is_some() {
+                args.push("-e".to_owned());
+                args.push(format!("{HOST_FOLDER_ENV}={folder}"));
+            }
             if let Some(keys) = keys {
                 // The list alone, read-only, at the place `sv` looks for it once XDG_CONFIG_HOME names the folder above.
                 args.push("-v".to_owned());
@@ -141,7 +172,11 @@ fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
         Runner::Installed(program) => (program.display().to_string(), Vec::new()),
     };
     let mut args = args;
-    args.extend(["mcp".to_owned(), "--root".to_owned(), folder]);
+    args.extend([
+        "mcp".to_owned(),
+        "--root".to_owned(),
+        inside.unwrap_or(folder),
+    ]);
     (command, args)
 }
 
@@ -221,12 +256,7 @@ pub fn command(args: &[String]) -> Result<String> {
     }
     let runner = match docker {
         Some(docker) => {
-            if !docker.starts_with('/') {
-                bail!(
-                    "--docker needs docker's full path, such as /usr/local/bin/docker (`which docker` \
-                     prints it), because an app started from the Dock often cannot find a bare `docker`"
-                );
-            }
+            check_docker_on(docker, cfg!(windows))?;
             if let Some(user) = user {
                 check_user(user)?;
             }
@@ -386,6 +416,26 @@ fn check_keys_on(keys: &str, windows: bool) -> Result<String> {
     Ok(trimmed.to_owned())
 }
 
+/// Docker's path as the settings give it: a full one, since an app started from the Dock (or the Start menu) often
+/// cannot find a bare `docker`. On Windows that is a path from a drive's root (`C:\Program Files\Docker\...\docker.exe`;
+/// backlog 0375, ADR-153), and anywhere it may start with `/`.
+fn check_docker_on(docker: &str, windows: bool) -> Result<()> {
+    if docker.starts_with('/') || (windows && is_drive_path(docker)) {
+        return Ok(());
+    }
+    if windows {
+        bail!(
+            "--docker needs docker's full path, such as \"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe\" \
+             (`where.exe docker` prints it), because an app started from the Start menu often cannot find a bare \
+             `docker`"
+        );
+    }
+    bail!(
+        "--docker needs docker's full path, such as /usr/local/bin/docker (`which docker` prints it), because an \
+         app started from the Dock often cannot find a bare `docker`"
+    );
+}
+
 /// A Windows path from a drive's root, `C:\…` or `C:/…`: read by hand, so it is told on any computer.
 fn is_drive_path(path: &str) -> bool {
     let b = path.as_bytes();
@@ -399,6 +449,9 @@ pub fn in_a_container() -> bool {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod windows_docker_tests;
 
 #[cfg(test)]
 mod windows_keys_tests;
