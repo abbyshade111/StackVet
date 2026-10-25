@@ -71,6 +71,7 @@ mod flows;
 mod forgery;
 mod input_limits;
 mod limit;
+mod oauth_client;
 mod once;
 mod owner_field;
 mod passwords;
@@ -281,6 +282,9 @@ pub struct Outcome {
     /// (backlog 0496). `None` when the browser did not list them; compared with `[stack] external-apis` by
     /// `crate::browser::undeclared_outside_services`.
     pub outside_hosts: Option<Vec<String>>,
+    /// The sign-in codes and tokens the app's own authorization server issued to the test client (ADR-151), blanked
+    /// from everything the run writes down once the suite is done (`script::keep_out`), as the seed's values are.
+    pub issued: Vec<String>,
 }
 
 /// An origin the app has certainly never heard of, for the forgery check.
@@ -550,9 +554,9 @@ pub fn run_with(
         users,
         accounts,
         seeded,
-        policy,
-        slow,
+        (policy, slow),
         &std::cell::Cell::new(0),
+        None,
     )
 }
 
@@ -713,9 +717,9 @@ pub fn run_within(
     users: &UsersSection,
     accounts: &Accounts,
     seeded: bool,
-    policy: &sv_manifest::PolicySection,
-    slow: bool,
+    (policy, slow): (&sv_manifest::PolicySection, bool),
     spent: &std::cell::Cell<u64>,
+    oauth_client: Option<&sv_manifest::OauthClientSection>,
 ) -> Outcome {
     // A user name apart from the address (backlog 0599): short names for the whole run, on this thread.
     let _short = ShortNames::set(users.signup.as_ref().is_some_and(wants_short_names));
@@ -726,7 +730,14 @@ pub fn run_within(
         .login
         .as_ref()
         .map(|login| login.path.split('?').next().unwrap_or_default().to_owned());
-    let mut out = run_checks(&mut patient, users, accounts, seeded, policy, slow);
+    let mut out = run_checks(
+        &mut patient,
+        users,
+        accounts,
+        seeded,
+        (policy, slow),
+        oauth_client,
+    );
     patient.settle(&mut out);
     out
 }
@@ -1177,8 +1188,8 @@ fn run_checks(
     users: &UsersSection,
     accounts: &Accounts,
     seeded: bool,
-    policy: &sv_manifest::PolicySection,
-    slow: bool,
+    (policy, slow): (&sv_manifest::PolicySection, bool),
+    oauth_client: Option<&sv_manifest::OauthClientSection>,
 ) -> Outcome {
     let mut counted = Counted {
         inner: http,
@@ -1801,6 +1812,7 @@ fn run_checks(
             confirm_path,
             signed_in_works,
             admins_pages,
+            oauth_client,
         },
         out,
     );
@@ -1909,6 +1921,7 @@ struct Late<'a> {
     confirm_path: Option<String>,
     signed_in_works: bool,
     admins_pages: Vec<Option<ProbeResponse>>,
+    oauth_client: Option<&'a sv_manifest::OauthClientSection>,
 }
 
 /// Checks 9b to 9h of `run_checks`, in its order, each through `asked!` or `quiet!` as there (`check_guard_tests` reads
@@ -1925,6 +1938,7 @@ fn late_checks(http: &mut Counted<'_>, late: Late<'_>, mut out: Outcome) -> Outc
         confirm_path,
         signed_in_works,
         admins_pages,
+        oauth_client,
     } = late;
 
     // 9b. A private WebSocket, with a sign-in of its own that it signs out at the end: after
@@ -1940,6 +1954,15 @@ fn late_checks(http: &mut Counted<'_>, late: Late<'_>, mut out: Outcome) -> Outc
     //     sessions of their own, and nothing changed.
     quiet!(open_redirect_check(http, users, &accounts.a, &mut out));
     quiet!(page_redirect_check(http, users, &accounts.a, &mut out));
+    // 9b'''. The app's own authorization server, asked through the test client stackvet.toml declares (ADR-151): a
+    //       sign-in of its own, nothing the other checks rely on changed, and before the password changes below.
+    quiet!(oauth_client::authorization_server_checks(
+        http,
+        users,
+        accounts,
+        oauth_client,
+        &mut out
+    ));
     // 9b''. The app's own sign-in token, waited out until it expires: a sign-in of its own, and
     //      before the password changes below, which can change A's.
     quiet!(app_token_expiry_check(
@@ -2144,6 +2167,8 @@ mod log_sign_ins_tests;
 mod no_signup_right_password_tests;
 #[cfg(test)]
 mod non_ascii_tests;
+#[cfg(test)]
+mod oauth_client_tests;
 #[cfg(test)]
 mod owner_field_tests;
 #[cfg(test)]

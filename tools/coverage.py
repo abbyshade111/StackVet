@@ -243,6 +243,10 @@ RUST_CHECKS = {
     "probe.oidc-access-token-user-keyed-on-email": ("signed-in", ["V10.3.3"]),
     # An access token without the scope a route stackvet.toml names needs (backlog 0625, part 5; ADR-148).
     "probe.oidc-access-token-scope-not-checked": ("signed-in", ["V10.3.2"]),
+    # The app's own authorization server, asked through the test client stackvet.toml declares (backlog 0625, part 7;
+    # ADR-151): a changed redirect address, and a sign-in code sent twice.
+    "probe.oauth-redirect-not-exact": ("signed-in", ["V10.4.1"]),
+    "probe.oauth-code-reused": ("signed-in", ["V10.4.2"]),
     "probe.oidc-id-token-taken-as-access-token": ("signed-in", ["V9.2.2"]),
     "probe.oidc-logout-token-not-checked": ("signed-in", ["V10.5.5"]),
     "probe.sign-out-control-hidden": ("signed-in", ["V7.4.4"]),
@@ -816,6 +820,8 @@ RUST_IN_PART |= {"config.turn-relay-reaches-reserved-addresses", "config.turn-re
 RUST_IN_PART |= {"probe.authorization-server-weak-client-auth", "probe.authorization-server-implicit-flow"}
 # A setting, not the server's behavior (ADR-147).
 RUST_IN_PART |= {"config.authorization-code-long-lived", "config.refresh-token-never-expires"}
+# One test client, one person, and a sample of wrong requests asked (ADR-151).
+RUST_IN_PART |= {"probe.oauth-redirect-not-exact", "probe.oauth-code-reused"}
 # Backlog 0430: every other check whose each credit is marked in part where it is made (`.in_part()`, or
 # `.in_part_if` on a condition that always holds for it), each with its reason beside that credit in the code.
 # Until then they were printed as able to mark a requirement *checked*. `--credits` holds this list to the

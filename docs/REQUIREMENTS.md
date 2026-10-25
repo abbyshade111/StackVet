@@ -41,9 +41,9 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 140 can be checked, 65 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 30 with no check yet.
+345 requirements: 142 can be checked, 65 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 28 with no check yet.
 
-### Level 1 (70 requirements, 46 can be checked, 14 can only be found failing)
+### Level 1 (70 requirements, 48 can be checked, 14 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -147,8 +147,8 @@ decided per app, from its `stackvet.toml` and its code.
 
 | Requirement | Coverage | Checks |
 |---|---|---|
-| **V10.4.1** Verify that the authorization server validates redirect URIs based on a client-specific allowlist of pre-registered URIs using exact string comparison. | No check yet | – |
-| **V10.4.2** Verify that, if the authorization server returns the authorization code in the authorization response, it can be used only once for a token request. For the second valid request with an authorization code that has already been used to issue an access token, the authorization server must reject a token request and revoke any issued tokens related to the authorization code. | No check yet | – |
+| **V10.4.1** Verify that the authorization server validates redirect URIs based on a client-specific allowlist of pre-registered URIs using exact string comparison. | Can be checked | Signed in: `probe.oauth-redirect-not-exact`, if it fails: Whoever owns the address the server accepted can have a person's sign-in code, and with it their account in the app that asked, sent to them by a link that starts at the real sign-in page. (only ever in part) |
+| **V10.4.2** Verify that, if the authorization server returns the authorization code in the authorization response, it can be used only once for a token request. For the second valid request with an authorization code that has already been used to issue an access token, the authorization server must reject a token request and revoke any issued tokens related to the authorization code. | Can be checked | Signed in: `probe.oauth-code-reused`, if it fails: A sign-in code that leaks after use, from a log, a browser's history, or a referrer, still gets tokens for the person it was issued to. (only ever in part) |
 | **V10.4.3** Verify that the authorization code is short-lived. The maximum lifetime can be up to 10 minutes for L1 and L2 applications and up to 1 minute for L3 applications. | Can be checked | Reads the code: `config.authorization-code-long-lived`, looks for: django-oauth-toolkit's `AUTHORIZATION_CODE_EXPIRE_SECONDS` or node-oidc-provider's `ttl.AuthorizationCode` (60 seconds when left at the default) at a minute or less, which meets every level; a setting, not the server's behavior (only ever in part) |
 | **V10.4.4** Verify that for a given client, the authorization server only allows the usage of grants that this client needs to use. Note that the grants 'token' (Implicit flow) and 'password' (Resource Owner Password Credentials flow) must no longer be used. | Can only be found failing | Reads the code: `config.retired-grant-enabled`, looks for: The app's sign-in server switches on a grant that must no longer be used (found failing only)<br>The running app: `probe.retired-grants-offered`, if it fails: An app using the password grant sees every user's password, and a token sent the implicit way can be read by anything that sees the address. Both are why V10.4.4 says they must no longer be used. (found failing only) |
 | **V10.4.5** Verify that the authorization server mitigates refresh token replay attacks for public clients, preferably using sender-constrained refresh tokens, i.e., Demonstrating Proof of Possession (DPoP) or Certificate-Bound Access Tokens using mutual TLS (mTLS). For L1 and L2 applications, refresh token rotation may be used. If refresh token rotation is used, the authorization server must invalidate the refresh token after usage, and revoke all refresh tokens for that authorization if an already used and invalidated refresh token is provided. | No check yet | – |

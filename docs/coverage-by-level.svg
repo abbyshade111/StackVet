@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 934 210" width="934" height="210" role="img" aria-labelledby="t d" font-family="Atkinson Hyperlegible, -apple-system, Segoe UI, sans-serif">
 <title id="t">ASVS 5.0 by level: what a check can reach</title>
-<desc id="d">Level 1: 70 requirements, 46 can be credited, 14 can only be found failing, 3 a check helps, a person decides, 4 the owner answers, 3 no check yet; Level 2: 183 requirements, 82 can be credited, 39 can only be found failing, 7 a check helps, a person decides, 51 the owner answers, 4 no check yet; Level 3: 92 requirements, 12 can be credited, 12 can only be found failing, 1 a check helps, a person decides, 44 the owner answers, 23 no check yet. The same counts are the table in docs/COVERAGE.md.</desc>
+<desc id="d">Level 1: 70 requirements, 48 can be credited, 14 can only be found failing, 3 a check helps, a person decides, 4 the owner answers, 1 no check yet; Level 2: 183 requirements, 82 can be credited, 39 can only be found failing, 7 a check helps, a person decides, 51 the owner answers, 4 no check yet; Level 3: 92 requirements, 12 can be credited, 12 can only be found failing, 1 a check helps, a person decides, 44 the owner answers, 23 no check yet. The same counts are the table in docs/COVERAGE.md.</desc>
 <style>.bg{fill:#FFFFFF}.ink{fill:#14201C}.soft{fill:#3B4842}.none{fill:#EEF0EA;stroke:#C9CEC4}@media (prefers-color-scheme: dark){.bg{fill:#14201C}.ink{fill:#F3F4EF}.soft{fill:#C9CEC4}.none{fill:#182A23;stroke:#3B4842}}</style>
 <defs><pattern id="owner" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect class="none" width="6" height="6"/><rect width="2.5" height="6" fill="#5470C0"/></pattern></defs>
 <rect class="bg" width="934" height="210"/>
@@ -17,12 +17,12 @@
 <text class="soft" x="776" y="58" font-size="13">no check yet</text>
 <text class="soft" x="692" y="82" font-size="12">counts, in the key's order</text>
 <text class="ink" x="12" y="109" font-size="13">Level 1</text>
-<rect fill="#3A9470" x="300.0" y="96" width="93.5" height="18" rx="2"><title>Level 1: 46 can be credited</title></rect>
-<rect fill="#D9692B" x="395.5" y="96" width="27.1" height="18" rx="2"><title>Level 1: 14 can only be found failing</title></rect>
-<rect fill="#5470C0" x="424.6" y="96" width="4.2" height="18" rx="2"><title>Level 1: 3 a check helps, a person decides</title></rect>
-<rect fill="url(#owner)" x="430.8" y="96" width="6.3" height="18" rx="2"><title>Level 1: 4 the owner answers</title></rect>
-<rect class="none" x="439.1" y="96" width="4.2" height="18" rx="2"><title>Level 1: 3 no check yet</title></rect>
-<text class="soft" x="692" y="109" font-size="13">46 · 14 · 3 · 4 · 3  of 70</text>
+<rect fill="#3A9470" x="300.0" y="96" width="97.7" height="18" rx="2"><title>Level 1: 48 can be credited</title></rect>
+<rect fill="#D9692B" x="399.7" y="96" width="27.1" height="18" rx="2"><title>Level 1: 14 can only be found failing</title></rect>
+<rect fill="#5470C0" x="428.7" y="96" width="4.2" height="18" rx="2"><title>Level 1: 3 a check helps, a person decides</title></rect>
+<rect fill="url(#owner)" x="435.0" y="96" width="6.3" height="18" rx="2"><title>Level 1: 4 the owner answers</title></rect>
+<rect class="none" x="443.3" y="96" width="1.0" height="18" rx="2"><title>Level 1: 1 no check yet</title></rect>
+<text class="soft" x="692" y="109" font-size="13">48 · 14 · 3 · 4 · 1  of 70</text>
 <text class="ink" x="12" y="135" font-size="13">Level 2</text>
 <rect fill="#3A9470" x="300.0" y="122" width="168.3" height="18" rx="2"><title>Level 2: 82 can be credited</title></rect>
 <rect fill="#D9692B" x="470.3" y="122" width="79.0" height="18" rx="2"><title>Level 2: 39 can only be found failing</title></rect>

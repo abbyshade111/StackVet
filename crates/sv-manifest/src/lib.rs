@@ -272,6 +272,11 @@ pub struct RunSection {
     /// can point it at a test provider of `sv`'s own and see what it accepts.
     #[serde(default)]
     pub oidc: Option<OidcSection>,
+    /// A client registered with the app's own authorization server, when other apps sign their users in through it
+    /// (backlog 0625, part 7; ADR-151). With it, the run asks the server what it does when a client sends what it
+    /// should refuse. Left out, those requirements are not assessed.
+    #[serde(default)]
+    pub oauth_client: Option<OauthClientSection>,
     /// How to talk to the app's AI feature, so the run can give it a test model of `sv`'s own and
     /// see what the app does when that model misbehaves.
     #[serde(default)]
@@ -480,6 +485,30 @@ pub struct OidcSection {
     /// refused. Left out, V10.3.2 is not asked.
     #[serde(default)]
     pub scoped: Option<ScopedRoute>,
+}
+
+/// `[stack.run.oauth-client]` (backlog 0625, part 7; ADR-151): a client the seed registers with the app's own
+/// authorization server, in the copy of the app the run starts, set to skip the consent page.
+#[derive(Debug, Clone, Deserialize, Default, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct OauthClientSection {
+    /// The client's id.
+    pub id: String,
+    /// One redirect address registered for the client, in full (`http://localhost/callback`).
+    pub redirect: String,
+    /// The client's secret, for a confidential client: always a value the seed prints, `{seed:NAME}`, never the
+    /// secret itself, since stackvet.toml is committed. Left out, the client is a public one.
+    #[serde(default)]
+    pub secret: Option<String>,
+    /// The scope to ask for. Defaults to `openid`.
+    #[serde(default)]
+    pub scope: Option<String>,
+    /// The authorization address's path, for a server that publishes no details about itself.
+    #[serde(default)]
+    pub authorize: Option<String>,
+    /// The token address's path, likewise.
+    #[serde(default)]
+    pub token: Option<String>,
 }
 
 /// `scoped` under `[stack.run.oidc]`: a route, and the scope an access token needs to be taken there.
