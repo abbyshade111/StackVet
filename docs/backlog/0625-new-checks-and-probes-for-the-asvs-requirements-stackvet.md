@@ -99,8 +99,12 @@ for backlog 0507.
    challenge and with `plain`, and one exchanged with the wrong verifier) and `oauth_client/refresh.rs` (V10.4.5, for a
    public client: a used refresh token sent again, and the newer one after it). The fake server moved to
    `oauth_client_fake.rs`; ten tests in `oauth_client_pkce_tests.rs`. Broken on purpose, one at a time, each of the
-   eight guards turned its own test red. Left: client authentication and response mode, PAR and sign-out without a
-   hint, then dynamic registration.
+   eight guards turned its own test red.
+   The third pull request built 25 October 2026: `oauth_client/client_auth.rs` (V10.4.10, for a confidential client: a
+   code exchanged with no client authentication and with the wrong secret) and `oauth_client/response_mode.rs`
+   (V10.4.12: a code asked to come back in the fragment and by a posted form). Nine tests in
+   `oauth_client_auth_tests.rs`. Broken on purpose, one at a time, each of the eight guards turned a test red. Left: PAR
+   and sign-out without a hint, then dynamic registration.
    **Part status:** claimed by claude/0625-7, 24 October 2026
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
    Built 24 October 2026 (ADR-150): a `codeql-cpp` adapter in `data/adapters.json`, turned on with the other CodeQL

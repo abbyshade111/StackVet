@@ -423,6 +423,12 @@
   "V10.4.8": [
    "static"
   ],
+  "V10.4.10": [
+   "signed-in"
+  ],
+  "V10.4.12": [
+   "signed-in"
+  ],
   "V10.4.16": [
    "running"
   ],
@@ -2890,6 +2896,22 @@
     "id": "config.refresh-token-never-expires",
     "run": "Reads the code",
     "looks_for": "django-oauth-toolkit's `REFRESH_TOKEN_EXPIRE_SECONDS` set, with rotation off, or node-oidc-provider's default rotation, which stops once a refresh token has lived a year; a setting, not the server's behavior",
+    "finding_only": false
+   }
+  ],
+  "V10.4.10": [
+   {
+    "id": "probe.oauth-client-not-authenticated",
+    "run": "Signed in",
+    "looks_for": "Whoever has a sign-in code meant for the app, from a log or a browser's history, can exchange it for tokens without the app's secret, so the secret protects nothing.",
+    "finding_only": false
+   }
+  ],
+  "V10.4.12": [
+   {
+    "id": "probe.oauth-response-mode-not-held",
+    "run": "Signed in",
+    "looks_for": "A sign-in link can choose how the code comes back, and a way the app was never built for (a fragment a page's scripts can read, or a form posted from another page) can hand the code to something other than the app.",
     "finding_only": false
    }
   ],
