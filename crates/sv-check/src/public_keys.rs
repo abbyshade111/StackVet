@@ -214,8 +214,12 @@ mod tests {
     use super::*;
 
     fn found(file: &str, text: &str) -> Vec<(String, usize, Confidence)> {
+        // A folder for each call: tests that run at once and read a file of the same name would otherwise share one,
+        // and one would remove it while the other wrote into it.
+        static CALLS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let call = CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let dir = std::env::temp_dir().join(format!(
-            "sv-public-keys-{}-{}",
+            "sv-public-keys-{}-{}-{call}",
             file.replace('/', "-"),
             std::process::id()
         ));
