@@ -88,7 +88,7 @@ for backlog 0507.
    mode, PAR, sign-out without a hint. Large.
    **Part status:** open
 8. **CodeQL's C/C++ suite for the unmanaged code that turns V1.4 on** (V1.4.2, L2): outside tool, finding only. Medium.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-8, 24 October 2026
 9. **Upload probes** (V5.2.5, V5.2.6, V14.2.8): an archive with a link in it, an image huge in pixels, image metadata
    kept. Small to medium.
    **Part status:** open
