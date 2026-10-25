@@ -22,7 +22,9 @@
 // Two more, which make a token on request rather than at the next sign-in (backlog 0500, ADR-127):
 //   `POST /_sv/access-token` with `aud=self` or `aud=other`: a signed access token for this app's client, or for a
 //                client that does not exist, as `{ "token": ... }`. `/userinfo` answers for either, as a real
-//                provider's does; `/introspect` says which client each was issued to.
+//                provider's does; `/introspect` says which client each was issued to. With `who=other-person`, the
+//                token is for a different subject who has the test person's email address (V10.3.3, ADR-148); every
+//                access token carries the `email` claim, as many providers' do.
 //   `POST /_sv/logout-token` with `variant=good`, `wrong-typ`, `no-events`, or `with-nonce`: a signed OIDC
 //                back-channel logout token for the test person, correct or wrong in that one way.
 //   `POST /_sv/id-token`: a signed ID token for the test person and this app's client, as `{ "token": ... }`, the
@@ -201,18 +203,23 @@ http
       });
     }
     if (req.method === 'POST' && path === '/_sv/access-token') {
-      const aud = new URLSearchParams(await body(req)).get('aud');
+      const form = new URLSearchParams(await body(req));
+      const aud = form.get('aud');
       if (aud !== 'self' && aud !== 'other') return json(res, 400, { error: 'aud is self or other' });
+      // `who=other-person`: a different subject who has the first person's email address (V10.3.3, ADR-148).
+      const who = form.get('who');
+      if (who !== null && who !== 'other-person') return json(res, 400, { error: 'who is other-person or left out' });
+      const sub = who === 'other-person' ? 'sv-oidc-other-person' : 'sv-oidc-user';
       const client = aud === 'self' ? CLIENT_ID : 'some-other-service';
       const now = Math.floor(Date.now() / 1000);
       const token = signed(
         { alg: 'RS256', typ: 'at+jwt', kid: KID },
         {
-          iss: ISSUER, sub: 'sv-oidc-user', aud: client, client_id: client, scope: 'openid email profile',
-          iat: now, exp: now + 300, jti: b64url(crypto.randomBytes(12)),
+          iss: ISSUER, sub, aud: client, client_id: client, scope: 'openid email profile',
+          email: 'sv-oidc-user@example.test', iat: now, exp: now + 300, jti: b64url(crypto.randomBytes(12)),
         },
       );
-      tokens.set(token, { sub: 'sv-oidc-user', email: 'sv-oidc-user@example.test', client });
+      tokens.set(token, { sub, email: 'sv-oidc-user@example.test', client });
       return json(res, 200, { token });
     }
     if (req.method === 'POST' && path === '/_sv/id-token') {

@@ -56,8 +56,11 @@ pub fn marker(kind: &str, tag: &str) -> String {
 /// once (`oidc-provider.mjs` says what each does).
 pub mod oidc {
     pub const MODE: &str = "/_sv/mode";
-    /// Mints an access token, `aud=self` for this app or `aud=other` for another service (ADR-127).
+    /// Mints an access token, `aud=self` for this app or `aud=other` for another service (ADR-127); with
+    /// `who=other-person`, for a different subject who has the test person's email address (V10.3.3, ADR-148).
     pub const ACCESS_TOKEN: &str = "/_sv/access-token";
+    /// The `who` that asks for a token for the other person who shares the email address.
+    pub const OTHER_SUBJECT: &str = "other-person";
     /// Mints an ID token for this app's client, as a sign-in hands it over (V9.2.2, backlog 0500).
     pub const ID_TOKEN: &str = "/_sv/id-token";
     /// Mints a back-channel logout token, `variant=good`, `wrong-typ`, `no-events`, or `with-nonce` (ADR-127).

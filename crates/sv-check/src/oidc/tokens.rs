@@ -23,6 +23,16 @@ pub(super) const RESOURCE_AUD: Rule = Rule {
           provider's introspection, its `client_id`) against the app's own, and refuse every other.",
 };
 
+pub(super) const SUBJECT: Rule = Rule {
+    rule_id: "probe.oidc-access-token-user-keyed-on-email",
+    requirement_ids: &["V10.3.3"],
+    cwe: &["CWE-287"],
+    impact: "A different person who has the same email address at the sign-in provider gets the first person's data \
+             through the app's API: an address can be given to someone else, or chosen by whoever signs up first.",
+    fix: "Know the person behind an access token by its issuer and subject (`iss` and `sub`) together, never by its \
+          `email`, and keep the email address only for writing to them.",
+};
+
 pub(super) const ID_AS_ACCESS: Rule = Rule {
     rule_id: "probe.oidc-id-token-taken-as-access-token",
     requirement_ids: &["V9.2.2"],
@@ -75,6 +85,119 @@ fn opens_with_bearer(http: &mut dyn Http, section: &OidcSection, token: &str, id
         headers: vec![("Authorization".to_owned(), format!("Bearer {token}"))],
         body: None,
     }))
+}
+
+/// Whether the page that shows what was saved, asked with `token` as a bearer token and no cookie, has the marker V10.5.2's
+/// question saved on it.
+fn bearer_shows_marker(http: &mut dyn Http, section: &OidcSection, token: &str, id: &str) -> bool {
+    let page = section.shows.as_deref().unwrap_or(&section.private);
+    http.send(&ProbeRequest {
+        id: id.to_owned(),
+        method: "GET".to_owned(),
+        path: page.to_owned(),
+        headers: vec![("Authorization".to_owned(), format!("Bearer {token}"))],
+        body: None,
+    })
+    .is_some_and(|r| r.status < 400 && r.body.contains(MARKER))
+}
+
+/// V10.3.3 (backlog 0625, part 5; ADR-148): an access token for a different person who has the first person's email
+/// address, sent where the first person's own token shows what they saved. Asked only when that control holds: V10.5.2's
+/// question saved the marker through `create`, and the first person's own access token, sent as a bearer token, shows
+/// it on `shows`. The marker shown to the other person is a finding; not shown, while the first person's own token shows
+/// it just before and after, is credited in part.
+pub(super) fn access_token_subject(http: &mut dyn Http, section: &OidcSection, out: &mut Outcome) {
+    let not_assessed =
+        |out: &mut Outcome, why: String| out.not_assessed.push(("V10.3.3".to_owned(), why));
+    if section.create.is_none() {
+        not_assessed(
+            out,
+            "stackvet.toml says nothing about saving anything as the signed-in person, so whose data an access token \
+             reaches could not be seen. Add `create` under `[stack.run.oidc]`, a request that saves something with \
+             `{marker}` in a field, and `shows`, a page where it appears, and it will be."
+                .to_owned(),
+        );
+        return;
+    }
+    let page = section
+        .shows
+        .as_deref()
+        .unwrap_or(&section.private)
+        .to_owned();
+    let Some(own) = mint(
+        http,
+        idp::ACCESS_TOKEN,
+        "aud=self",
+        "oidc-access-token-first",
+    ) else {
+        not_assessed(
+            out,
+            "The test provider did not hand over an access token, so nothing was sent as a bearer token.".to_owned(),
+        );
+        return;
+    };
+    if !bearer_shows_marker(http, section, &own, "oidc-bearer-first-shows") {
+        not_assessed(
+            out,
+            format!(
+                "The first person's own access token, sent as a bearer token to {page}, did not show what they saved, \
+                 so the page does not take the provider's access tokens or the save did not show there, and whose \
+                 data another person's token reaches could not be seen."
+            ),
+        );
+        return;
+    }
+    let Some(other) = mint(
+        http,
+        idp::ACCESS_TOKEN,
+        &format!("aud=self&who={}", idp::OTHER_SUBJECT),
+        "oidc-access-token-other-person",
+    ) else {
+        not_assessed(
+            out,
+            "The test provider did not hand over an access token for the other person.".to_owned(),
+        );
+        return;
+    };
+    let reached = bearer_shows_marker(http, section, &other, "oidc-bearer-other-person-shows");
+    out.steps.push(format!(
+        "sent {page} the first person's access token, which showed what they saved, and one for a different person \
+         with the same email address, which {}",
+        if reached { "showed it too" } else { "did not" }
+    ));
+    if reached {
+        out.findings.push(finding(
+            &SUBJECT,
+            "An access token for another person with the same email reaches the first person's data",
+            Severity::High,
+            format!(
+                "Sent as a bearer token with no cookie, an access token for a different person (another `sub`) who has \
+                 the first person's email address showed what the first person saved, on {page}: the app's API knows \
+                 people by their email address."
+            ),
+        ));
+    } else if bearer_shows_marker(http, section, &own, "oidc-bearer-first-shows-again") {
+        out.verified.push(
+            crate::Verified::new(
+                SUBJECT.rule_id,
+                SUBJECT.requirement_ids,
+                format!(
+                    "an access token for a different person with the same email address, sent as a bearer token to \
+                     {page}, did not show the first person's saved data, which their own token showed before and after"
+                ),
+            )
+            // One page, and one other person.
+            .in_part(),
+        );
+    } else {
+        not_assessed(
+            out,
+            "The first person's own token stopped showing what they saved after the other person's was sent, so the \
+             absence may not have been about whose token it was."
+                .to_owned(),
+        );
+    }
+    crate::verified::unless_credited(SUBJECT.rule_id, &out.verified);
 }
 
 /// V10.3.1: an access token for another service, sent where one for this app opens the private page.
@@ -374,3 +497,7 @@ pub(super) fn backchannel_logout(http: &mut dyn Http, section: &OidcSection, out
 #[cfg(test)]
 #[path = "tokens_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "subject_tests.rs"]
+mod subject_tests;

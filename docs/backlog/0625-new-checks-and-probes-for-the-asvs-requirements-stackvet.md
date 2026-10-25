@@ -45,6 +45,13 @@ for backlog 0507.
    **Part status:** open
 5. **Access tokens with too little scope, and for another person with the same email** (V10.3.2, V10.3.3, L2): probe,
    from the stand-in provider. Medium.
+   V10.3.3 built 24 October 2026 (ADR-148): the test provider mints an access token for a different person who has
+   the first person's email address, and `crates/sv-check/src/oidc/tokens.rs` sends it as a bearer token to `shows`,
+   where the first person's own token shows what they saved (V10.5.2's question saves it through `create`). Reaching
+   it is a finding; not reaching it, with the first person's own token showing it before and after, is credited in
+   part. Three tests in `crates/sv-check/src/oidc/subject_tests.rs`, and the provider's contract test runs the script.
+   Broken on purpose: with the control skipped, an app that saved nothing was credited; with the script minting the
+   other person under the first one's subject, the contract test went red. V10.3.2 is the next pull request.
    **Part status:** claimed by claude/0625-5, 24 October 2026
 6. **Authorization-server metadata and settings** (V10.4.16, V10.6.1; V10.4.3, V10.4.8): one read of the app's own
    `/.well-known` documents, and a settings check for django-oauth-toolkit and node-oidc-provider. Medium.
