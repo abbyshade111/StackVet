@@ -2375,6 +2375,14 @@
     "finding_only": false
    }
   ],
+  "V6.5.8": [
+   {
+    "id": "ast.otp-time-from-request",
+    "run": "Reads the code",
+    "looks_for": "A one-time code is checked against a time the request sent",
+    "finding_only": true
+   }
+  ],
   "V6.6.2": [
    {
     "id": "probe.email-code-unbound",

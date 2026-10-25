@@ -41,7 +41,7 @@ decided per app, from its `stackvet.toml` and its code.
 
 ## OWASP ASVS 5.0
 
-345 requirements: 148 can be checked, 65 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 22 with no check yet.
+345 requirements: 148 can be checked, 66 can only be found failing, 11 where a check helps but a person decides, 99 the owner answers, and 21 with no check yet.
 
 ### Level 1 (70 requirements, 49 can be checked, 14 can only be found failing)
 
@@ -460,7 +460,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V17.3.1** Verify that the signaling server is able to continue processing legitimate incoming signaling messages during a flood attack. This should be achieved by implementing rate limiting at the signaling level. | The owner answers | Asked of the owner: a design question |
 | **V17.3.2** Verify that the signaling server is able to continue processing legitimate signaling messages when encountering malformed signaling message that could cause a denial of service condition. This could include implementing input validation, safely handling integer overflows, preventing buffer overflows, and employing other robust error-handling techniques. | No check yet | – |
 
-### Level 3 (92 requirements, 14 can be checked, 13 can only be found failing)
+### Level 3 (92 requirements, 14 can be checked, 14 can only be found failing)
 
 #### V1 Encoding and Sanitization
 
@@ -526,7 +526,7 @@ decided per app, from its `stackvet.toml` and its code.
 | **V6.4.6** Verify that administrative users can initiate the password reset process for the user, but that this does not allow them to change or choose the user's password. This prevents a situation where they know the user's password. | The owner answers | Asked of the owner: a design question |
 | **V6.5.6** Verify that any authentication factor (including physical devices) can be revoked in case of theft or other loss. | The owner answers | Asked of the owner: a design question |
 | **V6.5.7** Verify that biometric authentication mechanisms are only used as secondary factors together with either something you have or something you know. | The owner answers | Asked of the owner: a design question |
-| **V6.5.8** Verify that time-based one-time passwords (TOTPs) are checked based on a time source from a trusted service and not from an untrusted or client provided time. | No check yet | – |
+| **V6.5.8** Verify that time-based one-time passwords (TOTPs) are checked based on a time source from a trusted service and not from an untrusted or client provided time. | Can only be found failing | Reads the code: `ast.otp-time-from-request`, looks for: A one-time code is checked against a time the request sent (found failing only) |
 | **V6.6.4** Verify that, where push notifications are used for multi-factor authentication, rate limiting is used to prevent push bombing attacks. Number matching may also mitigate this risk. | No check yet | – |
 | **V6.7.1** Verify that the certificates used to verify cryptographic authentication assertions are stored in a way protects them from modification. | No check yet | – |
 | **V6.7.2** Verify that the challenge nonce is at least 64 bits in length, and statistically unique or unique over the lifetime of the cryptographic device. | No check yet | – |
