@@ -42,7 +42,7 @@ for backlog 0507.
    of an address let back in went red.
    **Part status:** done, 24 October 2026
 4. **Malformed signaling messages, then a normal one** (V17.3.2, L2): probe. Medium.
-   **Part status:** open
+   **Part status:** claimed by claude/0625-4, 24 October 2026
 5. **Access tokens with too little scope, and for another person with the same email** (V10.3.2, V10.3.3, L2): probe,
    from the stand-in provider. Medium.
    V10.3.3 built 24 October 2026 (ADR-148): the test provider mints an access token for a different person who has
