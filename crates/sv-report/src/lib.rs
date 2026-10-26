@@ -26,6 +26,8 @@ pub mod chapters;
 pub mod checklist;
 pub mod dashboard;
 pub mod fence;
+// A report on somebody else's project, fetched from its address (backlog 0670, ADR-154).
+pub mod fetched;
 pub mod folder;
 pub mod groups;
 pub mod hook;
@@ -1192,6 +1194,11 @@ pub struct Report {
     /// different files apart.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub run_record: Option<RunRecord>,
+    /// Somebody else's project, fetched from its address (backlog 0670, ADR-154): its address, its commit, and whose
+    /// answers its `stackvet.toml` holds. Every page then says so at its top, and the short version is written for a
+    /// reader weighing the risk of using it (`fetched`). `None` for an app of the person's own.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fetched: Option<fetched::FetchedProject>,
     /// The manifest's file name as this run read it: `stackvet.toml`, or `stackvet.toml` while
     /// an app still has it under that name (ADR-062). Older reports carry none, and are read as the
     /// new name.
@@ -3579,6 +3586,7 @@ pub fn build(inputs: Inputs<'_>) -> Report {
         could_settle: Default::default(),
         plain: Default::default(),
         paper: Default::default(),
+        fetched: None,
     }
 }
 

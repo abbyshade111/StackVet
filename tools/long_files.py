@@ -154,10 +154,10 @@ def long_ones(root):
         test_file = is_test_file(relative)
         lines = code.count("\n") + (0 if code.endswith("\n") or not code else 1)
         if lines > FILE_LINES:
-            files.append({"file": str(relative), "lines": lines, "test": test_file})
+            files.append({"file": relative.as_posix(), "lines": lines, "test": test_file})
         for name, first, length, in_test in functions(code, test_file):
             if length > FUNCTION_LINES:
-                fns.append({"file": str(relative), "function": name, "line": first, "lines": length, "test": in_test})
+                fns.append({"file": relative.as_posix(), "function": name, "line": first, "lines": length, "test": in_test})
     files.sort(key=lambda f: (-f["lines"], f["file"]))
     fns.sort(key=lambda f: (-f["lines"], f["file"], f["line"]))
     return {"files": files, "functions": fns}

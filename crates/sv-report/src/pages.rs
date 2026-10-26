@@ -81,6 +81,7 @@ fn page(report: &Report, page: &Page, parts: Vec<String>, empty: &str) -> String
         )),
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
+    out.push_str(&crate::fetched::markdown(report));
     out.push_str(&crate::folder::markdown_line(page.file));
     out.push_str(
         "This page is one part of the report, cut whole from it: it credits nothing on its own, and the counts \

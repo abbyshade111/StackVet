@@ -542,7 +542,7 @@ pub fn fetch(address: &Address, base: &Path, via: &mut dyn Download) -> Result<F
         .map_or_else(|| "commit-not-said".to_owned(), |c| c[..12].to_owned());
     let mut folder = parent.join(format!("{project}-{short}"));
     let mut n = 2;
-    while folder.exists() {
+    while folder.exists() || record_path(&folder).exists() {
         folder = parent.join(format!("{project}-{short}-{n}"));
         n += 1;
     }
@@ -552,13 +552,72 @@ pub fn fetch(address: &Address, base: &Path, via: &mut dyn Download) -> Result<F
         std::fs::write(&path, NOBODY_ANSWERED)
             .with_context(|| format!("writing {}", path.display()))?;
     }
+    let project = sv_report::fetched::FetchedProject {
+        address: address.shown(),
+        commit: unpacked.commit.clone(),
+        answers: if manifest_written {
+            Answers::Nobody
+        } else {
+            Answers::Author
+        },
+    };
+    let mut record = serde_json::to_value(&project)?;
+    record["manifest_sha256"] = serde_json::json!(manifest_hash(&staging));
     std::fs::rename(&staging, &folder).with_context(|| format!("naming {}", folder.display()))?;
+    let path = record_path(&folder);
+    std::fs::write(&path, serde_json::to_string_pretty(&record)?)
+        .with_context(|| format!("writing {}", path.display()))?;
     Ok(Fetched {
         folder,
         address: address.clone(),
         unpacked,
         manifest_written,
     })
+}
+
+use sv_report::fetched::Answers;
+
+/// The record of the fetch into `folder`: `PROJECT-COMMIT.fetched.json` beside it, rather than in it, where no archive
+/// can write. It holds which project it is (`FetchedProject`), and `manifest_sha256`, the hash of the `stackvet.toml`
+/// it was fetched with (null when there was none by either name, or two), so a report can tell when that has changed.
+fn record_path(folder: &Path) -> PathBuf {
+    let name = folder
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    folder.with_file_name(format!("{name}.fetched.json"))
+}
+
+/// The SHA-256 of the app's `stackvet.toml`, by whichever name it has.
+fn manifest_hash(folder: &Path) -> Option<String> {
+    let located = sv_manifest::locate(folder).ok()??;
+    std::fs::read(located.path)
+        .ok()
+        .map(|bytes| crate::bundle::sha256(&bytes))
+}
+
+/// Which project `app_dir` is, when `sv` fetched it there: read from the record beside it, and only for a folder inside
+/// a `stackvet-fetched` folder, so an app of the person's own is never read as somebody else's. A `stackvet.toml`
+/// changed since the fetch is said to be (`Answers::Changed`). `None` for any other folder, or a record that cannot be
+/// read.
+pub fn record_for(app_dir: &Path) -> Option<sv_report::fetched::FetchedProject> {
+    let app_dir = sv_frameworks::paths::canonical(app_dir).ok()?;
+    if !app_dir
+        .ancestors()
+        .skip(1)
+        .any(|a| a.file_name().is_some_and(|n| n == FETCHED_FOLDER))
+    {
+        return None;
+    }
+    let text = std::fs::read_to_string(record_path(&app_dir)).ok()?;
+    let record: serde_json::Value = serde_json::from_str(&text).ok()?;
+    let mut project: sv_report::fetched::FetchedProject =
+        serde_json::from_value(record.clone()).ok()?;
+    let kept = record["manifest_sha256"].as_str().map(str::to_owned);
+    if manifest_hash(&app_dir) != kept {
+        project.answers = Answers::Changed;
+    }
+    Some(project)
 }
 
 #[cfg(test)]

@@ -22,7 +22,7 @@ pub fn escape(text: &str) -> String {
 /// heading (backlog 0219 part 5, ADR-107). Inline, it fetches nothing, so the page's policy (`CSP_META`) is
 /// unchanged; its colors are the page's style (`.mark-bracket`, `.mark-check`), so a dark page shows the
 /// colors of `stackvet-mark-dark.svg`. Decorative: the heading's own words name the page. No `xmlns`: an SVG
-/// inside an HTML page needs none, and the pages hold no web address at all.
+/// inside an HTML page needs none, and the pages link to no web address (a fetched project's address is text).
 pub const MARK: &str = "<svg class=\"mark\" viewBox=\"0 0 64 64\" \
                         width=\"28\" height=\"28\" aria-hidden=\"true\" focusable=\"false\">\
                         <path class=\"mark-bracket\" d=\"M20 10 H11 V54 H20\"/>\
@@ -255,6 +255,14 @@ pub fn page(report: &Report) -> String {
             .unwrap_or_default(),
         report.target_level
     ));
+    // Whose project this is, before anything else is read (backlog 0670, ADR-154).
+    if let Some(lines) = crate::fetched::banner(report) {
+        b.push_str("<section class=\"fetched\">\n");
+        for line in lines {
+            b.push_str(&format!("<p><strong>{}</strong></p>\n", escape(&line)));
+        }
+        b.push_str("</section>\n");
+    }
 
     // The short version, before any of the explaining. See `crate::bluf`.
     b.push_str("<section class=\"bluf\">\n");
@@ -1805,6 +1813,7 @@ mod tests {
             could_settle: Default::default(),
             plain: Default::default(),
             paper: Default::default(),
+            fetched: None,
         }
     }
 

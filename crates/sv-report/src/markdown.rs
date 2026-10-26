@@ -203,6 +203,7 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
             report.target_level
         ));
     }
+    out.push_str(&crate::fetched::markdown(report));
     if pdf {
         // The PDF's own line, then what its fonts cannot show (ADR-116).
         out.push_str(&crate::folder::markdown_line(crate::pdf::FILE));
@@ -1011,6 +1012,7 @@ pub fn security(report: &Report) -> String {
         )),
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
+    out.push_str(&crate::fetched::markdown(report));
     out.push_str(&crate::folder::markdown_line("security.md"));
     if let Some(line) = crate::baseline_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
@@ -1200,6 +1202,7 @@ pub fn low_findings(report: &Report) -> String {
         )),
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
+    out.push_str(&crate::fetched::markdown(report));
     out.push_str(&crate::folder::markdown_line(crate::LOW_FINDINGS_FILE));
     let low: Vec<&sv_check::Finding> = report
         .findings
@@ -1481,6 +1484,7 @@ mod tests {
             could_settle: Default::default(),
             plain: Default::default(),
             paper: Default::default(),
+            fetched: None,
         };
         let md = security(&report);
         // The setup: all three reached the page.

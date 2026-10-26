@@ -45,6 +45,18 @@ fn said(out: &Output) -> String {
     )
 }
 
+/// Where the container sees `path`: as it is, except on Windows, where `sv connect --docker` shows `C:\\Users\\you\\app`
+/// at `/c/Users/you/app` (backlog 0375, ADR-153).
+fn inside(path: &str) -> String {
+    if !cfg!(windows) {
+        return path.to_owned();
+    }
+    let (drive, rest) = path
+        .split_once(':')
+        .expect("a Windows path starts with its drive");
+    format!("/{}{}", drive.to_ascii_lowercase(), rest.replace('\\', "/"))
+}
+
 fn strings(v: &Value) -> Vec<String> {
     v.as_array()
         .expect("a list")
@@ -66,8 +78,13 @@ fn the_container_settings_carry_this_folders_real_path_and_say_where_they_go() {
     assert_eq!(server["command"], "/usr/local/bin/docker");
     let args = strings(&server["args"]);
     let path = dir.display().to_string();
-    assert!(args.contains(&format!("{path}:{path}")), "{args:?}");
-    assert_eq!(args.last().unwrap(), &path, "{args:?}");
+    let seen = inside(&path);
+    assert!(args.contains(&format!("{path}:{seen}")), "{args:?}");
+    assert_eq!(args.last().unwrap(), &seen, "{args:?}");
+    // On Windows the container is told the folder's own path, so the server can write it back (ADR-153).
+    if cfg!(windows) {
+        assert!(args.contains(&format!("SV_HOST_FOLDER={path}")), "{args:?}");
+    }
     assert!(
         args.contains(&sv_frameworks::names::IMAGE.to_owned()),
         "{args:?}"
@@ -129,8 +146,9 @@ fn a_folder_given_by_a_relative_name_is_written_as_its_full_path() {
     );
     let args = strings(&parsed(&out)["mcpServers"]["stackvet"]["args"]);
     let full = dir.join("app").display().to_string();
-    assert_eq!(args.last().unwrap(), &full, "{args:?}");
-    assert!(args.contains(&format!("{full}:{full}")), "{args:?}");
+    let seen = inside(&full);
+    assert_eq!(args.last().unwrap(), &seen, "{args:?}");
+    assert!(args.contains(&format!("{full}:{seen}")), "{args:?}");
 }
 
 #[test]
@@ -295,7 +313,11 @@ fn the_setup_prompts_command_prints_stackvets_server_in_no_apps_format() {
     ] {
         assert!(given.iter().any(|a| a == part), "{part}: {given:?}");
     }
-    assert_eq!(given.last().map(String::as_str), dir.to_str(), "{given:?}");
+    assert_eq!(
+        given.last(),
+        Some(&inside(&dir.display().to_string())),
+        "{given:?}"
+    );
     assert!(said(&out).contains("in no app's format"), "{}", said(&out));
     // And with the Linux line's --user, in the form `id` prints, before the image, where docker reads it.
     assert!(prompt.contains("--user \"$(id -u):$(id -g)\""));

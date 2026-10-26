@@ -438,6 +438,7 @@ pub fn render(report: &Report) -> String {
         )),
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
+    out.push_str(&crate::fetched::markdown(report));
     out.push_str(&crate::folder::markdown_line(FILE));
     out.push_str(&inert(&opening(report)));
     out.push_str("\n\n");
