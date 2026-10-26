@@ -82,7 +82,7 @@ fn page(report: &Report, page: &Page, parts: Vec<String>, empty: &str) -> String
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
     out.push_str(&crate::fetched::markdown(report));
-    out.push_str(&crate::folder::markdown_line(page.file));
+    out.push_str(&crate::folder::markdown_line(report, page.file));
     out.push_str(
         "This page is one part of the report, cut whole from it: it credits nothing on its own, and the counts \
          stay in `compliance.md`. Like every file in this folder it is sealed with the report, so `sv` can tell \
@@ -122,10 +122,14 @@ pub fn decisions(report: &Report) -> String {
     let compliance = crate::markdown::compliance(report);
     let mut parts = cut(&compliance, |h| h == "What only you can check");
     if !report.undecided.is_empty() {
-        let mut part = String::from(
+        // Of a fetched project, the answers are its author's (backlog 0677, part 2).
+        let mut part = String::from(if report.fetched.is_some() {
+            "## Requirements nobody has placed\n\nEach of these applies or not depending on an answer only the \
+             project's author can give: what rests on it is left open, not passed.\n\n"
+        } else {
             "## Requirements nobody has placed\n\nEach of these applies or not depending on an answer only you can \
-             give. Answer it in `stackvet.toml`, or with your AI coding tool, and write the report again.\n\n",
-        );
+             give. Answer it in `stackvet.toml`, or with your AI coding tool, and write the report again.\n\n"
+        });
         for un in &report.undecided {
             part.push_str(&format!(
                 "- **{}** {}: {}\n",

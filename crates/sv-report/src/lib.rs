@@ -488,6 +488,26 @@ pub struct ClaimLine {
 /// `ClaimLine::by` for an answer the owner confirmed through `sv review` (backlog 0606).
 pub const CONFIRMED_BY_OWNER: &str = "owner";
 
+/// `ClaimLine::by` for an answer no line of stackvet.toml gave, which `sv` takes by default (backlog 0677, part 1).
+pub const SV_DEFAULT: &str = "sv-default";
+
+/// Marks each answer named in `defaulted` as `sv`'s default, by its condition's name, with a note saying so (backlog
+/// 0677, part 1): it was never anybody's word, so it is not read as the AI coding tool's, or as the manifest's.
+pub fn mark_defaulted(claims: &mut [ClaimLine], defaulted: &[String]) {
+    for claim in claims.iter_mut() {
+        if defaulted.contains(&claim.name) {
+            claim.by = Some(SV_DEFAULT);
+            claim.note = match claim.found_in_code {
+                Some(true) => "Nobody has said, so sv takes the answer that keeps the requirements that turn on this \
+                               switched on. The code shows it too.",
+                _ => "Nobody has said, so sv takes the answer that keeps the requirements that turn on this \
+                      switched on.",
+            }
+            .to_owned();
+        }
+    }
+}
+
 /// Marks each answer named in `confirmed` as the owner's, by its condition's name (backlog 0606). An answer nobody gave
 /// stays nobody's: a confirmation is of an answer, never of a silence.
 pub fn mark_confirmed(claims: &mut [ClaimLine], confirmed: &[String]) {
@@ -499,13 +519,35 @@ pub fn mark_confirmed(claims: &mut [ClaimLine], confirmed: &[String]) {
 }
 
 impl ClaimLine {
+    /// Who gave the answer, for a person, in a report: of a fetched project, an answer in its own stackvet.toml is its
+    /// author's, or whoever changed it since (backlog 0677, part 2).
+    pub fn who_said_in(&self, report: &Report) -> &'static str {
+        match (&report.fetched, self.by) {
+            (Some(f), Some(by)) if by != SV_DEFAULT && by != CONFIRMED_BY_OWNER => {
+                match f.answers {
+                    crate::fetched::Answers::Changed => {
+                        "whoever changed the project's stackvet.toml since it was fetched"
+                    }
+                    _ => "the project's author, in its own stackvet.toml",
+                }
+            }
+            _ => self.who_said(),
+        }
+    }
+
     /// Who gave the answer, for a person.
     pub fn who_said(&self) -> &'static str {
         match self.by {
             Some(CONFIRMED_BY_OWNER) => "yours, confirmed through `sv review`",
+            Some(SV_DEFAULT) => "nobody: sv's default",
             Some(_) => "not recorded, so read as your AI coding tool's",
             None => "nobody",
         }
+    }
+
+    /// Whether no line of stackvet.toml gave this answer, and `sv` took it by default.
+    pub fn defaulted(&self) -> bool {
+        self.by == Some(SV_DEFAULT)
     }
 
     /// Whether the owner confirmed this answer through `sv review`.
@@ -976,9 +1018,13 @@ impl AiProcess {
         out
     }
 
-    /// What a route means, for the list.
-    pub fn route_text(route: &str) -> &'static str {
+    /// What a route means, for the list. Of a fetched project, a rule `sv` gives an AI coding tool says nothing of how
+    /// the project was built (backlog 0677, part 2).
+    pub fn route_text(report: &Report, route: &str) -> &'static str {
         match route {
+            "rules-given" if report.fetched.is_some() => {
+                "a rule sv gives an AI coding tool, which says nothing of how this project was built"
+            }
             "rules-given" => "given to your AI coding tool as a rule",
             "your-decision" => "your decision, among your questions",
             _ => "nothing in `sv` reaches it",
@@ -1515,7 +1561,12 @@ pub fn could_settle(
             said.push("sv's own reading of the code looked, and settled nothing");
         }
         if a_test_could.contains(r.id.as_str()) {
-            said.push("a test of the app's could (ask your AI coding tool to write one)");
+            // Of a fetched project, the test is its author's to write (backlog 0677, part 2).
+            said.push(if report.fetched.is_some() {
+                "a test of the project's own could, which its author would write"
+            } else {
+                "a test of the app's could (ask your AI coding tool to write one)"
+            });
         }
         if said.is_empty() {
             said.push(if listed.contains(r.id.as_str()) {

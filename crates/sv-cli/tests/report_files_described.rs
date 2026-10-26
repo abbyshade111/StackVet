@@ -119,7 +119,7 @@ fn the_report_lists_its_files_and_each_markdown_report_says_its_reader() {
     ] {
         let opening: String = text.lines().take(6).collect::<Vec<_>>().join("\n");
         assert!(
-            opening.contains(sv_report::folder::markdown_line(name).trim_end()),
+            opening.contains(sv_report::folder::markdown_line(&report, name).trim_end()),
             "{name} does not open by saying what it holds and who it is for:\n{opening}"
         );
     }

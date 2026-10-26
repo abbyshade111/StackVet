@@ -53,7 +53,7 @@ fn each_page_holds_its_own_sections_and_says_what_it_is() {
             "{text}"
         );
         assert!(
-            text.contains(crate::folder::markdown_line(page.file).trim_end()),
+            text.contains(crate::folder::markdown_line(&report, page.file).trim_end()),
             "{}",
             page.file
         );

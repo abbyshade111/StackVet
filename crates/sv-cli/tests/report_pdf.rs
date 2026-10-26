@@ -88,9 +88,14 @@ fn every_ordinary_word_of_the_security_and_compliance_reports_is_in_the_pdf() {
         let security = sv_report::markdown::security(&report)
             .replace(&sv_report::pdf_line(&report), "")
             .replace(&format!("in `{}`", sv_report::LOW_FINDINGS_FILE), "")
-            .replace(&sv_report::folder::markdown_line("security.md"), "");
-        let compliance = sv_report::markdown::compliance(&report)
-            .replace(&sv_report::folder::markdown_line("compliance.md"), "");
+            .replace(
+                &sv_report::folder::markdown_line(&report, "security.md"),
+                "",
+            );
+        let compliance = sv_report::markdown::compliance(&report).replace(
+            &sv_report::folder::markdown_line(&report, "compliance.md"),
+            "",
+        );
         let wanted: BTreeSet<String> = words(&compliance)
             .union(&words(&security))
             .cloned()
@@ -126,7 +131,10 @@ fn an_angle_bracket_and_an_ampersand_in_the_apps_own_text_reach_the_pdf_as_thems
     let security = security
         .replace(&sv_report::pdf_line(&report), "")
         .replace(&format!("in `{}`", sv_report::LOW_FINDINGS_FILE), "")
-        .replace(&sv_report::folder::markdown_line("security.md"), "");
+        .replace(
+            &sv_report::folder::markdown_line(&report, "security.md"),
+            "",
+        );
     let missing: Vec<String> = words(&security)
         .difference(&words(&text))
         .cloned()

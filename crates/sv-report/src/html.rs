@@ -564,7 +564,7 @@ pub fn page(report: &Report) -> String {
             b.push_str(&format!(
                 "<tr><td>{}</td><td>{}</td></tr>\n",
                 escape(&gap.what),
-                escape(&gap.why)
+                escape(&crate::fetched::gap_why(report, gap))
             ));
         }
         b.push_str("</table>\n");
@@ -718,7 +718,7 @@ pub fn page(report: &Report) -> String {
             "<tr><td><code>{}</code></td><td>{}</td><td>{}</td></tr>\n",
             escape(file.name),
             escape(file.holds),
-            escape(file.for_whom)
+            escape(crate::folder::for_whom(report, file))
         ));
     }
     b.push_str("</table>\n");
@@ -840,7 +840,7 @@ fn ai_process(report: &Report, b: &mut String) {
             b.push_str(&format!(
                 "<tr><td><code>{}</code></td><td>{}</td><td>{}</td></tr>\n",
                 escape(&line.id),
-                escape(crate::AiProcess::route_text(line.route)),
+                escape(crate::AiProcess::route_text(report, line.route)),
                 escape(&line.description)
             ));
         }
@@ -948,7 +948,7 @@ fn only_you(report: &Report, b: &mut String) {
                 "<tr><td><code>{}</code> {}</td><td>{}</td><td>{}</td></tr>\n",
                 escape(&item.id),
                 escape(&item.title),
-                escape(item.route.what_to_do()),
+                escape(crate::fetched::route_said(report, item.route)),
                 {
                     // The plain question first, then the standard's words beside it (backlog 0427).
                     let asked = match &item.plain {

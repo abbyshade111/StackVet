@@ -127,7 +127,7 @@ pub fn render(report: &Report) -> String {
         .map(|gap| {
             json!({
                 "level": "note",
-                "message": { "text": format!("Not examined: {} — {}", gap.what, gap.why) },
+                "message": { "text": format!("Not examined: {} — {}", gap.what, crate::fetched::gap_why(report, gap)) },
                 "descriptor": { "id": "sv.not-examined" }
             })
         })
