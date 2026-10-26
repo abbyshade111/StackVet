@@ -19,7 +19,10 @@ were installed (Semgrep ran; Bandit had no Python of the app's to read, since `s
 not-the-app` names `tools/`), and without `--run`, since `sv` is not a web app: `sv report . --out <a folder outside
 the repository>`. It took under two minutes. It found nothing to fix, with 13 false alarms set aside: the owner's 12 of
 23 October, and one the owner recorded on 26 October, StackVet's own description of a rule in `data/reach.json`. The
-report of 23 October had 151 things to fix (backlog 0672).
+report of 23 October had 151 things to fix (backlog 0672). The requirements where something found a problem are
+counted from findings in test code, in the example apps and the other folders `stackvet.toml` marks as not the app,
+and from matches only worth a look: such findings count against their requirements by design, since a key in a test is
+still a leaked key and a sample still gets copied (ADR-023, ADR-099), and none of them is a thing to fix.
 
 Two things to get right when it is made again, both learned on 26 October 2026:
 
