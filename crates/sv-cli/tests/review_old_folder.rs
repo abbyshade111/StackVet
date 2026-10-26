@@ -13,8 +13,9 @@ use std::process::Command;
 use sv_frameworks::names::{CONFIG_DIR, OLD_CONFIG_DIR};
 
 /// Runs `sv` with stdin, stdout and stderr on a pseudo-terminal, typing each line of `typed` as a person would: once
-/// `sv` is waiting at a question (what it printed has stopped, on a line not yet ended). Typed any sooner, `sv review`
-/// drops it as typed ahead (backlog 0675). A run still going after a minute is stopped, so a test fails, not hangs.
+/// `sv` is waiting at a question (what it printed has stopped, on a line not yet ended), and the end of input (Ctrl-D)
+/// once they are all typed. Typed any sooner, `sv review` drops it as typed ahead (backlog 0675). A run still going
+/// after a minute is stopped, so a test fails, not hangs.
 const PTY: &str = r#"
 import os, pty, select, subprocess, sys, time
 answers = sys.argv[1].splitlines(keepends=True)
@@ -42,8 +43,9 @@ while True:
         p.kill()
         break
     waiting = out and not out.replace(b"\r", b"").endswith(b"\n")
-    if answers and waiting and time.monotonic() - last > 0.3:
-        os.write(main, answers.pop(0).encode())
+    if waiting and time.monotonic() - last > 0.3:
+        # The next answer, or, with none left, the end of input (Ctrl-D), as a person would leave.
+        os.write(main, answers.pop(0).encode() if answers else b"\x04")
         last = time.monotonic()
 p.wait()
 sys.stdout.buffer.write(out)
