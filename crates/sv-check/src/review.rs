@@ -160,6 +160,63 @@ fn line_fingerprint(rule: &str, file: &str, lines: &[String], index: usize) -> S
     format!("{FINGERPRINT_V2}{hex}")
 }
 
+/// Every line's fingerprint, as `line_fingerprint` gives each, in one pass (backlog 0675): each line's reaching lines
+/// are worked out once, and the earlier lines that read the same with the same reaching lines are counted as they
+/// go by, rather than worked out again for every later line. On `data/reach.json`, whose lines repeat by the hundred,
+/// one line at a time took `sv review` about two minutes.
+fn fingerprints(rule: &str, file: &str, lines: &[String]) -> Vec<String> {
+    use sha2::{Digest, Sha256};
+    let mut seen: std::collections::HashMap<(&str, Vec<String>), usize> =
+        std::collections::HashMap::new();
+    // For each name, the lines that assign it or add to it, found once for the whole file: which they are does not
+    // depend on the line asking, only which of them are above it does.
+    let mut setting: std::collections::HashMap<&str, Option<Vec<(usize, bool)>>> =
+        std::collections::HashMap::new();
+    let mut out = Vec::with_capacity(lines.len());
+    for (index, line) in lines.iter().enumerate() {
+        let what = line.trim();
+        let mut reaching = Vec::new();
+        for name in names_in(line) {
+            let at = setting.entry(name).or_insert_with(|| {
+                let re = assignment(name)?;
+                Some(
+                    lines
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, l)| l.contains(name))
+                        .filter_map(|(i, l)| re.captures(l).map(|m| (i, m.get(1).is_some())))
+                        .collect(),
+                )
+            });
+            let Some(at) = at else {
+                continue;
+            };
+            let above = at.partition_point(|&(i, _)| i < index);
+            let mut kept = 0;
+            for &(i, adds_to) in at[..above].iter().rev() {
+                reaching.push(format!("{name}: {}", lines[i].trim()));
+                kept += 1;
+                if !adds_to || kept == MOST_ASSIGNMENTS {
+                    break;
+                }
+            }
+        }
+        let occurrence = seen.entry((what, reaching.clone())).or_insert(0);
+        let digest = Sha256::digest(
+            format!(
+                "v2\n{rule}\n{file}\n{what}\n{}\n{}\n{occurrence}",
+                reaching.len(),
+                reaching.join("\n")
+            )
+            .as_bytes(),
+        );
+        *occurrence += 1;
+        let hex: String = digest.iter().take(8).map(|b| format!("{b:02x}")).collect();
+        out.push(format!("{FINGERPRINT_V2}{hex}"));
+    }
+    out
+}
+
 fn reaching_eq(lines: &[String], index: usize, reaching_of_other: &[String]) -> bool {
     reaching(lines, index) == reaching_of_other
 }
@@ -172,28 +229,8 @@ fn reaching_eq(lines: &[String], index: usize, reaching_of_other: &[String]) -> 
 /// passes it as a keyword argument, counts too. That only ever adds a line to watch, so a false
 /// alarm comes back for looking at again more often, never less.
 fn reaching(lines: &[String], index: usize) -> Vec<String> {
-    let line = &lines[index];
-    let mut names: Vec<&str> = Vec::new();
-    let mut start = None;
-    for (i, c) in line
-        .char_indices()
-        .chain(std::iter::once((line.len(), ' ')))
-    {
-        let word = c.is_ascii_alphanumeric() || c == '_' || c == '$';
-        match (start, word) {
-            (None, true) if !c.is_ascii_digit() => start = Some(i),
-            (Some(s), false) => {
-                let name = &line[s..i];
-                if !names.contains(&name) {
-                    names.push(name);
-                }
-                start = None;
-            }
-            _ => {}
-        }
-    }
     let mut out = Vec::new();
-    for name in names {
+    for name in names_in(&lines[index]) {
         let Some(re) = assignment(name) else {
             continue;
         };
@@ -214,6 +251,30 @@ fn reaching(lines: &[String], index: usize) -> Vec<String> {
         }
     }
     out
+}
+
+/// The names `line` uses, each once, in the order it first uses them.
+fn names_in(line: &str) -> Vec<&str> {
+    let mut names: Vec<&str> = Vec::new();
+    let mut start = None;
+    for (i, c) in line
+        .char_indices()
+        .chain(std::iter::once((line.len(), ' ')))
+    {
+        let word = c.is_ascii_alphanumeric() || c == '_' || c == '$';
+        match (start, word) {
+            (None, true) if !c.is_ascii_digit() => start = Some(i),
+            (Some(s), false) => {
+                let name = &line[s..i];
+                if !names.contains(&name) {
+                    names.push(name);
+                }
+                start = None;
+            }
+            _ => {}
+        }
+    }
+    names
 }
 
 /// A pattern for a line that assigns `name`: the name as a whole word, an optional type after a
@@ -395,21 +456,20 @@ pub fn lines_with_fingerprint(
     if !earlier && !fingerprint.starts_with(FINGERPRINT_V2) {
         return Vec::new();
     }
-    let mut found = Vec::new();
-    for (i, l) in lines.iter().enumerate() {
-        let matches = if earlier {
-            named(rule, file, l.trim()) == fingerprint
-        } else {
-            line_fingerprint(rule, file, lines, i) == fingerprint
-        };
-        if matches {
-            found.push((i + 1, l.trim().to_owned()));
-            if !earlier {
-                break;
-            }
-        }
+    if !earlier {
+        // Every line's fingerprint in one pass (backlog 0675), and the first that matches.
+        return fingerprints(rule, file, lines)
+            .iter()
+            .position(|f| f == fingerprint)
+            .map(|i| vec![(i + 1, lines[i].trim().to_owned())])
+            .unwrap_or_default();
     }
-    found
+    lines
+        .iter()
+        .enumerate()
+        .filter(|(_, l)| named(rule, file, l.trim()) == fingerprint)
+        .map(|(i, l)| (i + 1, l.trim().to_owned()))
+        .collect()
 }
 
 /// The fingerprint, in today's form, of the one line an entry's earlier-form fingerprint names, for
@@ -808,6 +868,10 @@ mod still_reads_tests;
 #[cfg(test)]
 #[path = "review_renamed_title_tests.rs"]
 mod renamed_title_tests;
+
+#[cfg(test)]
+#[path = "review_line_search_tests.rs"]
+mod line_search_tests;
 
 #[cfg(test)]
 mod tests {
