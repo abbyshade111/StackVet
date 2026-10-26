@@ -499,3 +499,52 @@ fn the_record_beside_a_fetch_names_it_and_says_when_its_answers_changed() {
     std::fs::remove_file(record_path(&second.folder)).unwrap();
     assert!(record_for(&second.folder).is_none());
 }
+
+#[test]
+fn a_fetched_project_starts_only_when_it_says_how_and_installs_only_when_the_reader_allows() {
+    use std::sync::atomic::Ordering;
+    let base = scratch("start");
+    let none = archive(&[("project-main/app.py", "x = 1\n")], SHA);
+    let own = archive(
+        &[("project-main/stackvet.toml", "[app]\nname = \"its own\"\n")],
+        "1123456789abcdef0123456789abcdef01234567",
+    );
+    let mut host = StandIn::new(vec![Answer::Saved, Answer::Saved], none);
+    let nobody = fetch(&github(), &base, &mut host).unwrap();
+    let why = why_not_start(&nobody.folder, false).expect("nothing says how to start it");
+    assert!(why.contains("carries no stackvet.toml of its own"), "{why}");
+    host.archive = own;
+    let authors = fetch(&github(), &base, &mut host).unwrap();
+    assert_eq!(why_not_start(&authors.folder, false), None);
+    let why =
+        why_not_start(&authors.folder, true).expect("the author's install alone is not enough");
+    assert!(why.contains("add --install"), "{why}");
+    INSTALL_ALLOWED.store(true, Ordering::Relaxed);
+    let allowed = why_not_start(&authors.folder, true);
+    INSTALL_ALLOWED.store(false, Ordering::Relaxed);
+    assert_eq!(allowed, None);
+    // An app of the person's own is never held back here.
+    let mine = scratch("mine");
+    assert_eq!(why_not_start(&mine, true), None);
+}
+
+#[test]
+fn the_app_is_started_only_after_every_stage_that_reads_its_code() {
+    let stages = crate::assemble::REPORT_STAGES;
+    let run = stages
+        .iter()
+        .position(|s| s.starts_with("Running the app"))
+        .expect("a stage that runs the app");
+    // Only putting the report together comes after it: every stage that reads the code is before it.
+    assert_eq!(run, stages.len() - 2, "{stages:?}");
+    assert!(
+        stages[..run]
+            .iter()
+            .any(|s| s.starts_with("Reading its code"))
+    );
+    assert!(
+        stages[..run]
+            .iter()
+            .any(|s| s.starts_with("Running the outside tools"))
+    );
+}

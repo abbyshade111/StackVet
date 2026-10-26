@@ -1,6 +1,6 @@
 # Check any public code repository from its GitHub or GitLab address, for someone deciding whether to use it
 
-**Status:** claimed by claude/0670, 25 October 2026
+**Status:** done, 25 October 2026
 
 **Asked for by the owner, 25 October 2026:** "an option to use StackVet to evaluate any public code repository - for
 example, supply a GitHub or GitLab link to the tool and have it run all the tests so a user can decide if they want
@@ -67,5 +67,8 @@ In three parts, each a pull request:
    words and the short pages' titles are as they were, read under that banner.
 3. **Started only when asked:** with `--run`, after every static check has finished, a project with its own
    `stackvet.toml` is started in the fence as any app is, and the report says at its top that unvetted code was run.
-   **Part status:** open
+   **Part status:** done, 25 October 2026 (ADR-154, Later, and accepted). Started only with `--run`, after every check
+   that reads its code, and only when it carries its own `stackvet.toml`; its packages downloaded only with the reader's
+   `--install` (the owner's choice, "Only with --install (Recommended)"); every page's first line then says code nobody
+   vetted was run.
 

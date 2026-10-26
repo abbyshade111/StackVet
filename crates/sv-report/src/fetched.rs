@@ -40,16 +40,30 @@ pub fn banner(report: &Report) -> Option<Vec<String>> {
         Some(c) => format!("at commit {c}"),
         None => "at a commit its archive did not name".to_owned(),
     };
-    let mut lines = vec![
+    let started = matches!(report.run_status, Some(crate::RunStatus::Started { .. }));
+    let mut lines = Vec::new();
+    // Said first, above everything, when it is so (backlog 0670, part 3).
+    if started {
+        lines.push(
+            "Code nobody vetted was run: with --run, this project was started, after every check that reads its code, \
+             in a container on a network with no way out, its folder read-only and every capability dropped."
+                .to_owned(),
+        );
+    }
+    lines.extend([
         format!(
-            "This is somebody else's project: {} {commit}, fetched from its address and checked without running any \
-             of it. It may have changed since.",
-            f.address
+            "This is somebody else's project: {} {commit}, fetched from its address and {}. It may have changed since.",
+            f.address,
+            if started {
+                "checked by reading it, then by running it"
+            } else {
+                "checked without running any of it"
+            }
         ),
         "It is checked to help you decide whether to use it. Where this report says to fix something, read it as a \
          risk to weigh: fixing it is the author's to do. Nothing found is not the same as safe."
             .to_owned(),
-    ];
+    ]);
     lines.push(match f.answers {
         Answers::Nobody => "The project carried no stackvet.toml, so nobody has answered its questions: you cannot \
                             answer for somebody else's project, and what rests on them is left open, not passed."

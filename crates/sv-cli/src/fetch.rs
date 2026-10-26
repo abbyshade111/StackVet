@@ -577,6 +577,35 @@ pub fn fetch(address: &Address, base: &Path, via: &mut dyn Download) -> Result<F
 
 use sv_report::fetched::Answers;
 
+/// Set by `sv report --install` (backlog 0670, part 3; the owner's choice, ADR-154): the reader allows a project fetched
+/// from its address to have its packages downloaded before it is started. A fetched project's own `install = true` is
+/// its author's word, and is not enough on its own.
+pub static INSTALL_ALLOWED: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+/// Why a project fetched into `app_dir` is not started, or `None` when it may be, as for any app: it carries no
+/// `stackvet.toml` of its own, so nothing says how to start it, and `sv` does not guess; or its `stackvet.toml` asks for
+/// its packages to be downloaded (`install`) and the reader did not give `--install`. `None` too for an app of the
+/// person's own.
+pub fn why_not_start(app_dir: &Path, install: bool) -> Option<String> {
+    let project = record_for(app_dir)?;
+    if project.answers == Answers::Nobody {
+        return Some(
+            "it was not started: the project carries no stackvet.toml of its own, so nothing says how to start it, \
+             and sv does not guess"
+                .to_owned(),
+        );
+    }
+    if install && !INSTALL_ALLOWED.load(std::sync::atomic::Ordering::Relaxed) {
+        return Some(
+            "it was not started: its stackvet.toml asks for its packages to be downloaded first (install = true), \
+             which is its author's word, not yours; add --install to `sv report --run` to allow the download"
+                .to_owned(),
+        );
+    }
+    None
+}
+
 /// The record of the fetch into `folder`: `PROJECT-COMMIT.fetched.json` beside it, rather than in it, where no archive
 /// can write. It holds which project it is (`FetchedProject`), and `manifest_sha256`, the hash of the `stackvet.toml`
 /// it was fetched with (null when there was none by either name, or two), so a report can tell when that has changed.

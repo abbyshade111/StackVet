@@ -169,6 +169,12 @@ pub fn probe_the_running_app(
     slow: bool,
     private_files: &[sv_check::running::PrivateFile],
 ) -> std::result::Result<(sv_run::RunOutcome, sv_run::RunPlan), (String, sv_report::GapReason)> {
+    // Somebody else's project is started only when it says how, and downloads its packages only when the reader
+    // allows it (backlog 0670, part 3; ADR-154): asked before the plan, whose own refusal would ask for an answer.
+    let install = manifest.stack.run.install == Some(true);
+    if let Some(why) = fetch::why_not_start(app_dir, install) {
+        return Err((why, sv_report::GapReason::NotAsked));
+    }
     let mut plan = RunPlan::from_manifest(manifest, app_dir)
         .map_err(|e| (cannot_run_said(&e.explain(), e.kind()), run_gap_reason(&e)))?;
     plan.slow = slow;

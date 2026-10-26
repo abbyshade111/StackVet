@@ -129,3 +129,38 @@ fn the_next_steps_are_the_reader_s_not_the_owner_s() {
     r.fetched = None;
     assert!(crate::bluf::next_steps(&r)[0].what.starts_with("Fix the"));
 }
+
+#[test]
+fn a_project_that_was_started_says_so_above_everything() {
+    let mut r = fetched(Answers::Author);
+    let quiet = banner(&r).unwrap();
+    assert!(
+        quiet[0].starts_with("This is somebody else's project"),
+        "{quiet:?}"
+    );
+    assert!(quiet[0].contains("without running any of it"), "{quiet:?}");
+    r.run_status = Some(crate::RunStatus::Started {
+        image: "python:3.12-slim".to_owned(),
+        asked: 3,
+        answered: 3,
+        signed_in: false,
+        tests: "not-declared".to_owned(),
+    });
+    let ran = banner(&r).unwrap();
+    assert!(ran[0].starts_with("Code nobody vetted was run"), "{ran:?}");
+    assert!(ran[1].contains("then by running it"), "{ran:?}");
+    for (name, text) in pages(&r) {
+        let said = if name.ends_with(".html") {
+            crate::html::escape("Code nobody vetted was run")
+        } else {
+            "Code nobody vetted was run".to_owned()
+        };
+        assert!(text.contains(&said), "{name}");
+    }
+    assert!(
+        !crate::bluf::next_steps(&r)
+            .iter()
+            .any(|s| s.what.contains("never started")),
+        "a project that was started is not said never to have been"
+    );
+}
