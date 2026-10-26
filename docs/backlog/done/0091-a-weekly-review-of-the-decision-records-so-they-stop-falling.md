@@ -81,5 +81,6 @@ v1's records on the `v1` branch are archived and are out of scope. A correction 
   first firing, in backlog 0266 (this item was already done). Done the same day; the account is in 0266.
 
 - **The fourth, for the week to 19 October 2026: claimed that day by session securevibe-weekly-adr-4**, the scheduled routine, in backlog 0616. Done the same day; the account is in 0616.
+- **The fifth, for the week to 26 October 2026: claimed that day by session securevibe-weekly-adr-5**, the scheduled routine, in backlog 0673. Done the same day; the account is in 0673.
 
 **Decided by the owner, 10 October 2026:** done. Two weekly reviews are on main (week to 30 September, and week to 5 October). The routine continues outside the backlog.
