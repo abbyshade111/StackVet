@@ -1,6 +1,6 @@
 # sv review says it is reading the file while it finds an entry's line, so nobody types ahead into a silent prompt
 
-**Status:** open
+**Status:** claimed by claude/0675, 26 October 2026
 
 **Asked for by the owner, 26 October 2026:** "we should probably add a note or something so the user knows to wait
 until the prompt comes up", after recording a `[[finding-review]]` entry for `data/reach.json` twice that day.
