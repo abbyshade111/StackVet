@@ -195,6 +195,16 @@ by = "owner"
 on = "2026-10-23"
 seal = "v3:ede3386f148f7505:53534853494700000001000000330000000b7373682d6564323535313900000020040f0c2842fe829cc6e59037d883154cfdd08ecd53528f5b30b4cca3a479ac4a00000011736563757265766962652d7265766965770000000000000006736861353132000000530000000b7373682d65643235353139000000403b12adc58c7146670429e970b4bf77118164f7f839dc33c4309187310ec99379d25493cf28a8237de598507324250012d8e9bf170154e7be6868ade77a67dd00"
 
+[[finding-review]]
+rule = "secrets.default-credential-address"
+file = "data/reach.json"
+fingerprint = "v2-ccb78bcf0ac755f6"
+verdict = "false-alarm"
+why = "Line 3616 is the `looks_for` text of StackVet's own rule `secrets.password-in-url`, in the list `tools/coverage.py` writes of what each rule reads: as its example of what that rule finds, it gives a sample database address with a placeholder user name and password. It is a sentence describing a rule, in a data file, not an address the app connects to, and no account's user name or password."
+by = "owner"
+on = "2026-10-26"
+seal = "v3:ede3386f148f7505:53534853494700000001000000330000000b7373682d6564323535313900000020040f0c2842fe829cc6e59037d883154cfdd08ecd53528f5b30b4cca3a479ac4a00000011736563757265766962652d7265766965770000000000000006736861353132000000530000000b7373682d6564323535313900000040c4aec116edfa82e06098e3c5ea87425778d4cbc591f471b17440beff9aea89bbb069efbf49fcea0a677d56cd041f02479feee2a7a5be7e48d7a0e919c04c890c"
+
 [scope-review]
 audience = "just-me"
 categories = []

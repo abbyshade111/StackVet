@@ -13,11 +13,13 @@ version since changed. The rest of what `sv` wrote (`report.html`, `report.pdf`,
 `information.md`, and `stackvet.sarif`) was never kept.
 
 **How it was made,** so it can be made again: from the repository's top folder, with `stackvet.toml` as committed
-here (the owner's `sv review` records in it), with `sv` built from `5a1af08f` (`main` that day), the outside tools that
+here (the owner's `sv review` records in it), with `sv` built from `af0a06a2` (`main` that day with this report's own
+changes to the site, `sv`'s code and data being those of `5a1af08f`), the outside tools that
 were installed (Semgrep ran; Bandit had no Python of the app's to read, since `stackvet.toml`'s `[repository]
 not-the-app` names `tools/`), and without `--run`, since `sv` is not a web app: `sv report . --out <a folder outside
-the repository>`. It took under two minutes. It found 1 thing to fix, and the owner's 12 false alarms of 23 October
-still set aside; the report of 23 October had 151 things to fix (backlog 0672).
+the repository>`. It took under two minutes. It found nothing to fix, with 13 false alarms set aside: the owner's 12 of
+23 October, and one the owner recorded on 26 October, StackVet's own description of a rule in `data/reach.json`. The
+report of 23 October had 151 things to fix (backlog 0672).
 
 Two things to get right when it is made again, both learned on 26 October 2026:
 
