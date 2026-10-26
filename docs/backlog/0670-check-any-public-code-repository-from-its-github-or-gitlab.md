@@ -55,7 +55,8 @@ In three parts, each a pull request:
    **Part status:** done, 25 October 2026 (ADR-154, Later). A stand-in for the host, not a local server: a server
    would need plain HTTP or a certificate of its own, and the fetch takes neither; the module's tests answer for the
    host, and a stand-in `curl` answers for it through the `sv` binary. A project with no `stackvet.toml` gets one of
-   comments only, so its questions stay unanswered. Not yet tried against GitHub or GitLab themselves.
+   comments only, so its questions stay unanswered. Tried against both hosts the same day, at the owner's word: a
+   GitHub and a GitLab project each fetched with its commit named, and reported on.
 2. **The report for a reader weighing a risk:** the project, its address, and its commit named; the owner's questions
    left unanswered, and the requirements that leaves open said; findings worded as risks; never "nothing found" read as
    safe. A project that carries its own `stackvet.toml` holds its author's answers, not the reader's: the report
