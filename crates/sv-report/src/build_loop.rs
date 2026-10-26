@@ -297,7 +297,24 @@ pub fn went_same_line(report: &Report) -> Option<String> {
 /// One paragraph saying what the record of the build loop shows, for the top of the report. `None`
 /// for a report that was not written into a report folder.
 pub fn build_loop_line(report: &Report) -> Option<String> {
-    report.build_loop.as_ref().map(build_loop_said)
+    shown(report).map(|b| fetched_lead(report) + &build_loop_said(b))
+}
+
+/// The record to say something of. Of a fetched project, only a record the project brought with calls in it: that it
+/// has none, or turned it off, says nothing about a build the reader had no part in (backlog 0676, part 3).
+fn shown(report: &Report) -> Option<&BuildLoop> {
+    let b = report.build_loop.as_ref()?;
+    (report.fetched.is_none() || (b.calls > 0 && !b.off)).then_some(b)
+}
+
+/// Before a fetched project's record: whose record it is.
+fn fetched_lead(report: &Report) -> String {
+    match report.fetched {
+        Some(_) => "The project came with a record of how it was built, written by its author's tools, which sv \
+                    cannot check. "
+            .to_owned(),
+        None => String::new(),
+    }
 }
 
 /// When the record's calls were made, for a person to read: "on 2026-10-22, from 22:03 to 22:56 UTC" when the first
@@ -335,9 +352,12 @@ pub fn build_loop_said(b: &BuildLoop) -> String {
 /// details a report shows folded away. Together they say what `build_loop_said` says. `None` for a report that was
 /// not written into a report folder.
 pub fn build_loop_lines(report: &Report) -> Option<(String, String)> {
-    report.build_loop.as_ref().map(|b| {
+    shown(report).map(|b| {
         let (lead, details) = build_loop_parts(b);
-        (lead, details.trim_start().to_owned())
+        (
+            fetched_lead(report) + &lead,
+            details.trim_start().to_owned(),
+        )
     })
 }
 

@@ -7,7 +7,7 @@ use crate::bluf::tests::{a_finding, report};
 
 const SHA: &str = "0123456789abcdef0123456789abcdef01234567";
 
-fn fetched(answers: Answers) -> Report {
+pub(super) fn fetched(answers: Answers) -> Report {
     let mut r = report(Counts {
         applicable: 40,
         not_verified: 30,
@@ -24,7 +24,7 @@ fn fetched(answers: Answers) -> Report {
 }
 
 /// Every page of the report, as it is written.
-fn pages(r: &Report) -> Vec<(&'static str, String)> {
+pub(super) fn pages(r: &Report) -> Vec<(&'static str, String)> {
     vec![
         ("report.html", crate::html::page(r)),
         ("compliance.md", crate::markdown::compliance(r)),

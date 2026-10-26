@@ -3474,7 +3474,7 @@ fn level_hints(
     }
     let hints = level_hints_from(&sv_frameworks::data::file("level-hints.json"))?;
     let private_audience = matches!(
-        manifest.app.audience,
+        manifest.app.audience(),
         sv_manifest::Audience::JustMe | sv_manifest::Audience::MyTeam
     );
     Ok(sv_check::level_hints::find(

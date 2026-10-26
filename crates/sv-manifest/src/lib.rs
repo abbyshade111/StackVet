@@ -98,8 +98,10 @@ pub struct AppSection {
     pub name: String,
     #[serde(default)]
     pub description: String,
+    /// Who uses the app; `None` when stackvet.toml does not say, and the app is then taken to be used by customers
+    /// (`AppSection::audience`), a default the report names as one rather than as an answer (backlog 0676, part 1).
     #[serde(default)]
-    pub audience: Audience,
+    pub audience: Option<Audience>,
     #[serde(default)]
     pub deployment: Deployment,
     /// Whether `sv`'s MCP server writes down each call the AI coding tool makes for this app, for the
@@ -113,6 +115,13 @@ pub struct AppSection {
     /// set: `3` holds the app to level 3 (ADR-130). A level below theirs is refused when the file is read.
     #[serde(default)]
     pub level: Option<u8>,
+}
+
+impl AppSection {
+    /// Who uses the app: the answer in stackvet.toml, or customers when it gives none.
+    pub fn audience(&self) -> Audience {
+        self.audience.unwrap_or_default()
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -1902,7 +1911,7 @@ impl ScopeReview {
                 names
             })
         };
-        self.audience == manifest.app.audience.name()
+        self.audience == manifest.app.audience().name()
             && names(&self.categories) == names(&manifest.data.categories)
             && self.level == manifest.app.level
     }
@@ -2183,7 +2192,7 @@ impl Manifest {
                     || !DATA_CATEGORIES.contains(&c.as_str())
             }),
         };
-        let exposed = matches!(self.app.audience, Audience::Customers | Audience::Public);
+        let exposed = matches!(self.app.audience(), Audience::Customers | Audience::Public);
         if sensitive || exposed { 2 } else { 1 }
     }
 
@@ -2199,7 +2208,7 @@ impl Manifest {
                 self.answers_level()
             );
         }
-        let audience = match self.app.audience {
+        let audience = match self.app.audience() {
             Audience::JustMe => "only you use it",
             Audience::MyTeam => "only your own team uses it",
             Audience::Customers => "customers use it",
@@ -2221,7 +2230,12 @@ impl Manifest {
             .iter()
             .any(|c| !DATA_CATEGORIES.contains(&c.as_str()));
         let mut reasons = Vec::new();
-        if matches!(self.app.audience, Audience::Customers | Audience::Public) {
+        if self.app.audience.is_none() {
+            reasons.push(
+                "stackvet.toml does not say who uses the app, so sv takes it that customers do"
+                    .to_owned(),
+            );
+        } else if matches!(self.app.audience(), Audience::Customers | Audience::Public) {
             reasons.push(format!("stackvet.toml says {audience}"));
         }
         if self.data.categories.is_none() {
@@ -2248,7 +2262,7 @@ impl Manifest {
     /// Why the level is 2 when only the unanswered data list made it so, in words for the owner;
     /// `None` when the level rests on an answer.
     pub fn level_from_unanswered_data(&self) -> Option<&'static str> {
-        let exposed = matches!(self.app.audience, Audience::Customers | Audience::Public);
+        let exposed = matches!(self.app.audience(), Audience::Customers | Audience::Public);
         // An app that asked for a higher level is held to it whatever the data list says.
         let asked_higher = self.target_level() > self.answers_level();
         (self.data.categories.is_none() && !exposed && !asked_higher).then_some(
@@ -2875,7 +2889,7 @@ mod tests {
     #[test]
     fn sensitive_data_raises_the_target_level() {
         let mut m = Manifest::default();
-        m.app.audience = Audience::JustMe;
+        m.app.audience = Some(Audience::JustMe);
         m.data.categories = Some(vec!["contact".into()]);
         assert_eq!(m.target_level(), 1);
         m.data.categories = Some(vec!["health".into()]);
@@ -2887,7 +2901,7 @@ mod tests {
         // The documentation review of 6 October 2026, item 7: a misspelled "helth" allowed
         // level 1, and nothing said so.
         let mut m = Manifest::default();
-        m.app.audience = Audience::JustMe;
+        m.app.audience = Some(Audience::JustMe);
         m.data.categories = Some(vec!["contact".into(), "helth".into()]);
         assert_eq!(m.target_level(), 2);
         let why = m.level_from_unknown_data().expect("the name is said");

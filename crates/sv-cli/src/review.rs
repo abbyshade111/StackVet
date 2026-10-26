@@ -2297,7 +2297,7 @@ fn record_scope(
          confirmed here and changed later is unconfirmed again.",
         manifest.target_level(),
         manifest.level_because(),
-        manifest.app.audience.name(),
+        manifest.app.audience().name(),
     )?;
     loop {
         let Some(answer) = ask(
@@ -2322,7 +2322,7 @@ fn record_scope(
             continue;
         }
         let mut entry = sv_manifest::ScopeReview {
-            audience: manifest.app.audience.name().to_owned(),
+            audience: manifest.app.audience().name().to_owned(),
             categories: manifest.data.categories.clone(),
             level: manifest.app.level,
             by: sv_check::design::OWNER.to_owned(),

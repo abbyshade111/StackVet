@@ -179,3 +179,7 @@ pub fn next_steps(report: &Report) -> Vec<crate::bluf::NextStep> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+#[path = "fetched/reader_words_tests.rs"]
+mod reader_words_tests;
