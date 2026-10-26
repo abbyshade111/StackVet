@@ -480,6 +480,8 @@ pub fn assemble_report_saying(
             run_record,
         },
     )?;
+    // Somebody else's project, when `sv` fetched it here (backlog 0670, ADR-154): every page then says so.
+    report.fetched = crate::fetch::record_for(app_dir);
     report.timings = timings(
         &began.borrow(),
         std::time::Instant::now(),

@@ -398,6 +398,7 @@ mod tests {
             could_settle: Default::default(),
             plain: Default::default(),
             paper: Default::default(),
+            fetched: None,
         }
     }
 

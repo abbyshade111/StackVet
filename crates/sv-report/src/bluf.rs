@@ -79,6 +79,10 @@ fn severity_rank(s: Severity) -> u8 {
 /// The "nothing was found" wording is the careful one. An app with no findings has not passed
 /// anything, and the sentence has to carry that without the reader having to read on.
 pub fn headline(report: &Report) -> String {
+    // Somebody else's project: risks to weigh, not things to fix (backlog 0670, ADR-154).
+    if report.fetched.is_some() {
+        return crate::fetched::headline(report);
+    }
     // Counted over the findings, not over `needs_attention`, because the bullets under this line
     // are findings and the two numbers legitimately differ: a finding can name a requirement this
     // app is not being assessed against, which is reported and does not make a requirement need
@@ -342,6 +346,10 @@ pub fn only_a_person_can_counts(report: &Report) -> (usize, usize) {
 
 /// What to do, in the order a person would do it. Only steps there is actually work for.
 pub fn next_steps(report: &Report) -> Vec<NextStep> {
+    // The reader of somebody else's project has none of the owner's work to do (backlog 0670, ADR-154).
+    if report.fetched.is_some() {
+        return crate::fetched::next_steps(report);
+    }
     let mut steps = Vec::new();
     let c = &report.counts;
     // The things to fix in the app's own code, counted as the section below them counts them (ADR-110, Later): the
@@ -467,11 +475,11 @@ pub fn next_steps(report: &Report) -> Vec<NextStep> {
 mod next_steps_tests;
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::Counts;
 
-    pub(super) fn report(counts: Counts) -> Report {
+    pub(crate) fn report(counts: Counts) -> Report {
         Report {
             level_why: None,
             baseline: None,
@@ -527,6 +535,7 @@ mod tests {
             could_settle: Default::default(),
             plain: Default::default(),
             paper: Default::default(),
+            fetched: None,
         }
     }
 
@@ -682,7 +691,7 @@ mod tests {
         assert_eq!(line, "1 thing to fix was found in the app's own code.");
     }
 
-    fn a_finding(rule: &str) -> sv_check::Finding {
+    pub(crate) fn a_finding(rule: &str) -> sv_check::Finding {
         sv_check::Finding {
             evidence: Vec::new(),
             also_reported_by: Vec::new(),
@@ -942,7 +951,7 @@ mod tests {
     }
 
     /// A requirement line nothing has looked at, which is what `only_a_person_can` counts.
-    pub(super) fn unverified(id: &str) -> crate::RequirementLine {
+    pub(crate) fn unverified(id: &str) -> crate::RequirementLine {
         crate::RequirementLine {
             id: id.into(),
             description: String::new(),

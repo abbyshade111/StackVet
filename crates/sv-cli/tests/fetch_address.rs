@@ -104,6 +104,19 @@ fn an_address_is_fetched_once_into_a_folder_of_its_own_and_checked() {
         "{stderr}"
     );
     assert!(stderr.contains("carried no stackvet.toml"), "{stderr}");
+    // The report is of somebody else's project, and says so with its address and commit (part 2).
+    let html = std::fs::read_to_string(folder.join("stackvet-report/report.html")).unwrap();
+    assert!(
+        html.contains("somebody else&#39;s project"),
+        "report.html does not say whose"
+    );
+    assert!(html.contains("https://github.com/owner/project"));
+    assert!(html.contains(SHA));
+    let json = std::fs::read_to_string(folder.join("stackvet-report/report.json")).unwrap();
+    assert!(
+        json.contains("\"fetched\""),
+        "report.json does not record it"
+    );
 
     let calls = calls(&asked);
     assert_eq!(calls.len(), 2, "{calls:?}");
@@ -125,7 +138,12 @@ fn an_address_is_fetched_once_into_a_folder_of_its_own_and_checked() {
         .unwrap()
         .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
         .collect();
-    assert_eq!(beside, ["project-0123456789ab"]);
+    let mut beside = beside;
+    beside.sort();
+    assert_eq!(
+        beside,
+        ["project-0123456789ab", "project-0123456789ab.fetched.json"]
+    );
 }
 
 #[test]

@@ -438,8 +438,8 @@ fn a_fetch_is_named_after_its_commit_and_never_over_an_earlier_one() {
         .collect();
     assert_eq!(
         left.len(),
-        2,
-        "only the two projects, no download or unpacking left: {left:?}"
+        4,
+        "the two projects and their records, no download or unpacking left: {left:?}"
     );
 
     // A project's own stackvet.toml is kept as it is.
@@ -459,5 +459,43 @@ fn a_fetch_is_named_after_its_commit_and_never_over_an_earlier_one() {
     let mut broken = StandIn::new(vec![Answer::Saved], b"<html>not found</html>".to_vec());
     let e = fetch(&github(), &base, &mut broken).unwrap_err();
     assert!(format!("{e:#}").contains("not a zip archive"), "{e:#}");
-    assert_eq!(std::fs::read_dir(&parent).unwrap().count(), 3);
+    assert_eq!(std::fs::read_dir(&parent).unwrap().count(), 6);
+}
+
+#[test]
+fn the_record_beside_a_fetch_names_it_and_says_when_its_answers_changed() {
+    let base = scratch("record");
+    let bytes = archive(&[("project-main/app.py", "x = 1\n")], SHA);
+    let mut host = StandIn::new(vec![Answer::Saved, Answer::Saved], bytes);
+    let fetched = fetch(&github(), &base, &mut host).unwrap();
+    let project = record_for(&fetched.folder).expect("the record is read");
+    assert_eq!(project.address, "https://github.com/owner/project");
+    assert_eq!(project.commit.as_deref(), Some(SHA));
+    assert_eq!(project.answers, Answers::Nobody);
+    // Answered since, by whoever has the folder: no longer nobody's, and never the author's.
+    std::fs::write(
+        fetched.folder.join("stackvet.toml"),
+        "[app]\nname = \"mine now\"\n",
+    )
+    .unwrap();
+    assert_eq!(
+        record_for(&fetched.folder).unwrap().answers,
+        Answers::Changed
+    );
+
+    // The same record beside a folder that is not in a `stackvet-fetched` folder is not read.
+    let elsewhere = scratch("not-fetched");
+    let app = elsewhere.join("project-0123456789ab");
+    std::fs::create_dir(&app).unwrap();
+    std::fs::copy(
+        record_path(&fetched.folder),
+        elsewhere.join("project-0123456789ab.fetched.json"),
+    )
+    .unwrap();
+    assert!(record_path(&app).is_file(), "the setup made the record");
+    assert!(record_for(&app).is_none());
+    // Nor is a folder with no record beside it.
+    let second = fetch(&github(), &base, &mut host).unwrap();
+    std::fs::remove_file(record_path(&second.folder)).unwrap();
+    assert!(record_for(&second.folder).is_none());
 }

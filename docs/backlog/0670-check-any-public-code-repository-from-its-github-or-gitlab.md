@@ -61,7 +61,10 @@ In three parts, each a pull request:
    left unanswered, and the requirements that leaves open said; findings worded as risks; never "nothing found" read as
    safe. A project that carries its own `stackvet.toml` holds its author's answers, not the reader's: the report
    says whose they are.
-   **Part status:** open
+   **Part status:** done, 25 October 2026 (ADR-154, Later). Every page names the project, its address, and its commit
+   at its top and says how to read it; the short version counts risks to weigh and never reads as safe; the next steps
+   are the reader's; an author's `stackvet.toml`, and one changed since the fetch, are said to be. Each finding's own
+   words and the short pages' titles are as they were, read under that banner.
 3. **Started only when asked:** with `--run`, after every static check has finished, a project with its own
    `stackvet.toml` is started in the fence as any app is, and the report says at its top that unvetted code was run.
    **Part status:** open
