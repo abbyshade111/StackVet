@@ -355,9 +355,33 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
     assert!(itself.contains("Held to ASVS level 3"), "{itself}");
     // A summary only (the owner's choice of 23 October 2026, backlog 0633): the counts and the bill of materials,
     // never the finding-by-finding files.
+    // The counts are summary.md's own, each said in the singular or the plural it takes (1 on 26 October 2026).
+    let summary =
+        std::fs::read_to_string(repo().join("docs/website/self-assessment/summary.md")).unwrap();
+    let count = |label: &str| {
+        summary
+            .lines()
+            .find_map(|l| l.strip_prefix(label))
+            .unwrap_or_else(|| panic!("summary.md has no {label:?} line"))
+            .trim()
+            .parse::<usize>()
+            .unwrap()
+    };
+    let said = |n: usize, one: &str, many: &str| {
+        if n == 1 {
+            format!("1 {one} was")
+        } else {
+            format!("{n} {many} were")
+        }
+    };
+    let sentence = format!(
+        "{} found, and {} not examined.",
+        said(count("Things to fix:"), "thing to fix", "things to fix"),
+        said(count("Things not examined:"), "thing", "things")
+    );
     assert!(
-        itself.contains("things to fix were found, and"),
-        "the counts are on the page"
+        itself.contains(&sentence),
+        "the counts are on the page: {sentence}"
     );
     // The paper's own report stays in the repository; the site neither links nor names it.
     assert!(
