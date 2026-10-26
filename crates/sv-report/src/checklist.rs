@@ -47,6 +47,22 @@ impl Part {
     }
 
     /// What the part is, in a sentence, said when it has lines.
+    /// What the part is, in a report: of a fetched project, the answers and the fixes are its author's (backlog 0677,
+    /// part 3).
+    fn about_in(self, report: &Report) -> &'static str {
+        match (report.fetched.is_some(), self) {
+            (true, Part::Decide) => {
+                "Each of these decides whether a requirement applies to the project. Only its author can answer it; \
+                 until then, what rests on it is left open."
+            }
+            (true, Part::SignOff) => {
+                "What the checks found and is still there: risks to weigh before anyone puts the project on the \
+                 internet. Fixing them is the author's to do."
+            }
+            _ => self.about(),
+        }
+    }
+
     fn about(self) -> &'static str {
         match self {
             Part::AtTheHost => {
@@ -406,6 +422,15 @@ pub fn not_verified(report: &Report) -> Vec<String> {
 
 /// What the file says first: what it is, and what it is not.
 fn opening(report: &Report) -> String {
+    // Of a fetched project, the work is the author's, or the reader's only if they put it on the internet themselves;
+    // the ticks in `sv review` are an app owner's (backlog 0677, part 3).
+    if report.fetched.is_some() {
+        return "This is what would need doing or confirming before people use this project on the internet, in the \
+                order it would be done, drawn from what this report found: the project's author's to do, or yours if \
+                you put the project on the internet yourself. It credits nothing: a line here is not a check, and \
+                nothing on it counts toward any requirement."
+            .to_owned();
+    }
     let mut out = format!(
         "This is what to do or confirm before people use {} on the internet, in the order you would do it, drawn from \
          what this report found. It credits nothing: a line done here is not a check, and nothing on it counts toward \
@@ -439,7 +464,7 @@ pub fn render(report: &Report) -> String {
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
     out.push_str(&crate::fetched::markdown(report));
-    out.push_str(&crate::folder::markdown_line(FILE));
+    out.push_str(&crate::folder::markdown_line(report, FILE));
     out.push_str(&inert(&opening(report)));
     out.push_str("\n\n");
     let all = lines(report);
@@ -450,7 +475,7 @@ pub fn render(report: &Report) -> String {
             out.push_str("Nothing here for this app.\n\n");
             continue;
         }
-        out.push_str(&inert(part.about()));
+        out.push_str(&inert(part.about_in(report)));
         out.push_str("\n\n");
         for line in mine {
             let done = report.checklist_done.get(&line.key());
@@ -517,7 +542,7 @@ pub fn html(report: &Report) -> String {
         }
         b.push_str(&format!(
             "<p>{}</p>\n<ul class=\"checklist\">\n",
-            text(part.about())
+            text(part.about_in(report))
         ));
         if part == Part::SignOff {
             // The page lists each finding in full above; here they are counted, not repeated.

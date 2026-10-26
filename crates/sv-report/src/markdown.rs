@@ -206,10 +206,10 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
     out.push_str(&crate::fetched::markdown(report));
     if pdf {
         // The PDF's own line, then what its fonts cannot show (ADR-116).
-        out.push_str(&crate::folder::markdown_line(crate::pdf::FILE));
+        out.push_str(&crate::folder::markdown_line(report, crate::pdf::FILE));
         out.push_str(&format!("*{}*\n\n", crate::pdf::FONTS_NOTE));
     } else {
-        out.push_str(&crate::folder::markdown_line("compliance.md"));
+        out.push_str(&crate::folder::markdown_line(report, "compliance.md"));
     }
 
     // The short version, before any of the explaining. See `crate::bluf`.
@@ -390,7 +390,11 @@ fn compliance_as(report: &Report, pdf: bool) -> String {
              | not examined | why |\n|---|---|\n",
         );
         for gap in &report.gaps {
-            out.push_str(&format!("| {} | {} |\n", cell(&gap.what), cell(&gap.why)));
+            out.push_str(&format!(
+                "| {} | {} |\n",
+                cell(&gap.what),
+                cell(&crate::fetched::gap_why(report, gap))
+            ));
         }
         out.push('\n');
     }
@@ -557,7 +561,7 @@ fn ai_process(out: &mut String, report: &Report) {
             out.push_str(&format!(
                 "| {} | {} | {} |\n",
                 cell(&line.id),
-                cell(crate::AiProcess::route_text(line.route)),
+                cell(crate::AiProcess::route_text(report, line.route)),
                 cell(&line.description)
             ));
         }
@@ -663,7 +667,7 @@ fn only_you(out: &mut String, report: &Report) {
                 "| {} — {} | {} | {} |\n",
                 cell(&item.id),
                 cell(&item.title),
-                cell(item.route.what_to_do()),
+                cell(crate::fetched::route_said(report, item.route)),
                 cell(
                     &(match &item.where_to_look {
                         Some(where_to_look) =>
@@ -856,8 +860,16 @@ fn outside_the_tables(out: &mut String, report: &Report) {
             out.push_str(&format!(
                 "| {} | {} | {} | {} | {} |\n",
                 cell(&claim.name),
-                said(claim.claimed),
-                claim.who_said(),
+                if claim.defaulted() {
+                    match claim.claimed {
+                        Some(true) => "nothing, taken as yes",
+                        Some(false) => "nothing, taken as no",
+                        None => "nothing",
+                    }
+                } else {
+                    said(claim.claimed)
+                },
+                claim.who_said_in(report),
                 said(claim.found_in_code),
                 cell(&claim.note)
             ));
@@ -1013,7 +1025,7 @@ pub fn security(report: &Report) -> String {
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
     out.push_str(&crate::fetched::markdown(report));
-    out.push_str(&crate::folder::markdown_line("security.md"));
+    out.push_str(&crate::folder::markdown_line(report, "security.md"));
     if let Some(line) = crate::baseline_line(report) {
         out.push_str(&format!("{}\n\n", inert(&line)));
     }
@@ -1039,7 +1051,7 @@ pub fn security(report: &Report) -> String {
             out.push_str(&format!(
                 "- **{}** — {}\n",
                 inert(&gap.what),
-                inert(&gap.why)
+                inert(&crate::fetched::gap_why(report, gap))
             ));
         }
         out.push('\n');
@@ -1203,7 +1215,10 @@ pub fn low_findings(report: &Report) -> String {
         None => out.push_str(&format!("Produced by `sv` {}.\n\n", report.sv.describe())),
     }
     out.push_str(&crate::fetched::markdown(report));
-    out.push_str(&crate::folder::markdown_line(crate::LOW_FINDINGS_FILE));
+    out.push_str(&crate::folder::markdown_line(
+        report,
+        crate::LOW_FINDINGS_FILE,
+    ));
     let low: Vec<&sv_check::Finding> = report
         .findings
         .iter()

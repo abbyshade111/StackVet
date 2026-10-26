@@ -480,8 +480,6 @@ pub fn assemble_report_saying(
             run_record,
         },
     )?;
-    // Somebody else's project, when `sv` fetched it here (backlog 0670, ADR-154): every page then says so.
-    report.fetched = crate::fetch::record_for(app_dir);
     report.timings = timings(
         &began.borrow(),
         std::time::Instant::now(),
@@ -3011,7 +3009,7 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         confirmed: scope_confirmed(manifest, seals),
     };
     let mut report = sv_report::build(sv_report::Inputs {
-        on_the_internet: manifest.app.deployment == sv_manifest::Deployment::Internet,
+        on_the_internet: manifest.app.deployment() == sv_manifest::Deployment::Internet,
         ai_tool: sv_check::ai_tool::read(listing, loaded.secret_rules),
         look_away: sv_check::look_away::read(listing, loaded.secret_rules),
         app_name: if manifest.app.name.is_empty() {
@@ -3048,6 +3046,9 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
         human: Some((&notes_catalog, &design_questions, &human_checks)),
         threats: Some((threat_rules, ctx)),
     });
+    // Somebody else's project, when `sv` fetched it here (backlog 0670, ADR-154): every page then says so. Set as soon as
+    // the report is made, so what is worked out from it after speaks to the reader too (backlog 0677).
+    report.fetched = crate::fetch::record_for(app_dir);
     report.examined = examined;
     report.level_why = Some(level_why);
     // What kind of run this was, by what did not run (gap analysis 6.1).
@@ -3144,6 +3145,15 @@ fn put_together(scene: &Scene, gathered: Gathered) -> Result<sv_report::Report> 
     sv_report::mark_confirmed(
         &mut report.claims,
         &sv_check::capabilities_word::confirmed(manifest, seals),
+    );
+    // The answers no line of stackvet.toml gave are `sv`'s defaults, said as such (backlog 0677, part 1).
+    sv_report::mark_defaulted(
+        &mut report.claims,
+        &manifest
+            .defaulted_claims()
+            .iter()
+            .map(|c| c.name().to_owned())
+            .collect::<Vec<_>>(),
     );
     // A first draft of the cryptographic inventory, beside the key-management questions (backlog 0494).
     crate::code_lines::key_questions(listing, &mut report);

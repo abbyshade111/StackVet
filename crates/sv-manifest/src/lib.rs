@@ -102,8 +102,10 @@ pub struct AppSection {
     /// (`AppSection::audience`), a default the report names as one rather than as an answer (backlog 0676, part 1).
     #[serde(default)]
     pub audience: Option<Audience>,
+    /// Where the app runs; `None` when stackvet.toml does not say, and it is then taken to be on the internet
+    /// (`AppSection::deployment`), a default the report names as one (backlog 0677, part 1).
     #[serde(default)]
-    pub deployment: Deployment,
+    pub deployment: Option<Deployment>,
     /// Whether `sv`'s MCP server writes down each call the AI coding tool makes for this app, for the
     /// report to say how it was built (ADR-076). On unless `false`; a report says when it is off.
     #[serde(default)]
@@ -121,6 +123,11 @@ impl AppSection {
     /// Who uses the app: the answer in stackvet.toml, or customers when it gives none.
     pub fn audience(&self) -> Audience {
         self.audience.unwrap_or_default()
+    }
+
+    /// Where the app runs: the answer in stackvet.toml, or the internet when it gives none.
+    pub fn deployment(&self) -> Deployment {
+        self.deployment.unwrap_or_default()
     }
 }
 
@@ -199,8 +206,10 @@ pub struct Capabilities {
     pub webrtc: Option<bool>,
     #[serde(default)]
     pub external_apis: Option<Vec<String>>,
+    /// `None` when stackvet.toml does not say, and TLS is then taken to be ended in front of the app
+    /// (`Capabilities::tls`), a default the report names as one (backlog 0677, part 1).
     #[serde(default)]
-    pub tls: TlsMode,
+    pub tls: Option<TlsMode>,
     /// Sign-in codes sent by phone, SMS or push notification.
     #[serde(default)]
     pub out_of_band_auth: Option<bool>,
@@ -221,6 +230,13 @@ pub struct Capabilities {
     pub multiple_services: Option<bool>,
     #[serde(default)]
     pub ai: AiClaims,
+}
+
+impl Capabilities {
+    /// How TLS is set up: the answer in stackvet.toml, or ended in front of the app when it gives none.
+    pub fn tls(&self) -> TlsMode {
+        self.tls.unwrap_or_default()
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -2259,6 +2275,28 @@ impl Manifest {
         }
     }
 
+    /// The answers `claims` gives that no line of stackvet.toml gave: each a default, which keeps the requirements that
+    /// turn on it switched on (backlog 0677, part 1). `tls` and `internet` when their lines are left out; `level2`
+    /// when the app would be held to level 1 had the audience and the data list been answered on the low side.
+    pub fn defaulted_claims(&self) -> Vec<Condition> {
+        let mut defaulted = Vec::new();
+        if self.capabilities.tls.is_none() {
+            defaulted.push(Condition::Tls);
+        }
+        if self.app.deployment.is_none() {
+            defaulted.push(Condition::Internet);
+        }
+        if self.target_level() >= 2 {
+            let mut low = self.clone();
+            low.app.audience.get_or_insert(Audience::JustMe);
+            low.data.categories.get_or_insert_with(Vec::new);
+            if low.target_level() < 2 {
+                defaulted.push(Condition::Level2);
+            }
+        }
+        defaulted
+    }
+
     /// Why the level is 2 when only the unanswered data list made it so, in words for the owner;
     /// `None` when the level rests on an answer.
     pub fn level_from_unanswered_data(&self) -> Option<&'static str> {
@@ -2366,10 +2404,10 @@ impl Manifest {
                 Condition::ExternalApis,
                 c.external_apis.as_ref().map(|v| !v.is_empty()),
             ),
-            (Condition::Tls, Some(c.tls != TlsMode::Off)),
+            (Condition::Tls, Some(c.tls() != TlsMode::Off)),
             (
                 Condition::Internet,
-                Some(self.app.deployment == Deployment::Internet),
+                Some(self.app.deployment() == Deployment::Internet),
             ),
             (Condition::Ai, ai),
             (Condition::AiActions, about_ai(c.ai.can_act)),

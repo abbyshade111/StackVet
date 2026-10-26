@@ -32,6 +32,29 @@ pub struct FetchedProject {
     pub answers: Answers,
 }
 
+/// Why something was not examined, in a report: of a fetched project, a question only a person can settle is its
+/// author's, so it is not explained as one the reader answers (backlog 0677, part 2).
+pub fn gap_why(report: &Report, gap: &crate::Gap) -> String {
+    match (&report.fetched, &gap.reason) {
+        (Some(_), crate::GapReason::PersonOnly) => "Only a person can settle these, and for this project that is its \
+                                                    author: what rests on them is left open, not passed."
+            .to_owned(),
+        _ => gap.why.clone(),
+    }
+}
+
+/// What to do with a question only a person can answer, in a report: of a fetched project, the answer is its author's,
+/// not something the reader tells an AI coding tool (backlog 0677, part 2).
+pub fn route_said(report: &Report, route: sv_check::human::Route) -> &'static str {
+    use sv_check::human::Route;
+    match (report.fetched.is_some(), route) {
+        (true, Route::WriteItDown | Route::AnswerInTheManifest) => {
+            "only the project's author can answer it; until then it is left open"
+        }
+        _ => route.what_to_do(),
+    }
+}
+
 /// The lines at the top of every page of a report on a fetched project: whose project it is, which commit, how to
 /// read what follows, and whose answers there are. `None` for an app of the person's own.
 pub fn banner(report: &Report) -> Option<Vec<String>> {

@@ -232,7 +232,7 @@ fn an_app_not_for_the_internet_has_no_steps_at_a_live_address_and_says_why() {
 fn the_file_credits_nothing_and_ends_with_what_was_not_verified() {
     let md = checklist::render(&report());
     assert!(md.starts_with("# Before going live: test\n"), "{md}");
-    assert!(md.contains(crate::folder::markdown_line(checklist::FILE).trim_end()));
+    assert!(md.contains(crate::folder::markdown_line(&report(), checklist::FILE).trim_end()));
     assert!(md.contains("It credits nothing"), "{md}");
     assert!(
         !md.to_lowercase()

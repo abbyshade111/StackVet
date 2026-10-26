@@ -113,3 +113,38 @@ fn a_record_the_project_brought_is_said_to_be_its_author_s() {
     let (lead, _) = crate::build_loop_lines(&r).expect("and in two parts");
     assert!(lead.starts_with("The project came with a record"), "{lead}");
 }
+
+#[test]
+fn an_answer_in_the_project_s_own_stackvet_toml_is_its_author_s() {
+    // Backlog 0677, part 2: never "your AI coding tool's" of a project the reader did not build.
+    let line = crate::ClaimLine {
+        name: "auth".to_owned(),
+        claimed: Some(true),
+        found_in_code: None,
+        state: "unverifiable".to_owned(),
+        note: String::new(),
+        by: Some("ai-tool"),
+    };
+    let mine = fetched(Answers::Nobody);
+    let mut mine = mine;
+    mine.fetched = None;
+    assert_eq!(
+        line.who_said_in(&mine),
+        "not recorded, so read as your AI coding tool's"
+    );
+    assert_eq!(
+        line.who_said_in(&fetched(Answers::Author)),
+        "the project's author, in its own stackvet.toml"
+    );
+    assert_eq!(
+        line.who_said_in(&fetched(Answers::Changed)),
+        "whoever changed the project's stackvet.toml since it was fetched"
+    );
+    // A default stays sv's, whoever's project it is.
+    let mut defaulted = line.clone();
+    crate::mark_defaulted(std::slice::from_mut(&mut defaulted), &["auth".to_owned()]);
+    assert_eq!(
+        defaulted.who_said_in(&fetched(Answers::Author)),
+        "nobody: sv's default"
+    );
+}

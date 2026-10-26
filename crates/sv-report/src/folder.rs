@@ -108,12 +108,30 @@ pub fn about(name: &str) -> &'static FolderFile {
         .unwrap_or_else(|| panic!("{name} is not a report file"))
 }
 
+/// Who a file is for, in a report: of a fetched project, the reader weighing it, never an AI coding tool of theirs,
+/// and the checklist the author's or whoever puts the project on the internet (backlog 0677, part 3).
+pub fn for_whom(report: &crate::Report, file: &FolderFile) -> &'static str {
+    if report.fetched.is_none() {
+        return file.for_whom;
+    }
+    match file.name {
+        "security.md" => "You, weighing whether to use the project: each finding in full",
+        crate::LOW_FINDINGS_FILE => "You, when you want the detail",
+        crate::checklist::FILE => {
+            "The project's author, or you if you put the project on the internet yourself"
+        }
+        name if name == crate::pages::FIX_NOW.file => "You, first: the risks to weigh, worst first",
+        _ => file.for_whom,
+    }
+}
+
 /// The line a Markdown report opens with, saying what it is and who it is for.
-pub fn markdown_line(name: &str) -> String {
+pub fn markdown_line(report: &crate::Report, name: &str) -> String {
     let file = about(name);
     format!(
         "**This file:** {}. **For:** {}. The end of `report.html` lists every file in this folder and who each is \
          for.\n\n",
-        file.holds, file.for_whom
+        file.holds,
+        for_whom(report, file)
     )
 }
