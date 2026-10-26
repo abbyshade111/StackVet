@@ -90,7 +90,7 @@ with no ready-made download cannot be installed this way (ADR-052).
 fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on). Three you ask for by name: `sv
 probe <address>` (a few read-only requests to the address you type), `install = true` (the install step above), and
 `sv report` given a public project's GitHub or GitLab address in place of a folder (one download of its code, as an
-archive, with nothing in it run; ADR-154). The fourth is on unless you pass `--no-tools`: the outside tools, which `sv report` and `sv bundle` run (ADR-111), are
+archive, run only when you add `--run`, and its packages downloaded only when you add `--install`; ADR-154). The fourth is on unless you pass `--no-tools`: the outside tools, which `sv report` and `sv bundle` run (ADR-111), are
 other people's programs, and semgrep fetches its rule packs (`p/security-audit`, `p/default`, and
 `p/ai-best-practices` for an app that may call a model) from semgrep.dev every time it runs. Advisory data is
 something you download and point it at; the list of packages your app depends on is yours, and a check that quietly

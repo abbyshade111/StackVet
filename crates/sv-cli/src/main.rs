@@ -2419,6 +2419,8 @@ struct ReportArgs {
     app_dir: PathBuf,
     /// A public project's address in place of the folder (`sv report` only; backlog 0670, ADR-154).
     address: Option<String>,
+    /// `--install`: with `--run`, a fetched project may have its packages downloaded (backlog 0670, part 3).
+    install: bool,
     /// A folder for `sv report`, a file for `sv bundle`.
     out: Option<PathBuf>,
     /// Opt-in. Everything else these commands do reads files; this starts somebody's code. It runs
@@ -2448,6 +2450,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
     let mut parsed = ReportArgs {
         app_dir: PathBuf::from("."),
         address: None,
+        install: false,
         out: None,
         run_the_app: false,
         slow: false,
@@ -2469,6 +2472,7 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
                 ));
             }
             "--run" => parsed.run_the_app = true,
+            "--install" => parsed.install = true,
             "--slow" => parsed.slow = true,
             // Still accepted, and the default since ADR-111: scripts and prompts that pass it keep working.
             "--tools" => parsed.run_tools = true,
@@ -2622,17 +2626,12 @@ fn keep_unfinished(
 }
 
 /// Fetches the public project at `address` into a folder of its own under the current one, and says where and which
-/// commit (backlog 0670, ADR-154). Refused with `--run`: a fetched project is not started yet (0670, part 3).
-fn fetch_project(address: &str, run_the_app: bool) -> Result<PathBuf> {
+/// commit (backlog 0670, ADR-154). Started afterwards only with `--run`, after every check that reads its code, and only
+/// as `fetch::why_not_start` allows (part 3).
+fn fetch_project(address: &str) -> Result<PathBuf> {
     let address = sv_cli::fetch::read_address(address)?;
-    if run_the_app {
-        bail!(
-            "sv does not start a project it fetched yet; leave out --run, and it checks the project's code \
-             without running any of it"
-        );
-    }
     eprintln!(
-        "Fetching {}: one download of its code from {}, as an archive, with nothing in it run.",
+        "Fetching {}: one download of its code from {}, as an archive; nothing in it runs while it is unpacked and read.",
         address.shown(),
         address.host.name()
     );
@@ -2684,6 +2683,7 @@ fn report_command(
     let ReportArgs {
         mut app_dir,
         address,
+        install,
         out,
         run_the_app,
         slow,
@@ -2694,8 +2694,22 @@ fn report_command(
         advisories_dir,
         codeql_results,
     } = parse_report_args(args, "a directory")?;
+    if install && !run_the_app {
+        bail!(
+            "--install allows a fetched project's packages to be downloaded before it is started, so it goes with --run"
+        );
+    }
     if let Some(address) = address {
-        app_dir = fetch_project(&address, run_the_app)?;
+        app_dir = fetch_project(&address)?;
+    }
+    if install {
+        if sv_cli::fetch::record_for(&app_dir).is_none() {
+            bail!(
+                "--install is for a project fetched from its address; an app of your own says install = true in its \
+                 stackvet.toml"
+            );
+        }
+        sv_cli::fetch::INSTALL_ALLOWED.store(true, std::sync::atomic::Ordering::Relaxed);
     }
     if keep_tool_output && !run_tools {
         bail!("--keep-tool-output keeps what the tools wrote, so it cannot go with --no-tools");

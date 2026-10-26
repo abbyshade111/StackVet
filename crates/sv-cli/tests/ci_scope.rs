@@ -41,13 +41,18 @@ fn the_tool_passes_its_own_checks() {
 fn a_claim_of_a_real_item_takes_the_short_path_and_one_more_file_takes_the_long_one() {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../docs/backlog");
     // A real item's path, as `git diff --name-only` names it, so the pattern is held to the folder as
-    // it really is and not only to the self-test's samples.
-    let item = std::fs::read_dir(&root)
-        .unwrap()
-        .filter_map(|e| e.ok())
-        .map(|e| e.file_name().to_string_lossy().into_owned())
-        .find(|name| name.ends_with(".md") && name.as_bytes()[0].is_ascii_digit())
-        .expect("an open backlog item to read");
+    // it really is and not only to the self-test's samples. An open item's name when there is one, and a
+    // finished item's otherwise, as it was when it was claimed: the backlog can be empty (25 October 2026).
+    let item_in = |dir: std::path::PathBuf| {
+        std::fs::read_dir(dir)
+            .ok()?
+            .filter_map(|e| e.ok())
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .find(|name| name.ends_with(".md") && name.as_bytes()[0].is_ascii_digit())
+    };
+    let item = item_in(root.clone())
+        .or_else(|| item_in(root.join("done")))
+        .expect("a backlog item to read, open or done");
     let claim = format!("docs/backlog/{item}\n");
     let (ok, said) = scope(&claim, &[]);
     assert!(ok, "{said}");

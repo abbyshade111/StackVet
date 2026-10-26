@@ -166,25 +166,6 @@ fn a_redirect_anywhere_else_is_refused_before_it_is_asked() {
 }
 
 #[test]
-fn a_fetched_project_is_not_started_and_nothing_is_fetched_for_it() {
-    let dir = scratch("run");
-    let (curl, asked) = fake_curl(&dir, "https://codeload.github.com/owner/project/zip/main");
-    let out = report(&dir, &curl, &["--run"]);
-    let stderr = String::from_utf8_lossy(&out.stderr);
-    assert_eq!(out.status.code(), Some(3), "{stderr}");
-    assert!(
-        stderr.contains("does not start a project it fetched"),
-        "{stderr}"
-    );
-    assert!(
-        calls(&asked).is_empty(),
-        "curl was asked: {:?}",
-        calls(&asked)
-    );
-    assert!(!dir.join("stackvet-fetched").exists());
-}
-
-#[test]
 fn an_address_on_any_other_host_is_refused_before_curl_is_asked() {
     let dir = scratch("other");
     let (curl, asked) = fake_curl(&dir, "https://codeload.github.com/owner/project/zip/main");
