@@ -1,6 +1,7 @@
 //! Backlog 0437: the network rule is written out in full in one place, `docs/ARCHITECTURE.md`'s "The fence", and the
-//! other pages that state it say "three exceptions" and point there. Six pages stated it with two different lists once
-//! ADR-111 added the outside tools; a page that goes back to two, or a home that loses one of the three, fails here.
+//! other pages that state it say "four exceptions" and point there. Six pages stated it with two different lists once
+//! ADR-111 added the outside tools; a page that goes back to fewer, or a home that loses one of the four (ADR-154 added
+//! a public project's address), fails here.
 
 use std::path::Path;
 
@@ -18,7 +19,7 @@ fn read(relative: &str) -> String {
 }
 
 #[test]
-fn the_home_draws_and_lists_all_three_exceptions() {
+fn the_home_draws_and_lists_all_four_exceptions() {
     let architecture = read("docs/ARCHITECTURE.md");
     let start = architecture
         .find(HOME)
@@ -39,6 +40,9 @@ fn the_home_draws_and_lists_all_three_exceptions() {
         "install = true",
         "--no-tools",
         "semgrep.dev",
+        "sv report <address>",
+        "github.com",
+        "gitlab.com",
     ] {
         assert!(
             picture.contains(what),
@@ -55,7 +59,7 @@ fn the_home_draws_and_lists_all_three_exceptions() {
             "the fence's table does not say which are {what}"
         );
     }
-    for adr in ["ADR-027", "ADR-052", "ADR-111"] {
+    for adr in ["ADR-027", "ADR-052", "ADR-111", "ADR-154"] {
         assert!(
             section.contains(adr),
             "the fence's section does not cite {adr}"
@@ -64,7 +68,7 @@ fn the_home_draws_and_lists_all_three_exceptions() {
 }
 
 #[test]
-fn every_page_that_states_the_rule_says_three_and_points_home() {
+fn every_page_that_states_the_rule_says_four_and_points_home() {
     for page in ["README.md", "SECURITY.md", "CONTRIBUTING.md"] {
         let text = read(page);
         assert!(
@@ -72,13 +76,12 @@ fn every_page_that_states_the_rule_says_three_and_points_home() {
             "{page} does not link to the fence's section"
         );
         assert!(
-            text.contains("three exceptions"),
-            "{page} does not say three exceptions"
+            text.contains("four exceptions"),
+            "{page} does not say four exceptions"
         );
-        assert!(
-            !text.contains("two exceptions"),
-            "{page} still says two exceptions"
-        );
+        for fewer in ["two exceptions", "three exceptions"] {
+            assert!(!text.contains(fewer), "{page} still says {fewer}");
+        }
     }
     let architecture = read("docs/ARCHITECTURE.md");
     assert!(

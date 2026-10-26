@@ -34,6 +34,8 @@ pub mod crash;
 pub mod crash_notes;
 // The opt-in log of stages, named by SV_LOG (backlog 0237).
 pub mod exit;
+// A public project fetched from its GitHub or GitLab address (backlog 0670, ADR-154).
+pub mod fetch;
 pub mod left_out;
 pub mod own_log;
 pub mod report_lock;

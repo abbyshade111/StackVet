@@ -2363,8 +2363,14 @@ fn cmd_bundle(args: &[String]) -> Result<()> {
         slow,
         run_tools,
         advisories_dir,
+        address,
         ..
     } = parse_report_args(args, "a file name ending in .zip")?;
+    if address.is_some() {
+        bail!(
+            "sv bundle packs an app of your own; to check a public project, give its address to sv report"
+        );
+    }
     if !app_dir.is_dir() {
         bail!("{} is not a folder", app_dir.display());
     }
@@ -2411,6 +2417,8 @@ fn cmd_bundle(args: &[String]) -> Result<()> {
 /// What `sv report` and `sv bundle` are asked for.
 struct ReportArgs {
     app_dir: PathBuf,
+    /// A public project's address in place of the folder (`sv report` only; backlog 0670, ADR-154).
+    address: Option<String>,
     /// A folder for `sv report`, a file for `sv bundle`.
     out: Option<PathBuf>,
     /// Opt-in. Everything else these commands do reads files; this starts somebody's code. It runs
@@ -2439,6 +2447,7 @@ struct ReportArgs {
 fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
     let mut parsed = ReportArgs {
         app_dir: PathBuf::from("."),
+        address: None,
         out: None,
         run_the_app: false,
         slow: false,
@@ -2479,6 +2488,9 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
                 ));
             }
             other if other.starts_with('-') => bail!("unknown option: {other}"),
+            other if sv_cli::fetch::looks_like_address(other) => {
+                parsed.address = Some(other.to_owned());
+            }
             other => parsed.app_dir = sv_check::adapters::clean_folder(Path::new(other)),
         }
     }
@@ -2609,6 +2621,52 @@ fn keep_unfinished(
     }
 }
 
+/// Fetches the public project at `address` into a folder of its own under the current one, and says where and which
+/// commit (backlog 0670, ADR-154). Refused with `--run`: a fetched project is not started yet (0670, part 3).
+fn fetch_project(address: &str, run_the_app: bool) -> Result<PathBuf> {
+    let address = sv_cli::fetch::read_address(address)?;
+    if run_the_app {
+        bail!(
+            "sv does not start a project it fetched yet; leave out --run, and it checks the project's code \
+             without running any of it"
+        );
+    }
+    eprintln!(
+        "Fetching {}: one download of its code from {}, as an archive, with nothing in it run.",
+        address.shown(),
+        address.host.name()
+    );
+    let base = std::env::current_dir().context("finding the current folder")?;
+    let fetched = sv_cli::fetch::fetch(&address, &base, &mut sv_cli::fetch::Curl)
+        .with_context(|| format!("fetching {}", address.shown()))?;
+    let commit = fetched
+        .unpacked
+        .commit
+        .as_deref()
+        .unwrap_or("not said by the archive");
+    eprintln!(
+        "Fetched {} files into {} (commit {commit}). The folder stays for you to read or delete.",
+        fetched.unpacked.files,
+        fetched.folder.display()
+    );
+    if fetched.manifest_written {
+        eprintln!(
+            "It carried no stackvet.toml, so sv wrote one with nothing answered: what only its author could say is \
+             left open."
+        );
+    }
+    if !fetched.unpacked.left_out.is_empty() {
+        eprintln!(
+            "Left out, and not checked ({}):",
+            fetched.unpacked.left_out.len()
+        );
+        for why in &fetched.unpacked.left_out {
+            eprintln!("  {why}");
+        }
+    }
+    Ok(fetched.folder)
+}
+
 fn report_command(
     args: &[String],
     started: std::time::SystemTime,
@@ -2624,7 +2682,8 @@ fn report_command(
         .transpose()?;
     let args = &args[..];
     let ReportArgs {
-        app_dir,
+        mut app_dir,
+        address,
         out,
         run_the_app,
         slow,
@@ -2635,6 +2694,9 @@ fn report_command(
         advisories_dir,
         codeql_results,
     } = parse_report_args(args, "a directory")?;
+    if let Some(address) = address {
+        app_dir = fetch_project(&address, run_the_app)?;
+    }
     if keep_tool_output && !run_tools {
         bail!("--keep-tool-output keeps what the tools wrote, so it cannot go with --no-tools");
     }
