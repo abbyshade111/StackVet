@@ -477,6 +477,12 @@ def self_files():
     return names
 
 
+def counted(n, what):
+    """`n` of `what`, with its verb: "1 thing to fix was", "2 things to fix were"."""
+    head, _, rest = what.partition(" ")
+    return f"{n} {head} {rest} was".replace("  ", " ") if int(n) == 1 else f"{n} {head}s {rest} were".replace("  ", " ")
+
+
 def itself_page(commit):
     summary = (SELF / "summary.md").read_text(encoding="utf-8")
     produced = re.search(r"^Produced by .*$", summary, re.M)
@@ -500,7 +506,8 @@ def itself_page(commit):
             "AISVS level 3. A summary of it: the things it found are being gone through.</p>"
             f'<div class="panel"><p>{md(produced[0])[3:-4]}</p><p>Of the requirements that apply:</p>'
             f'{md(known[1])}<p class="small">{md(held[0])[3:-4]}</p>'
-            f'<p>{e(to_fix[1])} things to fix were found, and {e(not_examined[1])} things were not examined.</p></div>'
+            f'<p>{e(counted(to_fix[1], "thing to fix"))} found, and '
+            f'{e(counted(not_examined[1], "thing"))} not examined.</p></div>'
             f'<h2>Published here</h2><ul>{files}</ul>'
             f'<div class="md">{md(readme, "self.md")}</div>'
             f'<h2>The code it checked</h2><p>The code is on <a href="{GITHUB}">GitHub</a>.</p>')
@@ -639,6 +646,8 @@ def self_test():
     assert 'class="turn you"' in chat and "I want an app." in chat and 'class="turn asks"' in chat
     assert 'class="badge found"' in status_lines("| | |\n|---|---|\n| needs attention | Too quick. |")
     assert "<h3>New?</h3><p>Start here.</p>" == block_html("**New?**\nStart here.")
+    assert counted("1", "thing to fix") == "1 thing to fix was" and counted("151", "thing to fix") == "151 things to fix were"
+    assert counted("1", "thing") == "1 thing was" and counted("29", "thing") == "29 things were"
     assert inline_scripts("<script>a()</script><SCRIPT type=module>b()</SCRIPT ><p>") == ["a()", "b()"]
     print("website self-test: ok")
 
