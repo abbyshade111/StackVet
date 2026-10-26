@@ -213,9 +213,9 @@ terminal command the person can run.
 - **Whose word, at which rank.** A check of `sv`'s own, then the app's tests, then the owner's written answer, a check
   by hand, the owner's yes, the tool's yes; nothing a model says makes a requirement *checked* (ADR-022, ADR-050).
 - **The fence.** The app runs on a Docker network with no gateway, read-only, every capability dropped; every request
-  to it is sent from inside; `sv` opens no network connection of its own, with three exceptions, drawn and listed in
+  to it is sent from inside; `sv` opens no network connection of its own, with four exceptions, drawn and listed in
   [The fence](#the-fence-what-can-reach-the-internet-and-what-turns-it-on) below (ADR-019, ADR-027, ADR-052,
-  ADR-111). Verified by asking Docker, not by trusting the flag.
+  ADR-111, ADR-154). Verified by asking Docker, not by trusting the flag.
 - **What `sv` writes into somebody's folder** is the report folder, the record of the build loop in the app's hidden
   `.stackvet` folder (ADR-076), `security-notes.md`, its section of `AGENTS.md`, and, when the owner runs `sv review` at their own terminal, what
   they recorded and its seal in `stackvet.toml` and seal lines in `design-decisions.md`; nothing else (ADR-017, with
@@ -225,23 +225,25 @@ terminal command the person can run.
 ## The fence: what can reach the internet, and what turns it on
 
 This is the one place the network rule is written out in full; every other page says it in a sentence and links here.
-`sv` opens no network connection of its own, with **three exceptions**. Two are off until the person turns them on by
-name; the third is on unless they turn it off. The app being checked has no way out at all.
+`sv` opens no network connection of its own, with **four exceptions**. Three are off until the person turns them on by
+name; the outside tools are on unless they turn them off. The app being checked has no way out at all.
 
 ```text
                                           the internet
-          ▲                         ▲                              ▲
-          │ 1. sv probe <address>   │ 2. install = true            │ 3. outside tools,
-          │    (asked for by name)  │    (asked for by name)       │    unless --no-tools
-          │                         │                              │    (on by default)
- ┌────────┴─────────────────────────┴──────────────────────────────┴───────────────────┐
+       ▲                   ▲                   ▲                    ▲
+       │ 1. asked for      │ 2. asked for      │ 3. on unless       │ 4. asked for
+       │    by name        │    by name        │    --no-tools      │    by name
+ ┌─────┴───────────────────┴───────────────────┴────────────────────┴──────────────────┐
  │ this computer                                                                       │
  │                                                                                     │
- │   sv ─── curl, to the address typed      install container      Semgrep (or         │
- │      ─── one DNS question about it       (Docker's python or    Opengrep) fetching  │
- │                                          node image; sees the   its rule packs      │
- │                                          dependency files only, from semgrep.dev    │
- │                                          never the code)                            │
+ │   sv probe <address>  install = true      the outside tools    sv report <address>  │
+ │   sv ─── curl, to     install container   Semgrep (or          sv ─── curl, one     │
+ │   the address typed   (Docker's python    Opengrep) fetching   archive of one       │
+ │   sv ─── one DNS      or node image;      its rule packs       commit from          │
+ │   question about it   sees the            from semgrep.dev     github.com or        │
+ │                       dependency files                         gitlab.com, unpacked │
+ │                       only, never the                          as files only into   │
+ │                       code)                                    stackvet-fetched     │
  │                                                                                     │
  │   ┌─ the fence: a Docker network made for the run, with no gateway ──────────────┐  │
  │   │                                                                              │  │
@@ -263,6 +265,7 @@ name; the third is on unless they turn it off. The app being checked has no way 
 | 1 | `sv probe <address>`, typed by the person: **off** until asked for | At most four read-only requests through `curl` to the public address typed (five with `--api`), and one question to this computer's own DNS resolver about that name | ADR-027 |
 | 2 | `install = true` under `[stack.run]`: **off** until asked for | The app's packages, downloaded from PyPI or npm before the run, in a container of its own that sees only the dependency files, never the app's code or its `.env`, and runs none of the packages' own install code; the report says when it did | ADR-052 |
 | 3 | The outside tools, which `sv report` and `sv bundle` run: **on** unless `--no-tools` | Semgrep (or Opengrep in its place) fetches its rule packs from semgrep.dev every time it runs, with its usage reporting off; nothing of the app's is sent. gosec is started so that it cannot download the app's modules | ADR-111 |
+| 4 | `sv report <address>`, typed by the person with a public project's `https://github.com/...` or `https://gitlab.com/...` address in place of a folder: **off** until asked for | One download through `curl` of that host's archive of one commit: HTTPS only, to github.com, gitlab.com, and codeload.github.com (where GitHub sends its archives), each redirect checked before it is followed, at most three, 500 MB, and ten minutes. Nothing is sent but the request for the archive. Nothing in it runs: `sv` unpacks it itself, as files only, into `stackvet-fetched` in the folder it was started in, and leaves out links and any name that would land outside it | ADR-154 |
 
 Two more things are worth knowing, though neither is `sv` opening a connection. `sv run` (and `sv report --run`)
 starts containers, and Docker itself downloads any image it does not have yet. And the advisory data is something the

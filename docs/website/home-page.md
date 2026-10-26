@@ -188,14 +188,15 @@ app uses anywhere. When it starts your app to test it, the app runs with no inte
 is different: it can read every file in your app's folder, including any data or keys kept there, and it sends what
 it reads to the company that runs it.
 
-There are three exceptions. Two you turn on yourself: a check of your live website, which makes at most a few
-requests to the address you type; and, if you ask for it, downloading your app's packages so it can start. The third
-is on unless you turn it off: StackVet runs the security tools each language already has, when they are installed on
+There are four exceptions. Three you turn on yourself: a check of your live website, which makes at most a few
+requests to the address you type; if you ask for it, downloading your app's packages so it can start; and checking
+somebody else's public project on GitHub or GitLab, which downloads its code once, as files, and runs none of it. The
+fourth is on unless you turn it off: StackVet runs the security tools each language already has, when they are installed on
 your computer, and one of them, Semgrep (or Opengrep in its place), downloads its rules from semgrep.dev each time it
 checks your app. It checks your code on your computer, with its usage reporting turned off. To check without any of
 these tools, add `--no-tools`.
 
-- The rule is drawn and tabled in `docs/ARCHITECTURE.md`, "The fence", and is CLAUDE.md's, ADR-027 (`sv probe`), ADR-052 (`install = true`), and ADR-111 (the outside tools run by
+- The rule is drawn and tabled in `docs/ARCHITECTURE.md`, "The fence", and is CLAUDE.md's, ADR-027 (`sv probe`), ADR-052 (`install = true`), ADR-154 (a public project's address), and ADR-111 (the outside tools run by
   default since 13 October 2026, the owner's decision, Semgrep's download included). "Usage reporting turned off" is
   the `--metrics=off` `sv` passes Semgrep (`data/adapters.json`); Opengrep has no such option and sends no metrics.
 

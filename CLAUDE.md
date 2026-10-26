@@ -37,8 +37,9 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
 - **`sv` opens no network connection of its own**, with these exceptions only: `sv probe <address>` (at most four
   read-only requests through `curl`, five with `--api`, and one DNS query, to a public address the owner types:
   ADR-027); the install step when the owner sets `install = true` (Docker's own `python` or `node` image, the
-  dependency files only, running none of the packages' code: ADR-052); and Semgrep fetching its rules when the outside
-  tools run (ADR-111). Advisory data is something the person downloads. Keep it that way. The picture and the table
+  dependency files only, running none of the packages' code: ADR-052); Semgrep fetching its rules when the outside
+  tools run (ADR-111); and `sv report` given a public project's GitHub or GitLab address (one archive of one commit
+  through `curl`, HTTPS to those hosts only, unpacked as files with nothing run: ADR-154). Advisory data is something the person downloads. Keep it that way. The picture and the table
   are `docs/ARCHITECTURE.md`, "The fence"; a change here changes them too.
 - **A citation is a claim:** cite a requirement only when the check really speaks to it, after reading its text.
 - **One app is anonymous in everything public:** the health-tracking app the owner built for a friend. Call it "a

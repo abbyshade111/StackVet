@@ -52,7 +52,7 @@ in one sentence each, so this page cannot drift from that one; where the two see
   to look stronger than it is.
 - **Break your own rule and watch what catches it.** Disable each guard you add, run the tests, and say in the pull
   request which went red.
-- **`sv` opens no network connection of its own**, with three exceptions, drawn and listed in
+- **`sv` opens no network connection of its own**, with four exceptions, drawn and listed in
   [the fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on).
 - **Never print, log, echo, or commit a key**, including in a test, where one is built from pieces at run time.
 - **A citation is a claim:** cite a requirement only when the check really speaks to it, after reading its text.

@@ -22,3 +22,5 @@ toml_edit = "0.25"
 libc = "0.2"
 # A typed passphrase is zeroed once used (ADR-043); already a dependency of sv-check.
 zeroize = "1"
+# Unpacks a public project's archive (backlog 0670, ADR-154): reading only, pure Rust (zlib-rs), no compressor.
+zip = { version = "9.1.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }

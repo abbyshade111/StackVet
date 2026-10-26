@@ -52,10 +52,15 @@ In three parts, each a pull request:
    refusing links and paths outside it and stopping at a limit; the commit is read from the archive. The fence's
    picture and table in `docs/ARCHITECTURE.md`, and CLAUDE.md's sentence, say four exceptions. Tests fetch nothing from
    the network: a local server stands in for the host.
-   **Part status:** open
+   **Part status:** done, 25 October 2026 (ADR-154, Later). A stand-in for the host, not a local server: a server
+   would need plain HTTP or a certificate of its own, and the fetch takes neither; the module's tests answer for the
+   host, and a stand-in `curl` answers for it through the `sv` binary. A project with no `stackvet.toml` gets one of
+   comments only, so its questions stay unanswered. Tried against both hosts the same day, at the owner's word: a
+   GitHub and a GitLab project each fetched with its commit named, and reported on.
 2. **The report for a reader weighing a risk:** the project, its address, and its commit named; the owner's questions
    left unanswered, and the requirements that leaves open said; findings worded as risks; never "nothing found" read as
-   safe.
+   safe. A project that carries its own `stackvet.toml` holds its author's answers, not the reader's: the report
+   says whose they are.
    **Part status:** open
 3. **Started only when asked:** with `--run`, after every static check has finished, a project with its own
    `stackvet.toml` is started in the fence as any app is, and the report says at its top that unvetted code was run.
