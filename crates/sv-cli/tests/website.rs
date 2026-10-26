@@ -180,6 +180,7 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         "reports.html",
         "checks-itself.html",
         "credits.html",
+        "check-a-project.html",
         "standards/index.html",
         "standards/asvs.html",
         "reports/notes-with-users/report.html",
@@ -269,6 +270,28 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
     assert!(
         !how.contains("make_how_it_works.py"),
         "a note on the page's words is shown"
+    );
+
+    // Checking somebody else's project (backlog 0671): its own words, its notes left out, and the home page points to it.
+    let project = read("check-a-project.html");
+    // The headline is escaped as the site escapes every heading.
+    assert!(project.contains("Thinking of using somebody else&#x27;s code? Check it first."));
+    assert!(project.contains("That does not make it safe to use"));
+    assert!(project.contains("code nobody vetted was run"));
+    for note in [
+        "backlog 0670",
+        "ADR-154",
+        "crates/sv-report",
+        "Tried on 25 October 2026",
+    ] {
+        assert!(
+            !project.contains(note),
+            "a note on the page's words is shown: {note}"
+        );
+    }
+    assert!(
+        read("index.html").contains("href=\"check-a-project.html\""),
+        "the home page does not point to the page"
     );
 
     // The folders' own markers are not uploaded with the site (deploy/stackvet.dev/wrangler.jsonc).
