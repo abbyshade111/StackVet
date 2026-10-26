@@ -127,7 +127,7 @@ mod tests {
         // alone changes nothing — but the app plainly holds financial data and the categories say
         // it does not, and that answer does change things.
         let mut m = Manifest::default();
-        m.app.audience = Audience::JustMe;
+        m.app.audience = Some(Audience::JustMe);
         m.data.categories = Some(vec![]); // level 1, so the consequence is real
         let resolved = resolved_with(&m, Condition::Payments);
         let found = check(&m, &resolved);
@@ -143,7 +143,7 @@ mod tests {
     #[test]
     fn either_financial_or_payment_card_settles_it() {
         let mut m = Manifest::default();
-        m.app.audience = Audience::JustMe;
+        m.app.audience = Some(Audience::JustMe);
         for category in ["financial", "payment-card"] {
             m.data.categories = Some(vec![category.to_owned()]);
             let resolved = resolved_with(&m, Condition::Payments);
@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn a_claim_that_does_not_hold_asks_nothing() {
         let mut m = Manifest::default();
-        m.app.audience = Audience::JustMe;
+        m.app.audience = Some(Audience::JustMe);
         m.capabilities.payments = Some(false);
         let (_, resolved) = resolve(&m, &|_| Some(false));
         assert!(check(&m, &resolved).is_empty());
@@ -185,7 +185,7 @@ mod tests {
     #[test]
     fn sign_in_implies_credentials() {
         let mut m = Manifest::default();
-        m.app.audience = Audience::JustMe;
+        m.app.audience = Some(Audience::JustMe);
         m.capabilities.auth = Some(true);
         let (_, resolved) = resolve(&m, &|_| None);
         let found = check(&m, &resolved);

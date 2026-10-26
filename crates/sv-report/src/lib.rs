@@ -2704,12 +2704,21 @@ mod sbom_not_made_tests;
 mod went_same_tests;
 
 /// The next step for a finding no review answers for (ADR-098): fix it, or, if it is a false alarm, give it an entry and
-/// confirm it with `sv review`. `None` for an accepted risk, which a person has answered already, and for a note worth
+/// confirm it with `sv review`; of a fetched project, weigh it. `None` for an accepted risk, which a person has answered already, and for a note worth
 /// knowing, which asks for nothing.
 pub fn next_step(report: &Report, f: &sv_check::Finding) -> Option<String> {
     // A note worth knowing asks for nothing, so it is not told to be fixed (ADR-110, Later).
     if is_note(f) {
         return None;
+    }
+    // Of a fetched project, fixing is the author's to do, and a review the reader wrote would speak only for their copy
+    // (backlog 0676, part 2).
+    if report.fetched.is_some() {
+        return accepted_note(report, f).is_none().then(|| {
+            "A risk to weigh, not yours to fix: read the code it names, and decide whether it matters for how you would \
+             use the project. Fixing it is the project's author's to do."
+                .to_owned()
+        });
     }
     accepted_note(report, f).is_none().then(|| {
         "Fix it in the code and check again. If it is a false alarm, write a `[[finding-review]]` entry for it, \

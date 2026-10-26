@@ -257,7 +257,7 @@ pub fn held_to(report: &Report) -> String {
         ),
     };
     match &report.level_why {
-        Some(why) => format!("{held} {}", level_why_sentence(level, why)),
+        Some(why) => format!("{held} {}", level_why_sentence(report, level, why)),
         None => held,
     }
 }
@@ -266,7 +266,29 @@ pub fn held_to(report: &Report) -> String {
 /// finding 17): the answers that decide it are the AI coding tool's until somebody confirms them,
 /// and at level 1 the report says what level 2 would bring, so a level resting on an unconfirmed
 /// "only I use it" does not read as settled.
-fn level_why_sentence(level: u8, why: &crate::LevelWhy) -> String {
+///
+/// Of a fetched project, the answers are its author's or nobody's, never the reader's to check and confirm (backlog
+/// 0676, part 1).
+fn level_why_sentence(report: &Report, level: u8, why: &crate::LevelWhy) -> String {
+    if let Some(fetched) = &report.fetched {
+        return match fetched.answers {
+            crate::fetched::Answers::Nobody => format!(
+                "Level {level} because nobody has said who uses this project or what information it holds about \
+                 people, and sv holds an app to this level when that is not said: those answers are its author's to \
+                 give, so the level is not a judgment of the project."
+            ),
+            crate::fetched::Answers::Author => format!(
+                "Level {level} because {}: answers in the project's own stackvet.toml, its author's word, which sv \
+                 did not check.",
+                why.because
+            ),
+            crate::fetched::Answers::Changed => format!(
+                "Level {level} because {}: answers in a stackvet.toml changed since the project was fetched, the \
+                 word of whoever changed it, not the author's.",
+                why.because
+            ),
+        };
+    }
     let whose = match &why.confirmed {
         None => {
             "answers in stackvet.toml, which your AI coding tool usually writes and nobody has \

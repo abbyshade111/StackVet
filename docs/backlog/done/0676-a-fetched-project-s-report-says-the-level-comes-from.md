@@ -1,6 +1,6 @@
 # A fetched project's report says the level comes from stackvet.toml and tells the reader to fix and confirm, as if it were their own app
 
-**Status:** claimed by claude/0676, 26 October 2026
+**Status:** done, 26 October 2026
 
 **Asked for by the owner, 26 October 2026:** "yes, file it as a backlog item and go ahead and starting working them",
 after the first report on a project fetched from GitHub (`sv report https://github.com/OWNER/PROJECT`, `sv` 2044b9c,
@@ -18,18 +18,18 @@ person reading a report on their own app, and one of them says something that is
    own too, whenever `[app] audience` is left out. The level should say when it rests on the default, not on an answer;
    and for a fetched project it should say nobody answered, not tell the reader to check and confirm answers that are
    the author's to give (`level_why_sentence`, `crates/sv-report/src/bluf.rs`).
-   **Part status:** open
+   **Part status:** done, 26 October 2026
 2. **Each finding's next step tells the reader to fix the code and confirm a review.** `next_step`
    (`crates/sv-report/src/lib.rs`) reads "Fix it in the code and check again. If it is a false alarm, write a
    `[[finding-review]]` entry for it ... and confirm it with `sv review` in your own terminal". For a fetched project
    the banner says fixing is the author's to do, and a seal the reader made would count only in the folder it was made
    for. The step should say what the reader can do: weigh it, and look at the code it names.
-   **Part status:** open
+   **Part status:** done, 26 October 2026
 3. **The build history speaks of "while this app was built."** `build_loop.rs` reads "Nothing shows that sv was used
    while this app was built: no call from an AI coding tool to sv's MCP server is recorded for it." Of a stranger's
    project, that is a sentence about a build the reader had no part in. For a fetched project it should be left out, or
    say only that the project carries no record of how it was built.
-   **Part status:** open
+   **Part status:** done, 26 October 2026
 
 **Done when.** A test reports on a fetched project with no `stackvet.toml` of its own and reads every page: the level
 names the default as a default, not as the file's answer, and asks nobody to confirm it with `sv review`; no finding is
