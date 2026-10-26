@@ -12,26 +12,41 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use sv_frameworks::names::{CONFIG_DIR, OLD_CONFIG_DIR};
 
-/// Runs `sv` with stdin, stdout and stderr on a pseudo-terminal, typing `typed`.
+/// Runs `sv` with stdin, stdout and stderr on a pseudo-terminal, typing each line of `typed` as a person would: once
+/// `sv` is waiting at a question (what it printed has stopped, on a line not yet ended), and the end of input (Ctrl-D)
+/// once they are all typed. Typed any sooner, `sv review` drops it as typed ahead (backlog 0675). A run still going
+/// after a minute is stopped, so a test fails, not hangs.
 const PTY: &str = r#"
-import os, pty, select, subprocess, sys
-typed = sys.argv[1]
+import os, pty, select, subprocess, sys, time
+answers = sys.argv[1].splitlines(keepends=True)
 main, child = pty.openpty()
 p = subprocess.Popen(sys.argv[2:], stdin=child, stdout=child, stderr=child, close_fds=True)
 os.close(child)
-os.write(main, typed.encode())
 out = b""
+last = time.monotonic()
+started = last
 while True:
-    ready, _, _ = select.select([main], [], [], 20)
-    if not ready:
+    ready, _, _ = select.select([main], [], [], 0.1)
+    if ready:
+        try:
+            data = os.read(main, 4096)
+        except OSError:
+            break
+        if not data:
+            break
+        out += data
+        last = time.monotonic()
+        continue
+    if p.poll() is not None:
         break
-    try:
-        data = os.read(main, 4096)
-    except OSError:
+    if time.monotonic() - started > 60:
+        p.kill()
         break
-    if not data:
-        break
-    out += data
+    waiting = out and not out.replace(b"\r", b"").endswith(b"\n")
+    if waiting and time.monotonic() - last > 0.3:
+        # The next answer, or, with none left, the end of input (Ctrl-D), as a person would leave.
+        os.write(main, answers.pop(0).encode() if answers else b"\x04")
+        last = time.monotonic()
 p.wait()
 sys.stdout.buffer.write(out)
 sys.exit(p.returncode)

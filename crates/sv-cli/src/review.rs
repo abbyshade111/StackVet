@@ -104,6 +104,12 @@ mod left_out_tests;
 #[cfg(test)]
 #[path = "review_not_offered_tests.rs"]
 mod not_offered_tests;
+// What was typed before a question is dropped, on a real terminal (backlog 0675).
+#[cfg(all(test, unix))]
+mod typed_ahead_tests;
+// The line before the wait for an entry's line, and every question asked through the guard (backlog 0675).
+#[cfg(test)]
+mod wait_note_tests;
 
 mod ticks;
 
@@ -156,6 +162,8 @@ pub fn cmd_review(path: Option<PathBuf>, no_report: bool) -> Result<()> {
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
     let mut out = Visible(std::io::stdout());
+    // In the terminal, what was typed before a question was shown is not its answer (backlog 0675).
+    typed_ahead::ON.store(true, std::sync::atomic::Ordering::Relaxed);
     review_then_report(
         &path.unwrap_or_else(|| PathBuf::from(".")),
         Key::folder(),
@@ -267,6 +275,49 @@ mod quiet {
         }
         shown
     }
+}
+
+/// What was typed before a question was shown (backlog 0675). While `sv review` worked out which line an entry is
+/// about, the owner typed `owner` ahead of the question, twice on 26 October 2026; the terminal kept it, and it was read
+/// as the answer once the question came. It was the answer meant, but anything typed ahead would have been read the same
+/// way, and an answer here records a decision signed with the owner's key. So before each question is read, what is
+/// waiting unread in the terminal is dropped. Only `cmd_review` turns it on: a test's answers come through a pipe.
+mod typed_ahead {
+    pub static ON: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+    /// How many times a question dropped what was typed ahead, for the tests of the wiring.
+    #[cfg(test)]
+    pub static DROPS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+    pub fn drop_if_on() {
+        if ON.load(std::sync::atomic::Ordering::Relaxed) {
+            #[cfg(test)]
+            DROPS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            drop_pending(libc_stdin());
+        }
+    }
+
+    #[cfg(unix)]
+    fn libc_stdin() -> i32 {
+        libc::STDIN_FILENO
+    }
+
+    /// Drops what is waiting unread on the terminal `fd`; nothing when `fd` is not a terminal.
+    #[cfg(unix)]
+    pub(super) fn drop_pending(fd: i32) {
+        // SAFETY: `tcflush` takes a descriptor and a constant, and only discards queued input; on a descriptor that is
+        // not a terminal it fails, and nothing is changed.
+        unsafe { libc::tcflush(fd, libc::TCIFLUSH) };
+    }
+
+    /// On Windows the console's queue is not dropped yet: what is typed ahead is read as before.
+    #[cfg(not(unix))]
+    fn libc_stdin() -> i32 {
+        0
+    }
+
+    #[cfg(not(unix))]
+    pub(super) fn drop_pending(_fd: i32) {}
 }
 
 /// On Windows `sv` cannot yet ask the console to hide what is typed, so it says so instead of
@@ -1218,10 +1269,12 @@ enum Current {
     },
 }
 
-/// Reads one line, trimmed. `None` at the end of input.
+/// Reads one line, trimmed. `None` at the end of input. In the terminal, what was typed before the question was shown
+/// is dropped first, so only an answer to the question on the screen is read (`typed_ahead`).
 fn ask(input: &mut dyn BufRead, out: &mut dyn Write, prompt: &str) -> Result<Option<String>> {
     write!(out, "{prompt}")?;
     out.flush()?;
+    typed_ahead::drop_if_on();
     let mut line = String::new();
     if input.read_line(&mut line)? == 0 {
         writeln!(out)?;
@@ -1275,6 +1328,13 @@ fn record_finding(
         entry.rule,
         entry.file
     )?;
+    // Said before it is looked for, so a person knows a question is coming (backlog 0675).
+    writeln!(
+        out,
+        "  Reading {} to find the line this entry is about...",
+        entry.file
+    )?;
+    out.flush()?;
     let lines = sv_check::review::lines_with_fingerprint(
         app_dir,
         &entry.rule,
@@ -2707,10 +2767,11 @@ mod tests {
 
     pub(super) const HEAD: &str =
         "manifest-version = 1\n[app]\nname = \"R\"\n[stack]\nlanguages = [\"python\"]\n";
-    const LINE: &str = "return redirect(request.args.get(\"next\"))";
-    const WHY: &str = "The next= value is looked up in a fixed list of our own paths first.";
+    pub(super) const LINE: &str = "return redirect(request.args.get(\"next\"))";
+    pub(super) const WHY: &str =
+        "The next= value is looked up in a fixed list of our own paths first.";
 
-    fn proposal(why: &str) -> String {
+    pub(super) fn proposal(why: &str) -> String {
         format!(
             "\n# The AI coding tool's proposal.\n[[finding-review]]\nrule = \"ast.open-redirect\"\n\
              file = \"app.py\"\nfingerprint = \"{}\"\nverdict = \"false-alarm\"\nwhy = \"{why}\"\n\
