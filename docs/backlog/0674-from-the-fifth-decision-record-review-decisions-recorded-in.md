@@ -8,6 +8,6 @@ Backlog 0625's plan (24 October) says its Phase A and E checks, findings only, g
 
 Small, unrecorded and cheap to undo (listed so a later review does not find them again): #2346 (`config.email-code-sign-in` reads only the owner's declared `email-code`, because reading the code from the signed-in suite turned 34 tests red); #2238 (`{seed:NAME}` is a blank to the credential rule); #2251 (`docker exec rm -f --` in place of `sh -c`).
 
-**The owner's choice, 26 October 2026,** asked with a recommendation: "One short ADR (Recommended)". ADR-155 will state
-the policy that a check which only reports a finding, crediting nothing, needs no record of its own, say when one still
+**The owner's choice, 26 October 2026,** asked with a recommendation: "One short ADR (Recommended)". A new record will
+state the policy that a check which only reports a finding, crediting nothing, needs no record of its own, say when one still
 does, and list the pull requests that relied on backlog 0625's plan and the Rust rules' for it.
