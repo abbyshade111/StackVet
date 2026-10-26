@@ -1,6 +1,6 @@
 # A page on stackvet.dev for checking somebody else's project
 
-**Status:** claimed by claude/0671, 26 October 2026
+**Status:** done, 26 October 2026
 
 **Asked for by the owner, 26 October 2026:** "let's pull together some info on this new feature to add to
 stackvet.dev", the feature backlog 0670 built (ADR-154). Asked where it goes, with a recommendation, the owner chose

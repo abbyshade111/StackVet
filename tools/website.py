@@ -67,6 +67,7 @@ PAGES = {
     "how": ("how-it-works.html", "How it works"),
     "standards": ("standards/index.html", "What it checks"),
     "reports": ("reports.html", "The report"),
+    "project": ("check-a-project.html", "Check a project"),
     "itself": ("checks-itself.html", "StackVet checks itself"),
     "credits": ("credits.html", "Credits"),
 }
@@ -124,7 +125,7 @@ section.step h2 { border-top: 0; }
 figure img { max-width: 100%; height: auto; background: var(--panel); border-radius: 10px; }
 figcaption { color: var(--caption); font-size: 15px; }
 .md { overflow-wrap: anywhere; }
-.md pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; }
+.md pre, section pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; }
 .note { background: var(--bubble); border-radius: 10px; padding: 12px 16px; color: var(--text); }
 @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero h1 { font-size: 30px; }
   ul.statuses li { grid-template-columns: 1fr; gap: 4px; } }
@@ -431,6 +432,17 @@ def how_page(page_md, how_md, commit):
     return shell("How StackVet works — StackVet", "how", "".join(out), commit)
 
 
+def project_page(page_md, commit):
+    """Checking somebody else's project (backlog 0671): each section's headline, then its words, without its notes."""
+    out = []
+    for title, body in sections(page_md):
+        headline, rest = heading_of(without_notes(blocks(body)))
+        level = "h1" if not out else "h2"
+        out.append(f'<section id="{section_id(title)}"><{level}>{e(headline or title)}</{level}>'
+                   + blocks_html(rest, "project.md") + "</section>")
+    return shell("Check a project before you use it — StackVet", "project", "".join(out), commit)
+
+
 def build_page(page_md, commit):
     """One step to a section: its heading, its caption, its screen, and a link on to the next."""
     steps = []
@@ -565,6 +577,7 @@ def build(out):
         "how-it-works.html": how_page(read("docs/website/how-it-works-page.md"), read("docs/paper/HOW-SV-WORKS.md"),
                                       commit),
         "checks-itself.html": itself_page(commit),
+        "check-a-project.html": project_page(read("docs/website/check-a-project-page.md"), commit),
     }
     out.mkdir(parents=True, exist_ok=True)
     write_text(out / MARK, "Made by tools/website.py. Run it again to bring the site up to date.\n")

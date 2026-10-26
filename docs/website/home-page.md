@@ -190,11 +190,13 @@ it reads to the company that runs it.
 
 There are four exceptions. Three you turn on yourself: a check of your live website, which makes at most a few
 requests to the address you type; if you ask for it, downloading your app's packages so it can start; and checking
-somebody else's public project on GitHub or GitLab, which downloads its code once, as files, and runs none of it. The
-fourth is on unless you turn it off: StackVet runs the security tools each language already has, when they are installed on
+somebody else's public project on GitHub or GitLab, which downloads its code once, as files, and runs none of it
+unless you ask. The fourth is on unless you turn it off: StackVet runs the security tools each language already has, when they are installed on
 your computer, and one of them, Semgrep (or Opengrep in its place), downloads its rules from semgrep.dev each time it
 checks your app. It checks your code on your computer, with its usage reporting turned off. To check without any of
 these tools, add `--no-tools`.
+
+Thinking of using somebody else's code? [Check the project first](check-a-project.html).
 
 - The rule is drawn and tabled in `docs/ARCHITECTURE.md`, "The fence", and is CLAUDE.md's, ADR-027 (`sv probe`), ADR-052 (`install = true`), ADR-154 (a public project's address), and ADR-111 (the outside tools run by
   default since 13 October 2026, the owner's decision, Semgrep's download included). "Usage reporting turned off" is
