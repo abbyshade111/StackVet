@@ -1,6 +1,6 @@
 # Check any public code repository from its GitHub or GitLab address, for someone deciding whether to use it
 
-**Status:** open
+**Status:** claimed by claude/0670, 25 October 2026
 
 **Asked for by the owner, 25 October 2026:** "an option to use StackVet to evaluate any public code repository - for
 example, supply a GitHub or GitLab link to the tool and have it run all the tests so a user can decide if they want
@@ -40,3 +40,24 @@ wrote the code.
 **Done when.** `sv report <address>` (or another form the decisions settle on) checks a public repository end to end,
 with a test that fetches nothing from the network (a local repository served as the address), a test that a hook in
 the fetched repository does not run, and the report saying which checks ran, which could not, and why.
+
+**The owner's choices, 25 October 2026,** asked with a recommendation for each (ADR-154, proposed with this claim):
+hosts, "GitHub and GitLab only"; how, "Download one snapshot"; starting it, "Only when asked, and only after running
+all static checks first"; the report, "A reader weighing a risk".
+
+In three parts, each a pull request:
+
+1. **The fetch:** `sv report` given a GitHub or GitLab project's address downloads the host's archive of one commit
+   through `curl` (HTTPS, those hosts, limits on redirects, size, and time), and unpacks it into a folder it names,
+   refusing links and paths outside it and stopping at a limit; the commit is read from the archive. The fence's
+   picture and table in `docs/ARCHITECTURE.md`, and CLAUDE.md's sentence, say four exceptions. Tests fetch nothing from
+   the network: a local server stands in for the host.
+   **Part status:** open
+2. **The report for a reader weighing a risk:** the project, its address, and its commit named; the owner's questions
+   left unanswered, and the requirements that leaves open said; findings worded as risks; never "nothing found" read as
+   safe.
+   **Part status:** open
+3. **Started only when asked:** with `--run`, after every static check has finished, a project with its own
+   `stackvet.toml` is started in the fence as any app is, and the report says at its top that unvetted code was run.
+   **Part status:** open
+
