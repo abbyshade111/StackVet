@@ -1,6 +1,6 @@
 # The rest of a fetched project's report still talks to the app's owner, and three capabilities read as answered when nobody answered them
 
-**Status:** open
+**Status:** claimed by claude/0677, 26 October 2026
 
 **Asked for by the owner, 26 October 2026:** "yes, file it", of what backlog 0676 left: the first report on a project
 fetched from GitHub, read again after 0676's fix, still speaks to an app's owner in many places, and in one says
