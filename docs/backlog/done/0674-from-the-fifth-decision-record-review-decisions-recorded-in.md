@@ -1,6 +1,6 @@
 # From the fifth decision-record review: decisions recorded in a backlog plan only (0625 findings-only checks, Rust added to code rules)
 
-**Status:** claimed by claude/0674, 26 October 2026
+**Status:** done, 26 October 2026
 
 Found by the fifth weekly review (0673), 26 October 2026. For the owner to decide; nothing here was changed.
 

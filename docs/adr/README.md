@@ -12,7 +12,9 @@ it. (`sv`'s first eleven were each written one to seven days after the decision,
 
 - **What needs one.** A change to what counts as evidence or at which tier, to what `sv` runs or connects to, to what it
   writes into someone's folder, to the network fence, a new or removed dependency, a default that changes what a report
-  concludes, and every choice the owner makes when a session asks. A change that does none of these needs none.
+  concludes, and every choice the owner makes when a session asks. A change that does none of these needs none. A check
+  that only reports a finding, crediting nothing and reading only what is already read, needs no record of its own; its
+  family's record keeps the count (ADR-155).
 - **When.** In the same pull request as the decision. For anything substantial, first: the backlog claim adds the
   record as `Status: proposed`, and the pull request that builds it makes it accepted and says where the build
   differs from the plan. A change to an existing decision is a dated "Later" entry on its record, or a new record that
@@ -201,6 +203,7 @@ source files, and in two tests:
 | [ADR-152](ADR-152.md) | A weekly job lists the long files and functions to split, in its run's summary only (accepted, 25 October 2026) |
 | [ADR-153](ADR-153.md) | `sv connect --docker` works on Windows: a Windows Docker path, the folder at a Linux-style path, and paths handed back in Windows form (accepted, 25 October 2026) |
 | [ADR-154](ADR-154.md) | `sv` checks a public GitHub or GitLab project from its address, read first and started only when asked (accepted, 25 October 2026) |
+| [ADR-155](ADR-155.md) | A check that only reports a finding needs no record of its own (accepted, 26 October 2026) |
 
 ## Names in the records
 
