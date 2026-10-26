@@ -200,7 +200,7 @@ source files, and in two tests:
 | [ADR-151](ADR-151.md) | An authorization server is asked, through a test client the owner declares, whether it holds to what OAuth asks of it (accepted, 25 October 2026) |
 | [ADR-152](ADR-152.md) | A weekly job lists the long files and functions to split, in its run's summary only (accepted, 25 October 2026) |
 | [ADR-153](ADR-153.md) | `sv connect --docker` works on Windows: a Windows Docker path, the folder at a Linux-style path, and paths handed back in Windows form (accepted, 25 October 2026) |
-| [ADR-154](ADR-154.md) | `sv` checks a public GitHub or GitLab project from its address, read first and started only when asked (proposed, 25 October 2026) |
+| [ADR-154](ADR-154.md) | `sv` checks a public GitHub or GitLab project from its address, read first and started only when asked (accepted, 25 October 2026) |
 
 ## Names in the records
 
