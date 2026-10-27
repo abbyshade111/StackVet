@@ -9,8 +9,9 @@ continuous-authorization (cATO) pipeline. Most of what a pipeline needs is alrea
 to the controls an authorizing official reads, NIST SP 800-53 Rev. 5, in the form their tools read, NIST's OSCAL.
 ASVS 5.0's own text cites NIST SP 800-63B and SP 800-57 but never 800-53, and nothing in `sv` maps one to the other.
 
-The plan, and what an export may and may not conclude, is the proposed record ADR-156. Its three questions for the
-owner come before any build.
+The plan, and what an export may and may not conclude, is the proposed record ADR-156. The owner answered its three
+questions on 27 October 2026: an export only when asked (with an input on the Action that turns it on), the newest
+OSCAL 1.x release pinned when the build starts, and assessment results alone at first, with no POA&M.
 
 1. **The crosswalk.** Each ASVS 5.0 requirement against the 800-53 Rev. 5 controls and enhancements that ask the same
    thing, chosen by reading both texts, each pair with the few words they share, every requirement listed (empty when
@@ -32,6 +33,6 @@ owner come before any build.
    test exports *checked in part* as `satisfied` on purpose and must fail.
    **Part status:** open
 5. **The documents.** `docs/GETTING-STARTED.md` (how a pipeline runs the export and what it may conclude),
-   `docs/ARCHITECTURE.md`, `docs/COVERAGE.md` if the crosswalk's reach is counted there, and the Action's inputs if it
-   gains one for the export. ADR-156 made accepted, with where the build differs from the plan.
+   `docs/ARCHITECTURE.md`, `docs/COVERAGE.md` if the crosswalk's reach is counted there, and the Action's new input
+   that turns the export on. ADR-156 made accepted, with where the build differs from the plan.
    **Part status:** open
