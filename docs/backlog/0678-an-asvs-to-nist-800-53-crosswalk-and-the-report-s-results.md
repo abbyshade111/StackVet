@@ -1,6 +1,6 @@
 # An ASVS-to-NIST 800-53 crosswalk, and the report's results exported as OSCAL assessment results, so StackVet's evidence can feed a cATO pipeline
 
-**Status:** open
+**Status:** claimed by claude/0678, 27 October 2026
 
 Asked for by the owner on 26 October 2026, after a conversation about fitting StackVet into a DevSecOps and
 continuous-authorization (cATO) pipeline. Most of what a pipeline needs is already there: the GitHub Action
