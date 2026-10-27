@@ -201,6 +201,13 @@ pub fn proven_report(dir: &Path) -> Result<Vec<u8>, String> {
     }
 }
 
+/// `proven_wherever`, giving back the bytes of `report.json` its seal was checked against: what the OSCAL export reads
+/// (ADR-156), with no second read of a file that could have been replaced since, as `proven_report` does.
+pub fn proven_report_wherever(dir: &Path) -> Result<(Vec<u8>, Place), String> {
+    holds_only_svs(dir)?;
+    check_keeping_report(dir).map(|(_, place, report)| (report, place))
+}
+
 /// Where a report whose seal holds was sealed, as against where its folder is now.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Place {

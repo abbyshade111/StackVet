@@ -204,7 +204,7 @@ source files, and in two tests:
 | [ADR-153](ADR-153.md) | `sv connect --docker` works on Windows: a Windows Docker path, the folder at a Linux-style path, and paths handed back in Windows form (accepted, 25 October 2026) |
 | [ADR-154](ADR-154.md) | `sv` checks a public GitHub or GitLab project from its address, read first and started only when asked (accepted, 25 October 2026) |
 | [ADR-155](ADR-155.md) | A check that only reports a finding needs no record of its own (accepted, 26 October 2026) |
-| [ADR-156](ADR-156.md) | A report's results exported as OSCAL assessment results, through a crosswalk from ASVS to NIST SP 800-53 chosen by reading both texts (proposed, 26 October 2026) |
+| [ADR-156](ADR-156.md) | A report's results exported as OSCAL assessment results, through a crosswalk from ASVS to NIST SP 800-53 chosen by reading both texts (accepted, 27 October 2026) |
 
 ## Names in the records
 

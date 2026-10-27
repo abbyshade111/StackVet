@@ -586,10 +586,25 @@ report folder kept with the run as an artifact.
 - **It never starts your app and never runs other people's tools** (it leaves out `--run`, and passes
   `--no-tools`): on a pull request, starting the app would run code you have not read yet, and the image carries
   none of the tools. Run those at a terminal.
+- **For a compliance pipeline, `oscal: 'true'`** also writes the results as OSCAL assessment results, NIST's format,
+  kept with the run as a second artifact. Only *checked* is concluded as satisfied and only *needs attention* as not
+  satisfied; NIST SP 800-53 controls are named as related, never as assessed (ADR-156).
 - **The app needs its `stackvet.toml` committed.** Without one, the Action stops and says how to make it.
 - **It sees only the history the checkout fetched.** `actions/checkout` fetches one commit unless told
   otherwise (`fetch-depth: 0` for all of it), and the check for secrets files committed in the past reads
   that history.
+
+### For a compliance pipeline: OSCAL
+
+If an organization asks for the results in NIST's format for security assessments (OSCAL), for an authorization to
+operate or a compliance tool: `sv report --oscal FILE` writes OSCAL 1.2.3 assessment results in the same run as the
+report, `sv export --oscal [FOLDER] [--out FILE]` writes them later from a report `sv` wrote on this computer, and the
+Action does it with `oscal: 'true'`. The file says no more than the report does. Only *checked* becomes "satisfied"
+and only *needs attention* "not satisfied", each for one ASVS requirement. Every other status is passed on as what it
+is, with whose word it is and how it was found out (a test, a document read, or someone's answer), and *not verified*
+is neither. The NIST SP 800-53 controls each requirement relates to are named, never marked as met: a control asks
+more than any one requirement does ([ADR-156](docs/adr/ADR-156.md)). The file goes outside the report folder, which
+holds only `sv`'s own files.
 
 ## Building
 
