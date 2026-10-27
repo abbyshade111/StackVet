@@ -586,7 +586,10 @@ pub fn refuse_inside(report_dir: &Path, file: &Path) -> Result<()> {
         .filter(|p| !p.as_os_str().is_empty())
         .unwrap_or(Path::new("."));
     // A folder below the report folder is inside it too.
-    let inside = match (parent.canonicalize(), report_dir.canonicalize()) {
+    let inside = match (
+        sv_frameworks::paths::canonical(parent),
+        sv_frameworks::paths::canonical(report_dir),
+    ) {
         (Ok(parent), Ok(report)) => parent.starts_with(report),
         _ => false,
     };
