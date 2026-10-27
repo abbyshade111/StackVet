@@ -21,8 +21,9 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
   new file there.
 - Tests that start the app need Docker or Colima; without one they take the honest-absence path and say so.
 - Inside the Claude Code sandbox, cargo cannot write `~/.cargo`: set `CARGO_HOME` and `CARGO_TARGET_DIR` under the
-  sandbox's temporary folder, or run cargo in the Terminal panel. `tools/pwned_passwords.py` and
-  `tools/atlas_references.py` need the network: run them outside the sandbox, whose proxy cuts downloads short.
+  sandbox's temporary folder, or run cargo in the Terminal panel. `tools/pwned_passwords.py`,
+  `tools/atlas_references.py`, and `tools/nist_controls.py` need the network: run them outside the sandbox, whose
+  proxy cuts downloads short.
 
 ## Rules that hold everywhere
 

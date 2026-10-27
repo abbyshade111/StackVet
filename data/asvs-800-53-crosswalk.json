@@ -1,0 +1,1184 @@
+{
+  "_comment": "Each OWASP ASVS 5.0 requirement against the NIST SP 800-53 Rev. 5 controls and control enhancements that ask the same thing, at least in part, chosen by reading both texts on 27 October 2026 (ADR-156, backlog 0678). A pair means 'asks the same thing', never 'satisfies': an 800-53 control is broader than any one ASVS requirement, and the OSCAL export names these controls beside an ASVS result as related controls, never as a verdict on the control. Each pair carries a few words naming what the two ask in common, held by crates/sv-check/tests/nist_crosswalk.rs to share vocabulary with both texts. Every requirement is listed; an empty object means nothing in 800-53 was found to ask the same thing. Keys are OSCAL control ids (ac-7, ia-5.1). The catalog block and everything under controls are written by tools/nist_controls.py from NIST's own OSCAL catalog, never by hand.",
+  "catalog": {
+    "name": "NIST SP 800-53 Rev. 5",
+    "version": "5.2.0",
+    "release": "v1.6.0",
+    "source": "https://raw.githubusercontent.com/usnistgov/oscal-content/v1.6.0/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog.json"
+  },
+  "requirements": {
+    "V1.1.1": {},
+    "V1.1.2": {},
+    "V1.2.1": {},
+    "V1.2.2": {
+      "si-10.6": "encoding untrusted data so it cannot inject into URLs"
+    },
+    "V1.2.3": {
+      "si-10.6": "preventing JavaScript and JSON injection"
+    },
+    "V1.2.4": {
+      "si-10.6": "preventing database and SQL injection"
+    },
+    "V1.2.5": {
+      "si-10.6": "preventing operating system command injection"
+    },
+    "V1.2.6": {
+      "si-10.6": "preventing LDAP injection"
+    },
+    "V1.2.7": {
+      "si-10.6": "preventing XPath injection"
+    },
+    "V1.2.8": {
+      "si-10.6": "preventing LaTeX injection"
+    },
+    "V1.2.9": {
+      "si-10.6": "escaping regular expressions to prevent injected metacharacters"
+    },
+    "V1.2.10": {
+      "si-10.6": "preventing CSV and formula injection"
+    },
+    "V1.3.1": {
+      "si-10.6": "sanitizing untrusted HTML so it cannot inject content"
+    },
+    "V1.3.2": {},
+    "V1.3.3": {
+      "si-10": "allowing only safe characters in input before use"
+    },
+    "V1.3.4": {},
+    "V1.3.5": {},
+    "V1.3.6": {},
+    "V1.3.7": {
+      "si-10.6": "preventing template injection from untrusted input"
+    },
+    "V1.3.8": {
+      "si-10.6": "preventing JNDI injection from untrusted input"
+    },
+    "V1.3.9": {
+      "si-10.6": "preventing memcache injection"
+    },
+    "V1.3.10": {},
+    "V1.3.11": {
+      "si-10.6": "preventing SMTP or IMAP injection"
+    },
+    "V1.3.12": {},
+    "V1.4.1": {
+      "si-16": "protecting memory against overflows"
+    },
+    "V1.4.2": {
+      "si-10": "input validation to prevent integer overflows"
+    },
+    "V1.4.3": {},
+    "V1.5.1": {},
+    "V1.5.2": {
+      "si-10.5": "restricting untrusted input to allowed object types and formats"
+    },
+    "V1.5.3": {},
+    "V2.1.1": {
+      "si-10": "rules for checking the validity of input data"
+    },
+    "V2.1.2": {},
+    "V2.1.3": {},
+    "V2.2.1": {
+      "si-10": "validating input against expected structure and allowed values"
+    },
+    "V2.2.2": {
+      "si-10": "enforcing input validation on the trusted server side"
+    },
+    "V2.2.3": {},
+    "V2.3.1": {},
+    "V2.3.2": {},
+    "V2.3.3": {},
+    "V2.3.4": {},
+    "V2.3.5": {
+      "ac-3.2": "requiring approval by two people for high-value actions"
+    },
+    "V2.4.1": {
+      "sc-5": "protecting application functions against denial-of-service"
+    },
+    "V2.4.2": {},
+    "V3.1.1": {},
+    "V3.2.1": {},
+    "V3.2.2": {},
+    "V3.2.3": {},
+    "V3.3.1": {},
+    "V3.3.2": {},
+    "V3.3.3": {},
+    "V3.3.4": {
+      "sc-23": "keeping the session token away from scripts to protect sessions"
+    },
+    "V3.3.5": {},
+    "V3.4.1": {},
+    "V3.4.2": {},
+    "V3.4.3": {
+      "sc-18.3": "preventing the loading and execution of untrusted scripts"
+    },
+    "V3.4.4": {},
+    "V3.4.5": {},
+    "V3.4.6": {},
+    "V3.4.7": {},
+    "V3.4.8": {},
+    "V3.5.1": {},
+    "V3.5.2": {},
+    "V3.5.3": {},
+    "V3.5.4": {},
+    "V3.5.5": {
+      "si-10.5": "accepting messages only from trusted sources in valid formats"
+    },
+    "V3.5.6": {},
+    "V3.5.7": {},
+    "V3.5.8": {},
+    "V3.6.1": {
+      "si-7": "verifying the integrity of externally hosted software assets"
+    },
+    "V3.7.1": {
+      "sc-18": "using only acceptable and secure client-side code technologies",
+      "sa-22": "replacing client-side components that are no longer supported"
+    },
+    "V3.7.2": {},
+    "V3.7.3": {},
+    "V3.7.4": {},
+    "V3.7.5": {},
+    "V4.1.1": {},
+    "V4.1.2": {},
+    "V4.1.3": {
+      "si-10.5": "using header field inputs only from the trusted intermediary layer"
+    },
+    "V4.1.4": {
+      "cm-7": "blocking unused HTTP methods to restrict functions to those supported"
+    },
+    "V4.1.5": {
+      "sc-8.1": "digital signatures as cryptographic mechanisms to detect changes during transmission"
+    },
+    "V4.2.1": {
+      "si-10": "checking the validity of incoming HTTP message length inputs",
+      "sc-7.17": "enforcing adherence to HTTP protocol formats at load balancers and firewalls"
+    },
+    "V4.2.2": {},
+    "V4.2.3": {
+      "si-10": "rejecting invalid HTTP/2 message inputs with connection-specific header fields"
+    },
+    "V4.2.4": {
+      "si-10": "checking validity of header field inputs for CR and LF sequences",
+      "si-10.6": "preventing header injection from untrusted data"
+    },
+    "V4.2.5": {},
+    "V4.3.1": {
+      "sc-5": "limiting the effects of GraphQL denial of service from expensive queries"
+    },
+    "V4.3.2": {
+      "cm-7": "disabling unneeded GraphQL introspection to restrict available functions"
+    },
+    "V4.4.1": {
+      "sc-8.1": "WebSocket connections protected with TLS cryptography during transmission"
+    },
+    "V4.4.2": {},
+    "V4.4.3": {
+      "sc-23": "dedicated tokens protecting the authenticity of WebSocket sessions"
+    },
+    "V4.4.4": {
+      "sc-23": "protecting WebSocket session authenticity through the authenticated session"
+    },
+    "V5.1.1": {
+      "si-10.3": "documented behavior when malicious or invalid file inputs are received"
+    },
+    "V5.2.1": {
+      "sc-5": "limiting accepted file size to prevent denial of service",
+      "si-10": "checking the validity of file inputs by size"
+    },
+    "V5.2.2": {
+      "si-10": "checking the validity of accepted file contents against the expected type",
+      "si-10.5": "restricting accepted files to expected extensions and approved formats"
+    },
+    "V5.2.3": {
+      "si-10": "checking compressed file inputs against maximum allowed sizes"
+    },
+    "V5.2.4": {
+      "sc-6": "a per-user quota protecting the availability of storage resources"
+    },
+    "V5.2.5": {
+      "si-10": "checking uploaded compressed file inputs for symlinks"
+    },
+    "V5.2.6": {
+      "si-10": "checking validity of uploaded image inputs by maximum pixel size"
+    },
+    "V5.3.1": {
+      "cm-7.2": "preventing execution of uploaded files as server-side program code"
+    },
+    "V5.3.2": {
+      "si-10": "strict validation of user-submitted filename inputs",
+      "si-10.5": "restricting file path inputs to internally generated or trusted sources"
+    },
+    "V5.3.3": {},
+    "V5.4.1": {
+      "si-10": "validating user-submitted filename inputs"
+    },
+    "V5.4.2": {
+      "si-10.6": "sanitizing served file names to prevent injection"
+    },
+    "V5.4.3": {
+      "si-3": "scanning files from untrusted sources for known malicious code"
+    },
+    "V6.1.1": {},
+    "V6.1.2": {
+      "ia-5.1": "a maintained list of expected words kept out of passwords"
+    },
+    "V6.1.3": {},
+    "V6.2.1": {
+      "ia-5.1": "password-based authentication with a minimum length rule"
+    },
+    "V6.2.2": {},
+    "V6.2.3": {
+      "ia-11": "users re-authenticate with their current password before changing it"
+    },
+    "V6.2.4": {
+      "ia-5.1": "checking new passwords against a list of commonly-used passwords"
+    },
+    "V6.2.5": {
+      "ia-5.1": "letting users choose passwords with all printable characters"
+    },
+    "V6.2.6": {
+      "ia-6": "masking password entry to obscure authentication feedback"
+    },
+    "V6.2.7": {},
+    "V6.2.8": {},
+    "V6.2.9": {
+      "ia-5.1": "allowing long passwords and passphrases"
+    },
+    "V6.2.10": {},
+    "V6.2.11": {
+      "ia-5.1": "checking passwords against a list of expected words"
+    },
+    "V6.2.12": {
+      "ia-5.1": "checking passwords against a list of compromised passwords"
+    },
+    "V6.3.1": {
+      "ac-7": "limiting repeated invalid logon attempts against password brute force"
+    },
+    "V6.3.2": {
+      "ia-5": "no default accounts left with default authenticators"
+    },
+    "V6.3.3": {
+      "ia-2.1": "multi-factor authentication for access to accounts",
+      "ia-2.2": "multi-factor authentication for access to accounts",
+      "ia-2.6": "one authentication factor provided by a separate hardware device"
+    },
+    "V6.3.4": {},
+    "V6.3.5": {
+      "ac-9.1": "users notified of unsuccessful attempts before a successful logon"
+    },
+    "V6.3.6": {},
+    "V6.3.7": {
+      "ac-9.3": "users notified of changes to authentication details"
+    },
+    "V6.3.8": {
+      "si-11": "error messages that do not reveal valid users"
+    },
+    "V6.4.1": {
+      "ia-5": "establishing initial authenticator content such as initial passwords"
+    },
+    "V6.4.2": {},
+    "V6.4.3": {},
+    "V6.4.4": {
+      "ia-12": "identity proofing of the user at the required level",
+      "ia-5": "procedures for a lost authentication factor"
+    },
+    "V6.4.5": {},
+    "V6.4.6": {
+      "ia-5.1": "users select their own new password after a reset"
+    },
+    "V6.5.1": {
+      "ia-2.8": "authentication codes usable only once, resisting replay"
+    },
+    "V6.5.2": {},
+    "V6.5.3": {},
+    "V6.5.4": {},
+    "V6.5.5": {},
+    "V6.5.6": {
+      "ia-5": "authentication factor revoked when authenticators are lost"
+    },
+    "V6.5.7": {},
+    "V6.5.8": {},
+    "V6.6.1": {},
+    "V6.6.2": {
+      "ia-2.8": "authentication codes not usable again, resisting replay"
+    },
+    "V6.6.3": {
+      "ac-7": "limiting invalid attempts to brute force an authentication code"
+    },
+    "V6.6.4": {},
+    "V6.7.1": {},
+    "V6.7.2": {},
+    "V6.8.1": {
+      "ia-8": "uniquely identify each user across identity providers"
+    },
+    "V6.8.2": {
+      "ia-13.2": "verifying the integrity of signed identity assertions"
+    },
+    "V6.8.3": {
+      "ia-2.8": "assertions used only once to prevent replay"
+    },
+    "V6.8.4": {},
+    "V7.1.1": {
+      "ac-12": "defining the conditions that end a user session"
+    },
+    "V7.1.2": {
+      "ac-10": "limiting the number of concurrent sessions for one account"
+    },
+    "V7.1.3": {},
+    "V7.2.1": {
+      "sc-23": "protecting session authenticity by verifying session tokens"
+    },
+    "V7.2.2": {
+      "sc-23.3": "session tokens generated by the system, not static secrets"
+    },
+    "V7.2.3": {
+      "sc-23.3": "unique session identifiers generated with sufficient randomness"
+    },
+    "V7.2.4": {
+      "sc-23.3": "generating a new unique session token for each session"
+    },
+    "V7.3.1": {
+      "ac-12": "terminating a user session after a period of inactivity",
+      "ia-11": "requiring users to re-authenticate after inactivity"
+    },
+    "V7.3.2": {
+      "ac-12": "terminating a user session after a maximum lifetime",
+      "ia-11": "requiring users to re-authenticate after a maximum session lifetime"
+    },
+    "V7.4.1": {
+      "sc-23.1": "invalidating session identifiers at logout or other session termination"
+    },
+    "V7.4.2": {
+      "ac-12": "automatically terminating user sessions after a trigger event"
+    },
+    "V7.4.3": {},
+    "V7.4.4": {
+      "ac-12.1": "a logout capability wherever authentication is required"
+    },
+    "V7.4.5": {},
+    "V7.5.1": {
+      "ia-11": "requiring users to re-authenticate before sensitive changes"
+    },
+    "V7.5.2": {},
+    "V7.5.3": {
+      "ia-11": "requiring users to re-authenticate before highly sensitive operations",
+      "ia-10": "supplemental authentication before highly sensitive operations"
+    },
+    "V7.6.1": {
+      "ia-11": "requiring re-authentication when a maximum time is reached"
+    },
+    "V7.6.2": {},
+    "V8.1.1": {},
+    "V8.1.2": {},
+    "V8.1.3": {},
+    "V8.1.4": {},
+    "V8.2.1": {
+      "ac-3": "enforcing explicit authorizations for function-level access",
+      "ac-6": "allowing only authorized access to functions with explicit permissions"
+    },
+    "V8.2.2": {
+      "ac-3": "enforcing explicit authorizations for access to specific data items"
+    },
+    "V8.2.3": {
+      "ac-3": "enforcing explicit authorizations for field-level access"
+    },
+    "V8.2.4": {
+      "ia-10": "adaptive authentication under specific contextual circumstances"
+    },
+    "V8.3.1": {
+      "ac-3": "enforcing authorization rules at a trusted service layer"
+    },
+    "V8.3.2": {
+      "ac-3.8": "revoking authorization immediately when the values it rests on change"
+    },
+    "V8.3.3": {},
+    "V8.4.1": {
+      "ac-3": "enforcing authorization so consumers access only permitted tenants"
+    },
+    "V8.4.2": {},
+    "V9.1.1": {
+      "si-7.6": "cryptographic signature or MAC to detect tampering with token information"
+    },
+    "V9.1.2": {
+      "sc-13": "allowed cryptographic algorithms for each token context and use"
+    },
+    "V9.1.3": {
+      "si-10.5": "accepting token key sources only from an allowlist of trusted sources",
+      "sc-12": "managing the cryptographic keys used to validate tokens"
+    },
+    "V9.2.1": {},
+    "V9.2.2": {},
+    "V9.2.3": {},
+    "V9.2.4": {},
+    "V10.1.1": {},
+    "V10.1.2": {
+      "ia-13.2": "verifying the source of tokens such as the ID Token"
+    },
+    "V10.2.1": {},
+    "V10.2.2": {
+      "ia-13.2": "verifying the issuer of authorization responses and tokens"
+    },
+    "V10.2.3": {
+      "ac-6": "requesting only the access scopes that are required"
+    },
+    "V10.3.1": {
+      "ia-13.3": "access tokens restricted to their intended audience"
+    },
+    "V10.3.2": {
+      "ac-3": "enforcing authorization decisions for access"
+    },
+    "V10.3.3": {
+      "ia-4": "user identifiers that are not reassigned to other users"
+    },
+    "V10.3.4": {},
+    "V10.3.5": {
+      "ia-2.8": "replay-resistant access tokens"
+    },
+    "V10.4.1": {
+      "si-10": "validating redirect URI inputs against an allowlist"
+    },
+    "V10.4.2": {},
+    "V10.4.3": {},
+    "V10.4.4": {},
+    "V10.4.5": {},
+    "V10.4.6": {},
+    "V10.4.7": {
+      "si-10": "validating client metadata inputs such as registered URIs"
+    },
+    "V10.4.8": {},
+    "V10.4.9": {
+      "ia-13.3": "revoking issued access tokens"
+    },
+    "V10.4.10": {
+      "ia-9": "authenticating client applications before backchannel communications"
+    },
+    "V10.4.11": {
+      "ac-6": "assigning a client only the scopes it requires"
+    },
+    "V10.4.12": {
+      "si-10": "checking the validity of the response mode input value"
+    },
+    "V10.4.13": {},
+    "V10.4.14": {},
+    "V10.4.15": {},
+    "V10.4.16": {
+      "ia-9": "strong authentication of confidential client applications",
+      "ia-5.2": "client authentication based on public-key cryptography"
+    },
+    "V10.5.1": {
+      "ia-2.8": "replay-resistant authentication using a nonce"
+    },
+    "V10.5.2": {
+      "ia-4": "user identifiers that are not reassigned to other users"
+    },
+    "V10.5.3": {},
+    "V10.5.4": {
+      "ia-13.3": "ID tokens restricted to their intended audience"
+    },
+    "V10.5.5": {},
+    "V10.6.1": {},
+    "V10.6.2": {},
+    "V10.7.1": {},
+    "V10.7.2": {},
+    "V10.7.3": {},
+    "V11.1.1": {
+      "sc-12": "managing cryptographic keys under key management requirements"
+    },
+    "V11.1.2": {
+      "sc-13": "determining where cryptographic keys and algorithms are used"
+    },
+    "V11.1.3": {
+      "sc-13": "identifying the cryptographic uses within the system"
+    },
+    "V11.1.4": {},
+    "V11.2.1": {},
+    "V11.2.2": {},
+    "V11.2.3": {},
+    "V11.2.4": {},
+    "V11.2.5": {
+      "si-11": "handling errors without revealing information attackers could exploit"
+    },
+    "V11.3.1": {},
+    "V11.3.2": {
+      "sc-13": "implementing only the approved types of cryptography"
+    },
+    "V11.3.3": {
+      "si-7.6": "cryptographic mechanisms detecting unauthorized modification of information"
+    },
+    "V11.3.4": {},
+    "V11.3.5": {},
+    "V11.4.1": {
+      "sc-13": "implementing approved cryptography for each cryptographic use"
+    },
+    "V11.4.2": {
+      "ia-5.1": "storing passwords with an approved key derivation function"
+    },
+    "V11.4.3": {},
+    "V11.4.4": {},
+    "V11.5.1": {},
+    "V11.5.2": {},
+    "V11.6.1": {
+      "sc-13": "approved cryptographic algorithms for key generation and signatures"
+    },
+    "V11.6.2": {
+      "sc-13": "approved cryptographic algorithms for key exchange",
+      "sc-12": "secure cryptographic key establishment"
+    },
+    "V11.7.1": {},
+    "V11.7.2": {
+      "sa-8.33": "data minimization during processing"
+    },
+    "V12.1.1": {
+      "sc-8.1": "cryptographic protection of transmitted information through the TLS protocol"
+    },
+    "V12.1.2": {
+      "sc-8.1": "strong cryptographic cipher suites protecting information during transmission"
+    },
+    "V12.1.3": {
+      "ia-5.2": "validating client certificates against a trusted anchor before authentication"
+    },
+    "V12.1.4": {
+      "ia-5.2": "checking certificate revocation status information"
+    },
+    "V12.1.5": {
+      "sc-8.3": "cryptographic protection of handshake metadata as message externals"
+    },
+    "V12.2.1": {
+      "sc-8": "protecting communications in transmission with TLS",
+      "sc-8.1": "encrypted communications preventing unauthorized disclosure during transmission"
+    },
+    "V12.2.2": {
+      "sc-17": "public key certificates from publicly trusted providers"
+    },
+    "V12.3.1": {
+      "sc-8": "protecting all connections' transmitted information with encryption",
+      "sc-8.1": "encrypted protocol protecting information during transmission",
+      "ac-17.2": "encryption protecting remote access connections"
+    },
+    "V12.3.2": {
+      "sc-23.5": "verifying certificates before establishing a protected session",
+      "ia-5.2": "validating certificates received before communicating"
+    },
+    "V12.3.3": {
+      "sc-8": "transport encryption protecting transmitted information",
+      "sc-8.1": "transport encryption preventing unauthorized disclosure during transmission"
+    },
+    "V12.3.4": {
+      "sc-17": "trusting only specific certificate trust anchors",
+      "sc-23.5": "only allowing specific certificate authorities"
+    },
+    "V12.3.5": {
+      "ia-9": "authenticating each service before communicating"
+    },
+    "V13.1.1": {
+      "sa-4.9": "identifying the external services the application uses"
+    },
+    "V13.1.2": {},
+    "V13.1.3": {},
+    "V13.1.4": {
+      "ia-5": "a schedule for changing or refreshing secrets"
+    },
+    "V13.2.1": {
+      "ia-9": "authenticating backend services and applications before communication"
+    },
+    "V13.2.2": {
+      "ac-6": "accounts with least privilege"
+    },
+    "V13.2.3": {
+      "ia-5": "not using default credentials or authenticators"
+    },
+    "V13.2.4": {
+      "sc-7.5": "allowing communication only with permitted systems by exception"
+    },
+    "V13.2.5": {
+      "sc-7.5": "allowing server requests only to permitted systems by exception"
+    },
+    "V13.2.6": {
+      "cm-6": "implementing the documented configuration settings for each connection"
+    },
+    "V13.3.1": {
+      "ia-5.7": "secrets not embedded in application source code",
+      "sc-28.3": "protected hardware-backed storage for key material"
+    },
+    "V13.3.2": {
+      "ac-6": "access following the principle of least privilege"
+    },
+    "V13.3.3": {
+      "sc-28.3": "protecting key material inside a hardware security module"
+    },
+    "V13.3.4": {
+      "ia-5": "secrets refreshed or rotated on a schedule"
+    },
+    "V13.4.1": {},
+    "V13.4.2": {
+      "cm-7": "disabling unneeded debug functions in production"
+    },
+    "V13.4.3": {
+      "cm-7": "restricting directory listing functions unless intended"
+    },
+    "V13.4.4": {
+      "cm-7": "restricting the HTTP TRACE method and protocol functions"
+    },
+    "V13.4.5": {
+      "cm-7": "restricting documentation and monitoring services unless intended"
+    },
+    "V13.4.6": {},
+    "V13.4.7": {},
+    "V14.1.1": {
+      "ra-2": "categorizing the sensitive information the system processes into levels"
+    },
+    "V14.1.2": {},
+    "V14.2.1": {},
+    "V14.2.2": {},
+    "V14.2.3": {
+      "ac-4": "controlling the flow of sensitive data to outside parties"
+    },
+    "V14.2.4": {},
+    "V14.2.5": {},
+    "V14.2.6": {
+      "sa-8.33": "privacy principle of minimization: returning only the minimum required data"
+    },
+    "V14.2.7": {
+      "si-12": "retention of information, keeping only what is still required",
+      "si-12.3": "deleting or erasing information once its retention period ends"
+    },
+    "V14.2.8": {},
+    "V14.3.1": {},
+    "V14.3.2": {},
+    "V14.3.3": {},
+    "V15.1.1": {
+      "si-2": "installing component updates within a defined remediation time period",
+      "si-2.3": "defined time frames for remediating vulnerable component flaws"
+    },
+    "V15.1.2": {
+      "cm-8": "maintaining an inventory of all system components and libraries",
+      "sr-4": "maintaining the provenance of components from trusted repositories"
+    },
+    "V15.1.3": {},
+    "V15.1.4": {},
+    "V15.1.5": {},
+    "V15.2.1": {
+      "si-2": "installing component updates within the defined remediation time period"
+    },
+    "V15.2.2": {
+      "sc-5": "protecting against denial-of-service from resource-demanding functionality",
+      "sc-6": "protecting the availability of resources against overuse"
+    },
+    "V15.2.3": {
+      "cm-7": "providing only required functionality and restricting extraneous functions"
+    },
+    "V15.2.4": {
+      "sr-4": "provenance of components from the expected repository"
+    },
+    "V15.2.5": {
+      "sc-7.21": "isolating components with network level isolation boundaries"
+    },
+    "V15.3.1": {},
+    "V15.3.2": {},
+    "V15.3.3": {},
+    "V15.3.4": {},
+    "V15.3.5": {},
+    "V15.3.6": {},
+    "V15.3.7": {},
+    "V15.4.1": {},
+    "V15.4.2": {},
+    "V15.4.3": {},
+    "V15.4.4": {},
+    "V16.1.1": {
+      "au-2": "identifying and documenting the events that are logged"
+    },
+    "V16.2.1": {
+      "au-3": "log entries recording when, where, who, and what for each event"
+    },
+    "V16.2.2": {
+      "au-8": "timestamps in Coordinated Universal Time or with an explicit offset",
+      "sc-45": "synchronizing the time sources of logging components"
+    },
+    "V16.2.3": {},
+    "V16.2.4": {
+      "au-12.2": "logs in a common, standardized format"
+    },
+    "V16.2.5": {
+      "au-3.3": "limiting the sensitive personal information placed in logs"
+    },
+    "V16.3.1": {
+      "au-12": "generating log records for authentication events"
+    },
+    "V16.3.2": {
+      "au-12": "generating log records for failed authorization events"
+    },
+    "V16.3.3": {
+      "au-2": "logging the security events defined in documentation",
+      "au-12": "generating log records for the defined security event types"
+    },
+    "V16.3.4": {
+      "au-12": "generating log records for errors and security control failures"
+    },
+    "V16.4.1": {
+      "si-10.6": "preventing injection of untrusted data into logs"
+    },
+    "V16.4.2": {
+      "au-9": "protecting logs from unauthorized access and modification"
+    },
+    "V16.4.3": {
+      "au-4.1": "transferring logs to a different, separate system"
+    },
+    "V16.5.1": {
+      "si-11": "error messages that do not reveal exploitable internal information"
+    },
+    "V16.5.2": {
+      "si-17": "fail-safe procedures when external resource access fails"
+    },
+    "V16.5.3": {
+      "sc-24": "failing to a known secure state when errors occur",
+      "sa-8.24": "the secure failure design principle: the system fails securely"
+    },
+    "V16.5.4": {},
+    "V17.1.1": {},
+    "V17.1.2": {
+      "sc-5": "protecting the TURN service against denial-of-service by resource exhaustion"
+    },
+    "V17.2.1": {
+      "sc-12": "managing cryptographic keys according to documented key management requirements"
+    },
+    "V17.2.2": {
+      "sc-13": "approved types of cryptographic protection for DTLS media"
+    },
+    "V17.2.3": {
+      "sc-8.1": "cryptographic authentication that detects changes to transmitted media packets"
+    },
+    "V17.2.4": {
+      "si-10.3": "predictable behavior when malformed (invalid) packets are received"
+    },
+    "V17.2.5": {
+      "sc-5": "limiting the effects of a packet flood denial-of-service",
+      "sc-5.2": "capacity to keep processing traffic during information flooding"
+    },
+    "V17.2.6": {},
+    "V17.2.7": {
+      "sc-5.2": "capacity to keep processing traffic during information flooding"
+    },
+    "V17.2.8": {
+      "sc-23": "protecting the authenticity of the media stream session"
+    },
+    "V17.3.1": {
+      "sc-5": "limiting the effects of a signaling flood attack with rate limiting"
+    },
+    "V17.3.2": {
+      "si-10": "input validation of incoming signaling messages",
+      "si-10.3": "predictable behavior when malformed (invalid) messages are received"
+    }
+  },
+  "controls": {
+    "ac-3": {
+      "label": "AC-3",
+      "title": "Access Enforcement",
+      "statement": "Enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies."
+    },
+    "ac-3.2": {
+      "label": "AC-3(2)",
+      "title": "Dual Authorization",
+      "statement": "Enforce dual authorization for [Assignment: privileged commands and/or other actions]."
+    },
+    "ac-3.8": {
+      "label": "AC-3(8)",
+      "title": "Revocation of Access Authorizations",
+      "statement": "Enforce the revocation of access authorizations resulting from changes to the security attributes of subjects and objects based on [Assignment: rules]."
+    },
+    "ac-4": {
+      "label": "AC-4",
+      "title": "Information Flow Enforcement",
+      "statement": "Enforce approved authorizations for controlling the flow of information within the system and between connected systems based on [Assignment: information flow control policies]."
+    },
+    "ac-6": {
+      "label": "AC-6",
+      "title": "Least Privilege",
+      "statement": "Employ the principle of least privilege, allowing only authorized accesses for users (or processes acting on behalf of users) that are necessary to accomplish assigned organizational tasks."
+    },
+    "ac-7": {
+      "label": "AC-7",
+      "title": "Unsuccessful Logon Attempts",
+      "statement": "Enforce a limit of [Assignment: number] consecutive invalid logon attempts by a user during a [Assignment: time period] ; and Automatically [Selection: lock the account or node for [Assignment: time period] ; lock the account or node until released by an administrator; delay next logon prompt per [Assignment: delay algorithm] ; notify system administrator; take other [Assignment: action] ] when the maximum number of unsuccessful attempts is exceeded."
+    },
+    "ac-9.1": {
+      "label": "AC-9(1)",
+      "title": "Unsuccessful Logons",
+      "statement": "Notify the user, upon successful logon, of the number of unsuccessful logon attempts since the last successful logon."
+    },
+    "ac-9.3": {
+      "label": "AC-9(3)",
+      "title": "Notification of Account Changes",
+      "statement": "Notify the user, upon successful logon, of changes to [Assignment: security-related characteristics or parameters] during [Assignment: time period]."
+    },
+    "ac-10": {
+      "label": "AC-10",
+      "title": "Concurrent Session Control",
+      "statement": "Limit the number of concurrent sessions for each [Assignment: account and/or account types] to [Assignment: number]."
+    },
+    "ac-12": {
+      "label": "AC-12",
+      "title": "Session Termination",
+      "statement": "Automatically terminate a user session after [Assignment: conditions or trigger events]."
+    },
+    "ac-12.1": {
+      "label": "AC-12(1)",
+      "title": "User-initiated Logouts",
+      "statement": "Provide a logout capability for user-initiated communications sessions whenever authentication is used to gain access to [Assignment: information resources]."
+    },
+    "ac-17.2": {
+      "label": "AC-17(2)",
+      "title": "Protection of Confidentiality and Integrity Using Encryption",
+      "statement": "Implement cryptographic mechanisms to protect the confidentiality and integrity of remote access sessions."
+    },
+    "au-2": {
+      "label": "AU-2",
+      "title": "Event Logging",
+      "statement": "Identify the types of events that the system is capable of logging in support of the audit function: [Assignment: event types]; Coordinate the event logging function with other organizational entities requiring audit-related information to guide and inform the selection criteria for events to be logged; Specify the following event types for logging within the system: [Assignment: organization-defined event types (subset of the event types defined in [AU-2a.](#au-2_smt.a)) along with the frequency of (or situation requiring) logging for each identified event type]; Provide a rationale for why the event types selected for logging are deemed to be adequate to support after-the-fact investigations of incidents; and Review and update the event types selected for logging [Assignment: frequency]."
+    },
+    "au-3": {
+      "label": "AU-3",
+      "title": "Content of Audit Records",
+      "statement": "Ensure that audit records contain information that establishes the following: What type of event occurred; When the event occurred; Where the event occurred; Source of the event; Outcome of the event; and Identity of any individuals, subjects, or objects/entities associated with the event."
+    },
+    "au-3.3": {
+      "label": "AU-3(3)",
+      "title": "Limit Personally Identifiable Information Elements",
+      "statement": "Limit personally identifiable information contained in audit records to the following elements identified in the privacy risk assessment: [Assignment: elements]."
+    },
+    "au-4.1": {
+      "label": "AU-4(1)",
+      "title": "Transfer to Alternate Storage",
+      "statement": "Transfer audit logs [Assignment: frequency] to a different system, system component, or media other than the system or system component conducting the logging."
+    },
+    "au-8": {
+      "label": "AU-8",
+      "title": "Time Stamps",
+      "statement": "Use internal system clocks to generate time stamps for audit records; and Record time stamps for audit records that meet [Assignment: granularity of time measurement] and that use Coordinated Universal Time, have a fixed local time offset from Coordinated Universal Time, or that include the local time offset as part of the time stamp."
+    },
+    "au-9": {
+      "label": "AU-9",
+      "title": "Protection of Audit Information",
+      "statement": "Protect audit information and audit logging tools from unauthorized access, modification, and deletion; and Alert [Assignment: personnel or roles] upon detection of unauthorized access, modification, or deletion of audit information."
+    },
+    "au-12": {
+      "label": "AU-12",
+      "title": "Audit Record Generation",
+      "statement": "Provide audit record generation capability for the event types the system is capable of auditing as defined in [AU-2a](#au-2_smt.a) on [Assignment: system components]; Allow [Assignment: personnel or roles] to select the event types that are to be logged by specific components of the system; and Generate audit records for the event types defined in [AU-2c](#au-2_smt.c) that include the audit record content defined in [AU-3](#au-3)."
+    },
+    "au-12.2": {
+      "label": "AU-12(2)",
+      "title": "Standardized Formats",
+      "statement": "Produce a system-wide (logical or physical) audit trail composed of audit records in a standardized format."
+    },
+    "cm-6": {
+      "label": "CM-6",
+      "title": "Configuration Settings",
+      "statement": "Establish and document configuration settings for components employed within the system that reflect the most restrictive mode consistent with operational requirements using [Assignment: common secure configurations]; Implement the configuration settings; Identify, document, and approve any deviations from established configuration settings for [Assignment: system components] based on [Assignment: operational requirements] ; and Monitor and control changes to the configuration settings in accordance with organizational policies and procedures."
+    },
+    "cm-7": {
+      "label": "CM-7",
+      "title": "Least Functionality",
+      "statement": "Configure the system to provide only [Assignment: mission-essential capabilities] ; and Prohibit or restrict the use of the following functions, ports, protocols, software, and/or services: [Assignment: organization-defined prohibited or restricted functions, system ports, protocols, software, and/or services]."
+    },
+    "cm-7.2": {
+      "label": "CM-7(2)",
+      "title": "Prevent Program Execution",
+      "statement": "Prevent program execution in accordance with [Selection: [Assignment: policies, rules of behavior, and/or access agreements regarding software program usage and restrictions] ; rules authorizing the terms and conditions of software program usage]."
+    },
+    "cm-8": {
+      "label": "CM-8",
+      "title": "System Component Inventory",
+      "statement": "Develop and document an inventory of system components that: Accurately reflects the system; Includes all components within the system; Does not include duplicate accounting of components or components assigned to any other system; Is at the level of granularity deemed necessary for tracking and reporting; and Includes the following information to achieve system component accountability: [Assignment: information] ; and Review and update the system component inventory [Assignment: frequency]."
+    },
+    "ia-2.1": {
+      "label": "IA-2(1)",
+      "title": "Multi-factor Authentication to Privileged Accounts",
+      "statement": "Implement multi-factor authentication for access to privileged accounts."
+    },
+    "ia-2.2": {
+      "label": "IA-2(2)",
+      "title": "Multi-factor Authentication to Non-privileged Accounts",
+      "statement": "Implement multi-factor authentication for access to non-privileged accounts."
+    },
+    "ia-2.6": {
+      "label": "IA-2(6)",
+      "title": "Access to Accounts —separate Device",
+      "statement": "Implement multi-factor authentication for [Selection: local; network; remote] access to [Selection: privileged accounts; non-privileged accounts] such that: One of the factors is provided by a device separate from the system gaining access; and The device meets [Assignment: strength of mechanism requirements]."
+    },
+    "ia-2.8": {
+      "label": "IA-2(8)",
+      "title": "Access to Accounts — Replay Resistant",
+      "statement": "Implement replay-resistant authentication mechanisms for access to [Selection: privileged accounts; non-privileged accounts]."
+    },
+    "ia-4": {
+      "label": "IA-4",
+      "title": "Identifier Management",
+      "statement": "Manage system identifiers by: Receiving authorization from [Assignment: personnel or roles] to assign an individual, group, role, service, or device identifier; Selecting an identifier that identifies an individual, group, role, service, or device; Assigning the identifier to the intended individual, group, role, service, or device; and Preventing reuse of identifiers for [Assignment: time period]."
+    },
+    "ia-5": {
+      "label": "IA-5",
+      "title": "Authenticator Management",
+      "statement": "Manage system authenticators by: Verifying, as part of the initial authenticator distribution, the identity of the individual, group, role, service, or device receiving the authenticator; Establishing initial authenticator content for any authenticators issued by the organization; Ensuring that authenticators have sufficient strength of mechanism for their intended use; Establishing and implementing administrative procedures for initial authenticator distribution, for lost or compromised or damaged authenticators, and for revoking authenticators; Changing default authenticators prior to first use; Changing or refreshing authenticators [Assignment: time period by authenticator type] or when [Assignment: events] occur; Protecting authenticator content from unauthorized disclosure and modification; Requiring individuals to take, and having devices implement, specific controls to protect authenticators; and Changing authenticators for group or role accounts when membership to those accounts changes."
+    },
+    "ia-5.1": {
+      "label": "IA-5(1)",
+      "title": "Password-based Authentication",
+      "statement": "For password-based authentication: Maintain a list of commonly-used, expected, or compromised passwords and update the list [Assignment: frequency] and when organizational passwords are suspected to have been compromised directly or indirectly; Verify, when users create or update passwords, that the passwords are not found on the list of commonly-used, expected, or compromised passwords in IA-5(1)(a); Transmit passwords only over cryptographically-protected channels; Store passwords using an approved salted key derivation function, preferably using a keyed hash; Require immediate selection of a new password upon account recovery; Allow user selection of long passwords and passphrases, including spaces and all printable characters; Employ automated tools to assist the user in selecting strong password authenticators; and Enforce the following composition and complexity rules: [Assignment: composition and complexity rules]."
+    },
+    "ia-5.2": {
+      "label": "IA-5(2)",
+      "title": "Public Key-based Authentication",
+      "statement": "For public key-based authentication: Enforce authorized access to the corresponding private key; and Map the authenticated identity to the account of the individual or group; and When public key infrastructure (PKI) is used: Validate certificates by constructing and verifying a certification path to an accepted trust anchor, including checking certificate status information; and Implement a local cache of revocation data to support path discovery and validation."
+    },
+    "ia-5.7": {
+      "label": "IA-5(7)",
+      "title": "No Embedded Unencrypted Static Authenticators",
+      "statement": "Ensure that unencrypted static authenticators are not embedded in applications or other forms of static storage."
+    },
+    "ia-6": {
+      "label": "IA-6",
+      "title": "Authentication Feedback",
+      "statement": "Obscure feedback of authentication information during the authentication process to protect the information from possible exploitation and use by unauthorized individuals."
+    },
+    "ia-8": {
+      "label": "IA-8",
+      "title": "Identification and Authentication (Non-organizational Users)",
+      "statement": "Uniquely identify and authenticate non-organizational users or processes acting on behalf of non-organizational users."
+    },
+    "ia-9": {
+      "label": "IA-9",
+      "title": "Service Identification and Authentication",
+      "statement": "Uniquely identify and authenticate [Assignment: system services and applications] before establishing communications with devices, users, or other services or applications."
+    },
+    "ia-10": {
+      "label": "IA-10",
+      "title": "Adaptive Authentication",
+      "statement": "Require individuals accessing the system to employ [Assignment: supplemental authentication techniques or mechanisms] under specific [Assignment: circumstances or situations]."
+    },
+    "ia-11": {
+      "label": "IA-11",
+      "title": "Re-authentication",
+      "statement": "Require users to re-authenticate when [Assignment: circumstances or situations]."
+    },
+    "ia-12": {
+      "label": "IA-12",
+      "title": "Identity Proofing",
+      "statement": "Identity proof users that require accounts for logical access to systems based on appropriate identity assurance level requirements as specified in applicable standards and guidelines; Resolve user identities to a unique individual; and Collect, validate, and verify identity evidence."
+    },
+    "ia-13.2": {
+      "label": "IA-13(2)",
+      "title": "Verification of Identity Assertions and Access Tokens",
+      "statement": "The source and integrity of identity assertions and access tokens are verified before granting access to system and information resources."
+    },
+    "ia-13.3": {
+      "label": "IA-13(3)",
+      "title": "Token Management",
+      "statement": "In accordance with [Assignment: policy], assertions and access tokens are: generated; issued; refreshed; revoked; time-restricted; and audience-restricted."
+    },
+    "ra-2": {
+      "label": "RA-2",
+      "title": "Security Categorization",
+      "statement": "Categorize the system and information it processes, stores, and transmits; Document the security categorization results, including supporting rationale, in the security plan for the system; and Verify that the authorizing official or authorizing official designated representative reviews and approves the security categorization decision."
+    },
+    "sa-4.9": {
+      "label": "SA-4(9)",
+      "title": "Functions, Ports, Protocols, and Services in Use",
+      "statement": "Require the developer of the system, system component, or system service to identify the functions, ports, protocols, and services intended for organizational use."
+    },
+    "sa-8.24": {
+      "label": "SA-8(24)",
+      "title": "Secure Failure and Recovery",
+      "statement": "Implement the security design principle of secure failure and recovery in [Assignment: organization-defined systems or system components]."
+    },
+    "sa-8.33": {
+      "label": "SA-8(33)",
+      "title": "Minimization",
+      "statement": "Implement the privacy principle of minimization using [Assignment: processes]."
+    },
+    "sa-22": {
+      "label": "SA-22",
+      "title": "Unsupported System Components",
+      "statement": "Replace system components when support for the components is no longer available from the developer, vendor, or manufacturer; or Provide the following options for alternative sources for continued support for unsupported components [Selection: in-house support; [Assignment: support from external providers] ]."
+    },
+    "sc-5": {
+      "label": "SC-5",
+      "title": "Denial-of-service Protection",
+      "statement": "[Selection: protect against; limit] the effects of the following types of denial-of-service events: [Assignment: types of denial-of-service events] ; and Employ the following controls to achieve the denial-of-service objective: [Assignment: controls by type of denial-of-service event]."
+    },
+    "sc-5.2": {
+      "label": "SC-5(2)",
+      "title": "Capacity, Bandwidth, and Redundancy",
+      "statement": "Manage capacity, bandwidth, or other redundancy to limit the effects of information flooding denial-of-service attacks."
+    },
+    "sc-6": {
+      "label": "SC-6",
+      "title": "Resource Availability",
+      "statement": "Protect the availability of resources by allocating [Assignment: resources] by [Selection: priority; quota; [Assignment: controls] ]."
+    },
+    "sc-7.5": {
+      "label": "SC-7(5)",
+      "title": "Deny by Default — Allow by Exception",
+      "statement": "Deny network communications traffic by default and allow network communications traffic by exception [Selection: at managed interfaces; for [Assignment: systems] ]."
+    },
+    "sc-7.17": {
+      "label": "SC-7(17)",
+      "title": "Automated Enforcement of Protocol Formats",
+      "statement": "Enforce adherence to protocol formats."
+    },
+    "sc-7.21": {
+      "label": "SC-7(21)",
+      "title": "Isolation of System Components",
+      "statement": "Employ boundary protection mechanisms to isolate [Assignment: system components] supporting [Assignment: missions and/or business functions]."
+    },
+    "sc-8": {
+      "label": "SC-8",
+      "title": "Transmission Confidentiality and Integrity",
+      "statement": "Protect the [Selection: confidentiality; integrity] of transmitted information."
+    },
+    "sc-8.1": {
+      "label": "SC-8(1)",
+      "title": "Cryptographic Protection",
+      "statement": "Implement cryptographic mechanisms to [Selection: prevent unauthorized disclosure of information; detect changes to information] during transmission."
+    },
+    "sc-8.3": {
+      "label": "SC-8(3)",
+      "title": "Cryptographic Protection for Message Externals",
+      "statement": "Implement cryptographic mechanisms to protect message externals unless otherwise protected by [Assignment: alternative physical controls]."
+    },
+    "sc-12": {
+      "label": "SC-12",
+      "title": "Cryptographic Key Establishment and Management",
+      "statement": "Establish and manage cryptographic keys when cryptography is employed within the system in accordance with the following key management requirements: [Assignment: requirements]."
+    },
+    "sc-13": {
+      "label": "SC-13",
+      "title": "Cryptographic Protection",
+      "statement": "Determine the [Assignment: cryptographic uses] ; and Implement the following types of cryptography required for each specified cryptographic use: [Assignment: types of cryptography]."
+    },
+    "sc-17": {
+      "label": "SC-17",
+      "title": "Public Key Infrastructure Certificates",
+      "statement": "Issue public key certificates under an [Assignment: certificate policy] or obtain public key certificates from an approved service provider; and Include only approved trust anchors in trust stores or certificate stores managed by the organization."
+    },
+    "sc-18": {
+      "label": "SC-18",
+      "title": "Mobile Code",
+      "statement": "Define acceptable and unacceptable mobile code and mobile code technologies; and Authorize, monitor, and control the use of mobile code within the system."
+    },
+    "sc-18.3": {
+      "label": "SC-18(3)",
+      "title": "Prevent Downloading and Execution",
+      "statement": "Prevent the download and execution of [Assignment: unacceptable mobile code]."
+    },
+    "sc-23": {
+      "label": "SC-23",
+      "title": "Session Authenticity",
+      "statement": "Protect the authenticity of communications sessions."
+    },
+    "sc-23.1": {
+      "label": "SC-23(1)",
+      "title": "Invalidate Session Identifiers at Logout",
+      "statement": "Invalidate session identifiers upon user logout or other session termination."
+    },
+    "sc-23.3": {
+      "label": "SC-23(3)",
+      "title": "Unique System-generated Session Identifiers",
+      "statement": "Generate a unique session identifier for each session with [Assignment: randomness requirements] and recognize only session identifiers that are system-generated."
+    },
+    "sc-23.5": {
+      "label": "SC-23(5)",
+      "title": "Allowed Certificate Authorities",
+      "statement": "Only allow the use of [Assignment: certificated authorities] for verification of the establishment of protected sessions."
+    },
+    "sc-24": {
+      "label": "SC-24",
+      "title": "Fail in Known State",
+      "statement": "Fail to a [Assignment: known system state] for the following failures on the indicated components while preserving [Assignment: system state information] in failure: [Assignment: types of system failures on system components]."
+    },
+    "sc-28.3": {
+      "label": "SC-28(3)",
+      "title": "Cryptographic Keys",
+      "statement": "Provide protected storage for cryptographic keys [Selection: [Assignment: safeguards] ; hardware-protected key store]."
+    },
+    "sc-45": {
+      "label": "SC-45",
+      "title": "System Time Synchronization",
+      "statement": "Synchronize system clocks within and between systems and system components."
+    },
+    "si-2": {
+      "label": "SI-2",
+      "title": "Flaw Remediation",
+      "statement": "Identify, report, and correct system flaws; Test software and firmware updates related to flaw remediation for effectiveness and potential side effects before installation; Install security-relevant software and firmware updates within [Assignment: time period] of the release of the updates; and Incorporate flaw remediation into the organizational configuration management process."
+    },
+    "si-2.3": {
+      "label": "SI-2(3)",
+      "title": "Time to Remediate Flaws and Benchmarks for Corrective Actions",
+      "statement": "Measure the time between flaw identification and flaw remediation; and Establish the following benchmarks for taking corrective actions: [Assignment: benchmarks]."
+    },
+    "si-3": {
+      "label": "SI-3",
+      "title": "Malicious Code Protection",
+      "statement": "Implement [Selection: signature-based; non-signature-based] malicious code protection mechanisms at system entry and exit points to detect and eradicate malicious code; Automatically update malicious code protection mechanisms as new releases are available in accordance with organizational configuration management policy and procedures; Configure malicious code protection mechanisms to: Perform periodic scans of the system [Assignment: frequency] and real-time scans of files from external sources at [Selection: endpoint; network entry and exit points] as the files are downloaded, opened, or executed in accordance with organizational policy; and [Selection: block malicious code; quarantine malicious code; take [Assignment: action] ] ; and send alert to [Assignment: personnel or roles] in response to malicious code detection; and Address the receipt of false positives during malicious code detection and eradication and the resulting potential impact on the availability of the system."
+    },
+    "si-7": {
+      "label": "SI-7",
+      "title": "Software, Firmware, and Information Integrity",
+      "statement": "Employ integrity verification tools to detect unauthorized changes to the following software, firmware, and information: [Assignment: organization-defined software, firmware, and information] ; and Take the following actions when unauthorized changes to the software, firmware, and information are detected: [Assignment: organization-defined actions]."
+    },
+    "si-7.6": {
+      "label": "SI-7(6)",
+      "title": "Cryptographic Protection",
+      "statement": "Implement cryptographic mechanisms to detect unauthorized changes to software, firmware, and information."
+    },
+    "si-10": {
+      "label": "SI-10",
+      "title": "Information Input Validation",
+      "statement": "Check the validity of the following information inputs: [Assignment: information inputs]."
+    },
+    "si-10.3": {
+      "label": "SI-10(3)",
+      "title": "Predictable Behavior",
+      "statement": "Verify that the system behaves in a predictable and documented manner when invalid inputs are received."
+    },
+    "si-10.5": {
+      "label": "SI-10(5)",
+      "title": "Restrict Inputs to Trusted Sources and Approved Formats",
+      "statement": "Restrict the use of information inputs to [Assignment: trusted sources] and/or [Assignment: formats]."
+    },
+    "si-10.6": {
+      "label": "SI-10(6)",
+      "title": "Injection Prevention",
+      "statement": "Prevent untrusted data injections."
+    },
+    "si-11": {
+      "label": "SI-11",
+      "title": "Error Handling",
+      "statement": "Generate error messages that provide information necessary for corrective actions without revealing information that could be exploited; and Reveal error messages only to [Assignment: personnel or roles]."
+    },
+    "si-12": {
+      "label": "SI-12",
+      "title": "Information Management and Retention",
+      "statement": "Manage and retain information within the system and information output from the system in accordance with applicable laws, executive orders, directives, regulations, policies, standards, guidelines and operational requirements."
+    },
+    "si-12.3": {
+      "label": "SI-12(3)",
+      "title": "Information Disposal",
+      "statement": "Use the following techniques to dispose of, destroy, or erase information following the retention period: [Assignment: organization-defined techniques]."
+    },
+    "si-16": {
+      "label": "SI-16",
+      "title": "Memory Protection",
+      "statement": "Implement the following controls to protect the system memory from unauthorized code execution: [Assignment: controls]."
+    },
+    "si-17": {
+      "label": "SI-17",
+      "title": "Fail-safe Procedures",
+      "statement": "Implement the indicated fail-safe procedures when the indicated failures occur: [Assignment: organization-defined list of failure conditions and associated fail-safe procedures]."
+    },
+    "sr-4": {
+      "label": "SR-4",
+      "title": "Provenance",
+      "statement": "Document, monitor, and maintain valid provenance of the following systems, system components, and associated data: [Assignment: systems, system components, and associated data]."
+    }
+  }
+}
