@@ -1,6 +1,6 @@
 # An ASVS-to-NIST 800-53 crosswalk, and the report's results exported as OSCAL assessment results, so StackVet's evidence can feed a cATO pipeline
 
-**Status:** claimed by claude/0678, 27 October 2026
+**Status:** done, 27 October 2026
 
 Asked for by the owner on 26 October 2026, after a conversation about fitting StackVet into a DevSecOps and
 continuous-authorization (cATO) pipeline. Most of what a pipeline needs is already there: the GitHub Action
@@ -31,8 +31,8 @@ OSCAL 1.x release pinned when the build starts, and assessment results alone at 
    method and concluding `satisfied` or `not-satisfied` only where `sv` concluded *checked* or *needs attention*
    (ADR-156, Decision 3). Validated in tests against the pinned OSCAL schema, committed so the tests run offline; one
    test exports *checked in part* as `satisfied` on purpose and must fail.
-   **Part status:** open
+   **Part status:** done, 27 October 2026
 5. **The documents.** `docs/GETTING-STARTED.md` (how a pipeline runs the export and what it may conclude),
    `docs/ARCHITECTURE.md`, `docs/COVERAGE.md` if the crosswalk's reach is counted there, and the Action's new input
    that turns the export on. ADR-156 made accepted, with where the build differs from the plan.
-   **Part status:** open
+   **Part status:** done, 27 October 2026

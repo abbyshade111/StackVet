@@ -24,3 +24,9 @@ libc = "0.2"
 zeroize = "1"
 # Unpacks a public project's archive (backlog 0670, ADR-154): reading only, pure Rust (zlib-rs), no compressor.
 zip = { version = "9.1.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+
+[dev-dependencies]
+# For the tests alone, never in `sv` itself: holds what the OSCAL export writes to NIST's own JSON schema, offline
+# (ADR-156). Built on the `regex` crate the schema's patterns need; it adds 43 crates to the lock file, most of them the
+# Unicode tables URL parsing needs (`url`, `idna`), none to what `sv` is built from.
+boon = "=0.6.1"

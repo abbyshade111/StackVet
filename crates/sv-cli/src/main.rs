@@ -218,6 +218,7 @@ fn run() -> Result<i32> {
         "report" => cmd_report(rest),
         "dashboard" => finished(cmd_dashboard(rest)),
         "compare" => finished(sv_cli::compare::command(rest)),
+        "export" => finished(sv_cli::oscal::command(rest)),
         "history" => finished(history::command(rest)),
         "review" => finished(review::cmd_review(
             rest.iter()
@@ -2679,6 +2680,10 @@ fn report_command(
         .as_deref()
         .map(baseline::Baseline::load)
         .transpose()?;
+    // Written from this run's report once it is sealed, in the same run: the key that seals it may not outlive the run
+    // (in the GitHub Action it is thrown away with the container), and a later `sv export` could not show the report
+    // is sv's (ADR-156).
+    let (oscal_file, args) = sv_cli::oscal::take(&args)?;
     let args = &args[..];
     let ReportArgs {
         mut app_dir,
@@ -2740,6 +2745,9 @@ fn report_command(
         .collect::<Vec<_>>()
         .join(" ");
     let elsewhere = "give this run a folder of its own with --out";
+    if let Some(file) = &oscal_file {
+        sv_cli::oscal::refuse_inside(&out_dir, file)?;
+    }
     // Said before the run, not instead of it: a report without the running-app checks over one that had them
     // (backlog 0578).
     if let Some(warning) = sv_cli::report_again::losing_the_run(&out_dir, run_the_app) {
@@ -2823,6 +2831,26 @@ fn report_command(
     for name in &written {
         println!("  {name}");
     }
+    // A pipeline that asked for the OSCAL file and did not get it has failed, whatever the report holds: the report is
+    // written either way, and the exit status says the file is missing.
+    let oscal_failed = oscal_file.as_deref().is_some_and(|file| {
+        let written = sv_cli::oscal::refuse_inside(&out_dir, file)
+            .and_then(|()| sv_cli::oscal::export(&out_dir, Some(&app_dir)))
+            .and_then(|document| {
+                std::fs::write(file, document)
+                    .with_context(|| format!("writing {}", file.display()))
+            });
+        match written {
+            Ok(()) => {
+                println!("Wrote the OSCAL assessment results to {}.", file.display());
+                false
+            }
+            Err(e) => {
+                eprintln!("The OSCAL assessment results were not written: {e:#}");
+                true
+            }
+        }
+    });
     // Where to start (backlog 0590, the owner's answer): the front page, then what to fix when there is any.
     println!("Open first: {}", out_dir.join("report.html").display());
     let (app, _) = sv_report::app_then_tests(&report);
@@ -2988,6 +3016,9 @@ fn report_command(
     exit::explain(status, &reasons)
         .iter()
         .for_each(|l| println!("{l}"));
+    if oscal_failed {
+        return Ok(exit::FAILED);
+    }
     Ok(status)
 }
 

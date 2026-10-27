@@ -39,6 +39,14 @@ inputs:
   artifact-name:
     description: The name the report folder is kept under with the run; change it to run the Action twice in one job.
     default: stackvet-report
+  oscal:
+    description: >
+      `true` also writes the results as OSCAL assessment results (NIST's format, for a compliance or continuous-
+      authorization pipeline), kept with the run as <artifact-name>-oscal. Only `checked` is concluded as satisfied and
+      only `needs attention` as not satisfied, each for an ASVS requirement; NIST SP 800-53 controls are named as
+      related, never as assessed (ADR-156). Written in the same run as the report, whose seal cannot be shown once the
+      container is gone. `false`, the default, writes nothing more.
+    default: 'false'
   image:
     description: >
       The image to run. The published one is checked against its signature before it runs; any other, such as one
@@ -52,6 +60,9 @@ outputs:
   report-dir:
     description: The folder the report was written to.
     value: ${{ steps.run.outputs.report-dir }}
+  oscal-file:
+    description: The OSCAL assessment results file, when `oscal` is `true` and it was written.
+    value: ${{ steps.run.outputs.oscal-file }}
 
 runs:
   using: composite
@@ -102,6 +113,7 @@ runs:
         APP: ${{ steps.app.outputs.dir }}
         REF: ${{ steps.image.outputs.ref }}
         FAIL_ON: ${{ inputs.fail-on }}
+        OSCAL: ${{ inputs.oscal }}
       run: |
         out="$RUNNER_TEMP/stackvet-report-$GITHUB_RUN_ATTEMPT-$RANDOM"
         mkdir -p "$out"
@@ -113,14 +125,33 @@ runs:
           args+=(--no-tools)
         fi
         if [ -n "$FAIL_ON" ]; then args+=(--fail-on "$FAIL_ON"); fi
+        # The OSCAL file goes in a folder of its own, never the report folder, which holds only sv's files (ADR-156).
+        # The image is named to sv by the reference whose signature was checked above, and recorded in the file as such.
+        oscal=()
+        if [ "$OSCAL" = true ]; then
+          if ! docker run --rm --network none "$REF" report --help 2>/dev/null | grep -q -- '--oscal'; then
+            echo "::error title=StackVet::oscal is true, and this image's sv cannot write OSCAL yet; use a newer image"
+            exit 3
+          fi
+          oscal_dir="$out-oscal"
+          mkdir -p "$oscal_dir"
+          args+=(--oscal "$oscal_dir/stackvet-oscal.json")
+          oscal=(-v "$oscal_dir:$oscal_dir" -e "STACKVET_IMAGE=$REF")
+        elif [ "$OSCAL" != false ]; then
+          echo "::error title=StackVet::oscal is true or false, not $OSCAL"
+          exit 3
+        fi
         set +e
         # HOME inside the container only: sv makes the key it seals reports with there, which is thrown away with
         # the container, as sealing matters only to sv's MCP server on the owner's own computer.
         docker run --rm --network none --user "$(id -u):$(id -g)" -e HOME=/tmp \
-          -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE:ro" -v "$out:$out" -w "$APP" "$REF" "${args[@]}"
+          -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE:ro" -v "$out:$out" "${oscal[@]}" -w "$APP" "$REF" "${args[@]}"
         code=$?
         set -e
         echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        if [ "$OSCAL" = true ] && [ -f "$out-oscal/stackvet-oscal.json" ]; then
+          echo "oscal-file=$out-oscal/stackvet-oscal.json" >> "$GITHUB_OUTPUT"
+        fi
         # The SARIF file is stackvet.sarif since 14 October 2026 (backlog 0409); an image from before then writes it as
         # findings.sarif, so that name is read too until the published image carries the new one.
         for name in stackvet.sarif findings.sarif; do
@@ -155,6 +186,13 @@ runs:
       with:
         name: ${{ inputs.artifact-name }}
         path: ${{ steps.run.outputs.report-dir }}
+
+    - name: Keep the OSCAL assessment results with the run
+      if: always() && steps.run.outputs.oscal-file != ''
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.artifact-name }}-oscal
+        path: ${{ steps.run.outputs.oscal-file }}
 
     - name: Pass sv's answer on
       shell: bash

@@ -37,6 +37,7 @@ pub mod exit;
 // A public project fetched from its GitHub or GitLab address (backlog 0670, ADR-154).
 pub mod fetch;
 pub mod left_out;
+pub mod oscal;
 pub mod own_log;
 pub mod report_lock;
 pub mod static_scan;

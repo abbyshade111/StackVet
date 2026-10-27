@@ -402,6 +402,15 @@ shows who can grant each.
 If you later run StackVet in an automatic check (CI), [a table in `docs/ARCHITECTURE.md`](ARCHITECTURE.md#the-exit-codes)
 says what the number it ends with means.
 
+If an organization asks for the results in NIST's format for security assessments (OSCAL), for an authorization to
+operate or a compliance tool: `sv report --oscal FILE` writes it in the same run as the report, `sv export --oscal`
+writes it later from a report StackVet wrote on this computer, and [the GitHub Action](../README.md#on-each-pull-request-the-github-action)
+does it with `oscal: 'true'`. It says no more than the report does. Only *checked* becomes "satisfied" and only *needs
+attention* "not satisfied", each for one ASVS requirement. Every other word is passed on as what it is, with whose word
+it is and how it was found out (a test, a document read, or someone's answer), and *not verified* is neither. The NIST
+SP 800-53 controls each requirement relates to are named, never marked as met: a control asks more than any one
+requirement does (ADR-156). The file goes outside the report folder, which holds only StackVet's own files.
+
 ## Later
 
 - **The checks of the running app**, and keeping StackVet up to date: [`INSTALL.md`](INSTALL.md). An app in a language
