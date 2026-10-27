@@ -18,15 +18,15 @@ OSCAL 1.x release pinned when the build starts, and assessment results alone at 
    nothing in 800-53 asks the same), in a new data file with its line in `data/README.md`, read through
    `sv_frameworks::data` (ADR-036). OpenCRE's links may be read as a first draft; no pair is kept without reading both
    texts. Includes reading AISVS Appendix C's three existing 800-53 mappings.
-   **Part status:** open
+   **Part status:** done, 27 October 2026
 2. **The control text from NIST, not by hand.** A maintenance script, like `tools/atlas_references.py`, that reads the
    control titles and statements from a pinned release of NIST's OSCAL catalog for 800-53 Rev. 5, names any cited
    control a newer release renames, and refuses one it withdraws. Run outside the sandbox; `sv` fetches nothing.
-   **Part status:** open
+   **Part status:** done, 27 October 2026
 3. **The guard.** The citation guard (`crates/sv-check/tests/citations.rs`) holds the new crosswalk as it holds the
    Secure by Design one: shared vocabulary with both texts, and every requirement listed. Break a pair on purpose and
    watch it go red.
-   **Part status:** open
+   **Part status:** done, 27 October 2026
 4. **The export.** Reads a sealed report and writes OSCAL assessment results, mapping each status to an observation
    method and concluding `satisfied` or `not-satisfied` only where `sv` concluded *checked* or *needs attention*
    (ADR-156, Decision 3). Validated in tests against the pinned OSCAL schema, committed so the tests run offline; one
