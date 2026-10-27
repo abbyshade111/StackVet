@@ -27,6 +27,7 @@ const COMMANDS: &[&str] = &[
     "bundle",
     "dashboard",
     "compare",
+    "export",
     "history",
     "connect",
     "hook-record",
@@ -106,7 +107,7 @@ fn an_unknown_option_is_an_error_that_names_the_commands_options_never_a_folder(
     let said = text(&sv(&["report", "-x"]));
     assert!(
         said.contains(
-            "it takes --run, --slow, --install, --tools, --no-tools, --keep-tool-output, --quiet, --hook-record, --out, --advisories, --fail-on, --baseline, --codeql-results, and --help"
+            "it takes --run, --slow, --install, --tools, --no-tools, --keep-tool-output, --quiet, --hook-record, --out, --advisories, --fail-on, --baseline, --codeql-results, --oscal, and --help"
         ),
         "{said}"
     );

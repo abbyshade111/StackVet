@@ -594,6 +594,18 @@ report folder kept with the run as an artifact.
   otherwise (`fetch-depth: 0` for all of it), and the check for secrets files committed in the past reads
   that history.
 
+### For a compliance pipeline: OSCAL
+
+If an organization asks for the results in NIST's format for security assessments (OSCAL), for an authorization to
+operate or a compliance tool: `sv report --oscal FILE` writes OSCAL 1.2.3 assessment results in the same run as the
+report, `sv export --oscal [FOLDER] [--out FILE]` writes them later from a report `sv` wrote on this computer, and the
+Action does it with `oscal: 'true'`. The file says no more than the report does. Only *checked* becomes "satisfied"
+and only *needs attention* "not satisfied", each for one ASVS requirement. Every other status is passed on as what it
+is, with whose word it is and how it was found out (a test, a document read, or someone's answer), and *not verified*
+is neither. The NIST SP 800-53 controls each requirement relates to are named, never marked as met: a control asks
+more than any one requirement does ([ADR-156](docs/adr/ADR-156.md)). The file goes outside the report folder, which
+holds only `sv`'s own files.
+
 ## Building
 
 Rust 1.95 or newer.
