@@ -12,4 +12,4 @@ FROM docker.io/axllent/mailpit:v1.32@sha256:0790692be935ea4420d085694f7985b1f692
 # The test OpenID Connect provider, the test model, the name server, and the browser driver: a stock Node image.
 FROM docker.io/library/node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS provider
 # The headless browser. Its version is read from the tag, so a change of tag is a change of browser.
-FROM docker.io/chromedp/headless-shell:156.0.8078.17@sha256:e45d36d818636b955eb47cc1b40b91068be4aebc3490bcad239c1849f16eff1f AS browser
+FROM docker.io/chromedp/headless-shell:157.0.8103.6@sha256:da0222c4fac0d3da76b4a9e534ffc9e64b4fb3dd99c56381e8281f5c7727c8e8 AS browser
