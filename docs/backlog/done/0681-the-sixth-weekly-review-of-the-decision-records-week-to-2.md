@@ -1,6 +1,6 @@
 # The sixth weekly review of the decision records (week to 2 November 2026)
 
-**Status:** claimed by securevibe-weekly-adr-6, 2 November 2026
+**Status:** done, 2 November 2026
 
 The scheduled routine "Weekly decision-record review" (Monday 2 November 2026). Procedure: 0091 and `docs/adr/README.md`,
 "When a record is written, and how it stays true". The fifth review is 0673.
@@ -64,3 +64,10 @@ tests: see the end of this item.
 as current is an entry, and the reasons above that are not written down). (2) Whether the weekly routine should use
 helper agents again, as the fifth review did; this one did not, and says so above. (3) Two nightly failures are open:
 0679 (Windows) and 0680 (the fuzz lock file).
+
+*Test run, 2 November 2026 (Linux cloud container, no Docker, no outside network):* `cargo clippy --all-targets -- -D warnings`:
+clean. `cargo test --workspace --no-fail-fast`: 347 `test result` lines, 4,591 passed, 3 failed, the same three as the
+fifth review and all this container: `each_stored_7z_unpacks_to_exactly_what_it_says_in_py7zr` (no `py7zr` module) and the
+two `sv probe` tests (`an_address_that_cannot_be_reached_exits_2_and_one_that_answers_exits_0`,
+`an_address_that_answers_is_told_what_to_fix_what_held_and_what_could_not_be_settled`; no outside network). The records'
+reference test (`decision_records`) passed in that run.
