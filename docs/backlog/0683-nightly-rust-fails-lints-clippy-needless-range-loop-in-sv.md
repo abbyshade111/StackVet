@@ -30,3 +30,5 @@ loop with a comment saying why. Then run `cargo clippy --all-targets -- -D warni
 new is flagged; the run stopped at the first crate that failed, so other crates may have more.
 
 Seen again on 14 November 2026: Rust (scheduled), run <https://github.com/abbyshade111/StackVet/actions/runs/43584943376>, commit `089dbac`. The same error at `crates/sv-report/src/pdf/layout.rs:617` on Rust 1.100.0; every test suite passed. The push run for the same commit (run <https://github.com/abbyshade111/StackVet/actions/runs/43423897373>, 13 November) failed the same way. No open pull request fixes it yet.
+
+Seen again on 15 November 2026: Rust (scheduled), run <https://github.com/abbyshade111/StackVet/actions/runs/43705914305>, commit `7ab09ec`. The same error at `crates/sv-report/src/pdf/layout.rs:617` on Rust 1.100.0; every test suite passed. The push run for the same commit (run <https://github.com/abbyshade111/StackVet/actions/runs/43594254915>, 14 November) failed the same way. No open pull request fixes it yet.
