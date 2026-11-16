@@ -1,6 +1,6 @@
 # Nightly: Rust fails: lints (clippy needless_range_loop in sv-report pdf layout)
 
-**Status:** claimed by securevibe-weekly-adr-8, 16 November 2026
+**Status:** done, 16 November 2026
 
 Found by the nightly CI read on 13 November 2026.
 
@@ -41,3 +41,5 @@ flags a second place once the first is fixed, which the run on CI never reached:
 `tools_by_default` in `crates/sv-cli/src/main.rs` (an `if` guard returning `false` followed by `true`). The fix
 rewrites both and changes what neither does; a full `cargo clippy --all-targets -- -D warnings` on 1.100.0 is then
 clean, in the debug profile and, for `sv-cli`, the release profile too (the `cfg(not(debug_assertions))` arm).
+
+**Fixed 16 November 2026** by the same session, in its own pull request: the footer loop in `crates/sv-report/src/pdf/layout.rs` walks the pages with `iter_mut().enumerate()`, and `tools_by_default` in `crates/sv-cli/src/main.rs` is one boolean per build profile. `cargo clippy --all-targets -- -D warnings` on Rust 1.100.0 is clean, debug and release; `cargo test -p sv-report` and the tools-default tests pass. What `sv` does is unchanged.

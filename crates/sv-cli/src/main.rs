@@ -2514,10 +2514,10 @@ fn parse_report_args(args: &[String], out_wants: &str) -> Result<ReportArgs> {
 /// it away. A released `sv` has no such switch.
 fn tools_by_default() -> bool {
     #[cfg(debug_assertions)]
-    if std::env::var_os("SV_NO_TOOLS_FOR_TEST").is_some() {
-        return false;
-    }
-    true
+    let on = std::env::var_os("SV_NO_TOOLS_FOR_TEST").is_none();
+    #[cfg(not(debug_assertions))]
+    let on = true;
+    on
 }
 
 /// `sv report`, ending with its exit status (`exit`, and DESIGN, "Exit codes for CI").
