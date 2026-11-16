@@ -1,6 +1,6 @@
 # Nightly: Rust fails: lints (clippy needless_range_loop in sv-report pdf layout)
 
-**Status:** open
+**Status:** claimed by securevibe-weekly-adr-8, 16 November 2026
 
 Found by the nightly CI read on 13 November 2026.
 
@@ -34,3 +34,10 @@ Seen again on 14 November 2026: Rust (scheduled), run <https://github.com/abbysh
 Seen again on 15 November 2026: Rust (scheduled), run <https://github.com/abbyshade111/StackVet/actions/runs/43705914305>, commit `7ab09ec`. The same error at `crates/sv-report/src/pdf/layout.rs:617` on Rust 1.100.0; every test suite passed. The push run for the same commit (run <https://github.com/abbyshade111/StackVet/actions/runs/43594254915>, 14 November) failed the same way. No open pull request fixes it yet.
 
 Seen again on 16 November 2026: Rust (scheduled), run <https://github.com/abbyshade111/StackVet/actions/runs/43855650435>, commit `8b320cd`. The same error at `crates/sv-report/src/pdf/layout.rs:617` on Rust 1.100.0; every test suite passed. The push run for the same commit (run <https://github.com/abbyshade111/StackVet/actions/runs/43713726058>, 15 November, from pull request #2412) failed the same way. No open pull request fixes it yet.
+
+**Claimed 16 November 2026 by session securevibe-weekly-adr-8** (the weekly decision-record review's session, after its
+review, 0684, landed), in its own pull request, before the fix. On Rust 1.100.0 in this session's container, Clippy
+flags a second place once the first is fixed, which the run on CI never reached: `needless_bool` at
+`tools_by_default` in `crates/sv-cli/src/main.rs` (an `if` guard returning `false` followed by `true`). The fix
+rewrites both and changes what neither does; a full `cargo clippy --all-targets -- -D warnings` on 1.100.0 is then
+clean, in the debug profile and, for `sv-cli`, the release profile too (the `cfg(not(debug_assertions))` arm).
