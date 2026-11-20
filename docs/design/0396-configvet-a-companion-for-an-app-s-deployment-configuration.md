@@ -5,7 +5,7 @@ settings that are wrong and settings that are missing. Written at the owner's as
 is built. The decision it rests on is ADR-157 (proposed). The owner's three answers so far:
 
 - **One engine, its own command.** ConfigVet lives in this workspace, on `sv`'s engine, and ships as a binary of its
-  own (proposed name `cv`).
+  own, `cv`.
 - **Its people are ops and DevSecOps engineers**, not the non-programmers `sv` is written for.
 - **It reads live hosting accounts through their APIs**, not only files.
 
@@ -157,14 +157,19 @@ clients start with providers whose APIs are small and whose tooling is thin.
    already knows the API.
 5. **Drift and the joins between layers**, once there are two sources to compare.
 
-## Open questions for the owner
+## The owner's answers (20 November 2026)
 
-1. **The name of the binary.** `cv` is short, but clashes in some people's heads with OpenCV and résumés.
-   `configvet` in full is the alternative.
-2. **The first live providers after GitHub.** Cloudflare (scoped tokens, a small API), Vercel, Render, and Fly.io are
-   candidates.
-3. **What a live reading is worth.** Proposed: *checked* for "the account says this setting is X", and never for the
-   behavior the setting is meant to cause. The behavior stays `sv probe`'s and `sv run`'s to ask. The provider's word
-   about its own settings is still the provider's word, and the report should say whose it is.
-4. **One repository or two for the release:** a second Homebrew and Scoop formula beside `homebrew-stackvet` and
-   `scoop-stack-vet`, or both binaries in one package.
+Four questions were put to the owner. Two were answered, and the owner asked for a recommendation on the other two.
+ADR-157 records all four:
+
+1. **The binary is `cv`.**
+2. **The first live provider after GitHub: recommended Cloudflare,** awaiting the owner's word. Its settings sit
+   between the visitor and the app, which is where the joins between layers are found (the *Flexible* SSL example
+   above), and its tokens are built from named permissions, so one can be made read-only. Vercel comes later: its
+   tokens cannot be limited to reading, and its API can hand back environment variables' values.
+3. **A live reading is *checked* for a setting's value only,** never for the behavior the setting causes. That
+   stays `sv probe`'s and `sv run`'s to ask. Agreed as recommended.
+4. **The release: recommended one release, two packages,** awaiting the owner's word. Both binaries would come from
+   one commit, with one version and one signed release, and each would have its own formula in `homebrew-stackvet`
+   and its own manifest in `scoop-stack-vet`. Installing `sv` would never bring a binary that can reach a live
+   account.
