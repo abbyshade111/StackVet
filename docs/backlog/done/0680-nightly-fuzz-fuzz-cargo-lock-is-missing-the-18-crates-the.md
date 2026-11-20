@@ -1,6 +1,6 @@
 # Nightly: Fuzz: fuzz/Cargo.lock is missing the 18 crates the workspace added with sv report's fetch
 
-**Status:** open
+**Status:** done, 20 November 2026
 
 Recorded by the nightly CI routine on 29 October 2026. It is not a failed run: no Fuzz or Audit run happened on `main`
 in the 26 hours before this routine (both are weekly, on Mondays), so the routine ran both itself, on `main` at
@@ -24,3 +24,10 @@ in the 26 hours before this routine (both are weekly, on Mondays), so the routin
   downloaded that morning), compared all 153 packages and matched none (exit 0).
 
 This routine records; it fixes nothing.
+
+**Done, 20 November 2026,** in the dependency-upkeep pull request: `fuzz/Cargo.lock` regenerated from the workspace's
+lock as `crates/sv-cli/tests/fuzz_lock.rs` asks (copied, then `cargo update -w` in `fuzz/`). All 18 crates named above
+are listed, no shared crate differs from the workspace's version, and `cargo metadata --locked` in `fuzz/` resolves
+without rewriting it. The fuzz targets were not run here, since they need nightly Rust; the weekly Fuzz workflow will.
+The lockfile test suggested above already exists (backlog 0360's `fuzz_lock.rs`) and caught this drift on four
+Dependabot pull requests; it does not catch a crate missing from the fuzz lock, only one at a different version.
