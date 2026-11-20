@@ -6,7 +6,7 @@
 # Keep each line as `FROM <image> AS <name>`, with the four names below; a missing one stops `sv` compiling.
 
 # The probes, and the health check: tiny.
-FROM docker.io/library/busybox:1.38@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e AS probe
+FROM docker.io/library/busybox:1.38@sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4 AS probe
 # The mail server the app is given when the probes read its email: Mailpit.
 FROM docker.io/axllent/mailpit:v1.32@sha256:0790692be935ea4420d085694f7985b1f692ca6a8771ab0e0bd8ba75ac180498 AS mail
 # The test OpenID Connect provider, the test model, the name server, and the browser driver: a stock Node image.
