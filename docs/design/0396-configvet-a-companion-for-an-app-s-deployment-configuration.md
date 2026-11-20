@@ -165,7 +165,8 @@ ADR-157 records all four:
 1. **The binary is `cv`.**
 2. **The first live provider after GitHub: Cloudflare,** recommended and accepted. Its settings sit
    between the visitor and the app, which is where the joins between layers are found (the *Flexible* SSL example
-   above), and its tokens are built from named permissions, so one can be made read-only. Vercel comes later: its
+   above), and its tokens are built from named permissions, so one can be made read-only. And the project's own
+   website, stackvet.dev, is hosted there, so the first client can be tried on an account the project owns. Vercel comes later: its
    tokens cannot be limited to reading, and its API can hand back environment variables' values.
 3. **A live reading is *checked* for a setting's value only,** never for the behavior the setting causes. That
    stays `sv probe`'s and `sv run`'s to ask. Agreed as recommended.
