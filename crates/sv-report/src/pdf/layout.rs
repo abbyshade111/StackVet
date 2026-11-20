@@ -614,10 +614,10 @@ pub fn pages(blocks: &[Block], footer: &str, paper: Size) -> (Vec<Page>, Vec<Boo
     let size = paper;
     // The page's foot sits on the bottom margin, under the room kept for it.
     let base = size.1 - MARGIN;
-    for i in 0..n {
+    for (i, page) in p.pages.iter_mut().enumerate() {
         let said = format!("Page {} of {n}", i + 1);
         let w = fonts::width(&said, Font::Regular, SMALL);
-        p.pages[i].ops.push_str(&format!(
+        page.ops.push_str(&format!(
             "BT /{} {} Tf {MUTED} rg {} {} Td <{}> Tj ET\n",
             Font::Regular.key(),
             num(SMALL),
@@ -630,7 +630,7 @@ pub fn pages(blocks: &[Block], footer: &str, paper: Size) -> (Vec<Page>, Vec<Boo
         while !foot.is_empty() && fonts::width(&foot, Font::Regular, SMALL) > room {
             foot.pop();
         }
-        p.pages[i].ops.push_str(&format!(
+        page.ops.push_str(&format!(
             "BT /{} {} Tf {MUTED} rg {} {} Td <{}> Tj ET\n",
             Font::Regular.key(),
             num(SMALL),
