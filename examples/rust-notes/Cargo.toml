@@ -24,7 +24,7 @@ pbkdf2 = "0.12"
 openidconnect = "3"
 openssl = "0.10"
 sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio"] }
-jsonwebtoken = "9"
+jsonwebtoken = "10.3"
 reqwest = "0.12"
 tokio-tungstenite = "0.21"
 tower-http = { version = "0.5", features = ["cors", "fs"] }
