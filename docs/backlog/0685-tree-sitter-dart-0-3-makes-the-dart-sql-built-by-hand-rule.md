@@ -1,6 +1,6 @@
 # tree-sitter-dart 0.3 makes the Dart sql-built-by-hand rule flag its safe form (Dependabot #2401)
 
-**Status:** open
+**Status:** claimed by claude/dart-grammar-0.3, 20 November 2026
 
 Recorded on 20 November 2026 while settling the open Dependabot pull requests. Dependabot's pull request #2401
 (`tree-sitter-dart` 0.2 to 0.3, opened 6 November 2026) fails `suite (check)`, and the failure is not staleness:
