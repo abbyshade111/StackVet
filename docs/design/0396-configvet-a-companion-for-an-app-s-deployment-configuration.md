@@ -159,17 +159,17 @@ clients start with providers whose APIs are small and whose tooling is thin.
 
 ## The owner's answers (20 November 2026)
 
-Four questions were put to the owner. Two were answered, and the owner asked for a recommendation on the other two.
+Four questions were put to the owner. The owner answered two, asked for a recommendation on the other two, and accepted both the same day.
 ADR-157 records all four:
 
 1. **The binary is `cv`.**
-2. **The first live provider after GitHub: recommended Cloudflare,** awaiting the owner's word. Its settings sit
+2. **The first live provider after GitHub: Cloudflare,** recommended and accepted. Its settings sit
    between the visitor and the app, which is where the joins between layers are found (the *Flexible* SSL example
    above), and its tokens are built from named permissions, so one can be made read-only. Vercel comes later: its
    tokens cannot be limited to reading, and its API can hand back environment variables' values.
 3. **A live reading is *checked* for a setting's value only,** never for the behavior the setting causes. That
    stays `sv probe`'s and `sv run`'s to ask. Agreed as recommended.
-4. **The release: recommended one release, two packages,** awaiting the owner's word. Both binaries would come from
+4. **The release: one release, two packages,** recommended and accepted. Both binaries would come from
    one commit, with one version and one signed release, and each would have its own formula in `homebrew-stackvet`
    and its own manifest in `scoop-stack-vet`. Installing `sv` would never bring a binary that can reach a live
    account.
