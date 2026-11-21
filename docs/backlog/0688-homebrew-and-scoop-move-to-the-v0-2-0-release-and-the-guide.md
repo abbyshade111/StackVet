@@ -1,6 +1,6 @@
 # Homebrew and Scoop move to the v0.2.0 release, and the guide's --HEAD line with them
 
-**Status:** open
+**Status:** claimed by claude/0688-packages-v0.2.0, 20 November 2026
 
 Filed 21 November 2026, after the owner tagged `v0.2.0`: the step backlog 0120 (on hold) waited on a release after
 v0.1.0 for. It is work in the two package repositories, with one line of this one that must move with them.
