@@ -1458,7 +1458,7 @@ fn enclosing_function_name(node: tree_sitter::Node, source: &[u8]) -> Option<Str
                     parent.child_by_field_name("name")
                 }
                 "assignment_expression" | "assignment" => parent.child_by_field_name("left"),
-                "pair" => parent.child_by_field_name("key"),
+                "pair" | "map_element" => parent.child_by_field_name("key"),
                 _ => None,
             };
             if let Some(name) = named.and_then(text).and_then(last) {
@@ -1495,8 +1495,11 @@ fn value_names(node: tree_sitter::Node, source: &[u8]) -> Vec<String> {
             | "augmented_assignment_expression"
             | "short_var_declaration"
             | "assignment_statement" => n.child_by_field_name("left"),
+            // Dart's `final otp = …`: `initialized_variable_definition` until tree-sitter-dart 0.3, and
+            // `initialized_variable_declaration` since (backlog 0685).
             "variable_declarator"
             | "initialized_variable_definition"
+            | "initialized_variable_declaration"
             | "var_spec"
             | "public_field_definition"
             | "field_definition"
@@ -1504,7 +1507,8 @@ fn value_names(node: tree_sitter::Node, source: &[u8]) -> Vec<String> {
             | "variable_assignment" => n.child_by_field_name("name"),
             // C and C++: `int otp = …`, `char *code = …`.
             "init_declarator" => n.child_by_field_name("declarator"),
-            "pair" => n.child_by_field_name("key"),
+            // A map's entry: `pair` in most grammars, and Dart's `map_element` since tree-sitter-dart 0.3.
+            "pair" | "map_element" => n.child_by_field_name("key"),
             "let_declaration" => n.child_by_field_name("pattern"),
             // Kotlin's `val otp: Int = …`: the name is the declaration's first part, before its type.
             "property_declaration" => {
@@ -2659,6 +2663,8 @@ fn read_page(rules: &AstRules, relative: &str, source: &str, scan: &mut AstScan)
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod dart_grammar_tests;
 #[cfg(test)]
 mod dom_clobbering_tests;
 #[cfg(test)]

@@ -120,6 +120,10 @@ pub(super) fn is_literal(node: tree_sitter::Node, source: &[u8], fixed: &Fixed) 
 
     // `"a" + "b"` is still a constant; `"a" + name` is not. Python's `a or b` and a bracketed
     // expression are fixed when what is inside them is.
+    //
+    // The operator is not one of the values. Most grammars leave it unnamed, but Dart's since
+    // tree-sitter-dart 0.3 is a named `additive_operator` in the field `operator`, which would
+    // otherwise read as a value that is not fixed text and report every `'a' + 'b'` (backlog 0685).
     if matches!(
         node.kind(),
         "binary_operator"
@@ -130,11 +134,16 @@ pub(super) fn is_literal(node: tree_sitter::Node, source: &[u8], fixed: &Fixed) 
             | "parenthesized_expression"
     ) {
         let mut cursor = node.walk();
-        return node.named_child_count() > 0
-            && node
-                .named_children(&mut cursor)
-                .filter(|c| c.kind() != "comment")
-                .all(|c| is_literal(c, source, fixed));
+        let operators: Vec<usize> = node
+            .children_by_field_name("operator", &mut cursor)
+            .map(|o| o.id())
+            .collect();
+        let mut cursor = node.walk();
+        let values: Vec<_> = node
+            .named_children(&mut cursor)
+            .filter(|c| c.kind() != "comment" && !operators.contains(&c.id()))
+            .collect();
+        return !values.is_empty() && values.into_iter().all(|c| is_literal(c, source, fixed));
     }
     // Rust's macros that are read when the code is compiled: `env!("OUT_DIR")` and
     // `include_str!("schema.sql")` are fixed text in the program, whatever anyone sends it. `format!` is
