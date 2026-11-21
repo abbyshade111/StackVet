@@ -54,6 +54,7 @@ dependencies = [
  "av-record",
  "serde_json",
  "sv-check",
+ "sv-frameworks",
  "sv-report",
 ]
 

@@ -4,12 +4,13 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use sv_frameworks::paths::Canonical;
 
 fn folder(test: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("av-report-{test}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
-    dir.canonicalize().unwrap()
+    dir.canonical().unwrap()
 }
 
 /// Runs `av` with `state` as the folder `sv` keeps its own records under, so a test never reads this computer's.
@@ -288,6 +289,7 @@ fn av_s_own_source_names_nothing_that_connects_or_starts_a_program() {
         .nth(1)
         .expect("a dependencies table")
         .lines()
+        .take_while(|l| !l.starts_with('['))
         .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
         .filter_map(|l| l.split(['=', '.']).next())
         .map(str::trim)
