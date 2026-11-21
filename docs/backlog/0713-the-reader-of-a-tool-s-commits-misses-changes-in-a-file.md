@@ -1,6 +1,6 @@
 # The reader of a tool's commits misses changes in a file whose name git writes in quotes
 
-**Status:** open
+**Status:** claimed by Claude Code session (AgentVet), 21 November 2026
 
 Found on 21 November 2026 while testing `av report` (backlog 0705, part 2), by session "Claude Code session
 (AgentVet)". It is a gap in what `sv`'s report section "What the AI coding tool did that is worth a look" (ADR-131)
