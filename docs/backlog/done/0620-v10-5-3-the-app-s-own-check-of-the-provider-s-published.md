@@ -1,6 +1,6 @@
 # V10.5.3: the app's own check of the provider's published details, which needs a second start of the app (20 October 2026)
 
-**Status:** claimed by claude/0620-issuer-check, 21 November 2026
+**Status:** done, 21 November 2026
 
 Split from backlog 0500 at the owner's choice of 20 October 2026, as the one piece of it not built. Severity: low.
 
@@ -24,3 +24,16 @@ long a run takes (ADR-127, Later, 24 October 2026).
 through a provider a second start, with the test provider's published details set wrong from the beginning, the owner
 answered yes. So the item is open again, to be built as planned above: the second start, the check that the app then
 refuses to sign anybody in, and ADR-127's entry saying how the second start works and what it adds to a run's time.
+
+**Done, 21 November 2026, in PR #2457.** The test provider's new mode, `wrong-metadata-iss`, makes its published
+details name another issuer until another mode is set. Once the sign-in suite is done, and only if its ordinary
+sign-in worked, `sv run` starts a copy of the app under its own name, as the first was started, and signs in to it
+(`crates/sv-check/src/oidc/metadata.rs`).
+- **It read the details and signed in:** `probe.oidc-metadata-issuer-not-checked`, low.
+- **It refused, or did not start:** the copy is started again with the details right, and its signing in then is
+  V10.5.3 checked in part.
+- **It never read them:** not assessed.
+
+ADR-127, Later, 21 November 2026, says how the second start works and what it adds to a run's time. It was seen
+working in Docker on `examples/oidc-notes`, with and without its new `metadata-iss` flaw. Not held by any test: the
+script's call to the check, which only clippy's unused-import warning catches when it is removed.
