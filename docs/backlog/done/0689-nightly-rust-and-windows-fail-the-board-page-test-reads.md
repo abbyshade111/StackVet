@@ -1,6 +1,6 @@
 # Nightly: Rust and Windows fail: the board page test reads partly done items
 
-**Status:** open
+**Status:** done, 21 November 2026
 
 Recorded by the nightly CI routine on 21 November 2026. One test failed on `main` at commit `2b6aa2b` (pull request
 #2435, "Give each workflow test fixture a folder of its own (backlog 0679)"), on three runs:
