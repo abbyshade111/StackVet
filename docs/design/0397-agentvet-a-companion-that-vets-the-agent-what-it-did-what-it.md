@@ -168,10 +168,11 @@ for.
 4. **Telemetry intake,** for agents that are not coding tools.
 5. **"Ask the owner"** on the short list, after its own decision.
 
-## Questions for the owner
+## The owner's answers (21 November 2026)
 
-1. **Transcripts:** read only with consent for each session (proposed), or on by default since the owner is the
-   first reader?
-2. **The witness in the first build:** the keyed, checkpointed chain alone (proposed), or the recorder under another
-   account from the start?
-3. **The envelope's name and place:** `agentvet.toml` beside `stackvet.toml`, or a section of `stackvet.toml`?
+Asked as three questions when this entry was first written, and answered the same day:
+
+1. **Transcripts** are read only with the owner's consent for each session.
+2. **The witness in the first build** is the keyed, checkpointed chain alone; the recorder under another account
+   comes later.
+3. **The envelope** is a file of its own, `agentvet.toml`, beside `stackvet.toml`, not a section of it.
