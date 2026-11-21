@@ -1,6 +1,6 @@
 # Packaging `sv` for somebody who is not technical: a container now, a download later
 
-**Status:** on hold: Scoop tried by hand on a Windows computer and Homebrew on Linux, and a release tag newer than v0.1.0 from the owner
+**Status:** on hold: Scoop tried by hand on a Windows computer, and Homebrew on Linux
 
 **The
 owner's decision, 26 September 2026: build the container now, and keep the downloadable program
@@ -371,3 +371,10 @@ StackVet on your computer" now has its Windows section. Still open: winget; a tr
 the Homebrew formula and its README, which still build the latest `main` and say Windows is untried.
 
 **Checked against `main`, 20 October 2026** (the backlog clean-up): what is built is the root `Dockerfile` with `tools/image_smoke.py`, the image's publish job, the release workflow (tag `v0.1.0`, 12 October, Windows only, ADR-108), Scoop and Homebrew in `docs/INSTALL.md`, and the Windows CI. Two AI tools installed `sv` with Homebrew on the owner's Mac in the trial of 14 October (`docs/research/SETUP-PROMPT-TRIALS-2026-10-14.md`), so what is untried by hand is Scoop on Windows and Homebrew on Linux. **The owner's choices, 20 October 2026:** winget is dropped (ADR-108 chose against it, under "Alternatives considered"); and the owner tags a release newer than v0.1.0, which the formula is then pinned to (the tap is outside this repository). `docs/INSTALL.md` no longer says there is no numbered release. Stale paths above: `agnostic/Dockerfile` is now `Dockerfile`; `crates/sv-cli/src/mcp.rs` is now `crates/sv-cli/src/mcp/mod.rs`; and a built `sv` can be moved (ADR-036, `tools/install.sh`).
+
+**The release tag is in, 21 November 2026.** The owner tagged `v0.2.0`, and the release workflow published it with
+the Windows zip and its SHA-256 (#2436 set the version). That was the third thing this item waited on, so the hold now
+names the other two: Scoop tried by hand on a Windows computer, and Homebrew on Linux. What the tag unblocked, moving
+the Homebrew formula from building `main` to the v0.2.0 release, bringing the Scoop manifest to 0.2.0, and the guide's
+`--HEAD` line with them, is backlog 0688. The formula was still head-only on the day of the tag, so the guide's line was
+still true and was left alone.
