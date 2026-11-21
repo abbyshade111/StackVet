@@ -1,0 +1,9 @@
+[package]
+name = "sv-yaml"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tree-sitter.workspace = true
+tree-sitter-yaml.workspace = true

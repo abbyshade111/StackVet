@@ -1,0 +1,162 @@
+{
+  "_about": "ConfigVet's table of defaults (ADR-157, decision 3; backlog 0687). Each entry is what a framework or platform does when a setting is left out, for the versions named, as read from the vendor's own page on the date given. A default is a claim, held as a citation is: written after reading the page, and read again when the next major version comes out. A default the vendor does not document is not here, and a setting resting on it is not assessed. `safe` says whether the default is safe for an app in production; `cv-rules` reads this file through sv_frameworks::data.",
+  "defaults": [
+    {
+      "id": "express.env",
+      "subject": "Express",
+      "setting": "env (from NODE_ENV)",
+      "versions": {
+        "package": "express",
+        "from_major": 4,
+        "to_major": 5
+      },
+      "default": "development",
+      "safe": false,
+      "why": "With NODE_ENV not set, Express runs as \"development\", and its default error handler then writes the error's stack trace to the client.",
+      "sources": [
+        {
+          "url": "https://expressjs.com/en/5x/api/application",
+          "says": "env defaults to process.env.NODE_ENV, or \"development\" if NODE_ENV is not set",
+          "read": "2026-11-20"
+        },
+        {
+          "url": "https://expressjs.com/en/4x/api/application",
+          "says": "the same default for Express 4",
+          "read": "2026-11-20"
+        },
+        {
+          "url": "https://expressjs.com/en/guide/error-handling.html",
+          "says": "outside production the default error handler sends the stack trace; in production it does not",
+          "read": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "id": "docker-node.node-env",
+      "subject": "The official node container image",
+      "setting": "NODE_ENV",
+      "versions": {
+        "image": "node",
+        "majors": [
+          22,
+          24
+        ]
+      },
+      "default": "not set",
+      "safe": false,
+      "why": "The image sets only NODE_VERSION and YARN_VERSION, so an app built on it has no NODE_ENV unless something sets one; its maintainers' guide says to run with NODE_ENV set to production.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/nodejs/docker-node/main/24/bookworm-slim/Dockerfile",
+          "says": "ENV lines: NODE_VERSION and YARN_VERSION only",
+          "read": "2026-11-20"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/nodejs/docker-node/main/22/alpine3.23/Dockerfile",
+          "says": "ENV lines: NODE_VERSION and YARN_VERSION only",
+          "read": "2026-11-20"
+        },
+        {
+          "url": "https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md",
+          "says": "run with NODE_ENV set to production",
+          "read": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "id": "django.SESSION_COOKIE_SECURE",
+      "subject": "Django",
+      "setting": "SESSION_COOKIE_SECURE",
+      "versions": {
+        "package": "django",
+        "from": "4.2",
+        "to": "5.2"
+      },
+      "default": "False",
+      "safe": false,
+      "why": "Left out, the session cookie is sent without the Secure attribute, so a browser also sends it over plain HTTP.",
+      "sources": [
+        {
+          "url": "https://docs.djangoproject.com/en/5.2/ref/settings/#session-cookie-secure",
+          "says": "Default: False",
+          "read": "2026-11-20"
+        },
+        {
+          "url": "https://docs.djangoproject.com/en/4.2/ref/settings/#session-cookie-secure",
+          "says": "Default: False",
+          "read": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "id": "django.CSRF_COOKIE_SECURE",
+      "subject": "Django",
+      "setting": "CSRF_COOKIE_SECURE",
+      "versions": {
+        "package": "django",
+        "from": "4.2",
+        "to": "5.2"
+      },
+      "default": "False",
+      "safe": false,
+      "why": "Left out, the CSRF cookie is sent without the Secure attribute, so a browser also sends it over plain HTTP.",
+      "sources": [
+        {
+          "url": "https://docs.djangoproject.com/en/5.2/ref/settings/#csrf-cookie-secure",
+          "says": "Default: False",
+          "read": "2026-11-20"
+        },
+        {
+          "url": "https://docs.djangoproject.com/en/4.2/ref/settings/#csrf-cookie-secure",
+          "says": "Default: False",
+          "read": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "id": "docker-node.user",
+      "subject": "The official node container image",
+      "setting": "USER",
+      "versions": {
+        "image": "node",
+        "majors": [
+          22,
+          24
+        ]
+      },
+      "default": "root (no USER instruction)",
+      "safe": false,
+      "why": "The image creates a user named node (uid 1000) but never switches to it, so with no USER of the app's own the container's first process runs as Docker's default user, root. The images it is built on (Debian and Alpine) are taken as setting no USER either; their own Dockerfiles were not read.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/nodejs/docker-node/main/24/bookworm-slim/Dockerfile",
+          "says": "creates the node user with useradd; no USER instruction",
+          "read": "2026-11-20"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/nodejs/docker-node/main/22/alpine3.23/Dockerfile",
+          "says": "creates the node user with adduser; no USER instruction",
+          "read": "2026-11-20"
+        }
+      ]
+    },
+    {
+      "id": "docker.user",
+      "subject": "Docker",
+      "setting": "USER",
+      "versions": {
+        "any": true
+      },
+      "default": "root (uid 0)",
+      "safe": false,
+      "why": "With no USER in the image and no user given when it is run, the container's first process runs as root.",
+      "sources": [
+        {
+          "url": "https://docs.docker.com/engine/containers/run/#user",
+          "says": "the default user within a container is root (uid = 0)",
+          "read": "2026-11-20"
+        }
+      ]
+    }
+  ]
+}

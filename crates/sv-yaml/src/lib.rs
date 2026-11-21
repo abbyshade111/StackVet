@@ -3,12 +3,16 @@
 //! backlog 0496). An anchor, an alias, or a tag is refused rather than followed, since following either is where a
 //! reading goes wrong quietly. Moved out of `workflows.rs` on 22 October 2026, word for word, but for the documents
 //! a Kubernetes file holds several of (`parse_documents`).
+//!
+//! Moved out of `sv-check` into a crate of its own on 20 November 2026, word for word but for `pub(crate)` made `pub`
+//! (backlog 0687; ADR-157, "As built", part 2), so ConfigVet reads compose files and Kubernetes manifests the way `sv`
+//! reads them, without building every check to do it. `sv-check` re-exports it as `crate::yaml`.
 
 use tree_sitter::{Node, Parser};
 
 /// A YAML value, as far as `sv`'s readers need one: every scalar keeps the line it is on.
 #[derive(Debug, Clone)]
-pub(crate) enum Value {
+pub enum Value {
     Scalar(String, usize),
     Seq(Vec<Value>),
     Map(Vec<(String, Value)>),
@@ -16,14 +20,14 @@ pub(crate) enum Value {
 }
 
 impl Value {
-    pub(crate) fn get(&self, key: &str) -> Option<&Value> {
+    pub fn get(&self, key: &str) -> Option<&Value> {
         match self {
             Value::Map(pairs) => pairs.iter().find(|(k, _)| k == key).map(|(_, v)| v),
             _ => None,
         }
     }
 
-    pub(crate) fn text(&self) -> Option<&str> {
+    pub fn text(&self) -> Option<&str> {
         match self {
             Value::Scalar(s, _) => Some(s),
             _ => None,
@@ -31,7 +35,7 @@ impl Value {
     }
 
     /// The line of the first scalar in this value, for a finding to point at.
-    pub(crate) fn line(&self) -> Option<usize> {
+    pub fn line(&self) -> Option<usize> {
         match self {
             Value::Scalar(_, line) => Some(*line),
             Value::Seq(items) => items.iter().find_map(Value::line),
@@ -41,7 +45,7 @@ impl Value {
     }
 
     /// Every scalar inside this value with its line, keys left out.
-    pub(crate) fn scalars_at<'a>(&'a self, out: &mut Vec<(&'a str, usize)>) {
+    pub fn scalars_at<'a>(&'a self, out: &mut Vec<(&'a str, usize)>) {
         match self {
             Value::Scalar(s, line) => out.push((s, *line)),
             Value::Seq(items) => items.iter().for_each(|v| v.scalars_at(out)),
@@ -51,7 +55,7 @@ impl Value {
     }
 
     /// Every scalar inside this value, keys included.
-    pub(crate) fn scalars<'a>(&'a self, keys: bool, out: &mut Vec<&'a str>) {
+    pub fn scalars<'a>(&'a self, keys: bool, out: &mut Vec<&'a str>) {
         match self {
             Value::Scalar(s, _) => out.push(s),
             Value::Seq(items) => items.iter().for_each(|v| v.scalars(keys, out)),
@@ -69,7 +73,7 @@ impl Value {
 }
 
 /// Reads a file of one YAML document into a [`Value`], or says why it could not.
-pub(crate) fn parse(source: &str) -> Result<Value, String> {
+pub fn parse(source: &str) -> Result<Value, String> {
     let mut parser = Parser::new();
     parser
         .set_language(&tree_sitter_yaml::LANGUAGE.into())
@@ -218,7 +222,7 @@ fn value(node: Node, source: &str) -> Result<Value, String> {
 
 /// Reads a file of one or more YAML documents, separated by `---` as Kubernetes manifests often are, into a [`Value`]
 /// each, or says why it could not. A document with nothing in it is left out.
-pub(crate) fn parse_documents(source: &str) -> Result<Vec<Value>, String> {
+pub fn parse_documents(source: &str) -> Result<Vec<Value>, String> {
     let mut parser = Parser::new();
     parser
         .set_language(&tree_sitter_yaml::LANGUAGE.into())

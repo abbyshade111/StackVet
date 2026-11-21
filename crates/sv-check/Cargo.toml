@@ -32,6 +32,7 @@ tree-sitter-yaml.workspace = true
 sv-frameworks = { path = "../sv-frameworks" }
 sv-scan = { path = "../sv-scan" }
 sv-core = { path = "../sv-core" }
+sv-yaml = { path = "../sv-yaml" }
 sv-manifest = { path = "../sv-manifest" }
 hmac = "0.13"
 sha1 = "0.11"

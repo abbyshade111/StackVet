@@ -92,7 +92,7 @@ pub mod verified;
 pub mod weak_key_exchange;
 pub mod weak_keys;
 pub mod workflows;
-pub(crate) mod yaml;
+pub(crate) use sv_yaml as yaml;
 
 pub use finding::{Confidence, Finding, Location, Secret, Severity};
 pub use sbom::{Sbom, build as build_sbom, to_cyclonedx};
