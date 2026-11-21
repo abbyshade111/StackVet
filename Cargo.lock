@@ -251,6 +251,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "cv-cli"
+version = "0.1.0"
+dependencies = [
+ "cv-rules",
+ "serde_json",
+ "sv-core",
+]
+
+[[package]]
+name = "cv-rules"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "sv-core",
+ "sv-frameworks",
+ "sv-scan",
+ "sv-yaml",
+]
+
+[[package]]
 name = "digest"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -827,6 +848,7 @@ dependencies = [
  "sv-frameworks",
  "sv-manifest",
  "sv-scan",
+ "sv-yaml",
  "toml",
  "tree-sitter",
  "tree-sitter-bash",
@@ -931,6 +953,14 @@ dependencies = [
  "serde_json",
  "sv-frameworks",
  "toml",
+]
+
+[[package]]
+name = "sv-yaml"
+version = "0.1.0"
+dependencies = [
+ "tree-sitter",
+ "tree-sitter-yaml",
 ]
 
 [[package]]

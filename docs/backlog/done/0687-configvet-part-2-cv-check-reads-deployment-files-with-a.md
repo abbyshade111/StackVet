@@ -1,6 +1,6 @@
 # ConfigVet part 2: cv check reads deployment files, with a defaults table for Express and Django (ADR-157)
 
-**Status:** claimed by claude (cv part 2 session), 20 November 2026
+**Status:** done, 20 November 2026
 
 Asked for by the owner on 20 November 2026. The second step of the build order in the design entry "ConfigVet, a
 companion for an app's deployment configuration (20 November 2026)", under ADR-157 (accepted). Files only: no network
@@ -33,3 +33,12 @@ connection of any kind.
 - **Done when:** `cv check <folder>` runs on the examples, `cargo fmt --all --check`, `cargo clippy --all-targets --
   -D warnings`, and `cargo test --workspace` pass, ADR-157's "As built" gains part 2, and the build pull request is
   open for the owner to see.
+
+**Done, 20 November 2026.** `cv check <folder>` reads Dockerfiles, compose files, Kubernetes manifests, and Terraform
+plans as JSON, settles each setting as one of the five outcomes, prints the list, and writes `report.json`; no network
+connection is opened. Built as the owner chose: `crates/cv-rules`, `crates/cv-cli`, and `sv-check`'s YAML reader moved
+into `crates/sv-yaml`. Four rules: `cv.express-node-env` (V13.4.2, V16.5.1), `cv.django-session-cookie-secure` and
+`cv.django-csrf-cookie-secure` (V3.3.1), and `cv.container-root` (no requirement). `data/config-defaults.json` holds six
+defaults, each with its vendor's page; Kubernetes' `runAsUser` default is not among them, since its reference could not
+be read for it, so such a pod is not assessed. Each rule turned off sent its witnesses red (six, three, two, and three
+tests). ADR-157, "As built", part 2 says the rest.

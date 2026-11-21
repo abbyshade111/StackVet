@@ -1,0 +1,15 @@
+[package]
+name = "cv-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The `cv` binary (ADR-157, decision 1; backlog 0687). It depends on no crate of `sv`'s checks, runner, or report.
+[[bin]]
+name = "cv"
+path = "src/main.rs"
+
+[dependencies]
+serde_json.workspace = true
+cv-rules = { path = "../cv-rules" }
+sv-core = { path = "../sv-core" }

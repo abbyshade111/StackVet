@@ -599,6 +599,7 @@ dependencies = [
  "sv-frameworks",
  "sv-manifest",
  "sv-scan",
+ "sv-yaml",
  "toml",
  "tree-sitter",
  "tree-sitter-bash",
@@ -711,6 +712,14 @@ dependencies = [
  "serde_json",
  "sv-frameworks",
  "toml",
+]
+
+[[package]]
+name = "sv-yaml"
+version = "0.1.0"
+dependencies = [
+ "tree-sitter",
+ "tree-sitter-yaml",
 ]
 
 [[package]]

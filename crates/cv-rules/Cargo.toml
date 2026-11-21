@@ -1,0 +1,15 @@
+[package]
+name = "cv-rules"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# ConfigVet's rules over an app's deployment files (ADR-157; backlog 0687). Reads files only: nothing here opens a
+# network connection, and the live clients, when they come, are a crate of their own.
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sv-core = { path = "../sv-core" }
+sv-frameworks = { path = "../sv-frameworks" }
+sv-scan = { path = "../sv-scan" }
+sv-yaml = { path = "../sv-yaml" }
