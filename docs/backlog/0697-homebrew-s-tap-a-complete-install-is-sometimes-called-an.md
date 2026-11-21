@@ -1,6 +1,6 @@
 # Homebrew's tap: a complete install is sometimes called an "Empty installation"
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, after the second time. Work in `abbyshade111/homebrew-stackvet`'s
 `.github/workflows/test.yml`, not this repository.
