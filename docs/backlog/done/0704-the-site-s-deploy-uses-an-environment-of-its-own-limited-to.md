@@ -18,3 +18,5 @@ job read the Cloudflare keys from the repository's secrets, which every workflow
   then had the two repository-wide Cloudflare secrets deleted. Only `DOCKERHUB_TOKEN` and `DOCKERHUB_USERNAME` remain
   at the repository level.
 - **Not here:** the same for Docker Hub's token, which the review also raised; it is the owner's choice.
+  The owner chose on 21 November 2026 to keep it a repository secret, since every pull request uses it, and read its
+  permission as "Public Repo Read-only" (ADR-051, Later, 21 November 2026).
