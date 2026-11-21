@@ -318,14 +318,22 @@ fn envelope_lines(read: &envelope::Read) -> Vec<String> {
         }
     }
     out.push(format!(
-        "It may not change{}: {}.",
-        if e.guards.files.is_none() {
-            " (the list av uses when the file names none)"
-        } else {
-            ""
-        },
-        listed(&e.guards())
+        "It may not change, whatever the file says: {}.",
+        listed(
+            &envelope::DEFAULT_GUARDS
+                .iter()
+                .map(|g| (*g).to_owned())
+                .collect::<Vec<_>>()
+        )
     ));
+    let own: Vec<String> = e
+        .guards()
+        .into_iter()
+        .filter(|g| !envelope::DEFAULT_GUARDS.contains(&g.as_str()))
+        .collect();
+    if !own.is_empty() {
+        out.push(format!("The file adds to those: {}.", listed(&own)));
+    }
     for question in e.questions() {
         out.push(format!("Not said, so not assumed either way: {question}"));
     }

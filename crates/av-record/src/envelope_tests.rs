@@ -16,7 +16,7 @@ run = ["pytest", "npm"]
 reach = ["pypi.org"]
 
 [guards]
-files = [".github/workflows/", "AGENTS.md"]
+files = ["deploy/", "AGENTS.md"]
 "#;
 
 const LEAST: &str = "envelope-version = 1\n[task]\ngoal = \"Tidy the README.\"\n";
@@ -41,7 +41,15 @@ fn a_whole_envelope_is_read_and_leaves_no_question() {
         Some(&["delete".to_owned(), "push".to_owned()][..])
     );
     assert_eq!(e.questions(), Vec::<String>::new());
-    assert_eq!(e.guards(), [".github/workflows/", "AGENTS.md"]);
+    // The envelope's own guards add to the ones always guarded, each once, and take none away.
+    let guards = e.guards();
+    assert_eq!(guards.len(), DEFAULT_GUARDS.len() + 1, "{guards:?}");
+    assert_eq!(guards.last().map(String::as_str), Some("deploy/"));
+    assert!(
+        e.guards_file("deploy/prod.env")
+            && e.guards_file(FILE)
+            && e.guards_file(".claude/settings.json")
+    );
 }
 
 #[test]
@@ -61,7 +69,10 @@ fn a_line_left_out_is_a_question_and_never_a_yes_or_a_no() {
     let e = parse(&format!("{LEAST}[may]\nwrite = []\n")).unwrap();
     assert_eq!(e.may_write("src/app.py"), Some(false));
     assert_eq!(e.questions().len(), 3);
-    // With no guards named, the default list holds, the envelope itself among them.
+    // An empty list of its own unguards nothing.
+    let e = parse(&format!("{LEAST}[guards]\nfiles = []\n")).unwrap();
+    assert_eq!(e.guards().len(), DEFAULT_GUARDS.len());
+    // With no guards named, the ones always guarded hold, the envelope itself among them.
     assert!(e.guards_file(FILE) && e.guards_file(".claude/settings.json"));
     assert!(e.guards_file(".github/workflows/ci.yml") && !e.guards_file("src/app.py"));
 }

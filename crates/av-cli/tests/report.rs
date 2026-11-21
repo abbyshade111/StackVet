@@ -268,7 +268,8 @@ fn the_task_envelope_is_said_with_what_it_leaves_unsaid_and_that_it_may_be_the_t
     let state = folder("envelope-state");
     std::fs::write(
         app.join("agentvet.toml"),
-        "envelope-version = 1\n[task]\ngoal = \"Add a sign-out link.\"\n[may]\nwrite = [\"src/\"]\nrun = []\n",
+        "envelope-version = 1\n[task]\ngoal = \"Add a sign-out link.\"\n[may]\nwrite = [\"src/\"]\nrun = []\n\
+         [guards]\nfiles = [\"deploy/\"]\n",
     )
     .unwrap();
     let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
@@ -279,9 +280,10 @@ fn the_task_envelope_is_said_with_what_it_leaves_unsaid_and_that_it_may_be_the_t
         "It may write: src/.",
         "It may start: nothing.",
         "it may be the tool's own account of its task",
-        "It may not change (the list av uses when the file names none): agentvet.toml,",
+        "It may not change, whatever the file says: agentvet.toml,",
         "Not said, so not assumed either way: Which hosts may the tool connect to?",
         "Not said, so not assumed either way: Which actions must the tool ask you about first",
+        "The file adds to those: deploy/.",
         "Nothing is held to this yet",
         "the task file was read, and nothing is held to it yet",
     ] {

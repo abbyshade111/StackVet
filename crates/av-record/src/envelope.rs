@@ -13,7 +13,7 @@
 //! reach = ["pypi.org"]              # the hosts it may connect to
 //!
 //! [guards]
-//! files = [".github/workflows/", "AGENTS.md"]   # what it may not change; a default list when left out
+//! files = ["deploy/", "Makefile"]   # what it may not change, added to the list av always guards
 //!
 //! ask-first = ["delete", "push"]    # of: delete, push, install, send, spend
 //! ```
@@ -50,9 +50,10 @@ pub const MAY_BE_THE_TOOLS: &str = "The file does not say who wrote it. Your AI 
 /// The actions an envelope can say must ask first.
 pub const ASK_FIRST: [&str; 5] = ["delete", "push", "install", "send", "spend"];
 
-/// The files that guard oversight when the envelope names none: the tool's own instructions and permissions, the
-/// hooks and servers it is started with, what runs in CI and who must review, and the envelope itself. A folder ends
-/// in a slash.
+/// The files that always guard oversight, whatever the envelope names: the tool's own instructions and permissions,
+/// the hooks and servers it is started with, what runs in CI and who must review, and the envelope itself. A folder
+/// ends in a slash. An envelope's own list adds to these and takes none away (the owner's choice, 21 November 2026):
+/// an envelope the tool wrote cannot name a short list of its own to unguard them.
 pub const DEFAULT_GUARDS: [&str; 15] = [
     FILE,
     "AGENTS.md",
@@ -106,7 +107,7 @@ pub struct May {
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct Guards {
-    /// Folders and files the tool may not change. Left out, `DEFAULT_GUARDS`.
+    /// Folders and files the tool may not change, besides `DEFAULT_GUARDS`, which are always guarded.
     pub files: Option<Vec<String>>,
 }
 
@@ -255,12 +256,15 @@ pub fn covers(entries: &[String], path: &str) -> bool {
 }
 
 impl Envelope {
-    /// The files that guard oversight: the envelope's own list, or `DEFAULT_GUARDS`.
+    /// The files that guard oversight: `DEFAULT_GUARDS`, then the envelope's own list, each once.
     pub fn guards(&self) -> Vec<String> {
-        match &self.guards.files {
-            Some(files) => files.clone(),
-            None => DEFAULT_GUARDS.iter().map(|g| (*g).to_owned()).collect(),
+        let mut all: Vec<String> = DEFAULT_GUARDS.iter().map(|g| (*g).to_owned()).collect();
+        for own in self.guards.files.as_deref().unwrap_or_default() {
+            if !all.contains(own) {
+                all.push(own.clone());
+            }
         }
+        all
     }
 
     /// Whether `path` is one the tool may not change.
