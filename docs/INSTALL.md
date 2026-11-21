@@ -115,7 +115,7 @@ sv --version
 sv check ~/stackvet/examples/flask-booking
 ```
 
-The first prints `sv 0.1.0` and the version of the code it was built from, and on a second line the
+The first prints `sv 0.2.0` and the version of the code it was built from, and on a second line the
 folder of files it reads (`data: …/.local/share/stackvet/data`). The second checks one of the example apps that come with it: it
 should say what it read and what it found, not `Error`. If it says `command not found: sv`, step 5 has
 not taken effect: open a new terminal window, or look for the line at the end of `~/.zshrc`.
@@ -201,7 +201,7 @@ Mac, Ctrl+Shift+P elsewhere), choose "MCP: List Servers", pick `stackvet`, and c
 docker run --rm ghcr.io/abbyshade111/stackvet-sv --version
 ```
 
-It prints a line such as `sv 0.1.0 (commit 3f9c…)`, the commit being 40 letters and digits long: it is
+It prints a line such as `sv 0.2.0 (commit 3f9c…)`, the commit being 40 letters and digits long: it is
 the exact version of StackVet's code the copy was built from, and is what to quote if you report a problem. If you also built StackVet on
 your computer (for `--run`, above), `sv --version` prints the same line for that copy.
 
