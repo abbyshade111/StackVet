@@ -1,6 +1,6 @@
 # Package cv for v0.3.0: its own Windows zip, a Homebrew formula, and a Scoop manifest
 
-**Status:** claimed by claude/cv-packaging, 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word ("work simultaneously on the packaging and adding a new section to
 stackvet.dev"), after ConfigVet part 3 (backlog 0693) merged. ADR-157 planned "one release, two packages": a `cv`
@@ -35,3 +35,14 @@ Linux; its two jobs need adding to the tap's "Protect main" ruleset, and to `.gi
 word. The bucket's `bucket/cv.json` is written and kept back until v0.3.0's zip exists. Still to do: the release itself
 (the owner's tag), the formula's v0.3.0 `url` and `sha256`, the manifest's hash checked against a download, and
 `docs/INSTALL.md`'s lines.
+
+**Done, 21 November 2026.** v0.3.0 is published with `cv-0.3.0-windows-x86_64.zip` beside `sv`'s (#2462, the
+version #2463, tagged by the merge commit's hash, e7a0a6b2). Both zips' published SHA-256 matched a fresh download,
+and both attestations verified as built by `release.yml` at `refs/tags/v0.3.0`; the release workflow's check that
+PowerShell has no command named `cv` passed on Windows. Homebrew: `Formula/cv.rb`, head-only first
+(abbyshade111/homebrew-stackvet#4, with its `install-cv` jobs added to the tap's ruleset and `.github/rulesets.json` at
+the owner's word), then both formulas at v0.3.0's source archive, `sha256 015d4c40...` from a fresh download (#5; one
+job's "Empty installation" was Homebrew's false alarm, backlog 0697, and its rerun passed). Scoop: `bucket/sv.json` at
+0.3.0 and `bucket/cv.json`, with the release's hashes, `cv` installed and run in the one required `install` job
+(abbyshade111/scoop-stack-vet#3). `docs/INSTALL.md` has `cv`'s section. Not tried by hand: either install, on any
+system.
