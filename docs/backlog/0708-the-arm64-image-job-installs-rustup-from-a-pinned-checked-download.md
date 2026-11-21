@@ -1,6 +1,6 @@
 # The arm64 image job installs rustup from a pinned, checked download
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A6, its fourth point).
 The `image-arm64` job in `.github/workflows/rust.yml` installs rustup, where the runner has none, by piping
