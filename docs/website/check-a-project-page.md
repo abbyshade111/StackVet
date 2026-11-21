@@ -26,9 +26,9 @@ sv report https://github.com/OWNER/PROJECT
 
 **One download, and nothing in it runs.**
 
-- **It fetches one version.** StackVet downloads the host's own archive of the project, one commit, and nothing else
-  leaves your computer: no account, no password, and nothing about your own files. It talks to GitHub and GitLab
-  only, over a secure connection, and stops at 500 MB.
+- **It fetches one version.** StackVet downloads the host's own archive of the project, one commit, and the download
+  sends nothing else: no account, no password, and nothing about your own files. It talks to GitHub and GitLab only,
+  over a secure connection, and stops at 500 MB.
 - **It unpacks the files itself.** The archive is plain files, never a program. StackVet writes each one into a folder
   of its own, `stackvet-fetched`, where you started it, with no permission to run. Anything that tries to land outside
   that folder, or is a shortcut to somewhere else, is left out, and StackVet tells you what it left out.
@@ -36,13 +36,16 @@ sv report https://github.com/OWNER/PROJECT
   commit, it looked at.
 - **It checks the code by reading it,** with the same checks your own app gets: StackVet's own rules, the search for
   keys and passwords left in the code, and the security tools each language already has, when they are on your
-  computer.
+  computer. As for your own app, one of those tools, Semgrep (or Opengrep in its place), downloads its rules from
+  semgrep.dev; add `--no-tools` to check without the outside tools.
 
 Then it writes the report, in a folder named `stackvet-report` inside the project's folder.
 
 - The download is through `curl` with HTTPS only, to github.com, gitlab.com, and codeload.github.com, each redirect
   checked before it is followed, at most three, 500 MB, and ten minutes (ADR-154; `docs/ARCHITECTURE.md`, "The
-  fence", row 4). "Nothing about your own files" is the request carrying only the archive's address.
+  fence", row 4). "Nothing about your own files" is the request carrying only the archive's address. Semgrep's rule
+  download is the fence's other exception that a check of a fetched project uses (ADR-111), since the outside tools
+  run unless `--no-tools` is given (backlog 0696).
 - The unpacking: at most 50,000 files and 2 GB; links, names with `..`, a root, a drive, `\`, or `:`, and a second
   file of the same name are left out and named in the terminal.
 

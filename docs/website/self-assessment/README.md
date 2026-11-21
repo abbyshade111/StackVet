@@ -8,7 +8,7 @@ and stays as it was: the paper cites it.
 report's finding-by-finding files (`compliance.md`, `fix-now.md`, `your-decisions.md`, `not-examined.md`,
 `before-going-live.md`, `low-findings.md`, and `seen.json`) were kept here from 22 October 2026 and removed from `main`
 on 23 October at the owner's word: they listed each finding in StackVet's own code by file and line, and the owner chose
-not to publish them while they are gone through (backlog 0633). They are in the repository's history, as an older
+not to publish them while they were gone through (backlog 0633, done 23 October 2026). They are in the repository's history, as an older
 version since changed. The rest of what `sv` wrote (`report.html`, `report.pdf`, `report.json`, `security.md`,
 `information.md`, and `stackvet.sarif`) was never kept.
 
@@ -36,5 +36,5 @@ Two things to get right when it is made again, both learned on 26 October 2026:
 
 **What stackvet.dev shows of it.** A summary only, the owner's choice of 23 October 2026: the counts of what applies
 and what is known of it, how many things to fix were found and how many things were not examined, and the bill of
-materials. The things to fix are being gone through (backlog 0633), and their list is not published. Anyone can make the whole report by running
-`sv` on this repository, as above.
+materials. Going through the things to fix (backlog 0633) is done, and the finding-by-finding list is still not
+published. Anyone can make the whole report by running `sv` on this repository, as above.

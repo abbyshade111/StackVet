@@ -1,59 +1,61 @@
 # Notes with users — what applies, and what is known
 
-Produced by `sv` 0.1.0 (commit db196b303b79) on 2026-10-14 15:34:10 UTC, run 482d8f60aec0. ASVS level 2.
+Produced by `sv` 0.2.0 (commit 7031bd26f038) on 2026-11-21 15:48:12 UTC, run 15a3dae229ac. ASVS level 2.
 
 **This file:** Every requirement that applies, chapter by chapter, with what is known of each; the threats; what only you can check; and the tests worth writing. **For:** Anyone who needs the whole picture against the standards, you or someone you show it to. The end of `report.html` lists every file in this folder and who each is for.
 
 ## The short version
 
-2 things were found, worst first.
+2 things to fix were found in the app's own code. 1 more is a note worth knowing, not a thing to fix, under "Worth knowing".
 
-Nothing shows that sv was used while this app was built: no call from an AI coding tool to sv's MCP server is recorded for it. That is not a finding. The app may have been checked at a terminal, or built before sv kept this record.
-
-This run took 0.4 s. The slowest parts: Reading its configuration (0.2 s), Reading its code (0.1 s), Putting the report together (0.1 s), Looking for keys and passwords (0.0 s), Reading the app's files (0.0 s).
-
-The app's software bill of materials is in sbom.cdx.json beside this report. It lists no packages: the app declares none, in a package list or a lockfile.
-
-stackvet.sarif beside this report is for code editors and GitHub's code scanning, not for reading: it holds 2 findings, and 11 notes on what was not examined.
+Most serious first:
 
 - **A password is stored, or a key made from it, with too few rounds of work** — medium (ast.weak-password-key-derivation)
 - **There is no way to report a security problem** — low (config.security-contact)
+
+Nothing shows that sv was used while this app was built: no call from an AI coding tool to sv's MCP server is recorded for it. That is not a finding. The app may have been checked at a terminal, or built before sv kept this record.
+
+This run took 0.7 s. The slowest parts: Putting the report together (0.3 s), Reading its configuration (0.2 s), Reading its code (0.1 s), Looking for keys and passwords (0.0 s), Recognizing its languages and frameworks (0.0 s).
+
+The app's software bill of materials is in sbom.cdx.json beside this report. It lists no packages: the app declares none, in a package list or a lockfile.
+
+stackvet.sarif beside this report is for code editors and GitHub's code scanning, not for reading: it holds 3 findings, and 10 notes on what was not examined.
 
 Of the requirements that apply to this app:
 
 - **2** — something found a problem
 - **1** — an automated check looked and found nothing wrong
 - **7** — an automated check tried part of what each asks and found nothing wrong there
-- **186** — nothing has looked at these at all
+- **185** — nothing has looked at these at all
 
-Held to ASVS level 2. Not in these numbers: 153 more requirements at level 3, and 242 not yet placed because nobody has answered the question that decides them. Level 2 because stackvet.toml says customers use it: answers in stackvet.toml, which your AI coding tool usually writes and nobody has confirmed, so check them, and confirm them with `sv review`.
+Held to ASVS level 2. Not in these numbers: 153 more requirements at level 3, and 241 not yet placed because nobody has answered the question that decides them. Level 2 because stackvet.toml says customers use it: answers in stackvet.toml, which your AI coding tool usually writes and nobody has confirmed, so check them, and confirm them with `sv review`.
 
-Not run this time: the running app, signed in or not (`sv report --run`), and outside tools such as Semgrep (they run with `sv report` at a terminal; the MCP server never runs them). 70 of the requirements that apply can only be checked that way.
+Not run this time: the running app, signed in or not (`sv report --run`), and outside tools such as Semgrep (they run with `sv report` at a terminal; the MCP server never runs them). 59 of the requirements that apply can only be checked that way.
 
 ### What to do next
 
 1. Fix the 2 things that were found. *(each is below, and in security.md with what to do)*
 2. Answer the 23 questions at level 1 that no tool can settle — what your rules are, who may do what, how the app is built. 69 in all, most of them design review at higher levels. *(ask your AI coding tool to ask you them one at a time (it calls stackvet_check with section "questions" and records your answers); at a terminal, `sv questions` prints them)*
-3. Ask your AI coding tool to write tests for the 117 requirements a test could settle, starting with the 43 at level 1. *("Tests to write", lowest level first)*
-4. Run the full report, which starts the app behind sv's network fence and runs the outside tools: 70 requirements can only be checked that way. *(`sv report` does not start the app unless you pass --run.)*
-5. Answer the questions in stackvet.toml that would place 242 more requirements, which are in none of the numbers above until then. *("Requirements nobody has placed" names the question for each)*
+3. Ask your AI coding tool to write tests for the 116 requirements a test could settle, starting with the 43 at level 1. *("Tests to write", lowest level first)*
+4. Run the full report, which starts the app behind sv's network fence and runs the outside tools: 59 requirements can only be checked that way. *(`sv report` does not start the app unless you pass --run.)*
+5. Answer the questions in stackvet.toml that would place 241 more requirements, which are in none of the numbers above until then. *("Requirements nobody has placed" names the question for each)*
 
 ## 2 things to fix
 
-Worst first. Each is in security.md, with why it matters and what to do.
+Worst first. Each is in security.md, with why it matters and what to do. One more is a note worth knowing, not a thing to fix: it is under "Worth knowing" in security.md.
 
-- **medium** A password is stored, or a key made from it, with too few rounds of work — `app.py` line 45
+- **medium** A password is stored, or a key made from it, with too few rounds of work — `app.py` line 49
 - **low** There is no way to report a security problem — `SECURITY.md` line 1
 
 ## How this report was made
 
-196 requirements apply to this app. Of those, **10 have been looked at by something** and **186 have not been looked at at all**.
+195 requirements apply to this app. Of those, **10 have been looked at by something** and **185 have not been looked at at all**.
 
 A further 33 about how the app is built with an AI coding tool, from OWASP AISVS Appendix C, are counted apart: see "How the app is built with AI", below.
 
 There is no line in this report that says a requirement passed, because nothing here is able to establish that. A requirement marked *checked* had at least one automated check look at it and find nothing wrong, over the coverage named beside it — which is worth having and is not the same as the requirement being met. One marked as answered in the security notes, checked by hand, or answered yes rests on your word or your AI coding tool's, which is shown as exactly that and never as checked. Everything else applicable is *not verified*: nothing has produced evidence either way.
 
-A further **242 requirements could not even be placed**: nobody has answered the question that decides whether they apply. They are listed at the end with the question in each case. They are not exclusions and they are not passes.
+A further **241 requirements could not even be placed**: nobody has answered the question that decides whether they apply. They are listed at the end with the question in each case. They are not exclusions and they are not passes.
 
 | | count |
 |---|---:|
@@ -65,9 +67,9 @@ A further **242 requirements could not even be placed**: nobody has answered the
 | Applies, rests on your word: you checked it by hand | 0 |
 | Applies, rests on your word: you answered yes about how it is built | 0 |
 | Applies, rests on your AI coding tool's word: it answered yes | 0 |
-| Applies, not verified by anything | 186 |
-| Does not apply | 16 |
-| Not assessed — nobody has answered | 242 |
+| Applies, not verified by anything | 185 |
+| Does not apply | 18 |
+| Not assessed — nobody has answered | 241 |
 | Above this app's target level (ASVS level 2) | 153 |
 
 ## What was not examined
@@ -77,8 +79,7 @@ Each of these is a limit on what the rest of this report can mean.
 | not examined | why |
 |---|---|
 | the running app | `sv report` does not start the app unless you pass --run. Without it, nothing here has asked the app anything — what it sends to a browser, what it says when something goes wrong, which sites it accepts. |
-| the security tool this language already has | `sv report` ran none of the outside tools, because --no-tools was given; without it they run. Bandit, gosec, Brakeman, Semgrep, and CodeQL each know their languages far better than the handful of rules built in here. |
-| the check `config.secrets-file-committed` | This repository holds only its most recent commits (a shallow copy), so `sv` could not read whether a secrets file was committed earlier. Fetching the whole history (`git fetch --unshallow`) lets this check read it. |
+| the security tool this language already has | `sv report` ran none of the outside tools, because --no-tools was given; without it they run. Bandit, gosec, Brakeman, and Semgrep each know their languages far better than the handful of rules built in here. |
 | the check `config.gitignore-covers-env` | This app is a folder inside a larger git repository and has no .gitignore of its own. A .gitignore in a folder above it may leave out .env, but `sv` reads only the app's folder, so this check did not run. |
 | the check `config.security-contact-placeholder` | there is no SECURITY.md or security.txt to read, which config.security-contact reports |
 | the check `config.versions-pinned` | No package manifest was found, so there is nothing whose versions could be pinned. If this app installs dependencies some other way, that is not something `sv` can see. |
@@ -86,15 +87,13 @@ Each of these is a limit on what the rest of this report can mean.
 | 42 requirements that are design review, not scanning | these ask how the system was designed and how it is run — whether trust zones are enforced, whether an incident response plan is rehearsed, whether data has named owners. No check here reaches them and none ever will, so they are counted as applicable and unverified, and a person has to answer them. |
 | known vulnerabilities in the packages this app ships | `sv report` compares against known vulnerabilities only when you pass --advisories DIR. `sv` does not fetch anything, because the list of packages an app depends on is yours: download an OSV export for this app's ecosystems, unpack it, and pass its folder with --advisories. |
 | 18 requirements that ask for a written decision | No tool can answer these: they ask what your rules are, who may do what, and how long things are kept. Run `sv notes` to write security-notes.md, answer the questions in it, and they become documented. Your AI coding tool can ask you them: `sv questions` prints them for its chat. |
-| 13 questions about how this app is built | No tool can settle these — whether input is validated on the server, whether the app's own services authenticate to each other. Answer them in the `[design]` section of stackvet.toml: V2.2.2, V7.2.1, V8.3.1, V15.3.1, V1.1.1, V4.1.3, V4.2.1, V8.2.3, V11.2.2, V14.2.2, V15.3.4, V16.2.2, V16.4.3. Your AI coding tool can ask you them: `sv questions` prints them for its chat. |
+| 14 questions about how this app is built | No tool can settle these — whether input is validated on the server, whether the app's own services authenticate to each other. Answer them in the `[design]` section of stackvet.toml: V2.2.2, V7.2.1, V8.3.1, V15.3.1, V1.1.1, V4.1.3, V4.2.1, V8.2.3, V11.2.2, V14.2.2, V15.3.4, V16.2.2, V16.4.3, V2.3.3. Your AI coding tool can ask you them: `sv questions` prints them for its chat. |
 
 ## Outside tools
 
-None ran this time: Bandit, gosec, Brakeman, Semgrep, CodeQL (JavaScript and TypeScript), CodeQL (Python), CodeQL (Ruby). They run with every `sv report` at a terminal unless `--no-tools` is given; the MCP server and the GitHub Action never run them.
+None ran this time: Bandit, gosec, Brakeman, Semgrep. They run with every `sv report` at a terminal unless `--no-tools` is given; the MCP server and the GitHub Action never run them.
 
 ## Requirements that apply
-
-58 of these 196 requirements have a line in plain words, with the standard's own words beside it; the rest show the standard's words only, for now. The standard's words are what a requirement means. The standard's words are in the appendix at the end.
 
 Each chapter of the standards, with how many of its requirements apply to this app and what is known about them, and how many do not apply. What each requirement asks for is in the appendix at the end.
 
@@ -105,13 +104,13 @@ Each chapter of the standards, with how many of its requirements apply to this a
 | V3 Web Frontend Security | **17** | 0 | 0 | 1 | 16 | 1 | 1 |
 | V4 API and Web Service | **4** | 0 | 0 | 0 | 4 | 6 | 0 |
 | V5 File Handling | **9** | 0 | 0 | 1 | 8 | 0 | 0 |
-| V6 Authentication | **29** | 0 | 0 | 0 | 29 | 0 | 6 |
+| V6 Authentication | **29** | 0 | 0 | 0 | 29 | 1 | 5 |
 | V7 Session Management | **15** | 0 | 0 | 0 | 15 | 0 | 3 |
 | V8 Authorization | **6** | 0 | 0 | 0 | 6 | 0 | 1 |
 | V9 Self-contained Tokens | **0** | 0 | 0 | 0 | 0 | 0 | 7 |
 | V10 OAuth and OIDC | **0** | 0 | 0 | 0 | 0 | 0 | 29 |
 | V11 Cryptography | **14** | 2 | 0 | 2 | 10 | 0 | 0 |
-| V12 Secure Communication | **5** | 0 | 0 | 0 | 5 | 0 | 4 |
+| V12 Secure Communication | **4** | 0 | 0 | 0 | 4 | 1 | 4 |
 | V13 Configuration | **9** | 0 | 0 | 0 | 9 | 0 | 4 |
 | V14 Data Protection | **9** | 0 | 0 | 0 | 9 | 0 | 0 |
 | V15 Secure Coding and Architecture | **12** | 0 | 0 | 0 | 12 | 0 | 1 |
@@ -148,31 +147,31 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V1.2.4 | checked (a database query, sent through the usual database libraries' query calls, joined together from text and values rather than sent with its values kept separate, in 2 python files (the calls it reads: `execute`, `executemany`, `executescript`, `raw`, `read_sql`, `read_sql_query`, `extra`, `RawSQL`, `$where`, `or_`, and `filter`) (ast.sql-built-by-hand)) | 1 | Database queries keep the data apart from the query itself (parameterized queries, an ORM, or something as safe), so nobody can inject their own query. |
 | V1.2.5 | checked in part (a command line built from a value and handed to a shell to run, in 2 python files (the calls it reads: `system`, `popen`, `getoutput`, and `getstatusoutput`) (ast.shell-command)) | 1 | The app never lets input become part of an operating-system command: commands are given their arguments separately, or the input is encoded for the command line. |
 | V1.3.2 | checked in part (code built from a value and handed to something that runs it, such as eval, in 2 python files (the calls it reads: `eval`, `exec`, and `compile`) (ast.dynamic-code-execution)) | 1 | The app does not run text as code (eval, SpEL, and the like); where there is truly no alternative, any user input in it is sanitized first. |
-| V1.1.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.1.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.2.9 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.3.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.3.6 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.3.7 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.3.10 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V1.5.2 | checked in part (data read with a reader that can build any kind of object, such as pickle, Marshal, or PHP's unserialize, in 2 python files (the calls it reads: `load`, `loads`, and `Unpickler`) (ast.unsafe-deserialization)) | 2 |  |
+| V1.1.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Input is decoded into its plain form once, only when encoded data is expected, and before it is validated or cleaned, never after. |
+| V1.1.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Output encoding and escaping happen as the last step before the data is used by its interpreter, or by the interpreter itself. |
+| V1.2.9 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Special characters put into a regular expression are escaped, so they are not read as metacharacters. |
+| V1.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Data passed to a potentially dangerous place is sanitized first: only characters safe there are allowed, and input that is too long is trimmed. |
+| V1.3.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | SVG images people upload are validated or sanitized to keep only safe tags and attributes, with no scripts or foreignObject. |
+| V1.3.6 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | When the app calls another service with untrusted data, the protocol, domain, path, and port are checked against an allowlist, so it cannot be steered elsewhere (server-side request forgery, SSRF). |
+| V1.3.7 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | Templates are never built from untrusted input; where there is no alternative, the input is sanitized or strictly validated, to stop template injection. |
+| V1.3.10 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Format strings that could resolve in an unexpected or malicious way are sanitized before they are processed. |
+| V1.5.2 | checked in part (data read with a reader that can build any kind of object, such as pickle, Marshal, or PHP's unserialize, in 2 python files (the calls it reads: `load`, `loads`, and `Unpickler`) (ast.unsafe-deserialization)) | 2 | Deserialization of untrusted data is safe, for example with an allowlist of object types, and deserialization known to be insecure is never used on it. |
 
 ### V2 Validation and Business Logic — **11 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
 | V2.1.1 | not verified — only you can (it is in "What only you can check") | 1 | The app's documentation says what valid data looks like for each kind of input: an email address, a phone number, a card number, or the app's own formats. |
-| V2.2.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | Input is checked against what the app expects (allowed values, patterns, ranges, or structure); at level 1, at least the input used to make business or security decisions. |
+| V2.2.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Input is checked against what the app expects (allowed values, patterns, ranges, or structure); at level 1, at least the input used to make business or security decisions. |
 | V2.2.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | Input is validated on the server, the trusted side; checks in the browser help people but are never relied on for security. |
 | V2.3.1 | not verified — only you can (it is in "What only you can check") | 1 | A multi-step process, such as a checkout, runs its steps in order for the same user, and no step can be skipped. |
-| V2.1.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V2.1.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V2.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V2.3.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V2.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V2.3.4 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V2.4.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V2.1.2 | not verified — only you can (it is in "What only you can check") | 2 | The documentation says how to check that related pieces of data make sense together, such as a suburb matching its ZIP code. |
+| V2.1.3 | not verified — only you can (it is in "What only you can check") | 2 | The documentation sets out the business logic limits and validations, per user and across the whole application. |
+| V2.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | The app checks that combinations of related data items are reasonable, by the rules set out beforehand. |
+| V2.3.2 | not verified — a check of the running app could settle it (`sv report --run`) | 2 | The business logic limits the documentation sets out are enforced in the application, so they cannot be exploited. |
+| V2.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Business operations use transactions: each succeeds as a whole or is rolled back to the previous correct state. |
+| V2.3.4 | not verified — only you can (it is in "What only you can check") | 2 | Limited resources, such as theater seats or delivery slots, are locked while being taken, so they cannot be double-booked. |
+| V2.4.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Anti-automation controls stop excessive calls to the application's functions, which could leak data, fill it with garbage, use up quotas or costly resources, or deny service. |
 
 ### V3 Web Frontend Security — **17 apply**, 1 do not
 
@@ -186,24 +185,24 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V3.5.1 | not verified — a check of the running app could settle it (`sv report --run`); an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 1 | Requests that do something sensitive are checked to come from the app itself (with an anti-forgery token or a special header), to stop cross-site request forgery (CSRF), unless the CORS preflight already does that. |
 | V3.5.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Where the app relies on the browser's CORS preflight to block other sites, sensitive actions cannot be reached by a request that skips the preflight. |
 | V3.5.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | Sensitive actions use POST, PUT, PATCH, or DELETE, never GET or another method meant to be safe, or the request's Sec-Fetch headers are checked strictly instead. |
-| V3.3.2 | not verified — a check of the running app could settle it (`sv report --run`); an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.3.3 | not verified — only the live site can show it (`sv probe` once it is on the internet); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.3.4 | not verified — a check of the running app could settle it (`sv report --run`); an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.4.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.4.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.4.5 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.4.6 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.7.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V3.7.2 | checked in part (a redirect to a destination built from a value, in 2 python files (the calls it reads: `redirect`, `HttpResponseRedirect`, `HttpResponsePermanentRedirect`, and `RedirectResponse`) (ast.open-redirect)) | 2 |  |
+| V3.3.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Each cookie's SameSite attribute is set to suit its purpose, to limit cross-site request forgery (CSRF) and clickjacking. |
+| V3.3.3 | not verified — only the live site can show it (`sv probe` once it is on the internet); a test of the app's could (ask your AI coding tool to write one) | 2 | Cookie names start with __Host- unless the cookie is meant to be shared with other hosts. |
+| V3.3.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | A cookie that scripts in the page have no need to read, such as a session token, has the HttpOnly attribute, and its value is only ever sent in the Set-Cookie header. |
+| V3.4.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Every response has a Content-Security-Policy header that only lets the browser load and run trusted content, at least with object-src 'none' and base-uri 'none', and an allowlist, nonces, or hashes. |
+| V3.4.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Every response has the header X-Content-Type-Options: nosniff, so browsers never guess a response's type. |
+| V3.4.5 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | The app sets a referrer policy, so addresses with sensitive data in them are not leaked to other sites through the Referer header. |
+| V3.4.6 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Every response's Content-Security-Policy has a frame-ancestors directive, so other sites cannot embed the app's pages unless that is intended. |
+| V3.7.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | The app uses only client-side technologies that are still supported and secure, never Flash, ActiveX, Silverlight, Java applets, or the like. |
+| V3.7.2 | checked in part (a redirect to a destination built from a value, in 2 python files (the calls it reads: `redirect`, `HttpResponseRedirect`, `HttpResponsePermanentRedirect`, and `RedirectResponse`) (ast.open-redirect)) | 2 | The app redirects people automatically to another site it does not control only when that destination is on an allowlist. |
 
 ### V4 API and Web Service — **4 apply**, 6 do not
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
 | V4.1.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Every response with a body says what kind of content it is (the Content-Type header) and matches it, including the character set, such as UTF-8. |
-| V4.1.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V4.1.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V4.2.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
+| V4.1.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Only pages people open in a browser redirect from HTTP to HTTPS; other endpoints do not, so a client sending unencrypted requests is noticed. |
+| V4.1.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Header fields that a proxy or load balancer sets, such as X-Forwarded-For or X-Real-IP, cannot be overridden by the end user. |
+| V4.2.1 | not verified — only you can (it is in "What only you can check") | 2 | Every component, from load balancer to application server, decides where each HTTP message ends in the same correct way, to prevent HTTP request smuggling. |
 
 ### V5 File Handling — **9 apply**
 
@@ -213,13 +212,13 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V5.2.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | An uploaded file's extension is one the app expects, and its contents really are that type (checking its first bytes, for example); at level 1, at least files used for business or security decisions. |
 | V5.3.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Files that people upload into a public folder can never be run as code on the server when someone opens their address. |
 | V5.3.2 | checked in part (a file opened, written, or deleted at a path built from a value rather than written out, in 2 python files (the calls it reads: `open`, `send_file`, and `FileResponse`) (ast.file-path-from-value)) | 1 | File paths are built from names the app makes or trusts, not names people send; if a user's file name must be used, it is strictly checked, so nobody can reach other files or servers. |
-| V5.1.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V5.2.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V5.4.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V5.4.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V5.4.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
+| V5.1.1 | not verified — only you can (it is in "What only you can check") | 2 | The documentation sets, for each upload feature, the allowed file types and extensions, the largest size (unpacked too), and how files are made safe to download, including what happens to a malicious one. |
+| V5.2.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Before unpacking a compressed file (zip, gz, docx, odt), the app checks its unpacked size and number of files against set limits. |
+| V5.4.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | File names people submit are validated or ignored, and the app sets the file name itself in the Content-Disposition header of the response. |
+| V5.4.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | File names the app serves, in headers or email attachments, are encoded or sanitized (as RFC 6266 describes), so they cannot inject anything. |
+| V5.4.3 | not verified — only you can (it is in "What only you can check") | 2 | Files from untrusted sources are scanned by an antivirus scanner, so known malicious files are not served. |
 
-### V6 Authentication — **29 apply**
+### V6 Authentication — **29 apply**, 1 do not
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
@@ -236,22 +235,22 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V6.3.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | There are no default accounts such as root, admin, or sa, or they are turned off. |
 | V6.4.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | First passwords and activation codes the system makes are random, follow the password rules, expire soon or after first use, and cannot be kept as the long-term password. |
 | V6.4.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | There are no password hints or secret questions. |
-| V6.1.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V6.1.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V6.2.9 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.2.10 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.2.11 | not verified — a check of the running app could settle it (`sv report --run`) | 2 |  |
-| V6.2.12 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V6.3.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V6.3.4 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V6.4.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.4.4 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V6.5.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.5.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.5.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.5.4 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.5.5 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V6.6.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V6.1.2 | not verified — only you can (it is in "What only you can check") | 2 | A list of words specific to the app, such as the organization's and products' names, is documented, so they can be kept out of passwords. |
+| V6.1.3 | not verified — only you can (it is in "What only you can check") | 2 | If there are several ways to sign in, the documentation lists them all, with the security controls and strength each must enforce consistently. |
+| V6.2.9 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Passwords of at least 64 characters are allowed. |
+| V6.2.10 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | A password stays valid until it is found to be compromised or the user changes it; people are never made to change passwords on a schedule. |
+| V6.2.11 | not verified — a check of the running app could settle it (`sv report --run`) | 2 | The documented list of words specific to the app is used to stop easy-to-guess passwords being created. |
+| V6.2.12 | not verified — only you can (it is in "What only you can check") | 2 | Passwords chosen at registration or when changing a password are checked against a set of breached passwords. |
+| V6.3.3 | not verified — only you can (it is in "What only you can check") | 2 | Signing in to the application takes multi-factor authentication, or a combination of single-factor methods. |
+| V6.3.4 | not verified — only you can (it is in "What only you can check") | 2 | If there are several ways to sign in, none is undocumented, and each enforces the same security controls and strength. |
+| V6.4.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Resetting a forgotten password is secure and never skips multi-factor authentication that is turned on. |
+| V6.4.4 | not verified — only you can (it is in "What only you can check") | 2 | When someone loses a multi-factor authentication factor, their identity is checked again as thoroughly as when they first enrolled. |
+| V6.5.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Lookup secrets, codes sent out of band, and time-based one-time passwords (TOTPs) work only once. |
+| V6.5.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Lookup secrets with less than 112 bits of entropy are stored hashed with an approved password hashing algorithm and a 32-bit random salt. |
+| V6.5.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Lookup secrets, out-of-band codes, and time-based one-time password seeds come from a cryptographically secure random number generator (CSPRNG), so they cannot be predicted. |
+| V6.5.4 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Lookup secrets and out-of-band authentication codes have at least 20 bits of entropy (6 random digits is usually enough). |
+| V6.5.5 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Out-of-band authentication codes expire within 10 minutes, and time-based one-time passwords (TOTP) within 30 seconds. |
+| V6.6.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Out-of-band authentication codes are protected against brute force guessing by rate limiting. |
 
 ### V7 Session Management — **15 apply**
 
@@ -263,15 +262,15 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V7.2.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Signing in, or signing in again, gives a new session token and ends the old one. |
 | V7.4.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Once a session ends (signing out, or it expires), it cannot be used again; the server forgets it, or self-contained tokens are refused after that point. |
 | V7.4.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | When an account is disabled or deleted, all of its active sessions end. |
-| V7.1.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V7.1.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V7.3.1 | not verified — a check of the running app could settle it (`sv report --run`) | 2 |  |
-| V7.3.2 | not verified — a check of the running app could settle it (`sv report --run`) | 2 |  |
-| V7.4.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V7.4.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V7.4.5 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V7.5.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V7.5.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V7.1.1 | not verified — only you can (it is in "What only you can check") | 2 | The documentation sets the session inactivity timeout and the absolute maximum session lifetime, and justifies any difference from NIST SP 800-63B's re-authentication rules. |
+| V7.1.2 | not verified — only you can (it is in "What only you can check") | 2 | The documentation says how many sessions one account may have at once, and what happens when the maximum number is reached. |
+| V7.3.1 | not verified — a check of the running app could settle it (`sv report --run`) | 2 | An inactivity timeout makes people authenticate again, as the risk analysis and documented decisions set. |
+| V7.3.2 | not verified — a check of the running app could settle it (`sv report --run`) | 2 | An absolute maximum session lifetime makes people authenticate again, as the risk analysis and documented decisions set. |
+| V7.4.3 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | After a password or other authentication factor is changed or removed, the user is offered the choice to end all their other active sessions. |
+| V7.4.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Every page that requires sign-in has an easy, visible way to log out. |
+| V7.4.5 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Administrators can end the active sessions of one user, or of all users. |
+| V7.5.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Changing anything that affects authentication or account recovery, such as the email address, phone number, or multi-factor settings, requires full re-authentication. |
+| V7.5.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Users can see their active sessions and, after authenticating again, end any or all of them. |
 
 ### V8 Authorization — **6 apply**
 
@@ -281,8 +280,8 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V8.2.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Each function can be used only by people who have been given permission for it. |
 | V8.2.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Each record can be reached only by people who have been given permission for that record, so nobody can open someone else's by changing an id in the address. |
 | V8.3.1 | not verified — only you can (it is in "What only you can check") | 1 | Who may do what is enforced on the server, never by things a user could change, such as hidden buttons or JavaScript in the browser. |
-| V8.1.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V8.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V8.1.2 | not verified — only you can (it is in "What only you can check") | 2 | The authorization documentation sets rules for which fields of a record each user may read and write, by their permissions and the record's attributes. |
+| V8.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Access to individual fields is restricted to users with explicit permission for those fields (broken object property level authorization, BOPLA). |
 
 ### V11 Cryptography — **14 apply**
 
@@ -291,41 +290,40 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V11.3.1 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 1 | Insecure encryption modes such as ECB, and weak padding such as PKCS#1 v1.5, are not used. |
 | V11.3.2 | checked in part (encryption in ECB mode, or with a retired cipher such as DES, triple DES, RC4, RC2, or Blowfish, in 2 python files (the calls it reads: `ECB`, `MODE_ECB`, `TripleDES`, `ARC4`, `Blowfish`, `CAST5`, `IDEA`, and `SEED`) (ast.weak-cipher)) | 1 | Only approved ciphers and modes, such as AES with GCM, are used. |
 | V11.4.1 | checked in part (MD5 or SHA-1 used as a hash function, in 2 python files (the calls it reads: `md5`, `sha1`, and `md4`) (ast.weak-hash-function)) | 1 | Only approved hash functions are used for cryptography; MD5 and the like are never used for any cryptographic purpose. |
-| V11.1.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V11.1.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V11.2.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V11.2.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V11.2.3 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V11.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V11.4.2 | **needs attention** (ast.weak-password-key-derivation) | 2 |  |
-| V11.4.3 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V11.4.4 | **needs attention** (ast.weak-password-key-derivation) | 2 |  |
-| V11.5.1 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V11.6.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V11.1.1 | not verified — only you can (it is in "What only you can check") | 2 | A documented policy manages cryptographic keys through their whole lifecycle, following a standard such as NIST SP 800-57, and keys are not shared more widely than needed. |
+| V11.1.2 | not verified — only you can (it is in "What only you can check") | 2 | An up-to-date cryptographic inventory lists every key, algorithm, and certificate the application uses, where each may be used, and what data each may protect. |
+| V11.2.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Cryptographic operations use industry-validated implementations, such as well-known libraries or hardware, never home-made ones. |
+| V11.2.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | The application is built so its cryptographic algorithms, key lengths, and modes can be swapped or upgraded at any time, and keys and passwords replaced and data re-encrypted (crypto agility). |
+| V11.2.3 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | Every cryptographic primitive gives at least 128 bits of security, for example a 256-bit ECC key or a 3072-bit RSA key. |
+| V11.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Encrypted data is protected against unauthorized changes, preferably with approved authenticated encryption, or with encryption plus an approved MAC. |
+| V11.4.2 | **needs attention** (ast.weak-password-key-derivation) | 2 | Passwords are stored with an approved, deliberately slow key derivation function (a password hashing function), with settings that follow current guidance to make brute-force attacks hard. |
+| V11.4.3 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | Hash functions used for digital signatures and data integrity are collision resistant, with outputs of at least 256 bits where collision resistance is needed. |
+| V11.4.4 | **needs attention** (ast.weak-password-key-derivation) | 2 | Keys derived from passwords use an approved key derivation function with key stretching, set strongly enough that brute force cannot recover the key. |
+| V11.5.1 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | Every random number or string meant to be unguessable comes from a cryptographically secure random number generator (CSPRNG) and has at least 128 bits of entropy; a UUID does not count. |
+| V11.6.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Only approved cryptographic algorithms and modes are used to generate keys and to make and check digital signatures, and no generated key is weak to known attacks. |
 
-### V12 Secure Communication — **5 apply**
+### V12 Secure Communication — **4 apply**, 1 do not
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
 | V12.1.1 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 1 | Only the latest recommended TLS versions, such as 1.2 and 1.3, are turned on, with the newest preferred. |
 | V12.2.1 | not verified — only the live site can show it (`sv probe` once it is on the internet); a test of the app's could (ask your AI coding tool to write one) | 1 | All connections from clients to the app's public web services use TLS, and never fall back to unencrypted connections. |
 | V12.2.2 | not verified — only you can (it is in "What only you can check") | 1 | The app's public services use TLS certificates that browsers trust. |
-| V12.1.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V12.1.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V12.1.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Only recommended TLS cipher suites are enabled, with the strongest preferred. |
 
 ### V13 Configuration — **9 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
 | V13.4.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | The app is deployed without its source control folders (.git, .svn), or they cannot be reached, from outside or by the app itself. |
-| V13.1.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V13.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V13.3.1 | not verified — a person has to answer it; supporting: 4 files, against 21 known credential formats plus the assignment rule (secrets.scan) | 2 |  |
-| V13.3.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V13.4.2 | not verified — a check of the running app could settle it (`sv report --run`); an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V13.4.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V13.4.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V13.4.5 | not verified — only you can (it is in "What only you can check") | 2 |  |
+| V13.1.1 | not verified — only you can (it is in "What only you can check") | 2 | Every communication need of the application is documented, including the external services it relies on and any place a user could point it to connect to. |
+| V13.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | When a credential is used for one service to authenticate to another, it is never a default credential such as admin/admin. |
+| V13.3.1 | not verified — a person has to answer it; supporting: the files this check reads (config.secrets-file-committed); 4 files, against 23 known credential formats plus the assignment rule (secrets.scan) | 2 | Backend secrets, such as passwords, keys, and API keys, are created, stored, accessed, and destroyed through a secrets management solution such as a key vault, never in the source code or build artifacts. |
+| V13.3.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Access to secrets follows the principle of least privilege. |
+| V13.4.2 | not verified — a check of the running app could settle it (`sv report --run`); an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | Debug modes are disabled for every component in production, so debugging features and information do not leak. |
+| V13.4.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Web servers do not show directory listings unless that is explicitly intended. |
+| V13.4.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | The HTTP TRACE method is not supported in production, so it cannot leak information. |
+| V13.4.5 | not verified — only you can (it is in "What only you can check") | 2 | Documentation, such as for internal APIs, and monitoring endpoints are not exposed unless that is explicitly intended. |
 
 ### V14 Data Protection — **9 apply**
 
@@ -333,13 +331,13 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 |---|---|---:|---|
 | V14.2.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | Sensitive data, such as an API key or a session token, is sent only in the body or the headers of a request, never in the web address. |
 | V14.3.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 1 | Signed-in data is cleared from the browser when the session ends, even when the server cannot be reached. |
-| V14.1.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V14.1.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V14.2.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V14.2.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V14.2.4 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V14.3.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V14.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V14.1.1 | not verified — only you can (it is in "What only you can check") | 2 | All sensitive data the application creates or handles is identified and classified into protection levels, including data only encoded (such as Base64 or a JWT's payload), with the regulations it must follow in mind. |
+| V14.1.2 | not verified — only you can (it is in "What only you can check") | 2 | Each protection level for sensitive data has documented requirements: encryption, integrity, retention, logging, access to logs, database encryption, privacy, and other confidentiality needs. |
+| V14.2.2 | not verified — only you can (it is in "What only you can check") | 2 | Sensitive data is not cached in server components such as load balancers and application caches, or it is securely purged after use. |
+| V14.2.3 | not verified — only you can (it is in "What only you can check") | 2 | Sensitive data is never sent to untrusted parties, such as user trackers, where it would be collected outside the application's control. |
+| V14.2.4 | not verified — only you can (it is in "What only you can check") | 2 | The controls for sensitive data (encryption, integrity, retention, logging, privacy) are implemented as the documentation sets them for that data's protection level. |
+| V14.3.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Responses carrying sensitive data set anti-caching headers (Cache-Control: no-store), so browsers do not cache it. |
+| V14.3.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Browser storage (localStorage, sessionStorage, IndexedDB, or cookies) holds no sensitive data, apart from session tokens. |
 
 ### V15 Secure Coding and Architecture — **12 apply**
 
@@ -348,96 +346,96 @@ Not in this table: the 33 requirements about how the app is built with an AI cod
 | V15.1.1 | not verified — only you can (it is in "What only you can check") | 1 | The documentation sets deadlines for fixing third-party components with known weaknesses, and for keeping libraries up to date, by how risky they are. |
 | V15.2.1 | not verified — the advisory data could, once it is downloaded | 1 | Every component the app ships is within the update and fix deadlines its documentation sets. |
 | V15.3.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 1 | The app returns only the fields of a record that are needed, never the whole record with fields some users must not see. |
-| V15.1.2 | not verified — sv's own reading of the code looked, and settled nothing; a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V15.1.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V15.2.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V15.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V15.3.3 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V15.3.4 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V15.3.5 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V15.3.6 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V15.3.7 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V15.1.2 | not verified — sv's own reading of the code looked, and settled nothing; a test of the app's could (ask your AI coding tool to write one) | 2 | An inventory, such as a software bill of materials (SBOM), lists every third-party library in use, and checks each comes from a trusted, maintained repository. |
+| V15.1.3 | not verified — only you can (it is in "What only you can check") | 2 | The documentation names the functions that are slow or use many resources, and how to keep them from making the app unavailable or taking longer than the consumer's timeout. |
+| V15.2.2 | not verified — only you can (it is in "What only you can check") | 2 | The application defends against slow or resource-heavy functions making it unavailable, as the documented decisions set out. |
+| V15.2.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | The production environment holds only the functionality the application needs, with no test code, sample snippets, or development features exposed. |
+| V15.3.3 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | The application protects against mass assignment by limiting which fields each action may set, so a field not meant to be changed by an action cannot be. |
+| V15.3.4 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Proxies and middleware pass on the user's original IP address in trusted fields the user cannot manipulate, and the app uses that value for logging and rate limiting. |
+| V15.3.5 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | The code checks variables are of the correct type and uses strict equality and comparisons, so type juggling or type confusion cannot be exploited. |
+| V15.3.6 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | JavaScript code is written to prevent prototype pollution, for example by using Map() or Set() instead of plain object literals. |
+| V15.3.7 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | The application defends against HTTP parameter pollution, especially where its framework does not tell apart parameters from the query string, body, cookies, and header fields. |
 
 ### V16 Security Logging and Error Handling — **15 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| V16.1.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V16.2.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.2.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.2.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V16.2.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.2.5 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.3.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.3.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.3.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V16.3.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.4.1 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.4.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.4.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| V16.5.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 |  |
-| V16.5.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| V16.1.1 | not verified — only you can (it is in "What only you can check") | 2 | An inventory documents the logging at each layer: what events are logged, the formats, where logs are stored, how they are used, who can access them, and how long they are kept. |
+| V16.2.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Each log entry has the metadata needed to investigate an event's timeline: when, where, who, and what. |
+| V16.2.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | All logging components use synchronized time sources, and security event timestamps are in UTC or carry an explicit time zone offset. |
+| V16.2.3 | not verified — only you can (it is in "What only you can check") | 2 | Logs are stored or sent only to the files and services the log inventory documents. |
+| V16.2.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Logs can be read and correlated by the log processor in use, preferably by using a common logging format. |
+| V16.2.5 | not verified — an outside tool could (they run with `sv report` at a terminal); a test of the app's could (ask your AI coding tool to write one) | 2 | Sensitive data is logged only as its protection level allows: some, such as credentials or payment details, never; others, such as session tokens, only hashed or masked. |
+| V16.3.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Every authentication operation is logged, successful and unsuccessful, preferably with the type of authentication or factors used. |
+| V16.3.2 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Failed authorization attempts are logged. |
+| V16.3.3 | not verified — a check of the running app could settle it (`sv report --run`) | 2 | The security events the documentation defines are logged, as are attempts to bypass security controls such as input validation, business logic, and anti-automation. |
+| V16.3.4 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | Unexpected errors and security control failures, such as a backend TLS failure, are logged. |
+| V16.4.1 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Every logging component encodes data appropriately to prevent log injection. |
+| V16.4.2 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Logs are protected from unauthorized access and cannot be modified. |
+| V16.4.3 | not verified — only you can (it is in "What only you can check") | 2 | Logs are sent securely to a logically separate system for analysis and alerting, so a breach of the application does not compromise them. |
+| V16.5.1 | not verified — a check of the running app could settle it (`sv report --run`); a test of the app's could (ask your AI coding tool to write one) | 2 | When an unexpected or security-sensitive error occurs, the app returns a generic message, never internal details such as stack traces, queries, secret keys, or tokens. |
+| V16.5.3 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | The application fails gracefully and securely, including on an exception, so it never fails open, such as completing a transaction despite a validation error. |
 
 ### SBD-AC Access Control & Secure Communication — **5 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| SBD-AC-01 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-AC-02 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-AC-03 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-AC-05 | not verified — a person has to answer it; supporting: 4 files, against 21 known credential formats plus the assignment rule (secrets.scan) | 1 |  |
-| SBD-AC-06 | not verified — only you can: no check of sv's speaks to it | 1 |  |
+| SBD-AC-01 | not verified — only you can: no check of sv's speaks to it | 1 | All communications use TLS or mutual TLS (mTLS), and each service's identity is verified, for example with certificates issued by a service mesh. |
+| SBD-AC-02 | not verified — only you can: no check of sv's speaks to it | 1 | A central identity provider (IdP, using OIDC or OAuth2) is used, multi-factor authentication (MFA) is enforced on privileged and admin paths, and tokens are short-lived. |
+| SBD-AC-03 | not verified — only you can: no check of sv's speaks to it | 1 | Role- or attribute-based access control (RBAC or ABAC) governs the APIs and who may publish or consume messages, and least privilege (only the access needed) is applied. |
+| SBD-AC-05 | not verified — a person has to answer it; supporting: 4 files, against 23 known credential formats plus the assignment rule (secrets.scan); the files this check reads, as evidence about V13.3.1 (config.secrets-file-committed) | 1 | Secrets are stored in a secret manager, keys and certificates rotate automatically, and no secrets appear in code or logs. |
+| SBD-AC-06 | not verified — only you can: no check of sv's speaks to it | 1 | The regulatory controls that apply, such as privacy or financial rules, are identified, with evidence that the design aligns with them. |
 
 ### SBD-AS Architecture & Service Design — **1 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| SBD-AS-07 | not verified — only you can: no check of sv's speaks to it | 2 |  |
+| SBD-AS-07 | not verified — only you can: no check of sv's speaks to it | 2 | Services start up safely when a dependency is missing, and autoscaling (adding or removing copies as load changes) is defined with a minimum number of replicas. |
 
 ### SBD-DM Data Management & Protection — **3 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| SBD-DM-02 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-DM-01 | not verified — only you can: no check of sv's speaks to it | 2 |  |
-| SBD-DM-05 | not verified — only you can: no check of sv's speaks to it | 2 |  |
+| SBD-DM-02 | not verified — only you can: no check of sv's speaks to it | 1 | Encryption is designed in, both in transit (TLS or mutual TLS) and at rest, with managed keys and key rotation. |
+| SBD-DM-01 | not verified — only you can: no check of sv's speaks to it | 2 | Data are classified, each class has named owners, and the controls protecting data are proportional to its classification. |
+| SBD-DM-05 | not verified — only you can: no check of sv's speaks to it | 2 | Each class of data has retention and deletion policies, and minimization is applied, so only the data needed is collected and stored. |
 
 ### SBD-MT Monitoring, Testing & Incident Readiness — **7 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| SBD-MT-02 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-MT-03 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-MT-04 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-MT-05 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-MT-06 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-MT-07 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-MT-01 | not verified — only you can: no check of sv's speaks to it | 2 |  |
+| SBD-MT-02 | not verified — only you can: no check of sv's speaks to it | 1 | Metrics, service level objectives (SLOs), and dashboards cover service health and anomalies in event flow, and alerts are actionable. |
+| SBD-MT-03 | not verified — only you can: no check of sv's speaks to it | 1 | The test strategy plans security tests aligned with ASVS, and negative tests (checking that what should fail does fail) drawn from threat modeling. |
+| SBD-MT-04 | not verified — only you can: no check of sv's speaks to it | 1 | Secure by Design (SbD) controls are verifiable in tests, including isolation, mTLS, authorization denials, and rate-limit behavior. |
+| SBD-MT-05 | not verified — only you can: no check of sv's speaks to it | 1 | API descriptions (OpenAPI and AsyncAPI) and event catalogs are published, and decision records (ADRs) and runbooks are kept current. |
+| SBD-MT-06 | not verified — only you can: no check of sv's speaks to it | 1 | A documented Incident Response plan, covering roles, communications, and evidence handling, exists and is rehearsed. |
+| SBD-MT-07 | not verified — only you can: no check of sv's speaks to it | 1 | Audit log retention of at least 12 months is defined, with tamper-evidence (changes can be detected) and a searchable hot window of recent logs. |
+| SBD-MT-01 | not verified — only you can: no check of sv's speaks to it | 2 | Logs are structured and centralized, carry correlation or trace IDs that link related entries, and administrative access is logged. |
 
 ### SBD-RR Reliability & Resilience — **5 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| SBD-RR-06 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-RR-08 | not verified — only you can: no check of sv's speaks to it | 1 |  |
-| SBD-RR-01 | not verified — only you can: no check of sv's speaks to it | 2 |  |
-| SBD-RR-05 | not verified — only you can: no check of sv's speaks to it | 2 |  |
-| SBD-RR-07 | not verified — only you can: no check of sv's speaks to it | 2 |  |
+| SBD-RR-06 | not verified — only you can: no check of sv's speaks to it | 1 | All calls have timeouts, services have health probes, and critical paths have explicit failover strategies, such as running across multiple availability zones (multi-AZ). |
+| SBD-RR-08 | not verified — only you can: no check of sv's speaks to it | 1 | Caching, a CDN (content delivery network), and back-pressure (slowing senders when the system is overloaded) are applied where appropriate, and performance guardrails are defined. |
+| SBD-RR-01 | not verified — only you can: no check of sv's speaks to it | 2 | Retries wait longer after each failure (exponential backoff) plus a small random delay (jitter), and default exception handling and safe error models exist. |
+| SBD-RR-05 | not verified — only you can: no check of sv's speaks to it | 2 | Every endpoint that changes data enforces an Idempotency-Key (so a repeated request is not applied twice), and concurrency controls, such as locks or optimistic concurrency, are in place. |
+| SBD-RR-07 | not verified — only you can: no check of sv's speaks to it | 2 | Quotas and autoscaling are defined, rate limits are enforced at the edges where traffic comes in, and the minimum capacity is documented. |
 
 ### C7 Model Behavior, Output Control & Safety Assurance — **2 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| C7.2.1 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| C7.2.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
+| C7.2.1 | not verified — only you can (it is in "What only you can check") | 2 | The system assesses how reliable generated answers are using a confidence estimation method. |
+| C7.2.2 | not verified — only you can (it is in "What only you can check") | 2 | The application automatically blocks an answer, or switches to a fallback message, when its confidence score drops below a defined threshold. |
 
 ### C12 Monitoring, Logging & Anomaly Detection — **3 apply**
 
 | requirement | status | level | in plain words |
 |---|---|---:|---|
-| C12.2.2 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| C12.2.3 | not verified — only you can (it is in "What only you can check") | 2 |  |
-| C12.2.4 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 |  |
+| C12.2.2 | not verified — only you can (it is in "What only you can check") | 2 | Behavioral anomaly detection identifies unusual conversation patterns, excessive retry attempts, or probing behaviors. |
+| C12.2.3 | not verified — only you can (it is in "What only you can check") | 2 | Custom rules detect AI-specific threat patterns for coordinated jailbreak attempts, prompt injection, and attempts to extract the system prompt (the AI's hidden instructions). |
+| C12.2.4 | not verified — a test of the app's could (ask your AI coding tool to write one) | 2 | Extraction-alert events include metadata about the offending queries to support investigation. |
 
 ## How the app is built with AI (OWASP AISVS Appendix C)
 
@@ -562,17 +560,17 @@ A further 53 are the Secure by Design and AISVS design-review controls, which ar
 | V6.1.3 — Every way to sign in | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | What are all the ways someone can sign in (a password, a Google or Microsoft account, a code by email, a key for programs), and are they all protected as well as each other? In the standard's words: If there is more than one way to sign in (a password, a Google or Microsoft account, a code by email, an API key), list all these authentication pathways, and say which security controls apply to each, so they are enforced consistently and one is not weaker than the others. **Where to look:** Open the sign-in page and list every button on it, then search the code for anywhere else a session is created — an API key check, a magic link, a mobile app, an admin back door. Each one is a pathway, and they should all be as strong as each other. |
 | V7.1.1 — How long someone stays signed in | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | How long may someone be away before they have to sign in again, how long may anyone stay signed in at most, and why are those times right for this app? In the standard's words: The session inactivity timeout (how long someone can be away before signing in again) and the absolute maximum session lifetime (how long any session lasts at most), and why those times are right for this app. If they are longer than NIST SP 800-63B suggests, say why. **Where to look:** Find the two numbers in your app's configuration: how long an idle session lasts, and how long any session lasts at most. If you cannot find them, the answer is whatever your framework does by default, and that is the number to write down and then reconsider. |
 | V7.1.2 — Signed in on several devices at once | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | How many devices may one person be signed in on at once, and what happens when they sign in on one more? In the standard's words: How many concurrent sessions one account may have at once (a phone and a laptop, say), and what the app does when someone reaches the maximum: sign out the oldest, refuse the new one, or tell the person. **Where to look:** Sign in to the same account from two browsers and see whether both keep working. That tells you what the app does today; write down what it should do. |
-| V8.1.1 — Who may do what | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | Who may do what in the app: which kinds of people may use which features, and whose records may each one see or change? In the standard's words: The authorization rules: which kinds of users may use which functions (function-level: only administrators may open the admin page), and which records each may see or change (data-specific: a person may only open their own notes). **Where to look:** List the kinds of user the app has, then walk through the app as each one and note what they can reach. The pages that only some people should see, and the records that belong to one person, are what these rules are about. |
+| V8.1.1 — Who may do what | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | Who may do what in the app: which kinds of people may use which features, and whose records may each one see or change? In the standard's words: The authorization rules: which kinds of users may use which functions (function-level: only administrators may open the admin page), and which records each may see or change (data-specific: a person may only open their own notes). **Where to look:** List the kinds of user the app has, then walk through the app as each one and note what they can reach. The pages that only some people should see, and the records that belong to one person, are what these rules are about. **In the code**, comparisons and queries of a record's owner or user id, where the app may keep a person to their own records; places that refuse a request with a 403 (Forbidden), whether the answer is sent, returned, or raised: app.py, line 245; app.py, line 213; app.py, line 320; and 1 more. These are where to look, not evidence: StackVet found them by their names or their shape (a 403 sent, a query by owner) and did not read what they do. |
 | V8.1.2 — Who may see or change each field | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | Where some parts of a record are more private than the rest: who may see each part, who may change it, and does that change once the record is, say, published? In the standard's words: Where some fields of a record are more restricted than the record itself, the field-level access rules: who may read and who may write each field, and whether that depends on the record's state or status (a published order's total can no longer be changed). **Where to look:** Take a record with a field not everybody should see — a price, a note, an internal status. Write down who may read it and who may change it, and whether that depends on the record's state. |
 | V11.1.1 — How keys are looked after | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | For each secret key the app uses: where is it kept, who can get to it, how often is it replaced, and what happens if it may have leaked? In the standard's words: The policy for cryptographic keys: where each key is kept, who can reach it, how often it is replaced, and what happens when one may have leaked, following a key management standard such as NIST SP 800-57 through each key's lifecycle. **Where to look:** List every key the app uses: session signing, encryption at rest, the TLS certificate, anything a provider gave you. For each, write where it lives, who can read it, and what you would do tomorrow if it leaked. |
 | V11.1.2 — Every key, algorithm, and certificate | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | What is every key, kind of encryption, and certificate the app uses, and what may each one be used for? In the standard's words: A cryptographic inventory: every key, algorithm, and certificate the app uses, where each key may and may not be used, and what data each may and may not protect. Keep it updated when one is added or replaced. **Where to look:** Look in your .env and your host's secret store, at the certificate on the live site, and at whatever the code calls to hash or encrypt. That is the inventory; write down which data each protects and where it may not be used. |
 | V13.1.1 — Everything the app talks to | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | What does the app connect to outside itself (payments, email, AI services, other programs), and why? And can anyone using the app give it an address that it will then visit itself? In the standard's words: All the communication needs of the app: every external service it connects to (payment providers, email, AI services, other APIs) and why, and any place where someone using the app can give it an address that the app will then connect to itself. **Where to look:** Look at your dependency list for anything that calls out — payment, email, AI, maps, analytics — and at the report's own list of outside services. Then add the places where somebody using the app can give it an address it will fetch. |
 | V14.1.2 — How each kind of sensitive data is protected | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | For each kind of private information the app keeps: is it encrypted, how long is it kept, may it appear in logs, who can see it, and what does the privacy law you follow require? In the standard's words: For each kind of sensitive data the app holds, its protection requirements: whether it is encrypted, how long it is kept (retention), whether and how it may appear in logs, who can see it, and anything the privacy law you follow requires. **Where to look:** Take each kind of data from the list you made for V14.1.1 and decide four things for it: encrypted or not, kept for how long, allowed in logs or not, and who may see it. |
 | V15.1.1 — How quickly outdated libraries are updated | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | When a library the app uses turns out to have a security hole, how soon must it be updated, by how serious the hole is (critical within a week, say)? And how often are libraries updated anyway? In the standard's words: Time frames for remediation: how soon a third-party library with a known vulnerability is updated, by how serious the vulnerability is (for example, critical within a week), and how often libraries are updated in general. **Where to look:** Decide the number of days you would accept between a vulnerability being published and it being fixed, for each level of severity. Start from how bad it would be for this app rather than from what other people write down. Then put the same numbers in stackvet.toml as `[policy] fix-within-days`, so `sv audit` can hold the app's packages to them. |
-| V15.1.3 — Slow or heavy features | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | Which features are slow or heavy (big exports, reports, AI requests, image processing), and what stops one person's heavy use from making the app unavailable to everyone else? In the standard's words: Which functionality is time-consuming or resource-demanding (large exports, report generation, AI requests, image processing), and how the app prevents a loss of availability from overusing it: queues, limits per user, timeouts. **Where to look:** Time the slow things: an export, a report, a search over everything, an AI request, anything that resizes an image. Anything a person notices waiting for is what this asks about. |
+| V15.1.3 — Slow or heavy features | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | Which features are slow or heavy (big exports, reports, AI requests, image processing), and what stops one person's heavy use from making the app unavailable to everyone else? In the standard's words: Which functionality is time-consuming or resource-demanding (large exports, report generation, AI requests, image processing), and how the app prevents a loss of availability from overusing it: queues, limits per user, timeouts. **Where to look:** Time the slow things: an export, a report, a search over everything, an AI request, anything that resizes an image. Anything a person notices waiting for is what this asks about. **In the code**, work that can be slow or heavy: password hashing, images and PDFs, archives, exports, calls to an AI model, and files uploaded: app.py, line 49. These are where to look, not evidence: StackVet found them by their names or their shape (a 403 sent, a query by owner) and did not read what they do. |
 | V16.1.1 — What the app logs | tell your AI coding tool your answer, and it writes it in security-notes.md (at a terminal, `sv notes` makes the file) | What does the app write in its logs, where are they kept, who can read them, what are they for, and how long are they kept? In the standard's words: An inventory of the logging: which events are logged, in what format, where the logs are stored, who can read them (access), what they are used for, and how long they are kept. **Where to look:** Find where the app's output actually goes — the console, a file, your host's logging, an outside service — and what it writes at each level. Then say who can read it and how long it is kept. |
-| V8.3.1 — Authorization rules are enforced at a trusted service layer | tell your AI coding tool your answer, and it records it in the `[design]` section of stackvet.toml | When somebody tries to open a page or do something they are not allowed to, is it the server that stops them, or only a button that is hidden? In the standard's words: Does the application enforce its authorization rules at a trusted service layer — the server — rather than relying on controls an untrusted consumer could manipulate, such as a hidden button or a disabled field in the browser? Hiding a link is not a rule: anyone can request the address directly. **Where to look:** Take a page or an action only some people should reach, and find the code that stops everybody else. If the only thing you find is the button being hidden in the template, that is the answer. |
-| V4.2.1 — Everything in front of the app agrees where a request ends | tell your AI coding tool your answer, and it records it in the `[design]` section of stackvet.toml | If a request passes through other machines before reaching the app (a load balancer, a firewall), do they all agree on where one request ends and the next begins? In the standard's words: Do all the components a request passes through — load balancers, firewalls, and the application server — agree on where one HTTP message ends and the next begins? When they disagree, somebody can hide a second request inside the first. **Where to look:** Find what sits in front of the app — a load balancer, a reverse proxy, your host's edge. Check whether each one and the app agree on request size limits, chunked encoding, and duplicate headers. If you run nothing in front of the app, say so: that is the answer. |
+| V8.3.1 — Authorization rules are enforced at a trusted service layer | tell your AI coding tool your answer, and it records it in the `[design]` section of stackvet.toml | When somebody tries to open a page or do something they are not allowed to, is it the server that stops them, or only a button that is hidden? In the standard's words: Does the application enforce its authorization rules at a trusted service layer — the server — rather than relying on controls an untrusted consumer could manipulate, such as a hidden button or a disabled field in the browser? Hiding a link is not a rule: anyone can request the address directly. **Where to look:** Take a page or an action only some people should reach, and find the code that stops everybody else. If the only thing you find is the button being hidden in the template, that is the answer. **In the code**, comparisons and queries of a record's owner or user id, where the app may keep a person to their own records; places that refuse a request with a 403 (Forbidden), whether the answer is sent, returned, or raised: app.py, line 245; app.py, line 213; app.py, line 320; and 1 more. These are where to look, not evidence: StackVet found them by their names or their shape (a 403 sent, a query by owner) and did not read what they do. |
+| V4.2.1 — Everything in front of the app agrees where a request ends | tell your AI coding tool your answer, and it records it in the `[design]` section of stackvet.toml | If a request passes through other machines before reaching the app (a load balancer, a firewall), do they all agree on where one request ends and the next begins? In the standard's words: Do all the components a request passes through — load balancers, firewalls, and the application server — agree on where one HTTP message ends and the next begins? When they disagree, somebody can hide a second request inside the first. **Where to look:** Find what sits in front of the app — a load balancer, a reverse proxy, your host's edge. Check whether each one and the app agree on request size limits, chunked encoding, and duplicate headers. If you run nothing in front of the app, say so: that is the answer. **Why StackVet cannot check it:** The machines in front of the app, such as a load balancer, a reverse proxy, or your host's edge, are not in the app's folder, and StackVet runs the app on its own, with nothing in front of it. Sending the app a request built to be read two ways would test only the app's own server, and would say nothing about what is in front of it once the app is live. |
 | V14.2.2 — Sensitive data is not left in a cache | tell your AI coding tool your answer, and it records it in the `[design]` section of stackvet.toml | Is private information kept out of the caches the app does not control (your host's edge, a content delivery network), or protected when it is stored there? In the standard's words: Does the application prevent sensitive data from being kept in caches it does not own — a load balancer, a content delivery network, or an application cache — or make sure anything kept there is protected? **Where to look:** List every cache a response passes through: your host's edge or CDN, a reverse proxy, the browser. Then look at what a private page sends back in Cache-Control. Anything sensitive without no-store is the answer to this one. |
 | V16.4.3 — Logs are sent somewhere separate | tell your AI coding tool your answer, and it records it in the `[design]` section of stackvet.toml | Are the app's logs sent to a separate place, so someone who took over the app could not quietly delete them? In the standard's words: Are logs sent to a separate system, so that somebody who takes over the application cannot quietly delete the record of what they did? **Where to look:** Find where the logs end up. If the answer is a file on the same machine the app runs on, then somebody who takes over the app can edit them, and this is not done. |
 | V2.3.1 — Steps cannot be skipped or done out of order | check it by hand; nothing here can | Take a flow with more than one step — checkout, sign-up with a confirmation, anything with a "next" button. Write down the address of the last step. Start the flow again, and go straight to that address without doing the steps before it. It should refuse. Then try the steps in the wrong order, and try the same step twice. Describing the flow in stackvet.toml as `flow` under `[stack.run.users]` lets `sv report --run` try two skips, one wrong order, and one repeated step for you; other orders, and the last step sent again after the flow finished, are still yours. |
@@ -592,7 +590,7 @@ A further 53 are the Secure by Design and AISVS design-review controls, which ar
 | V14.1.1 — You know which of your data is sensitive | check it by hand; nothing here can | List every kind of information the app stores, including what it writes to logs and what it keeps in backups. Mark each with how much it would matter if it got out. Anything you cannot place is the thing to look at, and remember that encoded is not the same as protected. |
 | V14.2.3 — Nothing sensitive is handed to an outside service | check it by hand; nothing here can | Open the app in a browser with the network panel recording, sign in, and use it normally. Look at every request going somewhere that is not your own address — analytics, error reporting, fonts, chat widgets. Check what is in each, including the address of the page, which often carries names or record numbers. With `browser` under `[stack.run.users]`, `sv report --run` looks through what the signed-in pages send to other sites for the test account's email address, password, and session cookie; but code a page loads from another site cannot run inside the fence, so what analytics and chat widgets send is still yours to look at. |
 | V14.2.4 — Sensitive data is handled the way your notes say | check it by hand; nothing here can | Take each protection you wrote down — encrypted, kept for so long, never in logs — and check the app against it. Search the logs for the data that should never appear there, and confirm that something really deletes records when their time is up. |
-| V15.2.2 — Time-consuming features cannot cause a loss of availability | check it by hand; nothing here can | Take each time-consuming or resource-demanding feature you documented — an export, a report, an AI request, image processing. Start several at once from one account and see whether the rest of the application stays usable. The defenses you wrote down should stop any one person causing a loss of availability for everybody else. |
+| V15.2.2 — Time-consuming features cannot cause a loss of availability | check it by hand; nothing here can | Take each time-consuming or resource-demanding feature you documented — an export, a report, an AI request, image processing. Start several at once from one account and see whether the rest of the application stays usable. The defenses you wrote down should stop any one person causing a loss of availability for everybody else. **In the code**, work that can be slow or heavy: password hashing, images and PDFs, archives, exports, calls to an AI model, and files uploaded: app.py, line 49. These are where to look, not evidence: StackVet found them by their names or their shape (a 403 sent, a query by owner) and did not read what they do. |
 | V16.2.3 — Logs go only where your inventory says | check it by hand; nothing here can | Compare the log destinations in your inventory with where they really go: files on the server, your host's logging, any outside service, and anything printed to the console. A destination nobody wrote down is one nobody is watching or protecting. |
 | V16.3.3 — The events you said would be logged really are | check it by hand; nothing here can | Do each thing your notes say gets logged — a failed sign-in, a permission refused, a record deleted — then look in the logs and confirm each one is there with enough detail to tell who and when. Then try something that should be refused, such as posting a form with a field the app does not expect, and check that the refusal was logged too. |
 | V5.4.3 — Uploaded files are scanned for viruses | check it by hand; nothing here can | Find where a file someone uploads is stored before anyone downloads it, and check whether it is scanned by antivirus software on the way in: your host's upload service may offer this, or a scanner such as ClamAV can be added. Try uploading the harmless EICAR test file, which every antivirus scanner recognizes. If the app accepts it and serves it back, known malicious content would be served too. |
@@ -617,11 +615,30 @@ These can be answered only by the app's own live site, so nothing in this report
 | V4.1.2 | A program calling the API over plain HTTP is refused rather than redirected | `sv probe https://your-address --api /a/path/of/your/api` asks this. |
 | V12.1.2 | Only strong encryption settings (cipher suites) are offered | Not sv probe: check it with a scanner made for it, such as testssl.sh or SSL Labs' online test (see "What only you can check"). |
 
+## What the AI coding tool did that is worth a look
+
+Information only: nothing here changes a requirement's status, counts toward anything, or is a finding. Each line is something the AI coding tool did that a person may want to look at, with when and where it was seen. Many of them are right to do; a line says what happened, not that it was wrong.
+
+Read: the last 20 commits, as there is no earlier report made at a known commit, of which 20 were made by an AI coding tool, by a trailer in its message that names one; the 0 that name none are not read as the tool's.
+
+Not looked for: the commands the tool ran and the files it wrote without committing them, since the hook record was not read for this run (`sv report --hook-record` reads it, once its hook is installed).
+
+Not looked for: findings that went away, since this folder held no earlier report that sv can show it wrote.
+
+| Kind | What was seen | Where |
+|---|---|---|
+| Tests skipped or removed | a test was marked to be skipped in tools/session_token.py (xit() | commit c0f03aea "Backlog 0692: sessions push and open pull requests as the se", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
+| Tests skipped or removed | a line the test crates/sv-cli/tests/website.rs expects was changed in the same commit as 1 file of code | commit 7031bd26 "stackvet.dev: fix what the whole-site review found, the page", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
+| A guard edited | a marker that tells a check to look away (noqa) was added in tools/session_token.py | commit c0f03aea "Backlog 0692: sessions push and open pull requests as the se", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
+| A guard edited | a marker that tells a check to look away (nosec) was added in docs/backlog/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md | commit 6f1a9b40 "File and claim backlog 0693: ConfigVet part 3, the outside t", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
+| A guard edited | a marker that tells a check to look away (nosec) was added in docs/backlog/done/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md | commit 9ca59c36 "ConfigVet part 3: cv runs hadolint, Checkov, and Trivy (back", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
+| A guard edited | .github/workflows/release.yml was changed | commit cc3f49db "The release builds, checks, signs, and attaches cv's own Win", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
+
 ## Tests worth writing first
 
 Nothing produced evidence about these, and no test in the app names them. A test that names a requirement's id and passes is the one way to give evidence about any requirement, including the ones no check here can reach. These are the level 1 ones. Name only what a test really checks: nothing here can tell whether it does.
 
-74 more are at level 2 and above. They are not listed here, because a list that long is not something a person works through; `sv mcp` gives the whole list to your AI coding tool, and report.json carries it under `tests_to_write`.
+73 more are at level 2 and above. They are not listed here, because a list that long is not something a person works through; `sv mcp` gives the whole list to your AI coding tool, and report.json carries it under `tests_to_write`.
 
 102 more have no evidence and are not listed at all, because an application's own tests cannot show them: they ask for documentation, a deployment setting, a development process, or a design decision, and a person answers them.
 
@@ -853,9 +870,9 @@ These are not exclusions. Answering the question in the second column moves each
 | SBD-RR-02 | Does the app run as more than one service? — or — Does the app call other services over the network? |
 | SBD-RR-03 | Does the app run as more than one service? — or — Does the app run scheduled background jobs? |
 | SBD-RR-04 | Does the app run as more than one service? |
-| V1.3.1 | Does the app have AI features? |
+| V1.3.1 | Does the app take formatted text that people supply and show it: rich text from an editor, or Markdown, stylesheets, templates, BBCode, or similar? — or — Does the app have AI features? |
 | V1.3.11 | Does the app send email? |
-| V1.3.5 | Does the app have AI features? |
+| V1.3.5 | Does the app take formatted text that people supply and show it: rich text from an editor, or Markdown, stylesheets, templates, BBCode, or similar? — or — Does the app have AI features? |
 | V10.1.1 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
 | V10.1.2 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
 | V10.2.1 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
@@ -907,7 +924,6 @@ These are not exclusions. Answering the question in the second column moves each
 | V6.6.2 | Does the app send sign-in codes by phone, SMS, push notification, or email? |
 | V6.8.1 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
 | V6.8.2 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
-| V6.8.3 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
 | V6.8.4 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
 | V7.1.3 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
 | V7.6.1 | Does the app sign people in through another provider (OAuth or OpenID Connect)? |
@@ -930,7 +946,6 @@ These were satisfied. They appear here rather than beside a requirement because 
 
 | check | what it covered | why it is here |
 |---|---|---|
-| config.ai-commits-off-merge | the default branch's commits, by what each says about itself: none that names an AI coding tool reached the branch outside a merge | it names no requirement in any loaded framework |
 | config.mcp-server-unpinned | 3 files: no MCP server started with npx, uvx, or docker from a package or image named in them | it names no requirement in any loaded framework |
 | config.certificate-checks-off | 3 files: none sets `NODE_TLS_REJECT_UNAUTHORIZED` or `PYTHONHTTPSVERIFY` to `0` or switches certificate checking off for the whole app in code; the same setting made on the server itself is in no file | it names no requirement in any loaded framework |
 | config.rich-text-without-sanitizer | 0 packages: none is a rich-text editor `sv` knows | it names no requirement in any loaded framework |
@@ -953,6 +968,7 @@ An exclusion resting on the manifest's word is weaker than one resting on what t
 | V1.4.2 | This app's languages are memory-safe and it contains no unmanaged (C/C++) code. | what the app's code contains (unmanaged-code) |
 | V1.4.3 | This app's languages are memory-safe and it contains no unmanaged (C/C++) code. | what the app's code contains (unmanaged-code) |
 | V1.5.1 | No XML parser is used, so XML external entity (XXE) attacks are not possible. | what the app's code contains (xml) |
+| V12.1.3 | The app asks for no client certificate, so there is no certificate identity to validate before it is used. | what the app's code contains (mtls) |
 | V3.5.5 | This app's pages do not use the browser postMessage feature. | what the app's code contains (postmessage) |
 | V4.3.1 | No GraphQL library is used. | what the app's code contains (graphql) |
 | V4.3.2 | No GraphQL library is used. | what the app's code contains (graphql) |
@@ -960,61 +976,66 @@ An exclusion resting on the manifest's word is weaker than one resting on what t
 | V4.4.2 | No WebSocket library is used; every request is a normal web request. | what the app's code contains (websockets) |
 | V4.4.3 | No WebSocket library is used; every request is a normal web request. | what the app's code contains (websockets) |
 | V4.4.4 | No WebSocket library is used; every request is a normal web request. | what the app's code contains (websockets) |
+| V6.8.3 | No SAML library is used, so there are no SAML assertions to replay. | what the app's code contains (saml) |
 
 
 </details>
 
 ## What the app says about itself
 
-| about | stackvet.toml | the code | what that means |
-|---|---|---|---|
-| auth | yes | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
-| oauth | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| authorization-server | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| mcp-server | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| jwt | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| uploads | yes | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
-| payments | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| email | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| public-api | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| scheduler | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| multi-tenant | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| multiple-services | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| webrtc | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| external-apis | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| tls | yes | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
-| internet | yes | yes | The manifest and the code agree. |
-| ai | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| ai-actions | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| ai-history | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| ai-moderation | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| rag | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| web-search | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| generates-media | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| mcp | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| training | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| level2 | yes | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
-| self-hosted-model | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| multi-agent | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| multimodal-ai | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| out-of-band-auth | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| out-of-band-or-email-code | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| shared-hostname | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| ci-cd | nothing | no | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| hosted-scm | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| outside-contributors | nothing | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| iac | nothing | no | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
-| websockets | nothing | no | The manifest and the code agree. |
-| graphql | nothing | no | The manifest and the code agree. |
-| ldap | nothing | no | The manifest and the code agree. |
-| xpath | nothing | no | The manifest and the code agree. |
-| xml | nothing | no | The manifest and the code agree. |
-| latex | nothing | no | The manifest and the code agree. |
-| jndi | nothing | no | The manifest and the code agree. |
-| memcache | nothing | no | The manifest and the code agree. |
-| format-strings | nothing | yes | The manifest and the code agree. |
-| unmanaged-code | nothing | no | The manifest and the code agree. |
-| postmessage | nothing | no | The manifest and the code agree. |
+| about | stackvet.toml | who said it | the code | what that means |
+|---|---|---|---|---|
+| auth | yes | not recorded, so read as your AI coding tool's | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
+| oauth | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| authorization-server | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| mcp-server | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| jwt | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| uploads | yes | not recorded, so read as your AI coding tool's | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
+| payments | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| email | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| public-api | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| scheduler | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| multi-tenant | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| multiple-services | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| webrtc | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| external-apis | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| tls | yes | not recorded, so read as your AI coding tool's | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
+| internet | yes | not recorded, so read as your AI coding tool's | yes | The manifest and the code agree. |
+| ai | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| ai-actions | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| ai-history | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| ai-moderation | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| rag | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| web-search | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| generates-media | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| mcp | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| training | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| level2 | yes | not recorded, so read as your AI coding tool's | nothing | Taken on the manifest's word. `sv` looked and found nothing, which for this is not the same as finding it absent. |
+| self-hosted-model | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| multi-agent | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| multimodal-ai | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| out-of-band-auth | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| out-of-band-or-email-code | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| shared-hostname | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| rich-text | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| ci-cd | nothing | nobody | no | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| hosted-scm | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| outside-contributors | nothing | nobody | nothing | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| iac | nothing | nobody | no | Nobody has said. Requirements that turn on this are not assessed rather than excluded. |
+| websockets | nothing | nobody | no | The manifest and the code agree. |
+| graphql | nothing | nobody | no | The manifest and the code agree. |
+| ldap | nothing | nobody | no | The manifest and the code agree. |
+| xpath | nothing | nobody | no | The manifest and the code agree. |
+| xml | nothing | nobody | no | The manifest and the code agree. |
+| mtls | nothing | nobody | no | The manifest and the code agree. |
+| latex | nothing | nobody | no | The manifest and the code agree. |
+| jndi | nothing | nobody | no | The manifest and the code agree. |
+| memcache | nothing | nobody | no | The manifest and the code agree. |
+| format-strings | nothing | nobody | yes | The manifest and the code agree. |
+| unmanaged-code | nothing | nobody | no | The manifest and the code agree. |
+| postmessage | nothing | nobody | no | The manifest and the code agree. |
+| saml | nothing | nobody | no | The manifest and the code agree. |
+| cryptographic-authenticator | nothing | nobody | no | The manifest and the code agree. |
 
 ## Appendix: what each requirement asks for
 
@@ -1146,7 +1167,6 @@ The words of the standard, for every requirement that applies to this app, in th
 | V12.2.1 | Verify that TLS is used for all connectivity between a client and external facing, HTTP-based services, and does not fall back to insecure or unencrypted communications. |
 | V12.2.2 | Verify that external facing services use publicly trusted TLS certificates. |
 | V12.1.2 | Verify that only recommended cipher suites are enabled, with the strongest cipher suites set as preferred. L3 applications must only support cipher suites which provide forward secrecy. |
-| V12.1.3 | Verify that the application validates that mTLS client certificates are trusted before using the certificate identity for authentication or authorization. |
 | V13.4.1 | Verify that the application is deployed either without any source control metadata, including the .git or .svn folders, or in a way that these folders are inaccessible both externally and to the application itself. |
 | V13.1.1 | Verify that all communication needs for the application are documented. This must include external services which the application relies upon and cases where an end user might be able to provide an external location to which the application will then connect. |
 | V13.2.3 | Verify that if a credential has to be used for service authentication, the credential being used by the consumer is not a default credential (e.g., root/root or admin/admin). |

@@ -104,15 +104,15 @@ follow up on.
 Your AI tool can help with that part, too. It can read the report through with you, explain why it matters, fix
 what needs attention, and help you answer the questions only you can.
 
-*Example lines, not from a real app:*
+*Lines from a real report on Notes with users, one of StackVet's own example apps, shortened:*
 
 | | |
 |---|---|
-| needs attention | Passwords are stored with a method that is too quick to guess against. |
-| checked | No passwords or keys are written into the code. |
-| checked in part | Pages tell the browser not to let other sites frame them, but only the pages it could reach were looked at. |
-| not assessed | Whether signing out really ends the session: the app was not started, so this could not be tried. |
-| not verified | Whether backups are kept safe: nothing in StackVet can look at this. You can answer it yourself. |
+| needs attention | A password is stored, or a key made from it, with too few rounds of work. |
+| checked | Database queries keep the data apart from the query itself, so nobody can inject their own query. |
+| checked in part | The app sends people on to another site only when that site is on a list the app trusts: one check tried part of this. |
+| not verified | Passwords chosen at sign-up are checked against a set of breached passwords. Only you can check this one. |
+| not assessed | 241 more requirements: nobody has answered the question that decides whether they apply. |
 
 None of these words means "passed." Even *checked* means one check looked and found nothing wrong, not that the
 whole requirement is met.
@@ -120,7 +120,12 @@ whole requirement is met.
 - "Starts with the most important things to fix" is true since 13 October 2026 (item 2, done). "Every requirement
   in plain language" is *not yet true* (item 3): today each requirement is shown in OWASP's formal wording, with
   checks named by internal ids.
-- The example lines are invented and say so; a real report from one of the example apps replaces them before launch.
+- The example lines are the report on `examples/notes-with-users` the reports page links
+  (`docs/website/reports/notes-with-users/`, made 21 November 2026 by `sv` 0.2.0 at the commit its files name, backlog
+  0696): `fix-now.md`'s finding (V11.4.2), and `compliance.md`'s rows for V1.2.4 (checked), V3.7.2 (checked in part,
+  `ast.open-redirect`), V6.2.12 (not verified, "only you can"), and its count of 241 not placed ("Not assessed —
+  nobody has answered"). Each requirement's words are the report's plain ones, shortened; none is invented. When that
+  report is made again, check these lines against it.
 - The reports page (`reports-page.md`, backlog 0413) says what each report file is for and who reads it, with a real
   report of one example app; it is linked from this section, and the example lines above can be taken from it.
 - The reading prompt (`sv prompts report`) has not yet been tried in an AI tool, hence "can".
@@ -134,7 +139,7 @@ OWASP is a nonprofit that writes the security checklists many companies build to
 | Standard | What it covers | Requirements | StackVet can confirm or fail |
 |---|---|---|---|
 | ASVS 5.0, levels 1 and 2 | Web apps and the services behind them | 253 | 122 |
-| ASVS 5.0, level 3 | The same, for apps where a break-in would do the most harm | 92 | 10 |
+| ASVS 5.0, level 3 | The same, for apps that need the highest level of security | 92 | 10 |
 | AISVS 1.0, levels 1 and 2 | Apps that use AI | 146 | 26 |
 | AISVS 1.0, level 3 | The same, at the highest level | 45 | 1 |
 | Secure by Design 0.5 | Decisions made before the code | 36 | built into planning |
@@ -142,14 +147,17 @@ OWASP is a nonprofit that writes the security checklists many companies build to
 StackVet has a check for 61 more of the ASVS requirements and 19 more of the AISVS ones, but those checks can only
 show the protection missing: when they find nothing wrong, that doesn't show the protection is there.
 
+The AISVS rows leave out its Appendix C, 68 requirements for code an AI coding tool helped write; the
+[AISVS page](standards/aisvs.html) lists them with the rest.
+
 Five of the ASVS ones counted above only CodeQL can check, and it runs only when you turn it on, because its license
 allows it only for an open-source app, academic research, or a paid GitHub license. Without it, those five stay not
 verified.
 
 ASVS and AISVS sort their requirements into three levels. Level 1 is the baseline for any app, and level 2 is for
 most apps that hold people's information; StackVet holds each app to one of those two, from what you tell it the app
-does and keeps. Level 3, for apps where a break-in would do the most harm, such as banking or medical systems, is
-there when you ask for it: StackVet holds your app to level 3 if you set it.
+does and keeps. Level 3, for apps that need to show the highest level of security, such as a bank's online
+banking, is there when you ask for it: StackVet holds your app to level 3 if you set it.
 
 The Secure by Design requirements are decisions, not code, so no check can settle them. Instead, StackVet builds them
 into the design process: before your AI tool writes a feature, it gets the decisions to make and the prompts that
@@ -172,12 +180,18 @@ than guessing.
   *needs attention*. Many can only ever be *checked in part*, since the check tries part of what the requirement
   asks; `docs/COVERAGE.md` gives that count under the level table.
 - "If you set it" is `[app] level = 3` in `stackvet.toml` (ADR-130), which only ever raises the level. The level 3
-  examples are to be checked against ASVS's own wording before launch.
+  words were checked against ASVS 5.0.0's own, its chapter "What is the ASVS" (`5.0/en/0x03-What-is-the-ASVS.md` at
+  the tag `v5.0.0_release`), on 21 November 2026 (backlog 0696): level 3 "should be the goal for applications looking
+  to demonstrate the highest levels of security", and its example is a bank's online banking. The earlier "where a
+  break-in would do the most harm" and "medical systems" were not ASVS's, and are gone.
 - A picture for this section: `docs/coverage-by-level.svg` draws the ASVS level table as bars, and
   `docs/coverage-by-chapter.svg` the chapter table, each part labeled with its count. `tools/coverage.py` draws both
   from the same counts as `docs/COVERAGE.md`, so the site can show one beside the table (backlog 0483).
 - Secure by Design in planning: `stackvet_plan`, `stackvet_before`, and each library prompt's list of the controls it
   helps answer. None counts as checked in the report.
+- Appendix C's 68 is `docs/COVERAGE.md`'s "AISVS Appendix C" row; the What it checks page's AISVS total, 259, is the
+  191 here and those 68 (`tools/framework_pages.py`). Said here so the two pages' totals don't read as a contradiction
+  (backlog 0696).
 
 ## 6. What it does with your code
 
@@ -193,7 +207,7 @@ requests to the address you type; if you ask for it, downloading your app's pack
 somebody else's public project on GitHub or GitLab, which downloads its code once, as files, and runs none of it
 unless you ask. The fourth is on unless you turn it off: StackVet runs the security tools each language already has, when they are installed on
 your computer, and one of them, Semgrep (or Opengrep in its place), downloads its rules from semgrep.dev each time it
-checks your app. It checks your code on your computer, with its usage reporting turned off. To check without any of
+checks your app. Semgrep checks your code on your computer, with its usage reporting turned off. To check without any of
 these tools, add `--no-tools`.
 
 Thinking of using somebody else's code? [Check the project first](check-a-project.html).
@@ -239,7 +253,7 @@ Button: *Read the guide*.
 StackVet is free and its code is public on GitHub under the MIT license. That means anyone can use it, change it,
 and share it, even in their own work, as long as they keep the license with it, and it comes with no guarantee. It's
 new: very few people have used it yet, and what is known not to work is listed openly. If something confuses you,
-tell us in a GitHub issue.
+tell us in a [GitHub issue](https://github.com/abbyshade111/StackVet/issues).
 
 Deploy apps for a living? [ConfigVet](configvet.html), StackVet's companion for ops and DevSecOps engineers, reviews
 the files that say how an app is deployed. It's a preview.
@@ -267,13 +281,17 @@ the files that say how an app is deployed. It's a preview.
 - **Semgrep**, and **Opengrep** in its place when Semgrep isn't installed, running the Semgrep Registry rules. The
   rules are under the Semgrep Rules License, which allows use but not resale; StackVet is not sold. Semgrep and
   Opengrep themselves are under the GNU LGPL 2.1.
-- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby, only when you turn it on (`[tools] codeql = true`
+- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, Ruby, and C and C++, only when you turn it on (`[tools] codeql = true`
   in `stackvet.toml`). The CodeQL command-line tool is under the GitHub CodeQL Terms and Conditions, which allow it
   on an app released under an open-source license, for academic research, or with a paid GitHub Advanced Security
   license; its queries are under the MIT License.
 - **Bandit**, for Python, and **gosec**, for Go, both under the Apache License 2.0. **Brakeman**, for Ruby on
   Rails, under the Brakeman Public Use License, which allows use to analyze your own software and not commercial
   use.
+
+*ConfigVet's outside tools, run by `cv check` when they are installed (add `--no-tools` to leave them out):*
+- **hadolint**, for Dockerfiles, under the GNU GPL 3.0. **Checkov**, from Bridgecrew (Palo Alto Networks), and
+  **Trivy**, from Aqua Security, both under the Apache License 2.0.
 
 *Data:*
 - **OSV**, the open vulnerability database, which you download yourself. Each of its sources keeps its own
@@ -296,6 +314,10 @@ StackVet is not made by or endorsed by OWASP, GitHub, Semgrep, MITRE, FIRST, or 
   outside tools: the person installs each, and its license governs their own use. The Semgrep Rules License's own
   page could not be read from the session that checked (its network refused semgrep.dev); the owner's reading of
   26 September (ADR-018) stands. Three questions for the owner are backlog 0513.
+- CodeQL's C and C++ entry is `data/adapters.json`'s "CodeQL (C and C++)" (V1.4.2). ConfigVet's three tools are
+  `data/cv-adapters.json`'s; their licenses were read from each repository on 21 November 2026 (backlog 0696):
+  hadolint/hadolint GPL-3.0, bridgecrewio/checkov Apache-2.0, aquasecurity/trivy Apache-2.0. `cv` runs each as a
+  program of its own and ships none of them.
 
 ## Not yet true, and filed
 
