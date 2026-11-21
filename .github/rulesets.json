@@ -1,0 +1,224 @@
+{
+  "about": "The rules each repository should have on GitHub (backlog 0690; ADR-051 for StackVet, ADR-108 for the bucket and the tap). Change a repository's rules in its settings and here in the same pull request; tools/rulesets_check.py compares the two every week.",
+  "repositories": {
+    "abbyshade111/StackVet": {
+      "allow_auto_merge": true,
+      "rulesets": [
+        {
+          "name": "Main - ADR Check",
+          "target": "branch",
+          "enforcement": "active",
+          "conditions": {
+            "ref_name": {
+              "exclude": [],
+              "include": [
+                "~DEFAULT_BRANCH"
+              ]
+            }
+          },
+          "bypass_actors": [],
+          "rules": [
+            {
+              "type": "deletion"
+            },
+            {
+              "type": "non_fast_forward"
+            },
+            {
+              "type": "pull_request",
+              "parameters": {
+                "required_approving_review_count": 0,
+                "dismiss_stale_reviews_on_push": true,
+                "required_reviewers": [],
+                "require_code_owner_review": true,
+                "require_last_push_approval": false,
+                "required_review_thread_resolution": false,
+                "require_extra_approval_for_unattributed_changes": true,
+                "allowed_merge_methods": [
+                  "merge",
+                  "squash",
+                  "rebase"
+                ]
+              }
+            },
+            {
+              "type": "required_status_checks",
+              "parameters": {
+                "strict_required_status_checks_policy": false,
+                "do_not_enforce_on_create": false,
+                "required_status_checks": [
+                  {
+                    "context": "Decision records"
+                  },
+                  {
+                    "context": "test",
+                    "integration_id": 15368
+                  }
+                ]
+              }
+            },
+            {
+              "type": "code_scanning",
+              "parameters": {
+                "code_scanning_tools": [
+                  {
+                    "tool": "CodeQL",
+                    "security_alerts_threshold": "high_or_higher",
+                    "alerts_threshold": "errors_and_warnings"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "protect v1's tags",
+          "target": "tag",
+          "enforcement": "active",
+          "conditions": {
+            "ref_name": {
+              "exclude": [],
+              "include": [
+                "refs/tags/v1-*"
+              ]
+            }
+          },
+          "bypass_actors": [],
+          "rules": [
+            {
+              "type": "deletion"
+            },
+            {
+              "type": "non_fast_forward"
+            },
+            {
+              "type": "update"
+            }
+          ]
+        }
+      ]
+    },
+    "abbyshade111/homebrew-stackvet": {
+      "allow_auto_merge": true,
+      "rulesets": [
+        {
+          "name": "Protect main",
+          "target": "branch",
+          "enforcement": "active",
+          "conditions": {
+            "ref_name": {
+              "exclude": [],
+              "include": [
+                "~DEFAULT_BRANCH"
+              ]
+            }
+          },
+          "bypass_actors": [],
+          "rules": [
+            {
+              "type": "deletion"
+            },
+            {
+              "type": "non_fast_forward"
+            },
+            {
+              "type": "pull_request",
+              "parameters": {
+                "required_approving_review_count": 0,
+                "dismiss_stale_reviews_on_push": true,
+                "required_reviewers": [],
+                "require_code_owner_review": false,
+                "require_last_push_approval": false,
+                "required_review_thread_resolution": false,
+                "require_extra_approval_for_unattributed_changes": true,
+                "allowed_merge_methods": [
+                  "merge"
+                ]
+              }
+            },
+            {
+              "type": "required_status_checks",
+              "parameters": {
+                "strict_required_status_checks_policy": false,
+                "do_not_enforce_on_create": false,
+                "required_status_checks": [
+                  {
+                    "context": "install (macos-latest, release)",
+                    "integration_id": 15368
+                  },
+                  {
+                    "context": "install (macos-latest, head)",
+                    "integration_id": 15368
+                  },
+                  {
+                    "context": "install (ubuntu-latest, release)",
+                    "integration_id": 15368
+                  },
+                  {
+                    "context": "install (ubuntu-latest, head)",
+                    "integration_id": 15368
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "abbyshade111/scoop-stack-vet": {
+      "allow_auto_merge": true,
+      "rulesets": [
+        {
+          "name": "Protect main",
+          "target": "branch",
+          "enforcement": "active",
+          "conditions": {
+            "ref_name": {
+              "exclude": [],
+              "include": [
+                "~DEFAULT_BRANCH"
+              ]
+            }
+          },
+          "bypass_actors": [],
+          "rules": [
+            {
+              "type": "deletion"
+            },
+            {
+              "type": "non_fast_forward"
+            },
+            {
+              "type": "pull_request",
+              "parameters": {
+                "required_approving_review_count": 0,
+                "dismiss_stale_reviews_on_push": true,
+                "required_reviewers": [],
+                "require_code_owner_review": false,
+                "require_last_push_approval": false,
+                "required_review_thread_resolution": false,
+                "require_extra_approval_for_unattributed_changes": true,
+                "allowed_merge_methods": [
+                  "merge"
+                ]
+              }
+            },
+            {
+              "type": "required_status_checks",
+              "parameters": {
+                "strict_required_status_checks_policy": false,
+                "do_not_enforce_on_create": false,
+                "required_status_checks": [
+                  {
+                    "context": "install",
+                    "integration_id": 15368
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
