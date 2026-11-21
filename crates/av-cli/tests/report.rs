@@ -81,6 +81,7 @@ fn record_in(state: &Path, app: &Path) -> PathBuf {
     // binary reads it: `av` is given its own as a child's environment.
     unsafe { std::env::set_var(key, state) };
     let path = av_record::hook_record::record_of(app).expect("a place for the record");
+    let _ = av_record::passthrough::record_of(app);
     match before {
         Some(v) => unsafe { std::env::set_var(key, v) },
         None => unsafe { std::env::remove_var(key) },
@@ -579,16 +580,30 @@ fn a_folder_that_is_not_there_or_an_unknown_option_exits_3() {
     assert_eq!(code, 3);
 }
 
-/// `av` opens no network connection and starts no program of its own (ADR-159, decision 10). This holds what `av`'s
-/// own source can show: it names nothing that connects or starts a program, and depends only on the crates it is
-/// meant to. It says nothing of the crates beneath it, which read git as `sv` does (ADR-032).
+/// `av` opens no network connection, and starts one program only, in one place (ADR-159, decision 10). This holds
+/// what `av`'s own source can show: it names nothing that connects, only the pass-through starts a program, and it
+/// depends only on the crates it is meant to. It says nothing of the crates beneath it, which read git as `sv` does (ADR-032).
 #[test]
-fn av_s_own_source_names_nothing_that_connects_or_starts_a_program() {
+fn av_s_own_source_names_nothing_that_connects_and_starts_a_program_in_one_place() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let source = std::fs::read_to_string(root.join("src/main.rs")).unwrap();
-    for word in ["std::net", "TcpStream", "UdpSocket", "Command::new", "curl"] {
-        assert!(!source.contains(word), "src/main.rs names {word}");
+    let mut starts_a_program = Vec::new();
+    for entry in std::fs::read_dir(root.join("src")).unwrap() {
+        let path = entry.unwrap().path();
+        if path.extension().is_none_or(|e| e != "rs") {
+            continue;
+        }
+        let name = path.file_name().unwrap().to_string_lossy().into_owned();
+        let source = std::fs::read_to_string(&path).unwrap();
+        for word in ["std::net", "TcpStream", "UdpSocket", "curl"] {
+            assert!(!source.contains(word), "src/{name} names {word}");
+        }
+        if source.contains("Command::new") {
+            starts_a_program.push(name);
+        }
     }
+    // One place starts a program: the pass-through, which starts the tool server named on its command line and
+    // nothing else (ADR-159, decision 10, as built).
+    assert_eq!(starts_a_program, ["proxy.rs"]);
     let manifest = std::fs::read_to_string(root.join("Cargo.toml")).unwrap();
     let dependencies: Vec<&str> = manifest
         .split("[dependencies]")
@@ -602,7 +617,13 @@ fn av_s_own_source_names_nothing_that_connects_or_starts_a_program() {
         .collect();
     assert_eq!(
         dependencies,
-        ["serde_json", "av-record", "sv-check", "sv-report"],
+        [
+            "serde_json",
+            "av-record",
+            "sv-check",
+            "sv-report",
+            "sv-frameworks"
+        ],
         "a dependency added to av is a decision (ADR-159)"
     );
 }

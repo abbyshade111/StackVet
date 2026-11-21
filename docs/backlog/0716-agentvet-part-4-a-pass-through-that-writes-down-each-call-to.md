@@ -18,7 +18,7 @@ when.
    the agent's work, and the gap is in the record's own count. This is the first time `av` starts a program and the
    first time it writes a file: ADR-159's decision 10 and the architecture page's fence say so when it is built, and
    the test of `av`'s own source changes to say what it may start.
-   **Part status:** open
+   **Part status:** done, 21 November 2026
 2. **The report reads it.** `av report` reads the pass-through's record, with how far it can be relied on: which tools
    were called and how often, which answers were errors, and, under "Trying again after a no", a call answered with a
    refusal and made again. The task file gains `[may] call`, the tools the agent may call, and a call outside it is

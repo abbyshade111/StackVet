@@ -1,4 +1,5 @@
-//! `av`, AgentVet's command (ADR-159; backlog 0705, part 2). One command so far, `av report <folder>`, which reads what
+//! `av`, AgentVet's command (ADR-159; backlog 0705, part 2). Two commands: `av proxy`, the pass-through that writes
+//! down each call an agent makes to a tool (`proxy`), and `av report <folder>`, which reads what
 //! is already kept about the AI coding tool that worked in a folder and says what the record shows, at which
 //! strength, and what it could not see. It decides nothing about the tool, and it never says a tool can be trusted.
 //!
@@ -18,7 +19,7 @@ use std::process::ExitCode;
 
 // Everything `av` prints goes through `sv_report::visible`: a file name, a command, or a commit message is the
 // tool's text, and an escape character in one must not reach the terminal. These shadow the standard macros in
-// every module of this crate below them, as `sv`'s do.
+// every module of this crate below them, as `sv`'s do; `proxy` relays through writers of its own, never these.
 macro_rules! println {
     () => { ::std::println!() };
     ($($arg:tt)*) => { ::std::println!("{}", ::sv_report::visible(&::std::format!($($arg)*))) };
@@ -26,6 +27,8 @@ macro_rules! println {
 macro_rules! eprintln {
     ($($arg:tt)*) => { ::std::eprintln!("{}", ::sv_report::visible(&::std::format!($($arg)*))) };
 }
+
+mod proxy;
 
 const MADE: u8 = 0;
 const NOTHING_READ: u8 = 2;
@@ -36,6 +39,7 @@ av: AgentVet says what the record shows an AI coding tool did.
 
 Usage:
   av report <folder> [--hook-record] [--json]
+  av proxy [--app <folder>] -- <the tool server's command>
   av --version
 
 av report reads what is kept about the tool that worked in the folder: sv's record of the tool's calls to it, and
@@ -44,7 +48,13 @@ a hook you installed keeps outside the folder (`sv connect claude --hook` prints
 each time. It says what each record shows and how far each can be relied on, and what it could not see. When the
 folder holds a task file, agentvet.toml, it says what that allows and what it leaves unsaid, and lists what the tool
 did that falls outside it. It reads no transcript, decides nothing, writes nothing, and opens no network connection.
---json prints the same as JSON.";
+--json prints the same as JSON.
+
+av proxy sits between an agent and a tool server that speaks MCP over standard input and output: put it in front of
+the server's command in the agent's settings. It starts that server, relays everything each way unchanged, and writes
+down each call to a tool: the tool's name, how it was answered, a fingerprint and the size of what it was given, and a
+short summary of that with any key cut out. Never an answer's text. The record is kept outside the folder, readable
+only by you, for the app in --app (by default, the folder av proxy was started in). It opens no network connection.";
 
 #[derive(Debug, PartialEq, Eq)]
 struct Options {
@@ -74,6 +84,37 @@ fn parse(args: &[String]) -> Result<Options, String> {
     })
 }
 
+/// `av proxy`'s own options, then `--`, then the server's command, which is the server's and is never read as ours.
+/// The app's folder is given in full, since the record is named by it.
+fn parse_proxy(args: &[String]) -> Result<(PathBuf, Vec<String>), String> {
+    let split = args
+        .iter()
+        .position(|a| a == "--")
+        .ok_or("av proxy needs `--` and then the tool server's command")?;
+    let (ours, server) = (&args[..split], &args[split + 1..]);
+    if server.is_empty() {
+        return Err("av proxy needs the tool server's command after `--`".to_owned());
+    }
+    let mut app = None;
+    let mut rest = ours.iter();
+    while let Some(arg) = rest.next() {
+        match arg.as_str() {
+            "--app" => app = Some(PathBuf::from(rest.next().ok_or("--app needs a folder")?)),
+            other => return Err(format!("av proxy does not know {other}")),
+        }
+    }
+    let app = match app {
+        Some(app) => app,
+        None => std::env::current_dir()
+            .map_err(|why| format!("the folder av proxy was started in: {why}"))?,
+    };
+    use sv_frameworks::paths::Canonical as _;
+    let app = app
+        .canonical()
+        .map_err(|_| format!("{} is not a folder av can open", app.display()))?;
+    Ok((app, server.to_vec()))
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
@@ -83,6 +124,19 @@ fn main() -> ExitCode {
         }
         Some("report") => match parse(&args[1..]) {
             Ok(options) => ExitCode::from(run(&options)),
+            Err(why) => {
+                eprintln!("av: {why}\n\n{USAGE}");
+                ExitCode::from(FAILED)
+            }
+        },
+        Some("proxy") => match parse_proxy(&args[1..]) {
+            Ok((app, server)) => match proxy::run(&app, &server) {
+                Ok(code) => ExitCode::from(code),
+                Err(why) => {
+                    eprintln!("av proxy: {why}");
+                    ExitCode::from(FAILED)
+                }
+            },
             Err(why) => {
                 eprintln!("av: {why}\n\n{USAGE}");
                 ExitCode::from(FAILED)
