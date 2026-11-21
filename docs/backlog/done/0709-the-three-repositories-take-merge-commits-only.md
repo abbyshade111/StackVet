@@ -1,6 +1,6 @@
 # The three repositories take merge commits only
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A6, its second point).
 CLAUDE.md says a pull request merges with a merge commit, never squash or rebase, and `main`'s history is cited by

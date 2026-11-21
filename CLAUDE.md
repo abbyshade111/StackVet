@@ -67,6 +67,10 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
   the review that guards the workflows and the scripts that judge the checks would never be asked for. If the script
   says it has no token, stop and say so; do not use the owner's sign-in instead. Reading (`gh pr view`, `gh run list`)
   may use either. A pull request that changes a code-owned file then waits for the owner's approving review.
+- **A cloud session does not open a pull request that changes a file `.github/CODEOWNERS` names:** it opens pull
+  requests as the owner's own account, which GitHub counts as reviewed by the code owner. It pushes its branch and says
+  so; a session on the owner's Mac opens the pull request as the App. The "Decision records" check fails one that is
+  opened anyway (backlog 0710).
 - **Turn auto-merge on when you open a pull request** (a merge commit, never squash or rebase). When GitHub reports a
   conflict, run `python3 tools/merge_main.py`, settle what it leaves by keeping `main`'s side and putting your change
   back on top, commit, push, and leave auto-merge on.
