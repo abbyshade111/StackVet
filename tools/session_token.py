@@ -51,26 +51,27 @@ def b64url(data):
 
 def sign(message, key_pem):
     """The RS256 signature of `message`, by `openssl`, which reads the key from a pipe."""
+    # The key, a few kilobytes, fits in the pipe before `openssl` starts (a pipe holds 64 KB on macOS and Linux), so it
+    # is written whole and the writing end closed; `openssl` then reads it to the end, and the message on its input.
+    if len(key_pem) > 60_000:
+        raise Stop("the keychain item is too large to be the App's key; the owner stores it again (ADR-158)")
     read_end, write_end = os.pipe()
     try:
-        process = subprocess.Popen(
+        os.write(write_end, key_pem)
+        os.close(write_end)
+        write_end = None
+        signed = subprocess.run(
             ["openssl", "dgst", "-sha256", "-sign", f"/dev/fd/{read_end}"],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, pass_fds=(read_end,),
+            input=message, capture_output=True, pass_fds=(read_end,),
         )
-        os.close(read_end)
-        read_end = None
-        with os.fdopen(write_end, "wb") as pipe:
-            write_end = None
-            pipe.write(key_pem)
-        signature, error = process.communicate(message)
     finally:
         for fd in (read_end, write_end):
             if fd is not None:
                 os.close(fd)
-    if process.returncode != 0 or not signature:
+    if signed.returncode != 0 or not signed.stdout:
         # openssl's message names no part of the key; it is shown so a broken key says what broke.
-        raise Stop("openssl could not sign with the App's key: " + error.decode(errors="replace").strip()[:200])
-    return signature
+        raise Stop("openssl could not sign with the App's key: " + signed.stderr.decode(errors="replace").strip()[:200])
+    return signed.stdout
 
 
 def app_jwt(key_pem, now=None, app_id=APP_ID):
