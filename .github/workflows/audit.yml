@@ -11,7 +11,11 @@
 # a folder, the example apps and the test fixtures too (stackvet.toml's `not-the-app` changes where
 # they are listed, never whether they count), and some fixtures hold lockfiles that cannot be read on
 # purpose, so the whole repository can never be fully compared. Choosing the files here, in a file a
-# person reviews, is the deliberate version of that choice. The job fails on `sv audit`'s status: 1 for
+# person reviews, is the deliberate version of that choice.
+#
+# The fuzzing crate (`fuzz/`, ADR-077) is audited too, in a step and a folder of its own (backlog 0707): it
+# is built and run every week on CI's runners, and its lock holds crates the workspace's does not, so a
+# known vulnerability there is reported as the fuzzing crate's and never read as one in what `sv` ships. The job fails on `sv audit`'s status: 1 for
 # a known vulnerability, 2 for a comparison that did not cover every crate, 3 when `sv` itself failed.
 # Only 0 passes.
 #
@@ -24,9 +28,9 @@ on:
     - cron: '0 7 * * 1' # Mondays, 07:00 UTC, an hour after CodeQL's weekly run.
   push:
     branches: [main]
-    paths: ['Cargo.lock', 'Cargo.toml', 'crates/*/Cargo.toml', '.github/workflows/audit.yml']
+    paths: ['Cargo.lock', 'Cargo.toml', 'crates/*/Cargo.toml', 'fuzz/Cargo.toml', 'fuzz/Cargo.lock', '.github/workflows/audit.yml']
   pull_request:
-    paths: ['Cargo.lock', 'Cargo.toml', 'crates/*/Cargo.toml', '.github/workflows/audit.yml']
+    paths: ['Cargo.lock', 'Cargo.toml', 'crates/*/Cargo.toml', 'fuzz/Cargo.toml', 'fuzz/Cargo.lock', '.github/workflows/audit.yml']
   workflow_dispatch:
 
 permissions:
@@ -64,3 +68,13 @@ jobs:
           git ls-files -z 'Cargo.toml' 'Cargo.lock' 'crates/*/Cargo.toml' \
             | xargs -0 -I{} cp --parents {} "$RUNNER_TEMP/sv-ships/"
           ./target/release/sv audit "$RUNNER_TEMP/sv-ships" --advisories "$RUNNER_TEMP/osv"
+
+      - name: Audit the fuzzing crate
+        # Said even when the step above failed, so both results are seen in one run.
+        if: ${{ !cancelled() }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sv-fuzz"
+          git ls-files -z 'fuzz/Cargo.toml' 'fuzz/Cargo.lock' | xargs -0 -I{} cp {} "$RUNNER_TEMP/sv-fuzz/"
+          # The setup: both files were copied, so an audit of an empty folder cannot pass.
+          test -s "$RUNNER_TEMP/sv-fuzz/Cargo.toml" && test -s "$RUNNER_TEMP/sv-fuzz/Cargo.lock"
+          ./target/release/sv audit "$RUNNER_TEMP/sv-fuzz" --advisories "$RUNNER_TEMP/osv"
