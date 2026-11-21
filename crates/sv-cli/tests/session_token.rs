@@ -44,3 +44,27 @@ fn the_script_never_falls_back_to_the_owners_sign_in() {
         assert!(!script.contains(never), "{never:?} in the script");
     }
 }
+
+#[test]
+fn a_command_sessions_do_not_need_is_refused_before_any_token_is_made() {
+    // Backlog 0706: these stop in `plan`, before the keychain is read, so this test asks nothing of the owner's Mac.
+    for argv in [
+        &["gh", "auth", "token"][..],
+        &["gh", "api", "user"],
+        &["git", "credential", "fill"],
+    ] {
+        let out = Command::new("python3")
+            .arg("-I")
+            .arg(root().join("tools/session_token.py"))
+            .args(["run", "--"])
+            .args(argv)
+            .output()
+            .expect("python3 runs");
+        let said = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(out.status.code(), Some(3), "{argv:?}: {said}");
+        assert!(
+            said.contains("run takes only these commands") && out.stdout.is_empty(),
+            "{argv:?}: {said}"
+        );
+    }
+}
