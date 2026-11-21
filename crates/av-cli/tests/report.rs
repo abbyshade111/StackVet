@@ -236,6 +236,32 @@ fn a_folder_name_with_an_escape_character_does_not_reach_the_terminal() {
 }
 
 #[test]
+fn a_look_away_comment_is_listed_whatever_the_file_is_named() {
+    if no_git() {
+        return;
+    }
+    // Backlog 0713: git writes a name with a letter outside ASCII in quotes, and one with a space with a tab after
+    // it; a tool that named its file so kept what it added there out of this list.
+    for (test, name) in [
+        ("named-plain", "plain.py"),
+        ("named-accent", "caf\u{e9}.py"),
+        ("named-space", "my file.py"),
+    ] {
+        let app = folder(test);
+        let state = folder(&format!("{test}-state"));
+        with_a_tool_commit(&app, name, "import subprocess  # nosec\n");
+        let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
+        assert_eq!(code, 0, "{out}{err}");
+        assert!(
+            out.contains(&format!(
+                "a marker that tells a check to look away (nosec) was added in {name}"
+            )),
+            "{name}: {out}"
+        );
+    }
+}
+
+#[test]
 fn json_holds_each_record_with_how_far_to_rely_on_it_and_what_was_not_looked_at() {
     let app = folder("json");
     let state = folder("json-state");
