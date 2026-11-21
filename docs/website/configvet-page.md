@@ -249,7 +249,7 @@ If something is wrong or confusing, tell us in a [GitHub issue](https://github.c
 - The owner's answer on the release (ADR-157): a `cv` formula in `homebrew-stackvet` and a manifest in
   `scoop-stack-vet`, no new repositories (backlog 0694). StackVet v0.3.0, published 21 November 2026, is the first
   release with `cv`'s own Windows zip (#2462), signed beside `sv`'s. The bucket's `cv.json` (scoop-stack-vet#3) and
-  the tap's release formula (homebrew-stackvet#5) were checked as merged, with their install checks passing, before
-  these lines were (backlog 0696). `scoop bucket add` is only needed once, and is the same line as for `sv`; PowerShell
+  the tap's release formula (homebrew-stackvet#5) are the packages these lines install; the pull request that wrote
+  them (backlog 0696) merges only after both have merged with their install checks passing. `scoop bucket add` is only needed once, and is the same line as for `sv`; PowerShell
   has no command named `cv`, which the release workflow checks. `--locked` is the formula's own. Contact is GitHub
   issues only, as on the home page.
