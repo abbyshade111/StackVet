@@ -5,12 +5,14 @@
 //! What it reads: the build-loop record (`sv`'s own list of the tool's calls to it, ADR-076), git's history, and, only
 //! when the person asks for it with `--hook-record`, the hook record (the commands the tool ran and the files it
 //! wrote, ADR-122). It reads no transcript, so it says nothing of what the tool claimed beyond what the hook record
-//! keeps. It writes nothing and opens no network connection.
+//! keeps. It also reads the task envelope, `agentvet.toml`, when the folder has one, and says what it holds and what
+//! it leaves as a question; nothing is held to it yet (backlog 0715, parts 2 and 3). It writes nothing and opens no
+//! network connection.
 //!
 //! Exit codes follow `sv`'s (ADR-029): 0 when the report was made; 2 when there was nothing to read, so nothing was
 //! said about the tool; 3 when `av` itself failed and there is no result.
 
-use av_record::{build_loop, hook_record, tool_behavior};
+use av_record::{build_loop, envelope, hook_record, tool_behavior};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -39,8 +41,9 @@ Usage:
 av report reads what is kept about the tool that worked in the folder: sv's record of the tool's calls to it, and
 git's history. With --hook-record it also reads the record of the commands the tool ran and the files it wrote, which
 a hook you installed keeps outside the folder (`sv connect claude --hook` prints it); it is read only when you ask,
-each time. It says what each record shows and how far each can be relied on, and what it could not see. It reads no
-transcript, decides nothing, writes nothing, and opens no network connection. --json prints the same as JSON.";
+each time. It says what each record shows and how far each can be relied on, and what it could not see. When the
+folder holds a task file, agentvet.toml, it says what that allows and what it leaves unsaid. It reads no transcript,
+decides nothing, writes nothing, and opens no network connection. --json prints the same as JSON.";
 
 #[derive(Debug, PartialEq, Eq)]
 struct Options {
@@ -109,8 +112,10 @@ mod witness {
 }
 
 /// What one run of `av report` read, and what it did not.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct Read {
+    /// The task envelope, as it was read.
+    envelope: envelope::Read,
     build_loop: sv_report::BuildLoop,
     /// The hook record, when the person asked for it.
     hook: Option<sv_report::hook::HookSeen>,
@@ -178,8 +183,19 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         "What the tool said it did, against what it did: av reads no transcript yet. The hook record keeps one kind of \
          claim, that the app's tests pass, and says above when the record shows otherwise."
             .to_owned(),
-        "Whether the tool kept to its task: there is no task file (agentvet.toml) to hold it to yet."
-            .to_owned(),
+        match envelope::read(folder) {
+            envelope::Read::Held(_) => {
+                "Whether the tool kept to its task: the task file was read, and nothing is held to it yet."
+            }
+            envelope::Read::Unreadable(_) => {
+                "Whether the tool kept to its task: the task file could not be read, so there is nothing to hold \
+                 it to."
+            }
+            envelope::Read::NotThere => {
+                "Whether the tool kept to its task: there is no task file (agentvet.toml) to hold it to."
+            }
+        }
+        .to_owned(),
         "Which findings that went away a person set aside, and which findings are there now: those are in sv's \
          report, whose own section compares this report with the last (`sv report --hook-record`)."
             .to_owned(),
@@ -197,6 +213,7 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         );
     }
     Read {
+        envelope: envelope::read(folder),
         build_loop: loop_seen,
         hook,
         behavior,
@@ -255,6 +272,70 @@ fn findings_lines(b: &sv_report::BuildLoop) -> Vec<String> {
     out
 }
 
+/// A list of an envelope's entries as a report shows it: each on one line, or that there are none.
+fn listed(entries: &[String]) -> String {
+    if entries.is_empty() {
+        "nothing".to_owned()
+    } else {
+        entries
+            .iter()
+            .map(|e| sv_report::one_line(e))
+            .collect::<Vec<_>>()
+            .join(", ")
+    }
+}
+
+/// What the task envelope holds, in the report's words. Every word of the file shown is shown on one line: the
+/// file may be the tool's own.
+fn envelope_lines(read: &envelope::Read) -> Vec<String> {
+    let e = match read {
+        envelope::Read::NotThere => {
+            return vec![
+                "There is none in this folder, so nothing says what the tool's task was or what it might touch."
+                    .to_owned(),
+            ];
+        }
+        envelope::Read::Unreadable(why) => {
+            return vec![
+                format!("Not read: {}.", sv_report::one_line(why)),
+                "Nothing is judged against a file that cannot be read.".to_owned(),
+            ];
+        }
+        envelope::Read::Held(e) => e,
+    };
+    let mut out = vec![
+        envelope::MAY_BE_THE_TOOLS.to_owned(),
+        format!("The task: {}", sv_report::one_line(&e.task.goal)),
+    ];
+    for (what, entries) in [
+        ("It may write", e.may.write.as_deref()),
+        ("It may start", e.may.run.as_deref()),
+        ("It may connect to", e.may.reach.as_deref()),
+        ("It must ask first to", e.ask_first.as_deref()),
+    ] {
+        if let Some(entries) = entries {
+            out.push(format!("{what}: {}.", listed(entries)));
+        }
+    }
+    out.push(format!(
+        "It may not change{}: {}.",
+        if e.guards.files.is_none() {
+            " (the list av uses when the file names none)"
+        } else {
+            ""
+        },
+        listed(&e.guards())
+    ));
+    for question in e.questions() {
+        out.push(format!("Not said, so not assumed either way: {question}"));
+    }
+    out.push(
+        "Nothing is held to this yet: av reads the file, and does not yet compare what the tool did with it."
+            .to_owned(),
+    );
+    out
+}
+
 fn print(read: &Read, folder: &Path) {
     println!(
         "What the record shows the AI coding tool did in {}",
@@ -263,6 +344,12 @@ fn print(read: &Read, folder: &Path) {
     println!(
         "av decides nothing about the tool. It says what each record shows, and what it could not see."
     );
+
+    println!();
+    println!("The task (agentvet.toml)");
+    for line in envelope_lines(&read.envelope) {
+        println!("  {line}");
+    }
 
     println!();
     println!("The tool's calls to sv (the build-loop record)");
@@ -314,6 +401,18 @@ fn print(read: &Read, folder: &Path) {
 fn json(read: &Read) -> serde_json::Value {
     serde_json::json!({
         "av": env!("CARGO_PKG_VERSION"),
+        "envelope": match &read.envelope {
+            envelope::Read::NotThere => serde_json::json!({ "read": "not-there" }),
+            envelope::Read::Unreadable(why) => serde_json::json!({ "read": "unreadable", "why": why }),
+            envelope::Read::Held(e) => serde_json::json!({
+                "read": "held",
+                "whose": envelope::MAY_BE_THE_TOOLS,
+                "envelope": e,
+                "guards": e.guards(),
+                "questions": e.questions(),
+                "held_to": false,
+            }),
+        },
         "build_loop": {
             "witness": witness::BUILD_LOOP,
             "record": read.build_loop,
