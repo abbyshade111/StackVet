@@ -21,6 +21,11 @@
 //   refuse       every sign-in refused, as a person who declines does: `/authorize` sends the browser back with
 //                `error=access_denied` and no code. Not used up: it lasts until another mode is set (backlog 0629,
 //                where a real browser, signed out, must not be signed straight back in).
+//   wrong-metadata-iss  the published details (`/.well-known/openid-configuration`) name another provider as their
+//                `issuer`, every address in them still this one's. Not used up either: an app reads these details
+//                when it starts, so the mode lasts while a second copy of the app is started and signed in to, until
+//                another mode is set (V10.5.3, backlog 0620, ADR-127). `GET /_sv/metadata` says how many times the
+//                details were served wrong since the mode was set, so `sv` knows whether the copy read them at all.
 //
 // Two more, which make a token on request rather than at the next sign-in (backlog 0500, ADR-127):
 //   `POST /_sv/access-token` with `aud=self` or `aud=other`: a signed access token for this app's client, or for a
@@ -56,6 +61,8 @@ let requestsLeftOut = 0;
 const codes = new Map(); // code -> what the sign-in asked for
 const tokens = new Map(); // access token -> { sub, email }
 let mode = 'normal';
+// How many times the published details were served naming another issuer since `wrong-metadata-iss` was set.
+let wrongMetadataServed = 0;
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
 const json = (res, status, body) => {
@@ -108,8 +115,10 @@ http
       }
     }
     if (req.method === 'GET' && path === '/.well-known/openid-configuration') {
+      const wrongIssuer = mode === 'wrong-metadata-iss';
+      if (wrongIssuer) wrongMetadataServed += 1;
       return json(res, 200, {
-        issuer: ISSUER,
+        issuer: wrongIssuer ? OTHER_ISSUER : ISSUER,
         authorization_endpoint: `${ISSUER}/authorize`,
         token_endpoint: `${ISSUER}/token`,
         userinfo_endpoint: `${ISSUER}/userinfo`,
@@ -171,8 +180,9 @@ http
           grant.method === 'S256' ? b64url(crypto.createHash('sha256').update(verifier).digest()) : verifier;
         if (made !== grant.challenge) return json(res, 400, { error: 'invalid_grant' });
       }
-      const how = mode;
-      mode = 'normal';
+      // The two modes that last are left as they are; any other is used up by this token.
+      const how = mode === 'wrong-metadata-iss' ? 'normal' : mode;
+      if (mode !== 'wrong-metadata-iss') mode = 'normal';
       const now = Math.floor(Date.now() / 1000);
       const claims = {
         iss: how === 'wrong-token-iss' ? OTHER_ISSUER : ISSUER,
@@ -264,13 +274,17 @@ http
       const wanted = new URLSearchParams(await body(req)).get('mode');
       const modes = [
         'normal', 'wrong-nonce', 'wrong-aud', 'unsigned', 'wrong-key', 'wrong-iss', 'wrong-token-iss',
-        'other-person', 'new-email', 'refuse',
+        'other-person', 'new-email', 'refuse', 'wrong-metadata-iss',
       ];
       if (!modes.includes(wanted)) {
         return json(res, 400, { error: 'unknown mode' });
       }
       mode = wanted;
+      wrongMetadataServed = 0;
       return json(res, 200, { mode });
+    }
+    if (req.method === 'GET' && path === '/_sv/metadata') {
+      return json(res, 200, { served_wrong: wrongMetadataServed });
     }
     // The process id says which server answered: a test that started one on a port another test's
     // server had already taken would otherwise go on talking to that one.

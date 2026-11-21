@@ -79,25 +79,25 @@ fn each_example_app_is_pointed_where_its_checks_are_and_nowhere_else() {
             ],
         ),
         // Notes are kept by account (`notes.get(s.user)`), with no 403 and no owner compared: nothing to point at,
-        // and never the provider's `authorization_endpoint` (server.js:69).
+        // and never the provider's `authorization_endpoint` (server.js:75).
         // Where it reads what the provider sent: the token's issuer checked, the ID token read, and `sub` (backlog
         // 0500).
         (
             "oidc-notes",
             &[
                 // The algorithms it names: the ID token's `RS256`, and `sha256` for the signature and PKCE (backlog 0611).
-                "locate.algorithm-names server.js:45",
-                "locate.algorithm-names server.js:49",
-                "locate.algorithm-names server.js:79",
-                "locate.identity-claims server.js:51",
-                "locate.identity-claims server.js:113",
-                "locate.identity-claims server.js:118",
-                "locate.identity-claims server.js:120",
+                "locate.algorithm-names server.js:51",
+                "locate.algorithm-names server.js:55",
+                "locate.algorithm-names server.js:85",
+                "locate.identity-claims server.js:57",
+                "locate.identity-claims server.js:119",
+                "locate.identity-claims server.js:124",
+                "locate.identity-claims server.js:126",
                 // The scopes it asks the provider for, `scope: 'openid email'` (V10.2.3), and the one shared object named
                 // as state, `sessions` (V15.4.1); `notes` beside it is not, its name saying nothing about state (backlog
                 // 0507).
-                "locate.oauth-scopes server.js:74",
-                "locate.shared-state server.js:16",
+                "locate.oauth-scopes server.js:80",
+                "locate.shared-state server.js:17",
             ],
         ),
         // 25 lines each, no authorization code. Each has its search query, and the two its test sends to set up a
