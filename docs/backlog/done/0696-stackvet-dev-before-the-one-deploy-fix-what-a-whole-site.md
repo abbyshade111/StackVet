@@ -1,6 +1,6 @@
 # stackvet.dev before the one deploy: fix what a whole-site review found (21 November 2026)
 
-**Status:** claimed by Claude Code session (site review), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word. A whole-site review of stackvet.dev, as `tools/website.py` builds it from
 `main` at 472ab1f1, found sixteen things to change before the owner runs the site's deploy once; the owner chose to
@@ -22,3 +22,5 @@ make all of them. Merging publishes nothing: `.github/workflows/site.yml` publis
   "43 found a problem" beside "0 things to fix"; `--locked` in the ConfigVet build line.
 - **Not here:** `docs/INSTALL.md`, the release workflow, the tap, and the bucket, which the v0.3.0 session moves.
 - **The build pull request is opened without auto-merge;** it merges only on the owner's word.
+
+**Done, 21 November 2026:** built in #2465 (merged 16:03 UTC), the claim in #2464. All sixteen changes went in, except the fresh self-assessment, which has to run in the repository's own folder (its README). The ConfigVet page prints `cv`'s v0.3.0 install commands, written once homebrew-stackvet#5 and scoop-stack-vet#3 had merged. The checks that would have caught this drift are backlog 0698 to 0703. Publishing is still the owner's run of `.github/workflows/site.yml`.
