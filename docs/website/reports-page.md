@@ -92,8 +92,3 @@ marked Main or In part, with the sections it rests on.](diagrams/frameworks-by-s
 *The owner drew both on 13 October 2026 (`diagrams/source/make_diagrams.py`). Each cell of the second was checked
 against the standards' own text as StackVet carries it (`data/frameworks`) on 15 October 2026, and six cells' words
 were corrected to say no more than the sections they cite; no cell's tag changed (backlog 0514).*
-
-## Not yet on this page
-
-- **The report as a PDF,** beside `report.html`, once backlog 0412 builds it: a row in the table above, and in
-  `report.html`'s own list.

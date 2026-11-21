@@ -142,6 +142,9 @@ OWASP is a nonprofit that writes the security checklists many companies build to
 StackVet has a check for 61 more of the ASVS requirements and 19 more of the AISVS ones, but those checks can only
 show the protection missing: when they find nothing wrong, that doesn't show the protection is there.
 
+The AISVS rows leave out its Appendix C, 68 requirements for code an AI coding tool helped write; the
+[AISVS page](standards/aisvs.html) lists them with the rest.
+
 Five of the ASVS ones counted above only CodeQL can check, and it runs only when you turn it on, because its license
 allows it only for an open-source app, academic research, or a paid GitHub license. Without it, those five stay not
 verified.
@@ -178,6 +181,9 @@ than guessing.
   from the same counts as `docs/COVERAGE.md`, so the site can show one beside the table (backlog 0483).
 - Secure by Design in planning: `stackvet_plan`, `stackvet_before`, and each library prompt's list of the controls it
   helps answer. None counts as checked in the report.
+- Appendix C's 68 is `docs/COVERAGE.md`'s "AISVS Appendix C" row; the What it checks page's AISVS total, 259, is the
+  191 here and those 68 (`tools/framework_pages.py`). Said here so the two pages' totals don't read as a contradiction
+  (backlog 0696).
 
 ## 6. What it does with your code
 
@@ -193,7 +199,7 @@ requests to the address you type; if you ask for it, downloading your app's pack
 somebody else's public project on GitHub or GitLab, which downloads its code once, as files, and runs none of it
 unless you ask. The fourth is on unless you turn it off: StackVet runs the security tools each language already has, when they are installed on
 your computer, and one of them, Semgrep (or Opengrep in its place), downloads its rules from semgrep.dev each time it
-checks your app. It checks your code on your computer, with its usage reporting turned off. To check without any of
+checks your app. Semgrep checks your code on your computer, with its usage reporting turned off. To check without any of
 these tools, add `--no-tools`.
 
 Thinking of using somebody else's code? [Check the project first](check-a-project.html).
@@ -239,7 +245,7 @@ Button: *Read the guide*.
 StackVet is free and its code is public on GitHub under the MIT license. That means anyone can use it, change it,
 and share it, even in their own work, as long as they keep the license with it, and it comes with no guarantee. It's
 new: very few people have used it yet, and what is known not to work is listed openly. If something confuses you,
-tell us in a GitHub issue.
+tell us in a [GitHub issue](https://github.com/abbyshade111/StackVet/issues).
 
 Deploy apps for a living? [ConfigVet](configvet.html), StackVet's companion for ops and DevSecOps engineers, reviews
 the files that say how an app is deployed. It's a preview.
@@ -267,13 +273,17 @@ the files that say how an app is deployed. It's a preview.
 - **Semgrep**, and **Opengrep** in its place when Semgrep isn't installed, running the Semgrep Registry rules. The
   rules are under the Semgrep Rules License, which allows use but not resale; StackVet is not sold. Semgrep and
   Opengrep themselves are under the GNU LGPL 2.1.
-- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, and Ruby, only when you turn it on (`[tools] codeql = true`
+- **CodeQL**, GitHub, for JavaScript and TypeScript, Python, Ruby, and C and C++, only when you turn it on (`[tools] codeql = true`
   in `stackvet.toml`). The CodeQL command-line tool is under the GitHub CodeQL Terms and Conditions, which allow it
   on an app released under an open-source license, for academic research, or with a paid GitHub Advanced Security
   license; its queries are under the MIT License.
 - **Bandit**, for Python, and **gosec**, for Go, both under the Apache License 2.0. **Brakeman**, for Ruby on
   Rails, under the Brakeman Public Use License, which allows use to analyze your own software and not commercial
   use.
+
+*ConfigVet's outside tools, run by `cv check` when they are installed (add `--no-tools` to leave them out):*
+- **hadolint**, for Dockerfiles, under the GNU GPL 3.0. **Checkov**, from Bridgecrew (Palo Alto Networks), and
+  **Trivy**, from Aqua Security, both under the Apache License 2.0.
 
 *Data:*
 - **OSV**, the open vulnerability database, which you download yourself. Each of its sources keeps its own
@@ -296,6 +306,10 @@ StackVet is not made by or endorsed by OWASP, GitHub, Semgrep, MITRE, FIRST, or 
   outside tools: the person installs each, and its license governs their own use. The Semgrep Rules License's own
   page could not be read from the session that checked (its network refused semgrep.dev); the owner's reading of
   26 September (ADR-018) stands. Three questions for the owner are backlog 0513.
+- CodeQL's C and C++ entry is `data/adapters.json`'s "CodeQL (C and C++)" (V1.4.2). ConfigVet's three tools are
+  `data/cv-adapters.json`'s; their licenses were read from each repository on 21 November 2026 (backlog 0696):
+  hadolint/hadolint GPL-3.0, bridgecrewio/checkov Apache-2.0, aquasecurity/trivy Apache-2.0. `cv` runs each as a
+  program of its own and ships none of them.
 
 ## Not yet true, and filed
 

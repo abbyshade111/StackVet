@@ -517,11 +517,15 @@ def itself_page(commit):
         die("docs/website/self-assessment/README.md no longer has the paragraphs the page shows")
     files = "".join(f'<li><a href="self-assessment/{e(n)}">{e(n)}</a>, the bill of materials</li>'
                     for n in self_files())
+    # With nothing to fix, a count of requirements where something found a problem reads as a contradiction until the
+    # README's paragraph explains it, so say why beside it (backlog 0696).
+    found_note = ('<p class="small">The problems counted here were found in test code, in the example apps, and in '
+                  "matches only worth a look; none of them is a thing to fix.</p>") if int(to_fix[1]) == 0 else ""
     body = ("<h1>StackVet checks itself</h1>"
             '<p class="lede">StackVet\'s own report on its own code, held to the highest level there is, ASVS and '
-            "AISVS level 3. A summary of it: the things it found are being gone through.</p>"
+            "AISVS level 3. A summary of it.</p>"
             f'<div class="panel"><p>{md(produced[0])[3:-4]}</p><p>Of the requirements that apply:</p>'
-            f'{md(known[1])}<p class="small">{md(held[0])[3:-4]}</p>'
+            f'{md(known[1])}{found_note}<p class="small">{md(held[0])[3:-4]}</p>'
             f'<p>{e(counted(to_fix[1], "thing to fix"))} found, and '
             f'{e(counted(not_examined[1], "thing"))} not examined.</p></div>'
             f'<h2>Published here</h2><ul>{files}</ul>'
