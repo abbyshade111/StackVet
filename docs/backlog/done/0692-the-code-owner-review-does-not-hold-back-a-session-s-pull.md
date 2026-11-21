@@ -1,6 +1,6 @@
 # The code-owner review does not hold back a session's pull request, which is opened as the owner
 
-**Status:** claimed by claude/0692-session-app, 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from what the owner found reviewing #2446: GitHub offered no way to
 approve it. Sessions open pull requests through `gh` signed in as the owner (`abbyshade111`), so the owner is the
@@ -38,3 +38,13 @@ the rest.
 - **The build:** the script in `tools/` that makes an hour's token from the key; CLAUDE.md's "Git is pre-approved"
    saying sessions open pull requests and push with it; ADR-051's 14 October entry corrected by a Later entry; the
    witness of ADR-158; and what cloud sessions use, said.
+
+**Done, 21 November 2026** (ADR-158, accepted, with its "As built"; ADR-051, Later). The owner made the App
+(`stackvet-sessions`, App ID 5862353), installed it on the three repositories, and put its key in the keychain;
+`python3 -I tools/session_token.py check` read, with the App's own tokens, that each reaches its repository alone with
+contents, pull requests, and workflows to write and metadata to read. CLAUDE.md says sessions push and open pull
+requests through the script, and stop without a token. **Witnessed:** #2451, pushed and opened through the script,
+changes one comment in `.github/workflows/long-files.yml`; its author is `app/stackvet-sessions`, and GitHub asked
+`abbyshade111` for a code owner's review at once, which #2446, opened under the owner's name, never was. It is closed
+without merging. The pull request that built this was opened by the App too. Not looked at: cloud sessions, which
+open pull requests through the cloud's own GitHub connection.
