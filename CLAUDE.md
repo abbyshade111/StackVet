@@ -22,7 +22,7 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
 - Tests that start the app need Docker or Colima; without one they take the honest-absence path and say so.
 - Inside the Claude Code sandbox, cargo cannot write `~/.cargo`: set `CARGO_HOME` and `CARGO_TARGET_DIR` under the
   sandbox's temporary folder, or run cargo in the Terminal panel. `tools/pwned_passwords.py`,
-  `tools/atlas_references.py`, `tools/nist_controls.py`, and `tools/rulesets_check.py` need the network: run them outside the sandbox, whose
+  `tools/atlas_references.py`, `tools/nist_controls.py`, `tools/rulesets_check.py`, and `tools/session_token.py` need the network: run them outside the sandbox, whose
   proxy cuts downloads short.
 
 ## Rules that hold everywhere
@@ -59,6 +59,12 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
 
 - **Git is pre-approved:** commit and push to a working branch, open pull requests, and merge your own into `main` once
   its checks are green, without asking. Say afterwards what went in.
+- **On the owner's Mac, push and open pull requests as the sessions' GitHub App,** never as the owner (ADR-158):
+  `python3 -I tools/session_token.py run -- gh pr create ...`, and `run -- git push ...`, with `--repo` for the Scoop
+  bucket or the Homebrew tap. A pull request the owner's account opens counts as reviewed by its code owner, so the
+  review that guards the workflows and the scripts that judge the checks would never be asked for. If the script says
+  it has no token, stop and say so; do not use the owner's sign-in instead. Reading (`gh pr view`, `gh run list`) may
+  use either. A pull request that changes a code-owned file then waits for the owner's approving review.
 - **Turn auto-merge on when you open a pull request** (a merge commit, never squash or rebase). When GitHub reports a
   conflict, run `python3 tools/merge_main.py`, settle what it leaves by keeping `main`'s side and putting your change
   back on top, commit, push, and leave auto-merge on.
