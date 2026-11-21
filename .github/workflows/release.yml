@@ -1,9 +1,10 @@
-# The Windows program of `sv`, published as a GitHub Release when the owner pushes a version tag (backlog 0120 step 2,
-# ADR-108). Homebrew builds `sv` from source on Mac and Linux, and the container image runs anywhere Docker does; this
-# is the program a Scoop install on Windows downloads (the bucket abbyshade111/scoop-stackvet).
+# The Windows programs of `sv` and of ConfigVet's `cv`, published as a GitHub Release when the owner pushes a version
+# tag (backlog 0120 step 2, ADR-108; `cv`'s zip from v0.3.0, backlog 0694, ADR-157's "one release, two packages"). Homebrew builds `sv` from source on Mac and Linux, and the container image runs anywhere Docker does; this
+# is the program a Scoop install on Windows downloads (the bucket abbyshade111/scoop-stack-vet). Each program has a zip
+# of its own, with its own copy of the data, so the bucket's `cv` manifest installs `cv` alone.
 #
-# On a tag `v*`: built on a Windows runner, checked to start and to find its data beside it, zipped with that data and
-# the licence, and handed to a second job that signs it (GitHub's keyless signing, the step the image's publishing
+# On a tag `v*`: built on a Windows runner, each checked to start and to find its data beside it, zipped with that data
+# and the licence, and handed to a second job that signs it (GitHub's keyless signing, the step the image's publishing
 # uses, so anyone can check it with `gh attestation verify`) and attaches it with its SHA-256 to the release of that
 # tag. The tag must match the version `sv` reports. Run by hand, or on a pull request that changes this file: the
 # first job alone, kept as the run's file, with nothing published or signed, so the workflow can be tried before a
@@ -43,6 +44,7 @@ jobs:
         shell: bash
     outputs:
       name: ${{ steps.zip.outputs.name }}
+      cv_name: ${{ steps.cv_zip.outputs.name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The token stays out of the checked-out folder (AC.12.2).
@@ -61,8 +63,8 @@ jobs:
           echo "Cargo.toml says $version; the tag is $TAG"
           [ "$TAG" = "v$version" ] || { echo "::error::the tag $TAG is not v$version, the version in Cargo.toml"; exit 1; }
 
-      - name: Build sv
-        run: cargo build --release --locked -p sv-cli
+      - name: Build sv and cv
+        run: cargo build --release --locked -p sv-cli -p cv-cli
 
       - name: The zip, with the data beside the program
         id: zip
@@ -96,6 +98,57 @@ jobs:
           grep -q "Read " check.txt || { echo "::error::the zipped sv did not read the example app"; mv data.moved data; exit 1; }
           mv data.moved data
 
+      - name: cv's zip, with the data beside the program
+        id: cv_zip
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          name="cv-${TAG#v}-windows-x86_64"
+          [ "${{ github.event_name }}" = push ] || name="cv-trial-windows-x86_64"
+          mkdir -p "dist/$name"
+          cp target/release/cv.exe "dist/$name/"
+          cp -r data "dist/$name/data"
+          cp LICENSE "dist/$name/"
+          (cd dist && 7z a -tzip "$name.zip" "$name" > /dev/null)
+          (cd dist && sha256sum "$name.zip" > "$name.zip.sha256")
+          cat "dist/$name.zip.sha256"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: The zipped cv starts, finds its own data, and reads a Dockerfile
+        # As for sv: unzipped elsewhere, with the checkout's data moved away. The outside tools are not on this runner,
+        # and --no-tools keeps the check to cv's own reading; that each tool not installed is said so is cv's own test.
+        env:
+          NAME: ${{ steps.cv_zip.outputs.name }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/try-cv" "$RUNNER_TEMP/cv-app"
+          (cd "$RUNNER_TEMP/try-cv" && 7z x "$GITHUB_WORKSPACE/dist/$NAME.zip" > /dev/null)
+          printf 'FROM node:24-alpine\nCMD ["node", "index.js"]\n' > "$RUNNER_TEMP/cv-app/Dockerfile"
+          mv data data.moved
+          cv="$RUNNER_TEMP/try-cv/$NAME/cv.exe"
+          "$cv" --version
+          "$cv" check "$RUNNER_TEMP/cv-app" --no-tools --out "$RUNNER_TEMP/cv-report" > cv-check.txt 2>&1 || true
+          head -40 cv-check.txt
+          grep -q "Read 1 deployment files" cv-check.txt || { echo "::error::the zipped cv did not read the Dockerfile"; mv data.moved data; exit 1; }
+          mv data.moved data
+
+      - name: PowerShell has no command of its own named cv
+        # In PowerShell `sv` is an alias for Set-Variable, which is why sv is installed as `stackvet` too (ADR-108). If
+        # `cv` named anything there, typing it would run that instead, and the Scoop manifest would need another name.
+        shell: pwsh
+        run: |
+          $found = Get-Command cv -ErrorAction SilentlyContinue
+          if ($found) { Write-Output "::error::PowerShell already has 'cv': $($found.CommandType) $($found.Definition)"; exit 1 }
+          Write-Output "PowerShell has no command named cv"
+
+      - name: Keep cv's zip for the release job, or as the trial's file
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.cv_zip.outputs.name }}
+          path: |
+            dist/${{ steps.cv_zip.outputs.name }}.zip
+            dist/${{ steps.cv_zip.outputs.name }}.zip.sha256
+          retention-days: 3
+
       - name: Keep the zip for the release job, or as the trial's file
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -121,6 +174,7 @@ jobs:
       attestations: write
     env:
       NAME: ${{ needs.windows.outputs.name }}
+      CV_NAME: ${{ needs.windows.outputs.cv_name }}
     steps:
       - name: Fetch the zip that was checked
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -128,10 +182,18 @@ jobs:
           name: ${{ needs.windows.outputs.name }}
           path: dist
 
-      - name: Sign the zip that was checked
+      - name: Fetch cv's zip that was checked
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.windows.outputs.cv_name }}
+          path: dist
+
+      - name: Sign the zips that were checked
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
-          subject-path: dist/${{ needs.windows.outputs.name }}.zip
+          subject-path: |
+            dist/${{ needs.windows.outputs.name }}.zip
+            dist/${{ needs.windows.outputs.cv_name }}.zip
 
       - name: The release
         env:
@@ -139,5 +201,6 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           gh release create "$TAG" "dist/$NAME.zip" "dist/$NAME.zip.sha256" \
+            "dist/$CV_NAME.zip" "dist/$CV_NAME.zip.sha256" \
             --repo "$GITHUB_REPOSITORY" --verify-tag --title "sv $TAG" \
-            --notes "The Windows program of sv $TAG, zipped with its data. On Windows, install it with Scoop (see docs/GETTING-STARTED.md), or unzip it and run sv.exe from that folder. Check where it was built with: gh attestation verify $NAME.zip --repo $GITHUB_REPOSITORY. Mac and Linux: Homebrew, or the container image."
+            --notes "The Windows programs of sv $TAG and of ConfigVet's cv, each zipped with its data. On Windows, install them with Scoop (see docs/GETTING-STARTED.md), or unzip one and run sv.exe or cv.exe from that folder. Check where each was built with: gh attestation verify $NAME.zip --repo $GITHUB_REPOSITORY (and the same for $CV_NAME.zip). Mac and Linux: Homebrew, or the container image for sv."

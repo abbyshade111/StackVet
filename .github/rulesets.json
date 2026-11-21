@@ -157,6 +157,14 @@
                   {
                     "context": "install (ubuntu-latest, head)",
                     "integration_id": 15368
+                  },
+                  {
+                    "context": "install-cv (macos-latest)",
+                    "integration_id": 15368
+                  },
+                  {
+                    "context": "install-cv (ubuntu-latest)",
+                    "integration_id": 15368
                   }
                 ]
               }
