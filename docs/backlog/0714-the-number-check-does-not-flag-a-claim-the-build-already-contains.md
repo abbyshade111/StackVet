@@ -1,6 +1,6 @@
 # The number check does not flag a claim that the build's pull request already contains
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, after #2478 failed "Decision records" on its own claim. CLAUDE.md asks
 for a claim in a pull request of its own, merged before building. A build branch cut from the claim's branch while the
