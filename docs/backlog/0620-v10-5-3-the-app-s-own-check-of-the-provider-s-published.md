@@ -1,6 +1,6 @@
 # V10.5.3: the app's own check of the provider's published details, which needs a second start of the app (20 October 2026)
 
-**Status:** on hold: the owner's word to give sv run a second start of the app, with the provider set wrong from the beginning (the owner, 24 October 2026: "put 0620 on hold in the hold folder")
+**Status:** open
 
 Split from backlog 0500 at the owner's choice of 20 October 2026, as the one piece of it not built. Severity: low.
 
@@ -19,3 +19,8 @@ beginning, which nothing in `sv run` does yet. A decision record is needed when 
 either order, then develop a plan for 0625 once those are complete". Asked first because building it gives `sv run` a
 second start of the app for every app that signs people in through a provider, which changes what `sv` runs and how
 long a run takes (ADR-127, Later, 24 October 2026).
+
+**Taken off hold, 20 November 2026, at the owner's word.** Asked whether `sv run` may give an app that signs people in
+through a provider a second start, with the test provider's published details set wrong from the beginning, the owner
+answered yes. So the item is open again, to be built as planned above: the second start, the check that the app then
+refuses to sign anybody in, and ADR-127's entry saying how the second start works and what it adds to a run's time.
