@@ -1,6 +1,6 @@
 # AgentVet part 1: the agent records move into a crate of their own, and av report reads them
 
-**Status:** open
+**Status:** claimed by Claude Code session (AgentVet), 21 November 2026
 
 Asked for by the owner on 21 November 2026, with ADR-159 (proposed) and the design entry "AgentVet, a companion that
 vets the agent: what it did, what it said, and where the two part (21 November 2026)". This is step 1 of that entry's
