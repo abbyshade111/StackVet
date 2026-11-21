@@ -57,7 +57,7 @@ pub fn folder() -> Option<PathBuf> {
 /// The record of the app at `app` (a full path): one file per app, named by a hash of its path, so the name tells
 /// nothing of the app.
 pub fn record_of(app: &Path) -> Option<PathBuf> {
-    let key = crate::bundle::sha256(app.display().to_string().as_bytes());
+    let key = crate::plain::sha256(app.display().to_string().as_bytes());
     folder().map(|f| f.join(format!("{}.jsonl", &key[..16])))
 }
 
@@ -112,7 +112,7 @@ pub fn line_of(
 
 /// The hash that chains a line to the one before it, over the previous line's chain and this line's own text.
 fn chain_of(previous: &str, body: &str) -> String {
-    crate::bundle::sha256(format!("{previous}\n{body}").as_bytes())
+    crate::plain::sha256(format!("{previous}\n{body}").as_bytes())
 }
 
 /// `sv hook-record --app DIR`: one line for what the hook hands over on standard input. An event or tool not recorded
@@ -155,7 +155,7 @@ pub fn command(args: &[String]) -> Result<()> {
 }
 
 fn now() -> String {
-    crate::bundle::utc_time(
+    crate::plain::utc_time(
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_secs())
@@ -173,7 +173,7 @@ pub fn append(path: &Path, mut line: Value) -> Result<()> {
         use std::os::unix::fs::PermissionsExt;
         let _ = std::fs::set_permissions(folder, std::fs::Permissions::from_mode(0o700));
     }
-    crate::refuse_link(
+    crate::plain::refuse_link(
         path,
         "Remove the link; sv writes its record only as a plain file.",
     )?;
@@ -664,9 +664,9 @@ pub fn done_for(app_dir: &Path) -> Option<Vec<Done>> {
     Some(done)
 }
 
-/// The tip the last report in `folder` kept, when `sv` can show it wrote that report and it read a record.
-pub fn earlier_tip(folder: &Path) -> Option<sv_report::hook::Tip> {
-    let bytes = crate::report_seal::proven_report(folder).ok()?;
-    let report: Value = serde_json::from_slice(&bytes).ok()?;
+/// The tip a report kept, from the bytes of its `report.json`, when it read a record. The caller shows first that `sv`
+/// wrote the report (`sv-cli`'s `hook_record::earlier_tip` does, with the report seal).
+pub fn tip_in(bytes: &[u8]) -> Option<sv_report::hook::Tip> {
+    let report: Value = serde_json::from_slice(bytes).ok()?;
     serde_json::from_value(report["hook_record"]["tip"].clone()).ok()
 }

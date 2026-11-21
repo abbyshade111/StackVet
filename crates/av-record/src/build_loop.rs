@@ -391,9 +391,10 @@ fn old_place(app_dir: &Path) -> std::path::PathBuf {
 }
 
 fn append(app_dir: &Path, line: &Line) -> Result<()> {
-    let (folder, _) = crate::mcp::create_below(app_dir, Path::new(sv_scan::ecosystems::STATE_DIR))?;
+    let (folder, _) =
+        crate::plain::create_below(app_dir, Path::new(sv_scan::ecosystems::STATE_DIR))?;
     let path = folder.join(sv_scan::ecosystems::BUILD_LOOP_RECORD);
-    crate::refuse_link(
+    crate::plain::refuse_link(
         &path,
         "Remove the link; sv writes its record only as a plain file.",
     )?;
@@ -449,7 +450,7 @@ const GENESIS: &str = "sv build-loop record, before its first chained line";
 /// The hash that chains a line to the one before it: over the previous line's chain, and this line's own text without
 /// its chain (backlog 0239).
 fn chain_of(previous: &str, body: &str) -> String {
-    crate::bundle::sha256(format!("{previous}\n{body}").as_bytes())
+    crate::plain::sha256(format!("{previous}\n{body}").as_bytes())
 }
 
 /// The chain of the last line of `bytes` that carries one, or `None` when no line does.
@@ -553,7 +554,7 @@ pub fn signs_of_use(app_dir: &Path) -> Vec<String> {
         .and_then(|marker| read_small(&marker))
         .is_some_and(|text| {
             text.lines()
-                .any(|l| l.starts_with(crate::report_seal::SEAL_LINE))
+                .any(|l| l.starts_with(crate::plain::REPORT_SEAL_LINE))
         })
     {
         signs.push("the report folder holds an earlier report that sv sealed".to_owned());

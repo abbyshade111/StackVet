@@ -1142,26 +1142,38 @@ pub mod report_files;
 
 pub mod report_folder;
 
-pub mod build_loop;
+// The build-loop record is in the shared record crate (backlog 0705, ADR-159; ADR-076 says what it keeps).
+pub use av_record::build_loop;
 
 pub mod report_again;
 
 pub mod before_live;
 
-pub mod hook_record;
-pub mod tool_behavior;
-#[cfg(test)]
-mod tool_behavior_installs_tests;
-#[cfg(test)]
-mod tool_behavior_tests;
+/// The hook record (ADR-122), from the shared record crate (backlog 0705, ADR-159), with the one reader that needs
+/// this crate's report seal.
+pub mod hook_record {
+    pub use av_record::hook_record::*;
+    use std::path::Path;
 
-#[cfg(test)]
-mod hook_record_tests;
+    /// The tip the last report in `folder` kept, when `sv` can show it wrote that report and it read a record.
+    pub fn earlier_tip(folder: &Path) -> Option<sv_report::hook::Tip> {
+        let bytes = crate::report_seal::proven_report(folder).ok()?;
+        tip_in(&bytes)
+    }
+}
 
-#[cfg(test)]
-mod hook_record_claims_tests;
-#[cfg(test)]
-mod hook_record_kinds_tests;
+/// What the AI coding tool did that is worth a look (ADR-131), from the shared record crate (backlog 0705, ADR-159),
+/// with the one reader that needs this crate's report seal.
+pub mod tool_behavior {
+    pub use av_record::tool_behavior::*;
+    use std::path::Path;
+
+    /// The last report in `out_dir`, when `sv` can show it wrote it and left it unchanged.
+    pub fn earlier(out_dir: &Path) -> Option<EarlierReport> {
+        let bytes = crate::report_seal::proven_report(out_dir).ok()?;
+        earlier_in(&bytes)
+    }
+}
 
 #[cfg(test)]
 mod report_again_tests;
@@ -1523,51 +1535,9 @@ pub fn write_report_files(report: &sv_report::Report, out_dir: &Path) -> Result<
     Ok(write_report(report, out_dir)?.names())
 }
 
-/// Refuses a path that is a link, whatever it points to, saying so in the owner's terms and saying
-/// what to do instead.
-pub fn refuse_link(path: &Path, what_to_do: &str) -> Result<()> {
-    if let Ok(meta) = std::fs::symlink_metadata(path)
-        && meta.file_type().is_symlink()
-    {
-        return Err(Remedy::error(
-            format!(
-                "{} is a link to somewhere else, so sv does not read or write through it.",
-                path.display()
-            ),
-            what_to_do,
-        ));
-    }
-    Ok(())
-}
-
-/// What went wrong, and what `sv` itself says to do about it, kept apart. The MCP server fences what
-/// went wrong as the app's text, since it quotes the app as often as not, and writes the next step
-/// outside the fence as `sv`'s own words, which an AI coding tool reading a fenced instruction as
-/// information did not act on (`docs/GAP-ANALYSIS.md`, 5.3). At a terminal the two read as one, as
-/// before. `next` is `sv`'s words only: nothing of the app's goes in it.
-#[derive(Debug)]
-pub struct Remedy {
-    pub problem: String,
-    pub next: String,
-}
-
-impl Remedy {
-    /// The error that carries `problem` and `next`.
-    pub fn error(problem: impl Into<String>, next: impl Into<String>) -> anyhow::Error {
-        anyhow::Error::new(Remedy {
-            problem: problem.into(),
-            next: next.into(),
-        })
-    }
-}
-
-impl std::fmt::Display for Remedy {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {}", self.problem, self.next)
-    }
-}
-
-impl std::error::Error for Remedy {}
+// `refuse_link` and `Remedy` are in the shared record crate now, word for word, since the agent records refuse a
+// link and say what to do the same way (backlog 0705, ADR-159).
+pub use av_record::plain::{Remedy, refuse_link};
 
 pub fn assemble_report(
     app_dir: &Path,

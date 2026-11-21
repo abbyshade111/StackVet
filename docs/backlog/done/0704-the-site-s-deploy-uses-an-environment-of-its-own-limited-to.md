@@ -1,6 +1,6 @@
 # The site's deploy uses an Environment of its own, limited to main, with the owner as reviewer
 
-**Status:** claimed by Claude Code session (site review), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A3). The site's deploy
 job read the Cloudflare keys from the repository's secrets, which every workflow can reach, and named no Environment.
@@ -12,4 +12,9 @@ job read the Cloudflare keys from the repository's secrets, which every workflow
   `crates/sv-cli/tests/site_workflow.rs` fails if it does not; ADR-132 gains a Later entry.
 - **Then, on the owner's word, after a deploy through `site` works:** the two repository-wide Cloudflare secrets are
   deleted, since until then the Environment narrows nothing.
+- **Built, 21 November 2026:** #2473 (merge `8a45991a`). The test went in a sibling file,
+  `crates/sv-cli/tests/site_environment.rs`, rather than `site_workflow.rs`; with `environment: site` removed it alone
+  goes red. A deploy through `site` succeeded on 21 November (run 44951426212, at the owner's approval), and the owner
+  then had the two repository-wide Cloudflare secrets deleted. Only `DOCKERHUB_TOKEN` and `DOCKERHUB_USERNAME` remain
+  at the repository level.
 - **Not here:** the same for Docker Hub's token, which the review also raised; it is the owner's choice.
