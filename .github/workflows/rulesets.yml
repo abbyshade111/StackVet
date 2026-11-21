@@ -1,0 +1,42 @@
+# The rules on GitHub for this repository, the Scoop bucket, and the Homebrew tap, compared each week with
+# `.github/rulesets.json` (backlog 0690; ADR-051 and ADR-108, Later, 21 November 2026).
+#
+# Asked for by the owner on 21 November 2026, after the bucket and the tap were given a "Protect main" ruleset:
+# `tools/adr_check.py` reads a pull request's diff, so a rule changed in a settings page owes no record. The file is
+# that state written down, governed by ADR-051 and ADR-108; this run keeps it true. It fails, naming the difference in
+# the run's summary, when a rule on GitHub is not the file's, or a repository could not be read.
+#
+# The workflow's own token is read-only and is not an administrator's, so GitHub does not show it who may bypass a
+# ruleset or a repository's auto-merge setting. Those are listed as not read, never as matching; the owner's
+# `python3 -I tools/rulesets_check.py --gh` compares them too. No secret is added.
+#
+# Mondays at 09:30 UTC, after the long-files run, and by hand from the Actions tab. Every step is pinned to an exact
+# commit fingerprint, as in rust.yml.
+
+name: Rulesets
+
+on:
+  schedule:
+    - cron: '30 9 * * 1' # Mondays, 09:30 UTC, after the long-files run at 09:00.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: The script's own checks
+        run: python3 -I tools/rulesets_check.py --self-test
+
+      - name: Compare the rules on GitHub with the file
+        # The token only raises GitHub's limit on requests; every endpoint read answers without one.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 -I tools/rulesets_check.py

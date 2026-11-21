@@ -7,3 +7,5 @@
 /tools/adr_check.py      @abbyshade111
 /tools/record_numbers.py @abbyshade111
 /action.yml              @abbyshade111
+/.github/rulesets.json   @abbyshade111
+/tools/rulesets_check.py @abbyshade111
