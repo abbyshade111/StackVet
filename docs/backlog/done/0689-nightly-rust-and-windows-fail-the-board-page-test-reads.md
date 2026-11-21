@@ -23,3 +23,11 @@ Recorded by the nightly CI routine on 21 November 2026. One test failed on `main
   red was #2435.
 - **What to do:** most likely nothing more: check that #2437's fix holds, and mark this done. This routine records; it
   fixes nothing.
+
+**Done, 21 November 2026: nothing more to build.** #2437's fix held. The board test now looks for a claimed item and,
+with none, a partly done one (`--claimed`, then `--partly`, in
+`crates/sv-cli/tests/docs_page.rs`), as the board page itself does; its witness fails when an item sits under the
+wrong heading. From #2437's merge at 03:35 UTC to this note, `main` had 15 Rust runs and 15 Windows runs that passed
+and none that failed, across claims, builds, and backlog changes that moved items between claimed, partly done, and
+done (0690, 0691, and 0692 among them). The cause was two pull requests that each passed alone (#2434 and #2435); the
+test now reads the same two lists the page does, so the same pair would not break it.
