@@ -9,3 +9,5 @@
 /action.yml              @abbyshade111
 /.github/rulesets.json   @abbyshade111
 /tools/rulesets_check.py @abbyshade111
+/tools/session_token.py  @abbyshade111
+/.github/CODEOWNERS      @abbyshade111
