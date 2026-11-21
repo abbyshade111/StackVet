@@ -207,6 +207,7 @@ source files, and in two tests:
 | [ADR-156](ADR-156.md) | A report's results exported as OSCAL assessment results, through a crosswalk from ASVS to NIST SP 800-53 chosen by reading both texts (accepted, 27 October 2026) |
 | [ADR-157](ADR-157.md) | ConfigVet, a companion for deployment configuration on `sv`'s engine, with a binary of its own and read-only access to live hosting accounts that `sv` never gains (accepted, 20 November 2026) |
 | [ADR-158](ADR-158.md) | Sessions open pull requests as a GitHub App of the owner's, so the owner's code-owner review holds for their changes (accepted, 21 November 2026) |
+| [ADR-159](ADR-159.md) | AgentVet, a companion that vets the agent, on `sv`'s engine with a binary of its own, reporting what the record shows and deciding nothing (proposed, 21 November 2026) |
 
 ## Names in the records
 
