@@ -866,12 +866,25 @@ fn actions_not_pinned(workflow: &Value, name: &str, report: &mut WorkflowReport)
 mod checkout_in_part_tests;
 
 #[cfg(test)]
+mod folder_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
     /// An app folder holding these workflow files, and any other files named.
-    fn app(name: &str, workflows: &[(&str, &str)], other: &[&str]) -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("sv-workflows-{name}-{}", std::process::id()));
+    ///
+    /// Each call gets a folder of its own, counted, since the tests run on several threads of one process and two of
+    /// them may pass the same name (backlog 0679).
+    pub(super) fn app(
+        name: &str,
+        workflows: &[(&str, &str)],
+        other: &[&str],
+    ) -> std::path::PathBuf {
+        static MADE: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let n = MADE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let dir =
+            std::env::temp_dir().join(format!("sv-workflows-{name}-{}-{n}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(dir.join(".github/workflows")).unwrap();
         for (file, text) in workflows {
