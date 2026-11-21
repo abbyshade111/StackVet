@@ -10,28 +10,60 @@
 use std::path::Path;
 use std::process::Command;
 
-/// The setting given on git's command line, over the repository's own: no file-system monitor,
+/// The settings given on git's command line, over the repository's own. No file-system monitor,
 /// which is a program git runs to learn which files changed. Hooks were tried as well
 /// (`post-index-change` and `reference-transaction` under a planted `core.hooksPath`), and
 /// `ls-files` runs none, so nothing is given for them; a command added here should be tried the
 /// same way.
-const OVERRIDES: [&str; 2] = ["-c", "core.fsmonitor=false"];
+///
+/// And nothing fetched (21 November 2026). A repository can say that part of its history is kept
+/// elsewhere and name the program that brings it (`remote.<name>.uploadpack`, `core.sshCommand`),
+/// and `git log` or `git ls-tree`, meeting a commit that is not there, runs it. `protocol.allow=never`
+/// refuses every way of fetching, so no such program starts and no connection opens; `core.sshCommand`
+/// is set to nothing as well, for a git that reads the first another way. `safe.bareRepository=explicit`
+/// (git 2.38 and later) keeps git from taking a folder of plain files named `HEAD`, `config`, `objects`,
+/// and `refs` for a repository and reading its `config`: an unpacked archive can hold just that.
+/// `git_nothing_is_fetched_tests.rs` plants each and watches for its mark.
+const OVERRIDES: [&str; 8] = [
+    "-c",
+    "core.fsmonitor=false",
+    "-c",
+    "protocol.allow=never",
+    "-c",
+    "core.sshCommand=false",
+    "-c",
+    "safe.bareRepository=explicit",
+];
 
-/// The same override, as the environment of a program `sv` starts that may run `git` itself: the
+/// The same overrides, as the environment of a program `sv` starts that may run `git` itself: the
 /// outside tools (`adapters::prepared`). Git reads settings given this way after the repository's own,
 /// so they win, as `-c` does, from git 2.31; an older git ignores them. Semgrep and Opengrep run
 /// `git ls-files` in a folder they are given and CodeQL may run git too, so without this they would
-/// keep to ADR-032 only by being handed files rather than folders (6 October 2026).
-pub(crate) const ENV_OVERRIDES: [(&str, &str); 3] = [
-    ("GIT_CONFIG_COUNT", "1"),
+/// keep to ADR-032 only by being handed files rather than folders (6 October 2026). The last line
+/// tells git 2.44 and later to fetch no missing history, whatever its settings say.
+pub(crate) const ENV_OVERRIDES: [(&str, &str); 10] = [
+    ("GIT_CONFIG_COUNT", "4"),
     ("GIT_CONFIG_KEY_0", "core.fsmonitor"),
     ("GIT_CONFIG_VALUE_0", "false"),
+    ("GIT_CONFIG_KEY_1", "protocol.allow"),
+    ("GIT_CONFIG_VALUE_1", "never"),
+    ("GIT_CONFIG_KEY_2", "core.sshCommand"),
+    ("GIT_CONFIG_VALUE_2", "false"),
+    ("GIT_CONFIG_KEY_3", "safe.bareRepository"),
+    ("GIT_CONFIG_VALUE_3", "explicit"),
+    ("GIT_NO_LAZY_FETCH", "1"),
 ];
 
-/// `git` with the overrides, run in `app_dir`.
+/// `git` with the overrides, run in `app_dir`, told to fetch nothing and to ask nobody anything.
 fn git(app_dir: &Path) -> Command {
     let mut command = Command::new("git");
-    command.args(OVERRIDES).arg("-C").arg(app_dir);
+    command
+        .args(OVERRIDES)
+        .arg("-C")
+        .arg(app_dir)
+        .env("GIT_NO_LAZY_FETCH", "1")
+        .env("GIT_TERMINAL_PROMPT", "0")
+        .stdin(std::process::Stdio::null());
     command
 }
 
@@ -398,6 +430,10 @@ pub mod changes;
 #[cfg(test)]
 #[path = "git_ai_tests.rs"]
 mod ai_tests;
+
+#[cfg(test)]
+#[path = "git_nothing_is_fetched_tests.rs"]
+mod nothing_is_fetched_tests;
 
 #[cfg(test)]
 #[path = "git_separator_tests.rs"]
