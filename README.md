@@ -514,11 +514,11 @@ docker pull ghcr.io/abbyshade111/stackvet-sv
 
 It is built from the `Dockerfile` by CI on every change to `main`, once the image has passed its
 test, and tagged `latest` and with the commit it came from. Each one is signed with a statement of what built it:
-this repository, its workflow, and that commit. To check the one you pulled came from there, with the
-[GitHub CLI](https://cli.github.com/):
+this repository, its workflow, its branch, and that commit. To check the one you pulled came from there, and from
+`main` rather than another branch, with the [GitHub CLI](https://cli.github.com/):
 
 ```bash
-gh attestation verify oci://ghcr.io/abbyshade111/stackvet-sv:latest --owner abbyshade111
+gh attestation verify oci://ghcr.io/abbyshade111/stackvet-sv:latest --owner abbyshade111 --source-ref refs/heads/main
 ```
 
 To build it yourself instead, from the repository root: `docker build -t ghcr.io/abbyshade111/stackvet-sv .`

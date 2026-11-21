@@ -76,6 +76,10 @@ fn the_action_runs_the_published_image_and_checks_its_signature_first() {
         action.contains("--signer-workflow abbyshade111/StackVet/.github/workflows/rust.yml"),
         "the signature check does not require this repository's own workflow to have signed it"
     );
+    assert!(
+        action.contains("--source-ref refs/heads/main"),
+        "the signature check does not require the image to have been signed from main (backlog 0711)"
+    );
 }
 
 #[test]
