@@ -1,6 +1,6 @@
 # The repositories' rulesets kept as a file, and a weekly check that they still match
 
-**Status:** open
+**Status:** claimed by claude/0690-rulesets-file, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, after `abbyshade111/homebrew-stackvet` and `abbyshade111/scoop-stack-vet`
 were given a "Protect main" ruleset (backlog 0120's note of that day, ADR-108's Later entry). `tools/adr_check.py`
