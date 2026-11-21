@@ -33,3 +33,8 @@ changes the file, which needs no write permission at all.
 **The owner's decision, 13 October 2026** (asked by session stackvet-deep-review after the review): yes. The owner makes two GitHub Environments in the repository's settings, `release` allowing only tags `v*` and `publish` allowing only the branch `main`; then a pull request adds `environment: release` to this workflow's job and `environment: publish` to `rust.yml`'s `publish` job, with the Later lines on ADR-108 and ADR-051 that say the setting exists and what it holds. Until that pull request lands, the hold stands.
 
 **Done, 13 October 2026** (session stackvet-deep-review): the owner made the `release` Environment (tags `v*`, read back through the API: one rule, no other protection); `release.yml` is two jobs, the trial with `contents: read` and the signing and release inside the Environment, on a tag only; ADR-108, Later.
+
+**Corrected, 21 November 2026 (backlog 0712):** the Environment admits every tag `v*`, wherever it points, so it does
+not keep a release to `main` by itself (the security review of 21 November, A2). A release tag ruleset, the owner as
+the Environment's reviewer, and a check that `main` holds the tagged commit now do (ADR-108, Later, 21 November 2026).
+

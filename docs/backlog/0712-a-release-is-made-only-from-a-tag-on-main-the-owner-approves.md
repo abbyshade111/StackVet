@@ -1,6 +1,6 @@
 # A release is made only from a tag on main that the owner approves
 
-**Status:** open
+**Status:** partly done: the owner's two settings: the Release tags ruleset and the reviewer on the release Environment, commands given on 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A2). Title and text
 kept to the fix until it is built, as the review asked.
