@@ -1,0 +1,22 @@
+[package]
+name = "av-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The `av` binary, AgentVet's command (ADR-159; backlog 0705, part 2). It reads the records `sv` keeps about an AI
+# coding tool, through the crate both share, and opens no network connection.
+[[bin]]
+name = "av"
+path = "src/main.rs"
+
+[dependencies]
+serde_json.workspace = true
+av-record = { path = "../av-record" }
+# Git read under ADR-032's settings, and the bill of materials, as the shared record crate reads them (ADR-159, part 1).
+sv-check = { path = "../sv-check" }
+sv-report = { path = "../sv-report" }
+
+[dev-dependencies]
+# For the tests alone: a folder's real path, read the one way the workspace reads it.
+sv-frameworks = { path = "../sv-frameworks" }

@@ -41,11 +41,13 @@ COPY crates/sv-yaml/Cargo.toml crates/sv-yaml/
 COPY crates/cv-rules/Cargo.toml crates/cv-rules/
 COPY crates/cv-cli/Cargo.toml crates/cv-cli/
 COPY crates/av-record/Cargo.toml crates/av-record/
-RUN for c in sv-check sv-cli sv-core sv-frameworks sv-manifest sv-report sv-run sv-scan sv-yaml cv-rules cv-cli av-record; do \
+COPY crates/av-cli/Cargo.toml crates/av-cli/
+RUN for c in sv-check sv-cli sv-core sv-frameworks sv-manifest sv-report sv-run sv-scan sv-yaml cv-rules cv-cli av-record av-cli; do \
       mkdir -p "crates/$c/src" && : > "crates/$c/src/lib.rs"; \
     done \
  && echo 'fn main() {}' > crates/sv-cli/src/main.rs \
  && echo 'fn main() {}' > crates/cv-cli/src/main.rs \
+ && echo 'fn main() {}' > crates/av-cli/src/main.rs \
  && cargo build --release --locked -p sv-cli \
  && rm -rf crates
 # Then `sv`'s own sources and the data they compile in. Every source file is touched, since a copied file can

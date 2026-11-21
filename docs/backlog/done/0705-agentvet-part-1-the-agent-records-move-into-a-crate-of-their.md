@@ -1,6 +1,6 @@
 # AgentVet part 1: the agent records move into a crate of their own, and av report reads them
 
-**Status:** claimed by Claude Code session (AgentVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Asked for by the owner on 21 November 2026, with ADR-159 (proposed) and the design entry "AgentVet, a companion that
 vets the agent: what it did, what it said, and where the two part (21 November 2026)". This is step 1 of that entry's
@@ -18,11 +18,11 @@ built".
    paper's Figure 19: findings silenced by rewriting, findings fixed for real, and what could not be looked for, each
    with the tier of its witness. It reads no transcript yet, so it says claims were not looked at. It opens no network
    connection, and a test holds that.
-   **Part status:** open
+   **Part status:** done, 21 November 2026
 3. **The records it governs.** ADR-076, ADR-122, and ADR-131 each get a Later entry saying where their code lives
    now, with their Governs lists kept true; `docs/ARCHITECTURE.md` gets the new crates and a line for `av` under "The
    fence".
-   **Part status:** open
+   **Part status:** done, 21 November 2026
 
 Built on 21 November 2026, the first of the three: the records are in `crates/av-record`, and ADR-159 is accepted with
 what was built under "As built". One thing differs from the plan above, and holds for what is left: the shared crate
