@@ -3,6 +3,9 @@
   "repositories": {
     "abbyshade111/StackVet": {
       "allow_auto_merge": true,
+      "allow_merge_commit": true,
+      "allow_squash_merge": false,
+      "allow_rebase_merge": false,
       "rulesets": [
         {
           "name": "Main - ADR Check",
@@ -35,9 +38,7 @@
                 "required_review_thread_resolution": false,
                 "require_extra_approval_for_unattributed_changes": true,
                 "allowed_merge_methods": [
-                  "merge",
-                  "squash",
-                  "rebase"
+                  "merge"
                 ]
               }
             },
@@ -100,6 +101,9 @@
     },
     "abbyshade111/homebrew-stackvet": {
       "allow_auto_merge": true,
+      "allow_merge_commit": true,
+      "allow_squash_merge": false,
+      "allow_rebase_merge": false,
       "rulesets": [
         {
           "name": "Protect main",
@@ -175,6 +179,9 @@
     },
     "abbyshade111/scoop-stack-vet": {
       "allow_auto_merge": true,
+      "allow_merge_commit": true,
+      "allow_squash_merge": false,
+      "allow_rebase_merge": false,
       "rulesets": [
         {
           "name": "Protect main",
