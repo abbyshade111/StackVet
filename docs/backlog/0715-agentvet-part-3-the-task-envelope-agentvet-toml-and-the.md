@@ -15,7 +15,7 @@ two part (21 November 2026)", and ADR-159's decision 8, with the owner's answer 
    not settled by the file: until the owner's word is recorded, the report says it may be the tool's. `av` writes
    nothing; an example to copy is in the documents. The format's choices go into ADR-159 as built, and any that is
    the owner's to make is asked first.
-   **Part status:** open
+   **Part status:** done, 21 November 2026
 2. **Outside the envelope, and tampering with oversight.** Over what `av report` already reads (git's history, and the
    hook record when asked for): a file the tool wrote or a commit of its changed outside the folders allowed; a
    command it ran that the envelope does not allow; a file that guards oversight changed. Each is listed with where

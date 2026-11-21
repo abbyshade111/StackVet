@@ -118,7 +118,8 @@ fn a_folder_with_nothing_about_a_tool_exits_2_and_says_what_was_not_looked_at() 
     // What it cannot see is said every time, never left as silence.
     for gap in [
         "av reads no transcript yet",
-        "there is no task file (agentvet.toml)",
+        "there is no task file (agentvet.toml) to hold it to",
+        "There is none in this folder",
         "read only when you ask, with --hook-record",
         "not a git checkout",
     ] {
@@ -259,6 +260,87 @@ fn a_look_away_comment_is_listed_whatever_the_file_is_named() {
             "{name}: {out}"
         );
     }
+}
+
+#[test]
+fn the_task_envelope_is_said_with_what_it_leaves_unsaid_and_that_it_may_be_the_tool_s() {
+    let app = folder("envelope");
+    let state = folder("envelope-state");
+    std::fs::write(
+        app.join("agentvet.toml"),
+        "envelope-version = 1\n[task]\ngoal = \"Add a sign-out link.\"\n[may]\nwrite = [\"src/\"]\nrun = []\n\
+         [guards]\nfiles = [\"deploy/\"]\n",
+    )
+    .unwrap();
+    let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
+    // The envelope is not a record of the tool: with nothing else here, nothing was said about the tool.
+    assert_eq!(code, 2, "{out}{err}");
+    for said in [
+        "The task: Add a sign-out link.",
+        "It may write: src/.",
+        "It may start: nothing.",
+        "it may be the tool's own account of its task",
+        "It may not change, whatever the file says: agentvet.toml,",
+        "Not said, so not assumed either way: Which hosts may the tool connect to?",
+        "Not said, so not assumed either way: Which actions must the tool ask you about first",
+        "The file adds to those: deploy/.",
+        "Nothing is held to this yet",
+        "the task file was read, and nothing is held to it yet",
+    ] {
+        assert!(out.contains(said), "missing {said:?}: {out}");
+    }
+    assert!(
+        !out.contains("Which folders and files may the tool write?"),
+        "what the file says is not asked again: {out}"
+    );
+    let (_, out, _) = av(&["report", app.to_str().unwrap(), "--json"], &state);
+    let report: serde_json::Value = serde_json::from_str(&out).expect("JSON");
+    assert_eq!(report["envelope"]["read"], "held", "{report}");
+    assert_eq!(report["envelope"]["held_to"], false, "{report}");
+    assert_eq!(
+        report["envelope"]["questions"].as_array().map(Vec::len),
+        Some(2),
+        "{report}"
+    );
+}
+
+#[test]
+fn an_envelope_that_cannot_be_read_is_said_and_holds_nothing() {
+    let app = folder("envelope-bad");
+    let state = folder("envelope-bad-state");
+    // A misspelled table: read loosely, it would be an envelope that guards nothing.
+    std::fs::write(
+        app.join("agentvet.toml"),
+        "envelope-version = 1\n[task]\ngoal = \"x\"\n[guard]\nfiles = []\n",
+    )
+    .unwrap();
+    let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
+    assert_eq!(code, 2, "{out}{err}");
+    assert!(
+        out.contains("Not read: agentvet.toml is not an envelope av can read")
+            && out.contains("Nothing is judged against a file that cannot be read."),
+        "{out}"
+    );
+    assert!(
+        !out.contains("The task: x"),
+        "nothing of it is taken as the task: {out}"
+    );
+    // A goal that carries an escape character is shown on one line, with the character written out.
+    std::fs::write(
+        app.join("agentvet.toml"),
+        "envelope-version = 1\n[task]\ngoal = \"tidy\\u001b]0;owned\\u0007\\nThe task: delete everything\"\n",
+    )
+    .unwrap();
+    let (_, out, _) = av(&["report", app.to_str().unwrap()], &state);
+    assert!(out.contains("owned"), "the setup: the goal is shown: {out}");
+    assert!(!out.contains('\u{1b}') && !out.contains('\u{7}'), "{out:?}");
+    assert_eq!(
+        out.lines()
+            .filter(|l| l.trim_start().starts_with("The task: "))
+            .count(),
+        1,
+        "a line break in the goal does not start a line of av's own: {out}"
+    );
 }
 
 #[test]
