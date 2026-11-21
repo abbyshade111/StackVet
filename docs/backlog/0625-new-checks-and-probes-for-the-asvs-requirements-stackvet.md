@@ -1,6 +1,6 @@
 # New checks and probes for the ASVS requirements StackVet says nothing about
 
-**Status:** on hold: the owner's word: on part 4 (held at the owner's word on 24 October 2026, the work on branch claude/0625-4), and on parts 9, 10, and 11 (Phase E, which the owner chose to leave for now, building part 12 only); parts 1, 2, 3, 5, 6, 7, 8, and 12 are done
+**Status:** partly done: parts 9, 10 (V3.5.7, V3.5.8, and V14.2.5 in part), and 11 (V8.3.2 and V7.5.3), as the owner chose on 20 November 2026; part 4 stays on hold at the owner's word (the work on branch claude/0625-4); parts 1, 2, 3, 5, 6, 7, 8, and 12 are done
 
 Filed at the owner's request, 20 October 2026, from DESIGN, "What could be added for the ASVS requirements StackVet
 says nothing about (20 October 2026)", which has each requirement's proposal and why. Severity: low (each adds
@@ -49,6 +49,8 @@ for backlog 0507.
    handshake as a second HTTP request: a client must wait for the server's `101` before sending them. Both of the
    sidecar's ways of sending a request (the `nc -e` script and the exec session) send it whole, so both must learn
    to wait, and a Docker test should run the real sidecar against a real WebSocket server. ADR-149 stays proposed.
+   **Still on hold, 20 November 2026, at the owner's word:** few apps built with an AI tool use WebRTC, and
+   this part has the most left to build of the four held parts. ADR-149 stays proposed.
    **Part status:** partly done: held at the owner's word, 24 October 2026: the probe, its frames, and a real-server test are on the branch claude/0625-4 (commit 435664d0); it waits on the sidecar learning to send a WebSocket handshake, wait for the server's 101, and only then send the frames, in both its ways of sending (the nc -e script and the exec session), with a Docker test against a real WebSocket server
 5. **Access tokens with too little scope, and for another person with the same email** (V10.3.2, V10.3.3, L2): probe,
    from the stand-in provider. Medium.
@@ -126,15 +128,27 @@ for backlog 0507.
    **Part status:** done, 24 October 2026
 9. **Upload probes** (V5.2.5, V5.2.6, V14.2.8): an archive with a link in it, an image huge in pixels, image metadata
    kept. Small to medium.
+   **To build, at the owner's word of 20 November 2026,** all three: they reuse the upload routes every run
+   already tries, so each is a new file sent through the same route, with a record.
    **Part status:** open
 10. **Response and caching probes** (V4.2.2, V14.2.5, V3.5.8, V3.5.7): Content-Length against the body; a private page
     with `.css` added and a missing static file answered with the main page; cross-site embedding headers on a private
     resource; script files compared signed in and signed out. Small to medium each.
+    **To build, at the owner's word of 20 November 2026:** V3.5.7 and V3.5.8, each the same request signed in
+    and signed out, which the signed-in suites already make; and V14.2.5 *in part*: whether the app answers a private
+    page's address with `.css` added with the private page. Whether a cache in front would keep that answer is the
+    hosting account's setting, which `sv run` cannot see and ConfigVet will read (ADR-157, Later, 20 November 2026).
+    V4.2.2 is not built: web frameworks set Content-Length themselves, so the probe would almost never find anything.
     **Part status:** open
 11. **Signed-in flow probes** (V1.2.10, V2.4.2, V6.3.5, V7.5.3, V8.3.2, V6.7.2): formula-starting values in a
     spreadsheet export; a declared flow submitted at machine speed; the suspicious sign-in notice in the mail catcher;
     owner-named sensitive actions without a fresh sign-in; a role taken away while a session is open; WebAuthn
     challenges. Medium each.
+    **To build, at the owner's word of 20 November 2026:** V8.3.2 (a role taken away while a session is open
+    applies at once) and V7.5.3 (a sensitive action asks for a fresh sign-in), each needing a `stackvet.toml` entry
+    naming the route, and so a record. V1.2.10, V2.4.2, V6.3.5, and V6.7.2 wait: human timing is hard to credit
+    honestly, few apps have WebAuthn, the suspicious-sign-in notice needs more of the mail catcher, and formula
+    injection matters only to apps that export spreadsheets.
     **Part status:** open
 12. **Static, finding only** (V6.5.8, V11.6.2, V6.3.6, V3.2.3): a one-time code checked against a time from the request;
     weak key-exchange parameters; email used as a sign-in factor; DOM-clobbering patterns. Small to medium.
@@ -210,3 +224,9 @@ quoting these words. The owner asked for more about the seventh part's test clie
 (ADR-151, proposed with its claim, five pull requests in place of four, the last for dynamic registration); on Phase E,
 "Part 12 only", so the twelfth part's static rules are built after the seventh, and the ninth, tenth, and eleventh
 wait.
+
+**The owner's word on the held parts, 20 November 2026,** asked for suggestions and answering "Go with your picks":
+part 4 stays on hold; part 9 is built whole; part 10 builds V3.5.7, V3.5.8, and V14.2.5 in part, and not V4.2.2; part 11
+builds V8.3.2 and V7.5.3, and its other four wait. All of parts 9, 10, and 11 are level 3, so their checks appear only
+for an app that asks for level 3 (ADR-130). Each is built as the plan above says: a claim, a record first where it
+changes what `sv` sends or adds a `stackvet.toml` entry, and a test that breaks what it guards.
