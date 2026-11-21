@@ -61,10 +61,12 @@ to v1 is made there. **History is never rewritten** (no `filter-repo`, no squash
   its checks are green, without asking. Say afterwards what went in.
 - **On the owner's Mac, push and open pull requests as the sessions' GitHub App,** never as the owner (ADR-158):
   `python3 -I tools/session_token.py run -- gh pr create ...`, and `run -- git push ...`, with `--repo` for the Scoop
-  bucket or the Homebrew tap. A pull request the owner's account opens counts as reviewed by its code owner, so the
-  review that guards the workflows and the scripts that judge the checks would never be asked for. If the script says
-  it has no token, stop and say so; do not use the owner's sign-in instead. Reading (`gh pr view`, `gh run list`) may
-  use either. A pull request that changes a code-owned file then waits for the owner's approving review.
+  bucket or the Homebrew tap, and `run --workflows -- git push ...` for commits that change `.github/workflows/`. `run`
+  takes only the pull request and push commands it lists (backlog 0706); a change it refuses is the owner's to make,
+  never one for the owner's sign-in. A pull request the owner's account opens counts as reviewed by its code owner, so
+  the review that guards the workflows and the scripts that judge the checks would never be asked for. If the script
+  says it has no token, stop and say so; do not use the owner's sign-in instead. Reading (`gh pr view`, `gh run list`)
+  may use either. A pull request that changes a code-owned file then waits for the owner's approving review.
 - **A cloud session does not open a pull request that changes a file `.github/CODEOWNERS` names:** it opens pull
   requests as the owner's own account, which GitHub counts as reviewed by the code owner. It pushes its branch and says
   so; a session on the owner's Mac opens the pull request as the App. The "Decision records" check fails one that is

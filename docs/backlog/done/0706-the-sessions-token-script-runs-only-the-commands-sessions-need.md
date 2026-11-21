@@ -1,6 +1,6 @@
 # The sessions' token script runs only the commands sessions need, each with the permissions it needs
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A6, its first point).
 `tools/session_token.py run` (ADR-158) passes any `gh` or `git` command through with the App's token, and every token
