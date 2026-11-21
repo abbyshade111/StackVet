@@ -7,7 +7,8 @@
 # What it publishes is exports/site/ as tools/website.py builds it at the commit the run is started from: the
 # pages, the report files they link to, the walk-through's screens, and _headers, the response headers Cloudflare
 # sends with every page. deploy/stackvet.dev/wrangler.jsonc says where. The token and the account are the owner's,
-# in the repository's secrets, and reach only the deploy step, through its inputs.
+# in the `site` Environment's secrets, and reach only the deploy step, through its inputs. Only `main` can deploy to
+# that Environment, and the owner is its required reviewer, so a run waits for the owner's approval (backlog 0704).
 #
 # Every step is pinned to an exact commit fingerprint, as in rust.yml, and wrangler to an exact version.
 
@@ -48,6 +49,9 @@ jobs:
   deploy:
     needs: check
     if: github.event_name == 'workflow_dispatch'
+    # The Cloudflare keys are this Environment's, not the repository's: a workflow on another branch cannot reach
+    # them, and a run from `main` waits for the owner's approval (backlog 0704; ADR-132, Later).
+    environment: site
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
