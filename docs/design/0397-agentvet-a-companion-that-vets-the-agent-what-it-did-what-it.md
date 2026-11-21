@@ -161,7 +161,7 @@ for.
 ## Proposed order of the build
 
 1. **The records move** into a shared crate, word for word, with `av report` reading them and writing the Figure 19
-   table for a session (backlog 0704).
+   table for a session (backlog 0705).
 2. **The envelope and the six groups of detectors,** each with a fixture from the trials that trips it and one that
    does not.
 3. **The pass-through and the keyed, checkpointed chain.**
