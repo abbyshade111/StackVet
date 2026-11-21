@@ -1,9 +1,13 @@
-//! `cv`, ConfigVet's command (ADR-157; backlog 0687). Part 2 has one command, `cv check <folder>`, which reads the
-//! folder's deployment files, prints what each rule settled, and writes `report.json`. It opens no network connection.
+//! `cv`, ConfigVet's command (ADR-157; backlogs 0687 and 0693). One command, `cv check <folder>`, which reads the
+//! folder's deployment files, prints what each rule settled, runs the outside tools over the same files (hadolint,
+//! Checkov, and Trivy, `tools`), and writes `report.json`. Neither it nor the tools as it runs them open a network
+//! connection.
 //!
 //! Exit codes follow `sv`'s (ADR-029): 0 when the run finished; 1 only with `--fail-on attention` and a finding; 2 when
 //! a deployment file could not be read or the folder holds none (always), or with `--fail-on not-assessed` and anything
 //! not assessed; 3 when `cv` itself failed and there is no result. 1 outranks 2.
+
+mod tools;
 
 use cv_rules::outcome::Outcome;
 use cv_rules::{Checked, check, defaults::Table};
@@ -19,13 +23,14 @@ const USAGE: &str = "\
 cv: ConfigVet reviews the files that say how an app is deployed.
 
 Usage:
-  cv check <folder> [--out <folder>] [--fail-on attention|not-assessed]
+  cv check <folder> [--out <folder>] [--fail-on attention|not-assessed] [--no-tools]
   cv --version
 
 cv check reads the folder's Dockerfiles, compose files, Kubernetes manifests, and Terraform plans (as JSON), with the
 app's package.json and Django settings, and says for each setting whether it is set safely, set unsafely, missing with
-a safe or an unsafe default, or not assessed. It writes report.json into --out, by default <folder>/cv-report, and
-opens no network connection.";
+a safe or an unsafe default, or not assessed. It then runs hadolint, Checkov, and Trivy over the same files, where
+they are installed, unless --no-tools is given; a tool that is not installed is said so, never counted as a pass. It
+writes report.json into --out, by default <folder>/cv-report, and opens no network connection.";
 
 #[derive(Debug, PartialEq, Eq)]
 enum FailOn {
@@ -39,15 +44,18 @@ struct Options {
     folder: PathBuf,
     out: Option<PathBuf>,
     fail_on: FailOn,
+    tools: bool,
 }
 
 fn parse(args: &[String]) -> Result<Options, String> {
     let mut folder = None;
     let mut out = None;
     let mut fail_on = FailOn::Nothing;
+    let mut tools = true;
     let mut rest = args.iter();
     while let Some(arg) = rest.next() {
         match arg.as_str() {
+            "--no-tools" => tools = false,
             "--out" => out = Some(PathBuf::from(rest.next().ok_or("--out needs a folder")?)),
             "--fail-on" => {
                 fail_on = match rest.next().map(String::as_str) {
@@ -67,6 +75,7 @@ fn parse(args: &[String]) -> Result<Options, String> {
         folder: folder.ok_or("cv check needs a folder")?,
         out,
         fail_on,
+        tools,
     })
 }
 
@@ -107,31 +116,96 @@ fn run(options: &Options) -> u8 {
             return FAILED;
         }
     };
-    let checked = check(&options.folder, &table);
+    let mut checked = check(&options.folder, &table);
+    let tools = if options.tools {
+        match (tools::load(), sv_check::secrets::SecretRules::shared()) {
+            (Ok(adapters), Ok(rules)) => Some(tools::run(
+                &adapters,
+                &options.folder,
+                &checked.read,
+                &mut checked.evidence.findings,
+                rules,
+            )),
+            (Err(why), _) => {
+                eprintln!(
+                    "cv: the outside tools' descriptions could not be read: {why:#}. Nothing was checked."
+                );
+                return FAILED;
+            }
+            (_, Err(why)) => {
+                eprintln!(
+                    "cv: the rules that keep secrets out of a tool's words could not be read: {why}. Nothing was checked."
+                );
+                return FAILED;
+            }
+        }
+    } else {
+        None
+    };
     print!("{}", listing(&options.folder, &checked));
+    print!("{}", tool_listing(tools.as_ref()));
     let out = options
         .out
         .clone()
         .unwrap_or_else(|| options.folder.join("cv-report"));
-    match write_report(&out, &checked) {
+    match write_report(&out, &checked, tools.as_ref()) {
         Ok(path) => println!("\nWrote {}", path.display()),
         Err(why) => {
             eprintln!("cv: {why}");
             return FAILED;
         }
     }
-    exit_code(&checked, &options.fail_on)
+    exit_code(&checked, tools.as_ref(), &options.fail_on)
 }
 
-fn exit_code(checked: &Checked, fail_on: &FailOn) -> u8 {
-    if *fail_on == FailOn::Attention && !checked.evidence.findings.is_empty() {
+fn exit_code(checked: &Checked, tools: Option<&tools::Tools>, fail_on: &FailOn) -> u8 {
+    let tool_findings = tools.is_some_and(|t| !t.findings.is_empty());
+    if *fail_on == FailOn::Attention && (!checked.evidence.findings.is_empty() || tool_findings) {
         return ATTENTION;
     }
     let gaps = !checked.unread.is_empty() || checked.read.is_empty();
-    if gaps || (*fail_on == FailOn::NotAssessed && !checked.evidence.not_assessed.is_empty()) {
+    // A tool that did not run, or ran over part of what it was given, left something not assessed.
+    let tool_gaps = tools.is_some_and(|t| t.tools.iter().any(|l| l.status != "ran"));
+    if gaps
+        || (*fail_on == FailOn::NotAssessed
+            && (!checked.evidence.not_assessed.is_empty() || tool_gaps))
+    {
         return NOT_ASSESSED;
     }
     CLEAN
+}
+
+/// What the terminal says of the outside tools: each one's run, then what they found that `cv`'s rules did not.
+fn tool_listing(tools: Option<&tools::Tools>) -> String {
+    let Some(tools) = tools else {
+        return "\nThe outside tools were not run (--no-tools).\n".to_owned();
+    };
+    let mut out = String::from("\nOutside tools\n");
+    for line in &tools.tools {
+        let version = line
+            .version
+            .as_deref()
+            .map(|v| format!(" ({v})"))
+            .unwrap_or_default();
+        out.push_str(&format!("  {:<10} {}{version}", line.name, line.status));
+        if line.status != "not run" {
+            out.push_str(&format!(
+                ": {} findings, {} of them also cv's own",
+                line.findings, line.agreed
+            ));
+        }
+        out.push('\n');
+        for said in &line.said {
+            out.push_str(&format!("  {:<10} {said}\n", ""));
+        }
+    }
+    for f in &tools.findings {
+        out.push_str(&format!(
+            "  {} ({}) at {} line {}\n",
+            f.title, f.rule_id, f.location.file, f.location.line
+        ));
+    }
+    out
 }
 
 /// What a person reads on the terminal: what was read, then each setting with its outcome.
@@ -189,7 +263,11 @@ fn listing(folder: &Path, checked: &Checked) -> String {
 
 /// Writes `report.json` into `out`, refusing a folder that holds anything else, so `cv` never writes over a person's
 /// own files.
-fn write_report(out: &Path, checked: &Checked) -> Result<PathBuf, String> {
+fn write_report(
+    out: &Path,
+    checked: &Checked,
+    tools: Option<&tools::Tools>,
+) -> Result<PathBuf, String> {
     if out.exists() {
         let entries = std::fs::read_dir(out)
             .map_err(|e| format!("{} could not be opened: {e}", out.display()))?;
@@ -209,6 +287,7 @@ fn write_report(out: &Path, checked: &Checked) -> Result<PathBuf, String> {
         "tool": "cv",
         "version": env!("CARGO_PKG_VERSION"),
         "checked": checked,
+        "outside_tools": tools,
     });
     let path = out.join("report.json");
     let text = serde_json::to_string_pretty(&report).map_err(|e| e.to_string())?;
