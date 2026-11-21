@@ -27,3 +27,11 @@ The v0.2.0 release built and zipped `sv` alone (`-p sv-cli` in `.github/workflow
   `Set-Variable`, is checked on the bucket's Windows runner.
 - **`docs/INSTALL.md`** gains `cv`'s lines once each package works. The stackvet.dev page is another session's
   (it says "coming with v0.3.0").
+
+**Progress, 21 November 2026.** The release workflow builds, checks, signs, and attaches `cv`'s zip beside `sv`'s
+(ADR-108, Later), with a step that fails if PowerShell already has a command named `cv`; its trial run is the pull
+request that changes it. The tap's `Formula/cv.rb` is head-only, with a job of its own, `install-cv`, on a Mac and on
+Linux; its two jobs need adding to the tap's "Protect main" ruleset, and to `.github/rulesets.json`, at the owner's
+word. The bucket's `bucket/cv.json` is written and kept back until v0.3.0's zip exists. Still to do: the release itself
+(the owner's tag), the formula's v0.3.0 `url` and `sha256`, the manifest's hash checked against a download, and
+`docs/INSTALL.md`'s lines.
