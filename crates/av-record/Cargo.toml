@@ -10,7 +10,10 @@ license.workspace = true
 # scan does, git read under ADR-032's settings, and the bill of materials.
 [dependencies]
 anyhow.workspace = true
+serde.workspace = true
 serde_json.workspace = true
+# The task envelope is TOML, read as `sv` reads stackvet.toml.
+toml.workspace = true
 # To open a record without following a link (`O_NOFOLLOW`); already a dependency of sv-cli and sv-run.
 libc = "0.2"
 sv-check = { path = "../sv-check" }

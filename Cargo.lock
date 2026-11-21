@@ -64,12 +64,14 @@ version = "0.3.0"
 dependencies = [
  "anyhow",
  "libc",
+ "serde",
  "serde_json",
  "sv-check",
  "sv-frameworks",
  "sv-manifest",
  "sv-report",
  "sv-scan",
+ "toml",
 ]
 
 [[package]]
