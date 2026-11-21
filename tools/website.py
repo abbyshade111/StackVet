@@ -22,6 +22,8 @@ Every word is read from where it is kept, never copied here, so the site cannot 
 - How a build goes, the click-through of one real build, from `docs/website/build-walkthrough-page.md` and its
   screenshots in `docs/website/walkthrough/`: one step to a section, each with a link to the next, so it needs no
   script;
+- ConfigVet, StackVet's companion for deployment configuration, labeled preview, from
+  `docs/website/configvet-page.md` (backlog 0695, ADR-157);
 - StackVet checks itself from `docs/website/self-assessment/`, StackVet's own report on its own repository;
 - the framework pages from `tools/framework_pages.py`, into `standards/`.
 
@@ -69,6 +71,7 @@ PAGES = {
     "reports": ("reports.html", "The report"),
     "project": ("check-a-project.html", "Check a project"),
     "itself": ("checks-itself.html", "StackVet checks itself"),
+    "configvet": ("configvet.html", "ConfigVet (preview)"),
     "credits": ("credits.html", "Credits"),
 }
 
@@ -443,6 +446,19 @@ def project_page(page_md, commit):
     return shell("Check a project before you use it — StackVet", "project", "".join(out), commit)
 
 
+def configvet_page(page_md, commit):
+    """ConfigVet, for ops and DevSecOps engineers, labeled preview (backlog 0695): each section's headline, then its
+    words, without its notes, in the Markdown style, so its table of outcomes is drawn as the reports page's are."""
+    out = []
+    for title, body in sections(page_md):
+        headline, rest = heading_of(without_notes(blocks(body)))
+        level = "h1" if not out else "h2"
+        out.append(f'<section id="{section_id(title)}"><{level}>{e(headline or title)}</{level}>'
+                   + blocks_html(rest, "configvet.md") + "</section>")
+    return shell("ConfigVet (preview): a review of how an app is deployed — StackVet", "configvet",
+                 f'<div class="md">{"".join(out)}</div>', commit)
+
+
 def build_page(page_md, commit):
     """One step to a section: its heading, its caption, its screen, and a link on to the next."""
     steps = []
@@ -585,6 +601,7 @@ def build(out):
                                       commit),
         "checks-itself.html": itself_page(commit),
         "check-a-project.html": project_page(read("docs/website/check-a-project-page.md"), commit),
+        "configvet.html": configvet_page(read("docs/website/configvet-page.md"), commit),
     }
     out.mkdir(parents=True, exist_ok=True)
     write_text(out / MARK, "Made by tools/website.py. Run it again to bring the site up to date.\n")

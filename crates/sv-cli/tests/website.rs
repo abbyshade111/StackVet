@@ -181,6 +181,7 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         "checks-itself.html",
         "credits.html",
         "check-a-project.html",
+        "configvet.html",
         "standards/index.html",
         "standards/asvs.html",
         "reports/notes-with-users/report.html",
@@ -292,6 +293,40 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
     assert!(
         read("index.html").contains("href=\"check-a-project.html\""),
         "the home page does not point to the page"
+    );
+
+    // ConfigVet, labeled preview (backlog 0695): its own words, its notes left out, nothing promised that is not
+    // built, and the home page points to it.
+    let cv = read("configvet.html");
+    assert!(cv.contains("ConfigVet: a review of how your app is deployed. A preview."));
+    assert!(cv.contains("Not assessed is never a pass."));
+    assert!(cv.contains("cargo build --release -p cv-cli"));
+    assert!(
+        cv.contains("<table>"),
+        "the five outcomes are not drawn as a table"
+    );
+    for note in [
+        "backlog 0695",
+        "ADR-157",
+        "crates/cv-cli",
+        "data/cv-adapters.json",
+        "is not built, so the page does not print it",
+    ] {
+        assert!(
+            !cv.contains(note),
+            "a note on the page's words is shown: {note}"
+        );
+    }
+    for not_yet in ["cv live", "brew install", "scoop install"] {
+        assert!(
+            !cv.contains(not_yet),
+            "the page offers what is not built yet: {not_yet}"
+        );
+    }
+    assert!(
+        // The menu on every page links to it too, so this looks for the home page's own line.
+        read("index.html").contains("href=\"configvet.html\">ConfigVet</a>"),
+        "the home page does not point to the ConfigVet page"
     );
 
     // The folders' own markers are not uploaded with the site (deploy/stackvet.dev/wrangler.jsonc).
