@@ -10,6 +10,13 @@ name = "cv"
 path = "src/main.rs"
 
 [dependencies]
+anyhow.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 cv-rules = { path = "../cv-rules" }
 sv-core = { path = "../sv-core" }
+# The runner of `sv`'s outside tools, used as it is (the owner's choice, 21 November 2026; ADR-157, Later). It brings
+# all of `sv`'s checks with it; ADR-157 decision 1 already plans for `cv` to run `sv`'s `config.*` checks.
+sv-check = { path = "../sv-check" }
+sv-frameworks = { path = "../sv-frameworks" }
+sv-scan = { path = "../sv-scan" }

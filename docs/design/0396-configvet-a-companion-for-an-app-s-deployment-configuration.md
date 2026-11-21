@@ -98,7 +98,7 @@ holds the keys to production. ADR-157 holds the rules; in short:
 | The standards and what applies | `sv-frameworks`, `data/frameworks/`, the applicability rules | A few conditions (runs in a container, behind a CDN, on Kubernetes) |
 | Reading the folder | `sv-scan`'s one walk (`files::Listing`) | Parsers for Dockerfile, compose, Kubernetes YAML, Terraform plan JSON, nginx, Caddy, and the hosting platforms' files |
 | Checks | `Finding`, `Verified`, `Tier`, `Secret::redact`; `sv`'s `config.*` checks run as they are | `cv-rules`: missing settings, the joins between layers, drift |
-| Outside tools | `data/adapters.json` and its container runner (ADR-032) | Adapters for Checkov, Trivy, hadolint, and kube-linter, each mapped to requirements after reading them |
+| Outside tools | `data/adapters.json` and its runner, `sv_check::adapters` (ADR-018, ADR-111; this cited ADR-032, git's record, until 21 November 2026) | Adapters for Checkov, Trivy, hadolint, and kube-linter, each mapped to requirements after reading them |
 | Live accounts | None (that is the point) | `cv-live`: one client per provider, behind ADR-157's rules |
 | Reports | `sv-report`'s `status_of`, the nine statuses, SARIF, `report.json`, the seal, the OSCAL export (ADR-156) | ConfigVet's own pages, and the list of requests made |
 | The command and MCP | `sv-cli`'s exit codes and the MCP server's rules | `cv-cli`, a binary of its own; its MCP server never reads a live account, as `sv`'s never starts the app |

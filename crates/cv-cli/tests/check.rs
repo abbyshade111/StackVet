@@ -17,8 +17,13 @@ fn folder(test: &str, files: &[(&str, &str)]) -> PathBuf {
 }
 
 fn cv(args: &[&str]) -> (i32, String, String) {
+    // Without the outside tools, so what these tests read does not depend on which are installed; `tools.rs` runs them.
+    let mut args = args.to_vec();
+    if args.first() == Some(&"check") {
+        args.push("--no-tools");
+    }
     let out = Command::new(env!("CARGO_BIN_EXE_cv"))
-        .args(args)
+        .args(&args)
         .output()
         .unwrap();
     (

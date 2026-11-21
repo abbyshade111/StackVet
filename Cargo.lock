@@ -254,9 +254,14 @@ dependencies = [
 name = "cv-cli"
 version = "0.2.0"
 dependencies = [
+ "anyhow",
  "cv-rules",
+ "serde",
  "serde_json",
+ "sv-check",
  "sv-core",
+ "sv-frameworks",
+ "sv-scan",
 ]
 
 [[package]]

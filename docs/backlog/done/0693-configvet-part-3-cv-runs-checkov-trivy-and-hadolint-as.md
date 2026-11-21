@@ -1,6 +1,6 @@
 # ConfigVet part 3: cv runs Checkov, Trivy, and hadolint as outside tools
 
-**Status:** claimed by claude/cv-tools, 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word ("let's get started on ConfigVet part 3"). The third step of ADR-157's build
 order and of the design entry's "Proposed order of the build": "Outside tools: the Checkov, Trivy, and hadolint
@@ -29,3 +29,15 @@ the same day):
 - **They run with every `cv check` unless `--no-tools`,** as `sv`'s do with every report (ADR-111).
 - **Not in this item:** kube-linter (the design entry's table names it; its build order does not), and the report
   pages, which wait as part 2 said.
+
+**Done, 21 November 2026** (ADR-157, "As built", part 3; ADR-018, Later). `cv check` runs hadolint 2.15.1, Checkov
+3.4.6, and Trivy 0.74.0 through `sv`'s own runner (`cv-cli` now depends on `sv-check`, the owner's fourth choice),
+described in `data/cv-adapters.json`. Each was measured in the sandbox and over a planted app: run as they come, Trivy
+connected to `check.trivy.dev` and Checkov to `api0.prismacloud.io`, and the app's `trivy.yaml`, `.trivyignore`,
+`.hadolint.yaml`, `# hadolint ignore=` comments, and `.checkov.yaml` each hid a rule (Trivy's `trivy.yaml`, every
+rule). Each is now run offline and with `cv`'s own settings file, and Checkov, which reads the app's file whatever it is
+told, is "ran in part" while the file is there. 23 rules are mapped after reading ASVS 5.0; only a secret in a
+Dockerfile's `ARG` or `ENV` speaks to a requirement (against V13.3.1, never crediting it). A root container the tools
+report is folded into `cv.container-root`'s finding. Witnessed in `crates/cv-cli/tests/tools.rs`: five protections,
+each removed in turn, turned a test red. Not done: kube-linter, the report pages, and Terraform plans tried through the
+tools.

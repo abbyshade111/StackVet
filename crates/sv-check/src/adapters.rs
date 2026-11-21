@@ -129,6 +129,12 @@ pub struct Adapter {
     /// run and not named. Absent for a tool that runs whenever the outside tools do.
     #[serde(default)]
     pub opt_in: Option<String>,
+    /// The name of the report the tool writes inside `{database}`, for a tool that is given a folder for its report
+    /// rather than a file: Checkov 3.4.6 makes the folder its `--output-file-path` names and writes
+    /// `results_sarif.sarif` in it, whatever the name given (21 November 2026, backlog 0693). The report is moved to
+    /// where every other tool's is before it is read, and read as theirs is, so a link in its place is still refused.
+    #[serde(default)]
+    pub report_in_database: Option<String>,
 }
 
 /// A line a tool writes when part of its run did not happen, and what it means.
@@ -480,6 +486,18 @@ impl Adapters {
                 );
             }
             // The file names are relative to the app, so the tool has to be started inside it.
+            if let Some(name) = &adapter.report_in_database
+                && (name.is_empty()
+                    || name.contains(['/', '\\'])
+                    || name.starts_with('.')
+                    || !adapter.run.args.iter().any(|a| a.contains("{database}")))
+            {
+                anyhow::bail!(
+                    "adapter `{}` reads its report from {{database}} without a plain file name, or without \
+                     giving the tool {{database}}",
+                    adapter.id
+                );
+            }
             if adapter.run.args.iter().any(|a| a == "{files}")
                 && adapter.working_directory.is_none()
             {
@@ -1149,8 +1167,34 @@ pub fn run_one_in(
         report_path,
         not_holding,
         rules,
+        None,
         &mut record,
     )
+}
+
+/// `run_one_in` for a caller that chooses the files itself: `files`, relative to the app's folder, are what `{files}`
+/// becomes, in place of the ones the adapter's language picks (`handed_files`). ConfigVet hands its tools the
+/// deployment files it read (a Dockerfile is no language `sv_scan` names), so the tool reads what ConfigVet read and
+/// nothing else. Everything else is `run_one_in`'s: where the program is, the time limit, the exit codes, the report,
+/// what the tool was told to look away from, and redaction. With no files, it does not run, and says so.
+pub fn run_one_handed(
+    adapter: &Adapter,
+    listing: &sv_scan::files::Listing,
+    files: &[String],
+    report_path: &Path,
+    rules: &SecretRules,
+) -> (Outcome, ToolRun) {
+    let mut record = ToolRun::default();
+    let outcome = run_one_recorded(
+        adapter,
+        listing,
+        report_path,
+        &BTreeSet::new(),
+        rules,
+        Some(files),
+        &mut record,
+    );
+    (outcome, record)
 }
 
 /// What one outside tool was and how its run went, for a program reading the report (backlog 226,
@@ -1189,6 +1233,7 @@ fn run_one_recorded(
     report_path: &Path,
     not_holding: &BTreeSet<String>,
     rules: &SecretRules,
+    given: Option<&[String]>,
     record: &mut ToolRun,
 ) -> Outcome {
     let app_dir = listing.root.as_path();
@@ -1317,14 +1362,19 @@ fn run_one_recorded(
     // A list left behind by an earlier run would vouch for files this one never read.
     std::fs::remove_file(&scanned_path).ok();
     let files = if names_files {
-        handed_files(listing, adapter)
+        given.map_or_else(|| handed_files(listing, adapter), <[String]>::to_vec)
     } else {
         Vec::new()
     };
     if names_files {
         if files.is_empty() {
             return Outcome::NotRun {
-                why: if adapter.language == "*" {
+                why: if given.is_some() {
+                    format!(
+                        "this folder has none of the files {} reads, so it was given nothing to read",
+                        adapter.name
+                    )
+                } else if adapter.language == "*" {
                     format!(
                         "there is no code in this app in a language `sv` reads, so {} was given \
                          nothing to read",
@@ -1444,6 +1494,10 @@ fn run_one_recorded(
     }
 
     let output = finish(prepared(&mut command, adapter), limit);
+    if let Some(name) = &adapter.report_in_database {
+        // A rename moves a link as a link, so the check below that the report is a plain file still holds.
+        std::fs::rename(database.join(name), report_path).ok();
+    }
     std::fs::remove_dir_all(&database).ok();
     std::fs::remove_file(&settings).ok();
     record.exit_code = output.as_ref().ok().and_then(|ran| ran.code);
@@ -1696,6 +1750,7 @@ pub fn run_all_in(
                     &report_path,
                     not_holding,
                     rules,
+                    None,
                     &mut record,
                 );
                 record.took_ms = u64::try_from(began.elapsed().as_millis()).unwrap_or(u64::MAX);

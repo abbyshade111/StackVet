@@ -1,0 +1,217 @@
+{
+  "_comment": "The outside tools `cv` runs over the deployment files it read (backlog 0693; ADR-157, Later and As built, 21 November 2026). Read by the runner of `sv`'s own outside tools (`sv_check::adapters`, ADR-018), in the same shape as data/adapters.json, and kept apart from it so that `sv`'s list is unchanged. Each tool is handed the files `cv` read, by name, or the folder; is run so that it opens no network connection (measured in the sandbox, which reports each connection a program tries); and is given a settings file of `cv`'s own, so the app's cannot turn its rules off unseen. Rules are mapped one at a time after reading the requirement. Most container-hardening rules speak to no ASVS 5.0 requirement, as `cv.container-root` does not (the owner's choice, 20 November 2026): they are mapped for what they detect and cite nothing. A secret in a Dockerfile's ARG or ENV is evidence against V13.3.1 and never credits it, since finding none does not show that a vault is used. A rule not here is a finding carrying no requirement.",
+  "adapters": [
+    {
+      "id": "hadolint",
+      "name": "hadolint",
+      "language": "dockerfile",
+      "version": {
+        "command": "hadolint",
+        "args": [
+          "--version"
+        ]
+      },
+      "run": {
+        "command": "hadolint",
+        "args": [
+          "-c",
+          "{config}",
+          "--disable-ignore-pragma",
+          "--no-color",
+          "-f",
+          "sarif",
+          "-o",
+          "{output}",
+          "--",
+          "{files}"
+        ]
+      },
+      "install": "brew install hadolint",
+      "note": "Measured with hadolint 2.15.1 on 21 November 2026. Without a settings file of its own it reads the app's `.hadolint.yaml` from where it runs, whose `ignored` list hid DL3007, and a `# hadolint ignore=` comment hid DL3008: it is given `cv`'s settings file (`-c`, which it reads in place of the app's) and `--disable-ignore-pragma`, and both rules came back. It opened no connection. It exits 1 when it finds something and 0 when it does not. A file it cannot parse is reported as DL1000, with exit 1, so that is a finding rather than a quiet run. It is handed `cv`'s Dockerfiles by name.",
+      "working_directory": "{dir}",
+      "finished_exits": [
+        0,
+        1
+      ],
+      "rules": {
+        "DL1000": {
+          "what": "hadolint could not read this Dockerfile, so its other rules did not run over it",
+          "requirements": []
+        },
+        "DL3002": {
+          "what": "the last USER of the Dockerfile is root",
+          "requirements": []
+        },
+        "DL3007": {
+          "what": "the base image is named by its `latest` tag, so what is built can change without the file changing",
+          "requirements": []
+        },
+        "DL3008": {
+          "what": "`apt-get install` with no version pinned",
+          "requirements": []
+        },
+        "DL3016": {
+          "what": "`npm install` with no version pinned",
+          "requirements": []
+        },
+        "DL3064": {
+          "what": "a value that looks like a secret is set in the Dockerfile's ARG or ENV, where it is kept in the image",
+          "requirements": [],
+          "findings_against": [
+            "V13.3.1"
+          ]
+        }
+      }
+    },
+    {
+      "id": "checkov",
+      "name": "Checkov",
+      "language": "dockerfile,kubernetes,terraform_plan",
+      "version": {
+        "command": "checkov",
+        "args": [
+          "--version"
+        ]
+      },
+      "run": {
+        "command": "checkov",
+        "args": [
+          "--config-file",
+          "{config}",
+          "--skip-download",
+          "--framework",
+          "dockerfile,kubernetes,terraform_plan",
+          "-o",
+          "sarif",
+          "--output-file-path",
+          "{database}",
+          "--quiet",
+          "-f",
+          "{files}"
+        ]
+      },
+      "install": "brew install checkov",
+      "note": "Measured with Checkov 3.4.6 on 21 November 2026. Run as it comes, it asked api0.prismacloud.io for its rules' guidance four times; `--skip-download` stops that, with the same results. It reads the app's `.checkov.yaml`, which hid CKV_DOCKER_2 whatever `--config-file` said, from the folder it scans and from where it runs, and it must run in the app's folder to be handed files by name: so while that file is there, a run that finds nothing is not credited (`switched_off_by`). A `# checkov:skip=` comment leaves the result in its report, marked as suppressed. It writes its report as `results_sarif.sarif` in the folder `--output-file-path` names (`report_in_database`). It exits 1 when a check failed and 0 when none did. Given a Terraform plan it cannot parse it says nothing and exits 0, which is why it is handed only the files `cv` read.",
+      "working_directory": "{dir}",
+      "finished_exits": [
+        0,
+        1
+      ],
+      "report_in_database": "results_sarif.sarif",
+      "switched_off_by": [
+        ".checkov.yaml",
+        ".checkov.yml"
+      ],
+      "rules": {
+        "CKV_DOCKER_1": {
+          "what": "the Dockerfile exposes port 22",
+          "requirements": []
+        },
+        "CKV_DOCKER_7": {
+          "what": "the base image is named by its `latest` tag, or by no tag",
+          "requirements": []
+        },
+        "CKV_DOCKER_8": {
+          "what": "the last USER of the Dockerfile is root",
+          "requirements": []
+        },
+        "CKV_K8S_14": {
+          "what": "a Kubernetes container's image is named by its `latest` tag, or by no tag",
+          "requirements": []
+        },
+        "CKV_K8S_16": {
+          "what": "a Kubernetes container is privileged",
+          "requirements": []
+        },
+        "CKV_K8S_19": {
+          "what": "a Kubernetes pod shares the host's network namespace",
+          "requirements": []
+        },
+        "CKV_K8S_20": {
+          "what": "a Kubernetes container allows privilege escalation",
+          "requirements": []
+        },
+        "CKV_K8S_23": {
+          "what": "a Kubernetes container is allowed to run as root",
+          "requirements": []
+        }
+      }
+    },
+    {
+      "id": "trivy",
+      "name": "Trivy",
+      "language": "dockerfile,kubernetes,terraform_plan",
+      "version": {
+        "command": "trivy",
+        "args": [
+          "--version"
+        ]
+      },
+      "run": {
+        "command": "trivy",
+        "args": [
+          "config",
+          "--skip-check-update",
+          "--skip-version-check",
+          "--disable-telemetry",
+          "--config",
+          "{config}",
+          "--ignorefile",
+          "{config}",
+          "--format",
+          "sarif",
+          "-o",
+          "{output}",
+          "--quiet",
+          "{dir}"
+        ]
+      },
+      "install": "brew install trivy",
+      "note": "Measured with Trivy 0.74.0 on 21 November 2026. Its configuration rules are the ones built into the program (`--skip-check-update`; the owner's choice, 21 November 2026), so a report names the version whose rules ran. With that alone it still connected to check.trivy.dev; `--skip-version-check` and `--disable-telemetry` stop that, with the same results. It reads `trivy.yaml` and `.trivyignore` from where it runs: the app's `trivy.yaml` turned the run into no results at all, and its `.trivyignore` hid DS-0026. It is given `cv`'s settings file for both, and every rule came back. It is given the folder, since `trivy config` takes one target; it did not follow a link in it to a file outside. It exits 0 whether or not it finds something, and 1 when it fails.",
+      "finished_exits": [
+        0
+      ],
+      "rules": {
+        "DS-0001": {
+          "what": "the base image is named by its `latest` tag",
+          "requirements": []
+        },
+        "DS-0002": {
+          "what": "the image's user is root",
+          "requirements": []
+        },
+        "DS-0004": {
+          "what": "the Dockerfile exposes port 22",
+          "requirements": []
+        },
+        "DS-0031": {
+          "what": "a secret is passed in through build arguments or environment variables, or a secret file is copied into the image",
+          "requirements": [],
+          "findings_against": [
+            "V13.3.1"
+          ]
+        },
+        "KSV-0001": {
+          "what": "a Kubernetes container can raise its own privileges",
+          "requirements": []
+        },
+        "KSV-0009": {
+          "what": "a Kubernetes pod uses the host's network",
+          "requirements": []
+        },
+        "KSV-0012": {
+          "what": "a Kubernetes container runs as root",
+          "requirements": []
+        },
+        "KSV-0013": {
+          "what": "a Kubernetes container's image is named by its `latest` tag",
+          "requirements": []
+        },
+        "KSV-0017": {
+          "what": "a Kubernetes container is privileged",
+          "requirements": []
+        }
+      }
+    }
+  ]
+}
