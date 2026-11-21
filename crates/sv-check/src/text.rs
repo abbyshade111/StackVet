@@ -13,14 +13,7 @@ pub fn first_line(text: &str) -> String {
 
 /// `text`, or its first `kept` characters and how many more there were: `abcd… (6 more characters)`. A text no
 /// longer than `kept` comes back whole.
-pub fn cut_with_count(text: &str, kept: usize) -> String {
-    let total = text.chars().count();
-    if total <= kept {
-        return text.to_owned();
-    }
-    let head: String = text.chars().take(kept).collect();
-    format!("{head}… ({} more characters)", total - kept)
-}
+pub use sv_core::text::cut_with_count;
 
 /// The words a person would read on a page, one space between them: the head, scripts, and styles left out, every
 /// tag taken away with its attributes, and the common entities read. The report quotes an answer by them, and a

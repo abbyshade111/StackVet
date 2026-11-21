@@ -595,6 +595,7 @@ dependencies = [
  "serde_json",
  "sha1",
  "sha2",
+ "sv-core",
  "sv-frameworks",
  "sv-manifest",
  "sv-scan",
@@ -635,6 +636,14 @@ dependencies = [
  "toml_edit",
  "zeroize",
  "zip",
+]
+
+[[package]]
+name = "sv-core"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "sv-scan",
 ]
 
 [[package]]

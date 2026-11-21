@@ -41,7 +41,7 @@ pub const FAILING_OUTPUT_LINES: usize = 30;
 /// own tier, below `sv`'s own checks (ADR-050).
 pub const CHECK_ID: &str = "app-tests";
 
-pub const NAME_MISMATCH: &str = "tests.name-does-not-match-requirement";
+pub const NAME_MISMATCH: &str = sv_core::rule_ids::NAME_MISMATCH;
 
 /// The end of what a failing suite printed, as it read in a terminal.
 ///

@@ -31,12 +31,13 @@ WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
 COPY crates/sv-check/Cargo.toml crates/sv-check/
 COPY crates/sv-cli/Cargo.toml crates/sv-cli/
+COPY crates/sv-core/Cargo.toml crates/sv-core/
 COPY crates/sv-frameworks/Cargo.toml crates/sv-frameworks/
 COPY crates/sv-manifest/Cargo.toml crates/sv-manifest/
 COPY crates/sv-report/Cargo.toml crates/sv-report/
 COPY crates/sv-run/Cargo.toml crates/sv-run/
 COPY crates/sv-scan/Cargo.toml crates/sv-scan/
-RUN for c in sv-check sv-cli sv-frameworks sv-manifest sv-report sv-run sv-scan; do \
+RUN for c in sv-check sv-cli sv-core sv-frameworks sv-manifest sv-report sv-run sv-scan; do \
       mkdir -p "crates/$c/src" && : > "crates/$c/src/lib.rs"; \
     done \
  && echo 'fn main() {}' > crates/sv-cli/src/main.rs \

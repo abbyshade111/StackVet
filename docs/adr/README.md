@@ -205,7 +205,7 @@ source files, and in two tests:
 | [ADR-154](ADR-154.md) | `sv` checks a public GitHub or GitLab project from its address, read first and started only when asked (accepted, 25 October 2026) |
 | [ADR-155](ADR-155.md) | A check that only reports a finding needs no record of its own (accepted, 26 October 2026) |
 | [ADR-156](ADR-156.md) | A report's results exported as OSCAL assessment results, through a crosswalk from ASVS to NIST SP 800-53 chosen by reading both texts (accepted, 27 October 2026) |
-| [ADR-157](ADR-157.md) | ConfigVet, a companion for deployment configuration on `sv`'s engine, with a binary of its own and read-only access to live hosting accounts that `sv` never gains (proposed, 20 November 2026) |
+| [ADR-157](ADR-157.md) | ConfigVet, a companion for deployment configuration on `sv`'s engine, with a binary of its own and read-only access to live hosting accounts that `sv` never gains (accepted, 20 November 2026) |
 
 ## Names in the records
 
