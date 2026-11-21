@@ -1,6 +1,6 @@
 # Homebrew and Scoop move to the v0.2.0 release, and the guide's --HEAD line with them
 
-**Status:** claimed by claude/0688-packages-v0.2.0, 20 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, after the owner tagged `v0.2.0`: the step backlog 0120 (on hold) waited on a release after
 v0.1.0 for. It is work in the two package repositories, with one line of this one that must move with them.
@@ -18,3 +18,12 @@ v0.1.0 for. It is work in the two package repositories, with one line of this on
   v0.1.0" changes in the same step as the formula, never before, since until then it is true.
 - **Not in this item:** packaging `cv`. The release builds and zips `sv` only (`-p sv-cli`); a `cv` formula and
   manifest, as ADR-157's "one release, two packages" plans, are a step of their own.
+
+**Done, 21 November 2026.** Homebrew: abbyshade111/homebrew-stackvet#2 gave the formula the v0.2.0 source archive
+(`sha256 a800905db54ae1e403f29dc49d7f784f99bf49eaf546a94b87596c47c04a60f0`) and kept `head`; its test asserts
+`sv 0.2.0` for the release build, and its workflow now builds both the release and `--HEAD` on a Mac and on Linux, all
+eight checks passing. Scoop: abbyshade111/scoop-stack-vet#1 moved `bucket/sv.json` to 0.2.0, with the hash above
+checked against a fresh download of the zip and the zip's attestation verified (built by `release.yml` at
+`refs/tags/v0.2.0`); its install workflow passed on Windows. `docs/INSTALL.md` now gives the plain `brew install`, with
+`--HEAD` as the way to build `main`. Still not done here: packaging `cv`, and backlog 0120's tries by hand (Scoop on a
+Windows computer, Homebrew on Linux).

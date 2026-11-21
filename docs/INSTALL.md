@@ -41,12 +41,12 @@ StackVet on your computer, fetching what the build needs by itself, and puts `sv
 it. The first install takes a few minutes:
 
 ```bash
-brew install --HEAD abbyshade111/stackvet/sv
+brew install abbyshade111/stackvet/sv
 sv --version
 ```
 
-`--HEAD` means the latest StackVet, built from `main`, until the formula moves to a release newer than v0.1.0;
-`brew upgrade --fetch-HEAD sv` updates it.
+This builds the latest release, v0.2.0, and `brew upgrade sv` moves to the next one. To build the newest code on `main`
+instead, add `--HEAD` (`brew install --HEAD abbyshade111/stackvet/sv`); `brew upgrade --fetch-HEAD sv` then updates it.
 This is tried automatically on a Mac and on Linux every week and on every change to the formula
 ([github.com/abbyshade111/homebrew-stackvet](https://github.com/abbyshade111/homebrew-stackvet)), and two AI coding
 tools installed it this way on a Mac in the trial of 14 October 2026; it has not yet been tried by hand on Linux. If it fails, the steps below do the same thing by hand.
