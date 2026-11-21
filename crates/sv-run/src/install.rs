@@ -223,6 +223,13 @@ pub fn plan(app_dir: &Path, image: &str) -> Result<Vec<Install>, String> {
     if requirements.is_file() {
         let text = std::fs::read_to_string(&requirements)
             .map_err(|e| format!("requirements.txt could not be read: {e}"))?;
+        if let Some(why) = read_another_way(&text) {
+            return Err(format!(
+                "requirements.txt {why}, so pip could read lines in it that sv did not. Nothing was \
+                 installed. Write the file as plain text: the letters, digits, and punctuation of a \
+                 US keyboard, one requirement to a line."
+            ));
+        }
         let loose = unpinned(&text);
         if !loose.is_empty() {
             return Err(format!(
@@ -384,6 +391,38 @@ fn one_line(text: &str) -> String {
     }
 }
 
+/// Why pip could read this requirements file differently from `sv`, when it could: `None` for a file both read the
+/// same. `sv` reads the file as UTF-8 and judges each line (`unpinned`); pip decodes it first, as whatever a
+/// `coding:` comment in its first two lines names, or as a byte-order mark says, and ends a line at characters `sv`
+/// does not. A file in UTF-7, which is plain letters to `sv`, can so hold `--index-url` and `--no-binary` lines that
+/// only pip sees, and pip would then build a package from another server by running its code, in a container that
+/// can reach the internet (ADR-052, Later, 21 November 2026). So the file must be plain ASCII, name no encoding, and
+/// end its lines only with a line feed, with or without a carriage return before it.
+pub fn read_another_way(text: &str) -> Option<String> {
+    let lines: Vec<&str> = text.split('\n').collect();
+    for (n, line) in lines.iter().enumerate() {
+        let n = n + 1;
+        let line = line.strip_suffix('\r').unwrap_or(line);
+        if !line.is_ascii() {
+            return Some(format!(
+                "holds a character that is not plain ASCII on line {n}"
+            ));
+        }
+        if line.chars().any(|c| c.is_ascii_control() && c != '\t') {
+            return Some(format!(
+                "holds a control character on line {n}, which pip may take for the end of a line"
+            ));
+        }
+        let lower = line.to_ascii_lowercase();
+        if n <= 2 && (lower.contains("coding:") || lower.contains("coding=")) {
+            return Some(format!(
+                "names an encoding for itself on line {n} (`coding`)"
+            ));
+        }
+    }
+    None
+}
+
 /// The lines of a requirements file that do not name one exact version. Allowed: `name==version`,
 /// with extras (`name[extra]==version`), an environment marker after `;`, and `--hash=` options,
 /// over continued lines. Anything else is refused, notably another file (`-r`), an editable or
@@ -490,6 +529,9 @@ pub fn sentence(installed: &[(Ecosystem, bool)]) -> Option<String> {
         }
     ))
 }
+
+#[cfg(test)]
+mod read_another_way_tests;
 
 #[cfg(test)]
 mod volume_tests;

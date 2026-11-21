@@ -885,11 +885,7 @@ fn review(
                     "Your AI coding tool's answer to requirement {id} in {}, marked `Written by: AI \
                      coding tool`:\n\n{}\n",
                     catalog.file,
-                    prose
-                        .lines()
-                        .map(|l| format!("    {l}"))
-                        .collect::<Vec<_>>()
-                        .join("\n")
+                    shown_prose(&prose)
                 );
                 match record_notes_confirmation(&id, &prose, &what, &key, input, out)? {
                     Some(NotesAnswer::Confirmed(seal)) => {
@@ -1302,6 +1298,24 @@ struct Recorded {
     seal: String,
 }
 
+/// A field of an entry, as `sv review` shows it: on one line, a line break in it written out as `\n`. Anything in
+/// `stackvet.toml` may be the AI coding tool's words, and a line break there would let those words go on as lines
+/// shaped like `sv`'s own ("Written by: ...", "Left as a proposal.", then an entry that is not in the file), so the
+/// person would sign for an entry other than the one they read (ADR-026, Later, 21 November 2026).
+fn shown(text: &str) -> String {
+    sv_report::one_line(text.trim())
+}
+
+/// Prose from a notes file, as `sv review` shows it: each line set in and marked with a bar, so no line of it can be
+/// taken for one of `sv`'s own, which never start that way.
+fn shown_prose(prose: &str) -> String {
+    prose
+        .lines()
+        .map(|l| format!("    | {}", sv_report::one_line(l)))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 /// Asks about one `[[finding-review]]` entry. What to write when the person records it: `by`,
 /// `why`, `on`, the seal, and the fingerprint in today's form.
 fn record_finding(
@@ -1325,14 +1339,14 @@ fn record_finding(
                 "real: a finding in test code that counts as a finding (ADR-093)",
             _ => "something that is neither a false alarm, an accepted risk, nor a real finding",
         },
-        entry.rule,
-        entry.file
+        shown(&entry.rule),
+        shown(&entry.file)
     )?;
     // Said before it is looked for, so a person knows a question is coming (backlog 0675).
     writeln!(
         out,
         "  Reading {} to find the line this entry is about...",
-        entry.file
+        shown(&entry.file)
     )?;
     out.flush()?;
     let lines = sv_check::review::lines_with_fingerprint(
@@ -1357,7 +1371,7 @@ fn record_finding(
             "  No line of the file has this fingerprint ({}) now. It may be a finding about the \
              app as a whole rather than one line, or the line has changed; `sv report` lists each \
              finding with its fingerprint.",
-            entry.fingerprint
+            shown(&entry.fingerprint)
         )?,
         many => {
             // A fingerprint in the form used before 5 October 2026 named a line by its text alone,
@@ -1370,7 +1384,7 @@ fn record_finding(
                  means and would count for none of them. Left as it is: ask for the entry to be \
                  written again with the fingerprint `sv report` now prints beside the one you mean.",
                 numbers.join(", "),
-                entry.fingerprint
+                shown(&entry.fingerprint)
             )?;
             return Ok(None);
         }
@@ -1383,8 +1397,8 @@ fn record_finding(
     writeln!(
         out,
         "  Reason given: \"{}\"\n  Written by: {}",
-        entry.why.trim(),
-        entry.by.as_deref().unwrap_or("nobody named")
+        shown(&entry.why),
+        shown(entry.by.as_deref().unwrap_or("nobody named"))
     )?;
     if entry.verdict != sv_check::review::FALSE_ALARM
         && entry.verdict != sv_check::review::ACCEPTED_RISK
@@ -1394,7 +1408,7 @@ fn record_finding(
             out,
             "  Its verdict, \"{}\", is not `false-alarm`, `accepted-risk` or `counts`, so it cannot count. \
              Fix it in stackvet.toml first.",
-            entry.verdict
+            shown(&entry.verdict)
         )?;
         return Ok(None);
     }
@@ -1490,23 +1504,25 @@ fn record_confirmation(
         Current::Design { answer, location } => writeln!(
             out,
             "An answer your AI coding tool gave to requirement {id}, proposed as confirmed by a \
-             person who looked for themselves.\n  The answer: {answer}{}",
+             person who looked for themselves.\n  The answer: {}{}",
+            shown(answer),
             location
                 .as_deref()
-                .map(|w| format!(", pointing at {w}"))
+                .map(|w| format!(", pointing at {}", shown(w)))
                 .unwrap_or_default()
         )?,
         Current::Hand { result } => writeln!(
             out,
             "A check your AI coding tool made by hand for requirement {id}, proposed as confirmed \
-             by a person who looked for themselves.\n  The result: {result}"
+             by a person who looked for themselves.\n  The result: {}",
+            shown(result)
         )?,
     }
     writeln!(
         out,
         "  What was looked at: \"{}\"\n  Written by: {}",
-        proposed.how.as_deref().unwrap_or("nothing written").trim(),
-        proposed.by.as_deref().unwrap_or("nobody named")
+        shown(proposed.how.as_deref().unwrap_or("nothing written")),
+        shown(proposed.by.as_deref().unwrap_or("nobody named"))
     )?;
     let mut how = proposed.how.as_deref().unwrap_or("").trim().to_owned();
     loop {
@@ -1756,10 +1772,10 @@ fn own_answer(
             (
                 format!(
                     "Your answer to requirement {id}, as stackvet.toml gives it: {}{}.",
-                    a.answer,
+                    shown(&a.answer),
                     a.r#where
                         .as_deref()
-                        .map(|w| format!(", pointing at {w}"))
+                        .map(|w| format!(", pointing at {}", shown(w)))
                         .unwrap_or_default()
                 ),
                 sv_check::seal::design_answer_fields(id, a),
@@ -1771,9 +1787,9 @@ fn own_answer(
                 format!(
                     "Your check made by hand for requirement {id}, as stackvet.toml gives it: {}, \
                      on {}: \"{}\"{}",
-                    h.result,
-                    h.on.as_deref().unwrap_or("no date"),
-                    h.how.as_deref().unwrap_or("nothing written").trim(),
+                    shown(&h.result),
+                    shown(h.on.as_deref().unwrap_or("no date")),
+                    shown(h.how.as_deref().unwrap_or("nothing written")),
                     match h.reviewer.as_deref() {
                         Some(SOMEONE_ELSE) =>
                             ", reviewed by someone other than the person who asked for the code",
@@ -1794,11 +1810,7 @@ fn own_answer(
                 format!(
                     "Your answer to requirement {id} in {}, marked `Written by: owner`:\n\n{}\n",
                     catalog.file,
-                    prose
-                        .lines()
-                        .map(|l| format!("    {l}"))
-                        .collect::<Vec<_>>()
-                        .join("\n")
+                    shown_prose(&prose)
                 ),
                 sv_check::seal::notes_fields(id, &prose),
             )
@@ -1995,10 +2007,10 @@ fn record_not_offered(
          counts only once you confirm it. If the app does let people change one, take it off the \
          list and say how under `change-phone`, `change-two-factor`, or `change-recovery` \
          instead: a list confirmed here and changed later is unconfirmed again.",
-        words.join("; "),
+        shown(&words.join("; ")),
         listed
             .iter()
-            .map(|n| format!("\"{n}\""))
+            .map(|n| format!("\"{}\"", shown(n)))
             .collect::<Vec<_>>()
             .join(", "),
     )?;
@@ -2173,7 +2185,8 @@ fn record_capabilities(
             .unwrap_or_default();
         writeln!(
             out,
-            "  {name} = {said}   ({}: {question})",
+            "  {} = {said}   ({}: {question})",
+            shown(name),
             if *said { "yes" } else { "no" }
         )?;
     }
@@ -2282,7 +2295,7 @@ fn record_scope(
     let categories = match &manifest.data.categories {
         None => "not answered".to_owned(),
         Some(listed) if listed.is_empty() => "[] (nothing about people)".to_owned(),
-        Some(listed) => format!("[{}]", listed.join(", ")),
+        Some(listed) => format!("[{}]", shown(&listed.join(", "))),
     };
     // `[app] level`, when it is there, is a third answer that decides the level, and is confirmed with the two (ADR-130).
     let (answers, level) = match manifest.app.level {
@@ -2448,8 +2461,8 @@ fn record_left_out(
          it is; the report names the folder and prints this reason beside it. Until then the \
          folder is checked and its findings count. If the app's own code is in it, do not \
          confirm it.",
-        entry.folder.trim(),
-        entry.why.trim()
+        shown(&entry.folder),
+        shown(&entry.why)
     )?;
     if entry.why.trim().chars().count() < least {
         writeln!(
@@ -2683,6 +2696,9 @@ mod report_again_tests;
 
 #[cfg(test)]
 mod passphrase_prompts_tests;
+
+#[cfg(test)]
+mod one_line_tests;
 
 #[cfg(test)]
 mod owner_written_tests;
