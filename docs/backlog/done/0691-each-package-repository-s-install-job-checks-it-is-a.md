@@ -27,4 +27,5 @@ with `The job "install (ubuntu-24.04-arm, release)" is not a required check on m
 required jobs passed (run 44905110301). In Scoop, the job renamed to `install-windows` failed the same way, listing
 `install` as what is required (run 44905119268). What it misses: a job removed from the workflow stays required and
 never reports, so pull requests wait on it ("Expected — waiting"); that is visible, so it is left. The witness branches
-are still on GitHub; deleting them waits on the owner's word.
+were deleted the same day, at the owner's word, once each was seen to differ from `main` only by its one-line
+break.
