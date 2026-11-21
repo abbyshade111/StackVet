@@ -1,6 +1,6 @@
 # Nightly: Windows fails: workflows::tests::untrusted_text_passed_through_env_or_safe_fields_is_not_found
 
-**Status:** open
+**Status:** claimed by claude/0679-workflow-test-folders, 20 November 2026
 
 Recorded by the nightly CI routine on 28 October 2026. The Windows workflow's push run on `main` for commit `2da1540`
 (pull request #2385, "Claim 0678", a change to backlog items only) ended red on 27 October 2026:
