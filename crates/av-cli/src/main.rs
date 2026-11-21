@@ -12,7 +12,7 @@
 //! Exit codes follow `sv`'s (ADR-029): 0 when the report was made; 2 when there was nothing to read, so nothing was
 //! said about the tool; 3 when `av` itself failed and there is no result.
 
-use av_record::{build_loop, envelope, held, hook_record, tool_behavior};
+use av_record::{build_loop, envelope, groups, held, hook_record, tool_behavior};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -123,6 +123,8 @@ struct Read {
     /// The hook record, when the person asked for it.
     hook: Option<sv_report::hook::HookSeen>,
     behavior: sv_report::tool_behavior::ToolBehavior,
+    /// All of it, under the design's six groups.
+    groups: Vec<groups::Gathered>,
     not_looked_at: Vec<String>,
 }
 
@@ -183,8 +185,7 @@ fn read(folder: &Path, with_hook: bool) -> Read {
     });
 
     let mut not_looked_at = vec![
-        "What the tool said it did, against what it did: av reads no transcript yet. The hook record keeps one kind of \
-         claim, that the app's tests pass, and says above when the record shows otherwise."
+        "What the tool said it did, beyond that the app's tests pass: av reads no transcript yet."
             .to_owned(),
         match envelope::read(folder) {
             envelope::Read::Held(_) => {
@@ -233,9 +234,17 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         }
         _ => None,
     };
+    let gathered = groups::gather(&groups::Read {
+        build_loop: &loop_seen,
+        hook: hook.as_ref(),
+        behavior: &behavior,
+        held: held.as_ref(),
+        commits: commit_list,
+    });
     Read {
         envelope,
         held,
+        groups: gathered,
         build_loop: loop_seen,
         hook,
         behavior,
@@ -396,8 +405,50 @@ fn held_lines(held: &held::Held) -> Vec<String> {
     if held.more > 0 {
         out.push(format!("  {} more not listed here.", held.more));
     }
-    for gap in &held.not_held {
-        out.push(format!("Not held to it: {gap}"));
+    out
+}
+
+/// The six groups, as the report's last table: how many lines each holds, the lines no section above has shown, and
+/// what the group could not show. An empty group always says why.
+fn group_lines(all: &[groups::Gathered]) -> Vec<String> {
+    let mut out = Vec::new();
+    for g in all {
+        // The lines of these two groups come from what was held to the task file and from git, both listed above.
+        let listed_above = |line: &groups::Line| match g.group {
+            groups::Group::Gaming | groups::Group::Outside => true,
+            groups::Group::Oversight => {
+                !line.place.contains("of the record") && !line.place.contains("record's own")
+            }
+            _ => false,
+        };
+        let above = g.lines.iter().filter(|l| listed_above(l)).count();
+        out.push(format!(
+            "{}: {}{}",
+            g.group.label(),
+            match g.lines.len() {
+                0 => "nothing seen in what was read".to_owned(),
+                1 => "1 line".to_owned(),
+                n => format!("{n} lines"),
+            },
+            match above {
+                0 => "",
+                _ => " (listed above)",
+            }
+        ));
+        for line in g.lines.iter().filter(|l| !listed_above(l)) {
+            out.push(format!(
+                "    {}{} ({}; from {})",
+                line.verdict
+                    .map(|v| format!("{}: ", v.label()))
+                    .unwrap_or_default(),
+                sv_report::one_line(&line.what),
+                sv_report::one_line(&line.place),
+                line.from
+            ));
+        }
+        for gap in &g.not_shown {
+            out.push(format!("    could not be shown: {gap}"));
+        }
     }
     out
 }
@@ -463,6 +514,16 @@ fn print(read: &Read, folder: &Path) {
     }
 
     println!();
+    println!("By kind of thing");
+    println!(
+        "  The same lines under the six things av looks for. A line is for you to read, and an empty kind is not a \
+         clean one: each says what it could not show."
+    );
+    for line in group_lines(&read.groups) {
+        println!("  {line}");
+    }
+
+    println!();
     println!("Not looked at");
     for gap in &read.not_looked_at {
         println!("  {gap}");
@@ -496,6 +557,7 @@ fn json(read: &Read) -> serde_json::Value {
             "witness": witness::GIT,
             "seen": read.behavior,
         },
+        "groups": read.groups,
         "not_looked_at": read.not_looked_at,
     })
 }
