@@ -1,6 +1,6 @@
 # Each package repository's install job checks it is a required check
 
-**Status:** open
+**Status:** claimed by claude/0691-required-checks, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, beside 0690. The "Protect main" rulesets in
 `abbyshade111/homebrew-stackvet` and `abbyshade111/scoop-stack-vet` require their install jobs by name, matrix values
