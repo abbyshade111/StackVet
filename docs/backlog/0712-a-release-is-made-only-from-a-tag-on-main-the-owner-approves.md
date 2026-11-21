@@ -1,6 +1,6 @@
 # A release is made only from a tag on main that the owner approves
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A2). Title and text
 kept to the fix until it is built, as the review asked.

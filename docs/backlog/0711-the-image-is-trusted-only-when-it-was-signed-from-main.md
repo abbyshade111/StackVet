@@ -1,6 +1,6 @@
 # The image is trusted only when it was signed from main
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A1). Title and text
 kept to the fix until it is built, as the review asked.
