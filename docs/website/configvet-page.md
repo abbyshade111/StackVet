@@ -127,11 +127,12 @@ requirement attached.
   DS-0002 and KSV-0012 (`also_reported_by`). The secret rules: hadolint DL3064 and Trivy DS-0031. With
   `--fail-on not-assessed`, a tool that did not run, or ran in part, exits 2.
 
-## What it never does
+## Files now, live accounts later
 
-**No network connection, and no live account, yet.**
+**Checking files and reading a live account are kept apart.**
 
-- **`cv check` opens no network connection,** and neither do the tools as it runs them.
+- **`cv check` reads the folder you give it.** Reading a live account is never part of a check: it will be a command
+  of its own, which you ask for by name.
 - **It never writes over your files.** It writes one file, `report.json`, into `--out`, by default
   `<folder>/cv-report`, and refuses a folder that holds anything else.
 - **Its exit codes are StackVet's,** so a pipeline can stop on them: 0 when the run finished; 1 only with
@@ -168,6 +169,9 @@ accepted, HSTS, and redirecting to HTTPS, the settings that sit between the visi
   return environment variables' values.
 - `cv live <provider>` is the planned command's name in ADR-157; it is not built, so the page does not print it as
   a command. "Before any finding" is decision 5's "where a provider cannot say".
+- The page makes no claim that `cv` opens no network connection, though `cv check` opens none on 21 November 2026
+  (ADR-157, "As built", part 2): live reading will, and the owner chose on 21 November 2026 not to print a claim that
+  goes stale when it lands. "Never part of a check" is decision 5's "never from a report run".
 
 ## How it relates to StackVet
 

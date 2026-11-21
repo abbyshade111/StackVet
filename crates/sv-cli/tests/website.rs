@@ -317,10 +317,16 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
             "a note on the page's words is shown: {note}"
         );
     }
-    for not_yet in ["cv live", "brew install", "scoop install"] {
+    // No claim that cv opens no network connection: live reading will (the owner's word, 21 November 2026).
+    for not_yet in [
+        "cv live",
+        "brew install",
+        "scoop install",
+        "opens no network connection",
+    ] {
         assert!(
             !cv.contains(not_yet),
-            "the page offers what is not built yet: {not_yet}"
+            "the page says what is not built, or will not stay true: {not_yet}"
         );
     }
     assert!(
