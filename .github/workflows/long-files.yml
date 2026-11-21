@@ -1,4 +1,4 @@
-# The Rust files and functions long enough to split, listed each week in this run's summary (backlog 0662; ADR-152).
+# (Witness for backlog 0692, not to be merged.) The Rust files and functions long enough to split, listed each week in this run's summary (backlog 0662; ADR-152).
 #
 # Asked for by the owner on 24 October 2026, when the hand-made list of backlog 0324 was marked done: "there should be
 # a new weekly check for long files to split moving forward". It runs `tools/long_files.py`, which lists every Rust file
