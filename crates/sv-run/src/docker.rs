@@ -689,6 +689,7 @@ impl DockerBackend {
         let model_name = format!("{run_id}-model");
         let name_server_name = format!("{run_id}-dns");
         let switched_off = format!("{run_id}-app-off");
+        let again = format!("{run_id}-app-again");
         let installer = |e: crate::install::Ecosystem| format!("{run_id}-install-{}", e.short());
         let guard = Teardown {
             backend: self,
@@ -703,6 +704,7 @@ impl DockerBackend {
                 model_name.clone(),
                 name_server_name.clone(),
                 switched_off.clone(),
+                again.clone(),
                 installer(crate::install::Ecosystem::Python),
                 installer(crate::install::Ecosystem::Node),
             ],
@@ -973,6 +975,7 @@ impl DockerBackend {
             via: &via,
             app: &app,
             switched_off: &switched_off,
+            again: &again,
             app_args: &app_args,
             plan,
             mail,
@@ -1173,6 +1176,8 @@ struct DockerRun<'a> {
     app: &'a str,
     /// The name the kill-switch copy is started under.
     switched_off: &'a str,
+    /// The name the copy started while the provider's published details are wrong is started under (V10.5.3).
+    again: &'a str,
     /// The app's own arguments, which the copy differs from only in its name and one setting.
     app_args: &'a [String],
     plan: &'a RunPlan,
@@ -1219,6 +1224,7 @@ impl sv_check::script::Services for DockerRun<'_> {
             app: match target {
                 Target::App => self.app,
                 Target::SwitchedOff => self.switched_off,
+                Target::Again => self.again,
             },
             port: self.plan.port,
             mail: self.mail.filter(|_| with.mail),
@@ -1255,6 +1261,7 @@ impl sv_check::script::Services for DockerRun<'_> {
         let container = match target {
             sv_check::script::Target::App => self.app,
             sv_check::script::Target::SwitchedOff => self.switched_off,
+            sv_check::script::Target::Again => self.again,
         };
         self.backend.seed(container, seed, accounts)
     }
@@ -1274,6 +1281,19 @@ impl sv_check::script::Services for DockerRun<'_> {
 
     fn remove_switched_off(&self) {
         let _ = self.backend.docker(&["rm", "-f", self.switched_off]);
+    }
+
+    fn start_again(&self) -> bool {
+        self.backend
+            .start_again(self.app_args, self.app, self.again)
+            && self
+                .backend
+                .wait_until_ready(self.via, self.again, self.plan)
+                .answered
+    }
+
+    fn remove_again(&self) {
+        let _ = self.backend.docker(&["rm", "-f", self.again]);
     }
 
     fn liveness(&self, after: &str) -> sv_check::running::Liveness {

@@ -79,8 +79,16 @@ pub mod oidc {
     pub const NEW_EMAIL: &str = "new-email";
     /// Every sign-in refused until another mode is set, as a person who declines (backlog 0629).
     pub const REFUSE: &str = "refuse";
+    /// The published details name another provider as their `issuer`, until another mode is set: an app reads them
+    /// as it starts, so the mode lasts while a second copy of the app starts and is signed in to (V10.5.3, ADR-127).
+    pub const WRONG_METADATA_ISS: &str = "wrong-metadata-iss";
+    /// The provider the wrong details name, one that does not exist (`OTHER_ISSUER` in the script).
+    pub const OTHER_ISSUER: &str = "http://sv-other-idp.invalid";
+    /// How many times the published details were served wrong since the mode was last set, as
+    /// `{ "served_wrong": n }`.
+    pub const METADATA: &str = "/_sv/metadata";
     /// Every mode the provider takes, in the order its script lists them.
-    pub const MODES: [&str; 10] = [
+    pub const MODES: [&str; 11] = [
         NORMAL,
         WRONG_NONCE,
         WRONG_AUD,
@@ -91,5 +99,6 @@ pub mod oidc {
         OTHER_PERSON,
         NEW_EMAIL,
         REFUSE,
+        WRONG_METADATA_ISS,
     ];
 }

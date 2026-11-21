@@ -16,9 +16,9 @@
 //!
 //! # What is not asked
 //!
-//! V6.8.1 and V10.2.2 need a second provider; V10.5.3 needs the provider's published details to
-//! change under an app that usually reads them once at start-up; V6.8.4 turns on what the app
-//! decides, not on anything the provider can send wrong.
+//! V6.8.1 and V10.2.2 need a second provider; V6.8.4 turns on what the app decides, not on anything
+//! the provider can send wrong. V10.5.3 needs the provider's published details wrong from the start,
+//! so it is asked of a second copy of the app, started once everything here is done (`metadata`).
 //!
 //! V10.5.2 is asked by sending two identities that are each correct: a different person who shares
 //! the first one's email address, and the first person after their email address changed. When
@@ -31,12 +31,14 @@ use crate::signed_in::{Http, Outcome, Rule, Session, finding, get, ok, send_fill
 use crate::stand_in::oidc as idp;
 use sv_manifest::OidcSection;
 
-const IDS: &str = "V10.1.2, V10.2.1, V7.6.2, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2, V10.3.1, V10.3.2, V10.3.3";
+const IDS: &str = "V10.1.2, V10.2.1, V7.6.2, V10.5.1, V10.5.4, V6.8.2, V10.2.2, V10.5.2, V10.3.1, V10.3.2, V10.3.3, V10.5.3";
 
+mod metadata;
 mod session;
 mod storage;
 mod tokens;
 
+pub(crate) use metadata::wrong_metadata;
 pub(crate) use storage::browser_storage;
 
 const CROSS_SESSION: Rule = Rule {

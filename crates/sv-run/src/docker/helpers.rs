@@ -102,6 +102,16 @@ impl DockerBackend {
         matches!(self.docker(&args), Ok((0, _)))
     }
 
+    /// Starts a copy of the app under another name and nothing else changed, the test provider's published details
+    /// being whatever its mode makes them when the copy reads them (V10.5.3). A copy left from an earlier start under
+    /// the same name is removed first.
+    pub(super) fn start_again(&self, app_args: &[String], app: &str, name: &str) -> bool {
+        let _ = self.docker(&["rm", "-f", name]);
+        let args = renamed_args(app_args, app, name);
+        let args: Vec<&str> = args.iter().map(String::as_str).collect();
+        matches!(self.docker(&args), Ok((0, _)))
+    }
+
     pub(super) fn start_model(&self, network: &str, name: &str) -> bool {
         let host = format!("HOST={name}");
         let port = format!("PORT={MODEL_PORT}");

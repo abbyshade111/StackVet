@@ -42,6 +42,7 @@ fn the_model_and_the_provider_are_each_asked_once_for_the_run() {
         via: &via,
         app: "app",
         switched_off: "app-off",
+        again: "app-again",
         app_args: &[],
         plan: &plan,
         mail: None,
