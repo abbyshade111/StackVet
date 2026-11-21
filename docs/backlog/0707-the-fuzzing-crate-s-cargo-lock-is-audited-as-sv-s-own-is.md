@@ -1,6 +1,6 @@
 # The fuzzing crate's Cargo.lock is audited, as sv's own is
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A6, its third point).
 `.github/workflows/audit.yml` runs `sv audit` over the workspace's `Cargo.toml`, `Cargo.lock`, and each crate's
