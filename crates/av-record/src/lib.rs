@@ -6,6 +6,8 @@
 //! - `hook_record` (ADR-122): one line for each command the tool ran and each file it wrote, kept by a hook.
 //! - `envelope` (ADR-159, decision 8): the task envelope, `agentvet.toml`, read and never judged here. New on 21
 //!   November 2026 (backlog 0715), not moved from anywhere.
+//! - `held` (ADR-159, decision 8): what the records show a tool did, set against the envelope. New on 21 November
+//!   2026 (backlog 0715).
 //! - `tool_behavior` (ADR-131): what the tool did that is worth a look, read from git, the hook record, and the last
 //!   report.
 //!
@@ -16,6 +18,7 @@
 
 pub mod build_loop;
 pub mod envelope;
+pub mod held;
 pub mod hook_record;
 pub mod plain;
 pub mod tool_behavior;

@@ -6,13 +6,13 @@
 //! when the person asks for it with `--hook-record`, the hook record (the commands the tool ran and the files it
 //! wrote, ADR-122). It reads no transcript, so it says nothing of what the tool claimed beyond what the hook record
 //! keeps. It also reads the task envelope, `agentvet.toml`, when the folder has one, and says what it holds and what
-//! it leaves as a question; nothing is held to it yet (backlog 0715, parts 2 and 3). It writes nothing and opens no
-//! network connection.
+//! it leaves as a question, and lists what the records show the tool did that falls outside it or touched a file
+//! that guards oversight (backlog 0715). It writes nothing and opens no network connection.
 //!
 //! Exit codes follow `sv`'s (ADR-029): 0 when the report was made; 2 when there was nothing to read, so nothing was
 //! said about the tool; 3 when `av` itself failed and there is no result.
 
-use av_record::{build_loop, envelope, hook_record, tool_behavior};
+use av_record::{build_loop, envelope, held, hook_record, tool_behavior};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -42,8 +42,9 @@ av report reads what is kept about the tool that worked in the folder: sv's reco
 git's history. With --hook-record it also reads the record of the commands the tool ran and the files it wrote, which
 a hook you installed keeps outside the folder (`sv connect claude --hook` prints it); it is read only when you ask,
 each time. It says what each record shows and how far each can be relied on, and what it could not see. When the
-folder holds a task file, agentvet.toml, it says what that allows and what it leaves unsaid. It reads no transcript,
-decides nothing, writes nothing, and opens no network connection. --json prints the same as JSON.";
+folder holds a task file, agentvet.toml, it says what that allows and what it leaves unsaid, and lists what the tool
+did that falls outside it. It reads no transcript, decides nothing, writes nothing, and opens no network connection.
+--json prints the same as JSON.";
 
 #[derive(Debug, PartialEq, Eq)]
 struct Options {
@@ -116,6 +117,8 @@ mod witness {
 struct Read {
     /// The task envelope, as it was read.
     envelope: envelope::Read,
+    /// What the records show against it, when there is one to hold them to.
+    held: Option<held::Held>,
     build_loop: sv_report::BuildLoop,
     /// The hook record, when the person asked for it.
     hook: Option<sv_report::hook::HookSeen>,
@@ -185,7 +188,8 @@ fn read(folder: &Path, with_hook: bool) -> Read {
             .to_owned(),
         match envelope::read(folder) {
             envelope::Read::Held(_) => {
-                "Whether the tool kept to its task: the task file was read, and nothing is held to it yet."
+                "Whether the tool did its task, or did it well: av sets what it wrote and ran against the task \
+                 file, and reads nothing of what the work was for."
             }
             envelope::Read::Unreadable(_) => {
                 "Whether the tool kept to its task: the task file could not be read, so there is nothing to hold \
@@ -212,8 +216,26 @@ fn read(folder: &Path, with_hook: bool) -> Read {
             "Git's history: the folder is not a git checkout, or git could not say.".to_owned(),
         );
     }
+    let envelope = envelope::read(folder);
+    let held = match &envelope {
+        envelope::Read::Held(e) => {
+            // A commit names its files from the top of its repository, and the task file names them from its own
+            // folder: the two are the same only when this folder is that top.
+            let history = match &commits {
+                None => Err("the folder is not a git checkout, or git could not say"),
+                Some(_) if !folder.join(".git").exists() => Err(
+                    "this folder is not the top of its repository, so a commit's file names cannot be set \
+                     against the task file yet",
+                ),
+                Some((list, _)) => Ok(list.as_slice()),
+            };
+            Some(held::against(e, history, done.as_deref()))
+        }
+        _ => None,
+    };
     Read {
-        envelope: envelope::read(folder),
+        envelope,
+        held,
         build_loop: loop_seen,
         hook,
         behavior,
@@ -337,10 +359,46 @@ fn envelope_lines(read: &envelope::Read) -> Vec<String> {
     for question in e.questions() {
         out.push(format!("Not said, so not assumed either way: {question}"));
     }
-    out.push(
-        "Nothing is held to this yet: av reads the file, and does not yet compare what the tool did with it."
-            .to_owned(),
-    );
+    out
+}
+
+/// What the records show against the envelope, in the report's words: each line with the record it was read from.
+fn held_lines(held: &held::Held) -> Vec<String> {
+    let mut out = Vec::new();
+    if held.seen.is_empty() {
+        out.push(
+            "Held to it, nothing read here falls outside it or touched a guarded file. That is what these records \
+             show, not that nothing did."
+                .to_owned(),
+        );
+    } else {
+        out.push(format!(
+            "Held to it, {} worth a look. Each is what a record shows, for you to read: a line here is not a \
+             finding, and many are right to do.",
+            match held.seen.len() + held.more {
+                1 => "1 thing is".to_owned(),
+                n => format!("{n} things are"),
+            }
+        ));
+    }
+    for seen in &held.seen {
+        out.push(format!(
+            "  {}: {} ({}; {})",
+            seen.group.label(),
+            sv_report::one_line(&seen.what),
+            sv_report::one_line(&seen.place),
+            match seen.witness {
+                held::Witness::Git => "from git's history",
+                held::Witness::Hook => "from the hook record",
+            }
+        ));
+    }
+    if held.more > 0 {
+        out.push(format!("  {} more not listed here.", held.more));
+    }
+    for gap in &held.not_held {
+        out.push(format!("Not held to it: {gap}"));
+    }
     out
 }
 
@@ -357,6 +415,11 @@ fn print(read: &Read, folder: &Path) {
     println!("The task (agentvet.toml)");
     for line in envelope_lines(&read.envelope) {
         println!("  {line}");
+    }
+    if let Some(held) = &read.held {
+        for line in held_lines(held) {
+            println!("  {line}");
+        }
     }
 
     println!();
@@ -418,7 +481,7 @@ fn json(read: &Read) -> serde_json::Value {
                 "envelope": e,
                 "guards": e.guards(),
                 "questions": e.questions(),
-                "held_to": false,
+                "held_to": read.held,
             }),
         },
         "build_loop": {
