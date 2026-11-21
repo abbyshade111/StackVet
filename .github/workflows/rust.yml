@@ -589,7 +589,8 @@ jobs:
     # image (this repository, this workflow, this commit) for its digest, signed keylessly through
     # Sigstore with a certificate tied to this run, and pushes it beside the image. No key is kept.
     # Anybody can check it: `gh attestation verify oci://ghcr.io/abbyshade111/stackvet-sv:latest
-    # --owner abbyshade111`.
+    # --owner abbyshade111 --source-ref refs/heads/main`. The `--source-ref` is what keeps the check to
+    # main: this job's `if:` and Environment are in a file a branch can change (backlog 0711).
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [test, image, image-arm64]
     # The `publish` Environment, made by the owner in the repository's settings on 13 October 2026,

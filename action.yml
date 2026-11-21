@@ -95,9 +95,12 @@ runs:
           ghcr.io/abbyshade111/stackvet-sv|ghcr.io/abbyshade111/stackvet-sv:*|ghcr.io/abbyshade111/stackvet-sv@*)
             docker pull --quiet "$IMAGE" > /dev/null
             ref=$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE")
-            # Built by this repository's own workflow (whose publish job runs only on main), and nowhere else.
+            # Built by this repository's own workflow, from the branch main, and nowhere else. The workflow and its
+            # publish Environment are in files a branch can change, so the signature itself must say main
+            # (backlog 0711): an image signed from any other branch is refused here.
             gh attestation verify "oci://$ref" --repo abbyshade111/StackVet \
-              --signer-workflow abbyshade111/StackVet/.github/workflows/rust.yml
+              --signer-workflow abbyshade111/StackVet/.github/workflows/rust.yml \
+              --source-ref refs/heads/main
             ;;
           *)
             echo "::notice title=StackVet::$IMAGE is not the published image, so it is run without a signature check"

@@ -19,3 +19,7 @@
 **The owner's decision, 13 October 2026:** yes, the same way as 0422: an Environment named `publish` restricted to the branch `main`, made by the owner in the repository's settings, then `environment: publish` on the `publish` job with a Later line on ADR-051. Built together with 0423.
 
 **Done, 13 October 2026** (session stackvet-deep-review): the owner made the `publish` Environment (branch `main`, read back through the API); `rust.yml`'s `publish` job names it; ADR-051, Later. The `action.yml` half (verifying the source ref) was not changed: the Environment makes the branch rule hold before anything is signed.
+
+**Corrected, 21 November 2026 (backlog 0711):** the Environment does not make the branch rule hold by itself, since
+the job names it in the file a branch controls (the security review of 21 November, A1). The `action.yml` half of the
+fix above is now built: `--source-ref refs/heads/main` (ADR-051 and ADR-081, Later, 21 November 2026).

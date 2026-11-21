@@ -1,6 +1,6 @@
 # The image is trusted only when it was signed from main
 
-**Status:** open
+**Status:** partly done: the owner's choice on taking the workflows permission away from the sessions' App (ADR-158), asked on 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A1). Title and text
 kept to the fix until it is built, as the review asked.
