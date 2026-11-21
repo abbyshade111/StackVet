@@ -45,7 +45,7 @@ brew install abbyshade111/stackvet/sv
 sv --version
 ```
 
-This builds the latest release, v0.2.0, and `brew upgrade sv` moves to the next one. To build the newest code on `main`
+This builds the latest release, v0.3.0, and `brew upgrade sv` moves to the next one. To build the newest code on `main`
 instead, add `--HEAD` (`brew install --HEAD abbyshade111/stackvet/sv`); `brew upgrade --fetch-HEAD sv` then updates it.
 This is tried automatically on a Mac and on Linux every week and on every change to the formula
 ([github.com/abbyshade111/homebrew-stackvet](https://github.com/abbyshade111/homebrew-stackvet)), and two AI coding
@@ -154,6 +154,35 @@ sv report /Users/you/code/my-app --run
 
 To update StackVet later: `cd ~/stackvet`, then `git pull`, then `sh tools/install.sh` again. It
 replaces the program and its files together.
+
+## ConfigVet (`cv`), StackVet's companion for deployment files
+
+ConfigVet's `cv` reads an app's Dockerfiles, compose files, Kubernetes manifests, and Terraform plans, and says for
+each setting whether it is set safely, set unsafely, missing with a safe or an unsafe default, or not assessed. It is a
+preview, packaged from v0.3.0 the way `sv` is, and installed beside it or on its own.
+
+On a Mac or Linux, Homebrew builds it from source, as it does `sv`:
+
+```bash
+brew install abbyshade111/stackvet/cv
+cv --version
+```
+
+On Windows, Scoop installs its own download, zipped with its data and signed where GitHub built it:
+
+```powershell
+scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet
+scoop install stackvet/cv
+cv --version
+```
+
+Unlike `sv`, plain `cv` works in PowerShell: PowerShell has no command of its own by that name (checked on Windows by
+the release workflow). `brew upgrade cv` or `scoop update cv` updates it. Both installs are tried automatically, on a
+Mac, on Linux, and on Windows, on every change to the formula or the manifest and every week; neither has been tried
+by hand yet.
+
+`cv check <folder>` also runs hadolint, Checkov, and Trivy over the same files where they are installed, and says so,
+with how to install each, where they are not; `--no-tools` leaves them out.
 
 ## An image of your own
 

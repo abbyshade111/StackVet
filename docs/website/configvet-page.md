@@ -143,7 +143,7 @@ requirement attached.
 to production, a first for this project, so the rules were written before any of it is built:
 
 - **Off until you ask for it by name,** one provider at a time, with a command of its own. Never on by default, never
-  part of a report run, and never from ConfigVet's MCP server.
+  part of a report run, and never from an MCP server, should ConfigVet get one.
 - **The token comes from the environment or the provider's own credential helper,** never from an option, since
   options are kept in shell history. It is never written to any file, log, or report.
 - **Read only.** A token the provider says can write is refused. Where a provider can't say, the report says so
@@ -188,8 +188,8 @@ failure.
 - **StackVet's own network fence doesn't change.** StackVet gains no connection from ConfigVet. When the live
   readers are built, they go in a part of the code StackVet's program doesn't include, and a test will fail if it
   ever does.
-- **Two programs, installed separately.** `sv` and `cv` will come from one release, with one version number, as two
-  packages. Installing StackVet never brings a program that can reach a live account.
+- **Two programs, installed separately.** `sv` and `cv` come from one release, with one version number, as two
+  packages, since v0.3.0. Installing StackVet never brings a program that can reach a live account.
 
 StackVet is written for people who are not programmers. ConfigVet is written for ops and DevSecOps engineers, in the
 field's own terms.
@@ -209,7 +209,8 @@ field's own terms.
 - **No live accounts, drift, or joins between layers yet,** such as an app that trusts a proxy header with no proxy in
   front of it, or Cloudflare's SSL mode leaving the hop to the origin unencrypted while the app's HSTS header promises
   otherwise. Those need a second source to compare, so they come after the first live provider.
-- **Not yet run through the outside tools:** kube-linter, and Terraform plans tried through Checkov and Trivy.
+- **Not yet tried with the outside tools:** kube-linter isn't run, and no Terraform plan has been tried through
+  Checkov or Trivy yet, though Checkov is handed the plans `cv` read, and Trivy the whole folder.
 
 Until these are built, ConfigVet stays a preview, and this page says what each part really does as it lands.
 
@@ -218,20 +219,37 @@ Until these are built, ConfigVet stays a preview, and this page says what each p
 
 ## Trying it
 
-**Built from source, for now.**
+**Released with StackVet, as a package of its own.**
 
-ConfigVet is not packaged yet. To try it today, build it from StackVet's repository with Rust's `cargo`:
+`cv` comes from the same release as StackVet, with the same version number, and installs separately. On a Mac or
+Linux, Homebrew builds it on your computer:
 
 ```
-cargo build --release -p cv-cli
+brew install abbyshade111/stackvet/cv
 ```
 
-The program is `cv`, in `target/release/`. A Homebrew formula and a Scoop manifest for `cv` are coming with StackVet
-v0.3.0, beside StackVet's own. Install hadolint, Checkov, and Trivy yourself if you want ConfigVet to run them;
-without them, it says they did not run.
+On Windows, Scoop installs the signed download from the release:
 
-If something is wrong or confusing, tell us in a GitHub issue.
+```
+scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet
+scoop install stackvet/cv
+```
+
+Or build it from StackVet's repository with Rust's `cargo`, and the program is `cv`, in `target/release/`:
+
+```
+cargo build --release --locked -p cv-cli
+```
+
+Install hadolint, Checkov, and Trivy yourself if you want ConfigVet to run them; without them, it says they did not
+run.
+
+If something is wrong or confusing, tell us in a [GitHub issue](https://github.com/abbyshade111/StackVet/issues).
 
 - The owner's answer on the release (ADR-157): a `cv` formula in `homebrew-stackvet` and a manifest in
-  `scoop-stack-vet`, no new repositories. Being prepared in backlog 0694 to ship with v0.3.0, which is not tagged on
-  21 November 2026; no install command is printed until it is. Contact is GitHub issues only, as on the home page.
+  `scoop-stack-vet`, no new repositories (backlog 0694). StackVet v0.3.0, published 21 November 2026, is the first
+  release with `cv`'s own Windows zip (#2462), signed beside `sv`'s. The bucket's `cv.json` (scoop-stack-vet#3) and
+  the tap's release formula (homebrew-stackvet#5) are the packages these lines install; the pull request that wrote
+  them (backlog 0696) merges only after both have merged with their install checks passing. `scoop bucket add` is only needed once, and is the same line as for `sv`; PowerShell
+  has no command named `cv`, which the release workflow checks. `--locked` is the formula's own. Contact is GitHub
+  issues only, as on the home page.

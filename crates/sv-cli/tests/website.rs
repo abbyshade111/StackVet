@@ -300,7 +300,16 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
     let cv = read("configvet.html");
     assert!(cv.contains("ConfigVet: a review of how your app is deployed. A preview."));
     assert!(cv.contains("Not assessed is never a pass."));
-    assert!(cv.contains("cargo build --release -p cv-cli"));
+    assert!(cv.contains("cargo build --release --locked -p cv-cli"));
+    // From v0.3.0, cv's own packages: the tap's release formula and the bucket's manifest, each printed only once
+    // its pull request merged with its install check passing (backlog 0696). The sv lines stay INSTALL.md's.
+    assert!(cv.contains("brew install abbyshade111/stackvet/cv"));
+    assert!(cv.contains("scoop install stackvet/cv"));
+    assert!(
+        !cv.contains("scoop install stackvet/sv")
+            && !cv.contains("brew install abbyshade111/stackvet/sv"),
+        "the ConfigVet page installs StackVet's sv; that is INSTALL.md's"
+    );
     assert!(
         cv.contains("<table>"),
         "the five outcomes are not drawn as a table"
@@ -318,12 +327,7 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         );
     }
     // No claim that cv opens no network connection: live reading will (the owner's word, 21 November 2026).
-    for not_yet in [
-        "cv live",
-        "brew install",
-        "scoop install",
-        "opens no network connection",
-    ] {
+    for not_yet in ["cv live", "opens no network connection"] {
         assert!(
             !cv.contains(not_yet),
             "the page says what is not built, or will not stay true: {not_yet}"

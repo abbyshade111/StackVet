@@ -242,9 +242,22 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
             .find(|w| w.len() > 5)
             .unwrap_or(&title)
             .to_owned();
+        // The page writes each title through Python's `html.escape`, so a quote or an apostrophe in the title is
+        // `&quot;` or `&#x27;` there, and is looked for so (until 21 November 2026 it was looked for as typed, and the
+        // first open item with `"` in its title, backlog 0697, or `'` in its cut-off word, failed the test).
         assert!(
-            section.contains(&word) || section.contains(&title.replace('`', "")),
+            section.contains(&html_escaped(&word))
+                || section.contains(&html_escaped(&title.replace('`', ""))),
             "the first {flag} item ({title:?}) is under its heading"
         );
     }
+}
+
+/// Text as Python's `html.escape(text)` writes it, which is how `tools/docs_page.py` writes each title on the board.
+fn html_escaped(text: &str) -> String {
+    text.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#x27;")
 }
