@@ -172,7 +172,8 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
         "one row per item, plus a header row per table"
     );
     // Four headings in this order, and each item under the right one: the first open item the tool lists is
-    // under "Still to come", the first claimed one under "Being worked on", and the first held one under "On hold".
+    // under "Still to come", the first claimed one (or, with none claimed, the first partly done one, which the page
+    // lists there too) under "Being worked on", and the first held one under "On hold".
     let at = |needle: &str| {
         board
             .find(needle)
@@ -216,16 +217,23 @@ fn the_board_page_sorts_the_items_by_status_and_carries_the_tools_counts() {
                 .join(" "),
         )
     };
-    for (flag, from, to) in [
-        ("--open", coming, holding),
-        ("--claimed", working, coming),
-        ("--hold", holding, done),
+    // "Being worked on" holds what is claimed and what is partly done (`board` in tools/docs_page.py), so it says
+    // None only when neither list has an item (backlog 0625 was the one partly done item, and nothing was claimed,
+    // on 20 November 2026).
+    for (flags, from, to) in [
+        (&["--open"][..], coming, holding),
+        (&["--claimed", "--partly"][..], working, coming),
+        (&["--hold"][..], holding, done),
     ] {
         let section = &board[from..to];
-        let Some(title) = first_title(flag) else {
+        let Some((flag, title)) = flags
+            .iter()
+            .find_map(|flag| first_title(flag).map(|title| (*flag, title)))
+        else {
+            let flags = flags.join(" or ");
             assert!(
                 section.contains("<p>None.</p>"),
-                "no {flag} item, and its heading says None."
+                "no {flags} item, and its heading says None."
             );
             continue;
         };
