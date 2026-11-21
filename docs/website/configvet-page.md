@@ -188,8 +188,8 @@ failure.
 - **StackVet's own network fence doesn't change.** StackVet gains no connection from ConfigVet. When the live
   readers are built, they go in a part of the code StackVet's program doesn't include, and a test will fail if it
   ever does.
-- **Two programs, installed separately.** `sv` and `cv` will come from one release, with one version number, as two
-  packages. Installing StackVet never brings a program that can reach a live account.
+- **Two programs, installed separately.** `sv` and `cv` come from one release, with one version number, as two
+  packages, since v0.3.0. Installing StackVet never brings a program that can reach a live account.
 
 StackVet is written for people who are not programmers. ConfigVet is written for ops and DevSecOps engineers, in the
 field's own terms.
@@ -219,29 +219,37 @@ Until these are built, ConfigVet stays a preview, and this page says what each p
 
 ## Trying it
 
-**Built from source, for now.**
+**Released with StackVet, as a package of its own.**
 
-On a Mac or Linux, Homebrew builds the newest `cv` from StackVet's `main`:
+`cv` comes from the same release as StackVet, with the same version number, and installs separately. On a Mac or
+Linux, Homebrew builds it on your computer:
 
 ```
-brew install --HEAD abbyshade111/stackvet/cv
+brew install abbyshade111/stackvet/cv
 ```
 
-Anywhere else, build it from StackVet's repository with Rust's `cargo`:
+On Windows, Scoop installs the signed download from the release:
+
+```
+scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet
+scoop install stackvet/cv
+```
+
+Or build it from StackVet's repository with Rust's `cargo`, and the program is `cv`, in `target/release/`:
 
 ```
 cargo build --release --locked -p cv-cli
 ```
 
-The program is `cv`, in `target/release/`. With StackVet v0.3.0, `cv` gets released packages of its own: a Homebrew
-formula that builds the release, and a Windows download installed with Scoop, beside StackVet's own. Install
-hadolint, Checkov, and Trivy yourself if you want ConfigVet to run them; without them, it says they did not run.
+Install hadolint, Checkov, and Trivy yourself if you want ConfigVet to run them; without them, it says they did not
+run.
 
 If something is wrong or confusing, tell us in a [GitHub issue](https://github.com/abbyshade111/StackVet/issues).
 
 - The owner's answer on the release (ADR-157): a `cv` formula in `homebrew-stackvet` and a manifest in
-  `scoop-stack-vet`, no new repositories. The tap's `Formula/cv.rb` is head-only until v0.3.0 (backlog 0694), and the
-  tap's required checks `install-cv (macos-latest)` and `install-cv (ubuntu-latest)` install and test it (passing on
-  the tap's `main`, 21 November 2026). The Windows zip is the release workflow's from v0.3.0 (#2462), which is not
-  tagged on 21 November 2026, so no Scoop command and no plain `brew install` is printed until the packages move
-  (backlog 0696). `--locked` is the formula's own. Contact is GitHub issues only, as on the home page.
+  `scoop-stack-vet`, no new repositories (backlog 0694). StackVet v0.3.0, published 21 November 2026, is the first
+  release with `cv`'s own Windows zip (#2462), signed beside `sv`'s. The bucket's `cv.json` (scoop-stack-vet#3) and
+  the tap's release formula (homebrew-stackvet#5) were checked as merged, with their install checks passing, before
+  these lines were (backlog 0696). `scoop bucket add` is only needed once, and is the same line as for `sv`; PowerShell
+  has no command named `cv`, which the release workflow checks. `--locked` is the formula's own. Contact is GitHub
+  issues only, as on the home page.

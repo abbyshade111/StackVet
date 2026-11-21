@@ -104,15 +104,15 @@ follow up on.
 Your AI tool can help with that part, too. It can read the report through with you, explain why it matters, fix
 what needs attention, and help you answer the questions only you can.
 
-*Example lines, not from a real app:*
+*Lines from a real report on Notes with users, one of StackVet's own example apps, shortened:*
 
 | | |
 |---|---|
-| needs attention | Passwords are stored with a method that is too quick to guess against. |
-| checked | No passwords or keys are written into the code. |
-| checked in part | Pages tell the browser not to let other sites frame them, but only the pages it could reach were looked at. |
-| not assessed | Whether signing out really ends the session: the app was not started, so this could not be tried. |
-| not verified | Whether backups are kept safe: nothing in StackVet can look at this. You can answer it yourself. |
+| needs attention | A password is stored, or a key made from it, with too few rounds of work. |
+| checked | Database queries keep the data apart from the query itself, so nobody can inject their own query. |
+| checked in part | The app sends people on to another site only when that site is on a list the app trusts: one check tried part of this. |
+| not verified | Passwords chosen at sign-up are checked against a set of breached passwords. Only you can check this one. |
+| not assessed | 241 more requirements: nobody has answered the question that decides whether they apply. |
 
 None of these words means "passed." Even *checked* means one check looked and found nothing wrong, not that the
 whole requirement is met.
@@ -120,7 +120,12 @@ whole requirement is met.
 - "Starts with the most important things to fix" is true since 13 October 2026 (item 2, done). "Every requirement
   in plain language" is *not yet true* (item 3): today each requirement is shown in OWASP's formal wording, with
   checks named by internal ids.
-- The example lines are invented and say so; a real report from one of the example apps replaces them before launch.
+- The example lines are the report on `examples/notes-with-users` the reports page links
+  (`docs/website/reports/notes-with-users/`, made 21 November 2026 by `sv` 0.2.0 at the commit its files name, backlog
+  0696): `fix-now.md`'s finding (V11.4.2), and `compliance.md`'s rows for V1.2.4 (checked), V3.7.2 (checked in part,
+  `ast.open-redirect`), V6.2.12 (not verified, "only you can"), and its count of 241 not placed ("Not assessed —
+  nobody has answered"). Each requirement's words are the report's plain ones, shortened; none is invented. When that
+  report is made again, check these lines against it.
 - The reports page (`reports-page.md`, backlog 0413) says what each report file is for and who reads it, with a real
   report of one example app; it is linked from this section, and the example lines above can be taken from it.
 - The reading prompt (`sv prompts report`) has not yet been tried in an AI tool, hence "can".
@@ -134,7 +139,7 @@ OWASP is a nonprofit that writes the security checklists many companies build to
 | Standard | What it covers | Requirements | StackVet can confirm or fail |
 |---|---|---|---|
 | ASVS 5.0, levels 1 and 2 | Web apps and the services behind them | 253 | 122 |
-| ASVS 5.0, level 3 | The same, for apps where a break-in would do the most harm | 92 | 10 |
+| ASVS 5.0, level 3 | The same, for apps that need the highest level of security | 92 | 10 |
 | AISVS 1.0, levels 1 and 2 | Apps that use AI | 146 | 26 |
 | AISVS 1.0, level 3 | The same, at the highest level | 45 | 1 |
 | Secure by Design 0.5 | Decisions made before the code | 36 | built into planning |
@@ -151,8 +156,8 @@ verified.
 
 ASVS and AISVS sort their requirements into three levels. Level 1 is the baseline for any app, and level 2 is for
 most apps that hold people's information; StackVet holds each app to one of those two, from what you tell it the app
-does and keeps. Level 3, for apps where a break-in would do the most harm, such as banking or medical systems, is
-there when you ask for it: StackVet holds your app to level 3 if you set it.
+does and keeps. Level 3, for apps that need to show the highest level of security, such as a bank's online
+banking, is there when you ask for it: StackVet holds your app to level 3 if you set it.
 
 The Secure by Design requirements are decisions, not code, so no check can settle them. Instead, StackVet builds them
 into the design process: before your AI tool writes a feature, it gets the decisions to make and the prompts that
@@ -175,7 +180,10 @@ than guessing.
   *needs attention*. Many can only ever be *checked in part*, since the check tries part of what the requirement
   asks; `docs/COVERAGE.md` gives that count under the level table.
 - "If you set it" is `[app] level = 3` in `stackvet.toml` (ADR-130), which only ever raises the level. The level 3
-  examples are to be checked against ASVS's own wording before launch.
+  words were checked against ASVS 5.0.0's own, its chapter "What is the ASVS" (`5.0/en/0x03-What-is-the-ASVS.md` at
+  the tag `v5.0.0_release`), on 21 November 2026 (backlog 0696): level 3 "should be the goal for applications looking
+  to demonstrate the highest levels of security", and its example is a bank's online banking. The earlier "where a
+  break-in would do the most harm" and "medical systems" were not ASVS's, and are gone.
 - A picture for this section: `docs/coverage-by-level.svg` draws the ASVS level table as bars, and
   `docs/coverage-by-chapter.svg` the chapter table, each part labeled with its count. `tools/coverage.py` draws both
   from the same counts as `docs/COVERAGE.md`, so the site can show one beside the table (backlog 0483).
