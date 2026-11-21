@@ -241,7 +241,12 @@ and share it, even in their own work, as long as they keep the license with it, 
 new: very few people have used it yet, and what is known not to work is listed openly. If something confuses you,
 tell us in a GitHub issue.
 
+Deploy apps for a living? [ConfigVet](configvet.html), StackVet's companion for ops and DevSecOps engineers, reviews
+the files that say how an app is deployed. It's a preview.
+
 - Contact is GitHub issues only, for now.
+- The ConfigVet line is the owner's choice of 21 November 2026: one page, labeled preview, linked from the home page
+  (backlog 0695; ADR-132, Later).
 
 ## 9. The research
 
