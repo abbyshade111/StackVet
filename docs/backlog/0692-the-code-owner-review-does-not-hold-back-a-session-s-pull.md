@@ -1,6 +1,6 @@
 # The code-owner review does not hold back a session's pull request, which is opened as the owner
 
-**Status:** open
+**Status:** claimed by claude/0692-session-app, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from what the owner found reviewing #2446: GitHub offered no way to
 approve it. Sessions open pull requests through `gh` signed in as the owner (`abbyshade111`), so the owner is the
@@ -27,3 +27,14 @@ merges, not yet from GitHub's documentation: the first step is to confirm the ru
   `.github/workflows/` and is seen to wait for the owner's review (or, with the second choice, ADR-051 saying it does
   not).
 - `.github/rulesets.json` (backlog 0690) records the rule as it is; a change to it goes through that file.
+
+**The owner's choices, 21 November 2026, asked with a recommendation for each:** a separate identity for sessions,
+not a corrected record; and a GitHub App, not a second account. The decision is ADR-158, proposed in this claim and
+accepted in the pull request that builds it. The owner creates the App and keeps its key (step 1 below); the build is
+the rest.
+
+- **The owner:** create the App with the permissions ADR-158 lists, install it on the three repositories, make its
+   private key, and put the key where ADR-158 says. A session never sees the key.
+- **The build:** the script in `tools/` that makes an hour's token from the key; CLAUDE.md's "Git is pre-approved"
+   saying sessions open pull requests and push with it; ADR-051's 14 October entry corrected by a Later entry; the
+   witness of ADR-158; and what cloud sessions use, said.
