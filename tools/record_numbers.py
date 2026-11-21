@@ -12,7 +12,10 @@ conflict in git: on 12 October 2026 two design entries numbered 0376 merged side
     36 numbers taken twice on `main` before 12 October 2026 stay as they are, since their files are cited by path),
   - adds a number the base branch already holds, or
   - adds a number that another open pull request, opened before it, adds too (with --github, in CI),
-naming the file or the pull request that holds it. The one opened first keeps the number.
+naming the file or the pull request that holds it. The one opened first keeps the number. A pull request whose head
+commit this one already contains, adding the same file (or the same item moved under done/ or hold/), is not another
+item: it is this one's own claim, still open (backlog 0714). A head commit not in this checkout is never taken as
+contained, so the check passes nothing it could not see.
 
 `next` prints the next number free on this branch and every branch pushed to origin, after `git fetch`. Neither
 sees a number a session holds without having pushed it: a claim pushed early is what makes a number visible.
@@ -76,10 +79,26 @@ def new_numbers(base, head, cwd=None):
     return set(numbered(files_at(head, cwd))) - set(numbered(files_at(start, cwd)))
 
 
+def same_item(paths, theirs):
+    """Whether two lists of files with one number are the same item: one file's name, wherever under its folder (an
+    item moved to done/ or hold/ keeps its name)."""
+    leaf = lambda path: path.rsplit("/", 1)[-1]  # noqa: E731
+    return bool(paths) and bool(theirs) and {leaf(p) for p in paths} == {leaf(p) for p in theirs}
+
+
+def contains(commit, head, cwd=None):
+    """Whether `head`'s history holds `commit`. A commit this checkout does not have is not held."""
+    if not commit or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        return False
+    r = subprocess.run(["git", "merge-base", "--is-ancestor", commit, head], cwd=cwd or ROOT, capture_output=True)
+    return r.returncode == 0
+
+
 def problems(head, base, new, others, me):
     """What stops this pull request, in words. `head` and `base` are {(kind, n): [paths]} for the branch and for the
     base branch's tip; `new` the (kind, n) this pull request adds (those not where it branched from); `others` the
-    other open pull requests, each {"number", "created_at", "paths"}; `me` this one's {"number", "created_at"}."""
+    other open pull requests, each {"number", "created_at", "paths"}, and "contained" when this branch holds that pull
+    request's head commit; `me` this one's {"number", "created_at"}."""
     said = []
     for (kind, number), paths in sorted(head.items()):
         # Numbers taken twice before this check existed stay as they are: their files are cited by path. Only a
@@ -98,7 +117,10 @@ def problems(head, base, new, others, me):
             if other["number"] == me["number"]:
                 continue
             first = (other["created_at"], other["number"]) < (me["created_at"], me["number"])
-            if first and key in numbered(other["paths"]):
+            theirs = numbered(other["paths"]).get(key)
+            if first and theirs and other.get("contained") and same_item(head.get(key, []), theirs):
+                continue  # This branch holds that pull request's commit and the same file: its own claim.
+            if first and theirs:
                 said.append(f"{name(kind, number)} is also added by pull request #{other['number']}, opened first, "
                             f"so it keeps the number. Renumber this one before it merges "
                             f"(`python3 tools/record_numbers.py next {kind}`).")
@@ -124,7 +146,7 @@ def open_pulls(repository, token):
     pulls = []
     for pr in get(f"{api}/pulls?state=open"):
         files = get(f"{api}/pulls/{pr['number']}/files")
-        pulls.append({"number": pr["number"], "created_at": pr["created_at"],
+        pulls.append({"number": pr["number"], "created_at": pr["created_at"], "head_sha": pr["head"]["sha"],
                       "paths": [f["filename"] for f in files if f.get("status") in ("added", "renamed", "copied")]})
     return pulls
 
@@ -139,6 +161,8 @@ def check(base, head, event=None, github=False):
         me = {"number": pr.get("number", 0), "created_at": pr.get("created_at", "9999")}
     if github:
         others = open_pulls(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"])
+        for other in others:
+            other["contained"] = contains(other.get("head_sha"), head)
     said = problems(head_files, base_files, new, others, me)
     if said:
         print("Two files cannot share a number:\n\n  " + "\n  ".join(said))
@@ -195,6 +219,18 @@ def self_test():
     moved = numbered(["docs/backlog/done/0249-b.md"])
     other = {"number": 19, "created_at": "2026-10-12T09:00:00Z", "paths": ["docs/backlog/done/0249-b.md"]}
     assert problems(moved, moved, set(), [other], me) == []
+    # Backlog 0714: a build that holds its claim's commit and the same item, moved to done/, is not told to renumber;
+    # one that shares the number but not the commit is, as is one that holds the commit but a different file.
+    claim = {"number": 19, "created_at": "2026-10-12T09:00:00Z", "paths": ["docs/backlog/0714-x.md"]}
+    build = numbered(["docs/backlog/done/0714-x.md"])
+    assert problems(build, {}, set(build), [dict(claim, contained=True)], me) == []
+    said = problems(build, {}, set(build), [dict(claim, contained=False)], me)
+    assert len(said) == 1 and "#19" in said[0], said
+    said = problems(build, {}, set(build), [claim], me)
+    assert len(said) == 1 and "#19" in said[0], said
+    other_item = numbered(["docs/backlog/0714-y.md"])
+    said = problems(other_item, {}, set(other_item), [dict(claim, contained=True)], me)
+    assert len(said) == 1 and "#19" in said[0], said
     # Its own entry in the list is not another pull request.
     assert problems(head, {}, set(head), [dict(earlier, number=20)], me) == []
     # What a branch adds, read from git: an item moved to done/ is not new, one written is.
@@ -216,6 +252,19 @@ def self_test():
         g("add", "-A"); g("commit", "-q", "-m", "work")
         got = new_numbers("main", "work", cwd=tmp)
         assert got == {("backlog", 2)}, got
+        # A commit the branch was built on is held; one beside it, or one this checkout never had, is not.
+        claim_sha = g("rev-parse", "HEAD").strip()
+        g("switch", "-q", "-c", "build")
+        write("docs/backlog/0003-c.md", "# c\n")
+        g("add", "-A"); g("commit", "-q", "-m", "build")
+        g("switch", "-q", "main")
+        write("docs/backlog/0004-d.md", "# d\n")
+        g("add", "-A"); g("commit", "-q", "-m", "beside")
+        beside = g("rev-parse", "HEAD").strip()
+        assert contains(claim_sha, "build", cwd=tmp)
+        assert not contains(beside, "build", cwd=tmp)
+        assert not contains("0" * 40, "build", cwd=tmp)
+        assert not contains("not a commit", "build", cwd=tmp) and not contains(None, "build", cwd=tmp)
     print("record_numbers self-test: ok")
 
 
