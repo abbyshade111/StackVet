@@ -1,6 +1,6 @@
 # V10.5.3: the app's own check of the provider's published details, which needs a second start of the app (20 October 2026)
 
-**Status:** open
+**Status:** claimed by claude/0620-issuer-check, 21 November 2026
 
 Split from backlog 0500 at the owner's choice of 20 October 2026, as the one piece of it not built. Severity: low.
 
