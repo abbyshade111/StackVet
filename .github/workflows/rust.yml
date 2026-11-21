@@ -549,10 +549,23 @@ jobs:
           test "$arch" = arm64 || { echo "the image built here is $arch, not arm64"; exit 1; }
 
       - name: Build sv natively, to compare with
-        # rustup is installed first where the runner's image has none.
+        # rustup is installed first where the runner's image has none (on 21 November 2026 it had one, so this
+        # was not needed). A named rustup, downloaded for this runner's platform and checked against the SHA-256
+        # rustup published for it, runs only when the check passes (backlog 0708): never whatever an address
+        # serves that day. The checksum was read on 21 November 2026 from
+        # https://static.rust-lang.org/rustup/archive/1.29.3/aarch64-unknown-linux-gnu/rustup-init.sha256 and
+        # matched the downloaded file. To move the pin, change the version and take the new file's checksum
+        # from the same place.
+        env:
+          RUSTUP_VERSION: 1.29.3
+          RUSTUP_SHA256: 9f608c142e0e38a78957d0661ba1dfaf0b6fb37184cfaa4b9a0aa57af6184282
         run: |
           if ! command -v rustup > /dev/null; then
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+            curl --proto '=https' --tlsv1.2 -sSf -o "$RUNNER_TEMP/rustup-init" \
+              "https://static.rust-lang.org/rustup/archive/$RUSTUP_VERSION/aarch64-unknown-linux-gnu/rustup-init"
+            echo "$RUSTUP_SHA256  $RUNNER_TEMP/rustup-init" | sha256sum --check --strict
+            chmod +x "$RUNNER_TEMP/rustup-init"
+            "$RUNNER_TEMP/rustup-init" -y --profile minimal --default-toolchain none
             export PATH="$HOME/.cargo/bin:$PATH"
           fi
           rustup toolchain install stable --profile minimal && rustup default stable && cargo build --release --locked -p sv-cli
