@@ -52,7 +52,7 @@ ARG SV_GIT_COMMIT=
 RUN find crates -type f -exec touch {} + \
  && SV_GIT_COMMIT="$SV_GIT_COMMIT" cargo build --release --locked -p sv-cli
 
-FROM debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+FROM debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
 # git answers whether a secrets file was ever committed. It refuses a repository owned by another
 # user, which a mounted folder often is on Linux, and then that check is quietly not assessed.
 RUN apt-get update \
