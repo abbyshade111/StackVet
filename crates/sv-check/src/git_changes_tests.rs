@@ -4,7 +4,7 @@
 use super::*;
 use std::process::Command;
 
-fn run(dir: &Path, args: &[&str]) {
+pub(super) fn run(dir: &Path, args: &[&str]) {
     let ok = Command::new("git")
         .arg("-C")
         .arg(dir)

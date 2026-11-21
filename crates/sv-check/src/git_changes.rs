@@ -115,6 +115,7 @@ fn read(app_dir: &Path, hash: String) -> Option<Commit> {
 
 /// The files and lines of `git show --raw --patch` text, into `commit`. An added line belongs to the file its `+++ b/`
 /// header names, a removed one to its `--- a/` header's, so a deleted file's lines are kept under its own name.
+/// Every name is read as git holds it, not as it writes it (`unquoted`, `header_name`).
 fn parse(diff: &str, commit: &mut Commit) {
     let (mut new, mut old): (Option<String>, Option<String>) = (None, None);
     // Between a `diff` line and its first `@@`, where `---` and `+++` are headers rather than lines of the file.
@@ -128,16 +129,16 @@ fn parse(diff: &str, commit: &mut Commit) {
                     .last()
                     .and_then(|s| s.chars().next());
                 if let Some(status) = status {
-                    commit.files.push((status, path.to_owned()));
+                    commit.files.push((status, unquoted(path)));
                 }
             }
         } else if line.starts_with("diff ") {
             (new, old, header) = (None, None, true);
         } else if header {
             if let Some(path) = line.strip_prefix("+++ ") {
-                new = path.strip_prefix("b/").map(str::to_owned);
+                new = header_name(path, "b/");
             } else if let Some(path) = line.strip_prefix("--- ") {
-                old = path.strip_prefix("a/").map(str::to_owned);
+                old = header_name(path, "a/");
             } else if line.starts_with("@@") {
                 header = false;
             }
@@ -152,6 +153,66 @@ fn parse(diff: &str, commit: &mut Commit) {
     }
 }
 
+/// A file's name as git holds it, from how `git show` writes it (backlog 0713). Git writes a name that holds a letter
+/// outside ASCII, a quote, a backslash, or a control character in quotes, each such byte as a backslash and a letter
+/// (`\t`, `\"`, `\\`) or three octal digits (`\303\251`); any other name it writes as it is. A name in quotes that
+/// does not read as git's quoting is left as written, never guessed at.
+fn unquoted(written: &str) -> String {
+    let Some(inner) = written
+        .strip_prefix('"')
+        .and_then(|rest| rest.strip_suffix('"'))
+        .filter(|_| written.len() >= 2)
+    else {
+        return written.to_owned();
+    };
+    let mut bytes = Vec::with_capacity(inner.len());
+    let mut rest = inner.bytes();
+    while let Some(b) = rest.next() {
+        if b == b'"' {
+            // A quote inside the quotes is always written with a backslash, so this is not git's.
+            return written.to_owned();
+        }
+        if b != b'\\' {
+            bytes.push(b);
+            continue;
+        }
+        let byte = match rest.next() {
+            Some(b'a') => 0x07,
+            Some(b'b') => 0x08,
+            Some(b't') => b'\t',
+            Some(b'n') => b'\n',
+            Some(b'v') => 0x0b,
+            Some(b'f') => 0x0c,
+            Some(b'r') => b'\r',
+            Some(b'"') => b'"',
+            Some(b'\\') => b'\\',
+            Some(first @ b'0'..=b'3') => {
+                let (Some(second @ b'0'..=b'7'), Some(third @ b'0'..=b'7')) =
+                    (rest.next(), rest.next())
+                else {
+                    return written.to_owned();
+                };
+                (first - b'0') * 64 + (second - b'0') * 8 + (third - b'0')
+            }
+            _ => return written.to_owned(),
+        };
+        bytes.push(byte);
+    }
+    String::from_utf8_lossy(&bytes).into_owned()
+}
+
+/// The file a patch's `--- ` or `+++ ` header names, without the `a/` or `b/` git puts before it: `None` for
+/// `/dev/null`, which stands for no file. Git ends a name it did not put in quotes with a tab when the name holds a
+/// space, so the tab is not part of the name.
+fn header_name(written: &str, side: &str) -> Option<String> {
+    let name = if written.starts_with('"') {
+        unquoted(written)
+    } else {
+        written.strip_suffix('\t').unwrap_or(written).to_owned()
+    };
+    name.strip_prefix(side).map(str::to_owned)
+}
+
 fn cut(text: &str) -> String {
     text.chars().take(LINE_CHARS).collect()
 }
@@ -159,3 +220,7 @@ fn cut(text: &str) -> String {
 #[cfg(test)]
 #[path = "git_changes_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "git_changes_names_tests.rs"]
+mod names_tests;

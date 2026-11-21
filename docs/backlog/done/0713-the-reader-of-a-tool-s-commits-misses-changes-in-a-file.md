@@ -1,6 +1,6 @@
 # The reader of a tool's commits misses changes in a file whose name git writes in quotes
 
-**Status:** claimed by Claude Code session (AgentVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Found on 21 November 2026 while testing `av report` (backlog 0705, part 2), by session "Claude Code session
 (AgentVet)". It is a gap in what `sv`'s report section "What the AI coding tool did that is worth a look" (ADR-131)
@@ -25,3 +25,9 @@ are shown.
 with the patch's header names unquoted where git still quotes them (a quote, a backslash, a control character). A
 test beside `crates/sv-check/src/git_changes_tests.rs` with each kind of name, which fails today. Until it is fixed,
 the section could say when a commit changed a file whose name it could not read, rather than nothing.
+
+Fixed on 21 November 2026: the reader takes each name out of git's quotes, and drops the tab git puts after an
+unquoted header name that holds a space, which was a second way the same lines went unmatched and was found while
+writing the tests. Recorded in ADR-131 (Later, 21 November 2026). The item's last suggestion, saying when a commit
+changed a file whose name could not be read, is not built: a name in quotes that is not git's quoting is left as
+written and matched as that, which no file git wrote has been seen to produce.
