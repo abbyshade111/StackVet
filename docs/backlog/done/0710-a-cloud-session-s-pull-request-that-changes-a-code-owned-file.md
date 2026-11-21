@@ -1,6 +1,6 @@
 # A cloud session's pull request that changes a code-owned file is reopened as the sessions' App
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A6, its fifth point;
 the gap ADR-158 leaves open). A cloud session opens pull requests through the owner's own GitHub connection, so GitHub

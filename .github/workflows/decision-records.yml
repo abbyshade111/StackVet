@@ -9,6 +9,10 @@
 # description is read from the event file by the script, never put into a shell command. Steps are pinned to an exact
 # commit fingerprint, as in rust.yml.
 #
+# It also fails a session's pull request that the owner's own account opened and that changes a code-owned file
+# (`tools/cloud_session_check.py`; backlog 0710), since GitHub counts it as the code owner's own and never asks for the
+# review.
+#
 # It also fails a pull request that takes a record, backlog, or design-entry number another file already has: on the
 # base branch, twice in the branch, or added by another open pull request opened before it (backlog 0265; ADR-061,
 # Later). For the last it reads the open pull requests' file lists from GitHub, which is why it may read pull requests.
@@ -45,6 +49,16 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 tools/adr_check.py --base "$BASE_SHA" --head "$HEAD_SHA" --event "$GITHUB_EVENT_PATH"
+      - name: A session's pull request opened by the owner's account
+        # Backlog 0710: one that changes a code-owned file is reopened as the sessions' App, so the code owner's review
+        # is asked for. Said even when a step above failed.
+        if: ${{ !cancelled() }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python3 -I tools/cloud_session_check.py --self-test
+          python3 -I tools/cloud_session_check.py --base "$BASE_SHA" --head "$HEAD_SHA" --event "$GITHUB_EVENT_PATH"
       - name: The numbers' own test
         # Said even when the records step above failed, so both are fixed in one push.
         if: ${{ !cancelled() }}
