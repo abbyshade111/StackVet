@@ -378,3 +378,13 @@ names the other two: Scoop tried by hand on a Windows computer, and Homebrew on 
 the Homebrew formula from building `main` to the v0.2.0 release, bringing the Scoop manifest to 0.2.0, and the guide's
 `--HEAD` line with them, is backlog 0688. The formula was still head-only on the day of the tag, so the guide's line was
 still true and was left alone.
+
+**The package repositories protect `main`, 21 November 2026, at the owner's word.** Backlog 0688 (done the same day)
+moved the formula to the v0.2.0 release and the manifest to 0.2.0, and was merged by hand in both repositories, since
+neither protected `main` and `gh pr merge --auto` merged at once. Each now has an active ruleset, "Protect main", as
+StackVet's own: `main` cannot be deleted or force-pushed, every change comes through a pull request (no approval
+needed, merge commits only), nobody bypasses it, and the checks GitHub Actions reports must pass, the four `install`
+jobs in `abbyshade111/homebrew-stackvet` (Mac and Linux, the release and `--HEAD`) and `install` in
+`abbyshade111/scoop-stack-vet`. Auto-merge is on in both, so it now waits for those checks. A push straight to `main`
+was tried in each and refused (`GH013`). A renamed job, or a new system in the formula's matrix, needs the ruleset's
+list changed too, or every pull request waits on a check that never comes. The hold is unchanged.
