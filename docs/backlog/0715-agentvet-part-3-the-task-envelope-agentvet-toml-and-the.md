@@ -22,7 +22,7 @@ two part (21 November 2026)", and ADR-159's decision 8, with the owner's answer 
    it was seen and how far that record can be relied on. What cannot be held to the envelope from these records
    (the hosts reached, which no record here shows) is said every time. Each has a fixture that trips it and one that
    does not, and a test that fails with the detector taken out.
-   **Part status:** open
+   **Part status:** done, 21 November 2026
 3. **The rest of the six groups, from the records that exist.** Speaking as the owner (an entry or a seal line written
    in the owner's name by a commit of the tool's); trying again after a refusal, as far as the build-loop record's
    refused calls show it; and the two groups the records already feed (a claim against the record, gaming a check)
