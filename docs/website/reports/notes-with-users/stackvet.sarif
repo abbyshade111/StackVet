@@ -6,9 +6,9 @@
         {
           "executionSuccessful": true,
           "properties": {
-            "runId": "482d8f60aec0"
+            "runId": "15a3dae229ac"
           },
-          "startTimeUtc": "2026-10-14T15:34:10Z",
+          "startTimeUtc": "2026-11-21T15:48:12Z",
           "toolExecutionNotifications": [
             {
               "descriptor": {
@@ -25,16 +25,7 @@
               },
               "level": "note",
               "message": {
-                "text": "Not examined: the security tool this language already has — `sv report` ran none of the outside tools, because --no-tools was given; without it they run. Bandit, gosec, Brakeman, Semgrep, and CodeQL each know their languages far better than the handful of rules built in here."
-              }
-            },
-            {
-              "descriptor": {
-                "id": "sv.not-examined"
-              },
-              "level": "note",
-              "message": {
-                "text": "Not examined: the check `config.secrets-file-committed` — This repository holds only its most recent commits (a shallow copy), so `sv` could not read whether a secrets file was committed earlier. Fetching the whole history (`git fetch --unshallow`) lets this check read it."
+                "text": "Not examined: the security tool this language already has — `sv report` ran none of the outside tools, because --no-tools was given; without it they run. Bandit, gosec, Brakeman, and Semgrep each know their languages far better than the handful of rules built in here."
               }
             },
             {
@@ -106,7 +97,7 @@
               },
               "level": "note",
               "message": {
-                "text": "Not examined: 13 questions about how this app is built — No tool can settle these — whether input is validated on the server, whether the app's own services authenticate to each other. Answer them in the `[design]` section of stackvet.toml: V2.2.2, V7.2.1, V8.3.1, V15.3.1, V1.1.1, V4.1.3, V4.2.1, V8.2.3, V11.2.2, V14.2.2, V15.3.4, V16.2.2, V16.4.3. Your AI coding tool can ask you them: `sv questions` prints them for its chat."
+                "text": "Not examined: 14 questions about how this app is built — No tool can settle these — whether input is validated on the server, whether the app's own services authenticate to each other. Answer them in the `[design]` section of stackvet.toml: V2.2.2, V7.2.1, V8.3.1, V15.3.1, V1.1.1, V4.1.3, V4.2.1, V8.2.3, V11.2.2, V14.2.2, V15.3.4, V16.2.2, V16.4.3, V2.3.3. Your AI coding tool can ask you them: `sv questions` prints them for its chat."
               }
             }
           ]
@@ -122,7 +113,7 @@
                   "uri": "app.py"
                 },
                 "region": {
-                  "startLine": 45
+                  "startLine": 49
                 }
               }
             }
@@ -166,6 +157,33 @@
             "inTestCode": false
           },
           "ruleId": "config.security-contact"
+        },
+        {
+          "level": "note",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".git"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "138 commit(s) on the default branch were made by an AI coding tool and not merged in These commits name an AI coding tool and reached the branch directly: `1fe46225` Run the app's container read-only, without capabilities (#496) (Claude Opus 5.5 <noreply@anthropic.com>); `93bb7454` Claim running the app's container read-only (#493) (Claude Opus 5.5 <noreply@anthropic.com>); `53154bca` Backlog: say when a manifest and its lockfile disagree (#484) (Claude Opus 5.5 <noreply@anthropic.com>); `67a497af` Example app: PyJWT 2.15.1, and a lock that matches its manifest (#482) (Claude Opus 5.5 <noreply@anthropic.com>); `aeb056e1` Backlog: a prompt library from the CSA guide and lessons learned (#476) (Claude Opus 5.5 <noreply@anthropic.com>); `e91c7173` Backlog: record what the sessions agreed about the promotion (#221) (Claude Opus 5.5 <noreply@anthropic.com>); `8ced5fb1` Backlog: v1-paper is tagged and released (#216) (Claude Opus 5.5 <noreply@anthropic.com>); `76156b3c` Backlog: promote sv to the top of the repository, keep v1 for the paper (#210) (Claude Opus 5.5 <noreply@anthropic.com>); `0acfe495` Backlog: what the owner's first build from scratch found, and a zip (#204) (Claude Opus 5.5 <noreply@anthropic.com>); `ce032691` Backlog: packaging sv, a container now and a download later (#198) (Claude Opus 5.5 <noreply@anthropic.com>); and 128 more. This check reads only what a commit says about itself, in its `Assisted-by:` or `Co-Authored-By:` line, so a commit that names no tool is not seen. Whether the hosting service's protection rules held is in its settings, which `sv` does not read."
+          },
+          "partialFingerprints": {
+            "svFingerprint/v1": "4213cb48a86e8e56"
+          },
+          "properties": {
+            "alsoReportedBy": [],
+            "certainty": "confirmed",
+            "inTestCode": false
+          },
+          "ruleId": "config.ai-commits-off-merge"
         }
       ],
       "tool": {
@@ -173,7 +191,7 @@
           "informationUri": "https://github.com/abbyshade111/StackVet",
           "name": "sv",
           "properties": {
-            "commit": "db196b303b79b52284cdeb96112e899420b7bf3b"
+            "commit": "7031bd26f038e01308fa6ecafe52079e2a622a48"
           },
           "rules": [
             {
@@ -200,6 +218,23 @@
             },
             {
               "fullDescription": {
+                "text": "A change that reached the branch without a merge reached it without another person's review."
+              },
+              "help": {
+                "text": "Ask the AI coding tool to work on a branch and open a pull request, and merge it after a look. Turn on the pull-request rule for the default branch, so a direct push is refused."
+              },
+              "id": "config.ai-commits-off-merge",
+              "name": "config.ai-commits-off-merge",
+              "properties": {
+                "requirements": [],
+                "tags": []
+              },
+              "shortDescription": {
+                "text": "138 commit(s) on the default branch were made by an AI coding tool and not merged in"
+              }
+            },
+            {
+              "fullDescription": {
                 "text": "Problems found by outsiders get reported publicly, or not at all."
               },
               "help": {
@@ -216,7 +251,7 @@
               }
             }
           ],
-          "version": "0.1.0"
+          "version": "0.2.0"
         }
       }
     }

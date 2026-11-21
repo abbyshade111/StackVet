@@ -39,7 +39,18 @@ AI tool would not make up an address to put there.
 
 This is the account written for the research paper about StackVet, of StackVet as it was on 4 October 2026, when it
 was still called SecureVibe and its settings file `securevibe.toml`. The way it works is the same; some details, such
-as the number of commands, have grown since. The current map of the code is
+as the number of commands, have grown since. Three of them change what the account below says:
+
+- **The settings file** is now `stackvet.toml`.
+- **The outside tools run with every report** unless you add `--no-tools`; on 4 October they ran only when asked for.
+- **The live-site check is no longer StackVet's only network connection.** There are four exceptions now, and
+  [what StackVet does with your code](index.html#what-it-does-with-your-code) lists them all. The live-site check
+  itself makes at most five requests when you ask it to look at an API too.
+
+The current map of the code is
 [docs/ARCHITECTURE.md](https://github.com/abbyshade111/StackVet/blob/main/docs/ARCHITECTURE.md).
 
-- The paper's description is read from `docs/paper/HOW-SV-WORKS.md`, "Description", and shown after this.
+- The paper's description is read from `docs/paper/HOW-SV-WORKS.md`, "Description", and shown after this. It is left
+  as the paper has it; the three changes above are ADR-111 (the outside tools by default, 13 October 2026), CLAUDE.md's
+  network fence and `docs/ARCHITECTURE.md`, "The fence" (ADR-027 with `--api`, ADR-052, ADR-111, ADR-154), and the
+  rename (backlog 0696).

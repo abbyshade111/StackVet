@@ -58,19 +58,26 @@ in several states: *needs attention*, *checked*, *checked in part*, *not verifie
 - [`compliance.md`](reports/notes-with-users/compliance.md)
 - [`security.md`](reports/notes-with-users/security.md)
 - [`low-findings.md`](reports/notes-with-users/low-findings.md)
+- [`before-going-live.md`](reports/notes-with-users/before-going-live.md)
+- [`fix-now.md`](reports/notes-with-users/fix-now.md)
+- [`your-decisions.md`](reports/notes-with-users/your-decisions.md)
+- [`not-examined.md`](reports/notes-with-users/not-examined.md)
+- [`information.md`](reports/notes-with-users/information.md)
 - [`stackvet.sarif`](reports/notes-with-users/stackvet.sarif)
 - [`report.json`](reports/notes-with-users/report.json)
 - [`seen.json`](reports/notes-with-users/seen.json)
 - [`sbom.cdx.json`](reports/notes-with-users/sbom.cdx.json)
+- [`report.pdf`](reports/notes-with-users/report.pdf)
 
-- **What it leaves out, and says so:** it was made without starting the app (no `--run`), because the machine that
-  made it had no Docker running, and without the outside security tools (`--no-tools`). So `seen.json` is nearly
-  empty, nothing was asked of the running app, and the report's "What was not examined" says both. A report made
-  with `--run` has more in each file; this one shows what each file is, not everything StackVet can find.
+- **What it leaves out, and says so:** it was made, as the first one of 14 October 2026 was, without starting the app
+  (no `--run`) and without the outside security tools (`--no-tools`). So `seen.json` is nearly empty, nothing was
+  asked of the running app, and the report's "What was not examined" says both. A report made with `--run` has more
+  in each file; this one shows what each file is, not everything StackVet can find.
 - **How it was made,** so it can be made again: from the repository's top folder, with `sv` built from the commit
   the report names on its second line,
-  `sv report examples/notes-with-users --no-tools --out docs/website/reports/notes-with-users`, on 14 October 2026.
-  The health-tracking app built for a friend is never used as an example.
+  `sv report examples/notes-with-users --no-tools --out docs/website/reports/notes-with-users`, on 21 November 2026
+  (backlog 0696), in place of the report of 14 October, which `sv` 0.1.0 made with 8 of these 14 files. The home
+  page's example lines are taken from it. The health-tracking app built for a friend is never used as an example.
 
 ## Where the standards fit in building an app
 
@@ -92,8 +99,3 @@ marked Main or In part, with the sections it rests on.](diagrams/frameworks-by-s
 *The owner drew both on 13 October 2026 (`diagrams/source/make_diagrams.py`). Each cell of the second was checked
 against the standards' own text as StackVet carries it (`data/frameworks`) on 15 October 2026, and six cells' words
 were corrected to say no more than the sections they cite; no cell's tag changed (backlog 0514).*
-
-## Not yet on this page
-
-- **The report as a PDF,** beside `report.html`, once backlog 0412 builds it: a row in the table above, and in
-  `report.html`'s own list.
