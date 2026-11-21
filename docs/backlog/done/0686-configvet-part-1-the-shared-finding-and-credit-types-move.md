@@ -1,6 +1,6 @@
 # ConfigVet part 1: the shared finding and credit types move into a crate of their own, sv-core (ADR-157)
 
-**Status:** claimed by claude/sv-core, 20 November 2026
+**Status:** done, 20 November 2026
 
 Asked for by the owner on 20 November 2026 ("Start the ConfigVet sv-core build"). The first step of ADR-157 (proposed,
 decision 2) and of the build order in the design entry "ConfigVet, a companion for an app's deployment configuration
@@ -21,3 +21,13 @@ decision 2) and of the build order in the design entry "ConfigVet, a companion f
 - **Done when:** the workspace builds, `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings`, and
   `cargo test --workspace` pass, `python3 tools/coverage.py` writes nothing new, ADR-157 is accepted with an "As
   built" section, and `docs/ARCHITECTURE.md` lists the crate.
+
+**Done, 20 November 2026.** `crates/sv-core` holds the types, their methods, the lists those methods read, the credit
+census, and the two helpers, about 700 lines over `serde` and `sv-scan`. `sv-check` re-exports each under its old path,
+so no other crate's code changed. Locally: `cargo fmt --all --check` and `cargo clippy --workspace --all-targets -- -D
+warnings` pass, and `cargo test --workspace --no-fail-fast` passed 4,599 tests in 349 test binaries with none failing,
+run with `SV_CREDIT_LOG` set. `python3 tools/coverage.py --credits` over that log says every check credited as the
+lists say, and none of its 617,831 lines names a file in `sv-core`: every credit is still logged against the check that
+made it. `python3 tools/coverage.py --check` writes nothing new. The decision-records test caught ADR-138 naming a
+constant that had moved; five more records governed whole files whose code had partly moved, which no test could see,
+and all six now name `sv-core`'s files, each with a dated Later entry (ADR-157, "As built", part 1).
