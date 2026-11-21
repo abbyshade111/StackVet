@@ -1,6 +1,6 @@
 # AgentVet part 3: the task envelope, agentvet.toml, and the detectors that hold a tool to it
 
-**Status:** claimed by Claude Code session (AgentVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Asked for by the owner on 21 November 2026 ("start the task envelope and detectors once 0713 lands"). Step 2 of the
 build order in the design entry "AgentVet, a companion that vets the agent: what it did, what it said, and where the
@@ -28,4 +28,4 @@ two part (21 November 2026)", and ADR-159's decision 8, with the owner's answer 
    refused calls show it; and the two groups the records already feed (a claim against the record, gaming a check)
    gathered under their group's name in the report, so the report reads as the design's table does. A group no
    record can show yet says so.
-   **Part status:** open
+   **Part status:** done, 21 November 2026

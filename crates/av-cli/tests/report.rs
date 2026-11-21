@@ -286,8 +286,8 @@ fn the_task_envelope_is_said_with_what_it_leaves_unsaid_and_that_it_may_be_the_t
         "The file adds to those: deploy/.",
         "Held to it, nothing read here falls outside it or touched a guarded file.",
         "That is what these records show, not that nothing did.",
-        "Not held to it: What the tool's commits changed: the folder is not a git checkout",
-        "Not held to it: The hosts the tool reached",
+        "could not be shown: What the tool's commits changed: the folder is not a git checkout",
+        "could not be shown: The hosts the tool reached",
         "av sets what it wrote and ran against the task file",
     ] {
         assert!(out.contains(said), "missing {said:?}: {out}");
@@ -316,6 +316,94 @@ fn the_task_envelope_is_said_with_what_it_leaves_unsaid_and_that_it_may_be_the_t
         report["envelope"]["questions"].as_array().map(Vec::len),
         Some(2),
         "{report}"
+    );
+}
+
+#[test]
+fn every_kind_is_listed_and_an_empty_one_says_what_it_could_not_show() {
+    let app = folder("kinds-empty");
+    let state = folder("kinds-empty-state");
+    let (_, out, _) = av(&["report", app.to_str().unwrap()], &state);
+    for kind in [
+        "What the tool said, against the record: nothing seen in what was read",
+        "A check made to pass without a fix: nothing seen in what was read",
+        "Outside what the task file allows: nothing seen in what was read",
+        "Changes to what watches the tool: nothing seen in what was read",
+        "Written in your name: nothing seen in what was read",
+        "Trying again after a no: nothing seen in what was read",
+    ] {
+        let at = out
+            .find(kind)
+            .unwrap_or_else(|| panic!("missing {kind:?}: {out}"));
+        // The very next line says what the kind could not show.
+        let next = out[at..].lines().nth(1).unwrap_or_default();
+        assert!(
+            next.trim_start().starts_with("could not be shown: "),
+            "{kind}: {next:?}"
+        );
+    }
+    assert!(out.contains("an empty kind is not a clean one"), "{out}");
+    let (_, out, _) = av(&["report", app.to_str().unwrap(), "--json"], &state);
+    let report: serde_json::Value = serde_json::from_str(&out).expect("JSON");
+    assert_eq!(
+        report["groups"].as_array().map(Vec::len),
+        Some(6),
+        "{report}"
+    );
+}
+
+#[test]
+fn an_entry_a_tool_s_commit_wrote_in_the_owner_s_name_and_a_claim_the_record_contradicts_are_listed()
+ {
+    if no_git() {
+        return;
+    }
+    let app = folder("kinds-seen");
+    let state = folder("kinds-seen-state");
+    with_a_tool_commit(
+        &app,
+        "stackvet.toml",
+        "manifest-version = 1\n[design]\n\"V8.3.1\" = { answer = \"yes\", by = \"owner\" }\n",
+    );
+    // A turn the tool ended saying the tests pass, with no test command before it.
+    let record = record_in(&state, &app);
+    let rules = sv_check::secrets::SecretRules::shared().expect("the rules sv ships");
+    let line = av_record::hook_record::line_of(
+        &serde_json::json!({ "hook_event_name": "Stop", "session_id": "s1",
+            "last_assistant_message": "All done. The app's tests pass." }),
+        &app,
+        "2026-11-21T10:00:00Z",
+        rules,
+    )
+    .expect("a line");
+    // The setup: the hook kept the claim, by its kind.
+    assert_eq!(line["claims"][0], "tests-pass", "the setup: {line}");
+    av_record::hook_record::append(&record, line).unwrap();
+
+    let (code, out, err) = av(&["report", app.to_str().unwrap(), "--hook-record"], &state);
+    assert_eq!(code, 0, "{out}{err}");
+    for said in [
+        "Written in your name: 1 line",
+        "in stackvet.toml, an entry was given as yours (`by = \"owner\"`)",
+        "What the tool said, against the record: 1 line",
+        "contradicted by the record: the tool ended a turn saying the app's tests pass; no test command ran in that \
+         session before it",
+        "from the hook record",
+    ] {
+        assert!(out.contains(said), "missing {said:?}: {out}");
+    }
+    // Without the hook record, the claim is not read, and the kind says so and does not read as clean.
+    let (_, out, _) = av(&["report", app.to_str().unwrap()], &state);
+    assert!(
+        out.contains("What the tool said, against the record: nothing seen in what was read")
+            && out.contains(
+                "could not be shown: Whether the tool said the tests pass when they had not"
+            ),
+        "{out}"
+    );
+    assert!(
+        out.contains("Written in your name: 1 line"),
+        "git needs no asking: {out}"
     );
 }
 
@@ -392,7 +480,7 @@ fn what_the_tool_ran_and_wrote_is_held_to_the_envelope_only_when_the_hook_record
     );
     assert!(
         out.contains(
-            "Not held to it: The programs the tool started: only the hook record shows them"
+            "could not be shown: The programs the tool started: only the hook record shows them"
         ),
         "{out}"
     );
@@ -404,7 +492,7 @@ fn what_the_tool_ran_and_wrote_is_held_to_the_envelope_only_when_the_hook_record
         "a file that guards oversight was changed: CLAUDE.md was written",
         "which is not below this folder",
         "from the hook record",
-        "Not held to it: What a program the tool started went on to do",
+        "could not be shown: What a program the tool started went on to do",
     ] {
         assert!(out.contains(said), "missing {said:?}: {out}");
     }
