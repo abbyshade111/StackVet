@@ -1,0 +1,20 @@
+[package]
+name = "av-record"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The records of what an AI coding tool did, shared by `sv` and AgentVet (ADR-159; backlog 0705): the build-loop record
+# (ADR-076), the hook record (ADR-122), and the reader of what the tool did that is worth a look (ADR-131). Nothing here
+# opens a network connection. It depends on `sv-check` for three things: cutting a key out of a command as the secrets
+# scan does, git read under ADR-032's settings, and the bill of materials.
+[dependencies]
+anyhow.workspace = true
+serde_json.workspace = true
+# To open a record without following a link (`O_NOFOLLOW`); already a dependency of sv-cli and sv-run.
+libc = "0.2"
+sv-check = { path = "../sv-check" }
+sv-frameworks = { path = "../sv-frameworks" }
+sv-manifest = { path = "../sv-manifest" }
+sv-report = { path = "../sv-report" }
+sv-scan = { path = "../sv-scan" }

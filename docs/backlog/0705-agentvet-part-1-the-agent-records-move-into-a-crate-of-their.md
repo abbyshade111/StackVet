@@ -12,7 +12,7 @@ built".
    (`crates/sv-cli/src/hook_record.rs`, ADR-122), and the reader of what the tool did (`crates/sv-cli/src/tool_behavior.rs`,
    ADR-131) move into a crate of their own, word for word, with their tests. `sv-cli` re-exports them under the old
    paths, and `sv`'s report says what it said before: the tests that hold its section on the tool pass unchanged.
-   **Part status:** open
+   **Part status:** done, 21 November 2026
 2. **The `av` binary and `av report`.** A binary of its own, `av`, on the shared crate and `sv-core`, never on
    `sv-check`'s checks. `av report <folder>` reads the records for one session and writes the table of the white
    paper's Figure 19: findings silenced by rewriting, findings fixed for real, and what could not be looked for, each
@@ -23,3 +23,10 @@ built".
    now, with their Governs lists kept true; `docs/ARCHITECTURE.md` gets the new crates and a line for `av` under "The
    fence".
    **Part status:** open
+
+Built on 21 November 2026, the first of the three: the records are in `crates/av-record`, and ADR-159 is accepted with
+what was built under "As built". One thing differs from the plan above, and holds for what is left: the shared crate
+depends on `sv-check`, for cutting keys, git, and the bill of materials, so `av` will too, as `cv` does. The records'
+own decisions (ADR-076, ADR-084, ADR-122, ADR-131) each have their Later entry and their new file names already; what
+is left of the last of the three is the architecture page's line for `av` under "The fence", which waits for the
+binary.

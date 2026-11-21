@@ -40,7 +40,8 @@ COPY crates/sv-scan/Cargo.toml crates/sv-scan/
 COPY crates/sv-yaml/Cargo.toml crates/sv-yaml/
 COPY crates/cv-rules/Cargo.toml crates/cv-rules/
 COPY crates/cv-cli/Cargo.toml crates/cv-cli/
-RUN for c in sv-check sv-cli sv-core sv-frameworks sv-manifest sv-report sv-run sv-scan sv-yaml cv-rules cv-cli; do \
+COPY crates/av-record/Cargo.toml crates/av-record/
+RUN for c in sv-check sv-cli sv-core sv-frameworks sv-manifest sv-report sv-run sv-scan sv-yaml cv-rules cv-cli av-record; do \
       mkdir -p "crates/$c/src" && : > "crates/$c/src/lib.rs"; \
     done \
  && echo 'fn main() {}' > crates/sv-cli/src/main.rs \

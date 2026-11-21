@@ -48,6 +48,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e149dc73cd30538307e7ffa2acd3d2221148eaeed4871f246657b1c3eaa1cbd2"
 
 [[package]]
+name = "av-record"
+version = "0.3.0"
+dependencies = [
+ "anyhow",
+ "libc",
+ "serde_json",
+ "sv-check",
+ "sv-frameworks",
+ "sv-manifest",
+ "sv-report",
+ "sv-scan",
+]
+
+[[package]]
 name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -880,6 +894,7 @@ name = "sv-cli"
 version = "0.3.0"
 dependencies = [
  "anyhow",
+ "av-record",
  "boon",
  "libc",
  "serde_json",

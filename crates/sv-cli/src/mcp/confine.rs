@@ -82,46 +82,8 @@ pub(super) fn too_wide(root: &Path, home: Option<&Path>) -> Option<&'static str>
     }
 }
 
-/// Makes `relative` below `base` one folder at a time, refusing a level that is a link or is not a
-/// folder before anything below it is made. `relative` holds only plain names and `.`, which the
-/// caller has already checked. Gives the folder, and the ones it made, topmost first; refused part
-/// way, it takes away the ones it made.
-pub(crate) fn create_below(base: &Path, relative: &Path) -> Result<(PathBuf, Vec<PathBuf>)> {
-    let mut made = Vec::new();
-    let made_here = create_each(base, relative, &mut made);
-    if made_here.is_err() {
-        for folder in made.iter().rev() {
-            let _ = std::fs::remove_dir(folder);
-        }
-    }
-    made_here.map(|here| (here, made))
-}
-
-pub(super) fn create_each(
-    base: &Path,
-    relative: &Path,
-    made: &mut Vec<PathBuf>,
-) -> Result<PathBuf> {
-    let mut here = base.to_path_buf();
-    for part in relative.components() {
-        let Component::Normal(name) = part else {
-            continue;
-        };
-        here.push(name);
-        match std::fs::symlink_metadata(&here) {
-            Ok(meta) if meta.file_type().is_symlink() => anyhow::bail!(
-                "{} is a link to somewhere else, so nothing is written through it",
-                here.display()
-            ),
-            Ok(meta) => {
-                anyhow::ensure!(meta.is_dir(), "{} is not a folder", here.display());
-            }
-            Err(_) => {
-                std::fs::create_dir(&here)
-                    .with_context(|| format!("{} cannot be created", here.display()))?;
-                made.push(here.clone());
-            }
-        }
-    }
-    Ok(here)
-}
+// Making a folder below another one level at a time is in the shared record crate now, word for word, since the
+// build-loop record is written that way (backlog 0705, ADR-159).
+pub(crate) use av_record::plain::create_below;
+#[allow(unused_imports)]
+pub(super) use av_record::plain::create_each;
