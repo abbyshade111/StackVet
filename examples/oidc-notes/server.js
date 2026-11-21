@@ -4,7 +4,8 @@
 // `aud`, and `exp` checked. `flaws.json`, if present, lists checks to leave out, so the same app
 // can show what `sv` finds when one is missing: "state", "pkce", "nonce", "aud", "signature",
 // "iss" (the ID token's issuer), "iss-param" (the issuer the provider's return names, RFC 9207),
-// "email" (the account is found by the email address rather than the provider's `sub`).
+// "email" (the account is found by the email address rather than the provider's `sub`), "metadata-iss" (the
+// provider's published details are taken whatever issuer they name).
 const http = require('node:http');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -21,6 +22,11 @@ let provider;
 async function discover() {
   if (!provider) {
     const config = await (await fetch(`${ISSUER}/.well-known/openid-configuration`)).json();
+    // The details must name the provider the app was given, or a server passing itself off as that provider
+    // through them would be believed (V10.5.3). Nothing is kept from details refused, so they are read again.
+    if (!flaws.has('metadata-iss') && config.issuer !== ISSUER) {
+      throw new Error('the provider\'s published details name another issuer');
+    }
     const jwks = await (await fetch(config.jwks_uri)).json();
     provider = { config, jwks };
   }

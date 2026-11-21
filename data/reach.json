@@ -441,6 +441,9 @@
   "V10.5.2": [
    "signed-in"
   ],
+  "V10.5.3": [
+   "signed-in"
+  ],
   "V10.5.4": [
    "signed-in"
   ],
@@ -2992,6 +2995,14 @@
     "id": "probe.oidc-user-keyed-on-email",
     "run": "Signed in",
     "looks_for": "The app decides who someone is by their email address at the sign-in provider rather than by the provider's permanent id for them. An email address can pass from one person to another (a reused work address, a provider that lets people c...",
+    "finding_only": false
+   }
+  ],
+  "V10.5.3": [
+   {
+    "id": "probe.oidc-metadata-issuer-not-checked",
+    "run": "Signed in",
+    "looks_for": "The app trusts the sign-in provider's published details even when they say they come from a different provider. Whoever can serve those details, from a look-alike address or by changing them on the way, can pass their own server off as t...",
     "finding_only": false
    }
   ],

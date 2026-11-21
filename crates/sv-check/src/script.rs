@@ -46,6 +46,9 @@ pub enum Target {
     App,
     /// The second copy, with the kill switch on (C9.6.1), while it runs.
     SwitchedOff,
+    /// A copy started as the first was, with nothing changed, while the test provider's published details name
+    /// another issuer, and then again once they are right (V10.5.3, ADR-127, Later, 21 November 2026).
+    Again,
 }
 
 /// Whether a way to the app is given the test model, and which way: as the suites did before the
@@ -92,6 +95,13 @@ pub trait Services {
     fn start_switched_off(&self, setting: &str) -> bool;
     /// Removes the second copy.
     fn remove_switched_off(&self);
+    /// Starts a copy of the app as the first was started, under its own name ([`Target::Again`]), and waits until
+    /// it answers. None by default: a harness that cannot start one leaves V10.5.3 not assessed, and says so.
+    fn start_again(&self) -> bool {
+        false
+    }
+    /// Removes that copy, if it is there.
+    fn remove_again(&self) {}
     /// Whether the app is still up and answering, `after` what was just asked (V16.5.4).
     fn liveness(&self, after: &str) -> Liveness;
     /// Told as each suite begins, in a few words, so a person watching a long run sees it move
@@ -187,6 +197,9 @@ pub fn run(services: &dyn Services, plan: &Plan, probes: &[ProbeRequest]) -> Out
             crate::oidc::browser_storage(&mut patient, section, &mut out);
         }
         patient.settle(&mut out);
+        // Last, since it starts a copy of the app of its own: the provider's published details wrong from the
+        // copy's start (V10.5.3, backlog 0620).
+        crate::oidc::wrong_metadata(services, section, &spent, &mut out);
         out
     });
 

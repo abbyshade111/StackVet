@@ -380,3 +380,50 @@ fn in_refuse_mode_every_sign_in_is_declined_until_another_mode_is_set() {
     assert_eq!(set_mode(port, oidc::NORMAL).status, 200);
     assert_eq!(sign_in(port).claims["nonce"], "n1");
 }
+
+#[test]
+fn with_wrong_metadata_the_published_details_name_another_issuer_until_another_mode_is_set() {
+    if Command::new("node").arg("--version").output().is_err() {
+        println!("no Node on this computer, so the provider script cannot be run");
+        return;
+    }
+    let (_server, port) = start().expect("the provider started and answered its health address");
+    let issuer = format!("http://127.0.0.1:{port}");
+    let details = || {
+        let got = call(port, "GET", "/.well-known/openid-configuration", &[], "");
+        assert_eq!(got.status, 200, "{}", got.body);
+        serde_json::from_str::<serde_json::Value>(&got.body).expect("the details are JSON")
+    };
+    let served_wrong = || {
+        let got = call(port, "GET", oidc::METADATA, &[], "");
+        assert_eq!(got.status, 200, "{}", got.body);
+        serde_json::from_str::<serde_json::Value>(&got.body).expect("JSON")["served_wrong"]
+            .as_u64()
+            .expect("a count")
+    };
+    // Setup: ordinarily the details name this provider, and nothing is counted.
+    assert_eq!(details()["issuer"], issuer.as_str());
+    assert_eq!(served_wrong(), 0);
+
+    assert_eq!(set_mode(port, oidc::WRONG_METADATA_ISS).status, 200);
+    // Twice, with a whole sign-in between: an app's second copy reads them as it starts and signs in afterwards
+    // (V10.5.3, backlog 0620), so the mode is not used up by either.
+    let first = details();
+    assert_eq!(first["issuer"], oidc::OTHER_ISSUER, "{first}");
+    // Every address in them is still this provider's: only the name it gives itself is wrong.
+    for field in ["authorization_endpoint", "token_endpoint", "jwks_uri"] {
+        let address = first[field].as_str().unwrap_or_default();
+        assert!(address.starts_with(&issuer), "{field}: {address}");
+    }
+    let signed = sign_in(port);
+    // The ID token still names this provider: what is wrong is the published details alone.
+    assert_eq!(signed.claims["iss"], issuer.as_str());
+    assert_ne!(details()["issuer"], issuer.as_str());
+    assert_eq!(served_wrong(), 2);
+
+    // Another mode set puts them right and starts the count again.
+    assert_eq!(set_mode(port, oidc::NORMAL).status, 200);
+    assert_eq!(served_wrong(), 0);
+    assert_eq!(details()["issuer"], issuer.as_str());
+    assert_eq!(served_wrong(), 0);
+}

@@ -131,6 +131,16 @@ pub(super) fn helper_args<'a>(
     args
 }
 
+/// The first copy's `docker run` arguments with its name changed and nothing else: the copy started while the test
+/// provider's published details are wrong (V10.5.3, ADR-127, Later, 21 November 2026), and the kill-switch copy's
+/// start.
+pub(super) fn renamed_args(app_args: &[String], app: &str, name: &str) -> Vec<String> {
+    app_args
+        .iter()
+        .map(|a| if a == app { name.to_owned() } else { a.clone() })
+        .collect()
+}
+
 /// The first copy's `docker run` arguments, renamed, with one more setting before the image.
 pub(super) fn switched_off_args(
     app_args: &[String],
@@ -139,10 +149,7 @@ pub(super) fn switched_off_args(
     image: &str,
     setting: &str,
 ) -> Option<Vec<String>> {
-    let mut args: Vec<String> = app_args
-        .iter()
-        .map(|a| if a == app { name.to_owned() } else { a.clone() })
-        .collect();
+    let mut args = renamed_args(app_args, app, name);
     let at = args.iter().rposition(|a| a == image)?;
     args.splice(at..at, ["-e".to_owned(), setting.to_owned()]);
     Some(args)
