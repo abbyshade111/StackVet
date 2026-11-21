@@ -23,9 +23,9 @@ session, without a person reading transcripts.
 
 | What | Where | What it holds |
 |---|---|---|
-| The build-loop record (ADR-076) | `crates/sv-cli/src/build_loop.rs` | One line for each call the tool made to `sv`'s MCP server: the time, the tool's name, and counts. Never an argument or a finding's text. |
-| The hook record (ADR-122) | `crates/sv-cli/src/hook_record.rs` | One line for each command the tool ran and each file it wrote, kept by a hook the person installed, outside the app's folder. Never a file's contents, a command's output, the person's prompts, or the tool's words. |
-| What the tool did that is worth a look (ADR-131) | `crates/sv-cli/src/tool_behavior.rs` | Read for a report from git, the hook record when the person consented, and the last report `sv` can show it wrote. It reads what changed, so a tool that games a check cannot make its own line vanish. |
+| The build-loop record (ADR-076) | `crates/av-record/src/build_loop.rs` | One line for each call the tool made to `sv`'s MCP server: the time, the tool's name, and counts. Never an argument or a finding's text. |
+| The hook record (ADR-122) | `crates/av-record/src/hook_record.rs` | One line for each command the tool ran and each file it wrote, kept by a hook the person installed, outside the app's folder. Never a file's contents, a command's output, the person's prompts, or the tool's words. |
+| What the tool did that is worth a look (ADR-131) | `crates/av-record/src/tool_behavior.rs` | Read for a report from git, the hook record when the person consented, and the last report `sv` can show it wrote. It reads what changed, so a tool that games a check cannot make its own line vanish. |
 | AI-made commits straight onto the default branch (ADR-092) | `crates/sv-check/src/git.rs` | Read from commit trailers. |
 
 These move into a shared crate, word for word, and both `sv` and `av` read them there.

@@ -1,0 +1,31 @@
+//! The records of what an AI coding tool did, and their readers, shared by `sv` and AgentVet (ADR-159, decision 2;
+//! backlog 0705). Each module was moved here from `sv-cli` on 21 November 2026, word for word but for where it finds
+//! its helpers, and `sv-cli` gives each under its old path, so `sv` says what it said before.
+//!
+//! - `build_loop` (ADR-076): one line for each call the tool made to `sv`'s MCP server.
+//! - `hook_record` (ADR-122): one line for each command the tool ran and each file it wrote, kept by a hook.
+//! - `tool_behavior` (ADR-131): what the tool did that is worth a look, read from git, the hook record, and the last
+//!   report.
+//!
+//! Two readers take a report's bytes rather than its folder (`hook_record::tip_in`, `tool_behavior::earlier_in`):
+//! showing that `sv` wrote a report is the report seal's work, which stays in `sv-cli`, and each caller does it first.
+//!
+//! Nothing here prints, and nothing here opens a network connection.
+
+pub mod build_loop;
+pub mod hook_record;
+pub mod plain;
+pub mod tool_behavior;
+
+#[cfg(test)]
+mod tool_behavior_installs_tests;
+#[cfg(test)]
+mod tool_behavior_tests;
+
+#[cfg(test)]
+mod hook_record_tests;
+
+#[cfg(test)]
+mod hook_record_claims_tests;
+#[cfg(test)]
+mod hook_record_kinds_tests;

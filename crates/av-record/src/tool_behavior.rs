@@ -31,10 +31,10 @@ pub struct Was {
     pub line: u64,
 }
 
-/// The last report in `out_dir`, when `sv` can show it wrote it and left it unchanged.
-pub fn earlier(out_dir: &Path) -> Option<EarlierReport> {
-    let bytes = crate::report_seal::proven_report(out_dir).ok()?;
-    let json: Value = serde_json::from_slice(&bytes).ok()?;
+/// A report, from the bytes of its `report.json`. The caller shows first that `sv` wrote the report and left it
+/// unchanged (`sv-cli`'s `tool_behavior::earlier` does, with the report seal).
+pub fn earlier_in(bytes: &[u8]) -> Option<EarlierReport> {
+    let json: Value = serde_json::from_slice(bytes).ok()?;
     Some(earlier_of(&json))
 }
 
