@@ -1,7 +1,8 @@
 # The Windows programs of `sv` and of ConfigVet's `cv`, published as a GitHub Release when the owner pushes a version
 # tag (backlog 0120 step 2, ADR-108; `cv`'s zip from v0.3.0, backlog 0694, ADR-157's "one release, two packages"). Homebrew builds `sv` from source on Mac and Linux, and the container image runs anywhere Docker does; this
 # is the program a Scoop install on Windows downloads (the bucket abbyshade111/scoop-stack-vet). Each program has a zip
-# of its own, with its own copy of the data, so the bucket's `cv` manifest installs `cv` alone.
+# of its own, with its own copy of the data, so the bucket's `cv` manifest installs `cv` alone. AgentVet's `av` has
+# one too from v0.3.1 (backlog 0724, ADR-159; the owner's choice of 22 November 2026: its own zip, in v0.3.1).
 #
 # On a tag `v*`: built on a Windows runner, each checked to start and to find its data beside it, zipped with that data
 # and the licence, and handed to a second job that signs it (GitHub's keyless signing, the step the image's publishing
@@ -45,6 +46,7 @@ jobs:
     outputs:
       name: ${{ steps.zip.outputs.name }}
       cv_name: ${{ steps.cv_zip.outputs.name }}
+      av_name: ${{ steps.av_zip.outputs.name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         # The token stays out of the checked-out folder (AC.12.2).
@@ -63,8 +65,8 @@ jobs:
           echo "Cargo.toml says $version; the tag is $TAG"
           [ "$TAG" = "v$version" ] || { echo "::error::the tag $TAG is not v$version, the version in Cargo.toml"; exit 1; }
 
-      - name: Build sv and cv
-        run: cargo build --release --locked -p sv-cli -p cv-cli
+      - name: Build sv, cv, and av
+        run: cargo build --release --locked -p sv-cli -p cv-cli -p av-cli
 
       - name: The zip, with the data beside the program
         id: zip
@@ -140,6 +142,64 @@ jobs:
           if ($found) { Write-Output "::error::PowerShell already has 'cv': $($found.CommandType) $($found.Definition)"; exit 1 }
           Write-Output "PowerShell has no command named cv"
 
+      - name: av's zip, with the data beside the program
+        id: av_zip
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          name="av-${TAG#v}-windows-x86_64"
+          [ "${{ github.event_name }}" = push ] || name="av-trial-windows-x86_64"
+          mkdir -p "dist/$name"
+          cp target/release/av.exe "dist/$name/"
+          cp -r data "dist/$name/data"
+          cp LICENSE "dist/$name/"
+          (cd dist && 7z a -tzip "$name.zip" "$name" > /dev/null)
+          (cd dist && sha256sum "$name.zip" > "$name.zip.sha256")
+          cat "dist/$name.zip.sha256"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: The zipped av starts, finds its own data, and reports on an empty folder
+        # As for sv: unzipped elsewhere, with the checkout's data moved away. `av report` of a folder with nothing
+        # about a tool exits 2 and says what it did not look at. `av proxy` loads the rules that cut keys before it
+        # starts anything, so run in front of a program that only prints and ends (av itself), it ends 0 only if it
+        # found its data beside it.
+        env:
+          NAME: ${{ steps.av_zip.outputs.name }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/try-av" "$RUNNER_TEMP/av-app" "$RUNNER_TEMP/av-state"
+          (cd "$RUNNER_TEMP/try-av" && 7z x "$GITHUB_WORKSPACE/dist/$NAME.zip" > /dev/null)
+          mv data data.moved
+          av="$RUNNER_TEMP/try-av/$NAME/av.exe"
+          export XDG_STATE_HOME="$RUNNER_TEMP/av-state" XDG_CONFIG_HOME="$RUNNER_TEMP/av-state"
+          "$av" --version
+          code=0
+          "$av" report "$RUNNER_TEMP/av-app" > av-report.txt 2>&1 || code=$?
+          head -40 av-report.txt
+          [ "$code" = 2 ] || { echo "::error::the zipped av's report of an empty folder exited $code, not 2"; mv data.moved data; exit 1; }
+          grep -q "Not looked at" av-report.txt || { echo "::error::the zipped av did not say what it did not look at"; mv data.moved data; exit 1; }
+          code=0
+          "$av" proxy --app "$RUNNER_TEMP/av-app" -- "$av" --version < /dev/null > av-proxy.txt 2>&1 || code=$?
+          cat av-proxy.txt
+          [ "$code" = 0 ] || { echo "::error::the zipped av's pass-through exited $code: it did not find its data, or could not start a program"; mv data.moved data; exit 1; }
+          mv data.moved data
+
+      - name: PowerShell has no command of its own named av
+        # As for cv: if `av` named anything in PowerShell, typing it would run that instead.
+        shell: pwsh
+        run: |
+          $found = Get-Command av -ErrorAction SilentlyContinue
+          if ($found) { Write-Output "::error::PowerShell already has 'av': $($found.CommandType) $($found.Definition)"; exit 1 }
+          Write-Output "PowerShell has no command named av"
+
+      - name: Keep av's zip for the release job, or as the trial's file
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.av_zip.outputs.name }}
+          path: |
+            dist/${{ steps.av_zip.outputs.name }}.zip
+            dist/${{ steps.av_zip.outputs.name }}.zip.sha256
+          retention-days: 3
+
       - name: Keep cv's zip for the release job, or as the trial's file
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -175,6 +235,7 @@ jobs:
     env:
       NAME: ${{ needs.windows.outputs.name }}
       CV_NAME: ${{ needs.windows.outputs.cv_name }}
+      AV_NAME: ${{ needs.windows.outputs.av_name }}
     steps:
       - name: The tag's commit is on main
         # Backlog 0712: a release is made only from a commit `main` holds, before anything is signed. A tag's run uses
@@ -206,12 +267,19 @@ jobs:
           name: ${{ needs.windows.outputs.cv_name }}
           path: dist
 
+      - name: Fetch av's zip that was checked
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.windows.outputs.av_name }}
+          path: dist
+
       - name: Sign the zips that were checked
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: |
             dist/${{ needs.windows.outputs.name }}.zip
             dist/${{ needs.windows.outputs.cv_name }}.zip
+            dist/${{ needs.windows.outputs.av_name }}.zip
 
       - name: The release
         env:
@@ -220,5 +288,6 @@ jobs:
         run: |
           gh release create "$TAG" "dist/$NAME.zip" "dist/$NAME.zip.sha256" \
             "dist/$CV_NAME.zip" "dist/$CV_NAME.zip.sha256" \
+            "dist/$AV_NAME.zip" "dist/$AV_NAME.zip.sha256" \
             --repo "$GITHUB_REPOSITORY" --verify-tag --title "sv $TAG" \
-            --notes "The Windows programs of sv $TAG and of ConfigVet's cv, each zipped with its data. On Windows, install them with Scoop (see docs/GETTING-STARTED.md), or unzip one and run sv.exe or cv.exe from that folder. Check where each was built with: gh attestation verify $NAME.zip --repo $GITHUB_REPOSITORY (and the same for $CV_NAME.zip). Mac and Linux: Homebrew, or the container image for sv."
+            --notes "The Windows programs of sv $TAG, of ConfigVet's cv, and of AgentVet's av, each zipped with its data. On Windows, install them with Scoop (see docs/GETTING-STARTED.md), or unzip one and run sv.exe, cv.exe, or av.exe from that folder. Check where each was built with: gh attestation verify $NAME.zip --repo $GITHUB_REPOSITORY (and the same for $CV_NAME.zip and $AV_NAME.zip). Mac and Linux: Homebrew, or the container image for sv."

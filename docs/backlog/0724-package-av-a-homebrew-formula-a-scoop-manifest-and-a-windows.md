@@ -18,13 +18,16 @@ on the owner's Mac opens that pull request as the sessions' App (CLAUDE.md). The
 **For the owner to choose, before part 1 is built:** which release `av` first ships in (v0.3.0 is published without
 it), and whether `av` gets a zip of its own as `cv` did, or rides in `sv`'s.
 
+**The owner chose, 22 November 2026** ("go with your recommendations: v0.3.1 and its own zip"): `av` first ships in
+v0.3.1, with a zip of its own.
+
 1. **The release workflow builds, checks, zips, signs, and attaches `av`.** As it does `cv`: `av.exe` with the data
    it reads (`av` cuts keys with `sv`'s secret rules, so it needs `data/` beside it; check which files, ADR-036) and
    the licence, its SHA-256, and a step that shows the zipped `av` starts and finds its data (`av --version`, and an
    `av report` of an empty folder, which exits 2 and says what it did not look at). And a check that PowerShell has
    no command named `av` already, as was done for `cv`. Code-owned: a cloud session pushes the branch, a Mac session
    opens the pull request, and the owner reviews it.
-   **Part status:** open
+   **Part status:** claimed by Claude Code session (AgentVet), 22 November 2026
 2. **`av` says which commit it was built from.** `av --version` prints the version alone; `sv --version` names the
    commit, which a person reporting a fault needs, and which the second trial had to work out by hand. Not
    code-owned.
