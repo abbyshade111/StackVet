@@ -29,10 +29,24 @@ pub const MAX_BYTES: u64 = 4 * 1024 * 1024;
 
 /// Where the notes of the app at `app` (its full, real path) are kept: beside the hook records, in `loop-notes`.
 pub fn file_of(app: &Path) -> Option<PathBuf> {
-    let key = crate::plain::sha256(app.display().to_string().as_bytes());
+    let host = std::env::var(sv_frameworks::paths::HOST_FOLDER_ENV).ok();
+    let name = name_of(&app.display().to_string(), host.as_deref());
     crate::hook_record::folder()
         .and_then(|hooks| Some(hooks.parent()?.join("loop-notes")))
-        .map(|f| f.join(format!("{}.jsonl", &key[..16])))
+        .map(|f| f.join(format!("{name}.jsonl")))
+}
+
+/// The name of the notes of the app at `app`, a full path as this process sees it, in a container told its app's
+/// folder is the Windows folder `host` or not (backlog 0728). Named by the person's own path of the folder, so `sv` in
+/// its container on Windows, which sees `/c/Users/you/app`, writes the notes `av report` on the computer reads for
+/// `C:\Users\you\app`; and both paths are put in one form first (`sv_frameworks::paths::kept_form`). A path that is
+/// no Windows one is named as it always was, so nothing kept before is renamed.
+pub fn name_of(app: &str, host: Option<&str>) -> String {
+    let place = host
+        .and_then(|host| sv_frameworks::paths::host_path(app, host))
+        .unwrap_or_else(|| app.to_owned());
+    let key = crate::plain::sha256(sv_frameworks::paths::kept_form(&place).as_bytes());
+    key[..16].to_owned()
 }
 
 /// Notes where the build-loop record of the app at `app_dir` has got to, when this process writes notes. Never an
@@ -166,3 +180,7 @@ pub fn standing(app: &Path) -> Standing {
 #[cfg(test)]
 #[path = "outside_note_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "outside_note_windows_tests.rs"]
+mod windows_tests;

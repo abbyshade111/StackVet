@@ -1,6 +1,6 @@
 # The build-loop notes are named by the computer's path of the app's folder, so --notes works on Windows
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 22 November 2026
+**Status:** done, 22 November 2026
 
 Filed 22 November 2026, at the owner's word: recommendation 1 of the investigation for backlog 0719, design entry
 0398 ("What sv in its container could gain from its records folder").

@@ -27,7 +27,7 @@ fn folder(name: &str) -> PathBuf {
     dir.canonical().unwrap()
 }
 
-// Not on Windows: there `--notes` is refused, which the module's own tests hold on every computer.
+// Not on Windows: it makes the folder with `chmod`; the module's own tests hold what Windows is given (backlog 0728).
 #[cfg(not(windows))]
 #[test]
 fn the_block_mounts_the_notes_folder_alone_and_the_line_beside_it_says_how_to_make_it() {
