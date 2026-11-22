@@ -44,6 +44,11 @@ owner's answers); drift between the files and the account is part 5.
 **Records:** ADR-157, Later entries for the two answers and for "As built" part 4. The token's handling and the
 request list are its point 5; any change to either is a decision of its own.
 
+**The two questions, answered 21 November 2026** (ADR-157, Later): a classic token says its scopes and is refused when
+any allows writing; a fine-grained token cannot say, so the report says ConfigVet could not confirm it is read-only
+before any finding. The settings list, each with what it speaks to in part, is in the same entry. Next: the crate and
+its dependency test, then the client, tried on this repository with a read-only fine-grained token the owner makes.
+
 **Done, 21 November 2026:** `cv live github <owner>/<repo>` in `crates/cv-live` and `crates/cv-cli/src/live.rs`, behind
 every rule of ADR-157's point 5, and the test that keeps it out of `sv` (`crates/sv-cli/tests/cv_live_fence.rs`, shown
 red by making `sv-check` depend on it). Tried on this repository with the owner's read-only fine-grained token: 13

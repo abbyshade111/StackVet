@@ -14,6 +14,8 @@
 //!   New on 21 November 2026 (backlog 0716).
 //! - `checkpoint` (ADR-159, decision 12): where the owner signed that each record's chain had got to. New on 22
 //!   November 2026 (backlog 0716).
+//! - `outside_note` (ADR-159, decision 12): where the build-loop record's chain had got to, noted outside the app's
+//!   folder each time a line is written. New on 22 November 2026 (backlog 0716).
 //! - `tool_behavior` (ADR-131): what the tool did that is worth a look, read from git, the hook record, and the last
 //!   report.
 //!
@@ -28,6 +30,7 @@ pub mod envelope;
 pub mod groups;
 pub mod held;
 pub mod hook_record;
+pub mod outside_note;
 pub mod passthrough;
 pub mod plain;
 pub mod tool_behavior;

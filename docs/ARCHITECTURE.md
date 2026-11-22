@@ -285,7 +285,8 @@ AgentVet's `av` (ADR-159) opens no network connection. `av report` reads records
 and writes nothing. `av proxy`, the pass-through, starts one program, the tool server named on its command line,
 relays between it and the agent unchanged, and writes its record outside the app's folder; what that server connects
 to is the server's own. `av checkpoint`, run by the owner at a terminal, signs where each record has got to with the key
-`sv review` signs with, and writes that signature beside the records. A test holds what `av`'s source can show: nothing in it connects, and one file starts a
+`sv review` signs with, and writes that signature beside the records. And `sv mcp` notes, in a file beside them, where the build-loop
+record's chain has got to each time it writes a line, so a record rewritten inside the app's folder shows. A test holds what `av`'s source can show: nothing in it connects, and one file starts a
 program (`crates/av-cli/tests/report.rs`).
 
 ConfigVet's `cv` (ADR-157) opens no network connection in `cv check`, which reads files only. Its one connection is

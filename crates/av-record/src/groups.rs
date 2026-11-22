@@ -102,6 +102,8 @@ pub struct Read<'r> {
     pub commits: Option<&'r [Commit]>,
     /// How each record that was read stands against the owner's checkpoints.
     pub checkpoints: &'r [(crate::checkpoint::Kind, crate::checkpoint::Standing)],
+    /// How the build-loop record stands against the notes kept outside its folder.
+    pub noted: &'r crate::outside_note::Standing,
 }
 
 /// The six groups, each with what was seen and what could not be.
@@ -301,6 +303,21 @@ fn oversight(read: &Read) -> (Vec<Line>, Vec<String>) {
                 .to_owned(),
             place: format!("line {at} of the record"),
             from: FROM_HOOK,
+            verdict: None,
+        });
+    }
+    if let crate::outside_note::Standing::NotKept { at, lines: noted } = read.noted {
+        lines.push(Line {
+            what: format!(
+                "the build-loop record no longer passes through what sv noted outside the folder at {at}, when it \
+                 held {}: lines up to there were changed or cut since",
+                match noted {
+                    1 => "1 line".to_owned(),
+                    n => format!("{n} lines"),
+                }
+            ),
+            place: "the record's own lines, against the note outside the folder".to_owned(),
+            from: "the note outside the folder",
             verdict: None,
         });
     }
