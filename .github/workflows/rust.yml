@@ -686,10 +686,9 @@ jobs:
       - name: Publish them, as one image for both platforms
         id: publish
         # Each platform's image is pushed under its own tag, then one manifest naming both is pushed as the
-        # commit's tag (backlog 0539): `docker pull` picks the one for the machine it runs on. Runs on main can
-        # finish out of order now that each commit has its own, so `latest` moves only when this commit is still
-        # the newest on main. The token reaches the script through the environment, never as its text (backlog
-        # 0318), as the Docker Hub steps' does.
+        # commit's tag (backlog 0539): `docker pull` picks the one for the machine it runs on. `latest` is moved
+        # after the image is signed, below. The token reaches the script through the environment, never as its text
+        # (backlog 0318), as the Docker Hub steps' does.
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GHCR_USER: ${{ github.actor }}
@@ -698,14 +697,7 @@ jobs:
           sha="${{ github.sha }}"
           docker push "$IMAGE:$sha-amd64"
           docker push "$IMAGE:$sha-arm64"
-          tags=(-t "$IMAGE:${{ github.sha }}")
-          git fetch --depth=1 origin main
-          if [ "$(git rev-parse FETCH_HEAD)" = "$sha" ]; then
-            tags+=(-t "$IMAGE:latest")
-          else
-            echo "main has moved past $sha; latest is left to the newer commit's run"
-          fi
-          docker buildx imagetools create "${tags[@]}" "$IMAGE:$sha-amd64" "$IMAGE:$sha-arm64"
+          docker buildx imagetools create -t "$IMAGE:${{ github.sha }}" "$IMAGE:$sha-amd64" "$IMAGE:$sha-arm64"
           digest_of() {
             docker buildx imagetools inspect "$1" --format '{{json .Manifest}}' | jq -r .digest
           }
@@ -744,6 +736,36 @@ jobs:
           subject-digest: ${{ steps.publish.outputs.arm64 }}
           push-to-registry: true
           create-storage-record: false
+
+      - name: Point latest at the newest image published from main
+        # Backlog 0721, part 4: `latest` is the newest commit on main whose image is published, read from the
+        # registry after this run's own is pushed and signed. Runs on main finish out of order, so each one looks
+        # again, and whichever finishes last leaves `latest` on the newest: one that finishes late finds the newer
+        # image there and points `latest` at that, so `latest` never moves back. Until 22 November 2026 only the run
+        # of main's newest commit moved it, so a burst of merges left it behind until the burst's last run (33
+        # minutes that day), and a failed last run would have left it behind every green image before it until the
+        # next merge. A copy of the image, not a new one: the digest `latest` names must be the signed one, or
+        # `gh attestation verify` refuses it, so a copy that is not is an error.
+        run: |
+          git fetch --quiet --depth=50 origin main
+          newest=""
+          for c in $(git rev-list --first-parent --max-count=50 FETCH_HEAD); do
+            if docker buildx imagetools inspect "$IMAGE:$c" > /dev/null 2>&1; then
+              newest=$c
+              break
+            fi
+          done
+          if [ -z "$newest" ]; then
+            echo "::error::no image is published for any of main's last 50 commits, so latest was not moved"
+            exit 1
+          fi
+          docker buildx imagetools create -t "$IMAGE:latest" "$IMAGE:$newest"
+          digest_of() {
+            docker buildx imagetools inspect "$1" --format '{{json .Manifest}}' | jq -r .digest
+          }
+          test "$(digest_of "$IMAGE:latest")" = "$(digest_of "$IMAGE:$newest")" \
+            || { echo "::error::latest is not the same image as $newest's, so its signature would not match"; exit 1; }
+          echo "latest is the image of $newest$([ "$newest" = "${{ github.sha }}" ] && echo ", this run's" || echo ", the newest published")"
 
       - name: Log out of the registry
         if: always()
