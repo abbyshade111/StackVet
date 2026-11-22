@@ -103,8 +103,24 @@ pub fn line_of(
             line["event"] = json!(ASKED);
             line["tool"] = json!(sv_check::text::cut_with_count(&one_line(tool), 80));
             line["print"] = json!(print_of(&input["tool_input"]));
+            // A tool of the AI coding tool's own that names a file (its editor, its file writer) is summarized by
+            // the file alone, as a file write's line is: what it would write is a file's contents, which the
+            // record never keeps. The owner's trial of 22 November 2026 kept a Write's text; this is the fix.
+            let own_file = (!tool.starts_with("mcp__"))
+                .then(|| {
+                    ["file_path", "notebook_path"]
+                        .iter()
+                        .find_map(|key| input["tool_input"][key].as_str())
+                })
+                .flatten();
             let given = match input["tool_input"]["command"].as_str() {
                 Some(command) if matches!(tool, "Bash" | "PowerShell") => command.to_owned(),
+                _ if own_file.is_some() => {
+                    let file = Path::new(own_file.unwrap_or_default());
+                    file.strip_prefix(app)
+                        .map(|p| p.display().to_string())
+                        .unwrap_or_else(|_| file.display().to_string())
+                }
                 _ if input["tool_input"].is_null() => String::new(),
                 _ => input["tool_input"].to_string(),
             };
