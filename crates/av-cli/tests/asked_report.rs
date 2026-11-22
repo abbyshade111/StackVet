@@ -117,3 +117,33 @@ fn a_hook_record_with_no_asking_says_the_hook_may_not_write_them_down() {
         "{out}"
     );
 }
+
+#[test]
+fn an_asking_with_no_summary_is_listed_by_its_tool_alone() {
+    let (app, state) = (folder("bare"), folder("bare-state"));
+    record(
+        &state,
+        &app,
+        &[
+            asks(
+                "ExitPlanMode",
+                serde_json::json!({ "plan": "the tool's own words" }),
+            ),
+            asks(
+                "ExitPlanMode",
+                serde_json::json!({ "plan": "the tool's own words" }),
+            ),
+        ],
+    );
+    let (code, out, err) = av(&["report", app.to_str().unwrap(), "--hook-record"], &state);
+    assert_eq!(code, 0, "{out}{err}");
+    assert!(
+        out.contains("asked, and did not run: ExitPlanMode (2026-11-22T03:57:00Z)"),
+        "{out}"
+    );
+    assert!(
+        !out.contains("to be given  (") && !out.contains("It was to be given: ("),
+        "{out}"
+    );
+    assert!(!out.contains("the tool's own words"), "{out}");
+}
