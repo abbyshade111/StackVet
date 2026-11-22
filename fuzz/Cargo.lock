@@ -36,16 +36,18 @@ checksum = "3bc62ac97cc33321f50863d514c3bc38a453947a8f9e781137e47c7401020aed"
 
 [[package]]
 name = "av-record"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "libc",
+ "serde",
  "serde_json",
  "sv-check",
  "sv-frameworks",
  "sv-manifest",
  "sv-report",
  "sv-scan",
+ "toml",
 ]
 
 [[package]]
@@ -595,7 +597,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "sv-check"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "aes",
  "anyhow",
@@ -637,7 +639,7 @@ dependencies = [
 
 [[package]]
 name = "sv-cli"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "av-record",
@@ -656,7 +658,7 @@ dependencies = [
 
 [[package]]
 name = "sv-core"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "serde",
  "sv-scan",
@@ -664,7 +666,7 @@ dependencies = [
 
 [[package]]
 name = "sv-frameworks"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "serde",
@@ -683,7 +685,7 @@ dependencies = [
 
 [[package]]
 name = "sv-manifest"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "serde",
@@ -693,7 +695,7 @@ dependencies = [
 
 [[package]]
 name = "sv-report"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "serde",
@@ -705,7 +707,7 @@ dependencies = [
 
 [[package]]
 name = "sv-run"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "getrandom",
@@ -719,7 +721,7 @@ dependencies = [
 
 [[package]]
 name = "sv-scan"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "regex",
@@ -731,7 +733,7 @@ dependencies = [
 
 [[package]]
 name = "sv-yaml"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "tree-sitter",
  "tree-sitter-yaml",
