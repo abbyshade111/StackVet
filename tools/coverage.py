@@ -526,6 +526,9 @@ RUST_IN_PART = {"probe.business-limit-not-held", "probe.cookie-too-large", "prob
 # shown beside (backlog 0609); none credits anything.
 MENTIONS = {"V6.1.1", "AC.4.1", "SBD-AC-01", "V6.2.1", "V3.3.1", "V8.3.1", "V2.2.2", "V13.2.1", "V12.1.2", "V8.1.1", "V8.1.2",
             "V6.1.3", "V6.3.4", "V14.1.1", "V14.1.2", "V11.1.1", "V11.1.2",
+            # ConfigVet's live rules cite these (`crates/cv-live/src/judge.rs`, backlog 0717): what `cv` finds or credits
+            # is ConfigVet's evidence, never `sv`'s coverage (ADR-157), so they count for nothing here.
+            "AC.4.2", "AC.7.2", "AC.8.3", "AC.8.4", "V15.2.4",
             # The hand check on using a cryptography library, shown the draft inventory (0611).
             "V11.2.1",
             # The hand check on one key for several audiences, shown the app's own token's `aud` (0500).
