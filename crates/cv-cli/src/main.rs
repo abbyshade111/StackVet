@@ -7,6 +7,7 @@
 //! a deployment file could not be read or the folder holds none (always), or with `--fail-on not-assessed` and anything
 //! not assessed; 3 when `cv` itself failed and there is no result. 1 outranks 2.
 
+mod live;
 mod tools;
 
 use cv_rules::outcome::Outcome;
@@ -24,13 +25,17 @@ cv: ConfigVet reviews the files that say how an app is deployed.
 
 Usage:
   cv check <folder> [--out <folder>] [--fail-on attention|not-assessed] [--no-tools]
+  cv live github <owner>/<repo> [--out <folder>] [--fail-on attention|not-assessed]
   cv --version
 
 cv check reads the folder's Dockerfiles, compose files, Kubernetes manifests, and Terraform plans (as JSON), with the
 app's package.json and Django settings, and says for each setting whether it is set safely, set unsafely, missing with
 a safe or an unsafe default, or not assessed. It then runs hadolint, Checkov, and Trivy over the same files, where
 they are installed, unless --no-tools is given; a tool that is not installed is said so, never counted as a pass. It
-writes report.json into --out, by default <folder>/cv-report, and opens no network connection.";
+writes report.json into --out, by default <folder>/cv-report, and opens no network connection.
+
+cv live github, only when asked for by name, reads one GitHub repository's settings with the token in GH_TOKEN:
+every request a GET to api.github.com, each listed in its report. See `cv live --help`.";
 
 #[derive(Debug, PartialEq, Eq)]
 enum FailOn {
@@ -92,6 +97,19 @@ fn main() -> ExitCode {
                 eprintln!("cv: {why}\n\n{USAGE}");
                 ExitCode::from(FAILED)
             }
+        },
+        Some("live") => match args.get(1).map(String::as_str) {
+            Some("--help" | "-h") | None => {
+                println!("Usage:\n{}", live::USAGE);
+                ExitCode::from(if args.len() > 1 { CLEAN } else { FAILED })
+            }
+            _ => match live::parse(&args[1..]) {
+                Ok(options) => ExitCode::from(live::run(&options)),
+                Err(why) => {
+                    eprintln!("cv: {why}\n\nUsage:\n{}", live::USAGE);
+                    ExitCode::from(FAILED)
+                }
+            },
         },
         Some("--help" | "-h" | "help") => {
             println!("{USAGE}");

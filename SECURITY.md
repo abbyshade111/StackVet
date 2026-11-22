@@ -32,6 +32,9 @@ A vulnerability in `sv` is something that lets it be used against the person run
   asked for by name, and the outside tools, which run unless `--no-tools` and of which Semgrep fetches its rule packs
   from semgrep.dev; all four are drawn and listed in
   [the fence](docs/ARCHITECTURE.md#the-fence-what-can-reach-the-internet-and-what-turns-it-on));
+- ConfigVet's `cv live github`, the one way `cv` connects anywhere, sends anything but its fixed `GET` requests to
+  `api.github.com`, follows a redirect to another host, puts its token anywhere but `curl`'s input (on a command line,
+  in a file, or in a report), or shows more of the token than its first characters and its length (ADR-157);
 - it runs code from the app it is checking, when it was not asked to (`--run` and the outside tools are the only ways it does, and `--no-tools` turns the second off);
 - a report, or a message to the AI tool, shows a whole key or password (secrets are shown as their first four
   characters and their length);

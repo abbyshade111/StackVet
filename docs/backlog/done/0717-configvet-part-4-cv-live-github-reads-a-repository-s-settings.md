@@ -1,6 +1,6 @@
 # ConfigVet part 4: `cv live github` reads a repository's settings with a read-only token
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word. Part 4 of ADR-157's build order (the design entry
 `docs/design/0396-configvet-a-companion-for-an-app-s-deployment-configuration.md`, "Proposed order of the build"):
@@ -49,3 +49,10 @@ any allows writing; a fine-grained token cannot say, so the report says ConfigVe
 before any finding. The settings list, each with what it speaks to in part, is in the same entry. Next: the crate and
 its dependency test, then the client, tried on this repository with a read-only fine-grained token the owner makes.
 
+**Done, 21 November 2026:** `cv live github <owner>/<repo>` in `crates/cv-live` and `crates/cv-cli/src/live.rs`, behind
+every rule of ADR-157's point 5, and the test that keeps it out of `sv` (`crates/sv-cli/tests/cv_live_fence.rs`, shown
+red by making `sv-check` depend on it). Tried on this repository with the owner's read-only fine-grained token: 13
+`GET` requests to `api.github.com`, three findings, eight credits in part. ADR-157, "As built, part 4", says what was
+built and what each test was shown to catch; `docs/ARCHITECTURE.md`, `docs/INSTALL.md`, and `SECURITY.md` say what
+`cv live` connects to and how to make its token. Not here: the stackvet.dev ConfigVet page, which still says live
+accounts come later; Cloudflare; and drift between files and account (part 5).

@@ -184,6 +184,36 @@ by hand yet.
 `cv check <folder>` also runs hadolint, Checkov, and Trivy over the same files where they are installed, and says so,
 with how to install each, where they are not; `--no-tools` leaves them out.
 
+### Reading a GitHub repository's settings
+
+`cv live github <owner>/<repo>` reads one repository's settings from GitHub: the rules on its default branch, whether
+workflows may approve pull requests, what a workflow's token may do, which actions may run and whether they must be
+pinned, each environment's reviewers and deployment branches, and secret scanning. It is the one thing `cv` connects
+to, only when you type it, and every request it makes is a `GET` to `api.github.com`, listed in its report.
+
+It needs a token, and it should be one that can only read:
+
+1. On github.com: your picture, **Settings**, **Developer settings**, **Personal access tokens**, **Fine-grained
+   tokens**, **Generate new token**.
+2. **Repository access:** **Only select repositories**, and pick the one to read.
+3. **Repository permissions:** **Administration** and **Actions**, each **Read-only**. Leave everything else at **No
+   access**. A short expiry is fine.
+4. Put it in `GH_TOKEN` for the command, rather than typing it on the command line, which shell history keeps. On a
+   Mac, keep it in the keychain and read it for the one command:
+
+```bash
+security add-generic-password -s cv-github -a "$USER" -w
+```
+
+```bash
+GH_TOKEN="$(security find-generic-password -s cv-github -a "$USER" -w)" cv live github owner/repo
+```
+
+GitHub does not let a fine-grained token say what it can do, so `cv` says it could not confirm the token is read-only;
+that is why the permissions above matter. A classic token (one starting `ghp_` or `gho_`, as `gh auth token` gives)
+that can write is refused, and `cv` reads nothing with it. What is safe is credited *in part*, since GitHub's word for
+a setting is not a test of what it does; what GitHub did not show the token is *not assessed*, never a pass.
+
 ## An image of your own
 
 `install = true` downloads Python packages (from `requirements.txt`) and Node packages (from `package.json`)
