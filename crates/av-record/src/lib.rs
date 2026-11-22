@@ -12,6 +12,8 @@
 //!   (backlog 0715).
 //! - `passthrough` (ADR-159, decision 10): the record of each call an agent made to a tool through `av proxy`.
 //!   New on 21 November 2026 (backlog 0716).
+//! - `checkpoint` (ADR-159, decision 12): where the owner signed that each record's chain had got to. New on 22
+//!   November 2026 (backlog 0716).
 //! - `tool_behavior` (ADR-131): what the tool did that is worth a look, read from git, the hook record, and the last
 //!   report.
 //!
@@ -21,6 +23,7 @@
 //! Nothing here prints, and nothing here opens a network connection.
 
 pub mod build_loop;
+pub mod checkpoint;
 pub mod envelope;
 pub mod groups;
 pub mod held;
