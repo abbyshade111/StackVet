@@ -489,6 +489,64 @@ fn a_record_stands_under_the_owner_s_checkpoint_until_it_is_rewritten_and_then_t
     assert!(!out.contains("chain stops checking out"), "{out}");
 }
 
+#[test]
+fn a_record_rewritten_inside_the_folder_shows_against_what_sv_noted_outside_it() {
+    let app = folder("noted");
+    let state = folder("noted-state");
+    let (_, out, _) = av(&["report", app.to_str().unwrap()], &state);
+    assert!(
+        out.contains("The build-loop record: nothing was noted for this folder on this computer."),
+        "{out}"
+    );
+    // Two calls, each noted as `sv mcp` notes it: where the chain had got to, in a file outside the app's folder.
+    let name = av_record::plain::sha256(app.display().to_string().as_bytes());
+    let notes = state
+        .join("stackvet/loop-notes")
+        .join(format!("{}.jsonl", &name[..16]));
+    for time in ["2026-11-22T10:00:00Z", "2026-11-22T10:30:00Z"] {
+        av_record::build_loop::record(&app, &check(time, 1)).unwrap();
+        let seen = av_record::build_loop::read(&app);
+        av_record::hook_record::append(
+            &notes,
+            serde_json::json!({ "at": time, "lines": seen.chained, "head": seen.chain_head }),
+        )
+        .unwrap();
+    }
+    let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
+    assert_eq!(code, 0, "{out}{err}");
+    assert!(
+        out.contains("The build-loop record passes through every place noted: 2 places noted, the last at 2 lines."),
+        "{out}"
+    );
+    // What a tool kept to the folder can do: replace the record, with a chain of its own that checks out.
+    std::fs::remove_file(
+        av_record::checkpoint::record_path(&app, av_record::checkpoint::Kind::BuildLoop).unwrap(),
+    )
+    .unwrap();
+    av_record::build_loop::record(&app, &check("2026-11-22T09:00:00Z", 0)).unwrap();
+    av_record::build_loop::record(&app, &check("2026-11-22T09:30:00Z", 0)).unwrap();
+    let again = av_record::build_loop::read(&app);
+    assert_eq!(
+        (again.chained, again.chain_broken_at),
+        (2, None),
+        "the setup: its own chain holds"
+    );
+    let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
+    assert_eq!(code, 0, "{out}{err}");
+    for said in [
+        "The build-loop record: CHANGED since sv noted it at 2026-11-22T10:00:00Z, when it held 1 line.",
+        "the build-loop record no longer passes through what sv noted outside the folder at 2026-11-22T10:00:00Z",
+        "from the note outside the folder",
+        "a tool that can write anywhere you can, can",
+    ] {
+        assert!(out.contains(said), "missing {said:?}: {out}");
+    }
+    assert!(
+        !out.contains("chain stops checking out"),
+        "the chain alone shows nothing: {out}"
+    );
+}
+
 /// The envelope the next tests hold a tool to: it may write `src/` and start `pytest` and `git`.
 const HELD_TO: &str = "envelope-version = 1\n[task]\ngoal = \"Add a sign-out link.\"\n[may]\nwrite = [\"src/\"]\n\
                        run = [\"pytest\", \"git\"]\n";

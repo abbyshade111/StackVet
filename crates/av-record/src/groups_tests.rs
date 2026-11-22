@@ -14,6 +14,7 @@ fn nothing<'r>(build_loop: &'r BuildLoop, behavior: &'r ToolBehavior) -> Read<'r
         held: None,
         commits: None,
         checkpoints: &[],
+        noted: &crate::outside_note::Standing::None,
     }
 }
 
@@ -269,6 +270,42 @@ fn a_record_that_no_longer_passes_through_the_owner_s_checkpoint_is_listed_and_o
         "{:?}",
         lines[0]
     );
+}
+
+#[test]
+fn a_record_that_no_longer_passes_through_the_note_outside_its_folder_is_listed_and_one_that_does_is_not()
+ {
+    use crate::outside_note::Standing;
+    let (b, t) = (BuildLoop::default(), ToolBehavior::default());
+    let changed = Standing::NotKept {
+        at: "T1".to_owned(),
+        lines: 4,
+    };
+    let all = gather(&Read {
+        noted: &changed,
+        ..nothing(&b, &t)
+    });
+    let lines = &group(&all, Group::Oversight).lines;
+    assert_eq!(lines.len(), 1, "{lines:?}");
+    assert!(
+        lines[0]
+            .what
+            .contains("no longer passes through what sv noted outside the folder at T1")
+            && lines[0].what.contains("4 lines")
+            && lines[0].from == "the note outside the folder",
+        "{:?}",
+        lines[0]
+    );
+    let kept = Standing::Kept {
+        noted: 9,
+        lines: 9,
+        after: 0,
+    };
+    let all = gather(&Read {
+        noted: &kept,
+        ..nothing(&b, &t)
+    });
+    assert_eq!(group(&all, Group::Oversight).lines, Vec::<Line>::new());
 }
 
 #[test]
