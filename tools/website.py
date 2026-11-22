@@ -24,6 +24,8 @@ Every word is read from where it is kept, never copied here, so the site cannot 
   script;
 - ConfigVet, StackVet's companion for deployment configuration, labeled preview, from
   `docs/website/configvet-page.md` (backlog 0695, ADR-157);
+- AgentVet, StackVet's companion that vets the AI coding tool, labeled preview, from
+  `docs/website/agentvet-page.md` (backlog 0725, ADR-159);
 - StackVet checks itself from `docs/website/self-assessment/`, StackVet's own report on its own repository;
 - the framework pages from `tools/framework_pages.py`, into `standards/`.
 
@@ -74,6 +76,7 @@ PAGES = {
     "project": ("check-a-project.html", "Check a project"),
     "itself": ("checks-itself.html", "StackVet checks itself"),
     "configvet": ("configvet.html", "ConfigVet (preview)"),
+    "agentvet": ("agentvet.html", "AgentVet (preview)"),
     "credits": ("credits.html", "Credits"),
 }
 
@@ -559,6 +562,19 @@ def configvet_page(page_md, commit, counted):
                  f'<div class="md">{"".join(out)}</div>', commit)
 
 
+def agentvet_page(page_md, commit):
+    """AgentVet, labeled preview (backlog 0725): each section's headline, then its words, without its notes, in the
+    Markdown style, as ConfigVet's page is, so its table of records is drawn as a table."""
+    out = []
+    for title, body in sections(page_md):
+        headline, rest = heading_of(without_notes(blocks(body)))
+        level = "h1" if not out else "h2"
+        out.append(f'<section id="{section_id(title)}"><{level}>{e(headline or title)}</{level}>'
+                   + blocks_html(rest, "agentvet.md") + "</section>")
+    return shell("AgentVet (preview): what the record shows your AI coding tool did — StackVet", "agentvet",
+                 f'<div class="md">{"".join(out)}</div>', commit)
+
+
 def build_page(page_md, commit):
     """One step to a section: its heading, its caption, its screen, and a link on to the next."""
     steps = []
@@ -714,6 +730,7 @@ def build(out):
         "checks-itself.html": itself_page(commit),
         "check-a-project.html": project_page(read("docs/website/check-a-project-page.md"), commit),
         "configvet.html": configvet_page(read("docs/website/configvet-page.md"), commit, counted),
+        "agentvet.html": agentvet_page(read("docs/website/agentvet-page.md"), commit),
     }
     out.mkdir(parents=True, exist_ok=True)
     write_text(out / MARK, "Made by tools/website.py. Run it again to bring the site up to date.\n")

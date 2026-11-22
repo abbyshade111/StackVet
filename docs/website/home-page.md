@@ -258,7 +258,12 @@ tell us in a [GitHub issue](https://github.com/abbyshade111/StackVet/issues).
 Deploy apps for a living? [ConfigVet](configvet.html), StackVet's companion for ops and DevSecOps engineers, reviews
 the files that say how an app is deployed. It's a preview.
 
+Building with an AI coding tool? [AgentVet](agentvet.html), StackVet's companion, says what the record shows the
+tool did, and what it could not see. It's a preview too.
+
 - Contact is GitHub issues only, for now.
+- The AgentVet line is the owner's word of 22 November 2026 ("an update to stackvet.dev about av (similar to cv)"):
+  one page, labeled preview, linked from here (backlog 0725).
 - The ConfigVet line is the owner's choice of 21 November 2026: one page, labeled preview, linked from the home page
   (backlog 0695; ADR-132, Later).
 

@@ -220,6 +220,35 @@ that is why the permissions above matter. A classic token (one starting `ghp_` o
 that can write is refused, and `cv` reads nothing with it. What is safe is credited *in part*, since GitHub's word for
 a setting is not a test of what it does; what GitHub did not show the token is *not assessed*, never a pass.
 
+
+## AgentVet (`av`), StackVet's companion that vets the AI coding tool
+
+AgentVet's `av` reads the records kept while an AI coding tool worked on an app, and says what each record shows the
+tool did, how far that record can be relied on, and what it could not see. It is a preview. It runs on your own
+computer, not in StackVet's container: it starts the tool server it sits in front of, reads records kept in your own
+folders, and takes your key's passphrase at your terminal.
+
+Today it is built from StackVet's repository with Rust's `cargo`, and the program is `av`, in `target/release/`:
+
+```bash
+cargo build --release --locked -p av-cli
+```
+
+`av --version` says which commit it was built from. Its own Homebrew and Scoop packages come with v0.3.1, which is not
+released yet (backlog 0724); this section gains those commands once each has been seen to work.
+
+Two things it reads are kept by something you install first:
+
+- **The hook record** is kept by a hook in Claude Code's settings. `sv connect claude --hook` prints it. The hook runs a
+  copy of `sv` installed on your computer, so it is not offered for `sv` in its container; build `sv` the same way
+  (`-p sv-cli`) or install it as above.
+- **The pass-through's record** is kept by `av proxy`, put in front of a tool server's command in your AI coding
+  tool's MCP settings: the command becomes `av`, and its arguments `proxy`, `--app`, the app's folder, `--`, and then
+  the old command and its arguments, unchanged.
+
+`av report <folder>` reads the hook record only with `--hook-record` and the pass-through's record only with
+`--proxy-record`, each time you ask.
+
 ## An image of your own
 
 `install = true` downloads Python packages (from `requirements.txt`) and Node packages (from `package.json`)
