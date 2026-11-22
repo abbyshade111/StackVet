@@ -697,7 +697,7 @@ jobs:
           sha="${{ github.sha }}"
           docker push "$IMAGE:$sha-amd64"
           docker push "$IMAGE:$sha-arm64"
-          docker buildx imagetools create -t "$IMAGE:$sha" "$IMAGE:$sha-amd64" "$IMAGE:$sha-arm64"
+          docker buildx imagetools create -t "$IMAGE:${{ github.sha }}" "$IMAGE:$sha-amd64" "$IMAGE:$sha-arm64"
           digest_of() {
             docker buildx imagetools inspect "$1" --format '{{json .Manifest}}' | jq -r .digest
           }
