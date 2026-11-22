@@ -28,7 +28,7 @@ it), and whether `av` gets a zip of its own as `cv` did, or rides in `sv`'s.
 2. **`av` says which commit it was built from.** `av --version` prints the version alone; `sv --version` names the
    commit, which a person reporting a fault needs, and which the second trial had to work out by hand. Not
    code-owned.
-   **Part status:** open
+   **Part status:** done, 22 November 2026
 3. **Homebrew: `Formula/av.rb` in the tap,** head-only first with an install job of its own on a Mac and on Linux,
    then the release's source archive once it is tagged. The tap's ruleset and `.github/rulesets.json` name the
    install jobs, so they change with it, at the owner's word (backlog 0690). Another repository: a Mac session.

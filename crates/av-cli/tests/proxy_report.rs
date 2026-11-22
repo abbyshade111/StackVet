@@ -258,3 +258,28 @@ fn two_sessions_are_counted_apart_and_a_no_from_the_first_is_not_a_retry_in_the_
         "a later session's call was said to be made again after the no: {out}"
     );
 }
+
+/// `av --version` names the commit it was built from (backlog 0724, part 2): a person reporting a fault needs it,
+/// and the owner's second trial had to work it out by hand.
+#[test]
+fn the_version_names_the_commit_av_was_built_from() {
+    let state = folder("version-state");
+    let (code, out, err) = av(&["--version"], &state);
+    assert_eq!(code, 0, "{err}");
+    let line = out.trim();
+    let commit = line
+        .strip_prefix(&format!("av {} (commit ", env!("CARGO_PKG_VERSION")))
+        .and_then(|rest| rest.strip_suffix(')'))
+        .unwrap_or_else(|| panic!("not a version and a commit: {line}"));
+    // Built in a checkout, as these tests are, it is a commit's hash; built from an archive with none given, it
+    // says so and does not guess.
+    assert!(
+        commit == "unknown" || (commit.len() >= 7 && commit.chars().all(|c| c.is_ascii_hexdigit())),
+        "{commit}"
+    );
+    // And the same one is in a report's JSON.
+    let app = folder("version");
+    let (_, out, _) = av(&["report", app.to_str().unwrap(), "--json"], &state);
+    let report: serde_json::Value = serde_json::from_str(&out).expect("JSON");
+    assert_eq!(report["commit"], commit, "{report}");
+}
