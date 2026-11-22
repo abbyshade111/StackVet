@@ -264,9 +264,8 @@ Or build it from StackVet's repository with Rust's `cargo`, and the program is `
 cargo build --release --locked -p av-cli
 ```
 
-`av --version` says which commit it was built from, where it was built in a checkout. Installed with Homebrew it
-says `commit unknown`, since Homebrew builds from the release's source archive, which carries no commit; the version
-is the release's.
+`av --version` says which commit it was built from: built in a checkout, the checkout's; installed with Homebrew or
+Scoop, the commit the release was tagged at.
 
 Two things it reads are kept by something you install first:
 
