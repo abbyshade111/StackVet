@@ -42,8 +42,8 @@ on ADR-157,** as 0717 did for GitHub.
   only, never for the behavior it causes: ADR-157, point 6); every request listed with its method, host, path, and
   status; and what could not be read said as not assessed, never as a pass. The same report shape as GitHub's.
 - **The fence:** `docs/ARCHITECTURE.md`, "The fence", gains `api.cloudflare.com` beside `api.github.com` for `cv live`,
-  and `sv`'s list is unchanged; `docs/INSTALL.md` says how to make the read-only token; `SECURITY.md` already counts a
-  break of this fence as a vulnerability.
+  and `sv`'s list is unchanged; `docs/INSTALL.md` says how to make the read-only token; `SECURITY.md`, which names
+  `cv live github` as the one way `cv` connects anywhere, names `cv live cloudflare` beside it.
 - **Tested** as 0717's client is: a stand-in `curl` that records its arguments, with the token never on its command
   line, each guard broken in turn and the test that catches it named.
 - **Tried first on stackvet.dev's own zone,** with a read-only token the owner makes; never on anyone else's account
