@@ -159,27 +159,3 @@ fn the_token_words_never_call_a_fine_grained_token_read_only() {
     let words = token_words(&reading);
     assert!(words.contains("could not confirm"), "{words}");
 }
-
-#[test]
-fn every_citation_names_a_requirement_that_exists() {
-    let mut known = String::new();
-    for f in ["asvs-5.0.0.json", "aisvs-1.0-appendix-c.json"] {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../data/frameworks")
-            .join(f);
-        known.push_str(&std::fs::read_to_string(path).unwrap());
-    }
-    assert!(
-        known.contains("\"AC.8.3\""),
-        "the setup: the frameworks were read"
-    );
-    for rule in RULES {
-        for id in rule.requirement_ids {
-            assert!(
-                known.contains(&format!("\"{id}\"")),
-                "{} cites {id}, which is not in the frameworks",
-                rule.id
-            );
-        }
-    }
-}

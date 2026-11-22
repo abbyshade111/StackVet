@@ -70,8 +70,8 @@ struct Ran {
 
 fn cv(dir: &Path, token: Option<&str>, args: &[&str], canned: &serde_json::Value) -> Ran {
     let curl = dir.join("curl");
-    std::fs::write(&curl, FAKE_CURL).unwrap();
-    std::fs::set_permissions(&curl, std::os::unix::fs::PermissionsExt::from_mode(0o755)).unwrap();
+    // Written by a child process, so no other test's program inherits it half-written ("text file busy").
+    sv_check::test_support::executable(&curl, FAKE_CURL);
     std::fs::write(dir.join("answers.json"), canned.to_string()).unwrap();
     let log = dir.join("calls.log");
     let out_dir = dir.join("report");
