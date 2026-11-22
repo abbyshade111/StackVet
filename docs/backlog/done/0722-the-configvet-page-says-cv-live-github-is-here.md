@@ -1,6 +1,6 @@
 # The ConfigVet page says `cv live github` is here, and what it reads
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word. `cv live github` merged in #2509 (backlog 0717; ADR-157, "As built, part
 4"), and `docs/website/configvet-page.md` still says reading live hosting accounts "comes later" and heads a section
@@ -13,3 +13,5 @@ Filed 21 November 2026, at the owner's word. `cv live github` merged in #2509 (b
   The page's sources list gains the part 4 entries. Its install lines stay `docs/INSTALL.md`'s (backlog 0701).
 - **Done when:** the built page says it, `crates/sv-cli/tests/website.rs` passes, and the owner has read it before the
   site is deployed.
+
+**Done, 22 November 2026:** the page says what `cv live github` reads, its fence, and what a setting counts as; `website.rs` asks for it. ADR-132, Later, 22 November 2026.

@@ -1,6 +1,6 @@
 # Information: Notes with users
 
-Produced by `sv` 0.2.0 (commit 7031bd26f038) on 2026-11-21 15:48:12 UTC, run 15a3dae229ac.
+Produced by `sv` 0.3.0 (commit 7cb7878b2ec7) on 2026-11-22 03:24:15 UTC, run 90bae36f9345.
 
 **This file:** What asks nothing of you: findings in test code, checks that found nothing, your AI coding tool's files, and the text of each requirement, from compliance.md and security.md. **For:** You, when you want the rest. The end of `report.html` lists every file in this folder and who each is for.
 
@@ -76,12 +76,7 @@ Not looked for: findings that went away, since this folder held no earlier repor
 
 | Kind | What was seen | Where |
 |---|---|---|
-| Tests skipped or removed | a test was marked to be skipped in tools/session_token.py (xit() | commit c0f03aea "Backlog 0692: sessions push and open pull requests as the se", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
-| Tests skipped or removed | a line the test crates/sv-cli/tests/website.rs expects was changed in the same commit as 1 file of code | commit 7031bd26 "stackvet.dev: fix what the whole-site review found, the page", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
-| A guard edited | a marker that tells a check to look away (noqa) was added in tools/session_token.py | commit c0f03aea "Backlog 0692: sessions push and open pull requests as the se", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
-| A guard edited | a marker that tells a check to look away (nosec) was added in docs/backlog/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md | commit 6f1a9b40 "File and claim backlog 0693: ConfigVet part 3, the outside t", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
-| A guard edited | a marker that tells a check to look away (nosec) was added in docs/backlog/done/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md | commit 9ca59c36 "ConfigVet part 3: cv runs hadolint, Checkov, and Trivy (back", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
-| A guard edited | .github/workflows/release.yml was changed | commit cc3f49db "The release builds, checks, signs, and attaches cv's own Win", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
+| A guard edited | .github/workflows/rust.yml was changed | commit afca5627 "Every file that decides what the required check runs is code", by Claude Opus 5.5 &lt;noreply@anthropic.com> |
 
 ## Checks that ran and found nothing, against nothing in the tables above
 

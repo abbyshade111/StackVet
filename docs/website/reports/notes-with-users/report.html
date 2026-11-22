@@ -69,7 +69,7 @@ ul.checklist { list-style: none; padding-left: .4rem; }
 </head>
 <body>
 <h1><svg class="mark" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true" focusable="false"><path class="mark-bracket" d="M20 10 H11 V54 H20"/><path class="mark-bracket" d="M44 10 H53 V54 H44"/><path class="mark-check" d="M22 33 L29 40 L43 24"/></svg>Notes with users</h1>
-<p class="note">Produced by <code>sv</code> 0.2.0 (commit 7031bd26f038) on 2026-11-21 15:48:12 UTC, run 15a3dae229ac. ASVS level 2.</p>
+<p class="note">Produced by <code>sv</code> 0.3.0 (commit 7cb7878b2ec7) on 2026-11-22 03:24:15 UTC, run 90bae36f9345. ASVS level 2.</p>
 <section class="bluf">
 <p class="headline">2 things to fix were found in the app&#39;s own code. 1 more is a note worth knowing, not a thing to fix, under &quot;Worth knowing&quot;.</p>
 <p class="note">Most serious first:</p>
@@ -929,12 +929,7 @@ ul.checklist { list-style: none; padding-left: .4rem; }
 <p>Not looked for: the commands the tool ran and the files it wrote without committing them, since the hook record was not read for this run (`sv report --hook-record` reads it, once its hook is installed).</p>
 <p>Not looked for: findings that went away, since this folder held no earlier report that sv can show it wrote.</p>
 <table><thead><tr><th>Kind</th><th>What was seen</th><th>Where</th></tr></thead><tbody>
-<tr><td>Tests skipped or removed</td><td>a test was marked to be skipped in tools/session_token.py (xit()</td><td>commit c0f03aea &quot;Backlog 0692: sessions push and open pull requests as the se&quot;, by Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</td></tr>
-<tr><td>Tests skipped or removed</td><td>a line the test crates/sv-cli/tests/website.rs expects was changed in the same commit as 1 file of code</td><td>commit 7031bd26 &quot;stackvet.dev: fix what the whole-site review found, the page&quot;, by Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</td></tr>
-<tr><td>A guard edited</td><td>a marker that tells a check to look away (noqa) was added in tools/session_token.py</td><td>commit c0f03aea &quot;Backlog 0692: sessions push and open pull requests as the se&quot;, by Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</td></tr>
-<tr><td>A guard edited</td><td>a marker that tells a check to look away (nosec) was added in docs/backlog/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md</td><td>commit 6f1a9b40 &quot;File and claim backlog 0693: ConfigVet part 3, the outside t&quot;, by Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</td></tr>
-<tr><td>A guard edited</td><td>a marker that tells a check to look away (nosec) was added in docs/backlog/done/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md</td><td>commit 9ca59c36 &quot;ConfigVet part 3: cv runs hadolint, Checkov, and Trivy (back&quot;, by Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</td></tr>
-<tr><td>A guard edited</td><td>.github/workflows/release.yml was changed</td><td>commit cc3f49db &quot;The release builds, checks, signs, and attaches cv&#39;s own Win&quot;, by Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</td></tr>
+<tr><td>A guard edited</td><td>.github/workflows/rust.yml was changed</td><td>commit afca5627 &quot;Every file that decides what the required check runs is code&quot;, by Claude Opus 5.5 &lt;noreply@anthropic.com&gt;</td></tr>
 </tbody></table>
 <h2>Tests worth writing first</h2>
 <p>Nothing produced evidence about these, and no test in the app names them. A test that names a requirement&#39;s id and passes is the one way to give evidence about any requirement, including the ones no check here can reach. These are the level 1 ones. Name only what a test really checks: nothing here can tell whether it does.</p>

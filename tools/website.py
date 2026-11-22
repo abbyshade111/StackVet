@@ -43,6 +43,7 @@ import argparse
 import base64
 import hashlib
 import html
+import json
 import os
 import re
 import shutil
@@ -209,12 +210,89 @@ def word(n, capital=False):
     return w[0].upper() + w[1:] if capital else w
 
 
-def once(pattern, repl, text, what):
+def once(pattern, repl, text, what, where="docs/website/home-page.md", source="docs/COVERAGE.md"):
     new, n = re.subn(pattern, repl, text, flags=re.M)
     if n != 1:
-        die(f"docs/website/home-page.md: {what} is no longer written as this script expects ({n} found), so its "
-            "number from docs/COVERAGE.md has nowhere to go. Bring the two back in line.")
+        die(f"{where}: {what} is no longer written as this script expects ({n} found), so its "
+            f"number from {source} has nowhere to go. Bring the two back in line.")
     return new
+
+
+def configvet_counts(rules_rs, cv_adapters, defaults):
+    """What the ConfigVet page counts (backlog 0699): the rules `cv check` reports, by their ids in
+    crates/cv-rules/src/rules.rs; the outside tools' rules mapped in data/cv-adapters.json; and the defaults in
+    data/config-defaults.json."""
+    return {
+        "rules": len(re.findall(r'^\s*id: "cv\.[a-z0-9-]+"', rules_rs, re.M)),
+        "mapped": sum(len(a.get("rules", {})) for a in cv_adapters["adapters"]),
+        "defaults": len(defaults["defaults"]),
+    }
+
+
+def with_configvet_counts(text, c):
+    """The ConfigVet page with the counts read from their sources in place of those written there."""
+    where = "docs/website/configvet-page.md"
+    text = once(r"has \w+ rules of its own", f"has {word(c['rules'])} rules of its own", text,
+                "the count of its own rules", where, "crates/cv-rules/src/rules.rs")
+    text = once(r"The table holds \w+ defaults today", f"The table holds {word(c['defaults'])} defaults today", text,
+                "the count of defaults", where, "data/config-defaults.json")
+    return once(r"Of the \d+ mapped so far", f"Of the {c['mapped']} mapped so far", text,
+                "the count of mapped tool rules", where, "data/cv-adapters.json")
+
+
+def fence_exceptions(architecture):
+    """How many exceptions docs/ARCHITECTURE.md's "The fence" tables (backlog 0700), and how many of them are off until
+    asked for: its numbered rows, and those whose "What turns it on" says **off**."""
+    found = re.search(r"^## The fence\b.*?(?=^## )", architecture, re.M | re.S)
+    if not found:
+        die("docs/ARCHITECTURE.md has no section \"The fence\"")
+    rows = re.findall(r"^\| (\d+) \| ([^|]*)\|", found[0], re.M)
+    if not rows or [int(r) for r, _ in rows] != list(range(1, len(rows) + 1)):
+        die(f"docs/ARCHITECTURE.md's fence table's rows are not numbered 1 to n ({[r for r, _ in rows]})")
+    off = sum("**off**" in turns_on for _, turns_on in rows)
+    return {"all": len(rows), "off": off, "on": len(rows) - off}
+
+
+ORDINALS = ["zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"]
+
+
+def with_exceptions(text, n):
+    """The home page's paragraph on the exceptions, held to the fence table: how many there are, how many you turn on
+    yourself, and, when one is on by default, which it is. The paragraph names each one after the number, so a number
+    that changed alone would leave it wrong: the build stops instead, until a person writes the paragraph again."""
+    found = re.search(r"There are (\w+) exceptions\. (\w+) you turn on yourself:.*?(?:The (\w+) is on unless|\Z)",
+                      " ".join(text.split()))
+    if not found:
+        die("docs/website/home-page.md no longer says \"There are ... exceptions. ... you turn on yourself:\", so the "
+            "number of network exceptions in docs/ARCHITECTURE.md, \"The fence\", cannot be checked against it")
+    said = {"all": found[1].lower(), "off": found[2].lower(), "on": (found[3] or "").lower()}
+    want = {"all": word(n["all"]), "off": word(n["off"]),
+            "on": ORDINALS[n["all"]] if n["on"] == 1 and n["all"] < len(ORDINALS) else ""}
+    if said != want:
+        die(f"docs/website/home-page.md says there are {said['all']} exceptions, {said['off']} turned on by you"
+            + (f", the {said['on']} on by default" if said["on"] else "")
+            + f"; docs/ARCHITECTURE.md's fence table has {n['all']}, {n['off']} off until asked for and {n['on']} on. "
+            "Write the paragraph again from the table.")
+    return text
+
+
+def missing_from_credits(credits, *adapter_files):
+    """Each outside tool `sv` or `cv` runs that the credits' shown words leave out, and each CodeQL language
+    (backlog 0703). A tool is named by its `name`; a name like "CodeQL (C and C++)" is the tool CodeQL, whose
+    language, "C and C++", must be in the same line of the credits."""
+    lines = [" ".join(b.split()) for b in credits]
+    missing = []
+    for adapters in adapter_files:
+        for adapter in adapters["adapters"]:
+            name = adapter["name"]
+            tool, _, language = name.partition(" (")
+            language = language.rstrip(")")
+            holding = [line for line in lines if f"**{tool}**" in line]
+            if not holding:
+                missing.append(tool)
+            elif language and not any(language in line for line in holding):
+                missing.append(f"{tool}'s {language}")
+    return sorted(set(missing))
 
 
 def with_counts(text, c):
@@ -352,8 +430,8 @@ def shell(title, here, body, commit, depth=0, credit=""):
             "<span class=mono>tools/website.py</span>.</p></div></footer>\n</body>\n</html>\n")
 
 
-def home_page(home_md, coverage, setup, commit):
-    text = with_tools_tried(with_counts(home_md, counts(coverage)), tried_in(setup))
+def home_page(home_md, coverage, setup, commit, exceptions):
+    text = with_exceptions(with_tools_tried(with_counts(home_md, counts(coverage)), tried_in(setup)), exceptions)
     out = []
     for title, body in sections(text):
         if title.startswith(NOT_ON_THE_HOME_PAGE):
@@ -446,11 +524,12 @@ def project_page(page_md, commit):
     return shell("Check a project before you use it — StackVet", "project", "".join(out), commit)
 
 
-def configvet_page(page_md, commit):
+def configvet_page(page_md, commit, counted):
     """ConfigVet, for ops and DevSecOps engineers, labeled preview (backlog 0695): each section's headline, then its
-    words, without its notes, in the Markdown style, so its table of outcomes is drawn as the reports page's are."""
+    words, without its notes, in the Markdown style, so its table of outcomes is drawn as the reports page's are. Its
+    counts are read from their sources (backlog 0699)."""
     out = []
-    for title, body in sections(page_md):
+    for title, body in sections(with_configvet_counts(page_md, counted)):
         headline, rest = heading_of(without_notes(blocks(body)))
         level = "h1" if not out else "h2"
         out.append(f'<section id="{section_id(title)}"><{level}>{e(headline or title)}</{level}>'
@@ -596,8 +675,16 @@ def build(out):
                             text=True, encoding="utf-8").stdout.strip() or "unknown"
     read = lambda rel: (ROOT / rel).read_text(encoding="utf-8")  # noqa: E731
     home_md = read("docs/website/home-page.md")
+    left_out = missing_from_credits(credits_section(home_md), json.loads(read("data/adapters.json")),
+                                    json.loads(read("data/cv-adapters.json")))
+    if left_out:
+        die("the credits in docs/website/home-page.md do not name " + ", ".join(left_out) + ", which sv or cv runs "
+            "(data/adapters.json, data/cv-adapters.json). Add each, with its license read from its source.")
+    counted = configvet_counts(read("crates/cv-rules/src/rules.rs"), json.loads(read("data/cv-adapters.json")),
+                               json.loads(read("data/config-defaults.json")))
     pages = {
-        "index.html": home_page(home_md, read("docs/COVERAGE.md"), read("docs/prompts/setup.md"), commit),
+        "index.html": home_page(home_md, read("docs/COVERAGE.md"), read("docs/prompts/setup.md"), commit,
+                                fence_exceptions(read("docs/ARCHITECTURE.md"))),
         "credits.html": credits_page(home_md, commit),
         "reports.html": reports_page(read("docs/website/reports-page.md"), commit),
         "how-a-build-goes.html": build_page(read("docs/website/build-walkthrough-page.md"), commit),
@@ -605,7 +692,7 @@ def build(out):
                                       commit),
         "checks-itself.html": itself_page(commit),
         "check-a-project.html": project_page(read("docs/website/check-a-project-page.md"), commit),
-        "configvet.html": configvet_page(read("docs/website/configvet-page.md"), commit),
+        "configvet.html": configvet_page(read("docs/website/configvet-page.md"), commit, counted),
     }
     out.mkdir(parents=True, exist_ok=True)
     write_text(out / MARK, "Made by tools/website.py. Run it again to bring the site up to date.\n")
@@ -670,6 +757,49 @@ def self_test():
     assert counted("1", "thing to fix") == "1 thing to fix was" and counted("151", "thing to fix") == "151 things to fix were"
     assert counted("1", "thing") == "1 thing was" and counted("29", "thing") == "29 things were"
     assert inline_scripts("<script>a()</script><SCRIPT type=module>b()</SCRIPT ><p>") == ["a()", "b()"]
+    # The ConfigVet page's counts come from their sources, and changed words stop the build (backlog 0699).
+    rules_rs = '    id: "cv.a",\n    id: "cv.b-c",\n// id: "cv.not-at-line-start" is a comment\n'
+    cv = {"adapters": [{"name": "T", "rules": {"x": 1, "y": 2}}, {"name": "U", "rules": {"z": 3}}]}
+    cc = configvet_counts(rules_rs, cv, {"defaults": [1, 2, 3, 4, 5, 6, 7]})
+    assert cc == {"rules": 2, "mapped": 3, "defaults": 7}, cc
+    page = "has four rules of its own.\nThe table holds six defaults today.\nOf the 23 mapped so far, only"
+    built = with_configvet_counts(page, cc)
+    assert "has two rules of its own" in built and "holds seven defaults" in built and "Of the 3 mapped" in built
+    for old, new in (("has four rules of its own", "has four rules we wrote"),
+                     ("The table holds six defaults", "The table has six defaults"),
+                     ("Of the 23 mapped", "Of the twenty-three mapped")):
+        try:
+            with_configvet_counts(page.replace(old, new), cc)
+            raise AssertionError(f"changed words must stop the build: {new!r}")
+        except SystemExit:
+            pass
+    # The home page's number of exceptions is the fence table's (backlog 0700).
+    fence = ("## The fence\n\n| | a |\n|---|---|\n| 1 | x: **off** |\n| 2 | y: **off** |\n| 3 | z: **on** unless |\n\n"
+             "## Next\n| 9 | not it |\n")
+    n = fence_exceptions(fence)
+    assert n == {"all": 3, "off": 2, "on": 1}, n
+    right = "There are three exceptions. Two you turn on yourself: a; and b. The third is on unless you say."
+    assert with_exceptions(right, n) == right, "a paragraph that matches the table is left as it is"
+    for wrong in (right.replace("three", "four"), right.replace("Two you", "Three you"),
+                  right.replace("The third", "The fourth"), "There are three exceptions, and that is all."):
+        try:
+            with_exceptions(wrong, n)
+            raise AssertionError(f"a paragraph that does not match the table must stop the build: {wrong!r}")
+        except SystemExit:
+            pass
+    for bad in (fence.replace("| 2 | y: **off** |", "| 5 | y: **off** |"), "## Elsewhere\n| 1 | x |\n"):
+        try:
+            fence_exceptions(bad)
+            raise AssertionError("a fence table that cannot be counted must stop the build")
+        except SystemExit:
+            pass
+    # Every tool sv or cv runs is in the credits, CodeQL with each language (backlog 0703).
+    credits = ["- **Semgrep**, rules.", "- **CodeQL**, for Python and C and C++.", "- **hadolint**, GPL."]
+    tools = {"adapters": [{"name": "Semgrep"}, {"name": "CodeQL (Python)"}, {"name": "CodeQL (C and C++)"}]}
+    assert missing_from_credits(credits, tools, {"adapters": [{"name": "hadolint"}]}) == []
+    assert missing_from_credits(credits, tools, {"adapters": [{"name": "Trivy"}]}) == ["Trivy"]
+    assert missing_from_credits(credits, {"adapters": [{"name": "CodeQL (Ruby)"}]}) == ["CodeQL's Ruby"]
+    assert missing_from_credits(["- hadolint, named but not bold"], {"adapters": [{"name": "hadolint"}]}) == ["hadolint"]
     print("website self-test: ok")
 
 

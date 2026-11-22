@@ -1,6 +1,6 @@
 # Notes with users — every low-severity finding
 
-Produced by `sv` 0.2.0 (commit 7031bd26f038) on 2026-11-21 15:48:12 UTC, run 15a3dae229ac.
+Produced by `sv` 0.3.0 (commit 7cb7878b2ec7) on 2026-11-22 03:24:15 UTC, run 90bae36f9345.
 
 **This file:** Every low-severity finding in full, where the other reports group them by rule. **For:** You or your AI coding tool, when you want the detail. The end of `report.html` lists every file in this folder and who each is for.
 

@@ -1,6 +1,6 @@
 # A test holds the example report to the reports page's list of files and to the current release
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). The reports page's example
 report was made on 14 October by `sv` 0.1.0 and held 8 of the 14 files the page's table lists; nothing noticed until a
@@ -14,3 +14,5 @@ person read the page.
   turns the test red. A version bump will then turn it red too, which is the point: the release says the example needs
   making again.
 - **Order,** after 0696.
+
+**Done, 22 November 2026:** made again by `sv` 0.3.0; `crates/sv-cli/tests/website_example_report.rs` holds its files and its version, and removing a file or writing an older version turned it red. ADR-132, Later, 22 November 2026.

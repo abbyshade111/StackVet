@@ -3191,7 +3191,7 @@
       "why": "No tool can settle these — whether input is validated on the server, whether the app's own services authenticate to each other. Answer them in the `[design]` section of stackvet.toml: V2.2.2, V7.2.1, V8.3.1, V15.3.1, V1.1.1, V4.1.3, V4.2.1, V8.2.3, V11.2.2, V14.2.2, V15.3.4, V16.2.2, V16.4.3, V2.3.3. Your AI coding tool can ask you them: `sv questions` prints them for its chat."
     }
   ],
-  "generated": "2026-11-21 15:48:12 UTC, run 15a3dae229ac",
+  "generated": "2026-11-22 03:24:15 UTC, run 90bae36f9345",
   "level_why": {
     "because": "stackvet.toml says customers use it",
     "level_two_more": 0
@@ -7688,10 +7688,10 @@
     "options": [
       "--no-tools"
     ],
-    "run_id": "15a3dae229ac",
+    "run_id": "90bae36f9345",
     "securevibe_toml_sha256": "694893d8e387d0c0b007354641dc3a78579481d7940fa16a7ce2b5e085fa5c6a",
-    "started": "2026-11-21T15:48:12Z",
-    "started_unix_ms": 1795276092455
+    "started": "2026-11-22T03:24:15Z",
+    "started_unix_ms": 1795317855157
   },
   "run_status": {
     "state": "not-asked",
@@ -7727,9 +7727,9 @@
   ],
   "set_aside": [],
   "sv": {
-    "commit": "7031bd26f038e01308fa6ecafe52079e2a622a48",
+    "commit": "7cb7878b2ec7252d46f348f980e6f1235ec2ab9a",
     "uncommitted_changes": false,
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "target_level": 2,
   "test_output": null,
@@ -9345,27 +9345,27 @@
   ],
   "timings": [
     {
-      "took_ms": 1,
+      "took_ms": 0,
       "what": "Reading the app's files"
     },
     {
-      "took_ms": 8,
+      "took_ms": 7,
       "what": "Recognizing its languages and frameworks"
     },
     {
-      "took_ms": 1,
+      "took_ms": 0,
       "what": "Listing the packages it uses"
     },
     {
-      "took_ms": 13,
+      "took_ms": 9,
       "what": "Looking for keys and passwords"
     },
     {
-      "took_ms": 183,
+      "took_ms": 222,
       "what": "Reading its configuration"
     },
     {
-      "took_ms": 130,
+      "took_ms": 126,
       "what": "Reading its code"
     },
     {
@@ -9381,12 +9381,12 @@
       "what": "Running the app, when asked with --run"
     },
     {
-      "took_ms": 336,
+      "took_ms": 332,
       "what": "Putting the report together"
     }
   ],
   "tool_behavior": {
-    "at_commit": "7031bd26f038e01308fa6ecafe52079e2a622a48",
+    "at_commit": "7cb7878b2ec7252d46f348f980e6f1235ec2ab9a",
     "commits_read": "the last 20 commits, as there is no earlier report made at a known commit",
     "not_seen": [
       "the commands the tool ran and the files it wrote without committing them, since the hook record was not read for this run (`sv report --hook-record` reads it, once its hook is installed)",
@@ -9395,34 +9395,9 @@
     "other_commits": 0,
     "seen": [
       {
-        "kind": "tests-touched",
-        "what": "a test was marked to be skipped in tools/session_token.py (xit()",
-        "where": "commit c0f03aea \"Backlog 0692: sessions push and open pull requests as the se\", by Claude Opus 5.5 <noreply@anthropic.com>"
-      },
-      {
-        "kind": "tests-touched",
-        "what": "a line the test crates/sv-cli/tests/website.rs expects was changed in the same commit as 1 file of code",
-        "where": "commit 7031bd26 \"stackvet.dev: fix what the whole-site review found, the page\", by Claude Opus 5.5 <noreply@anthropic.com>"
-      },
-      {
         "kind": "guard-edited",
-        "what": "a marker that tells a check to look away (noqa) was added in tools/session_token.py",
-        "where": "commit c0f03aea \"Backlog 0692: sessions push and open pull requests as the se\", by Claude Opus 5.5 <noreply@anthropic.com>"
-      },
-      {
-        "kind": "guard-edited",
-        "what": "a marker that tells a check to look away (nosec) was added in docs/backlog/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md",
-        "where": "commit 6f1a9b40 \"File and claim backlog 0693: ConfigVet part 3, the outside t\", by Claude Opus 5.5 <noreply@anthropic.com>"
-      },
-      {
-        "kind": "guard-edited",
-        "what": "a marker that tells a check to look away (nosec) was added in docs/backlog/done/0693-configvet-part-3-cv-runs-checkov-trivy-and-hadolint-as.md",
-        "where": "commit 9ca59c36 \"ConfigVet part 3: cv runs hadolint, Checkov, and Trivy (back\", by Claude Opus 5.5 <noreply@anthropic.com>"
-      },
-      {
-        "kind": "guard-edited",
-        "what": ".github/workflows/release.yml was changed",
-        "where": "commit cc3f49db \"The release builds, checks, signs, and attaches cv's own Win\", by Claude Opus 5.5 <noreply@anthropic.com>"
+        "what": ".github/workflows/rust.yml was changed",
+        "where": "commit afca5627 \"Every file that decides what the required check runs is code\", by Claude Opus 5.5 <noreply@anthropic.com>"
       }
     ],
     "tool_commits": 20

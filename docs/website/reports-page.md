@@ -75,8 +75,8 @@ in several states: *needs attention*, *checked*, *checked in part*, *not verifie
   in each file; this one shows what each file is, not everything StackVet can find.
 - **How it was made,** so it can be made again: from the repository's top folder, with `sv` built from the commit
   the report names on its second line,
-  `sv report examples/notes-with-users --no-tools --out docs/website/reports/notes-with-users`, on 21 November 2026
-  (backlog 0696), in place of the report of 14 October, which `sv` 0.1.0 made with 8 of these 14 files. The home
+  `sv report examples/notes-with-users --no-tools --out docs/website/reports/notes-with-users`, on 22 November 2026
+  by `sv` 0.3.0 (backlog 0698; first on 21 November by 0.2.0, backlog 0696), in place of the report of 14 October, which `sv` 0.1.0 made with 8 of these 14 files. The home
   page's example lines are taken from it. The health-tracking app built for a friend is never used as an example.
 
 ## Where the standards fit in building an app

@@ -1,6 +1,6 @@
 # The site build stops when the credits leave out a tool sv or cv runs
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). The credits are written by
 hand in `docs/website/home-page.md`, so they drifted: they named CodeQL for three languages when `data/adapters.json`
@@ -13,3 +13,5 @@ Trivy. Nothing failed.
 - **Done when:** removing hadolint, or CodeQL's "C and C++", from the credits makes the build and
   `crates/sv-cli/tests/website.rs` fail, and putting it back makes them pass.
 - **Order,** after 0696.
+
+**Done, 22 November 2026:** the build stops when the credits leave out a tool or a CodeQL language; taking out hadolint, or "C and C++", stopped it. ADR-132, Later, 22 November 2026.

@@ -1,6 +1,6 @@
 # The site takes its number of network exceptions from The fence, and refuses phrases that say fewer
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). Two pages said less than the
 network fence allows: How it works showed the paper's "the one network connection sv makes of its own", and the
@@ -15,3 +15,5 @@ The fence is tabled in `docs/ARCHITECTURE.md`, "The fence"; the site doesn't rea
 - **Done when:** adding a row to "The fence" without changing the home page stops the build, and putting back
   check-a-project's old sentence turns the test red.
 - **Order,** after 0696.
+
+**Done, 22 November 2026:** the build holds the home page's exceptions paragraph to the fence table and stops on a difference, rather than writing the number in, since the paragraph names each one; `crates/sv-cli/tests/website_fence_words.rs` refuses phrases that say fewer. Read differently from the item in one place: the refused phrase is "nothing else leaves your computer", the old sentence's real fault, since the page's "talks to GitHub and GitLab only" is true of the download. ADR-132, Later, 22 November 2026.
