@@ -247,7 +247,8 @@ av --version
 
 PowerShell has no command of its own named `av` (checked on Windows by the release workflow). `brew upgrade av` or
 `scoop update av` updates it. Both installs are tried automatically, on a Mac, on Linux, and on Windows, on every
-change to the formula or the manifest; neither has been tried by hand yet.
+change to the formula or the manifest. The Homebrew install was tried by hand once, on a Mac, on 22 November 2026:
+it built `av` 0.3.1 in under two minutes. The Scoop install has not been tried by hand yet.
 
 Or build it from StackVet's repository with Rust's `cargo`, and the program is `av`, in `target/release/`:
 
@@ -255,7 +256,9 @@ Or build it from StackVet's repository with Rust's `cargo`, and the program is `
 cargo build --release --locked -p av-cli
 ```
 
-`av --version` says which commit it was built from, where it was built in a checkout.
+`av --version` says which commit it was built from, where it was built in a checkout. Installed with Homebrew it
+says `commit unknown`, since Homebrew builds from the release's source archive, which carries no commit; the version
+is the release's.
 
 Two things it reads are kept by something you install first:
 
