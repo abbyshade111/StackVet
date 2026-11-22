@@ -11,4 +11,15 @@
 /tools/rulesets_check.py @abbyshade111
 /tools/session_token.py  @abbyshade111
 /tools/cloud_session_check.py @abbyshade111
+# What the required `test` check runs, and what it holds the repository to, and what the site and the image publish
+# (backlog 0720, the security review of 21 November 2026, A5): how the suite's tests are dealt between its jobs, the
+# lists the credits are held to, the hashed packages the archive tests install, the drive of the image before it is
+# published, the site's build, and the setup prompts with the fingerprints that hold them.
+/tools/ci_shards.py           @abbyshade111
+/tools/coverage.py            @abbyshade111
+/tools/py7zr-requirements.txt @abbyshade111
+/tools/image_smoke.py         @abbyshade111
+/tools/website.py             @abbyshade111
+/tools/prompt_stamps.py       @abbyshade111
+/docs/prompts/                @abbyshade111
 /.github/CODEOWNERS      @abbyshade111

@@ -252,8 +252,12 @@ jobs:
           # its log, which then names the test: Rust's runner prints "has been running for over 60 seconds" for
           # each one still going (backlog 0668; ADR-106, Later). Until 25 October 2026 a hang ran into the job's
           # limit, and GitHub kept no log of the cancelled job.
-          timeout --kill-after=1m "${PART_LIMIT:-25m}" bash "$RUNNER_TEMP/part.sh"
-          status=$?
+          timeout --kill-after=1m "${PART_LIMIT:-25m}" bash "$RUNNER_TEMP/part.sh" 2>&1 | tee "$RUNNER_TEMP/part.log"
+          status=${PIPESTATUS[0]}
+          # Each test program prints one `test result:` line. The count goes to `test`, which holds the suite to a
+          # floor, so the number of programs run cannot fall without a check saying so (backlog 0720).
+          grep -c '^test result: ' "$RUNNER_TEMP/part.log" > "$RUNNER_TEMP/programs.txt" || true
+          echo "The $PART part ran $(cat "$RUNNER_TEMP/programs.txt") test programs."
           if [ "$status" = 124 ] || [ "$status" = 137 ]; then
             echo "::error::the $PART tests ran past ${PART_LIMIT:-25m} and were stopped: the last \"has been running for over 60 seconds\" line above names the test that did not finish"
           fi
@@ -273,6 +277,7 @@ jobs:
           path: |
             ${{ runner.temp }}/credits.log
             ${{ runner.temp }}/credits.log.withheld
+            ${{ runner.temp }}/programs.txt
           if-no-files-found: error
           retention-days: 3
 
@@ -345,6 +350,31 @@ jobs:
           cat "$RUNNER_TEMP"/credits/credits-*/credits.log > "$RUNNER_TEMP/credits.log"
           cat "$RUNNER_TEMP"/credits/credits-*/credits.log.withheld > "$RUNNER_TEMP/credits.log.withheld"
           python3 tools/coverage.py --credits "$RUNNER_TEMP/credits.log"
+
+      - name: The suite ran no fewer test programs than its floor
+        if: needs.scope.outputs.full != 'false'
+        # Backlog 0720 (the security review of 21 November 2026, A5): a change that runs fewer tests, by dealing
+        # them out differently (tools/ci_shards.py) or any other way, fails here rather than passing on what it
+        # left out. The four parts ran 376 test programs on main at 8c504665 (21 November 2026): check 64, cli-1
+        # 114, rest 85, cli-2 113. The floor sits a little under, so removing a test file or two on purpose does not
+        # need it moved; when the suite grows or shrinks for good, move it to a little under a fresh run's total.
+        env:
+          FLOOR: 370
+        run: |
+          total=0
+          for part in rest check cli-1 cli-2; do
+            count="$RUNNER_TEMP/credits/credits-$part/programs.txt"
+            [ -s "$count" ] || { echo "::error::no count of test programs from $part"; exit 1; }
+            n=$(tr -dc '0-9' < "$count")
+            [ -n "$n" ] || { echo "::error::$part's count of test programs is not a number"; exit 1; }
+            echo "$part: $n test programs"
+            total=$((total + n))
+          done
+          echo "The suite ran $total test programs; the floor is $FLOOR."
+          if [ "$total" -lt "$FLOOR" ]; then
+            echo "::error::the suite ran $total test programs, fewer than its floor of $FLOOR: tests were left out, or the floor in rust.yml needs moving down on purpose"
+            exit 1
+          fi
 
   image:
     # The container for somebody who is not going to install Rust (the Dockerfile). Built from

@@ -1,6 +1,6 @@
 # Every script that decides what the required check runs is code-owned
 
-**Status:** open
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A5). Title and text are
 kept to the fix, as the review asked.
@@ -26,3 +26,8 @@ required `test` check runs, or what it holds the repository to, are not in it. O
 - **Check:** a pull request from the sessions' App that changes one of the files above is seen waiting for the owner's
   approving review; and with the floor raised above the real count in a trial, `test` fails.
 - **Records:** ADR-051, a Later entry; `.github/CODEOWNERS`'s own comment says what was added and why.
+
+**Done, 21 November 2026:** CODEOWNERS names all seven, each read on `main` for what it decides; `test` fails below a
+floor of 370 test programs (376 on `main` that day) or on a part that sent no count, held by
+`crates/sv-cli/tests/suite_floor.rs`. ADR-051, Later. What the pull request's own run shows, and a pull request of the
+App's waiting for the owner on one of the new paths, are the checks still to see on GitHub.
