@@ -203,6 +203,14 @@
                   {
                     "context": "install-cv (ubuntu-latest)",
                     "integration_id": 15368
+                  },
+                  {
+                    "context": "install-av (macos-latest)",
+                    "integration_id": 15368
+                  },
+                  {
+                    "context": "install-av (ubuntu-latest)",
+                    "integration_id": 15368
                   }
                 ]
               }
