@@ -1,6 +1,6 @@
 # AgentVet part 4: a pass-through that writes down each call to a tool and its answer, and a chain the owner checkpoints
 
-**Status:** claimed by Claude Code session (AgentVet), 21 November 2026
+**Status:** done, 22 November 2026
 
 Asked for by the owner on 21 November 2026 ("go ahead with the pass-through and keyed chain after that"). Step 3 of
 the build order in the design entry "AgentVet, a companion that vets the agent: what it did, what it said, and where
@@ -24,7 +24,7 @@ when.
    refusal and made again. The task file gains `[may] call`, the tools the agent may call, and a call outside it is
    listed. What still cannot be held is said: `[may] reach`, unless a tool's own arguments name a host, and `ask-first`,
    unless the server's answer says the person was asked.
-   **Part status:** open
+   **Part status:** done, 22 November 2026
 3. **The chain takes a key, and the owner checkpoints it.** Each record's chain is made with a key kept beside `sv`'s
    own (readable only by the person), and `av checkpoint`, run by the owner at their own terminal, signs each record's
    latest link with the key `sv review` uses. The report then says which lines stand under a checkpoint the owner
@@ -37,4 +37,4 @@ when.
    it runs through Docker, as the owner's own set-up does (the owner's word, 22 November 2026: "yes, mount the
    records folder"). Only the notes' folder, made first and readable by the person alone; opt-in, as `--keys` is; not
    on Windows yet, where the folder's path differs inside the container.
-   **Part status:** open
+   **Part status:** done, 22 November 2026

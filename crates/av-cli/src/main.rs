@@ -5,7 +5,8 @@
 //!
 //! What it reads: the build-loop record (`sv`'s own list of the tool's calls to it, ADR-076), git's history, and, only
 //! when the person asks for it with `--hook-record`, the hook record (the commands the tool ran and the files it
-//! wrote, ADR-122). It reads no transcript, so it says nothing of what the tool claimed beyond what the hook record
+//! wrote, ADR-122), and, only with `--proxy-record`, the pass-through's own record of the calls made to other tools
+//! (backlog 0716, part 2). It reads no transcript, so it says nothing of what the tool claimed beyond what the hook record
 //! keeps. It also reads the task envelope, `agentvet.toml`, when the folder has one, and says what it holds and what
 //! it leaves as a question, and lists what the records show the tool did that falls outside it or touched a file
 //! that guards oversight (backlog 0715). It writes nothing and opens no network connection.
@@ -13,7 +14,7 @@
 //! Exit codes follow `sv`'s (ADR-029): 0 when the report was made; 2 when there was nothing to read, so nothing was
 //! said about the tool; 3 when `av` itself failed and there is no result.
 
-use av_record::{build_loop, envelope, groups, held, hook_record, tool_behavior};
+use av_record::{build_loop, envelope, groups, held, hook_record, proxy_seen, tool_behavior};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -39,7 +40,7 @@ const USAGE: &str = "\
 av: AgentVet says what the record shows an AI coding tool did.
 
 Usage:
-  av report <folder> [--hook-record] [--json]
+  av report <folder> [--hook-record] [--proxy-record] [--json]
   av proxy [--app <folder>] -- <the tool server's command>
   av checkpoint <folder>
   av --version
@@ -47,7 +48,8 @@ Usage:
 av report reads what is kept about the tool that worked in the folder: sv's record of the tool's calls to it, and
 git's history. With --hook-record it also reads the record of the commands the tool ran and the files it wrote, which
 a hook you installed keeps outside the folder (`sv connect claude --hook` prints it); it is read only when you ask,
-each time. It says what each record shows and how far each can be relied on, and what it could not see. When the
+each time. With --proxy-record it also reads the record av proxy keeps of the calls made to other tools, the same way:
+only when you ask, each time. It says what each record shows and how far each can be relied on, and what it could not see. When the
 folder holds a task file, agentvet.toml, it says what that allows and what it leaves unsaid, and lists what the tool
 did that falls outside it. It reads no transcript, decides nothing, writes nothing, and opens no network connection.
 --json prints the same as JSON.
@@ -57,6 +59,7 @@ the server's command in the agent's settings. It starts that server, relays ever
 down each call to a tool: the tool's name, how it was answered, a fingerprint and the size of what it was given, and a
 short summary of that with any key cut out. Never an answer's text. The record is kept outside the folder, readable
 only by you, for the app in --app (by default, the folder av proxy was started in). It opens no network connection.
+A call you refuse at your AI coding tool's own permission prompt is never sent to the server, so it is not written down.
 
 av checkpoint, run by you at your own terminal, signs where each record of the app has got to, with the key sv review
 signs with; it asks for that key's passphrase and keeps nothing of it. A later av report then says whether the lines
@@ -66,15 +69,17 @@ you signed for are still as they were. av never makes a key: sv review does.";
 struct Options {
     folder: PathBuf,
     hook_record: bool,
+    proxy_record: bool,
     json: bool,
 }
 
 fn parse(args: &[String]) -> Result<Options, String> {
     let mut folder = None;
-    let (mut hook_record, mut json) = (false, false);
+    let (mut hook_record, mut proxy_record, mut json) = (false, false, false);
     for arg in args {
         match arg.as_str() {
             "--hook-record" => hook_record = true,
+            "--proxy-record" => proxy_record = true,
             "--json" => json = true,
             other if other.starts_with("--") => {
                 return Err(format!("av report does not know {other}"));
@@ -86,6 +91,7 @@ fn parse(args: &[String]) -> Result<Options, String> {
     Ok(Options {
         folder: folder.ok_or("av report needs a folder")?,
         hook_record,
+        proxy_record,
         json,
     })
 }
@@ -178,8 +184,20 @@ impl std::io::Write for Prompted {
     }
 }
 
+/// Whether a command's own arguments ask for help. What follows `--` is the tool server's command (`av proxy`), and
+/// a `--help` there is the server's, never read as ours.
+fn asks_for_help(args: &[String]) -> bool {
+    args.iter()
+        .take_while(|a| *a != "--")
+        .any(|a| a == "--help" || a == "-h")
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if asks_for_help(&args) {
+        println!("{USAGE}");
+        return ExitCode::from(MADE);
+    }
     match args.first().map(String::as_str) {
         Some("--version" | "-V") => {
             println!("av {}", env!("CARGO_PKG_VERSION"));
@@ -206,7 +224,7 @@ fn main() -> ExitCode {
                 ExitCode::from(FAILED)
             }
         },
-        Some("--help" | "-h" | "help") => {
+        Some("help") => {
             println!("{USAGE}");
             ExitCode::from(MADE)
         }
@@ -226,6 +244,10 @@ mod witness {
     pub const HOOK: &str = "Kept by a hook in the tool's own settings, outside the folder. The tool could remove the \
                             hook or rewrite the record; its lines are chained, so a change to a line already written \
                             shows.";
+    pub const PROXY: &str = "Kept by av proxy, outside the folder, for each call that reached the tool server \
+                             through it. The tool could take av proxy out of its settings or rewrite the record; its \
+                             lines are chained, so a change to a line already written shows. A call you refused at \
+                             your AI coding tool's own prompt never reached the server and is not in it.";
     pub const GIT: &str = "Read from git's history. A commit counts as the tool's only when its message says so, and \
                            history can be rewritten.";
 }
@@ -241,6 +263,8 @@ struct Read {
     /// The hook record, when the person asked for it.
     hook: Option<sv_report::hook::HookSeen>,
     behavior: sv_report::tool_behavior::ToolBehavior,
+    /// The pass-through's record, when the person asked for it.
+    proxy: Option<proxy_seen::Seen>,
     /// How each record stands against the owner's checkpoints: `None` for a record this run did not read.
     checkpoints: Vec<(
         av_record::checkpoint::Kind,
@@ -262,10 +286,14 @@ impl Read {
                 .hook
                 .as_ref()
                 .is_some_and(|h| h.not_read.is_none() && h.commands + h.writes + h.turns > 0)
+            || self
+                .proxy
+                .as_ref()
+                .is_some_and(|p| p.not_read.is_none() && p.calls > 0)
     }
 }
 
-fn read(folder: &Path, with_hook: bool) -> Read {
+fn read(folder: &Path, with_hook: bool, with_proxy: bool) -> Read {
     // The build-loop record. Findings a person set aside are in sv's report, not here, so none are told apart.
     let mut loop_seen = build_loop::read(folder);
     build_loop::settle(&mut loop_seen, &[]);
@@ -337,6 +365,14 @@ fn read(folder: &Path, with_hook: bool) -> Read {
                 .to_owned(),
         );
     }
+    if !with_proxy {
+        not_looked_at.push(
+            "The calls the tool made to other tools through av proxy: the pass-through's record is read only when \
+             you ask, with --proxy-record."
+                .to_owned(),
+        );
+    }
+    not_looked_at.push(groups::NO_AT_THE_PROMPT.to_owned());
     if commits.is_none() {
         not_looked_at.push(
             "Git's history: the folder is not a git checkout, or git could not say.".to_owned(),
@@ -359,8 +395,14 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         }
         _ => None,
     };
+    // The pass-through's record, only for a run that asked for it, as the hook record is.
+    let may_call = match &envelope {
+        envelope::Read::Held(e) => e.may.call.as_deref(),
+        _ => None,
+    };
+    let proxy = with_proxy.then(|| proxy_seen::read_for(folder, may_call));
     // What the owner signed for (ADR-159, decision 12). A record is set against its checkpoints only when this run
-    // may read it: the hook record when asked for, and the pass-through's not yet.
+    // may read it: the hook record and the pass-through's, each when asked for.
     use sv_frameworks::paths::Canonical as _;
     let real = folder.canonical().unwrap_or_else(|_| folder.to_path_buf());
     let checker = sv_check::seal::Checker::for_app(&real);
@@ -370,7 +412,7 @@ fn read(folder: &Path, with_hook: bool) -> Read {
             let may_read = match kind {
                 av_record::checkpoint::Kind::BuildLoop => true,
                 av_record::checkpoint::Kind::Hook => with_hook,
-                av_record::checkpoint::Kind::Proxy => false,
+                av_record::checkpoint::Kind::Proxy => with_proxy,
             };
             (
                 kind,
@@ -385,6 +427,7 @@ fn read(folder: &Path, with_hook: bool) -> Read {
     let noted = av_record::outside_note::standing(&real);
     let gathered = groups::gather(&groups::Read {
         noted: &noted,
+        proxy: proxy.as_ref(),
         checkpoints: &read_standings,
         build_loop: &loop_seen,
         hook: hook.as_ref(),
@@ -401,8 +444,86 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         build_loop: loop_seen,
         hook,
         behavior,
+        proxy,
         not_looked_at,
     }
+}
+
+/// What the pass-through's record holds, in the report's words. A tool's name and a summary are the tool's text.
+fn proxy_lines(seen: &proxy_seen::Seen) -> Vec<String> {
+    if let Some(why) = &seen.not_read {
+        return vec![format!("Not read: {}.", sv_report::one_line(why))];
+    }
+    let calls = |n: usize| match n {
+        1 => "1 call".to_owned(),
+        n => format!("{n} calls"),
+    };
+    if seen.calls == 0 {
+        return vec!["The record is there and holds no call.".to_owned()];
+    }
+    let mut out = vec![format!(
+        "{} written down, from {} to {}: {} answered, {} turned down by the server{}.",
+        calls(seen.calls),
+        sv_report::one_line(seen.first.as_deref().unwrap_or("a time not kept")),
+        sv_report::one_line(seen.last.as_deref().unwrap_or("a time not kept")),
+        seen.ok,
+        seen.turned_down(),
+        match seen.unanswered {
+            0 => String::new(),
+            n => format!(", and {n} never answered before av proxy ended"),
+        }
+    )];
+    if seen.turned_down() > 0 {
+        out.push(
+            "Turned down means the server answered with an error, or the tool said it failed: a server that will \
+             not do a thing and a tool that ran and failed can answer the same way, so av does not tell them apart."
+                .to_owned(),
+        );
+    }
+    out.push(match seen.broken_at {
+        None => "Every line's chain checks out.".to_owned(),
+        Some(at) => format!(
+            "The chain stops checking out at line {at}: a line was changed, removed, or added after it was written."
+        ),
+    });
+    for t in &seen.tools {
+        out.push(format!(
+            "  {}: {}{}",
+            sv_report::one_line(&t.name),
+            calls(t.calls),
+            match t.turned_down {
+                0 => String::new(),
+                n => format!(", {n} turned down"),
+            }
+        ));
+    }
+    match &seen.outside {
+        None => out.push(
+            "Not held to the task file: it does not say which tools may be called ([may] call), or there is none."
+                .to_owned(),
+        ),
+        Some(outside) if outside.is_empty() => {
+            out.push("Every tool called is one [may] call names.".to_owned());
+        }
+        Some(outside) => out.push(format!(
+            "Called, and not named by [may] call: {}.",
+            outside
+                .iter()
+                .map(|t| sv_report::one_line(&t.name))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )),
+    }
+    match seen.again.len() + seen.again_more {
+        0 => out.push("No call the server turned down was made again with the same arguments.".to_owned()),
+        n => out.push(format!(
+            "{} the server turned down {} made again with the same arguments; each is listed under \"Trying again \
+             after a no\" below.",
+            calls(n),
+            if n == 1 { "was" } else { "were" }
+        )),
+    }
+    out
 }
 
 /// The findings between the first check and the last, from the build-loop record alone: how many went, and of those
@@ -495,6 +616,7 @@ fn envelope_lines(read: &envelope::Read) -> Vec<String> {
         ("It may write", e.may.write.as_deref()),
         ("It may start", e.may.run.as_deref()),
         ("It may connect to", e.may.reach.as_deref()),
+        ("It may call through av proxy", e.may.call.as_deref()),
         ("It must ask first to", e.ask_first.as_deref()),
     ] {
         if let Some(entries) = entries {
@@ -625,7 +747,7 @@ fn checkpoint_lines(
                 kind.said(),
                 match kind {
                     Kind::Hook => "; it is read only when you ask, with --hook-record",
-                    _ => "; av report does not read it yet",
+                    _ => "; it is read only when you ask, with --proxy-record",
                 }
             ),
             Some(Standing::None) => format!(
@@ -751,6 +873,20 @@ fn print(read: &Read, folder: &Path) {
     }
 
     println!();
+    println!("The tool's calls to other tools (the pass-through's record)");
+    match &read.proxy {
+        None => println!("  Not read: it is read only when you ask, with --proxy-record."),
+        Some(seen) => {
+            if seen.not_read.is_none() {
+                println!("  How far to rely on it: {}", witness::PROXY);
+            }
+            for line in proxy_lines(seen) {
+                println!("  {line}");
+            }
+        }
+    }
+
+    println!();
     println!("What is worth a look (from git, and the hook record when it was read)");
     println!("  How far to rely on it: {}", witness::GIT);
     for line in sv_report::tool_behavior::sentences(&read.behavior) {
@@ -817,6 +953,10 @@ fn json(read: &Read) -> serde_json::Value {
             "witness": witness::HOOK,
             "record": seen,
         })),
+        "proxy_record": read.proxy.as_ref().map(|seen| serde_json::json!({
+            "witness": witness::PROXY,
+            "record": seen,
+        })),
         "worth_a_look": {
             "witness": witness::GIT,
             "seen": read.behavior,
@@ -837,7 +977,7 @@ fn run(options: &Options) -> u8 {
         eprintln!("av: {} is not a folder", options.folder.display());
         return FAILED;
     }
-    let read = read(&options.folder, options.hook_record);
+    let read = read(&options.folder, options.hook_record, options.proxy_record);
     if options.json {
         match serde_json::to_string_pretty(&json(&read)) {
             Ok(text) => println!("{text}"),
@@ -855,10 +995,15 @@ fn run(options: &Options) -> u8 {
         if !options.json {
             println!();
             println!(
-                "Nothing here is about the tool: no call to sv was written down, no commit names a tool{}. That is \
-                 not a sign that no tool worked here.",
+                "Nothing here is about the tool: no call to sv was written down, no commit names a tool{}{}. That \
+                 is not a sign that no tool worked here.",
                 if options.hook_record {
-                    ", and the hook record holds nothing"
+                    ", the hook record holds nothing"
+                } else {
+                    ""
+                },
+                if options.proxy_record {
+                    ", the pass-through's record holds no call"
                 } else {
                     ""
                 }

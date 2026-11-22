@@ -8,6 +8,7 @@ fn docker(path: &str) -> Runner {
         docker: path.to_owned(),
         user: None,
         keys: None,
+        notes: None,
     }
 }
 

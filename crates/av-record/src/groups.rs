@@ -89,6 +89,7 @@ pub struct Gathered {
 const FROM_GIT: &str = "git's history";
 const FROM_HOOK: &str = "the hook record";
 const FROM_LOOP: &str = "the build-loop record";
+const FROM_PROXY: &str = "the pass-through's record";
 
 /// Everything a run of `av report` read, as `gather` takes it.
 pub struct Read<'r> {
@@ -104,6 +105,20 @@ pub struct Read<'r> {
     pub checkpoints: &'r [(crate::checkpoint::Kind, crate::checkpoint::Standing)],
     /// How the build-loop record stands against the notes kept outside its folder.
     pub noted: &'r crate::outside_note::Standing,
+    /// The pass-through's record, when the person asked for it.
+    pub proxy: Option<&'r crate::proxy_seen::Seen>,
+}
+
+/// The pass-through's record, when it was asked for and could be read.
+fn proxy_read<'r>(read: &Read<'r>) -> Option<&'r crate::proxy_seen::Seen> {
+    read.proxy.filter(|p| p.not_read.is_none())
+}
+
+fn times(n: usize) -> String {
+    match n {
+        1 => "once".to_owned(),
+        n => format!("{n} times"),
+    }
 }
 
 /// The six groups, each with what was seen and what could not be.
@@ -258,10 +273,49 @@ fn held_lines(read: &Read, group: held::Group) -> Vec<Line> {
 
 fn outside(read: &Read) -> (Vec<Line>, Vec<String>) {
     match read.held {
-        Some(h) => (
-            held_lines(read, held::Group::OutsideEnvelope),
-            h.not_held.clone(),
-        ),
+        Some(h) => {
+            let mut lines = held_lines(read, held::Group::OutsideEnvelope);
+            let mut not_shown = h.not_held.clone();
+            match (read.proxy, proxy_read(read)) {
+                (None, _) => not_shown.push(
+                    "The tools the tool called through av proxy: the pass-through's record is read only when you \
+                     ask, with --proxy-record."
+                        .to_owned(),
+                ),
+                (Some(p), None) => not_shown.push(format!(
+                    "The tools the tool called through av proxy: {}.",
+                    p.not_read.as_deref().unwrap_or("the record was not read")
+                )),
+                (Some(_), Some(p)) => match &p.outside {
+                    None => not_shown.push(
+                        "The tools the tool called through av proxy: the task file does not say which it may call \
+                         ([may] call is left out)."
+                            .to_owned(),
+                    ),
+                    Some(outside) => {
+                        for t in outside {
+                            lines.push(Line {
+                                what: format!(
+                                    "{} was called {}, and [may] call does not name it",
+                                    t.name,
+                                    times(t.calls)
+                                ),
+                                place: "the calls made through av proxy".to_owned(),
+                                from: FROM_PROXY,
+                                verdict: None,
+                            });
+                        }
+                        not_shown.push(
+                            "A tool called some other way than through av proxy: only a tool server with av proxy \
+                             in front of it is seen, and the AI coding tool's own tools (its shell, its file \
+                             editor) never are."
+                                .to_owned(),
+                        );
+                    }
+                },
+            }
+            (lines, not_shown)
+        }
         None => (
             Vec::new(),
             vec!["Anything: there is no task file (agentvet.toml) that could be read, so there is nothing to be \
@@ -321,6 +375,15 @@ fn oversight(read: &Read) -> (Vec<Line>, Vec<String>) {
             verdict: None,
         });
     }
+    if let Some(at) = proxy_read(read).and_then(|p| p.broken_at) {
+        lines.push(Line {
+            what: "the record's chain stops checking out: a line was changed, removed, or added after it was written"
+                .to_owned(),
+            place: format!("line {at} of the record"),
+            from: FROM_PROXY,
+            verdict: None,
+        });
+    }
     for (kind, standing) in read.checkpoints {
         if let crate::checkpoint::Standing::NotKept { at, lines: signed } = standing {
             lines_changed(&mut lines, *kind, at, *signed);
@@ -338,6 +401,13 @@ fn oversight(read: &Read) -> (Vec<Line>, Vec<String>) {
         not_shown.push(
             "Whether the hook record was changed after it was written: it is read only when you ask, with \
              --hook-record."
+                .to_owned(),
+        );
+    }
+    if read.proxy.is_none() {
+        not_shown.push(
+            "Whether the pass-through's record was changed after it was written: it is read only when you ask, \
+             with --proxy-record."
                 .to_owned(),
         );
     }
@@ -451,12 +521,55 @@ fn as_owner(read: &Read) -> (Vec<Line>, Vec<String>) {
     (lines, not_shown)
 }
 
+/// A no you gave at the tool's own prompt is never seen: said every time, whatever was read.
+pub const NO_AT_THE_PROMPT: &str = "A no you gave at your AI coding tool's own permission prompt: a call you refuse \
+                                    there is never sent to the tool server, so no record read here holds a line \
+                                    for it, and none can show the tool trying another way after it. (Seen in a \
+                                    trial on 21 November 2026; it needs the tool's own hooks, which av does not \
+                                    read for this yet.)";
+
 fn again_after_no(read: &Read) -> (Vec<Line>, Vec<String>) {
-    let mut not_shown = vec![
-        "Anything: no record read here shows what the tool was refused, by you or by its own permissions, so none \
-         can show it trying another way. That needs a record of each call and its answer."
-            .to_owned(),
-    ];
+    let mut lines = Vec::new();
+    let mut not_shown = vec![NO_AT_THE_PROMPT.to_owned()];
+    match (read.proxy, proxy_read(read)) {
+        (None, _) => not_shown.push(
+            "A call a tool server turned down and the tool made again: the pass-through's record (av proxy) shows \
+             those, and it is read only when you ask, with --proxy-record."
+                .to_owned(),
+        ),
+        (Some(p), None) => not_shown.push(format!(
+            "A call a tool server turned down and the tool made again: {}.",
+            p.not_read.as_deref().unwrap_or("the record was not read")
+        )),
+        (Some(_), Some(p)) => {
+            for again in &p.again {
+                lines.push(Line {
+                    what: format!(
+                        "{} was turned down by the server ({}) and called again with the same arguments {}; the \
+                         last was answered {}. It was given: {}",
+                        again.tool,
+                        again.answer,
+                        times(again.times),
+                        again.last_answer,
+                        again.summary
+                    ),
+                    place: format!("first turned down at {}", again.at),
+                    from: FROM_PROXY,
+                    verdict: None,
+                });
+            }
+            if p.again_more > 0 {
+                not_shown.push(format!("{} more such calls, not listed.", p.again_more));
+            }
+            not_shown.push(
+                "Why a server turned a call down: a server that will not do a thing and a tool that ran and failed \
+                 (a test that did not pass, say) can answer the same way, so both are listed, and making a failed \
+                 call again is often right. A call turned down and then made with different arguments, or to \
+                 another tool, is not matched to its no."
+                    .to_owned(),
+            );
+        }
+    }
     if read.build_loop.refused > 0 {
         not_shown.push(format!(
             "For what it is worth, sv itself refused {} for a tool it does not have; that is not a no from you.",
@@ -466,9 +579,13 @@ fn again_after_no(read: &Read) -> (Vec<Line>, Vec<String>) {
             }
         ));
     }
-    (Vec::new(), not_shown)
+    (lines, not_shown)
 }
 
 #[cfg(test)]
 #[path = "groups_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "groups_proxy_tests.rs"]
+mod proxy_tests;
