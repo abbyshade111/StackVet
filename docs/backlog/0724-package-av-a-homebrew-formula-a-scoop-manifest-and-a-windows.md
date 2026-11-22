@@ -27,7 +27,7 @@ v0.3.1, with a zip of its own.
    `av report` of an empty folder, which exits 2 and says what it did not look at). And a check that PowerShell has
    no command named `av` already, as was done for `cv`. Code-owned: a cloud session pushes the branch, a Mac session
    opens the pull request, and the owner reviews it.
-   **Part status:** claimed by Claude Code session (AgentVet), 22 November 2026
+   **Part status:** done, 22 November 2026
 2. **`av` says which commit it was built from.** `av --version` prints the version alone; `sv --version` names the
    commit, which a person reporting a fault needs, and which the second trial had to work out by hand. Not
    code-owned.
