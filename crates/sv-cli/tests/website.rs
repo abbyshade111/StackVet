@@ -388,6 +388,36 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
             .any(|l| l.trim() == "Cache-Control: public, max-age=0, must-revalidate, no-transform"),
         "{headers}"
     );
+    // Every other kind of file the build wrote drops `no-transform` again, so Cloudflare compresses it: the header
+    // removed first, then set again, since Cloudflare joins a header set twice.
+    let mut kinds: Vec<String> = made
+        .iter()
+        .filter(|p| {
+            !p.file_name()
+                .is_some_and(|n| n.to_string_lossy().starts_with('.'))
+        })
+        .filter_map(|p| p.extension().map(|x| x.to_string_lossy().into_owned()))
+        .filter(|x| x != "html")
+        .collect();
+    kinds.sort();
+    kinds.dedup();
+    assert!(
+        kinds.iter().any(|k| k == "json") && kinds.iter().any(|k| k == "png"),
+        "the setup: {kinds:?}"
+    );
+    for kind in &kinds {
+        let rule = format!(
+            "/*.{kind}\n  ! Cache-Control\n  Cache-Control: public, max-age=0, must-revalidate\n"
+        );
+        assert!(
+            headers.contains(&rule),
+            "no rule that lets Cloudflare compress .{kind}: {headers}"
+        );
+    }
+    assert!(
+        !headers.contains("/*.html"),
+        "pages keep no-transform: {headers}"
+    );
     assert!(policy.contains("default-src 'none'") && policy.contains("frame-ancestors 'none'"));
     let mut scripts = 0;
     for page in made
