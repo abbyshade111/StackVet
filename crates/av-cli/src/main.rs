@@ -246,6 +246,8 @@ struct Read {
         av_record::checkpoint::Kind,
         Option<av_record::checkpoint::Standing>,
     )>,
+    /// How the build-loop record stands against the notes sv keeps outside the app's folder.
+    noted: av_record::outside_note::Standing,
     /// All of it, under the design's six groups.
     groups: Vec<groups::Gathered>,
     not_looked_at: Vec<String>,
@@ -380,7 +382,9 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         .iter()
         .filter_map(|(kind, standing)| Some((*kind, standing.clone()?)))
         .collect();
+    let noted = av_record::outside_note::standing(&real);
     let gathered = groups::gather(&groups::Read {
+        noted: &noted,
         checkpoints: &read_standings,
         build_loop: &loop_seen,
         hook: hook.as_ref(),
@@ -392,6 +396,7 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         envelope,
         held,
         checkpoints,
+        noted,
         groups: gathered,
         build_loop: loop_seen,
         hook,
@@ -553,6 +558,46 @@ fn held_lines(held: &held::Held) -> Vec<String> {
     if held.more > 0 {
         out.push(format!("  {} more not listed here.", held.more));
     }
+    out
+}
+
+/// How the build-loop record stands against the notes kept outside the app's folder, in the report's words.
+fn noted_lines(noted: &av_record::outside_note::Standing) -> Vec<String> {
+    use av_record::outside_note::Standing;
+    let lines = |n: &usize| match n {
+        1 => "1 line".to_owned(),
+        n => format!("{n} lines"),
+    };
+    let mut out = vec![
+        "Each time sv's MCP server writes a line of the build-loop record, it notes outside this folder where the \
+         record's chain has got to. A tool kept to this folder cannot change those notes; a tool that can write \
+         anywhere you can, can. Only a checkpoint you signed shows a change made by such a tool."
+            .to_owned(),
+    ];
+    out.push(match noted {
+        Standing::None => "The build-loop record: nothing was noted for this folder on this computer. sv notes only \
+                           from its MCP server, and only where it can reach its own records folder (it cannot when it \
+                           runs through Docker without that folder)."
+            .to_owned(),
+        Standing::Kept { noted, lines: at, after } => format!(
+            "The build-loop record passes through every place noted: {} noted, the last at {}.{}",
+            match noted {
+                1 => "1 place".to_owned(),
+                n => format!("{n} places"),
+            },
+            lines(at),
+            match after {
+                0 => String::new(),
+                n => format!(" {} came after the last note, and rest on the chain alone.", lines(n)),
+            }
+        ),
+        Standing::NotKept { at, lines: held } => format!(
+            "The build-loop record: CHANGED since sv noted it at {}, when it held {}. Lines up to there were changed \
+             or cut.",
+            sv_report::one_line(at),
+            lines(held)
+        ),
+    });
     out
 }
 
@@ -721,6 +766,12 @@ fn print(read: &Read, folder: &Path) {
     }
 
     println!();
+    println!("What sv noted outside the folder");
+    for line in noted_lines(&read.noted) {
+        println!("  {line}");
+    }
+
+    println!();
     println!("What you signed for (checkpoints)");
     for line in checkpoint_lines(&read.checkpoints) {
         println!("  {line}");
@@ -775,6 +826,7 @@ fn json(read: &Read) -> serde_json::Value {
             "read": standing.is_some(),
             "standing": standing,
         })).collect::<Vec<_>>(),
+        "noted_outside": read.noted,
         "groups": read.groups,
         "not_looked_at": read.not_looked_at,
     })

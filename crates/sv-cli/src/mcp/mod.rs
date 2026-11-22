@@ -378,6 +378,11 @@ pub fn cmd_mcp(args: &[String]) -> Result<()> {
         "sv mcp: serving {} over stdio; paths outside it are refused",
         server.root.display()
     );
+    // The server a person starts is what writes the build-loop record for an app someone is building, so it is what
+    // notes, outside the app's folder, where that record has got to (ADR-159, decision 12; ADR-076, Later, 22
+    // November 2026). Turned on only here, once the server is about to serve: a test that builds a server, or calls
+    // this with options it refuses, writes no note into the folder of whoever runs the tests.
+    av_record::outside_note::ON.store(server.recording, std::sync::atomic::Ordering::Relaxed);
     serve(&server, std::io::stdin().lock(), std::io::stdout().lock())
 }
 

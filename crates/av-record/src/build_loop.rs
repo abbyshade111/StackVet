@@ -360,6 +360,11 @@ pub fn record(app_dir: &Path, line: &Line) -> Result<()> {
         return Ok(());
     }
     let written = append(app_dir, line);
+    if written.is_ok() {
+        // Where the chain has got to, noted outside the app's folder, when this process keeps such notes
+        // (ADR-159, decision 12; `sv mcp` turns it on).
+        crate::outside_note::note(app_dir, &line.time);
+    }
     if written.is_err() {
         *unwritten()
             .lock()
