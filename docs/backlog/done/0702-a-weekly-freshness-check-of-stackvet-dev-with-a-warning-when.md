@@ -1,6 +1,6 @@
 # A weekly freshness check of stackvet.dev, with a warning when a report shown on it is old
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). Two reports shown on the site
 were weeks old and a version behind (the self-assessment of 26 October and the example of 14 October, both by
@@ -17,3 +17,5 @@ were weeks old and a version behind (the self-assessment of 26 October and the e
   page makes the scheduled run open an issue.
 
 **The owner's word, 22 November 2026:** yes, weekly on Mondays, beside the other weekly checks (the tap's install, long files, and the rulesets comparison). Actions minutes are free for a public repository.
+
+**Done, 22 November 2026:** `tools/website.py` warns on a stale report (`stale`), and `.github/workflows/site-weekly.yml` runs on Mondays and says what it found in one issue, held by `crates/sv-cli/tests/site_weekly.rs`. The example report moved back 31 days warned; the issue step did as it should in five cases against a stand-in `gh`. The self-assessment (sv 0.1.0) warns already, so the first run opens the issue until it is made again. ADR-132, Later.
