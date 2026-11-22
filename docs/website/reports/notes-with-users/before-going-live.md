@@ -1,6 +1,6 @@
 # Before going live: Notes with users
 
-Produced by `sv` 0.2.0 (commit 7031bd26f038) on 2026-11-21 15:48:12 UTC, run 15a3dae229ac.
+Produced by `sv` 0.3.0 (commit 7cb7878b2ec7) on 2026-11-22 03:24:15 UTC, run 90bae36f9345.
 
 **This file:** What to do or confirm before the app is on the internet, in the order you would do it, with what could not be verified at its end. It credits nothing. **For:** You, or whoever puts the app on the internet. The end of `report.html` lists every file in this folder and who each is for.
 

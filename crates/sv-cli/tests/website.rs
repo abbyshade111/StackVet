@@ -326,13 +326,28 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
             "a note on the page's words is shown: {note}"
         );
     }
-    // No claim that cv opens no network connection: live reading will (the owner's word, 21 November 2026).
-    for not_yet in ["cv live", "opens no network connection"] {
+    // No claim that cv opens no network connection: `cv live github` does, to api.github.com only (the owner's word,
+    // 21 November 2026; ADR-157, "As built", part 4). The page says what it reads, and that it is never part of a check
+    // (backlog 0722).
+    assert!(
+        !cv.contains("opens no network connection"),
+        "the page says cv opens no network connection, which cv live github does not keep"
+    );
+    for live in [
+        "cv live github &lt;owner&gt;/&lt;repo&gt;",
+        "every one a <code>GET</code> to <code>api.github.com</code>",
+        "could not confirm it",
+        "Cloudflare",
+    ] {
         assert!(
-            !cv.contains(not_yet),
-            "the page says what is not built, or will not stay true: {not_yet}"
+            cv.contains(live),
+            "the page does not say {live:?} of cv live github"
         );
     }
+    assert!(
+        !cv.contains("comes later"),
+        "the page still says live reading comes later"
+    );
     assert!(
         // The menu on every page links to it too, so this looks for the home page's own line.
         read("index.html").contains("href=\"configvet.html\">ConfigVet</a>"),

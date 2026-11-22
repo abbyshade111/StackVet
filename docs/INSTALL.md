@@ -181,6 +181,12 @@ the release workflow). `brew upgrade cv` or `scoop update cv` updates it. Both i
 Mac, on Linux, and on Windows, on every change to the formula or the manifest and every week; neither has been tried
 by hand yet.
 
+Or build it from StackVet's repository with Rust's `cargo`, and the program is `cv`, in `target/release/`:
+
+```bash
+cargo build --release --locked -p cv-cli
+```
+
 `cv check <folder>` also runs hadolint, Checkov, and Trivy over the same files where they are installed, and says so,
 with how to install each, where they are not; `--no-tools` leaves them out.
 

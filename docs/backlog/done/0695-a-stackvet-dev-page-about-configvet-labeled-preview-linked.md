@@ -1,6 +1,6 @@
 # A stackvet.dev page about ConfigVet, labeled preview, linked from the home page
 
-**Status:** claimed by Claude Code session (ConfigVet page), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word. The owner chose on 21 November 2026: one page on stackvet.dev about
 ConfigVet (`cv`, ADR-157), labeled preview, for ops and DevSecOps engineers, linked from the home page, and read by
@@ -17,3 +17,5 @@ the owner before it merges.
   (backlog 0694), which is not tagged, so the page prints no install command as if it worked.
 - **The build pull request is opened without auto-merge;** it merges only after the owner has read the draft and said
   so. Merging publishes nothing: `.github/workflows/site.yml` publishes only when the owner starts it.
+
+**Done, 21 November 2026** (noted 22 November): the page merged in #2461 and was deployed by the owner the same day; its claim was left standing. Updated for `cv live github` by backlog 0722.

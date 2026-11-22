@@ -121,7 +121,7 @@ whole requirement is met.
   in plain language" is *not yet true* (item 3): today each requirement is shown in OWASP's formal wording, with
   checks named by internal ids.
 - The example lines are the report on `examples/notes-with-users` the reports page links
-  (`docs/website/reports/notes-with-users/`, made 21 November 2026 by `sv` 0.2.0 at the commit its files name, backlog
+  (`docs/website/reports/notes-with-users/`, made 22 November 2026 by `sv` 0.3.0 at the commit its files name, backlog 0698; before that made 21 November 2026 by `sv` 0.2.0, backlog
   0696): `fix-now.md`'s finding (V11.4.2), and `compliance.md`'s rows for V1.2.4 (checked), V3.7.2 (checked in part,
   `ast.open-redirect`), V6.2.12 (not verified, "only you can"), and its count of 241 not placed ("Not assessed —
   nobody has answered"). Each requirement's words are the report's plain ones, shortened; none is invented. When that

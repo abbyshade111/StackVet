@@ -4,9 +4,10 @@ The words of the page about ConfigVet (`cv`) for ops and DevSecOps engineers (ba
 the home page's: `tools/website.py` reads them, shows each section's headline in bold as its heading, and leaves out
 each section's last list, the notes on it. The owner chose on 21 November 2026 one page, labeled preview, linked from
 the home page, read by the owner before it merges. Every claim comes from ADR-157 (its decisions, the owner's answers,
-"As built" parts 1 to 3, and its Later entries), the design entry
+"As built" parts 1 to 4, and its Later entries), the design entry
 `docs/design/0396-configvet-a-companion-for-an-app-s-deployment-configuration.md`, `cv`'s usage text in
-`crates/cv-cli/src/main.rs`, and each tool's `note` in `data/cv-adapters.json`; the notes say which. ADR-157's
+`crates/cv-cli/src/main.rs` and `crates/cv-cli/src/live.rs`, each tool's `note` in `data/cv-adapters.json`, and
+`docs/INSTALL.md`'s section on `cv live github`; the notes say which. ADR-157's
 decision 7 lets ConfigVet's pages use the field's own terms; this page still explains the few that are StackVet's
 own. **Nothing here is live** until the owner publishes the site.
 
@@ -19,15 +20,16 @@ running app. ConfigVet reads the layer between them: the files that say how the 
 that matters, it says whether the setting is safe, unsafe, or something it could not establish, and it never counts
 what it could not establish as a pass.
 
-**This is a preview.** ConfigVet reads files only, has four rules of its own, and writes its results as one
-`report.json`, without the report pages StackVet has. Reading live hosting accounts comes later.
+**This is a preview.** ConfigVet has four rules of its own for deployment files, reads one GitHub repository's
+settings only when you ask it to, and writes its results as one `report.json`, without the report pages StackVet has.
 
 ```
 cv check <folder> [--out <folder>] [--fail-on attention|not-assessed] [--no-tools]
+cv live github <owner>/<repo> [--out <folder>] [--fail-on attention|not-assessed]
 ```
 
-- ADR-157, decisions 1 and 7, and "As built" parts 1 to 3 (backlogs 0686, 0687, and 0693, 20 and 21 November 2026).
-  The command line is the usage text in `crates/cv-cli/src/main.rs`. "Four rules of its own" are
+- ADR-157, decisions 1 and 7, and "As built" parts 1 to 4 (backlogs 0686, 0687, 0693, and 0717, 20 and 21 November
+  2026). The command lines are the usage text in `crates/cv-cli/src/main.rs`. "Four rules of its own" are
   `cv.express-node-env`, `cv.django-session-cookie-secure`, `cv.django-csrf-cookie-secure`, and `cv.container-root`.
   "Report pages, SARIF, the seal, and the OSCAL export" wait for a later part (part 2's owner's choice).
 
@@ -127,51 +129,57 @@ requirement attached.
   DS-0002 and KSV-0012 (`also_reported_by`). The secret rules: hadolint DL3064 and Trivy DS-0031. With
   `--fail-on not-assessed`, a tool that did not run, or ran in part, exits 2.
 
-## Files now, live accounts later
+## Files, and one live account: GitHub
 
 **Checking files and reading a live account are kept apart.**
 
-- **`cv check` reads the folder you give it.** Reading a live account is never part of a check: it will be a command
-  of its own, which you ask for by name.
+- **`cv check` reads the folder you give it.** Reading a live account is never part of a check: it is
+  `cv live github`, a command of its own, which you ask for by name.
 - **It never writes over your files.** It writes one file, `report.json`, into `--out`, by default
   `<folder>/cv-report`, and refuses a folder that holds anything else.
 - **Its exit codes are StackVet's,** so a pipeline can stop on them: 0 when the run finished; 1 only with
   `--fail-on attention` and a finding; 2 when a deployment file could not be read or the folder holds none, or with
   `--fail-on not-assessed` and anything not assessed; and 3 when `cv` itself failed.
 
-**Live hosting accounts come later, behind rules of their own.** Reading a live account means holding a credential
-to production, a first for this project, so the rules were written before any of it is built:
+**Reading a GitHub repository's settings, behind rules of their own.** `cv live github <owner>/<repo>` reads one
+repository's settings: the rules on its default branch, whether workflows may approve pull requests, what a
+workflow's token may do by default, which actions may run and whether they must be pinned, each environment's
+reviewers and deployment branches, and secret scanning. Reading a live account means holding a credential to
+production, a first for this project, so the rules were written before any of it was built:
 
-- **Off until you ask for it by name,** one provider at a time, with a command of its own. Never on by default, never
-  part of a report run, and never from an MCP server, should ConfigVet get one.
-- **The token comes from the environment or the provider's own credential helper,** never from an option, since
-  options are kept in shell history. It is never written to any file, log, or report.
-- **Read only.** A token the provider says can write is refused. Where a provider can't say, the report says so
-  before any finding.
-- **A fixed list of requests compiled into the program:** HTTPS to each provider's named hosts only, with
-  certificate checks, `GET` or a GraphQL query from the list (never a mutation), and limits on how many, how large,
-  and how long.
-- **Settings, never data:** an environment variable's name, never its value; never logs, database rows, or stored
-  files.
+- **Off until you ask for it by name,** one provider at a time. Never on by default, and never part of `cv check`.
+- **The token comes from `GH_TOKEN` or `GITHUB_TOKEN`,** never from an option, since options are kept in shell
+  history. It goes to `curl` on its input, never on a command line, and is never written to any file, log, or report,
+  which show only its first characters and its length.
+- **Read only.** A classic token that can write is refused, and nothing more is read. GitHub doesn't let a
+  fine-grained token say what it can do, so the report says, before any finding, that ConfigVet could not confirm it
+  is read-only. Make it with read-only access to the repository's Administration and Actions, and nothing else.
+- **A fixed list of requests compiled into the program:** every one a `GET` to `api.github.com`, over HTTPS with
+  certificate checks, a redirect followed only to that host, and at most 40 requests of 1 MB and 20 seconds each.
+- **Settings, never data:** no secret's value, no logs, and nothing from the repository's files, which `cv check`
+  and StackVet read.
 - **Every request is listed in the report:** its method, host, path, and response status.
 
-A live reading counts as the provider's own account of its settings: it can show what a setting's value is, never
-the behavior the setting is meant to cause. Where the files and the account disagree, that is drift, a finding of its
-own: the files are what someone intended, and the account is what is running.
+A live reading counts as GitHub's own account of its settings: a safe setting is *checked in part*, since it shows a
+setting's value, never the behavior the setting is meant to cause. What GitHub does not show the token is *not
+assessed*, never a pass. Where the files and the account disagree, that will be drift, a finding of its own: the files
+are what someone intended, and the account is what is running.
 
-GitHub's repository and organization settings come first, then Cloudflare's: SSL mode, the lowest TLS version
-accepted, HSTS, and redirecting to HTTPS, the settings that sit between the visitor and the app.
+Cloudflare's settings come next: SSL mode, the lowest TLS version accepted, HSTS, and redirecting to HTTPS, the
+settings that sit between the visitor and the app. Drift comes after that.
 
 - ADR-157, decision 5 (the live fence), decision 6 and the owner's answers (credit), and the design entry's
   "Proposed order of the build", step 4 (GitHub first, its fine-grained tokens can be made read-only). Cloudflare
   second is the owner's answer of 20 November 2026; stackvet.dev itself is hosted there, so the first client can be
   tried on an account the project owns. Vercel comes later: its tokens can't be limited to reading, and its API can
   return environment variables' values.
-- `cv live <provider>` is the planned command's name in ADR-157; it is not built, so the page does not print it as
-  a command. "Before any finding" is decision 5's "where a provider cannot say".
-- The page makes no claim that `cv` opens no network connection, though `cv check` opens none on 21 November 2026
-  (ADR-157, "As built", part 2): live reading will, and the owner chose on 21 November 2026 not to print a claim that
-  goes stale when it lands. "Never part of a check" is decision 5's "never from a report run".
+- `cv live github` is ADR-157's "As built, part 4" (backlog 0717), and what it reads, what each setting counts as, and
+  why a fine-grained token cannot be confirmed read-only are its Later entry of 21 November 2026. "Administration and
+  Actions, read-only" is what each endpoint was found to need with a read-only token on this repository the same day;
+  `docs/INSTALL.md` says how to make one. "Before any finding" is decision 5's "where a provider cannot say".
+- The page makes no claim that `cv` opens no network connection: `cv check` opens none (ADR-157, "As built", part 2),
+  and `cv live github` opens connections to `api.github.com` only (part 4), as `docs/ARCHITECTURE.md`, "The fence",
+  says. "Never part of a check" is decision 5's "never from a report run".
 
 ## How it relates to StackVet
 
