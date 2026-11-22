@@ -37,6 +37,19 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/ahash@0.8.12",
+      "name": "ahash",
+      "version": "0.8.12",
+      "purl": "pkg:cargo/ahash@0.8.12",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/aho-corasick@1.1.5",
       "name": "aho-corasick",
       "version": "1.1.5",
@@ -63,10 +76,62 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/appendlist@1.4.0",
+      "name": "appendlist",
+      "version": "1.4.0",
+      "purl": "pkg:cargo/appendlist@1.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/arbitrary@1.5.0",
       "name": "arbitrary",
       "version": "1.5.0",
       "purl": "pkg:cargo/arbitrary@1.5.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/av-cli@0.3.0",
+      "name": "av-cli",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/av-cli@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/av-record@0.3.0",
+      "name": "av-record",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/av-record@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/base64@0.22.1",
+      "name": "base64",
+      "version": "0.22.1",
+      "purl": "pkg:cargo/base64@0.22.1",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -119,6 +184,32 @@
       "name": "blowfish",
       "version": "0.10.0",
       "purl": "pkg:cargo/blowfish@0.10.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/boon@0.6.1",
+      "name": "boon",
+      "version": "0.6.1",
+      "purl": "pkg:cargo/boon@0.6.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/borrow-or-share@0.2.4",
+      "name": "borrow-or-share",
+      "version": "0.2.4",
+      "purl": "pkg:cargo/borrow-or-share@0.2.4",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -336,10 +427,62 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/cv-cli@0.3.0",
+      "name": "cv-cli",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/cv-cli@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cv-live@0.3.0",
+      "name": "cv-live",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/cv-live@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/cv-rules@0.3.0",
+      "name": "cv-rules",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/cv-rules@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/digest@0.11.3",
       "name": "digest",
       "version": "0.11.3",
       "purl": "pkg:cargo/digest@0.11.3",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/displaydoc@0.2.7",
+      "name": "displaydoc",
+      "version": "0.2.7",
+      "purl": "pkg:cargo/displaydoc@0.2.7",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -427,10 +570,49 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/fluent-uri@0.3.2",
+      "name": "fluent-uri",
+      "version": "0.3.2",
+      "purl": "pkg:cargo/fluent-uri@0.3.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/foldhash@0.2.0",
       "name": "foldhash",
       "version": "0.2.0",
       "purl": "pkg:cargo/foldhash@0.2.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/form_urlencoded@1.2.2",
+      "name": "form_urlencoded",
+      "version": "1.2.2",
+      "purl": "pkg:cargo/form_urlencoded@1.2.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/getrandom@0.3.4",
+      "name": "getrandom",
+      "version": "0.3.4",
+      "purl": "pkg:cargo/getrandom@0.3.4",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -483,6 +665,123 @@
       "name": "hybrid-array",
       "version": "0.4.15",
       "purl": "pkg:cargo/hybrid-array@0.4.15",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/icu_collections@2.4.0",
+      "name": "icu_collections",
+      "version": "2.4.0",
+      "purl": "pkg:cargo/icu_collections@2.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/icu_locale_core@2.4.0",
+      "name": "icu_locale_core",
+      "version": "2.4.0",
+      "purl": "pkg:cargo/icu_locale_core@2.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/icu_normalizer@2.4.0",
+      "name": "icu_normalizer",
+      "version": "2.4.0",
+      "purl": "pkg:cargo/icu_normalizer@2.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/icu_normalizer_data@2.4.0",
+      "name": "icu_normalizer_data",
+      "version": "2.4.0",
+      "purl": "pkg:cargo/icu_normalizer_data@2.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/icu_properties@2.4.0",
+      "name": "icu_properties",
+      "version": "2.4.0",
+      "purl": "pkg:cargo/icu_properties@2.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/icu_properties_data@2.4.0",
+      "name": "icu_properties_data",
+      "version": "2.4.0",
+      "purl": "pkg:cargo/icu_properties_data@2.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/icu_provider@2.4.0",
+      "name": "icu_provider",
+      "version": "2.4.0",
+      "purl": "pkg:cargo/icu_provider@2.4.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/idna@1.1.0",
+      "name": "idna",
+      "version": "1.1.0",
+      "purl": "pkg:cargo/idna@1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/idna_adapter@1.2.2",
+      "name": "idna_adapter",
+      "version": "1.2.2",
+      "purl": "pkg:cargo/idna_adapter@1.2.2",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -557,10 +856,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/libc@0.2.190",
+      "bom-ref": "pkg:cargo/libc@0.2.191",
       "name": "libc",
-      "version": "0.2.190",
-      "purl": "pkg:cargo/libc@0.2.190",
+      "version": "0.2.191",
+      "purl": "pkg:cargo/libc@0.2.191",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -574,6 +873,19 @@
       "name": "libfuzzer-sys",
       "version": "0.4.13",
       "purl": "pkg:cargo/libfuzzer-sys@0.4.13",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/litemap@0.8.3",
+      "name": "litemap",
+      "version": "0.8.3",
+      "purl": "pkg:cargo/litemap@0.8.3",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -635,6 +947,32 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/percent-encoding@2.3.2",
+      "name": "percent-encoding",
+      "version": "2.3.2",
+      "purl": "pkg:cargo/percent-encoding@2.3.2",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/potential_utf@0.1.6",
+      "name": "potential_utf",
+      "version": "0.1.6",
+      "purl": "pkg:cargo/potential_utf@0.1.6",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/proc-macro2@1.0.107",
       "name": "proc-macro2",
       "version": "1.0.107",
@@ -661,10 +999,49 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/r-efi@5.3.0",
+      "name": "r-efi",
+      "version": "5.3.0",
+      "purl": "pkg:cargo/r-efi@5.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/r-efi@6.0.0",
       "name": "r-efi",
       "version": "6.0.0",
       "purl": "pkg:cargo/r-efi@6.0.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/ref-cast@1.0.27",
+      "name": "ref-cast",
+      "version": "1.0.27",
+      "purl": "pkg:cargo/ref-cast@1.0.27",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/ref-cast-impl@1.0.27",
+      "name": "ref-cast-impl",
+      "version": "1.0.27",
+      "purl": "pkg:cargo/ref-cast-impl@1.0.27",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -804,10 +1181,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/serde_spanned@1.1.1",
+      "bom-ref": "pkg:cargo/serde_spanned@1.1.3",
       "name": "serde_spanned",
-      "version": "1.1.1",
-      "purl": "pkg:cargo/serde_spanned@1.1.1",
+      "version": "1.1.3",
+      "purl": "pkg:cargo/serde_spanned@1.1.3",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -869,6 +1246,32 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/smallvec@1.16.4",
+      "name": "smallvec",
+      "version": "1.16.4",
+      "purl": "pkg:cargo/smallvec@1.16.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/stable_deref_trait@1.2.1",
+      "name": "stable_deref_trait",
+      "version": "1.2.1",
+      "purl": "pkg:cargo/stable_deref_trait@1.2.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/streaming-iterator@0.1.9",
       "name": "streaming-iterator",
       "version": "0.1.9",
@@ -895,10 +1298,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/sv-check@0.1.0",
+      "bom-ref": "pkg:cargo/sv-check@0.3.0",
       "name": "sv-check",
-      "version": "0.1.0",
-      "purl": "pkg:cargo/sv-check@0.1.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-check@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -908,10 +1311,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/sv-cli@0.1.0",
+      "bom-ref": "pkg:cargo/sv-cli@0.3.0",
       "name": "sv-cli",
-      "version": "0.1.0",
-      "purl": "pkg:cargo/sv-cli@0.1.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-cli@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -921,10 +1324,23 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/sv-frameworks@0.1.0",
+      "bom-ref": "pkg:cargo/sv-core@0.3.0",
+      "name": "sv-core",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-core@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-frameworks@0.3.0",
       "name": "sv-frameworks",
-      "version": "0.1.0",
-      "purl": "pkg:cargo/sv-frameworks@0.1.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-frameworks@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -947,10 +1363,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/sv-manifest@0.1.0",
+      "bom-ref": "pkg:cargo/sv-manifest@0.3.0",
       "name": "sv-manifest",
-      "version": "0.1.0",
-      "purl": "pkg:cargo/sv-manifest@0.1.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-manifest@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -960,10 +1376,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/sv-report@0.1.0",
+      "bom-ref": "pkg:cargo/sv-report@0.3.0",
       "name": "sv-report",
-      "version": "0.1.0",
-      "purl": "pkg:cargo/sv-report@0.1.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-report@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -973,10 +1389,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/sv-run@0.1.0",
+      "bom-ref": "pkg:cargo/sv-run@0.3.0",
       "name": "sv-run",
-      "version": "0.1.0",
-      "purl": "pkg:cargo/sv-run@0.1.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-run@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -986,10 +1402,23 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/sv-scan@0.1.0",
+      "bom-ref": "pkg:cargo/sv-scan@0.3.0",
       "name": "sv-scan",
-      "version": "0.1.0",
-      "purl": "pkg:cargo/sv-scan@0.1.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-scan@0.3.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/sv-yaml@0.3.0",
+      "name": "sv-yaml",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/sv-yaml@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -1025,10 +1454,36 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/toml@1.1.6+spec-1.1.0",
+      "bom-ref": "pkg:cargo/synstructure@0.14.0",
+      "name": "synstructure",
+      "version": "0.14.0",
+      "purl": "pkg:cargo/synstructure@0.14.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/tinystr@0.8.5",
+      "name": "tinystr",
+      "version": "0.8.5",
+      "purl": "pkg:cargo/tinystr@0.8.5",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml@1.2.1+spec-1.1.0",
       "name": "toml",
-      "version": "1.1.6+spec-1.1.0",
-      "purl": "pkg:cargo/toml@1.1.6+spec-1.1.0",
+      "version": "1.2.1+spec-1.1.0",
+      "purl": "pkg:cargo/toml@1.2.1+spec-1.1.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -1038,36 +1493,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/toml_datetime@1.1.1+spec-1.1.0",
+      "bom-ref": "pkg:cargo/toml_datetime@1.1.3+spec-1.1.0",
       "name": "toml_datetime",
-      "version": "1.1.1+spec-1.1.0",
-      "purl": "pkg:cargo/toml_datetime@1.1.1+spec-1.1.0",
-      "properties": [
-        {
-          "name": "securevibe:version-source",
-          "value": "locked: this is what is installed"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/toml_edit@0.25.15+spec-1.1.0",
-      "name": "toml_edit",
-      "version": "0.25.15+spec-1.1.0",
-      "purl": "pkg:cargo/toml_edit@0.25.15+spec-1.1.0",
-      "properties": [
-        {
-          "name": "securevibe:version-source",
-          "value": "locked: this is what is installed"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "bom-ref": "pkg:cargo/toml_parser@1.1.3+spec-1.1.0",
-      "name": "toml_parser",
       "version": "1.1.3+spec-1.1.0",
-      "purl": "pkg:cargo/toml_parser@1.1.3+spec-1.1.0",
+      "purl": "pkg:cargo/toml_datetime@1.1.3+spec-1.1.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -1077,10 +1506,36 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/toml_writer@1.1.2+spec-1.1.0",
+      "bom-ref": "pkg:cargo/toml_edit@0.25.19+spec-1.1.0",
+      "name": "toml_edit",
+      "version": "0.25.19+spec-1.1.0",
+      "purl": "pkg:cargo/toml_edit@0.25.19+spec-1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml_parser@1.1.5+spec-1.1.0",
+      "name": "toml_parser",
+      "version": "1.1.5+spec-1.1.0",
+      "purl": "pkg:cargo/toml_parser@1.1.5+spec-1.1.0",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/toml_writer@1.2.0+spec-1.1.0",
       "name": "toml_writer",
-      "version": "1.1.2+spec-1.1.0",
-      "purl": "pkg:cargo/toml_writer@1.1.2+spec-1.1.0",
+      "version": "1.2.0+spec-1.1.0",
+      "purl": "pkg:cargo/toml_writer@1.2.0+spec-1.1.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -1155,10 +1610,10 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/tree-sitter-dart@0.2.0",
+      "bom-ref": "pkg:cargo/tree-sitter-dart@0.3.0",
       "name": "tree-sitter-dart",
-      "version": "0.2.0",
-      "purl": "pkg:cargo/tree-sitter-dart@0.2.0",
+      "version": "0.3.0",
+      "purl": "pkg:cargo/tree-sitter-dart@0.3.0",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -1363,6 +1818,58 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/url@2.5.8",
+      "name": "url",
+      "version": "2.5.8",
+      "purl": "pkg:cargo/url@2.5.8",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/utf8_iter@1.0.4",
+      "name": "utf8_iter",
+      "version": "1.0.4",
+      "purl": "pkg:cargo/utf8_iter@1.0.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/version_check@0.9.5",
+      "name": "version_check",
+      "version": "0.9.5",
+      "purl": "pkg:cargo/version_check@0.9.5",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/wasip2@1.0.4+wasi-0.2.12",
+      "name": "wasip2",
+      "version": "1.0.4+wasi-0.2.12",
+      "purl": "pkg:cargo/wasip2@1.0.4+wasi-0.2.12",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/wasm-bindgen@0.2.129",
       "name": "wasm-bindgen",
       "version": "0.2.129",
@@ -1454,6 +1961,110 @@
     },
     {
       "type": "library",
+      "bom-ref": "pkg:cargo/wit-bindgen@0.57.1",
+      "name": "wit-bindgen",
+      "version": "0.57.1",
+      "purl": "pkg:cargo/wit-bindgen@0.57.1",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/writeable@0.6.4",
+      "name": "writeable",
+      "version": "0.6.4",
+      "purl": "pkg:cargo/writeable@0.6.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/yoke@0.8.4",
+      "name": "yoke",
+      "version": "0.8.4",
+      "purl": "pkg:cargo/yoke@0.8.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/yoke-derive@0.8.4",
+      "name": "yoke-derive",
+      "version": "0.8.4",
+      "purl": "pkg:cargo/yoke-derive@0.8.4",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zerocopy@0.8.63",
+      "name": "zerocopy",
+      "version": "0.8.63",
+      "purl": "pkg:cargo/zerocopy@0.8.63",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zerocopy-derive@0.8.63",
+      "name": "zerocopy-derive",
+      "version": "0.8.63",
+      "purl": "pkg:cargo/zerocopy-derive@0.8.63",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zerofrom@0.1.8",
+      "name": "zerofrom",
+      "version": "0.1.8",
+      "purl": "pkg:cargo/zerofrom@0.1.8",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zerofrom-derive@0.1.8",
+      "name": "zerofrom-derive",
+      "version": "0.1.8",
+      "purl": "pkg:cargo/zerofrom-derive@0.1.8",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "bom-ref": "pkg:cargo/zeroize@1.9.1",
       "name": "zeroize",
       "version": "1.9.1",
@@ -1467,10 +2078,49 @@
     },
     {
       "type": "library",
-      "bom-ref": "pkg:cargo/zip@9.1.1",
+      "bom-ref": "pkg:cargo/zerotrie@0.2.5",
+      "name": "zerotrie",
+      "version": "0.2.5",
+      "purl": "pkg:cargo/zerotrie@0.2.5",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zerovec@0.11.9",
+      "name": "zerovec",
+      "version": "0.11.9",
+      "purl": "pkg:cargo/zerovec@0.11.9",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zerovec-derive@0.11.7",
+      "name": "zerovec-derive",
+      "version": "0.11.7",
+      "purl": "pkg:cargo/zerovec-derive@0.11.7",
+      "properties": [
+        {
+          "name": "securevibe:version-source",
+          "value": "locked: this is what is installed"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:cargo/zip@9.1.3",
       "name": "zip",
-      "version": "9.1.1",
-      "purl": "pkg:cargo/zip@9.1.1",
+      "version": "9.1.3",
+      "purl": "pkg:cargo/zip@9.1.3",
       "properties": [
         {
           "name": "securevibe:version-source",
@@ -1530,7 +2180,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/website.py"
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/cloud_session_check.py, tools/codeql_suites.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/nist_controls.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/website.py"
             }
           ]
         },
@@ -1545,7 +2195,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "tools/website.py"
+              "value": "tools/session_token.py, tools/website.py"
             }
           ]
         },
@@ -1590,7 +2240,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, examples/notes-with-users/app.py, tools/backlog.py, tools/codeql_suites.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/semgrep_packs.py"
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, examples/notes-with-users/app.py, tools/backlog.py, tools/codeql_suites.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/semgrep_packs.py, tools/website.py"
             }
           ]
         },
@@ -1785,7 +2435,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/trials/make_figure.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, tools/adr_check.py, tools/atlas_references.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py"
+              "value": "docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/trials/make_figure.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, tools/adr_check.py, tools/atlas_references.py, tools/cloud_session_check.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/nist_controls.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/rulesets_check.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/session_token.py, tools/website.py"
             }
           ]
         },
@@ -1815,7 +2465,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "crates/sv-check/tests/fixtures/semgrep-aisvs/app/assistant.py, crates/sv-check/tests/fixtures/semgrep-aisvs/app/careful.py, crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/codeql-app-py/app.py, crates/sv-run/tests/fixtures/install-app/app.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, examples/notes-with-users/app.py, examples/notes-with-users/seed.py, examples/partly-passing/app.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/app.py, examples/tested-notes/tests/test_search.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/website.py"
+              "value": "crates/sv-check/tests/fixtures/semgrep-aisvs/app/assistant.py, crates/sv-check/tests/fixtures/semgrep-aisvs/app/careful.py, crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/codeql-app-py/app.py, crates/sv-run/tests/fixtures/install-app/app.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/loop-scale/vuln_chart.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, examples/notes-with-users/app.py, examples/notes-with-users/seed.py, examples/partly-passing/app.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/app.py, examples/tested-notes/tests/test_search.py, tools/atlas_references.py, tools/backlog.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/merge_main.py, tools/nist_controls.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/record_numbers.py, tools/rulesets_check.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/session_token.py, tools/website.py"
             }
           ]
         },
@@ -1830,7 +2480,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/paper/trials/make_figure.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/merge_main.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/website.py"
+              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/paper/trials/make_figure.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_shards.py, tools/cloud_session_check.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/merge_main.py, tools/nist_controls.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/rulesets_check.py, tools/semgrep_packs.py, tools/website.py"
             }
           ]
         },
@@ -1905,7 +2555,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_trial.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/long_files.py, tools/merge_main.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_rule_map.py, tools/website.py"
+              "value": "docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_trial.py, tools/_shared.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/long_files.py, tools/merge_main.py, tools/nist_controls.py, tools/prompt_stamps.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_rule_map.py, tools/website.py"
             }
           ]
         },
@@ -2010,7 +2660,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/semgrep-app/app.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_trial.py, tools/adr_check.py, tools/codeql_suites.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_trial.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/website.py"
+              "value": "crates/sv-check/tests/fixtures/semgrep/app/app.py, crates/sv-check/tests/fixtures/suppressed/semgrep-app/app.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-pilot/loop_trial.py, tools/adr_check.py, tools/cloud_session_check.py, tools/codeql_suites.py, tools/cvss4_tables.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/merge_main.py, tools/prompt_trial.py, tools/record_numbers.py, tools/rulesets_check.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/session_token.py, tools/website.py"
             }
           ]
         },
@@ -2025,7 +2675,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/tests/test_search.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/ci_shards.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/merge_main.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/website.py"
+              "value": "docs/brand/source/make_logo.py, docs/paper/tables/ledgers.py, docs/paper/tables/make_tables.py, docs/paper/tables/period_figures.py, docs/paper/tables/period_records.py, docs/paper/tables/periods.py, docs/prompts/drafts-trial/score_drafts_trial.py, docs/prompts/library-trial/recount_signed_in.py, docs/prompts/library-trial/score_delivery.py, docs/prompts/library-trial/score_haiku55.py, docs/prompts/library-trial/score_prompt_trial.py, docs/prompts/library-trial/score_recipe1.py, docs/prompts/library-trial/score_recipe2.py, docs/prompts/library-trial/score_recount.py, docs/prompts/library-trial/score_revision.py, docs/prompts/library-trial/score_sentences.py, docs/prompts/library-trial/score_start.py, docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-compare/blind_tester.py, docs/prompts/loop-compare/score_loop_compare.py, docs/prompts/loop-pilot/loop_dodging.py, docs/prompts/loop-pilot/loop_measures.py, docs/prompts/loop-pilot/loop_trial.py, docs/prompts/trial-3/score_prompts.py, docs/prompts/trial-3/testability.py, docs/website/diagrams/make_how_it_works.py, docs/website/diagrams/source/make_diagrams.py, examples/partly-passing/run_tests.py, examples/partly-passing/tests/test_search.py, examples/tested-notes/tests/test_search.py, tools/adr_check.py, tools/atlas_references.py, tools/backlog.py, tools/ci_scope.py, tools/ci_shards.py, tools/cloud_session_check.py, tools/codeql_suites.py, tools/coverage.py, tools/cvss4_tables.py, tools/design_entry.py, tools/docs_page.py, tools/framework_pages.py, tools/image_smoke.py, tools/long_files.py, tools/merge_main.py, tools/nist_controls.py, tools/prompt_stamps.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/rulesets_check.py, tools/semgrep_packs.py, tools/semgrep_rule_map.py, tools/session_token.py, tools/website.py"
             }
           ]
         },
@@ -2040,7 +2690,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-pilot/loop_measures.py, tools/_shared.py, tools/adr_check.py, tools/backlog.py, tools/ci_shards.py, tools/design_entry.py, tools/image_smoke.py, tools/merge_main.py, tools/record_numbers.py, tools/semgrep_packs.py"
+              "value": "docs/prompts/loop-2/score_loop2.py, docs/prompts/loop-pilot/loop_measures.py, tools/_shared.py, tools/adr_check.py, tools/backlog.py, tools/ci_shards.py, tools/design_entry.py, tools/image_smoke.py, tools/merge_main.py, tools/record_numbers.py, tools/semgrep_packs.py, tools/session_token.py"
             }
           ]
         },
@@ -2055,7 +2705,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-pilot/loop_trial.py, tools/prompt_trial.py, tools/pwned_passwords.py"
+              "value": "docs/prompts/loop-2/scripted_review.py, docs/prompts/loop-pilot/loop_trial.py, tools/prompt_trial.py, tools/pwned_passwords.py, tools/session_token.py"
             }
           ]
         },
@@ -2100,7 +2750,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "tools/pwned_passwords.py"
+              "value": "tools/pwned_passwords.py, tools/rulesets_check.py, tools/session_token.py"
             }
           ]
         },
@@ -2130,7 +2780,7 @@
             },
             {
               "name": "securevibe:imported-by",
-              "value": "tools/atlas_references.py, tools/pwned_passwords.py, tools/record_numbers.py"
+              "value": "tools/atlas_references.py, tools/nist_controls.py, tools/pwned_passwords.py, tools/record_numbers.py, tools/rulesets_check.py, tools/session_token.py"
             }
           ]
         },
