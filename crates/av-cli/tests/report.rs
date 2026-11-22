@@ -213,6 +213,10 @@ fn the_hook_record_is_read_only_when_asked_for() {
     );
 }
 
+// Not on Windows: a folder there cannot be named with an escape character, so this text cannot reach `av` this way
+// (the Windows run of 22 November 2026 failed making the folder). What `av` prints of a record's own text is held
+// on every platform by `proxy_report.rs`, with a tool's name that carries one.
+#[cfg(not(windows))]
 #[test]
 fn a_folder_name_with_an_escape_character_does_not_reach_the_terminal() {
     // The folder's own name is the one piece of text `av` prints that no record cleaned first: the hook record
