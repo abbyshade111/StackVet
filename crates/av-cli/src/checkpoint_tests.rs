@@ -125,7 +125,10 @@ fn each_record_with_lines_is_signed_and_stands_until_a_line_signed_for_is_change
     };
     assert_eq!(lines, 2);
     assert!(
-        signed.contains("SHA256:") && signed.contains("trusts for this app"),
+        signed.contains("SHA256:")
+            && signed.contains("trusts for this app (a key on this computer")
+            // As the owner's second trial read it: a stray comma and two spaces (backlog 0721, part 2).
+            && !signed.contains(",  ("),
         "{signed}"
     );
     assert!(matches!(

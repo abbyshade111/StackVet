@@ -486,6 +486,35 @@ fn proxy_lines(seen: &proxy_seen::Seen) -> Vec<String> {
             "The chain stops checking out at line {at}: a line was changed, removed, or added after it was written."
         ),
     });
+    // By run of av proxy, which is by session of the agent (backlog 0721, part 1).
+    if seen.runs.len() > 1 || seen.runs.iter().any(|r| r.started.is_none()) {
+        out.push(format!(
+            "In {}, each one start of av proxy:",
+            match seen.runs.len() {
+                1 => "1 session".to_owned(),
+                n => format!("{n} sessions"),
+            }
+        ));
+        for run in &seen.runs {
+            out.push(format!(
+                "  {}: {}, {} answered, {} turned down{}",
+                match &run.started {
+                    Some(at) => format!("started {}", sv_report::one_line(at)),
+                    None =>
+                        "before av proxy marked its starts (read as one session; it may be several)"
+                            .to_owned(),
+                },
+                calls(run.calls),
+                run.ok,
+                run.turned_down,
+                match run.unanswered {
+                    0 => String::new(),
+                    n => format!(", {n} never answered"),
+                }
+            ));
+        }
+        out.push("By tool, over the whole record:".to_owned());
+    }
     for t in &seen.tools {
         out.push(format!(
             "  {}: {}{}",
@@ -517,8 +546,8 @@ fn proxy_lines(seen: &proxy_seen::Seen) -> Vec<String> {
     match seen.again.len() + seen.again_more {
         0 => out.push("No call the server turned down was made again with the same arguments.".to_owned()),
         n => out.push(format!(
-            "{} the server turned down {} made again with the same arguments; each is listed under \"Trying again \
-             after a no\" below.",
+            "{} the server turned down {} made again with the same arguments, in the same session or a later one; \
+             each is listed under \"Trying again after a no\" below.",
             calls(n),
             if n == 1 { "was" } else { "were" }
         )),

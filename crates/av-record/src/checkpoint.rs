@@ -254,11 +254,9 @@ pub fn standing(app: &Path, kind: Kind, checker: &Checker) -> Standing {
                     Some(true) => Standing::Kept {
                         at: checkpoint.at,
                         lines: checkpoint.head.lines,
-                        signed: format!(
-                            "signed with key {key}, which {} trusts for this app, {}",
-                            from.named(),
-                            lock.said()
-                        ),
+                        // In the words every report of sv's uses for a signed seal, from the one place that makes
+                        // them (backlog 0721, part 2).
+                        signed: sv_check::seal::signed_with(&key, from, lock),
                     },
                     // No record at all now is the record cut to nothing.
                     Some(false) | None => Standing::NotKept {

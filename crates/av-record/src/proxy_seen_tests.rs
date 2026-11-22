@@ -120,7 +120,9 @@ fn a_call_turned_down_and_made_again_with_the_same_arguments_is_listed_and_no_ot
             summary: r#"{"path":"data"}"#.to_owned(),
             at: "2026-11-22T00:00:00Z".to_owned(),
             answer: "refused".to_owned(),
+            run: 1,
             times: 2,
+            later: 0,
             last_answer: "ok".to_owned(),
         }],
         "{seen:?}"
@@ -212,4 +214,96 @@ fn a_name_in_a_record_that_was_rewritten_is_taken_no_longer_than_the_pass_throug
         "{}",
         seen.tools[0].name.len()
     );
+}
+
+/// A record of two runs of `av proxy`: each begins with the line that says it started.
+fn two_runs(
+    path: &Path,
+    first: &[(&str, &str, Option<Answer>)],
+    second: &[(&str, &str, Option<Answer>)],
+) {
+    append(
+        path,
+        crate::passthrough::started_line("2026-11-22T00:00:00Z"),
+    )
+    .unwrap();
+    write(path, first);
+    append(
+        path,
+        crate::passthrough::started_line("2026-11-22T02:00:00Z"),
+    )
+    .unwrap();
+    write(path, second);
+}
+
+#[test]
+fn a_call_turned_down_in_one_session_and_made_in_a_later_one_is_not_said_to_be_made_again_in_it() {
+    // What the owner's second trial showed: a no in one session, the same call 90 minutes later in another.
+    let path = record("later");
+    two_runs(
+        &path,
+        &[("check", r#"{"path":"/home"}"#, NO)],
+        &[("check", "{}", OK), ("check", r#"{"path":"/home"}"#, NO)],
+    );
+    let seen = read(&path, None);
+    assert_eq!(
+        seen.broken_at, None,
+        "a start line is chained as any line is"
+    );
+    assert_eq!(seen.calls, 3, "a start line is not a call");
+    assert_eq!(
+        seen.runs,
+        vec![
+            Run {
+                started: Some("2026-11-22T00:00:00Z".to_owned()),
+                calls: 1,
+                ok: 0,
+                turned_down: 1,
+                unanswered: 0
+            },
+            Run {
+                started: Some("2026-11-22T02:00:00Z".to_owned()),
+                calls: 2,
+                ok: 1,
+                turned_down: 1,
+                unanswered: 0
+            },
+        ]
+    );
+    assert_eq!(seen.again.len(), 1, "{seen:?}");
+    let again = &seen.again[0];
+    assert_eq!(
+        (again.run, again.times, again.later),
+        (1, 0, 1),
+        "{again:?}"
+    );
+}
+
+#[test]
+fn a_call_made_again_within_a_session_is_counted_there_whatever_an_earlier_session_did() {
+    let path = record("within");
+    two_runs(
+        &path,
+        &[("delete", "{}", REFUSED)],
+        &[("delete", "{}", REFUSED), ("delete", "{}", OK)],
+    );
+    let seen = read(&path, None);
+    let by_run: Vec<(usize, usize, usize)> = seen
+        .again
+        .iter()
+        .map(|a| (a.run, a.times, a.later))
+        .collect();
+    // The first session's no came back twice later; the second session's own no was made again once in it.
+    assert_eq!(by_run, [(1, 0, 2), (2, 1, 0)], "{seen:?}");
+}
+
+#[test]
+fn calls_from_before_av_proxy_marked_its_starts_are_one_run_with_no_start() {
+    let path = record("unmarked");
+    write(&path, &[("check", "{}", NO), ("check", "{}", NO)]);
+    let seen = read(&path, None);
+    assert_eq!(seen.runs.len(), 1);
+    assert_eq!(seen.runs[0].started, None);
+    // Nothing tells its sessions apart, so the two are read as one session's.
+    assert_eq!((seen.again[0].times, seen.again[0].later), (1, 0));
 }

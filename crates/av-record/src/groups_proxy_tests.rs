@@ -30,7 +30,9 @@ fn again() -> Again {
         summary: r#"{"path":"data"}"#.to_owned(),
         at: "2026-11-22T00:00:00Z".to_owned(),
         answer: "refused".to_owned(),
+        run: 1,
         times: 2,
+        later: 0,
         last_answer: "ok".to_owned(),
     }
 }
@@ -52,8 +54,9 @@ fn a_call_turned_down_and_made_again_is_a_line_and_the_owner_s_own_no_is_still_s
             .contains("delete was turned down by the server (refused)")
             && line
                 .what
-                .contains("called again with the same arguments 2 times")
+                .contains("called again with the same arguments 2 times in the same session")
             && line.what.contains("the last was answered ok")
+            && !line.what.contains("later session")
             && line.what.contains(r#"{"path":"data"}"#),
         "{}",
         line.what
@@ -170,5 +173,36 @@ fn a_pass_through_record_whose_chain_does_not_check_out_is_a_line_under_oversigh
             .iter()
             .any(|l| l.from == "the pass-through's record" && l.place == "line 2 of the record"),
         "{g:?}"
+    );
+}
+
+#[test]
+fn a_call_that_came_back_in_a_later_session_is_said_as_that_and_not_as_made_again_after_its_no() {
+    let seen = Seen {
+        calls: 2,
+        again: vec![Again {
+            times: 0,
+            later: 1,
+            ..again()
+        }],
+        runs: vec![crate::proxy_seen::Run::default()],
+        ..Default::default()
+    };
+    let all = gathered(Some(&seen), None);
+    let g = group(&all, Group::AgainAfterNo);
+    let what = &g.lines[0].what;
+    assert!(
+        what.contains(
+            "the same call was made once in a later session, which may not have known of the no"
+        ) && !what.contains("in the same session"),
+        "{what}"
+    );
+    // A run with no start line is from before av proxy marked its starts, and the group says what that costs.
+    assert!(
+        g.not_shown
+            .iter()
+            .any(|n| n.contains("read as one session")),
+        "{:?}",
+        g.not_shown
     );
 }

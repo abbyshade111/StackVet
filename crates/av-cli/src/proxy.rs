@@ -24,6 +24,9 @@ struct Record {
     waiting: HashMap<String, Call>,
     /// Lines that could not be written, said once and counted.
     unwritten: usize,
+    /// When this run of the pass-through began, until the line that says so is written: before the first call's
+    /// line, so a run in which no tool was called writes nothing.
+    started: Option<String>,
 }
 
 impl Record {
@@ -33,7 +36,11 @@ impl Record {
             return;
         };
         let line = passthrough::line_of(&now(), call, answer);
-        if let Err(why) = passthrough::append(path, line) {
+        let start = match self.started.take() {
+            Some(at) => passthrough::append(path, passthrough::started_line(&at)),
+            None => Ok(()),
+        };
+        if let Err(why) = start.and_then(|()| passthrough::append(path, line)) {
             if self.unwritten == 0 {
                 eprintln!(
                     "av proxy: a call could not be written down ({}); relaying goes on, and the record is short \
@@ -101,6 +108,7 @@ pub fn run(app: &Path, server: &[String]) -> Result<u8, String> {
         path,
         waiting: HashMap::new(),
         unwritten: 0,
+        started: Some(now()),
     }));
 
     // The agent's lines, to the server: a call to a tool is kept until its answer comes.
