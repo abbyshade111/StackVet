@@ -76,6 +76,24 @@ fn full_encrypts_without_checking_the_certificate() {
 }
 
 #[test]
+fn a_mode_finding_says_it_needs_a_server_behind_cloudflare() {
+    // stackvet.dev is served by a Worker alone, where the mode guards nothing: each mode finding says what it depends on.
+    for mode in [r#""flexible""#, r#""full""#] {
+        let (e, _) = judged(with("ssl", mode));
+        let f = e
+            .findings
+            .iter()
+            .find(|f| f.rule_id == ORIGIN_UNENCRYPTED.id || f.rule_id == ORIGIN_UNCHECKED.id)
+            .expect("the setup: a mode finding");
+        assert!(
+            f.description.contains("does not read the DNS records"),
+            "{mode}: {}",
+            f.description
+        );
+    }
+}
+
+#[test]
 fn a_mode_cv_does_not_know_is_not_assessed_never_a_pass() {
     let (e, _) = judged(with("ssl", r#""origin_pull""#));
     for rule in [&ORIGIN_UNENCRYPTED, &ORIGIN_UNCHECKED] {
@@ -111,10 +129,16 @@ fn http_not_redirected_is_a_finding() {
 }
 
 #[test]
-fn hsts_off_or_short_is_a_finding_and_subdomains_wait_on_the_level() {
+fn hsts_short_is_a_finding_off_is_not_assessed_and_subdomains_wait_on_the_level() {
+    // Off: Cloudflare adds no header, which says nothing of whether the app sends one (stackvet.dev does).
     let off = r#"{"strict_transport_security":{"enabled":false,"max_age":0,"include_subdomains":false,"preload":false}}"#;
     let (e, _) = judged(with("security_header", off));
-    assert!(finds(&e, &HSTS));
+    assert!(!finds(&e, &HSTS) && !credits(&e, &HSTS));
+    assert!(
+        e.not_assessed
+            .iter()
+            .any(|n| n.rule_id == HSTS.id && n.why.contains("whether the app sends it"))
+    );
     let short = r#"{"strict_transport_security":{"enabled":true,"max_age":15552000,"include_subdomains":true,"preload":false}}"#;
     let (e, _) = judged(with("security_header", short));
     assert!(finds(&e, &HSTS));
