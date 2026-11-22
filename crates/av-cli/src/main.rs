@@ -28,6 +28,7 @@ macro_rules! eprintln {
     ($($arg:tt)*) => { ::std::eprintln!("{}", ::sv_report::visible(&::std::format!($($arg)*))) };
 }
 
+mod checkpoint;
 mod proxy;
 
 const MADE: u8 = 0;
@@ -40,6 +41,7 @@ av: AgentVet says what the record shows an AI coding tool did.
 Usage:
   av report <folder> [--hook-record] [--json]
   av proxy [--app <folder>] -- <the tool server's command>
+  av checkpoint <folder>
   av --version
 
 av report reads what is kept about the tool that worked in the folder: sv's record of the tool's calls to it, and
@@ -54,7 +56,11 @@ av proxy sits between an agent and a tool server that speaks MCP over standard i
 the server's command in the agent's settings. It starts that server, relays everything each way unchanged, and writes
 down each call to a tool: the tool's name, how it was answered, a fingerprint and the size of what it was given, and a
 short summary of that with any key cut out. Never an answer's text. The record is kept outside the folder, readable
-only by you, for the app in --app (by default, the folder av proxy was started in). It opens no network connection.";
+only by you, for the app in --app (by default, the folder av proxy was started in). It opens no network connection.
+
+av checkpoint, run by you at your own terminal, signs where each record of the app has got to, with the key sv review
+signs with; it asks for that key's passphrase and keeps nothing of it. A later av report then says whether the lines
+you signed for are still as they were. av never makes a key: sv review does.";
 
 #[derive(Debug, PartialEq, Eq)]
 struct Options {
@@ -115,6 +121,63 @@ fn parse_proxy(args: &[String]) -> Result<(PathBuf, Vec<String>), String> {
     Ok((app, server.to_vec()))
 }
 
+/// `av checkpoint <folder>`: only at a terminal, since a checkpoint is the owner's own act; a passphrase typed there
+/// is what makes it one.
+fn run_checkpoint(args: &[String]) -> u8 {
+    use std::io::IsTerminal as _;
+    use sv_frameworks::paths::Canonical as _;
+    let [folder] = args else {
+        eprintln!("av: av checkpoint needs one folder\n\n{USAGE}");
+        return FAILED;
+    };
+    let Ok(app) = Path::new(folder).canonical() else {
+        eprintln!("av: {folder} is not a folder av can open");
+        return FAILED;
+    };
+    if !std::io::stdin().is_terminal() {
+        eprintln!(
+            "av: av checkpoint is for you to run at your own terminal: what it signs is your word, so it does not \
+             read a passphrase handed to it by another program."
+        );
+        return FAILED;
+    }
+    let Some(keys) = sv_check::seal::Key::folder() else {
+        eprintln!(
+            "av: this computer has no folder for sv's keys (neither HOME nor XDG_CONFIG_HOME is set)"
+        );
+        return FAILED;
+    };
+    let stdin = std::io::stdin();
+    // Written through a cleaning writer, as everything `av` prints is.
+    let done = checkpoint::run(&app, &keys, &mut stdin.lock(), &mut Prompted);
+    match done {
+        Ok(true) => MADE,
+        Ok(false) => NOTHING_READ,
+        Err(why) => {
+            eprintln!("av checkpoint: {why}");
+            FAILED
+        }
+    }
+}
+
+/// Standard output, cleaned as `println!` here cleans it, for a command that writes as it goes: a question must be
+/// on the screen before its answer is read.
+struct Prompted;
+
+impl std::io::Write for Prompted {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let text = String::from_utf8_lossy(buf);
+        std::io::stdout()
+            .lock()
+            .write_all(sv_report::visible(&text).as_bytes())?;
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        std::io::stdout().lock().flush()
+    }
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
@@ -129,6 +192,7 @@ fn main() -> ExitCode {
                 ExitCode::from(FAILED)
             }
         },
+        Some("checkpoint") => ExitCode::from(run_checkpoint(&args[1..])),
         Some("proxy") => match parse_proxy(&args[1..]) {
             Ok((app, server)) => match proxy::run(&app, &server) {
                 Ok(code) => ExitCode::from(code),
@@ -177,6 +241,11 @@ struct Read {
     /// The hook record, when the person asked for it.
     hook: Option<sv_report::hook::HookSeen>,
     behavior: sv_report::tool_behavior::ToolBehavior,
+    /// How each record stands against the owner's checkpoints: `None` for a record this run did not read.
+    checkpoints: Vec<(
+        av_record::checkpoint::Kind,
+        Option<av_record::checkpoint::Standing>,
+    )>,
     /// All of it, under the design's six groups.
     groups: Vec<groups::Gathered>,
     not_looked_at: Vec<String>,
@@ -288,7 +357,31 @@ fn read(folder: &Path, with_hook: bool) -> Read {
         }
         _ => None,
     };
+    // What the owner signed for (ADR-159, decision 12). A record is set against its checkpoints only when this run
+    // may read it: the hook record when asked for, and the pass-through's not yet.
+    use sv_frameworks::paths::Canonical as _;
+    let real = folder.canonical().unwrap_or_else(|_| folder.to_path_buf());
+    let checker = sv_check::seal::Checker::for_app(&real);
+    let checkpoints: Vec<_> = av_record::checkpoint::Kind::ALL
+        .into_iter()
+        .map(|kind| {
+            let may_read = match kind {
+                av_record::checkpoint::Kind::BuildLoop => true,
+                av_record::checkpoint::Kind::Hook => with_hook,
+                av_record::checkpoint::Kind::Proxy => false,
+            };
+            (
+                kind,
+                may_read.then(|| av_record::checkpoint::standing(&real, kind, &checker)),
+            )
+        })
+        .collect();
+    let read_standings: Vec<_> = checkpoints
+        .iter()
+        .filter_map(|(kind, standing)| Some((*kind, standing.clone()?)))
+        .collect();
     let gathered = groups::gather(&groups::Read {
+        checkpoints: &read_standings,
         build_loop: &loop_seen,
         hook: hook.as_ref(),
         behavior: &behavior,
@@ -298,6 +391,7 @@ fn read(folder: &Path, with_hook: bool) -> Read {
     Read {
         envelope,
         held,
+        checkpoints,
         groups: gathered,
         build_loop: loop_seen,
         hook,
@@ -462,6 +556,65 @@ fn held_lines(held: &held::Held) -> Vec<String> {
     out
 }
 
+/// How each record stands against the owner's checkpoints, in the report's words.
+fn checkpoint_lines(
+    all: &[(
+        av_record::checkpoint::Kind,
+        Option<av_record::checkpoint::Standing>,
+    )],
+) -> Vec<String> {
+    use av_record::checkpoint::{Kind, Standing};
+    let mut out = vec![
+        "A checkpoint is your signature, made with `av checkpoint` at your own terminal, on where a record had got \
+         to. It shows a change to lines you signed for; it says nothing of lines written since."
+            .to_owned(),
+    ];
+    for (kind, standing) in all {
+        let lines = |n: &usize| match n {
+            1 => "its first line stands".to_owned(),
+            n => format!("its first {n} lines stand"),
+        };
+        out.push(match standing {
+            None => format!(
+                "{}: not read, so not set against a checkpoint{}.",
+                kind.said(),
+                match kind {
+                    Kind::Hook => "; it is read only when you ask, with --hook-record",
+                    _ => "; av report does not read it yet",
+                }
+            ),
+            Some(Standing::None) => format!(
+                "{}: no checkpoint. Every line rests on its chain alone, which a tool that runs as you could make \
+                 again.",
+                kind.said()
+            ),
+            Some(Standing::Kept { at, lines: n, signed }) => format!(
+                "{}: {} as you signed for them at {} ({}). Lines after them rest on the chain alone.",
+                kind.said(),
+                lines(n),
+                sv_report::one_line(at),
+                sv_report::one_line(signed)
+            ),
+            Some(Standing::NotKept { at, lines: n }) => format!(
+                "{}: CHANGED since your checkpoint of {}. Of the {} you signed for, some were changed or cut.",
+                kind.said(),
+                sv_report::one_line(at),
+                match n {
+                    1 => "1 line".to_owned(),
+                    n => format!("{n} lines"),
+                }
+            ),
+            Some(Standing::Unchecked { at, why }) => format!(
+                "{}: a checkpoint of {} is there and could not be taken as yours: {}. It is read as no checkpoint.",
+                kind.said(),
+                sv_report::one_line(at),
+                sv_report::one_line(why)
+            ),
+        });
+    }
+    out
+}
+
 /// The six groups, as the report's last table: how many lines each holds, the lines no section above has shown, and
 /// what the group could not show. An empty group always says why.
 fn group_lines(all: &[groups::Gathered]) -> Vec<String> {
@@ -568,6 +721,12 @@ fn print(read: &Read, folder: &Path) {
     }
 
     println!();
+    println!("What you signed for (checkpoints)");
+    for line in checkpoint_lines(&read.checkpoints) {
+        println!("  {line}");
+    }
+
+    println!();
     println!("By kind of thing");
     println!(
         "  The same lines under the six things av looks for. A line is for you to read, and an empty kind is not a \
@@ -611,6 +770,11 @@ fn json(read: &Read) -> serde_json::Value {
             "witness": witness::GIT,
             "seen": read.behavior,
         },
+        "checkpoints": read.checkpoints.iter().map(|(kind, standing)| serde_json::json!({
+            "record": kind,
+            "read": standing.is_some(),
+            "standing": standing,
+        })).collect::<Vec<_>>(),
         "groups": read.groups,
         "not_looked_at": read.not_looked_at,
     })

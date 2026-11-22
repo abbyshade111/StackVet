@@ -18,6 +18,9 @@ fn av(args: &[&str], state: &Path) -> (i32, String, String) {
     let out = Command::new(env!("CARGO_BIN_EXE_av"))
         .args(args)
         .env("XDG_STATE_HOME", state)
+        // And its keys: a test never reads, or trusts, this computer's own.
+        .env("XDG_CONFIG_HOME", state)
+        .env_remove("SV_TRUSTED_SEALS")
         .output()
         .expect("av runs");
     (
@@ -406,6 +409,84 @@ fn an_entry_a_tool_s_commit_wrote_in_the_owner_s_name_and_a_claim_the_record_con
         out.contains("Written in your name: 1 line"),
         "git needs no asking: {out}"
     );
+}
+
+#[test]
+fn a_record_stands_under_the_owner_s_checkpoint_until_it_is_rewritten_and_then_the_report_says_so()
+{
+    use av_record::checkpoint::{self, Head, Kind};
+    let app = folder("checkpointed");
+    let state = folder("checkpointed-state");
+    av_record::build_loop::record(&app, &check("2026-11-22T10:00:00Z", 2)).unwrap();
+    av_record::build_loop::record(&app, &check("2026-11-22T10:30:00Z", 1)).unwrap();
+
+    // With no checkpoint, the report says the record rests on its chain alone.
+    let (_, out, _) = av(&["report", app.to_str().unwrap()], &state);
+    assert!(
+        out.contains("the build-loop record: no checkpoint. Every line rests on its chain alone"),
+        "{out}"
+    );
+    assert!(
+        out.contains("the hook record: not read, so not set against a checkpoint"),
+        "{out}"
+    );
+
+    // The owner's checkpoint, made as `av checkpoint` makes it: signed with a key this computer trusts for the app.
+    let keys = state.join("stackvet");
+    let key = sv_check::signed::SigningKey::make_in(&keys, None).unwrap();
+    let id = sv_check::seal::App::of(&app).unwrap();
+    assert!(sv_check::signed::trust_here(&keys, &key, &id).unwrap());
+    let seen = av_record::build_loop::read(&app);
+    let head = Head {
+        lines: seen.chained,
+        chain: seen.chain_head.clone().expect("a chain"),
+    };
+    assert_eq!(head.lines, 2, "the setup: {seen:?}");
+    let fields = checkpoint::fields(Kind::BuildLoop, &head);
+    let fields: Vec<&str> = fields.iter().map(String::as_str).collect();
+    let name = av_record::plain::sha256(app.display().to_string().as_bytes());
+    av_record::hook_record::append(
+        &state.join("stackvet/checkpoints").join(format!("{}.jsonl", &name[..16])),
+        serde_json::json!({
+            "at": "2026-11-22T11:00:00Z", "record": "build-loop", "lines": head.lines, "head": head.chain,
+            "seal": key.for_app(&id).seal(&fields).unwrap(), "key": key.fingerprint(),
+        }),
+    )
+    .unwrap();
+
+    let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
+    assert_eq!(code, 0, "{out}{err}");
+    assert!(
+        out.contains("the build-loop record: its first 2 lines stand as you signed for them at 2026-11-22T11:00:00Z")
+            && out.contains("Lines after them rest on the chain alone."),
+        "{out}"
+    );
+    assert!(
+        !out.contains("no longer passes through your checkpoint"),
+        "{out}"
+    );
+
+    // The record replaced whole, with a chain of its own that checks out.
+    std::fs::remove_file(checkpoint::record_path(&app, Kind::BuildLoop).unwrap()).unwrap();
+    av_record::build_loop::record(&app, &check("2026-11-22T09:00:00Z", 0)).unwrap();
+    av_record::build_loop::record(&app, &check("2026-11-22T09:30:00Z", 0)).unwrap();
+    let again = av_record::build_loop::read(&app);
+    assert_eq!(
+        (again.chained, again.chain_broken_at),
+        (2, None),
+        "the setup: its own chain holds"
+    );
+    let (code, out, err) = av(&["report", app.to_str().unwrap()], &state);
+    assert_eq!(code, 0, "{out}{err}");
+    for said in [
+        "the build-loop record: CHANGED since your checkpoint of 2026-11-22T11:00:00Z.",
+        "the build-loop record no longer passes through your checkpoint of 2026-11-22T11:00:00Z",
+        "from your checkpoint",
+    ] {
+        assert!(out.contains(said), "missing {said:?}: {out}");
+    }
+    // The chain alone says nothing is wrong: that is what the checkpoint is for.
+    assert!(!out.contains("chain stops checking out"), "{out}");
 }
 
 /// The envelope the next tests hold a tool to: it may write `src/` and start `pytest` and `git`.

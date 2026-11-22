@@ -100,6 +100,8 @@ pub struct Read<'r> {
     pub held: Option<&'r Held>,
     /// The commits read, when git could say.
     pub commits: Option<&'r [Commit]>,
+    /// How each record that was read stands against the owner's checkpoints.
+    pub checkpoints: &'r [(crate::checkpoint::Kind, crate::checkpoint::Standing)],
 }
 
 /// The six groups, each with what was seen and what could not be.
@@ -302,6 +304,11 @@ fn oversight(read: &Read) -> (Vec<Line>, Vec<String>) {
             verdict: None,
         });
     }
+    for (kind, standing) in read.checkpoints {
+        if let crate::checkpoint::Standing::NotKept { at, lines: signed } = standing {
+            lines_changed(&mut lines, *kind, at, *signed);
+        }
+    }
     let mut not_shown = Vec::new();
     if read.held.is_none() {
         not_shown.push(
@@ -318,11 +325,30 @@ fn oversight(read: &Read) -> (Vec<Line>, Vec<String>) {
         );
     }
     not_shown.push(
-        "A record replaced whole, or a hook taken out so that nothing was written: a chain shows a change to what \
-         is there, not what was never written."
+        "A record replaced whole since your last checkpoint, or before you ever made one, and a hook taken out so \
+         that nothing was written: a chain shows a change to what is there, and only a checkpoint (`av checkpoint`) \
+         shows a record that was replaced."
             .to_owned(),
     );
     (lines, not_shown)
+}
+
+/// A record that no longer passes through a checkpoint the owner signed.
+fn lines_changed(lines: &mut Vec<Line>, kind: crate::checkpoint::Kind, at: &str, signed: usize) {
+    lines.push(Line {
+        what: format!(
+            "{} no longer passes through your checkpoint of {at}: of the {} you signed for, some were changed or \
+             cut since",
+            kind.said(),
+            match signed {
+                1 => "1 line".to_owned(),
+                n => format!("{n} lines"),
+            }
+        ),
+        place: "the record's own lines, against your checkpoint".to_owned(),
+        from: "your checkpoint",
+        verdict: None,
+    });
 }
 
 /// The files an owner's word is recorded in: `stackvet.toml` (and its old name), and the notes files.

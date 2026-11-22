@@ -1,5 +1,6 @@
 //! The plain helpers the records need and `sv` already had: a SHA-256, a time written out, a refusal of a link that
-//! says what to do instead, and making a folder below another one level at a time. Moved here from `sv-cli` word for
+//! says what to do instead, making a folder below another one level at a time, and hiding what is typed for a
+//! passphrase (`quiet`, moved on 21 November 2026 for `av checkpoint`). Moved here from `sv-cli` word for
 //! word on 21 November 2026 (backlog 0705, ADR-159), and `sv-cli` reads each under its old name, so there is one of
 //! each.
 
@@ -183,4 +184,47 @@ pub fn create_each(base: &Path, relative: &Path, made: &mut Vec<PathBuf>) -> Res
         }
     }
     Ok(here)
+}
+
+/// Turning off what the terminal shows while a passphrase is typed.
+#[cfg(unix)]
+pub mod quiet {
+    pub const CAN_HIDE: bool = true;
+    pub const CANNOT_HIDE: &str = "";
+
+    /// What the terminal shows is put back however this returns.
+    pub struct Shown(Option<libc::termios>);
+    impl Drop for Shown {
+        fn drop(&mut self) {
+            if let Some(was) = self.0 {
+                // SAFETY: `was` is the terminal's own settings, read below from the same descriptor.
+                unsafe { libc::tcsetattr(libc::STDIN_FILENO, libc::TCSANOW, &was) };
+            }
+        }
+    }
+
+    pub fn hide_typing() -> Shown {
+        let mut shown = Shown(None);
+        // SAFETY: a zeroed termios is only written into by `tcgetattr`, and used only if that succeeds.
+        let mut was: libc::termios = unsafe { std::mem::zeroed() };
+        if unsafe { libc::tcgetattr(libc::STDIN_FILENO, &mut was) } == 0 {
+            let mut quiet = was;
+            quiet.c_lflag &= !libc::ECHO;
+            // SAFETY: as above; `quiet` is the terminal's settings with echo turned off.
+            if unsafe { libc::tcsetattr(libc::STDIN_FILENO, libc::TCSANOW, &quiet) } == 0 {
+                shown.0 = Some(was);
+            }
+        }
+        shown
+    }
+}
+
+/// On Windows `sv` cannot yet ask the console to hide what is typed, so it says so instead of
+/// pretending (backlog 0120, step 2).
+#[cfg(not(unix))]
+pub mod quiet {
+    pub const CAN_HIDE: bool = false;
+    pub const CANNOT_HIDE: &str = "(What you type next will show on the screen: StackVet cannot hide it on \
+                                   this computer yet. Make sure nobody can see your screen.)";
+    pub fn hide_typing() {}
 }
