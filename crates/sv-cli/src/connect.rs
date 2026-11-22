@@ -392,8 +392,21 @@ pub fn where_it_goes(args: &[String]) -> String {
             )
         })
         .unwrap_or_default();
+    // The settings name the image with no tag (the owner's choice, 22 November 2026; backlog 0721, part 5): Docker
+    // then starts the newest one already on the computer, which can be older than the one that printed them.
+    let image = if args.iter().any(|a| a == "--docker") {
+        format!(
+            " These settings start {image} with no tag: the newest copy already on your computer, which Docker \
+             does not refresh by itself. Run `docker pull {image}` first, and again whenever you update, or the \
+             tool may start an older sv than the one that printed this ({}).",
+            crate::doctor::version_line(),
+            image = sv_frameworks::names::IMAGE,
+        )
+    } else {
+        String::new()
+    };
     let said = where_the_block_goes(args);
-    said + &notes
+    said + &image + &notes
 }
 
 /// The commands that make the folder of notes under `dir`, readable by the person alone.

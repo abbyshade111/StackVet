@@ -62,8 +62,16 @@ fn record(app: &Path, state: &Path) -> Vec<serde_json::Value> {
         .join(format!("{}.jsonl", &key[..16]));
     let text =
         std::fs::read_to_string(&path).unwrap_or_else(|why| panic!("{}: {why}", path.display()));
-    text.lines()
+    let lines: Vec<serde_json::Value> = text
+        .lines()
         .map(|l| serde_json::from_str(l).expect("a line of JSON"))
+        .collect();
+    // Each run of av proxy begins with the line that says it started (backlog 0721, part 1); the tests of what a
+    // call's line holds read the calls.
+    assert_eq!(lines[0]["event"], "started", "{lines:?}");
+    lines
+        .into_iter()
+        .filter(|l| l.get("event").is_none())
         .collect()
 }
 

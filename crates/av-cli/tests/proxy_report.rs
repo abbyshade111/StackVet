@@ -108,8 +108,9 @@ fn the_pass_through_s_record_is_read_only_when_asked_for() {
         "Not held to the task file",
         "1 call the server turned down was made again with the same arguments",
         "Trying again after a no: 1 line",
-        "delete_file was turned down by the server (refused) and called again with the same arguments once; the \
-         last was answered tool-error.",
+        "delete_file was turned down by the server (refused) and called again with the same arguments once in the \
+         same session; the last was answered tool-error.",
+        "before av proxy marked its starts (read as one session; it may be several): 3 calls",
         "the pass-through's record: no checkpoint.",
         // What no record can show is said whether or not the record was read.
         "A no you gave at your AI coding tool's own permission prompt",
@@ -216,4 +217,44 @@ fn help_asked_of_a_command_prints_the_help_and_succeeds() {
     let (code, out, _) = av(&["proxy", "--", "/nowhere/at/all/server", "--help"], &state);
     assert_ne!(code, 0);
     assert!(!out.contains("av proxy [--app <folder>] --"), "{out}");
+}
+
+#[test]
+fn two_sessions_are_counted_apart_and_a_no_from_the_first_is_not_a_retry_in_the_second() {
+    let (app, state) = (folder("sessions"), folder("sessions-state"));
+    let path = record_in(&state, &app);
+    let no = Some(Answer::ToolError);
+    append(
+        &path,
+        av_record::passthrough::started_line("2026-11-22T00:33:00Z"),
+    )
+    .unwrap();
+    write(&path, &[("stackvet_check", r#"{"path":"/home"}"#, no)]);
+    append(
+        &path,
+        av_record::passthrough::started_line("2026-11-22T02:04:00Z"),
+    )
+    .unwrap();
+    write(
+        &path,
+        &[
+            ("stackvet_check", "{}", Some(Answer::Ok)),
+            ("stackvet_check", r#"{"path":"/home"}"#, no),
+        ],
+    );
+    let (code, out, err) = av(&["report", app.to_str().unwrap(), "--proxy-record"], &state);
+    assert_eq!(code, 0, "{out}{err}");
+    for said in [
+        "3 calls written down",
+        "In 2 sessions, each one start of av proxy:",
+        "started 2026-11-22T00:33:00Z: 1 call, 0 answered, 1 turned down",
+        "started 2026-11-22T02:04:00Z: 2 calls, 1 answered, 1 turned down",
+        "the same call was made once in a later session, which may not have known of the no",
+    ] {
+        assert!(out.contains(said), "missing {said:?} in:\n{out}");
+    }
+    assert!(
+        !out.contains("in the same session;"),
+        "a later session's call was said to be made again after the no: {out}"
+    );
 }

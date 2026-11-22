@@ -126,3 +126,24 @@ fn notes_without_docker_or_without_a_folder_is_refused_with_the_reason() {
         assert!(err.contains(reason), "{args:?}: {err}");
     }
 }
+
+/// The settings name the image with no tag, so the line beside them says to pull it first, and which `sv` printed
+/// them (backlog 0721, part 5; the owner's choice, 22 November 2026).
+#[test]
+fn with_docker_the_line_beside_the_settings_says_to_pull_the_image_first() {
+    let dir = folder("pull");
+    let out = sv(
+        &dir,
+        &["connect", "claude", "--docker", "/usr/local/bin/docker"],
+    );
+    let err = String::from_utf8_lossy(&out.stderr).into_owned();
+    assert!(out.status.success(), "{err}");
+    let image = sv_frameworks::names::IMAGE;
+    assert!(
+        err.contains(&format!("Run `docker pull {image}` first")) && err.contains("(sv "),
+        "{err}"
+    );
+    // The settings themselves still name the image with no tag.
+    let block = String::from_utf8_lossy(&out.stdout).into_owned();
+    assert!(block.contains(&format!("\"{image}\"")), "{block}");
+}
