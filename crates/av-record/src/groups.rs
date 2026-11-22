@@ -543,20 +543,41 @@ fn again_after_no(read: &Read) -> (Vec<Line>, Vec<String>) {
         )),
         (Some(_), Some(p)) => {
             for again in &p.again {
+                // In the session that was told no, and in a later one, are two things: a later session may know
+                // nothing of the no (backlog 0721, part 1).
+                let same = match again.times {
+                    0 => String::new(),
+                    n => format!(
+                        " and called again with the same arguments {} in the same session; the last was answered {}",
+                        times(n),
+                        again.last_answer
+                    ),
+                };
+                let later = match again.later {
+                    0 => String::new(),
+                    n => format!(
+                        "{} the same call was made {} in a later session, which may not have known of the no",
+                        if same.is_empty() { " and" } else { ". Also," },
+                        times(n)
+                    ),
+                };
                 lines.push(Line {
                     what: format!(
-                        "{} was turned down by the server ({}) and called again with the same arguments {}; the \
-                         last was answered {}. It was given: {}",
-                        again.tool,
-                        again.answer,
-                        times(again.times),
-                        again.last_answer,
-                        again.summary
+                        "{} was turned down by the server ({}){same}{later}. It was given: {}",
+                        again.tool, again.answer, again.summary
                     ),
                     place: format!("first turned down at {}", again.at),
                     from: FROM_PROXY,
                     verdict: None,
                 });
+            }
+            if p.runs.iter().any(|r| r.started.is_none()) {
+                not_shown.push(
+                    "Which session each of the record's older calls came from: av proxy began marking its starts \
+                     on 22 November 2026, and calls written before that are read as one session, so a call made \
+                     again there may have been made in another."
+                        .to_owned(),
+                );
             }
             if p.again_more > 0 {
                 not_shown.push(format!("{} more such calls, not listed.", p.again_more));

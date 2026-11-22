@@ -160,6 +160,16 @@ pub fn line_of(at: &str, call: &Call, answer: Option<Answer>) -> Value {
     line
 }
 
+/// The line that says `av proxy` started, at `at` (backlog 0721, part 1): what follows it, up to the next such line,
+/// is one run of the pass-through, which is one session of the agent with the tool server. Without it, a report could
+/// not tell one session's calls from another's.
+pub fn started_line(at: &str) -> Value {
+    json!({ "at": at, "event": STARTED })
+}
+
+/// What a start line's `event` says.
+pub const STARTED: &str = "started";
+
 /// Appends `line` to the record at `path`, chained to the line before it, as the hook record's lines are.
 pub fn append(path: &Path, line: Value) -> anyhow::Result<()> {
     crate::hook_record::append(path, line)

@@ -13,6 +13,11 @@
 //!   the second. So the two are counted together as "turned down", and a `tool-error` may as well be a tool that
 //!   ran and failed, such as a test that did not pass. Making such a call again is often right.
 //!
+//! Calls are read by run (backlog 0721, part 1, from the owner's second trial): `av proxy` writes a line when it
+//! starts, and what follows it is one session of the agent. A call made again is listed as made again only within
+//! the run that turned it down; the same call in a later run is counted apart, since that session may know nothing of
+//! the no. Calls written before `av proxy` marked its starts are read as one run, and the report says so.
+//!
 //! The record is a file the tool could rewrite. Every word of it shown is the tool's text.
 
 use serde_json::Value;
@@ -42,10 +47,27 @@ pub struct Again {
     pub at: String,
     /// How it was turned down: `tool-error` or `refused`.
     pub answer: String,
-    /// How many times it was made again after that.
+    /// Which run of the pass-through it was turned down in, counted from 1 in the record's order.
+    pub run: usize,
+    /// How many times it was made again after that, in the same run.
     pub times: usize,
+    /// How many times the same call was made in a later run: another session, which may not know of the no.
+    pub later: usize,
     /// How the last of those was answered.
     pub last_answer: String,
+}
+
+/// One run of the pass-through: from one line that says `av proxy` started to the next. One session of the agent
+/// with the tool server.
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
+pub struct Run {
+    /// When `av proxy` started. `None` for calls written before any start line: a record from before `av proxy`
+    /// marked its starts (22 November 2026), read as one run because nothing tells its sessions apart.
+    pub started: Option<String>,
+    pub calls: usize,
+    pub ok: usize,
+    pub turned_down: usize,
+    pub unanswered: usize,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize)]
@@ -64,6 +86,8 @@ pub struct Seen {
     pub tool_error: usize,
     pub refused: usize,
     pub unanswered: usize,
+    /// The runs, oldest first. The counts above are of the whole record.
+    pub runs: Vec<Run>,
     /// By name, in order of name.
     pub tools: Vec<Tool>,
     /// Oldest first, at most `MOST_LINES`.
@@ -106,10 +130,12 @@ pub fn read(path: &Path, may_call: Option<&[String]>) -> Seen {
     }
     let mut previous = crate::hook_record::GENESIS.to_owned();
     let mut lines = 0;
-    // Each call turned down, by tool and fingerprint, as the place in `again` it would be listed at.
-    let mut noes: std::collections::HashMap<(String, String), Again> =
-        std::collections::HashMap::new();
-    let mut order: Vec<(String, String)> = Vec::new();
+    // Every call turned down, in the order met, and where to find one: within the run it was turned down in, and
+    // the first time the record holds it at all.
+    type Key = (String, String);
+    let mut noes: Vec<Again> = Vec::new();
+    let mut in_run: std::collections::HashMap<Key, usize> = std::collections::HashMap::new();
+    let mut first_no: std::collections::HashMap<Key, usize> = std::collections::HashMap::new();
     let mut tools: std::collections::BTreeMap<String, Tool> = std::collections::BTreeMap::new();
     for raw in String::from_utf8_lossy(&bytes).lines() {
         if raw.trim().is_empty() {
@@ -138,23 +164,50 @@ pub fn read(path: &Path, may_call: Option<&[String]>) -> Seen {
                 _ => seen.broken_at = Some(lines),
             }
         }
+        let at = value["at"].as_str().unwrap_or_default().to_owned();
+        if value["event"].as_str() == Some(crate::passthrough::STARTED) {
+            // A new run: a no in the run before is another session's.
+            seen.runs.push(Run {
+                started: Some(at),
+                ..Default::default()
+            });
+            in_run.clear();
+            continue;
+        }
         let (Some(tool), Some(answer)) = (value["tool"].as_str(), value["answer"].as_str()) else {
             continue;
         };
         // The file may not be the pass-through's own any more: nothing in it is taken at more than the length the
         // pass-through writes.
         let tool = sv_check::text::cut_with_count(tool, crate::passthrough::NAME_CHARS);
-        let at = value["at"].as_str().unwrap_or_default().to_owned();
         seen.calls += 1;
         if seen.first.is_none() {
             seen.first = Some(at.clone());
         }
         seen.last = Some(at.clone());
+        if seen.runs.is_empty() {
+            seen.runs.push(Run::default());
+        }
+        let number = seen.runs.len();
+        let run = &mut seen.runs[number - 1];
+        run.calls += 1;
         match answer {
-            "ok" => seen.ok += 1,
-            "tool-error" => seen.tool_error += 1,
-            "refused" => seen.refused += 1,
-            _ => seen.unanswered += 1,
+            "ok" => {
+                seen.ok += 1;
+                run.ok += 1;
+            }
+            "tool-error" => {
+                seen.tool_error += 1;
+                run.turned_down += 1;
+            }
+            "refused" => {
+                seen.refused += 1;
+                run.turned_down += 1;
+            }
+            _ => {
+                seen.unanswered += 1;
+                run.unanswered += 1;
+            }
         }
         let entry = tools.entry(tool.clone()).or_insert_with(|| Tool {
             name: tool.clone(),
@@ -170,35 +223,41 @@ pub fn read(path: &Path, may_call: Option<&[String]>) -> Seen {
             continue;
         };
         let key = (tool.clone(), print.to_owned());
-        match noes.get_mut(&key) {
-            Some(no) => {
-                no.times += 1;
-                no.last_answer = answer.to_owned();
+        // A call turned down in an earlier run and made in this one: counted apart, since this run's session may
+        // know nothing of that no.
+        if let Some(&earlier) = first_no.get(&key)
+            && noes[earlier].run != number
+        {
+            noes[earlier].later += 1;
+        }
+        match in_run.get(&key) {
+            Some(&no) => {
+                noes[no].times += 1;
+                noes[no].last_answer = answer.to_owned();
             }
             None if turned_down(answer) => {
-                order.push(key.clone());
-                noes.insert(
-                    key,
-                    Again {
-                        tool,
-                        summary: sv_check::text::cut_with_count(
-                            value["summary"].as_str().unwrap_or_default(),
-                            crate::passthrough::SUMMARY_CHARS,
-                        ),
-                        at,
-                        answer: answer.to_owned(),
-                        times: 0,
-                        last_answer: answer.to_owned(),
-                    },
-                );
+                noes.push(Again {
+                    tool,
+                    summary: sv_check::text::cut_with_count(
+                        value["summary"].as_str().unwrap_or_default(),
+                        crate::passthrough::SUMMARY_CHARS,
+                    ),
+                    at,
+                    answer: answer.to_owned(),
+                    run: number,
+                    times: 0,
+                    later: 0,
+                    last_answer: answer.to_owned(),
+                });
+                in_run.insert(key.clone(), noes.len() - 1);
+                first_no.entry(key).or_insert(noes.len() - 1);
             }
             None => {}
         }
     }
-    let mut again: Vec<Again> = order
+    let mut again: Vec<Again> = noes
         .into_iter()
-        .filter_map(|key| noes.remove(&key))
-        .filter(|no| no.times > 0)
+        .filter(|no| no.times > 0 || no.later > 0)
         .collect();
     seen.again_more = again.len().saturating_sub(MOST_LINES);
     again.truncate(MOST_LINES);

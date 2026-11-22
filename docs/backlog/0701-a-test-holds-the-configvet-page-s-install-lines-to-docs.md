@@ -1,6 +1,6 @@
 # A test holds the ConfigVet page's install lines to docs/INSTALL.md's
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). The ConfigVet page said
 "not packaged yet" after the tap had a head-only `cv` formula, and its install lines had to be rewritten by hand

@@ -1,6 +1,6 @@
 # A test holds the example report to the reports page's list of files and to the current release
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). The reports page's example
 report was made on 14 October by `sv` 0.1.0 and held 8 of the 14 files the page's table lists; nothing noticed until a

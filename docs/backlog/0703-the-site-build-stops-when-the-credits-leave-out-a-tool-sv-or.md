@@ -1,6 +1,6 @@
 # The site build stops when the credits leave out a tool sv or cv runs
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). The credits are written by
 hand in `docs/website/home-page.md`, so they drifted: they named CodeQL for three languages when `data/adapters.json`
