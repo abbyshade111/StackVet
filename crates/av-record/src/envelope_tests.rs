@@ -14,6 +14,7 @@ goal = "Add a sign-out link to the header."
 write = ["src/", "tests/", "README.md"]
 run = ["pytest", "npm"]
 reach = ["pypi.org"]
+call = ["stackvet_check"]
 
 [guards]
 files = ["deploy/", "AGENTS.md"]
@@ -57,8 +58,14 @@ fn a_line_left_out_is_a_question_and_never_a_yes_or_a_no() {
     let e = parse(LEAST).unwrap();
     // Nobody said what it may write: neither "anything" nor "nothing".
     assert_eq!(e.may_write("src/app.py"), None);
-    assert_eq!(e.questions().len(), 4, "{:?}", e.questions());
-    for asked in ["[may] write", "[may] run", "[may] reach", "ask-first"] {
+    assert_eq!(e.questions().len(), 5, "{:?}", e.questions());
+    for asked in [
+        "[may] write",
+        "[may] run",
+        "[may] reach",
+        "[may] call",
+        "ask-first",
+    ] {
         assert!(
             e.questions().iter().any(|q| q.contains(asked)),
             "no question about {asked}: {:?}",
@@ -68,7 +75,7 @@ fn a_line_left_out_is_a_question_and_never_a_yes_or_a_no() {
     // An empty list is an answer: nothing.
     let e = parse(&format!("{LEAST}[may]\nwrite = []\n")).unwrap();
     assert_eq!(e.may_write("src/app.py"), Some(false));
-    assert_eq!(e.questions().len(), 3);
+    assert_eq!(e.questions().len(), 4);
     // An empty list of its own unguards nothing.
     let e = parse(&format!("{LEAST}[guards]\nfiles = []\n")).unwrap();
     assert_eq!(e.guards().len(), DEFAULT_GUARDS.len());

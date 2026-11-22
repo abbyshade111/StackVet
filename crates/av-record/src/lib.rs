@@ -12,6 +12,8 @@
 //!   (backlog 0715).
 //! - `passthrough` (ADR-159, decision 10): the record of each call an agent made to a tool through `av proxy`.
 //!   New on 21 November 2026 (backlog 0716).
+//! - `proxy_seen` (ADR-159, decision 10): what that record holds, for a report. New on 22 November 2026 (backlog
+//!   0716, part 2).
 //! - `checkpoint` (ADR-159, decision 12): where the owner signed that each record's chain had got to. New on 22
 //!   November 2026 (backlog 0716).
 //! - `outside_note` (ADR-159, decision 12): where the build-loop record's chain had got to, noted outside the app's
@@ -33,6 +35,7 @@ pub mod hook_record;
 pub mod outside_note;
 pub mod passthrough;
 pub mod plain;
+pub mod proxy_seen;
 pub mod tool_behavior;
 
 #[cfg(test)]

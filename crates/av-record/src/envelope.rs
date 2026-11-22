@@ -11,6 +11,7 @@
 //! write = ["src/", "tests/"]        # a folder ends in a slash; anything else is one file
 //! run = ["pytest", "npm"]           # the programs it may start, by name
 //! reach = ["pypi.org"]              # the hosts it may connect to
+//! call = ["stackvet_check"]         # the tools it may call through `av proxy`, by the server's name for each
 //!
 //! [guards]
 //! files = ["deploy/", "Makefile"]   # what it may not change, added to the list av always guards
@@ -102,6 +103,9 @@ pub struct May {
     pub run: Option<Vec<String>>,
     /// Hosts it may connect to.
     pub reach: Option<Vec<String>>,
+    /// Tools it may call through the pass-through (`av proxy`), each by the name the tool server gives it, as
+    /// written: `stackvet_check`, not the longer name an AI coding tool may show for it.
+    pub call: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, serde::Serialize)]
@@ -188,6 +192,7 @@ pub fn parse(text: &str) -> Result<Envelope, String> {
     for (key, entries) in [
         ("[may] run", envelope.may.run.as_deref()),
         ("[may] reach", envelope.may.reach.as_deref()),
+        ("[may] call", envelope.may.call.as_deref()),
     ] {
         for entry in entries.unwrap_or_default() {
             if entry.is_empty() || entry.chars().any(|c| c.is_whitespace() || c.is_control()) {
@@ -290,6 +295,12 @@ impl Envelope {
         }
         if self.may.reach.is_none() {
             out.push("Which hosts may the tool connect to? ([may] reach is left out.)".to_owned());
+        }
+        if self.may.call.is_none() {
+            out.push(
+                "Which tools may the tool call through av proxy? ([may] call is left out.)"
+                    .to_owned(),
+            );
         }
         if self.ask_first.is_none() {
             out.push(format!(

@@ -318,7 +318,7 @@ fn the_task_envelope_is_said_with_what_it_leaves_unsaid_and_that_it_may_be_the_t
     );
     assert_eq!(
         report["envelope"]["questions"].as_array().map(Vec::len),
-        Some(2),
+        Some(3),
         "{report}"
     );
 }

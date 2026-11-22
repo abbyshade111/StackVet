@@ -15,6 +15,7 @@ fn nothing<'r>(build_loop: &'r BuildLoop, behavior: &'r ToolBehavior) -> Read<'r
         commits: None,
         checkpoints: &[],
         noted: &crate::outside_note::Standing::None,
+        proxy: None,
     }
 }
 
@@ -391,7 +392,7 @@ fn what_only_looks_like_the_owner_s_name_or_is_the_owner_s_own_commit_is_not_lis
 }
 
 #[test]
-fn trying_again_after_a_no_is_never_shown_and_always_says_why() {
+fn without_the_pass_through_s_record_trying_again_after_a_no_is_not_shown_and_says_why() {
     let t = ToolBehavior::default();
     let b = BuildLoop {
         refused: 3,
@@ -400,10 +401,11 @@ fn trying_again_after_a_no_is_never_shown_and_always_says_why() {
     let all = gather(&nothing(&b, &t));
     let again = group(&all, Group::AgainAfterNo);
     assert_eq!(again.lines, Vec::<Line>::new());
-    assert!(again.not_shown[0].contains("no record read here shows what the tool was refused"));
+    assert_eq!(again.not_shown[0], NO_AT_THE_PROMPT);
+    assert!(again.not_shown[1].contains("read only when you ask, with --proxy-record"));
     // What sv itself refused is said for what it is: not a no from the owner, and not a line.
     assert!(
-        again.not_shown[1].contains("sv itself refused 3 calls")
-            && again.not_shown[1].contains("not a no from you")
+        again.not_shown[2].contains("sv itself refused 3 calls")
+            && again.not_shown[2].contains("not a no from you")
     );
 }
