@@ -1,6 +1,6 @@
 # The self-assessment on stackvet.dev is made again by the current `sv`
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 22 November 2026, at the owner's word. "StackVet checks itself" shows a summary of `sv`'s report on this
 repository, made on 26 October 2026 by `sv` 0.1.0. The workspace is 0.3.0, so `tools/website.py` warns that it is
