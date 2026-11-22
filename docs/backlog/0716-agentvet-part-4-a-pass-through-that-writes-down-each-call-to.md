@@ -31,4 +31,4 @@ when.
    made and which rest on the chain alone. Said plainly wherever it applies: a tool that runs as the owner can read
    the chain's key, so the key stops a rewrite by something that cannot, and a checkpoint is what shows a rewrite of
    lines the owner already signed for. Waits on the owner's answers about the key.
-   **Part status:** open
+   **Part status:** partly done: the chain's own key, so a rewrite by something that cannot read the owner's files shows; the checkpoints are built

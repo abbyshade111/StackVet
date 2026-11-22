@@ -13,6 +13,7 @@ fn nothing<'r>(build_loop: &'r BuildLoop, behavior: &'r ToolBehavior) -> Read<'r
         behavior,
         held: None,
         commits: None,
+        checkpoints: &[],
     }
 }
 
@@ -228,6 +229,46 @@ fn a_record_whose_chain_is_broken_or_that_was_turned_off_is_a_change_to_what_wat
         ..nothing(&whole, &t)
     });
     assert_eq!(group(&all, Group::Oversight).lines, Vec::<Line>::new());
+}
+
+#[test]
+fn a_record_that_no_longer_passes_through_the_owner_s_checkpoint_is_listed_and_one_that_does_is_not()
+ {
+    use crate::checkpoint::{Kind as Record, Standing};
+    let (b, t) = (BuildLoop::default(), ToolBehavior::default());
+    let standings = [
+        (
+            Record::BuildLoop,
+            Standing::NotKept {
+                at: "T1".to_owned(),
+                lines: 12,
+            },
+        ),
+        (
+            Record::Hook,
+            Standing::Kept {
+                at: "T1".to_owned(),
+                lines: 3,
+                signed: "signed".to_owned(),
+            },
+        ),
+        (Record::Proxy, Standing::None),
+    ];
+    let all = gather(&Read {
+        checkpoints: &standings,
+        ..nothing(&b, &t)
+    });
+    let lines = &group(&all, Group::Oversight).lines;
+    assert_eq!(lines.len(), 1, "{lines:?}");
+    assert!(
+        lines[0]
+            .what
+            .starts_with("the build-loop record no longer passes through your checkpoint of T1")
+            && lines[0].what.contains("12 lines")
+            && lines[0].from == "your checkpoint",
+        "{:?}",
+        lines[0]
+    );
 }
 
 #[test]
