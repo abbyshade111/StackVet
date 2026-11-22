@@ -35,10 +35,13 @@ v0.3.1, with a zip of its own.
 3. **Homebrew: `Formula/av.rb` in the tap,** head-only first with an install job of its own on a Mac and on Linux,
    then the release's source archive once it is tagged. The tap's ruleset and `.github/rulesets.json` name the
    install jobs, so they change with it, at the owner's word (backlog 0690). Another repository: a Mac session.
-   **Part status:** open
+   The owner's word, 22 November 2026 ("Yes, add them"): `av`'s install jobs are added to the tap's ruleset and
+   `.github/rulesets.json`, the owner applying the ruleset change. Built after v0.3.1 is tagged, with `sv.rb` and
+   `cv.rb` moved to 0.3.1 beside it.
+   **Part status:** claimed by Claude Code session (packaging and ConfigVet), 22 November 2026
 4. **Scoop: `bucket/av.json` in the bucket,** after the release is published, with the zip's SHA-256 checked against
    a fresh download. Another repository: a Mac session.
-   **Part status:** open
+   **Part status:** claimed by Claude Code session (packaging and ConfigVet), 22 November 2026
 5. **`docs/INSTALL.md` gains `av`'s section** once each package works, with what the hook and the pass-through need:
    the hook `sv connect claude --hook` prints runs a copy of `sv` installed on the computer, not the container's
    (ADR-122), which the owner's trial met.
