@@ -1,6 +1,6 @@
 # From the second trial of AgentVet: a retry is paired across sessions, latest lags a merge, and three smaller things
 
-**Status:** partly done: part 4 is open, for a session on the owner's Mac or the owner (the workflow is a code-owned file)
+**Status:** done, 21 November 2026
 
 From the owner's second trial of AgentVet on their own computer, 21 November 2026 (ADR-159, "As built", parts 9 and
 10; backlog 0716). All five things tried passed: `av proxy --help`; `sv` in its container wrote a note outside the
@@ -30,7 +30,10 @@ the owner at a terminal, signed two records, which the next report said stand as
    publishes; the cost is that "merged and green" does not yet mean "`latest` has it". Worth a look at whether the
    newer run could be slow or skip the image (a pull request that changes only the backlog), which would leave
    `latest` behind for longer. The workflow is a code-owned file: for a session on the owner's Mac, or the owner.
-   **Part status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+   **Part status:** done, 22 November 2026. Measured on the 25 runs before: about 10 minutes alone, 33 at most in a burst, none
+   stalled; a failed last run was the one way to a long stall. `latest` now names the newest image published from
+   `main`, moved after signing, so a late run never moves it back and a failed newest run no longer strands it (ADR-080,
+   Later, 22 November 2026; `crates/sv-cli/tests/latest_newest_published.rs`).
 5. **`sv connect` prints the image with no tag, even when it was run from a tagged image.** Where the computer's
    `latest` is older than the image that printed the settings, the settings start an older `sv` than the one that
    wrote them; in the trial that would have dropped the `--notes` mount's use without a word. Whether `sv connect`
