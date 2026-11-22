@@ -405,8 +405,22 @@ pub fn where_it_goes(args: &[String]) -> String {
         String::new()
     };
     let said = where_the_block_goes(args);
-    said + &image + &notes
+    let not_kept = if args.iter().any(|a| a == "--docker") {
+        format!(" {NOT_KEPT_IN_A_CONTAINER}")
+    } else {
+        String::new()
+    };
+    said + &image + &not_kept + &notes
 }
+
+/// What `sv` in its container does not carry from one session to the next, said beside the settings that start it
+/// that way (backlog 0729; design entry 0398, recommendation 2). The container is started with `--rm`, and is given
+/// only the app's folder and what `--keys` and `--notes` mount. Said, and nothing more is mounted for it.
+pub const NOT_KEPT_IN_A_CONTAINER: &str = "Two things do not carry over when sv runs this way, because each session \
+     starts a fresh container that sees only your app's folder: history is not kept for runs made in the container, \
+     even if you turned history on; and a report the container wrote in an earlier session is not offered again as \
+     one sv wrote, so your AI coding tool asks for a new report each session. The report's files stay in your app's \
+     folder either way.";
 
 /// The commands that make the folder of notes under `dir`, readable by the person alone.
 fn make_notes(dir: &str) -> String {
