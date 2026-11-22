@@ -81,12 +81,6 @@ docker run --rm --network none -v "$PWD":"$PWD" -w "$PWD" ghcr.io/abbyshade111/s
 It prints the settings and the name of the file they go in, and writes nothing. On Linux, add
 `--user "$(id -u):$(id -g)"` at the end.
 
-Beside the settings it also says two things that do not carry over when StackVet runs through Docker, because each
-session starts a fresh container that sees only your app's folder: history is not kept for runs made in the container,
-even if you turned history on; and a report the container wrote in an earlier session is not offered again as one
-StackVet wrote, so your AI coding tool asks for a new report each session. The report's files stay in your app's
-folder either way.
-
 **On Windows, the Docker settings do not work yet:** `sv connect --docker` takes only a Mac or Linux path for
 Docker. Install StackVet with Scoop instead ("On Windows: Scoop", in section 6), and in the app's folder, in
 PowerShell, run `stackvet connect claude` (or `vscode`, or `cursor`). Its settings start the installed copy, without

@@ -191,11 +191,12 @@ fn without_docker_nothing_is_said_of_a_container() {
     }
 }
 
-/// The guide shows this output's sense in its own words; both sentences are there too.
+/// The install guide says the same two things in its own words. (The getting-started guide has a budget of words,
+/// which this would have passed: ADR-120.)
 #[test]
-fn the_guide_says_the_same_two_things() {
+fn the_install_guide_says_the_same_two_things() {
     let guide = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/GETTING-STARTED.md"),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/INSTALL.md"),
     )
     .unwrap();
     let one_line = guide.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -205,7 +206,7 @@ fn the_guide_says_the_same_two_things() {
     ] {
         assert!(
             one_line.contains(said),
-            "docs/GETTING-STARTED.md does not say: {said}"
+            "docs/INSTALL.md does not say: {said}"
         );
     }
 }

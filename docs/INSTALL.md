@@ -155,6 +155,14 @@ sv report /Users/you/code/my-app --run
 To update StackVet later: `cd ~/stackvet`, then `git pull`, then `sh tools/install.sh` again. It
 replaces the program and its files together.
 
+### What StackVet in Docker does not keep between sessions
+
+When your AI tool uses StackVet through Docker, each session starts a fresh container that sees only your app's
+folder. Two things do not carry over, and `sv connect --docker` says so beside the settings it prints: history is not
+kept for runs made in the container, even if you turned history on; and a report the container wrote in an earlier
+session is not offered again as one StackVet wrote, so your AI coding tool asks for a new report each session. The
+report's files stay in your app's folder either way. A copy installed on your computer, as above, keeps both.
+
 ## ConfigVet (`cv`), StackVet's companion for deployment files
 
 ConfigVet's `cv` reads an app's Dockerfiles, compose files, Kubernetes manifests, and Terraform plans, and says for
