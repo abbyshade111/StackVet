@@ -4,6 +4,8 @@
 //!
 //! - `build_loop` (ADR-076): one line for each call the tool made to `sv`'s MCP server.
 //! - `hook_record` (ADR-122): one line for each command the tool ran and each file it wrote, kept by a hook.
+//! - `asked` (ADR-159, part 12; backlog 0718): what the hook record shows of the permissions a person was asked for,
+//!   and which were not followed by the tool running. New on 22 November 2026.
 //! - `envelope` (ADR-159, decision 8): the task envelope, `agentvet.toml`, read and never judged here. New on 21
 //!   November 2026 (backlog 0715), not moved from anywhere.
 //! - `held` (ADR-159, decision 8): what the records show a tool did, set against the envelope. New on 21 November
@@ -26,6 +28,7 @@
 //!
 //! Nothing here prints, and nothing here opens a network connection.
 
+pub mod asked;
 pub mod build_loop;
 pub mod checkpoint;
 pub mod envelope;
@@ -46,6 +49,8 @@ mod tool_behavior_tests;
 #[cfg(test)]
 mod hook_record_tests;
 
+#[cfg(test)]
+mod hook_record_asked_tests;
 #[cfg(test)]
 mod hook_record_claims_tests;
 #[cfg(test)]

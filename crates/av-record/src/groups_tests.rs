@@ -16,6 +16,7 @@ fn nothing<'r>(build_loop: &'r BuildLoop, behavior: &'r ToolBehavior) -> Read<'r
         checkpoints: &[],
         noted: &crate::outside_note::Standing::None,
         proxy: None,
+        asked: None,
     }
 }
 
@@ -402,10 +403,11 @@ fn without_the_pass_through_s_record_trying_again_after_a_no_is_not_shown_and_sa
     let again = group(&all, Group::AgainAfterNo);
     assert_eq!(again.lines, Vec::<Line>::new());
     assert_eq!(again.not_shown[0], NO_AT_THE_PROMPT);
-    assert!(again.not_shown[1].contains("read only when you ask, with --proxy-record"));
+    assert!(again.not_shown[1].contains("read only when you ask, with --hook-record"));
+    assert!(again.not_shown[2].contains("read only when you ask, with --proxy-record"));
     // What sv itself refused is said for what it is: not a no from the owner, and not a line.
     assert!(
-        again.not_shown[2].contains("sv itself refused 3 calls")
-            && again.not_shown[2].contains("not a no from you")
+        again.not_shown[3].contains("sv itself refused 3 calls")
+            && again.not_shown[3].contains("not a no from you")
     );
 }

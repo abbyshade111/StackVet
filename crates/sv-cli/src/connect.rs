@@ -219,7 +219,9 @@ pub const NOTES_DIR: &str = "loop-notes";
 
 /// The hooks block that keeps the hook record for the app in `folder` (backlog 0566, ADR-122): Claude Code's, for the
 /// person to add to its settings. Each runs `program hook-record --app folder` after a command or file write, whether it
-/// finished or failed, and at the end of each turn.
+/// finished or failed, and at the end of each turn. Since backlog 0718 it also runs when Claude Code is about to ask
+/// the person's permission for any tool, and after any tool: `sv hook-record` keeps a line for the asking, and for a
+/// tool with no line of its own only when it ran after an asking, so the record can show "asked, and did not run".
 pub fn hook_block(program: &Path, folder: &Path) -> Value {
     let command = format!(
         "{} hook-record --app {}",
@@ -227,11 +229,12 @@ pub fn hook_block(program: &Path, folder: &Path) -> Value {
         shell_word(&folder.display().to_string())
     );
     let hooks = json!([{ "type": "command", "command": command }]);
-    let matcher = format!("^({})$", crate::hook_record::TOOLS.join("|"));
+    // No matcher: every tool. Which lines are kept is `sv hook-record`'s to decide, not the matcher's.
     json!({
         "hooks": {
-            "PostToolUse": [{ "matcher": matcher, "hooks": hooks }],
-            "PostToolUseFailure": [{ "matcher": matcher, "hooks": hooks }],
+            av_record::hook_record::ASKS: [{ "hooks": hooks }],
+            "PostToolUse": [{ "hooks": hooks }],
+            "PostToolUseFailure": [{ "hooks": hooks }],
             "Stop": [{ "hooks": hooks }],
         }
     })
@@ -373,9 +376,11 @@ fn hook_for(tool: Option<Tool>, docker: bool, folder: &Path) -> Result<String> {
 pub fn where_it_goes(args: &[String]) -> String {
     if args.iter().any(|a| a == "--hook") {
         return "Add this to .claude/settings.local.json in the app's folder, under \"hooks\" with any hooks already \
-                there, then restart Claude Code. It runs sv after each command Claude Code runs and each file it \
-                writes, and records what it did outside this folder (no file contents, output, or prompts). Nothing \
-                reads that record unless you run `sv report --hook-record`."
+                there, then restart Claude Code. It runs sv after each tool Claude Code uses and each time it is \
+                about to ask your permission, and records outside this folder each command it ran, each file it \
+                wrote, and each thing it asked your permission for, with whether that then ran (no file contents, \
+                output, or prompts; what a tool was to be given is cut short, with any key cut out). Nothing reads \
+                that record unless you run `sv report --hook-record` or `av report --hook-record`."
             .to_owned();
     }
     let notes = args
