@@ -1,6 +1,6 @@
 # ConfigVet part 4, second provider: cv live cloudflare reads a zone's settings with a read-only token
 
-**Status:** partly done: the try on stackvet.dev's zone with a read-only token the owner makes, and then the ConfigVet page on stackvet.dev
+**Status:** done, 22 November 2026
 
 Filed 22 November 2026, at the owner's word ("Yes, file Cloudflare"). The second half of part 4 of ADR-157's build
 order (the design entry `docs/design/0396-configvet-a-companion-for-an-app-s-deployment-configuration.md`, "Proposed
@@ -51,3 +51,10 @@ on ADR-157,** as 0717 did for GitHub.
 
 **Records:** ADR-157, Later entries for the three answers and for "As built" part 4, Cloudflare. The token's handling
 and the request list are its point 5; any change to either is a decision of its own.
+
+**Built, 22 November 2026,** in the pull request that closes this in part: `cv live cloudflare <zone>` (ADR-157, "As
+built, part 4, Cloudflare"). **Tried the same day on stackvet.dev** with the owner's read-only token (Zone Read, Zone
+Settings Read, Cache Rules Read): ten requests, all answered. Two readings were corrected by what the site really sends
+(the SSL/TLS mode where a Worker serves the zone; Cloudflare's HSTS off where the site sends its own header); the lowest
+TLS version and Always Use HTTPS were real findings, which the owner changed in Cloudflare, and the next reading
+credited both. The stackvet.dev ConfigVet page says Cloudflare is here.

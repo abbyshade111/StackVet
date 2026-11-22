@@ -11,6 +11,12 @@ use sv_core::{Confidence, Finding, Location, Severity, Verified};
 /// HSTS's shortest max-age V3.4.1 accepts: one year, in seconds.
 pub const ONE_YEAR: u64 = 31_536_000;
 
+/// What the SSL/TLS mode's finding depends on, said with each one (the try on stackvet.dev, 22 November 2026, a zone
+/// served by a Worker alone, where the mode guards no connection at all).
+pub const ORIGIN_CAVEAT: &str = " The mode guards only the connection to a server of the app that a proxied DNS record \
+     sends requests on to; cv does not read the DNS records, so a zone served by Cloudflare Workers alone, which has no \
+     such server, is reported the same.";
+
 pub const ORIGIN_UNENCRYPTED: Rule = Rule {
     id: "cv.cloudflare-origin-unencrypted",
     setting: "ssl",
@@ -93,11 +99,11 @@ pub const HSTS: Rule = Rule {
     requirement_ids: &["V3.4.1"],
     cwe: &["CWE-319"],
     severity: Severity::Medium,
-    title: "HSTS is off or too short",
-    impact: "Browsers are not told to use HTTPS only, or are told for less than a year, so a visitor's first request \
-             after that can be made over plain HTTP and taken over.",
-    fix: "Turn on HSTS with a max-age of at least 12 months (SSL/TLS, Edge Certificates, HTTP Strict Transport \
-          Security), once every subdomain it covers serves HTTPS.",
+    title: "Cloudflare's HSTS is too short",
+    impact: "Browsers are told to use HTTPS only for less than a year, so a visitor who returns after that can make a \
+             first request over plain HTTP, which can be taken over.",
+    fix: "Set HSTS's max-age to at least 12 months (SSL/TLS, Edge Certificates, HTTP Strict Transport Security), once \
+          every subdomain it covers serves HTTPS.",
     scope: "The HSTS header Cloudflare adds for",
 };
 
@@ -212,7 +218,7 @@ pub fn judge(reading: &Reading) -> Evidence {
                 &ORIGIN_UNENCRYPTED,
                 place(reading, "SSL/TLS"),
                 format!(
-                    "The SSL/TLS mode of {zone} is {}, so Cloudflare connects to the app's server over plain HTTP{automatic}.",
+                    "The SSL/TLS mode of {zone} is {}, so Cloudflare connects to the app's server over plain HTTP{automatic}.{ORIGIN_CAVEAT}",
                     if mode == "off" { "Off" } else { "Flexible" }
                 ),
             ));
@@ -230,7 +236,7 @@ pub fn judge(reading: &Reading) -> Evidence {
                 place(reading, "SSL/TLS"),
                 format!(
                     "The SSL/TLS mode of {zone} is Full: Cloudflare encrypts its connection to the app's server but \
-                     does not check its certificate{automatic}."
+                     does not check its certificate{automatic}.{ORIGIN_CAVEAT}"
                 ),
             ));
         }
@@ -338,10 +344,14 @@ pub fn judge(reading: &Reading) -> Evidence {
             let subdomains = hsts["include_subdomains"].as_bool();
             let preload = hsts["preload"].as_bool() == Some(true);
             match (enabled, max_age) {
-                (Some(false), _) => out.findings.push(found(
+                // Cloudflare's own HSTS off means only that Cloudflare does not add the header: the app may send it
+                // itself, as stackvet.dev does from its own files (the try of 22 November 2026). Whether responses
+                // carry it is `sv probe`'s to see, or a join between the files and the account (backlog 0733).
+                (Some(false), _) => out.not_assessed.push(unknown(
                     rule,
-                    place(reading, "Edge Certificates"),
-                    format!("HSTS is off for {zone}."),
+                    zone,
+                    "Cloudflare's own HSTS setting is off, so Cloudflare does not add the header; whether the app sends \
+                     it itself is not read here",
                 )),
                 (Some(true), Some(age)) if age < ONE_YEAR => out.findings.push(found(
                     rule,

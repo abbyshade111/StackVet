@@ -7,7 +7,7 @@ the home page, read by the owner before it merges. Every claim comes from ADR-15
 "As built" parts 1 to 4, and its Later entries), the design entry
 `docs/design/0396-configvet-a-companion-for-an-app-s-deployment-configuration.md`, `cv`'s usage text in
 `crates/cv-cli/src/main.rs` and `crates/cv-cli/src/live.rs`, each tool's `note` in `data/cv-adapters.json`, and
-`docs/INSTALL.md`'s section on `cv live github`; the notes say which. ADR-157's
+`docs/INSTALL.md`'s sections on `cv live github` and `cv live cloudflare`; the notes say which. ADR-157's
 decision 7 lets ConfigVet's pages use the field's own terms; this page still explains the few that are StackVet's
 own. **Nothing here is live** until the owner publishes the site.
 
@@ -20,16 +20,18 @@ running app. ConfigVet reads the layer between them: the files that say how the 
 that matters, it says whether the setting is safe, unsafe, or something it could not establish, and it never counts
 what it could not establish as a pass.
 
-**This is a preview.** ConfigVet has four rules of its own for deployment files, reads one GitHub repository's
-settings only when you ask it to, and writes its results as one `report.json`, without the report pages StackVet has.
+**This is a preview.** ConfigVet has four rules of its own for deployment files, reads one GitHub repository's or
+one Cloudflare zone's settings only when you ask it to, and writes its results as one `report.json`, without the
+report pages StackVet has.
 
 ```
 cv check <folder> [--out <folder>] [--fail-on attention|not-assessed] [--no-tools]
 cv live github <owner>/<repo> [--out <folder>] [--fail-on attention|not-assessed]
+cv live cloudflare <zone> [--out <folder>] [--fail-on attention|not-assessed]
 ```
 
-- ADR-157, decisions 1 and 7, and "As built" parts 1 to 4 (backlogs 0686, 0687, 0693, and 0717, 20 and 21 November
-  2026). The command lines are the usage text in `crates/cv-cli/src/main.rs`. "Four rules of its own" are
+- ADR-157, decisions 1 and 7, and "As built" parts 1 to 4 (backlogs 0686, 0687, 0693, 0717, and 0732, 20 to 22
+  November 2026). The command lines are the usage text in `crates/cv-cli/src/main.rs`. "Four rules of its own" are
   `cv.express-node-env`, `cv.django-session-cookie-secure`, `cv.django-csrf-cookie-secure`, and `cv.container-root`.
   "Report pages, SARIF, the seal, and the OSCAL export" wait for a later part (part 2's owner's choice).
 
@@ -129,12 +131,12 @@ requirement attached.
   DS-0002 and KSV-0012 (`also_reported_by`). The secret rules: hadolint DL3064 and Trivy DS-0031. With
   `--fail-on not-assessed`, a tool that did not run, or ran in part, exits 2.
 
-## Files, and one live account: GitHub
+## Files, and live accounts: GitHub and Cloudflare
 
 **Checking files and reading a live account are kept apart.**
 
 - **`cv check` reads the folder you give it.** Reading a live account is never part of a check: it is
-  `cv live github`, a command of its own, which you ask for by name.
+  `cv live github` or `cv live cloudflare`, a command of its own, which you ask for by name.
 - **It never writes over your files.** It writes one file, `report.json`, into `--out`, by default
   `<folder>/cv-report`, and refuses a folder that holds anything else.
 - **Its exit codes are StackVet's,** so a pipeline can stop on them: 0 when the run finished; 1 only with
@@ -165,21 +167,41 @@ setting's value, never the behavior the setting is meant to cause. What GitHub d
 assessed*, never a pass. Where the files and the account disagree, that will be drift, a finding of its own: the files
 are what someone intended, and the account is what is running.
 
-Cloudflare's settings come next: SSL mode, the lowest TLS version accepted, HSTS, and redirecting to HTTPS, the
-settings that sit between the visitor and the app. Drift comes after that.
+**Reading a Cloudflare zone's settings, behind the same rules.** `cv live cloudflare <zone>` reads the settings that
+sit between the visitor and the app: the SSL/TLS mode (the connection from Cloudflare to the app's server), the lowest
+TLS version accepted, TLS 1.3, Always Use HTTPS, HSTS, Automatic HTTPS Rewrites, and the cache rules, with ten
+requests, every one a `GET` to `api.cloudflare.com`. What differs from GitHub:
+
+- **The token comes from `CLOUDFLARE_API_TOKEN` alone.** A Global API Key and the token `wrangler login` keeps can
+  change the whole account, so either is refused before anything is sent, and the token must be active.
+- **Read only, as far as Cloudflare lets it be told.** Cloudflare shows a token its own permissions only if it may
+  read every API token on the account, which ConfigVet doesn't ask for, so the report says, before any finding, that it
+  could not confirm the token is read-only. Make it with Zone Read, Zone Settings Read, and Cache Rules Read, for the
+  one zone, and nothing else.
+- **A setting's value, said with what it depends on.** The SSL/TLS mode guards only a connection to a server behind
+  Cloudflare, which ConfigVet can't see without the DNS records, so its finding says so; Cloudflare's own HSTS being
+  off is *not assessed*, since the app may send the header itself. The cache rules are listed, never credited.
+
+It was tried first on stackvet.dev, this site's own zone, with a read-only token: two of its findings were real (TLS
+1.0 accepted, and plain HTTP not redirected), both were changed in Cloudflare, and the next reading credited both.
+Drift, where the files and the account disagree, comes next.
 
 - ADR-157, decision 5 (the live fence), decision 6 and the owner's answers (credit), and the design entry's
   "Proposed order of the build", step 4 (GitHub first, its fine-grained tokens can be made read-only). Cloudflare
   second is the owner's answer of 20 November 2026; stackvet.dev itself is hosted there, so the first client can be
   tried on an account the project owns. Vercel comes later: its tokens can't be limited to reading, and its API can
   return environment variables' values.
+- `cv live cloudflare` is ADR-157's "As built, part 4, Cloudflare" (backlog 0732); its three questions, the owner's
+  choice not to ask for API Tokens Read, and what each setting counts as are its Later entry of 22 November 2026. The
+  try on stackvet.dev, the two readings it corrected, and the two settings the owner then changed are in "As built";
+  the permissions are `docs/INSTALL.md`'s. Reading the DNS records is backlog 0739, the owner's choice first.
 - `cv live github` is ADR-157's "As built, part 4" (backlog 0717), and what it reads, what each setting counts as, and
   why a fine-grained token cannot be confirmed read-only are its Later entry of 21 November 2026. "Administration and
   Actions, read-only" is what each endpoint was found to need with a read-only token on this repository the same day;
   `docs/INSTALL.md` says how to make one. "Before any finding" is decision 5's "where a provider cannot say".
 - The page makes no claim that `cv` opens no network connection: `cv check` opens none (ADR-157, "As built", part 2),
-  and `cv live github` opens connections to `api.github.com` only (part 4), as `docs/ARCHITECTURE.md`, "The fence",
-  says. "Never part of a check" is decision 5's "never from a report run".
+  and `cv live github` and `cv live cloudflare` open connections to `api.github.com` and `api.cloudflare.com` only
+  (part 4), as `docs/ARCHITECTURE.md`, "The fence", says. "Never part of a check" is decision 5's "never from a report run".
 
 ## How it relates to StackVet
 
@@ -193,9 +215,8 @@ failure.
 - **One rule has one home.** A check StackVet already makes stays in StackVet. StackVet already reports a
   Dockerfile's final stage setting `NODE_ENV` to `development`; ConfigVet lists that value as set unsafe and leaves
   the finding to StackVet, naming its rule.
-- **StackVet's own network fence doesn't change.** StackVet gains no connection from ConfigVet. When the live
-  readers are built, they go in a part of the code StackVet's program doesn't include, and a test will fail if it
-  ever does.
+- **StackVet's own network fence doesn't change.** StackVet gains no connection from ConfigVet. The live readers
+  are in a part of the code StackVet's program doesn't include, and a test fails if it ever does.
 - **Two programs, installed separately.** `sv` and `cv` come from one release, with one version number, as two
   packages, since v0.3.0. Installing StackVet never brings a program that can reach a live account.
 
@@ -214,9 +235,9 @@ field's own terms.
 
 - **No report pages yet:** the results are on the terminal and in `report.json`. The pages, SARIF, the seal, and the
   OSCAL export come in a later part.
-- **No live accounts, drift, or joins between layers yet,** such as an app that trusts a proxy header with no proxy in
-  front of it, or Cloudflare's SSL mode leaving the hop to the origin unencrypted while the app's HSTS header promises
-  otherwise. Those need a second source to compare, so they come after the first live provider.
+- **No drift or joins between layers yet,** such as an app that trusts a proxy header with no proxy in front of it,
+  or Cloudflare's SSL mode leaving the hop to the origin unencrypted while the app's HSTS header promises otherwise.
+  With two live providers built, they come next.
 - **Not yet tried with the outside tools:** kube-linter isn't run, and no Terraform plan has been tried through
   Checkov or Trivy yet, though Checkov is handed the plans `cv` read, and Trivy the whole folder.
 
