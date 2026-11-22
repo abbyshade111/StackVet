@@ -1,6 +1,6 @@
 # Homebrew's tap: a complete install is sometimes called an "Empty installation"
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Filed 21 November 2026, at the owner's word, after the second time. Work in `abbyshade111/homebrew-stackvet`'s
 `.github/workflows/test.yml`, not this repository.
@@ -31,3 +31,20 @@ Each time it blocks a merge until someone reads the log and reruns.
 - **Report it to Homebrew** if it reproduces on demand.
 - **The witness:** a step that fails with that message once is retried and the job passes, saying so; a step that
   fails with any other message is not retried.
+
+**Done, 21 November 2026** (in `abbyshade111/homebrew-stackvet`, its PR #6): **the cause was found.** For a `--HEAD`
+build Homebrew names the version from GitHub's latest commit on `main` when it starts, the build asks GitHub again
+and installs under that answer, and the check after the build looks for the first name (`formula_installer.rb`
+raises "Empty installation" after `formula.update_head_version`; `GitHubGitDownloadStrategy#last_commit` asks the
+GitHub API). In the failed attempt of run 44921228898, Homebrew named the build `HEAD-e7a0a6b` at 15:51:22 UTC,
+`2dfff8b` merged into `main` at 15:52:02, the build step started at 15:52:11 and installed into `HEAD-2dfff8b`, and
+the check found no `HEAD-e7a0a6b`. The rerun passed because `main` did not move during it. The formula is not at fault.
+
+- **The retry that says so:** `.github/scripts/install-sv.sh` retries a `--HEAD` install once, only when the log says
+  "Empty installation", the named folder does not exist, and another HEAD folder holds the install, with a warning and
+  the folder's listing. Any other failure, a release build, or a retry that fails again fails the step.
+- **The witness:** `.github/scripts/test-install-sv.sh` plays six cases with a stand-in for `brew`; the `install` job
+  runs it first. Breaking each of the script's five guards made one of its cases fail (at first three breaks went
+  unseen, because the refused cases were refused for two reasons each; each now differs from the race in one way).
+  On the pull request's own run the tests passed on all four install jobs, on a Mac and on Linux.
+- **Not done:** reporting it to Homebrew, which would post publicly; the owner's to decide.
