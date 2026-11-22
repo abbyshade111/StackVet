@@ -200,7 +200,12 @@ fn main() -> ExitCode {
     }
     match args.first().map(String::as_str) {
         Some("--version" | "-V") => {
-            println!("av {}", env!("CARGO_PKG_VERSION"));
+            // With the commit it was built from, as `sv --version` says its own (backlog 0724, part 2).
+            println!(
+                "av {} (commit {})",
+                env!("CARGO_PKG_VERSION"),
+                env!("AV_GIT_COMMIT")
+            );
             ExitCode::from(MADE)
         }
         Some("report") => match parse(&args[1..]) {
@@ -1025,6 +1030,7 @@ fn print(read: &Read, folder: &Path) {
 fn json(read: &Read) -> serde_json::Value {
     serde_json::json!({
         "av": env!("CARGO_PKG_VERSION"),
+        "commit": env!("AV_GIT_COMMIT"),
         "envelope": match &read.envelope {
             envelope::Read::NotThere => serde_json::json!({ "read": "not-there" }),
             envelope::Read::Unreadable(why) => serde_json::json!({ "read": "unreadable", "why": why }),
