@@ -1,6 +1,6 @@
 # Would a records folder in sv's container be useful to anything sv does besides the note? An investigation
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Asked for by the owner on 22 November 2026 ("file a backlog item one of the other sessions can pick up to investigate
 if the records file in the container would be useful to any other sv functions"). Open for any session. An
