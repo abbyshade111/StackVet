@@ -25,6 +25,20 @@ pub const TOOLS: [&str; 4] = ["Bash", "PowerShell", "Edit", "Write"];
 /// tests), and a turn's end.
 pub const EVENTS: [&str; 3] = ["PostToolUse", "PostToolUseFailure", "Stop"];
 
+/// The event Claude Code hands a hook when it is about to ask the person's permission for a tool (backlog 0718).
+pub const ASKS: &str = "PermissionRequest";
+
+/// A line's `event` for a permission the person was asked for: the tool's name, a fingerprint of what it was given,
+/// and a summary of that, cut short and with any key cut, as a command's line is.
+pub const ASKED: &str = "Asked";
+
+/// A line's `event` for a tool that ran after the person was asked about it, when the tool is not one of `TOOLS`
+/// (those have a line of their own already): the tool's name and the fingerprint, and nothing of what it was given.
+pub const RAN: &str = "Ran";
+
+/// The most of what a tool was given that an asked line keeps.
+const ASKED_CHARS: usize = 200;
+
 /// The most of a command a line keeps.
 const COMMAND_CHARS: usize = 300;
 
@@ -81,9 +95,45 @@ pub fn line_of(
                 line["claims"] = json!(claims);
             }
         }
+        ASKS => {
+            // Claude Code is about to ask the person (backlog 0718; ADR-122, Later, 22 November 2026). Every tool,
+            // since a tool server's tools are asked about too. Whether the person said yes is not handed to any
+            // hook: a reader tells it from whether the tool then ran.
+            let tool = input["tool_name"].as_str()?;
+            line["event"] = json!(ASKED);
+            line["tool"] = json!(sv_check::text::cut_with_count(&one_line(tool), 80));
+            line["print"] = json!(print_of(&input["tool_input"]));
+            let given = match input["tool_input"]["command"].as_str() {
+                Some(command) if matches!(tool, "Bash" | "PowerShell") => command.to_owned(),
+                _ if input["tool_input"].is_null() => String::new(),
+                _ => input["tool_input"].to_string(),
+            };
+            let (redacted, _) = sv_check::secrets::redact_text(rules, &given);
+            line["summary"] = json!(sv_check::text::cut_with_count(
+                one_line(&redacted).trim(),
+                ASKED_CHARS
+            ));
+        }
+        "PostToolUse" | "PostToolUseFailure"
+            if !input["tool_name"]
+                .as_str()
+                .is_some_and(|t| TOOLS.contains(&t)) =>
+        {
+            // Another tool ran. `command` keeps this line only when the person was asked about that tool and no
+            // run has answered the asking yet; otherwise nothing is written for it, as before.
+            let tool = input["tool_name"].as_str()?;
+            line["event"] = json!(RAN);
+            line["tool"] = json!(sv_check::text::cut_with_count(&one_line(tool), 80));
+            line["print"] = json!(print_of(&input["tool_input"]));
+            if event == "PostToolUseFailure" {
+                line["failed"] = json!(true);
+            }
+        }
         "PostToolUse" | "PostToolUseFailure" => {
             let tool = input["tool_name"].as_str().filter(|t| TOOLS.contains(t))?;
             line["tool"] = json!(tool);
+            // The same fingerprint an asked line carries, so the two can be set side by side.
+            line["print"] = json!(print_of(&input["tool_input"]));
             if matches!(tool, "Bash" | "PowerShell") {
                 let command = input["tool_input"]["command"].as_str()?;
                 let (redacted, _) = sv_check::secrets::redact_text(rules, command);
@@ -108,6 +158,38 @@ pub fn line_of(
         _ => return None,
     }
     Some(line)
+}
+
+fn one_line(text: &str) -> String {
+    text.chars()
+        .map(|c| if c.is_control() { ' ' } else { c })
+        .collect()
+}
+
+/// A fingerprint of what a tool was given: the same call gives the same one.
+fn print_of(tool_input: &Value) -> String {
+    crate::plain::sha256(tool_input.to_string().as_bytes())
+}
+
+/// Whether the record in `bytes` holds, for `session` and `tool`, an asking that no run has answered yet.
+pub(crate) fn asked_and_waiting(bytes: &[u8], session: &str, tool: &str) -> bool {
+    let mut open = 0usize;
+    for value in String::from_utf8_lossy(bytes)
+        .lines()
+        .filter_map(|raw| serde_json::from_str::<Value>(raw).ok())
+    {
+        if value["session"].as_str().unwrap_or_default() != session
+            || value["tool"].as_str() != Some(tool)
+        {
+            continue;
+        }
+        match value["event"].as_str() {
+            Some(ASKED) => open += 1,
+            Some(RAN | "PostToolUse" | "PostToolUseFailure") => open = open.saturating_sub(1),
+            _ => {}
+        }
+    }
+    open > 0
 }
 
 /// The hash that chains a line to the one before it, over the previous line's chain and this line's own text.
@@ -151,6 +233,22 @@ pub fn command(args: &[String]) -> Result<()> {
     let path = record_of(&app).context(
         "this computer has no folder for sv's records (neither HOME nor XDG_STATE_HOME is set)",
     )?;
+    if line["event"] == RAN {
+        // A tool with no line of its own is written down only as the answer to an asking: the record does not
+        // become a list of every tool the agent used.
+        let mut bytes = Vec::new();
+        let read =
+            std::fs::File::open(&path).and_then(|f| f.take(MAX_BYTES + 1).read_to_end(&mut bytes));
+        let waiting = read.is_ok()
+            && asked_and_waiting(
+                &bytes,
+                line["session"].as_str().unwrap_or_default(),
+                line["tool"].as_str().unwrap_or_default(),
+            );
+        if !waiting {
+            return Ok(());
+        }
+    }
     append(&path, line)
 }
 

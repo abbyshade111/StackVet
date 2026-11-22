@@ -107,6 +107,8 @@ pub struct Read<'r> {
     pub noted: &'r crate::outside_note::Standing,
     /// The pass-through's record, when the person asked for it.
     pub proxy: Option<&'r crate::proxy_seen::Seen>,
+    /// What the hook record shows of the permissions asked for, when the person asked for the hook record.
+    pub asked: Option<&'r crate::asked::Seen>,
 }
 
 /// The pass-through's record, when it was asked for and could be read.
@@ -521,16 +523,74 @@ fn as_owner(read: &Read) -> (Vec<Line>, Vec<String>) {
     (lines, not_shown)
 }
 
-/// A no you gave at the tool's own prompt is never seen: said every time, whatever was read.
+/// A no given at the tool's own prompt is handed to no record: said every time, whatever was read.
 pub const NO_AT_THE_PROMPT: &str = "A no you gave at your AI coding tool's own permission prompt: a call you refuse \
-                                    there is never sent to the tool server, so no record read here holds a line \
-                                    for it, and none can show the tool trying another way after it. (Seen in a \
-                                    trial on 21 November 2026; it needs the tool's own hooks, which av does not \
-                                    read for this yet.)";
+                                    there is never sent to a tool server, and no hook is told you refused. The \
+                                    nearest thing a record holds is that you were asked and the tool did not run, \
+                                    which the hook record shows when its hook is installed (`sv connect claude \
+                                    --hook`) and you read it with --hook-record. (Seen in trials on 21 and 22 \
+                                    November 2026.)";
+
+/// What "asked, and did not run" can mean, said wherever one is listed.
+pub const ASKED_NOT_RUN: &str = "Asked, and did not run, is what the record shows: you said no, or the prompt was \
+                                 closed without an answer, or the session ended with it open. No hook says which.";
 
 fn again_after_no(read: &Read) -> (Vec<Line>, Vec<String>) {
     let mut lines = Vec::new();
     let mut not_shown = vec![NO_AT_THE_PROMPT.to_owned()];
+    // What you were asked about, from the hook record (backlog 0718).
+    match (read.asked, read.asked.filter(|a| a.not_read.is_none())) {
+        (None, _) => not_shown.push(
+            "A call you were asked about that did not run, and was asked for again or ran later: the hook record \
+             shows those, and it is read only when you ask, with --hook-record."
+                .to_owned(),
+        ),
+        (Some(a), None) => not_shown.push(format!(
+            "A call you were asked about that did not run, and was asked for again or ran later: {}.",
+            a.not_read.as_deref().unwrap_or("the record was not read")
+        )),
+        (Some(_), Some(a)) => {
+            for no in a.not_run.iter().filter(|n| n.asked_again + n.ran_later > 0) {
+                let again = match no.asked_again {
+                    0 => String::new(),
+                    n => format!(" was asked for again {}", times(n)),
+                };
+                let ran = match no.ran_later {
+                    0 => String::new(),
+                    n => format!(
+                        "{} ran {} later in the same session",
+                        if again.is_empty() { "" } else { ", and" },
+                        times(n)
+                    ),
+                };
+                lines.push(Line {
+                    what: format!(
+                        "you were asked to let {} run and it did not run; the same call{again}{ran}. It was to be \
+                         given: {}",
+                        no.tool, no.summary
+                    ),
+                    place: format!("asked at {}", no.at),
+                    from: FROM_HOOK,
+                    verdict: None,
+                });
+            }
+            if a.asked == 0 {
+                not_shown.push(
+                    "Anything you were asked: the hook record holds no asking. Either the tool never asked, or the \
+                     hook installed does not write askings down (print it again with `sv connect claude --hook`)."
+                        .to_owned(),
+                );
+            } else {
+                not_shown.push(ASKED_NOT_RUN.to_owned());
+                not_shown.push(
+                    "The same end reached another way: only the same tool given the same thing is matched. What \
+                     the tool did next after each call that did not run is listed with the hook record, for you \
+                     to read."
+                        .to_owned(),
+                );
+            }
+        }
+    }
     match (read.proxy, proxy_read(read)) {
         (None, _) => not_shown.push(
             "A call a tool server turned down and the tool made again: the pass-through's record (av proxy) shows \

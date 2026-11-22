@@ -86,16 +86,19 @@ fn the_hook_is_printed_for_claude_code_alone_and_never_written() {
         String::from_utf8_lossy(&printed.stderr)
     );
     let block: Value = serde_json::from_slice(&printed.stdout).expect("the block is JSON");
-    for event in ["PostToolUse", "PostToolUseFailure", "Stop"] {
+    for event in [
+        "PermissionRequest",
+        "PostToolUse",
+        "PostToolUseFailure",
+        "Stop",
+    ] {
         let command = block["hooks"][event][0]["hooks"][0]["command"]
             .as_str()
             .unwrap_or_default();
         assert!(command.contains(" hook-record --app '"), "{event}: {block}");
     }
-    assert_eq!(
-        block["hooks"]["PostToolUse"][0]["matcher"],
-        "^(Bash|PowerShell|Edit|Write)$"
-    );
+    // No matcher: the hook runs for every tool, and `sv hook-record` decides which lines are kept (backlog 0718).
+    assert_eq!(block["hooks"]["PostToolUse"][0]["matcher"], Value::Null);
     assert!(String::from_utf8_lossy(&printed.stderr).contains(".claude/settings.local.json"));
     assert!(
         !place.app.join(".claude").exists(),

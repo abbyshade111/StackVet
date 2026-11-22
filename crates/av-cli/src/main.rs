@@ -265,6 +265,8 @@ struct Read {
     behavior: sv_report::tool_behavior::ToolBehavior,
     /// The pass-through's record, when the person asked for it.
     proxy: Option<proxy_seen::Seen>,
+    /// What the hook record shows of the permissions asked for, when the person asked for the hook record.
+    asked: Option<av_record::asked::Seen>,
     /// How each record stands against the owner's checkpoints: `None` for a record this run did not read.
     checkpoints: Vec<(
         av_record::checkpoint::Kind,
@@ -401,6 +403,8 @@ fn read(folder: &Path, with_hook: bool, with_proxy: bool) -> Read {
         _ => None,
     };
     let proxy = with_proxy.then(|| proxy_seen::read_for(folder, may_call));
+    // The permissions asked for, from the hook record, under the same consent as the rest of it.
+    let asked = with_hook.then(|| av_record::asked::read_for(folder));
     // What the owner signed for (ADR-159, decision 12). A record is set against its checkpoints only when this run
     // may read it: the hook record and the pass-through's, each when asked for.
     use sv_frameworks::paths::Canonical as _;
@@ -428,6 +432,7 @@ fn read(folder: &Path, with_hook: bool, with_proxy: bool) -> Read {
     let gathered = groups::gather(&groups::Read {
         noted: &noted,
         proxy: proxy.as_ref(),
+        asked: asked.as_ref(),
         checkpoints: &read_standings,
         build_loop: &loop_seen,
         hook: hook.as_ref(),
@@ -445,8 +450,61 @@ fn read(folder: &Path, with_hook: bool, with_proxy: bool) -> Read {
         hook,
         behavior,
         proxy,
+        asked,
         not_looked_at,
     }
+}
+
+/// What the hook record shows of the permissions asked for, in the report's words. A tool's name and a summary are
+/// the tool's text.
+fn asked_lines(seen: &av_record::asked::Seen) -> Vec<String> {
+    if seen.not_read.is_some() {
+        // The hook record's own lines above say why it was not read.
+        return Vec::new();
+    }
+    if seen.asked == 0 {
+        return vec![
+            "Permissions asked for: none written down. Either the tool never asked, or the hook installed does not \
+             write askings down (print it again with `sv connect claude --hook`)."
+                .to_owned(),
+        ];
+    }
+    let not_run = seen.not_run.len() + seen.not_run_more;
+    let mut out = vec![format!(
+        "You were asked for permission {}; the tool then ran after {}, and did not after {}.",
+        match seen.asked {
+            1 => "once".to_owned(),
+            n => format!("{n} times"),
+        },
+        seen.ran,
+        not_run
+    )];
+    if not_run > 0 {
+        out.push(groups::ASKED_NOT_RUN.to_owned());
+    }
+    for no in &seen.not_run {
+        out.push(format!(
+            "  asked, and did not run: {}, to be given {} ({}){}{}",
+            sv_report::one_line(&no.tool),
+            sv_report::one_line(&no.summary),
+            sv_report::one_line(&no.at),
+            match (&no.next, no.last_of_session) {
+                (_, true) =>
+                    ". Nothing follows it in its session: the prompt may still have been open"
+                        .to_owned(),
+                (Some(next), _) => format!(". Next in that session: {}", sv_report::one_line(next)),
+                (None, _) => String::new(),
+            },
+            match no.asked_again + no.ran_later {
+                0 => "",
+                _ => ". The same call came again; see \"Trying again after a no\" below",
+            }
+        ));
+    }
+    if seen.not_run_more > 0 {
+        out.push(format!("  {} more not listed here.", seen.not_run_more));
+    }
+    out
 }
 
 /// What the pass-through's record holds, in the report's words. A tool's name and a summary are the tool's text.
@@ -898,6 +956,11 @@ fn print(read: &Read, folder: &Path) {
                 };
                 println!("  {line}");
             }
+            if let Some(asked) = &read.asked {
+                for line in asked_lines(asked) {
+                    println!("  {line}");
+                }
+            }
         }
     }
 
@@ -982,6 +1045,7 @@ fn json(read: &Read) -> serde_json::Value {
             "witness": witness::HOOK,
             "record": seen,
         })),
+        "asked": read.asked,
         "proxy_record": read.proxy.as_ref().map(|seen| serde_json::json!({
             "witness": witness::PROXY,
             "record": seen,

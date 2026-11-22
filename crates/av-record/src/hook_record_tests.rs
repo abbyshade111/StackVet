@@ -82,11 +82,23 @@ fn a_line_keeps_the_command_or_the_file_and_nothing_the_tool_wrote_or_said() {
         "the tool's words are not kept: {stop}"
     );
 
-    for (event, name) in [
-        ("PostToolUse", "Read"),
-        ("PreToolUse", "Bash"),
-        ("UserPromptSubmit", ""),
-    ] {
+    // A tool with no line of its own gives only a marker that it ran, which `sv hook-record` keeps only as the
+    // answer to an asking (backlog 0718): its name and a fingerprint, and nothing of what it was given.
+    let read = line_of(
+        &tool(
+            "PostToolUse",
+            "Read",
+            json!({ "file_path": "/x/secret-plans.txt" }),
+        ),
+        app,
+        "T",
+        rules(),
+    )
+    .expect("a marker");
+    assert_eq!(read["event"], crate::hook_record::RAN);
+    assert!(!read.to_string().contains("secret-plans"), "{read}");
+
+    for (event, name) in [("PreToolUse", "Bash"), ("UserPromptSubmit", "")] {
         assert!(
             line_of(
                 &tool(event, name, json!({ "command": "ls", "file_path": "/x" })),

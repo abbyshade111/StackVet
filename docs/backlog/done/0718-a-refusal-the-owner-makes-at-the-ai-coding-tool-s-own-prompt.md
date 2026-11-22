@@ -1,6 +1,6 @@
 # A refusal the owner makes at the AI coding tool's own prompt is seen by nothing av reads: look for it through the tool's hooks
 
-**Status:** claimed by Claude Code session (AgentVet), 22 November 2026
+**Status:** done, 22 November 2026
 
 Asked for by the owner on 22 November 2026 ("queue the hooks work"), after a trial of `av proxy` on their own computer
 on 21 November (ADR-159, "As built, part 6"; backlog 0716). Open for any session. It is the one of the design's six

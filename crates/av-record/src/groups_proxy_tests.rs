@@ -15,6 +15,7 @@ fn gathered(proxy: Option<&Seen>, held: Option<&Held>) -> Vec<Gathered> {
         checkpoints: &[],
         noted: &crate::outside_note::Standing::None,
         proxy,
+        asked: None,
     })
 }
 
@@ -202,6 +203,87 @@ fn a_call_that_came_back_in_a_later_session_is_said_as_that_and_not_as_made_agai
         g.not_shown
             .iter()
             .any(|n| n.contains("read as one session")),
+        "{:?}",
+        g.not_shown
+    );
+}
+
+fn with_asked(asked: Option<&crate::asked::Seen>) -> Vec<Gathered> {
+    gather(&Read {
+        build_loop: &BuildLoop::default(),
+        hook: None,
+        behavior: &ToolBehavior::default(),
+        held: None,
+        commits: None,
+        checkpoints: &[],
+        noted: &crate::outside_note::Standing::None,
+        proxy: None,
+        asked,
+    })
+}
+
+#[test]
+fn a_call_asked_about_that_did_not_run_and_came_again_is_a_line_and_one_that_did_not_come_again_is_not()
+ {
+    let no = |asked_again, ran_later| crate::asked::NotRun {
+        at: "2026-11-22T03:57:21Z".to_owned(),
+        tool: "Bash".to_owned(),
+        summary: "rm -rf data".to_owned(),
+        asked_again,
+        ran_later,
+        next: None,
+        last_of_session: false,
+    };
+    let seen = crate::asked::Seen {
+        asked: 3,
+        ran: 1,
+        not_run: vec![no(1, 1), no(0, 0)],
+        ..Default::default()
+    };
+    let all = with_asked(Some(&seen));
+    let g = group(&all, Group::AgainAfterNo);
+    assert_eq!(g.lines.len(), 1, "{g:?}");
+    let what = &g.lines[0].what;
+    assert!(
+        what.contains("you were asked to let Bash run and it did not run")
+            && what.contains("was asked for again once, and ran once later in the same session")
+            && what.contains("rm -rf data"),
+        "{what}"
+    );
+    assert_eq!(g.lines[0].from, "the hook record");
+    // It is never called a refusal: no hook says the person said no.
+    assert!(!what.contains("refus"), "{what}");
+    assert!(
+        g.not_shown.iter().any(|n| n == ASKED_NOT_RUN),
+        "{:?}",
+        g.not_shown
+    );
+    assert!(
+        g.not_shown
+            .iter()
+            .any(|n| n.contains("The same end reached another way"))
+    );
+}
+
+#[test]
+fn a_hook_record_with_no_asking_or_one_not_read_says_which_and_puts_no_line() {
+    let all = with_asked(None);
+    let g = group(&all, Group::AgainAfterNo);
+    assert_eq!(g.not_shown[0], NO_AT_THE_PROMPT);
+    assert!(
+        g.not_shown
+            .iter()
+            .any(|n| n.contains("asked about") && n.contains("--hook-record"))
+    );
+
+    let none = crate::asked::Seen::default();
+    let all = with_asked(Some(&none));
+    let g = group(&all, Group::AgainAfterNo);
+    assert_eq!(g.lines, Vec::<Line>::new());
+    assert!(
+        g.not_shown
+            .iter()
+            .any(|n| n.contains("holds no asking") && n.contains("sv connect claude --hook")),
         "{:?}",
         g.not_shown
     );
