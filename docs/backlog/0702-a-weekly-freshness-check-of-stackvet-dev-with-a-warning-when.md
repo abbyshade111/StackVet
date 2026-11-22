@@ -1,6 +1,6 @@
 # A weekly freshness check of stackvet.dev, with a warning when a report shown on it is old
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). Two reports shown on the site
 were weeks old and a version behind (the self-assessment of 26 October and the example of 14 October, both by
@@ -15,3 +15,5 @@ were weeks old and a version behind (the self-assessment of 26 October and the e
   repository; check that before building.
 - **Done when:** a run against a branch where the example report's date is moved back 31 days warns, and a broken
   page makes the scheduled run open an issue.
+
+**The owner's word, 22 November 2026:** yes, weekly on Mondays, beside the other weekly checks (the tap's install, long files, and the rulesets comparison). Actions minutes are free for a public repository.
