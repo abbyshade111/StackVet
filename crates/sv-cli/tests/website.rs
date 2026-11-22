@@ -338,6 +338,10 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         "every one a <code>GET</code> to <code>api.github.com</code>",
         "could not confirm it",
         "Cloudflare",
+        // And Cloudflare's, once built (backlog 0732).
+        "cv live cloudflare &lt;zone&gt;",
+        "every one a <code>GET</code> to <code>api.cloudflare.com</code>",
+        "<code>CLOUDFLARE_API_TOKEN</code>",
     ] {
         assert!(
             cv.contains(live),
