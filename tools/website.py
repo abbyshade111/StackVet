@@ -682,6 +682,11 @@ def inline_scripts(page):
     return re.findall(r"<script\b[^>]*>(.*?)</script\b[^>]*>", page, re.S | re.I)
 
 
+# What Cloudflare serves a file with unless told otherwise: cached, but checked again on every visit, so a deploy shows
+# at once. Pages add `no-transform` to it (backlog 0740).
+CACHE = "public, max-age=0, must-revalidate"
+
+
 def headers(out):
     """`_headers` for Cloudflare: every inline script the build wrote is allowed by its hash, and nothing else runs.
     Inline styles are allowed, since the pages and the example report set them in `style` attributes too.
@@ -690,7 +695,10 @@ def headers(out):
     deploy shows at once) and adds `no-transform` (backlog 0740): without it, Cloudflare added a bot-detection script
     of its own to every page, which the policy above blocks, so it did nothing but fail in each visitor's browser, and
     the pages served were not the pages built. Its documentation says the script is not added to a response that
-    carries `no-transform`."""
+    carries `no-transform`. But `no-transform` also stopped Cloudflare compressing (measured after the deploy of 22
+    November 2026), and the script goes only into pages, so every other kind of file the build wrote gets a rule of its
+    own that drops `no-transform` again: `! Cache-Control` first, since a header set twice is joined, not replaced
+    (Cloudflare's documentation for `_headers`). A rule is written for each kind found, so a new one is never missed."""
     scripts = set()
     for page in sorted(out.rglob("*.html")):
         scripts.update(inline_scripts(page.read_text(encoding="utf-8")))
@@ -698,6 +706,9 @@ def headers(out):
                              + "'" for s in scripts)) or "'none'"
     policy = (f"default-src 'none'; script-src {hashes}; style-src 'unsafe-inline'; img-src 'self'; "
               "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+    others = sorted({f.suffix for f in out.rglob("*.*")
+                     if f.is_file() and not f.name.startswith(".") and f.suffix not in (".html", "")})
+    compressed = "".join(f"\n/*{suffix}\n  ! Cache-Control\n  Cache-Control: {CACHE}\n" for suffix in others)
     return ("/*\n"
             f"  Content-Security-Policy: {policy}\n"
             "  X-Content-Type-Options: nosniff\n"
@@ -705,7 +716,7 @@ def headers(out):
             "  Permissions-Policy: camera=(), microphone=(), geolocation=()\n"
             "  Cross-Origin-Opener-Policy: same-origin\n"
             "  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n"
-            "  Cache-Control: public, max-age=0, must-revalidate, no-transform\n")
+            f"  Cache-Control: {CACHE}, no-transform\n" + compressed)
 
 
 def copy(src, dst):
