@@ -565,9 +565,12 @@ fn again_after_no(read: &Read) -> (Vec<Line>, Vec<String>) {
                 };
                 lines.push(Line {
                     what: format!(
-                        "you were asked to let {} run and it did not run; the same call{again}{ran}. It was to be \
-                         given: {}",
-                        no.tool, no.summary
+                        "you were asked to let {} run and it did not run; the same call{again}{ran}.{}",
+                        no.tool,
+                        match no.summary.as_str() {
+                            "" => String::new(),
+                            summary => format!(" It was to be given: {summary}"),
+                        }
                     ),
                     place: format!("asked at {}", no.at),
                     from: FROM_HOOK,

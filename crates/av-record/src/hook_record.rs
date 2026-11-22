@@ -36,6 +36,10 @@ pub const ASKED: &str = "Asked";
 /// (those have a line of their own already): the tool's name and the fingerprint, and nothing of what it was given.
 pub const RAN: &str = "Ran";
 
+/// Tools of the AI coding tool's own that reach the person through the permission event and ask no permission:
+/// Claude Code's question to the person. Nothing is kept for one.
+pub const NOT_A_PERMISSION: [&str; 1] = ["AskUserQuestion"];
+
 /// The most of what a tool was given that an asked line keeps.
 const ASKED_CHARS: usize = 200;
 
@@ -100,6 +104,12 @@ pub fn line_of(
             // since a tool server's tools are asked about too. Whether the person said yes is not handed to any
             // hook: a reader tells it from whether the tool then ran.
             let tool = input["tool_name"].as_str()?;
+            // The AI coding tool's own way of putting a question to the person goes through the same event, and
+            // is not a permission: nothing is kept for it. The owner's first real session, 22 November 2026,
+            // showed one listed as a call that did not run, with the start of the question's text.
+            if NOT_A_PERMISSION.contains(&tool) {
+                return None;
+            }
             line["event"] = json!(ASKED);
             line["tool"] = json!(sv_check::text::cut_with_count(&one_line(tool), 80));
             line["print"] = json!(print_of(&input["tool_input"]));
@@ -122,6 +132,10 @@ pub fn line_of(
                         .unwrap_or_else(|_| file.display().to_string())
                 }
                 _ if input["tool_input"].is_null() => String::new(),
+                // Any other tool of the AI coding tool's own: its name alone. What it is given can be the tool's
+                // own words (a plan, a question, a message), which the record never keeps.
+                _ if !tool.starts_with("mcp__") => String::new(),
+                // A tool server's tool: the start of what it was given, as the owner chose.
                 _ => input["tool_input"].to_string(),
             };
             let (redacted, _) = sv_check::secrets::redact_text(rules, &given);

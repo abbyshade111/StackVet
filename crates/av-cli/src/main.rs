@@ -297,6 +297,12 @@ impl Read {
                 .proxy
                 .as_ref()
                 .is_some_and(|p| p.not_read.is_none() && p.calls > 0)
+            // A permission the tool asked for is something the record holds about the tool, whether or not
+            // anything then ran.
+            || self
+                .asked
+                .as_ref()
+                .is_some_and(|a| a.not_read.is_none() && a.asked > 0)
     }
 }
 
@@ -489,9 +495,13 @@ fn asked_lines(seen: &av_record::asked::Seen) -> Vec<String> {
     }
     for no in &seen.not_run {
         out.push(format!(
-            "  asked, and did not run: {}, to be given {} ({}){}{}",
+            "  asked, and did not run: {}{} ({}){}{}",
             sv_report::one_line(&no.tool),
-            sv_report::one_line(&no.summary),
+            match no.summary.as_str() {
+                // Nothing of what it was to be given is kept for this kind of tool.
+                "" => String::new(),
+                summary => format!(", to be given {}", sv_report::one_line(summary)),
+            },
             sv_report::one_line(&no.at),
             match (&no.next, no.last_of_session) {
                 (_, true) =>

@@ -145,3 +145,35 @@ fn an_asking_to_write_or_edit_a_file_keeps_the_file_s_name_and_nothing_of_what_w
     .unwrap();
     assert_eq!(asked["summary"], r#"{"file_path":"/app/a.txt"}"#);
 }
+
+/// What the owner's first real session showed, 22 November 2026: the AI coding tool's question to the person was
+/// kept as a permission asked for, with the start of the question's text.
+#[test]
+fn the_tool_s_own_question_is_not_an_asking_and_its_other_tools_keep_no_words_of_the_tool_s() {
+    let question = json!({ "questions": [{ "header": "Starting point", "question": "Shall I keep the existing sign-in?" }] });
+    assert_eq!(
+        line(json!({
+            "hook_event_name": "PermissionRequest", "session_id": "s", "tool_name": "AskUserQuestion",
+            "tool_input": question
+        })),
+        None,
+        "a question to the person is not a permission asked for"
+    );
+    // And when it is answered, nothing is kept for it either: no asking is waiting for it.
+    let answered = line(json!({
+        "hook_event_name": "PostToolUse", "session_id": "s", "tool_name": "AskUserQuestion", "tool_input": question
+    }))
+    .unwrap();
+    assert!(!answered.to_string().contains("Shall I keep"), "{answered}");
+    assert!(!asked_and_waiting(b"", "s", "AskUserQuestion"));
+
+    // Another tool of its own that names no command and no file: the name, the fingerprint, and no summary.
+    let plan = line(json!({
+        "hook_event_name": "PermissionRequest", "session_id": "s", "tool_name": "ExitPlanMode",
+        "tool_input": { "plan": "First I will rewrite the sign-in, the tool's own words" }
+    }))
+    .expect("asking to leave plan mode is an asking");
+    assert_eq!(plan["summary"], "");
+    assert!(!plan.to_string().contains("the tool's own words"), "{plan}");
+    assert_eq!(plan["print"].as_str().map(str::len), Some(64));
+}
