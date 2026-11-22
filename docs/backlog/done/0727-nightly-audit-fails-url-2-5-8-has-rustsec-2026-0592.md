@@ -1,6 +1,6 @@
 # Nightly: Audit fails: url 2.5.8 has RUSTSEC-2026-0592
 
-**Status:** open
+**Status:** done, 22 November 2026
 
 Recorded by the nightly CI routine on 22 November 2026. This routine records; it does not fix.
 
@@ -22,3 +22,10 @@ passed with the same `Cargo.lock` entry, so the advisory is new in OSV's records
 
 **What to do.** Read the advisory, then upgrade `url` in `Cargo.lock` past the affected range if a fixed release is
 out (`cargo update -p url`) and run the tests, or, if none is out yet, record why the finding is accepted for now.
+
+**Done, 22 November 2026.** Overtaken the same day, before this item was picked up: the version bump for v0.3.1
+(#2537) met the same failure on its own `audit` check and moved `url` to 2.5.9 with `cargo update -p url`
+(`form_urlencoded` to 1.2.3 with it). The test that uses `boon` passed (`oscal_export`), and the `audit` check on
+that pull request passed on the new lockfile, which is what shows 2.5.9 is past the advisory's range; the advisory's
+own range was not read. `url` is in the lockfile only through `boon`, which `sv-cli`'s tests use, so it was in no
+program that shipped.
