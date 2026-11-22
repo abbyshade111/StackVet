@@ -1,6 +1,6 @@
 # Would a records folder in sv's container be useful to anything sv does besides the note? An investigation
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
+**Status:** done, 21 November 2026
 
 Asked for by the owner on 22 November 2026 ("file a backlog item one of the other sessions can pick up to investigate
 if the records file in the container would be useful to any other sv functions"). Open for any session. An
@@ -39,3 +39,5 @@ that is worth what it costs.
 **What to hand back.** A design entry (`python3 tools/design_entry.py new`) with what was found for each, a
 recommendation, and the choices that are the owner's. Anything worth building becomes an item of its own. Changing
 what the container is given is a decision with a record (ADR-101, ADR-153, and the fence in `docs/ARCHITECTURE.md`).
+
+**Done, 22 November 2026:** the write-up is `docs/design/0398-what-sv-in-its-container-could-gain-from-its-records-folder.md`. Found: two gaps beside the notes, the report key (a report the MCP server wrote in an earlier container session is never offered again) and the hook record (already said by `sv connect --hook`), and history off in the container without a word. Recommended: name the notes by `SV_HOST_FOLDER` so `--notes` can work on Windows; say in `sv connect --docker`'s output that history and earlier reports do not carry over; leave the report key unless Docker-only MCP use grows, and if it is ever given, a key of the container's own; one mount for each use. The report key is the owner's choice.
