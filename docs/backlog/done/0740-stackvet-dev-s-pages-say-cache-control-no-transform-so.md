@@ -1,6 +1,6 @@
 # stackvet.dev's pages say Cache-Control no-transform, so Cloudflare adds no script the site's CSP would block
 
-**Status:** partly done: after the owner deploys the pages-only rules: check that pages still carry no script and other files are compressed again
+**Status:** done, 22 November 2026
 
 Filed 22 November 2026, at the owner's word ("Yes, file it and build it"), from the review of stackvet.dev's Cloudflare
 settings that day.
