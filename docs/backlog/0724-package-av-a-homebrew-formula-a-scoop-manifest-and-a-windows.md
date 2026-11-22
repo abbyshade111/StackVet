@@ -45,4 +45,4 @@ v0.3.1, with a zip of its own.
 5. **`docs/INSTALL.md` gains `av`'s section** once each package works, with what the hook and the pass-through need:
    the hook `sv connect claude --hook` prints runs a copy of `sv` installed on the computer, not the container's
    (ADR-122), which the owner's trial met.
-   **Part status:** claimed by Claude Code session (AgentVet), 22 November 2026
+   **Part status:** done, 22 November 2026
