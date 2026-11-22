@@ -1,6 +1,6 @@
 # A stackvet.dev page about AgentVet, labeled preview, linked from the home page
 
-**Status:** claimed by Claude Code session (AgentVet), 22 November 2026
+**Status:** done, 22 November 2026
 
 Filed 22 November 2026, at the owner's word ("an update to stackvet.dev about av (similar to cv)"), to come after the
 packaging (backlog 0724). ConfigVet's page was backlog 0695, and this follows it.
