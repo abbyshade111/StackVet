@@ -1,6 +1,6 @@
 # The site takes its number of network exceptions from The fence, and refuses phrases that say fewer
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the whole-site review (backlog 0696). Two pages said less than the
 network fence allows: How it works showed the paper's "the one network connection sv makes of its own", and the
