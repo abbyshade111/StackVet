@@ -1,6 +1,6 @@
 # sv connect --docker says what does not carry over between container sessions
 
-**Status:** claimed by Claude Code session (AgentVet), 22 November 2026
+**Status:** done, 22 November 2026
 
 Filed 22 November 2026, at the owner's word: recommendation 2 of the investigation for backlog 0719, design entry
 0398 ("What sv in its container could gain from its records folder").

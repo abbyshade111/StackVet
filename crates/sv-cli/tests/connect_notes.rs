@@ -147,3 +147,65 @@ fn with_docker_the_line_beside_the_settings_says_to_pull_the_image_first() {
     let block = String::from_utf8_lossy(&out.stdout).into_owned();
     assert!(block.contains(&format!("\"{image}\"")), "{block}");
 }
+
+/// With `--docker`, the line beside the settings says what a container session does not keep: history, and a report
+/// from an earlier session (backlog 0729). Without it, neither: a copy of `sv` installed on the computer keeps both.
+#[test]
+fn with_docker_the_line_says_what_does_not_carry_over_between_sessions_and_without_it_says_neither()
+{
+    let dir = folder("carry");
+    for args in [
+        &["connect", "claude", "--docker", "/usr/local/bin/docker"][..],
+        // With no tool named, the server in no tool's format: the same is said.
+        &["connect", "--docker", "/usr/local/bin/docker"],
+    ] {
+        let out = sv(&dir, args);
+        let err = String::from_utf8_lossy(&out.stderr).into_owned();
+        assert!(out.status.success(), "{args:?}: {err}");
+        for said in [
+            "history is not kept for runs made in the container, even if you turned history on",
+            "a report the container wrote in an earlier session is not offered again as one sv wrote",
+            "your AI coding tool asks for a new report each session",
+        ] {
+            assert!(err.contains(said), "{args:?}: missing {said:?} in:\n{err}");
+        }
+        // Said beside the settings, never inside them: standard output is still the block alone.
+        let block = String::from_utf8_lossy(&out.stdout).into_owned();
+        assert!(
+            !block.contains("history") && serde_json::from_str::<Value>(&block).is_ok(),
+            "{block}"
+        );
+    }
+}
+
+#[test]
+fn without_docker_nothing_is_said_of_a_container() {
+    // Called as the program calls it, with no --docker: an installed copy keeps its history and its report key.
+    for args in [&["claude"][..], &[], &["claude", "--hook"]] {
+        let args: Vec<String> = args.iter().map(|a| (*a).to_owned()).collect();
+        let said = sv_cli::connect::where_it_goes(&args);
+        assert!(
+            !said.contains("history is not kept") && !said.contains("earlier session"),
+            "{args:?}: {said}"
+        );
+    }
+}
+
+/// The guide shows this output's sense in its own words; both sentences are there too.
+#[test]
+fn the_guide_says_the_same_two_things() {
+    let guide = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/GETTING-STARTED.md"),
+    )
+    .unwrap();
+    let one_line = guide.split_whitespace().collect::<Vec<_>>().join(" ");
+    for said in [
+        "history is not kept for runs made in the container, even if you turned history on",
+        "a report the container wrote in an earlier session is not offered again",
+    ] {
+        assert!(
+            one_line.contains(said),
+            "docs/GETTING-STARTED.md does not say: {said}"
+        );
+    }
+}
