@@ -35,8 +35,10 @@ the owner at a terminal, signed two records, which the next report said stand as
    `latest` is older than the image that printed the settings, the settings start an older `sv` than the one that
    wrote them; in the trial that would have dropped the `--notes` mount's use without a word. Whether `sv connect`
    should name the image it is running from, take an option for the image, or say beside the settings which image
-   they start, is the owner's to choose: a pinned tag does not move when the person updates.
-   **Part status:** open
+   they start, is the owner's to choose: a pinned tag does not move when the person updates. **The owner chose, 22 November 2026:**
+   keep the image untagged, and say beside the settings which image they start and to pull it first, so it is the
+   newest ("go with your recommendation").
+   **Part status:** claimed by Claude Code session (AgentVet), 22 November 2026
 
 Not faults, written down so they are not found again: a line of the notes file holds two hashes, the record's head
 and the notes file's own chain, as designed; and the app's settings were back to plain Docker before the trial
