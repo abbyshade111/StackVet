@@ -245,24 +245,38 @@ Until these change, AgentVet stays a preview, and this page says what each part 
 
 ## Trying it
 
-**Built from StackVet's repository today. Its own packages come with the next release.**
+**Released with StackVet, as a package of its own.**
 
-Build it from StackVet's repository with Rust's `cargo`, and the program is `av`, in `target/release/`:
+`av` comes from the same release as StackVet, with the same version number, and installs separately. On a Mac or
+Linux, Homebrew builds it on your computer:
+
+```
+brew install abbyshade111/stackvet/av
+```
+
+On Windows, Scoop installs the signed download from the release:
+
+```
+scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet
+scoop install stackvet/av
+```
+
+Or build it from StackVet's repository with Rust's `cargo`, and the program is `av`, in `target/release/`:
 
 ```
 cargo build --release --locked -p av-cli
 ```
-
-`av --version` says which commit it was built from. A Homebrew package and a Scoop package of its own come with
-StackVet v0.3.1, which is not released yet; this page will print those commands once they work.
 
 The hook that keeps the hook record runs a copy of StackVet's `sv` installed on your computer, not the one in
 StackVet's container.
 
 If something is wrong or confusing, tell us in a [GitHub issue](https://github.com/abbyshade111/StackVet/issues).
 
-- The `cargo` line is `docs/INSTALL.md`'s, which a test holds this page to, as it holds ConfigVet's. Backlog 0724:
-  the release workflow builds `av`'s own Windows zip from v0.3.1 (the owner's choices of 22 November 2026), and the
-  tap's formula and the bucket's manifest are not written yet, so no `brew` or `scoop` line is printed.
+- Each line is `docs/INSTALL.md`'s, which a test holds this page to, as it holds ConfigVet's. StackVet v0.3.1,
+  published 22 November 2026, is the first release with `av`'s own Windows zip (#2533, backlog 0724), signed beside
+  `sv`'s and `cv`'s. The tap's `Formula/av.rb` (homebrew-stackvet#7) and the bucket's `av.json` (scoop-stack-vet#4)
+  are the packages these lines install; both had merged, with the tap's install jobs for `av` required, before this
+  page printed them. Neither install has been tried by hand. `scoop bucket add` is only needed once, and is the same
+  line as for `sv`.
 - "A copy of `sv` installed on your computer": ADR-122 (`sv connect claude --hook` is not offered for `sv` in its
   container). Contact is GitHub issues only, as on the home page.

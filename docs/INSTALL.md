@@ -45,7 +45,7 @@ brew install abbyshade111/stackvet/sv
 sv --version
 ```
 
-This builds the latest release, v0.3.0, and `brew upgrade sv` moves to the next one. To build the newest code on `main`
+This builds the latest release, v0.3.1, and `brew upgrade sv` moves to the next one. To build the newest code on `main`
 instead, add `--HEAD` (`brew install --HEAD abbyshade111/stackvet/sv`); `brew upgrade --fetch-HEAD sv` then updates it.
 This is tried automatically on a Mac and on Linux every week and on every change to the formula
 ([github.com/abbyshade111/homebrew-stackvet](https://github.com/abbyshade111/homebrew-stackvet)), and two AI coding
@@ -228,14 +228,34 @@ tool did, how far that record can be relied on, and what it could not see. It is
 computer, not in StackVet's container: it starts the tool server it sits in front of, reads records kept in your own
 folders, and takes your key's passphrase at your terminal.
 
-Today it is built from StackVet's repository with Rust's `cargo`, and the program is `av`, in `target/release/`:
+It is packaged from v0.3.1 the way `sv` and `cv` are, and installed beside them or on its own.
+
+On a Mac or Linux, Homebrew builds it from source:
+
+```bash
+brew install abbyshade111/stackvet/av
+av --version
+```
+
+On Windows, Scoop installs its own download, zipped with its data and signed where GitHub built it:
+
+```powershell
+scoop bucket add stackvet https://github.com/abbyshade111/scoop-stack-vet
+scoop install stackvet/av
+av --version
+```
+
+PowerShell has no command of its own named `av` (checked on Windows by the release workflow). `brew upgrade av` or
+`scoop update av` updates it. Both installs are tried automatically, on a Mac, on Linux, and on Windows, on every
+change to the formula or the manifest; neither has been tried by hand yet.
+
+Or build it from StackVet's repository with Rust's `cargo`, and the program is `av`, in `target/release/`:
 
 ```bash
 cargo build --release --locked -p av-cli
 ```
 
-`av --version` says which commit it was built from. Its own Homebrew and Scoop packages come with v0.3.1, which is not
-released yet (backlog 0724); this section gains those commands once each has been seen to work.
+`av --version` says which commit it was built from, where it was built in a checkout.
 
 Two things it reads are kept by something you install first:
 

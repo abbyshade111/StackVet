@@ -1,5 +1,5 @@
 //! The AgentVet page of stackvet.dev (backlog 0725, ADR-159): it is made, labeled preview, shows its words and none
-//! of the owner's notes on them, promises no package that is not published, and the home page points to it. And its
+//! of the owner's notes on them, prints the install commands of its published packages, and the home page points to it. And its
 //! install commands are `docs/INSTALL.md`'s, word for word, as the ConfigVet page's are (backlog 0701).
 
 use std::path::{Path, PathBuf};
@@ -75,10 +75,15 @@ fn the_agentvet_page_is_made_with_its_words_and_without_its_notes_and_the_home_p
     for note in ["ADR-159", "ADR-122", "As built", "crates/av-", "backlog 07"] {
         assert!(!page.contains(note), "a note is shown on the page: {note}");
     }
-    // No package is printed as if it worked before it is published (backlog 0724).
+    // From v0.3.1, av's own packages: the tap's formula and the bucket's manifest, printed once each had merged
+    // (backlog 0724). The page installs av, and leaves sv's and cv's lines to their own pages.
+    assert!(page.contains("brew install abbyshade111/stackvet/av"));
+    assert!(page.contains("scoop install stackvet/av"));
     assert!(
-        !page.contains("brew install") && !page.contains("scoop install"),
-        "the page prints an install command for a package that is not published"
+        !page.contains("scoop install stackvet/sv")
+            && !page.contains("brew install abbyshade111/stackvet/sv")
+            && !page.contains("stackvet/cv"),
+        "the AgentVet page installs another program; that is its own page's"
     );
     let home = std::fs::read_to_string(dir.join("index.html")).unwrap();
     assert!(
@@ -93,7 +98,9 @@ fn the_agentvet_page_is_made_with_its_words_and_without_its_notes_and_the_home_p
 fn the_agentvet_pages_install_lines_are_the_guides() {
     let page = install_lines(&read("docs/website/agentvet-page.md"));
     assert!(
-        page.iter().any(|l| l.starts_with("cargo build")),
+        page.iter().any(|l| l.starts_with("brew install"))
+            && page.iter().any(|l| l.starts_with("scoop install"))
+            && page.iter().any(|l| l.starts_with("cargo build")),
         "the setup: the page's install lines were read: {page:?}"
     );
     let guide = install_lines(&read("docs/INSTALL.md"));
