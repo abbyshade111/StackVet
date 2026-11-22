@@ -42,9 +42,7 @@ fn build(dir: &Path) {
 
 /// Each paragraph or list item a page shows, as text.
 fn paragraphs(page: &str) -> Vec<String> {
-    page.split(|c| c == '\n')
-        .collect::<Vec<_>>()
-        .join(" ")
+    page.replace('\n', " ")
         .split("</p>")
         .flat_map(|chunk| chunk.split("</li>"))
         .map(|chunk| {
