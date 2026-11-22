@@ -26,6 +26,15 @@
 //! Without the list, the container could not count what they recorded with `sv review`. The file must be there before
 //! the container starts, or Docker makes a folder in its place; the setup makes it empty first.
 //!
+//! With `--docker`, `--notes DIR` names the person's own records folder for `sv` on their computer
+//! (`~/.local/state/stackvet`), and the container is given the one folder under it where `sv` notes where an app's
+//! build-loop record has got to, `loop-notes`, and nothing else of it (backlog 0716, part 4; ADR-159, decision 12; the
+//! owner's word of 22 November 2026). Without it, the MCP server in a container has nowhere outside the app's folder to
+//! write those notes, and `av report` says nothing was noted. Off unless asked for, as `--keys` is. The folder must be
+//! there before the container starts, readable by the person alone; `sv connect` prints and never writes, so it says
+//! how to make it. Not on Windows yet: there the app's folder has another path inside the container, and a note is
+//! named by that path, so `av report` on the computer would not find it.
+//!
 //! # What it is worth
 //!
 //! Nothing, as evidence: it reads no file of the app's and credits nothing. A block that is right is
@@ -77,6 +86,9 @@ pub enum Runner {
         user: Option<String>,
         /// The person's key folder on their computer, whose list of trusted keys the container reads (backlog 0581).
         keys: Option<String>,
+        /// The person's records folder for `sv` on their computer, whose folder of notes the container writes
+        /// (backlog 0716, part 4).
+        notes: Option<String>,
     },
     /// This copy of `sv`, at its real place.
     Installed(PathBuf),
@@ -136,7 +148,12 @@ fn command_and_args_on(runner: &Runner, folder: &Path, windows: bool) -> (String
         _ => None,
     };
     let (command, args) = match runner {
-        Runner::Docker { docker, user, keys } => {
+        Runner::Docker {
+            docker,
+            user,
+            keys,
+            notes,
+        } => {
             let mut args = vec![
                 "run".to_owned(),
                 "-i".to_owned(),
@@ -162,6 +179,16 @@ fn command_and_args_on(runner: &Runner, folder: &Path, windows: bool) -> (String
                 args.push("-e".to_owned());
                 args.push(format!("XDG_CONFIG_HOME={CONTAINER_CONFIG}"));
             }
+            if let Some(notes) = notes {
+                // The notes' folder alone, at the place `sv` keeps it once XDG_STATE_HOME names the folder above.
+                args.push("-v".to_owned());
+                args.push(format!(
+                    "{notes}/{NOTES_DIR}:{CONTAINER_STATE}/{dir}/{NOTES_DIR}",
+                    dir = sv_frameworks::names::CONFIG_DIR,
+                ));
+                args.push("-e".to_owned());
+                args.push(format!("XDG_STATE_HOME={CONTAINER_STATE}"));
+            }
             if let Some(user) = user {
                 args.push("--user".to_owned());
                 args.push(user.clone());
@@ -182,6 +209,13 @@ fn command_and_args_on(runner: &Runner, folder: &Path, windows: bool) -> (String
 
 /// Where the container's settings folder is, when it is given the list of trusted keys.
 const CONTAINER_CONFIG: &str = "/sv-config";
+
+/// Where the container's records folder is, when it is given the folder of notes.
+const CONTAINER_STATE: &str = "/sv-state";
+
+/// The one folder of the person's records the container is given: where `sv` notes where an app's build-loop record
+/// has got to (`av_record::outside_note`).
+pub const NOTES_DIR: &str = "loop-notes";
 
 /// The hooks block that keeps the hook record for the app in `folder` (backlog 0566, ADR-122): Claude Code's, for the
 /// person to add to its settings. Each runs `program hook-record --app folder` after a command or file write, whether it
@@ -208,13 +242,14 @@ fn shell_word(word: &str) -> String {
     format!("'{}'", word.replace('\'', r"'\''"))
 }
 
-/// `sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--folder DIR] [--hook]`.
+/// `sv connect [TOOL] [--docker PATH] [--user UID:GID] [--keys DIR] [--notes DIR] [--folder DIR] [--hook]`.
 pub fn command(args: &[String]) -> Result<String> {
     let mut tool = None;
     let mut hook = false;
     let mut docker = None;
     let mut user = None;
     let mut keys = None;
+    let mut notes = None;
     let mut folder = None;
     let mut words = args.iter();
     while let Some(arg) = words.next() {
@@ -227,6 +262,9 @@ pub fn command(args: &[String]) -> Result<String> {
                         "--keys needs your key folder, such as \"$HOME/.config/stackvet\"",
                     )?)
             }
+            "--notes" => notes = Some(words.next().context(
+                "--notes needs your records folder for sv, such as \"$HOME/.local/state/stackvet\"",
+            )?),
             "--folder" => {
                 folder = Some(PathBuf::from(
                     words.next().context("--folder needs a folder")?,
@@ -261,10 +299,14 @@ pub fn command(args: &[String]) -> Result<String> {
                 check_user(user)?;
             }
             let keys = keys.map(|k| check_keys(k)).transpose()?;
+            let notes = notes
+                .map(|n| check_notes_on(n, cfg!(windows)))
+                .transpose()?;
             Runner::Docker {
                 docker: docker.clone(),
                 user: user.cloned(),
                 keys,
+                notes,
             }
         }
         None => {
@@ -275,6 +317,12 @@ pub fn command(args: &[String]) -> Result<String> {
                 bail!(
                     "--keys is for the container: give it with --docker. A copy of `sv` installed on your computer \
                      reads your key folder itself"
+                );
+            }
+            if notes.is_some() {
+                bail!(
+                    "--notes is for the container: give it with --docker. A copy of `sv` installed on your computer \
+                     reaches its own records folder itself"
                 );
             }
             if in_a_container() {
@@ -330,6 +378,31 @@ pub fn where_it_goes(args: &[String]) -> String {
                 reads that record unless you run `sv report --hook-record`."
             .to_owned();
     }
+    let notes = args
+        .iter()
+        .position(|a| a == "--notes")
+        .and_then(|at| args.get(at + 1))
+        .map(|dir| {
+            let dir = dir.trim_end_matches('/');
+            format!(
+                " With --notes, sv in the container notes where this app's build-loop record has got to in \
+                 {dir}/{NOTES_DIR}, outside the app's folder. That folder must be there, and yours alone, before \
+                 the tool starts the container: {}",
+                make_notes(dir)
+            )
+        })
+        .unwrap_or_default();
+    let said = where_the_block_goes(args);
+    said + &notes
+}
+
+/// The commands that make the folder of notes under `dir`, readable by the person alone.
+fn make_notes(dir: &str) -> String {
+    let (dir, notes) = (shell_word(dir), shell_word(&format!("{dir}/{NOTES_DIR}")));
+    format!("mkdir -p {notes} && chmod 700 {dir} {notes}")
+}
+
+fn where_the_block_goes(args: &[String]) -> String {
     match args.iter().find_map(|a| Tool::named(a)) {
         Some(tool) => format!(
             "Put this in {} in the app's folder, then restart your AI coding tool and ask it to list the \
@@ -416,6 +489,57 @@ fn check_keys_on(keys: &str, windows: bool) -> Result<String> {
     Ok(trimmed.to_owned())
 }
 
+/// The records folder as Docker is given it: a full path, without a trailing `/`, and holding no `:` or `,`. Outside
+/// the container its folder of notes must be there already, a real folder and the person's alone: Docker would make
+/// one in its place, as another user on Linux. Inside, the person's folders cannot be seen, and `where_it_goes` says
+/// how to make it. Refused on Windows, with the reason.
+fn check_notes_on(notes: &str, windows: bool) -> Result<String> {
+    if windows {
+        bail!(
+            "--notes is not offered on Windows yet: there the app's folder has another path inside the container, \
+             and a note is named by that path, so `av report` on your computer would not find the notes the \
+             container wrote. A copy of `sv` installed on your computer writes them itself"
+        );
+    }
+    let trimmed = notes.trim_end_matches('/');
+    if !trimmed.starts_with('/') {
+        bail!(
+            "--notes needs your records folder's full path, such as \"$HOME/.local/state/stackvet\" (the shell \
+             fills in $HOME), not {notes}"
+        );
+    }
+    if trimmed.contains([':', ',']) {
+        bail!(
+            "--notes cannot name a folder whose path holds `:` or `,`, which Docker reads as separators: {notes}"
+        );
+    }
+    if in_a_container() {
+        return Ok(trimmed.to_owned());
+    }
+    let folder = Path::new(trimmed).join(NOTES_DIR);
+    let meta = std::fs::symlink_metadata(&folder);
+    if !meta.as_ref().is_ok_and(|m| m.is_dir()) {
+        bail!(
+            "{} is not there yet as a folder of its own, and Docker would make one in its place. Make it first: {}",
+            folder.display(),
+            make_notes(trimmed)
+        );
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if meta.is_ok_and(|m| m.permissions().mode() & 0o077 != 0) {
+            bail!(
+                "{} can be read or written by others on this computer, and the notes are yours alone. Close it \
+                 first: {}",
+                folder.display(),
+                make_notes(trimmed)
+            );
+        }
+    }
+    Ok(trimmed.to_owned())
+}
+
 /// Docker's path as the settings give it: a full one, since an app started from the Dock (or the Start menu) often
 /// cannot find a bare `docker`. On Windows that is a path from a drive's root (`C:\Program Files\Docker\...\docker.exe`;
 /// backlog 0375, ADR-153), and anywhere it may start with `/`.
@@ -455,3 +579,6 @@ mod windows_docker_tests;
 
 #[cfg(test)]
 mod windows_keys_tests;
+
+#[cfg(test)]
+mod notes_tests;

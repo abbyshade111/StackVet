@@ -34,7 +34,7 @@ const MAX_INPUT: u64 = 1024 * 1024;
 pub const MAX_BYTES: u64 = 16 * 1024 * 1024;
 
 /// The chain a record starts from.
-const GENESIS: &str = "sv hook record, before its first line";
+pub(crate) const GENESIS: &str = "sv hook record, before its first line";
 
 /// Where the records are kept: `$XDG_STATE_HOME/stackvet/hook-records`, or `~/.local/state/stackvet/hook-records`.
 pub fn folder() -> Option<PathBuf> {
@@ -111,7 +111,7 @@ pub fn line_of(
 }
 
 /// The hash that chains a line to the one before it, over the previous line's chain and this line's own text.
-fn chain_of(previous: &str, body: &str) -> String {
+pub(crate) fn chain_of(previous: &str, body: &str) -> String {
     crate::plain::sha256(format!("{previous}\n{body}").as_bytes())
 }
 
