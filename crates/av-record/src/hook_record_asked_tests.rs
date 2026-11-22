@@ -107,3 +107,41 @@ fn a_tool_with_no_line_of_its_own_is_kept_only_while_an_asking_for_it_is_unanswe
         "mcp__sv__status"
     ));
 }
+
+/// What the owner's trial of 22 November 2026 showed: an asking for a file write kept the text to be written.
+#[test]
+fn an_asking_to_write_or_edit_a_file_keeps_the_file_s_name_and_nothing_of_what_would_be_written() {
+    for (tool, input) in [
+        (
+            "Write",
+            json!({ "file_path": "/app/notes/trial.txt", "content": "the file's own text" }),
+        ),
+        (
+            "Edit",
+            json!({ "file_path": "/app/notes/trial.txt", "old_string": "the file's own text", "new_string": "the file's own text, changed" }),
+        ),
+        (
+            "NotebookEdit",
+            json!({ "notebook_path": "/app/notes/trial.txt", "new_source": "the file's own text" }),
+        ),
+    ] {
+        let asked = line(json!({
+            "hook_event_name": "PermissionRequest", "session_id": "s", "tool_name": tool, "tool_input": input
+        }))
+        .unwrap();
+        assert_eq!(asked["summary"], "notes/trial.txt", "{tool}");
+        assert!(
+            !asked.to_string().contains("the file's own text"),
+            "{tool}: {asked}"
+        );
+        // The fingerprint is still of everything it was given, so the same write is the same call.
+        assert_eq!(asked["print"].as_str().map(str::len), Some(64));
+    }
+    // A tool server's tool is not known to name a file this way: its input is summarized as text, cut short.
+    let asked = line(json!({
+        "hook_event_name": "PermissionRequest", "session_id": "s", "tool_name": "mcp__files__write",
+        "tool_input": { "file_path": "/app/a.txt" }
+    }))
+    .unwrap();
+    assert_eq!(asked["summary"], r#"{"file_path":"/app/a.txt"}"#);
+}
