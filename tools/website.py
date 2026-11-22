@@ -41,6 +41,7 @@ file's type, or being told where a reader came from.
 
 import argparse
 import base64
+import datetime
 import hashlib
 import html
 import json
@@ -238,6 +239,26 @@ def with_configvet_counts(text, c):
                 "the count of defaults", where, "data/config-defaults.json")
     return once(r"Of the \d+ mapped so far", f"Of the {c['mapped']} mapped so far", text,
                 "the count of mapped tool rules", where, "data/cv-adapters.json")
+
+
+MOST_DAYS_OLD = 30
+
+
+def stale(where, report, ours, today):
+    """Why a report the site shows is stale, if it is (backlog 0702): made more than MOST_DAYS_OLD days before `today`,
+    or by an `sv` older in its major or minor number than `ours`, read from its "Produced by" line. Only ever a
+    warning: the site still builds, and the weekly run says so where a person will see it."""
+    m = re.search(r"Produced by `sv` (\d+)\.(\d+)\.\d+ \(commit [0-9a-f]+\) on (\d{4})-(\d{2})-(\d{2})", report)
+    if not m:
+        return [f"{where} has no \"Produced by\" line, so how old it is cannot be told"]
+    said = []
+    made_by = (int(m[1]), int(m[2]))
+    if made_by < tuple(int(x) for x in ours.split(".")[:2]):
+        said.append(f"{where} was made by sv {m[1]}.{m[2]}, older than this workspace's {ours}")
+    age = (today - datetime.date(int(m[3]), int(m[4]), int(m[5]))).days
+    if age > MOST_DAYS_OLD:
+        said.append(f"{where} is {age} days old (made {m[3]}-{m[4]}-{m[5]}), more than {MOST_DAYS_OLD}")
+    return said
 
 
 def fence_exceptions(architecture):
@@ -719,6 +740,14 @@ def build(out):
     # that say these folders are this tool's own, which are for this repository, not for a reader.
     write_text(out / ".assetsignore", f"{MARK}\nstandards/{framework_pages.MARK}\n")
     print(f"wrote {out}: " + ", ".join(pages) + ", the report files, and standards/")
+    ours = re.search(r'^version = "([^"]+)"', read("Cargo.toml"), re.M)[1]
+    today = datetime.datetime.now(datetime.timezone.utc).date()
+    for where, report in (("the example report (docs/website/reports/notes-with-users)",
+                           read("docs/website/reports/notes-with-users/security.md")),
+                          ("the self-assessment (docs/website/self-assessment)",
+                           read("docs/website/self-assessment/summary.md"))):
+        for why in stale(where, report, ours, today):
+            print(f"tools/website.py: warning: {why}. Make it again; the page's notes say how.", file=sys.stderr)
 
 
 def self_test():
@@ -800,6 +829,15 @@ def self_test():
     assert missing_from_credits(credits, tools, {"adapters": [{"name": "Trivy"}]}) == ["Trivy"]
     assert missing_from_credits(credits, {"adapters": [{"name": "CodeQL (Ruby)"}]}) == ["CodeQL's Ruby"]
     assert missing_from_credits(["- hadolint, named but not bold"], {"adapters": [{"name": "hadolint"}]}) == ["hadolint"]
+    # A report shown on the site is said to be stale when old or made by an older sv, never refused (backlog 0702).
+    line = "Produced by `sv` 0.3.0 (commit 7cb7878b2ec7) on 2026-11-22 03:24:15 UTC, run 90bae36f9345."
+    day = datetime.date(2026, 11, 22)
+    assert stale("r", line, "0.3.0", day) == [] and stale("r", line, "0.3.0", day + datetime.timedelta(30)) == []
+    assert stale("r", line, "0.3.0", day + datetime.timedelta(31)) == ["r is 31 days old (made 2026-11-22), more than 30"]
+    assert stale("r", line, "0.4.0", day) == ["r was made by sv 0.3, older than this workspace's 0.4.0"]
+    assert stale("r", line, "0.3.9", day) == [], "a patch release does not make a report stale"
+    assert stale("r", line, "1.0.0", day + datetime.timedelta(40))[0].startswith("r was made by sv 0.3")
+    assert stale("r", "no such line", "0.3.0", day) == ['r has no "Produced by" line, so how old it is cannot be told']
     print("website self-test: ok")
 
 
