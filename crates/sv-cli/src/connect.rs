@@ -32,8 +32,9 @@
 //! owner's word of 22 November 2026). Without it, the MCP server in a container has nowhere outside the app's folder to
 //! write those notes, and `av report` says nothing was noted. Off unless asked for, as `--keys` is. The folder must be
 //! there before the container starts, readable by the person alone; `sv connect` prints and never writes, so it says
-//! how to make it. Not on Windows yet: there the app's folder has another path inside the container, and a note is
-//! named by that path, so `av report` on the computer would not find it.
+//! how to make it. On Windows too (backlog 0728): there the app's folder has another path inside the container, so a
+//! note is named by the person's own path of it, which the container is told in `SV_HOST_FOLDER`, and `av report` on
+//! the computer finds it.
 //!
 //! # What it is worth
 //!
@@ -123,20 +124,11 @@ fn command_and_args(runner: &Runner, folder: &Path) -> (String, Vec<String>) {
 }
 
 /// What the container is told the app's folder is on the person's computer, when that is a Windows path (backlog 0375,
-/// ADR-153): the MCP server writes the paths it hands back under it, and reads the ones it is given from it.
-pub const HOST_FOLDER_ENV: &str = "SV_HOST_FOLDER";
+/// ADR-153): the MCP server writes the paths it hands back under it, and reads the ones it is given from it, and the
+/// build-loop notes are named by it (backlog 0728).
+pub use sv_frameworks::paths::HOST_FOLDER_ENV;
 
-/// A Windows folder as a Linux container shows it: the drive letter in lower case, then the rest with `/` for `\`
-/// (`C:\Users\you\app` is `/c/Users/you/app`). `None` for a path that does not start at a drive's root.
-pub fn inside_path(folder: &str) -> Option<String> {
-    if !is_drive_path(folder) {
-        return None;
-    }
-    let drive = folder[..1].to_ascii_lowercase();
-    let rest = folder[2..].replace('\\', "/");
-    let rest = rest.trim_end_matches('/');
-    Some(format!("/{drive}{rest}"))
-}
+pub use sv_frameworks::paths::inside_path;
 
 /// `command_and_args`, with whether this is Windows given, so the Windows settings are tested everywhere.
 fn command_and_args_on(runner: &Runner, folder: &Path, windows: bool) -> (String, Vec<String>) {
@@ -182,8 +174,10 @@ fn command_and_args_on(runner: &Runner, folder: &Path, windows: bool) -> (String
             if let Some(notes) = notes {
                 // The notes' folder alone, at the place `sv` keeps it once XDG_STATE_HOME names the folder above.
                 args.push("-v".to_owned());
+                // On Windows the folder is the person's Windows one (backlog 0728), and its parts are joined as theirs are.
+                let sep = if windows { '\\' } else { '/' };
                 args.push(format!(
-                    "{notes}/{NOTES_DIR}:{CONTAINER_STATE}/{dir}/{NOTES_DIR}",
+                    "{notes}{sep}{NOTES_DIR}:{CONTAINER_STATE}/{dir}/{NOTES_DIR}",
                     dir = sv_frameworks::names::CONFIG_DIR,
                 ));
                 args.push("-e".to_owned());
@@ -416,6 +410,16 @@ pub fn where_it_goes(args: &[String]) -> String {
 
 /// The commands that make the folder of notes under `dir`, readable by the person alone.
 fn make_notes(dir: &str) -> String {
+    make_notes_on(dir, cfg!(windows))
+}
+
+/// `make_notes`, with whether this is Windows given. On Windows, PowerShell's command, which makes the folder under the
+/// person's own profile folder, where only they and the computer's administrators can open it.
+fn make_notes_on(dir: &str, windows: bool) -> String {
+    if windows {
+        let quoted = format!("'{}'", format!("{dir}\\{NOTES_DIR}").replace('\'', "''"));
+        return format!("New-Item -ItemType Directory -Force -Path {quoted}");
+    }
     let (dir, notes) = (shell_word(dir), shell_word(&format!("{dir}/{NOTES_DIR}")));
     format!("mkdir -p {notes} && chmod 700 {dir} {notes}")
 }
@@ -510,23 +514,33 @@ fn check_keys_on(keys: &str, windows: bool) -> Result<String> {
 /// The records folder as Docker is given it: a full path, without a trailing `/`, and holding no `:` or `,`. Outside
 /// the container its folder of notes must be there already, a real folder and the person's alone: Docker would make
 /// one in its place, as another user on Linux. Inside, the person's folders cannot be seen, and `where_it_goes` says
-/// how to make it. Refused on Windows, with the reason.
+/// how to make it. On Windows (backlog 0728) a drive's path is taken too, and `av` on the computer must have a records
+/// folder to read the notes from: it finds one only where HOME or XDG_STATE_HOME is set.
 fn check_notes_on(notes: &str, windows: bool) -> Result<String> {
-    if windows {
+    let trimmed = notes.trim_end_matches(['/', '\\']);
+    // On Windows a full path starts with its drive, whose colon Docker Desktop reads as part of the path.
+    let drive = windows && !trimmed.starts_with('/') && is_drive_path(trimmed);
+    if !trimmed.starts_with('/') && !drive {
+        let example = if windows {
+            "\"$HOME\\.local\\state\\stackvet\" (PowerShell fills in $HOME)"
+        } else {
+            "\"$HOME/.local/state/stackvet\" (the shell fills in $HOME)"
+        };
+        bail!("--notes needs your records folder's full path, such as {example}, not {notes}");
+    }
+    if windows && !in_a_container() && av_record::hook_record::folder().is_none() {
         bail!(
-            "--notes is not offered on Windows yet: there the app's folder has another path inside the container, \
-             and a note is named by that path, so `av report` on your computer would not find the notes the \
-             container wrote. A copy of `sv` installed on your computer writes them itself"
+            "--notes needs a records folder that `av report` on this computer reads, and on Windows `av` finds one \
+             only when the HOME or XDG_STATE_HOME setting names it, which neither does here. Set XDG_STATE_HOME to \
+             your user folder's .local\\state for your account, then name that folder's stackvet here"
         );
     }
-    let trimmed = notes.trim_end_matches('/');
-    if !trimmed.starts_with('/') {
-        bail!(
-            "--notes needs your records folder's full path, such as \"$HOME/.local/state/stackvet\" (the shell \
-             fills in $HOME), not {notes}"
-        );
-    }
-    if trimmed.contains([':', ',']) {
+    let past_drive = if drive {
+        trimmed.get(2..).unwrap_or_default()
+    } else {
+        trimmed
+    };
+    if past_drive.contains([':', ',']) {
         bail!(
             "--notes cannot name a folder whose path holds `:` or `,`, which Docker reads as separators: {notes}"
         );
@@ -540,7 +554,7 @@ fn check_notes_on(notes: &str, windows: bool) -> Result<String> {
         bail!(
             "{} is not there yet as a folder of its own, and Docker would make one in its place. Make it first: {}",
             folder.display(),
-            make_notes(trimmed)
+            make_notes_on(trimmed, windows)
         );
     }
     #[cfg(unix)]
@@ -578,11 +592,7 @@ fn check_docker_on(docker: &str, windows: bool) -> Result<()> {
     );
 }
 
-/// A Windows path from a drive's root, `C:\…` or `C:/…`: read by hand, so it is told on any computer.
-fn is_drive_path(path: &str) -> bool {
-    let b = path.as_bytes();
-    b.len() >= 3 && b[0].is_ascii_alphabetic() && b[1] == b':' && (b[2] == b'\\' || b[2] == b'/')
-}
+use sv_frameworks::paths::is_drive_path;
 
 /// Docker marks every container with `/.dockerenv`.
 pub fn in_a_container() -> bool {

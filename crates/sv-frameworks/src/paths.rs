@@ -81,5 +81,76 @@ fn device(part: &str) -> bool {
             && matches!(stem.as_bytes()[3], b'1'..=b'9'))
 }
 
+/// What `sv connect --docker` tells the container the app's folder is on the person's computer, when that is a
+/// Windows folder (backlog 0375, ADR-153): `C:\Users\you\app`, shown inside at `/c/Users/you/app`.
+pub const HOST_FOLDER_ENV: &str = "SV_HOST_FOLDER";
+
+/// Whether `path` starts at a Windows drive's root: `C:\` or `C:/`.
+pub fn is_drive_path(path: &str) -> bool {
+    let b = path.as_bytes();
+    b.len() >= 3 && b[0].is_ascii_alphabetic() && b[1] == b':' && (b[2] == b'\\' || b[2] == b'/')
+}
+
+/// A Windows folder as a Linux container shows it: the drive letter in lower case, then the rest with `/` for `\`
+/// (`C:\Users\you\app` is `/c/Users/you/app`). `None` for a path that does not start at a drive's root.
+pub fn inside_path(folder: &str) -> Option<String> {
+    if !is_drive_path(folder) {
+        return None;
+    }
+    let drive = folder[..1].to_ascii_lowercase();
+    let rest = folder[2..].replace('\\', "/");
+    let rest = rest.trim_end_matches('/');
+    Some(format!("/{drive}{rest}"))
+}
+
+/// The person's own path of `inside`, a path in a Linux container whose app's folder is the Windows folder `host`:
+/// `/c/Users/you/app/sub` is `C:\Users\you\app\sub` (backlog 0728). `None` when `inside` is not under the folder
+/// `host` is shown at, or `host` is not a Windows folder.
+pub fn host_path(inside: &str, host: &str) -> Option<String> {
+    let host = if host.len() > 3 {
+        host.trim_end_matches(['\\', '/'])
+    } else {
+        host
+    };
+    let shown = inside_path(host)?;
+    let inside = inside.trim_end_matches('/');
+    let head = inside.get(..shown.len())?;
+    let rest = inside.get(shown.len()..)?;
+    if !head.eq_ignore_ascii_case(&shown) || !(rest.is_empty() || rest.starts_with('/')) {
+        return None;
+    }
+    let host = host.replace('/', "\\");
+    let rest = rest.replace('/', "\\");
+    Some(if host.ends_with('\\') {
+        format!("{host}{}", rest.trim_start_matches('\\'))
+    } else {
+        format!("{host}{rest}")
+    })
+}
+
+/// One form of a folder's full path, for naming what is kept about it outside it, so the same folder gets one name
+/// whichever program writes it down (backlog 0728). A Windows path loses the `\\?\` before its drive, gets its drive
+/// letter in upper case and `\` between its parts, and loses a separator at its end; any other path is as it was. The
+/// rest of a Windows path keeps its case: both sides take it from the same `canonical`, which gives the case the
+/// folder has on the disk, and a path lowered here would rename every note already kept on Windows.
+pub fn kept_form(path: &str) -> String {
+    let path = path
+        .strip_prefix(r"\\?\")
+        .filter(|rest| is_drive_path(rest))
+        .unwrap_or(path);
+    if !is_drive_path(path) {
+        return path.to_owned();
+    }
+    let mut out = path[..1].to_ascii_uppercase();
+    out.push_str(&path[1..].replace('/', "\\"));
+    while out.len() > 3 && out.ends_with('\\') {
+        out.pop();
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod kept_form_tests;

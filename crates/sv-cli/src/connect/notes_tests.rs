@@ -1,6 +1,6 @@
 //! `sv connect --docker --notes DIR` (backlog 0716, part 4): the container is given the one folder of notes and told
-//! where its records are, only when asked; the folder must be there and the person's alone; and Windows is refused
-//! with the reason.
+//! where its records are, only when asked; the folder must be there and the person's alone; and on Windows (backlog 0728) a
+//! drive's folder is taken, with PowerShell's command to make it.
 
 use super::*;
 
@@ -97,15 +97,45 @@ fn the_folder_sv_mounts_is_the_one_the_notes_are_written_to() {
 }
 
 #[test]
-fn windows_is_refused_with_the_reason_whatever_the_path() {
-    for notes in [r"C:\Users\someone\state\stackvet", "/c/Users/someone/state"] {
-        let why = said(notes, true);
+fn on_windows_a_drive_s_folder_is_taken_and_it_says_how_to_make_it_in_powershell() {
+    // Backlog 0728: no longer refused. A folder that is not there yet is named, with PowerShell's command to make it.
+    let why = said(r"C:\Users\someone\.local\state\stackvet", true);
+    if !in_a_container() {
         assert!(
-            why.contains("not offered on Windows yet")
-                && why.contains("another path inside the container"),
-            "{notes}: {why}"
+            why.contains(r"C:\Users\someone\.local\state\stackvet\loop-notes")
+                && why.contains("New-Item -ItemType Directory -Force -Path")
+                && !why.contains("chmod"),
+            "{why}"
         );
     }
+    // A path that is not a full one is still refused, with a Windows example; and a colon past the drive's.
+    assert!(said(r"state\stackvet", true).contains("PowerShell fills in $HOME"));
+    assert!(said(r"C:\Users\a:b\stackvet", true).contains("`:` or `,`"));
+    // A quote in the folder's name is doubled, as PowerShell reads it inside single quotes.
+    assert_eq!(
+        make_notes_on(r"C:\Users\O'Neil\.local\state\stackvet", true),
+        r"New-Item -ItemType Directory -Force -Path 'C:\Users\O''Neil\.local\state\stackvet\loop-notes'"
+    );
+}
+
+#[test]
+fn on_windows_the_notes_are_mounted_from_the_windows_folder_and_the_container_is_told_the_app_s() {
+    let runner = docker(Some(r"C:\Users\someone\.local\state\stackvet"));
+    let with = command_and_args_on(&runner, Path::new(r"C:\Users\someone\app"), true).1;
+    assert!(
+        with.windows(2).any(|w| w
+            == [
+                "-v",
+                r"C:\Users\someone\.local\state\stackvet\loop-notes:/sv-state/stackvet/loop-notes"
+            ]),
+        "{with:?}"
+    );
+    // The folder the notes are named by (backlog 0728) is the one the container is told.
+    assert!(
+        with.windows(2)
+            .any(|w| w == ["-e", r"SV_HOST_FOLDER=C:\Users\someone\app"]),
+        "{with:?}"
+    );
 }
 
 #[test]
