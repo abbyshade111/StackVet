@@ -7,13 +7,18 @@
 //! GitHub App's, cannot say its permissions, so the report says, before any finding, that ConfigVet could not confirm
 //! it is read-only. Nothing here ever sends a write to find out.
 
-use crate::{Answer, MOST_REDIRECTS, MOST_REQUESTS, Sent, Transport};
+use crate::{Answer, Client, Got, Sent, Transport};
 use serde::Serialize;
 use serde_json::Value;
 use sv_core::Secret;
 
 /// The one host every request goes to.
 pub const HOST: &str = "api.github.com";
+/// The headers GitHub's REST API asks for, sent beside the token.
+pub const HEADERS: &[&str] = &[
+    "Accept: application/vnd.github+json",
+    "X-GitHub-Api-Version: 2022-11-28",
+];
 /// No more rulesets or environments than this are read one by one.
 pub const MOST_EACH: usize = 10;
 
@@ -189,76 +194,6 @@ pub fn segment(text: &str) -> String {
     out
 }
 
-struct Client<'t> {
-    transport: &'t mut dyn Transport,
-    token: &'t str,
-    requests: Vec<Sent>,
-}
-
-enum Got {
-    Json(Value, Answer),
-    Status(u16, Answer),
-}
-
-impl Client<'_> {
-    /// A `GET` of `path` on `api.github.com`, following a redirect only when it stays on that host.
-    fn get(&mut self, path: &str) -> Result<Got, String> {
-        let mut url = format!("https://{HOST}{path}");
-        for _ in 0..=MOST_REDIRECTS {
-            if self.requests.len() >= MOST_REQUESTS {
-                return Err(format!(
-                    "cv stopped at its limit of {MOST_REQUESTS} requests"
-                ));
-            }
-            let shown = url
-                .trim_start_matches(&format!("https://{HOST}"))
-                .to_owned();
-            let answer = match self.transport.get(&url, self.token) {
-                Ok(answer) => answer,
-                Err(why) => {
-                    self.requests.push(Sent {
-                        method: "GET",
-                        host: HOST.to_owned(),
-                        path: shown,
-                        status: 0,
-                    });
-                    return Err(why);
-                }
-            };
-            self.requests.push(Sent {
-                method: "GET",
-                host: HOST.to_owned(),
-                path: shown,
-                status: answer.status,
-            });
-            if (300..400).contains(&answer.status) {
-                match &answer.redirect {
-                    Some(next) if next.starts_with(&format!("https://{HOST}/")) => {
-                        url = next.clone();
-                        continue;
-                    }
-                    Some(next) => {
-                        return Err(format!(
-                            "GitHub redirected to {next}, which is not {HOST}, so it was not followed"
-                        ));
-                    }
-                    None => return Ok(Got::Status(answer.status, answer)),
-                }
-            }
-            if answer.status == 200 {
-                return match serde_json::from_slice::<Value>(&answer.body) {
-                    Ok(value) => Ok(Got::Json(value, answer)),
-                    Err(_) => Err(format!("GitHub's answer to {path} was not JSON")),
-                };
-            }
-            return Ok(Got::Status(answer.status, answer));
-        }
-        Err(format!(
-            "GitHub redirected {path} more than {MOST_REDIRECTS} times"
-        ))
-    }
-}
-
 /// What a refused or missing answer means, in a person's words, with the permission GitHub says the endpoint needs.
 fn unanswered(what: &str, status: u16, answer: &Answer) -> String {
     let needs = answer
@@ -286,11 +221,7 @@ pub fn read(repo: &Repo, token: &str, transport: &mut dyn Transport) -> Reading 
         unread: Vec::new(),
         stopped: None,
     };
-    let mut client = Client {
-        transport,
-        token,
-        requests: Vec::new(),
-    };
+    let mut client = Client::new(HOST, "", "GitHub", transport, token);
     let base = format!("/repos/{}/{}", segment(&repo.owner), segment(&repo.name));
     read_into(&mut client, &base, &mut reading);
     reading.requests = client.requests;

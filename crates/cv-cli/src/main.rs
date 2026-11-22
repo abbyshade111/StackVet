@@ -26,6 +26,7 @@ cv: ConfigVet reviews the files that say how an app is deployed.
 Usage:
   cv check <folder> [--out <folder>] [--fail-on attention|not-assessed] [--no-tools]
   cv live github <owner>/<repo> [--out <folder>] [--fail-on attention|not-assessed]
+  cv live cloudflare <zone> [--out <folder>] [--fail-on attention|not-assessed]
   cv --version
 
 cv check reads the folder's Dockerfiles, compose files, Kubernetes manifests, and Terraform plans (as JSON), with the
@@ -34,8 +35,9 @@ a safe or an unsafe default, or not assessed. It then runs hadolint, Checkov, an
 they are installed, unless --no-tools is given; a tool that is not installed is said so, never counted as a pass. It
 writes report.json into --out, by default <folder>/cv-report, and opens no network connection.
 
-cv live github, only when asked for by name, reads one GitHub repository's settings with the token in GH_TOKEN:
-every request a GET to api.github.com, each listed in its report. See `cv live --help`.";
+cv live github and cv live cloudflare, only when asked for by name, read one GitHub repository's settings with the
+token in GH_TOKEN, or one Cloudflare zone's with the token in CLOUDFLARE_API_TOKEN: every request a GET to
+api.github.com or api.cloudflare.com, each listed in its report. See `cv live --help`.";
 
 #[derive(Debug, PartialEq, Eq)]
 enum FailOn {

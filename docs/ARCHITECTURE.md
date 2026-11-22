@@ -36,8 +36,8 @@ written inside another file is counted), rounded to the hundred, on 13 October 2
 | `av-record` | 2,500 | The records of what an AI coding tool did, shared by `sv` and AgentVet (ADR-159, part 1; backlog 0705): the build-loop record (`build_loop`, ADR-076), the hook record (`hook_record`, ADR-122), and the reader of what the tool did that is worth a look (`tool_behavior`, ADR-131), moved out of `sv-cli` on 21 November 2026 word for word, with five small helpers (`plain`). `sv-cli` re-exports each under its old path. Depends on `sv-check` today, for cutting keys, git, and the bill of materials. Opens no network connection. AgentVet's own binary, `av`, is not built yet. |
 | `av-cli` | 400 | The `av` binary, AgentVet's command (ADR-159, part 2; backlog 0705): `av report <folder>`, which says what the build-loop record and git show an AI coding tool did, and the hook record and the pass-through's record too when asked with `--hook-record` and `--proxy-record`, each with how far it can be relied on, and what it could not see. It decides nothing, writes nothing, and opens no network connection. `av proxy -- <command>` is the pass-through: it starts the tool server it is given, relays every line unchanged, and writes down each call to a tool. Depends on `av-record`, `sv-report`, `sv-check`, and `sv-frameworks`; no crate of `sv`'s depends on it. Not in the published image or a release yet. |
 | `cv-rules` | 1,900 | ConfigVet's rules over an app's deployment files (ADR-157, part 2; backlog 0687): readers for Dockerfiles, compose files, Kubernetes manifests, and Terraform plans as JSON, each turned into deployment units; the table of defaults (`data/config-defaults.json`); the five outcomes of a setting (`outcome`); and the first rules (`rules`). On `sv-core`, `sv-scan`, `sv-frameworks`, and `sv-yaml`, never `sv-check`. Opens no network connection. |
-| `cv-live` | 1,300 | ConfigVet's live clients (ADR-157, decisions 4 to 6; backlog 0717): `github`, which reads a repository's settings through `curl` with a fixed list of `GET` requests and tells whether the token can write, and `judge`, which settles each setting as a finding, a credit in part, or not assessed. On `cv-rules` and `sv-core`. The only crate that opens a connection to a hosting account; `sv-cli` never reaches it (`crates/sv-cli/tests/cv_live_fence.rs`). |
-| `cv-cli` | 800 | The `cv` binary: `cv check <folder>`, which prints what each rule settled, runs hadolint, Checkov, and Trivy over the same files (`tools`, described in `data/cv-adapters.json`; ADR-157, part 3; backlog 0693), and writes `report.json`, with `sv`'s exit codes (ADR-029); and `cv live github <owner>/<repo>` (`live`), through `cv-live`. Depends on `cv-rules`, `cv-live`, `sv-core`, and `sv-check`, for the runner of `sv`'s outside tools (the owner's choice, 21 November 2026); no crate of `sv`'s depends on it. |
+| `cv-live` | 2,200 | ConfigVet's live clients (ADR-157, decisions 4 to 6; backlogs 0717 and 0732): `github`, which reads a repository's settings through `curl` with a fixed list of `GET` requests and tells whether the token can write, and `judge`, which settles each setting as a finding, a credit in part, or not assessed; `cloudflare` and `cloudflare_judge`, the same for one Cloudflare zone; and the one `Client` both send their requests through, which holds the limits and checks each redirect. On `cv-rules` and `sv-core`. The only crate that opens a connection to a hosting account; `sv-cli` never reaches it (`crates/sv-cli/tests/cv_live_fence.rs`). |
+| `cv-cli` | 900 | The `cv` binary: `cv check <folder>`, which prints what each rule settled, runs hadolint, Checkov, and Trivy over the same files (`tools`, described in `data/cv-adapters.json`; ADR-157, part 3; backlog 0693), and writes `report.json`, with `sv`'s exit codes (ADR-029); and `cv live github <owner>/<repo>` and `cv live cloudflare <zone>` (`live`), through `cv-live`. Depends on `cv-rules`, `cv-live`, `sv-core`, and `sv-check`, for the runner of `sv`'s outside tools (the owner's choice, 21 November 2026); no crate of `sv`'s depends on it. |
 
 The rule of the layering: a crate below decides nothing a crate above would want to overrule. `sv-check` says what
 it saw; `sv-report` says what that is called; `sv-cli` says it to a person or a tool.
@@ -289,14 +289,20 @@ to is the server's own. `av checkpoint`, run by the owner at a terminal, signs w
 record's chain has got to each time it writes a line, so a record rewritten inside the app's folder shows; through Docker it can only when `sv connect --docker` was given `--notes`, which mounts that one folder of notes into the container. A test holds what `av`'s source can show: nothing in it connects, and one file starts a
 program (`crates/av-cli/tests/report.rs`).
 
-ConfigVet's `cv` (ADR-157) opens no network connection in `cv check`, which reads files only. Its one connection is
-`cv live github <owner>/<repo>`, typed by the person: **off** until asked for by name, never run by `cv check`. It
+ConfigVet's `cv` (ADR-157) opens no network connection in `cv check`, which reads files only. Its two connections are
+`cv live github <owner>/<repo>` and `cv live cloudflare <zone>`, typed by the person: **off** until asked for by name,
+never run by `cv check`. The first
 reads one repository's settings through `curl`, a fixed list of `GET` requests to `api.github.com` only, HTTPS only, a
 redirect followed only to that host, at most 40 requests of 1 MB and 20 seconds each, and lists every request in its
 report. The token comes from `GH_TOKEN` or `GITHUB_TOKEN`, never from an option, and reaches `curl` on its input, never
 its command line; nothing shows more of it than `Secret::redact` does. A classic token that can write is refused; a
 fine-grained one cannot say its permissions, so the report says it could not be confirmed read-only (ADR-157, Later,
-21 November 2026; backlog 0717). It lives in `cv-live`, which `sv` never reaches: `crates/sv-cli/tests/cv_live_fence.rs`
+21 November 2026; backlog 0717). `cv live cloudflare` is held to the same limits, through the same client, with a fixed
+list of `GET` requests to `api.cloudflare.com` only, under `/client/v4`: the zone, the token's verify, seven settings,
+and the cache rules. Its token comes from `CLOUDFLARE_API_TOKEN` alone; a Global API Key (`cfk_`) and Wrangler's own
+sign-in token (`cfoat_`) are refused before anything is sent, and a Global API Key's headers are never sent at all.
+Cloudflare shows a token its permissions only if it may read every API token, which `cv` does not ask for, so the report
+says it could not be confirmed read-only (ADR-157, Later, 22 November 2026; backlog 0732). Both live in `cv-live`, which `sv` never reaches: `crates/sv-cli/tests/cv_live_fence.rs`
 follows every dependency of `sv-cli` and fails if one does. None of this is `sv`, so its four exceptions above are
 unchanged.
 

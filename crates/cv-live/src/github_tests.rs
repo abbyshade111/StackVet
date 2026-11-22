@@ -371,11 +371,7 @@ fn the_client_stops_at_its_request_limit() {
     // The fixed plan stays well under the limit, so the client is driven past it directly.
     let mut fake = Fake::default().ok("/x", "{}");
     let token = fine();
-    let mut client = Client {
-        transport: &mut fake,
-        token: &token,
-        requests: Vec::new(),
-    };
+    let mut client = Client::new(HOST, "", "GitHub", &mut fake, &token);
     let mut refused = None;
     for n in 0..MOST_REQUESTS + 5 {
         if let Err(why) = client.get("/x") {

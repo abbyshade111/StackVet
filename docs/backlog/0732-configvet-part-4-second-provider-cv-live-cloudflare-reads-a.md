@@ -1,6 +1,6 @@
 # ConfigVet part 4, second provider: cv live cloudflare reads a zone's settings with a read-only token
 
-**Status:** claimed by Claude Code session (packaging and ConfigVet), 22 November 2026
+**Status:** partly done: the try on stackvet.dev's zone with a read-only token the owner makes, and then the ConfigVet page on stackvet.dev
 
 Filed 22 November 2026, at the owner's word ("Yes, file Cloudflare"). The second half of part 4 of ADR-157's build
 order (the design entry `docs/design/0396-configvet-a-companion-for-an-app-s-deployment-configuration.md`, "Proposed

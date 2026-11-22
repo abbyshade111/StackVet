@@ -2,7 +2,7 @@
 //! cited after reading its text). Here rather than in `src/`, since it reads the repository's `data/` folder where the
 //! source is, which code under `src/` must never do (`crates/sv-cli/tests/moved.rs`).
 
-use cv_live::judge::RULES;
+use cv_live::{cloudflare_judge, judge};
 
 #[test]
 fn every_citation_names_a_requirement_that_exists() {
@@ -17,8 +17,12 @@ fn every_citation_names_a_requirement_that_exists() {
         known.contains("\"AC.8.3\""),
         "the setup: the frameworks were read"
     );
-    assert!(RULES.len() >= 9, "the setup: the rules were read");
-    for rule in RULES {
+    assert!(judge::RULES.len() >= 9, "the setup: the rules were read");
+    assert!(
+        cloudflare_judge::RULES.len() >= 7,
+        "the setup: Cloudflare's rules were read"
+    );
+    for rule in judge::RULES.iter().chain(cloudflare_judge::RULES) {
         for id in rule.requirement_ids {
             assert!(
                 known.contains(&format!("\"{id}\"")),
