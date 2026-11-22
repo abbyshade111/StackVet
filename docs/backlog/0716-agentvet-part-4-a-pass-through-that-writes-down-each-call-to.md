@@ -32,3 +32,9 @@ when.
    the chain's key, so the key stops a rewrite by something that cannot, and a checkpoint is what shows a rewrite of
    lines the owner already signed for. Waits on the owner's answers about the key.
    **Part status:** done, 22 November 2026
+4. **The note, through Docker.** `sv connect <tool> --docker` gains an option that mounts the one folder of the notes
+   into the container and tells `sv` where it is, so the server can note where the build-loop record has got to when
+   it runs through Docker, as the owner's own set-up does (the owner's word, 22 November 2026: "yes, mount the
+   records folder"). Only the notes' folder, made first and readable by the person alone; opt-in, as `--keys` is; not
+   on Windows yet, where the folder's path differs inside the container.
+   **Part status:** open
