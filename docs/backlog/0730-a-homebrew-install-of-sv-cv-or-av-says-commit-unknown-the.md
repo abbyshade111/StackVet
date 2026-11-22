@@ -1,6 +1,6 @@
 # A Homebrew install of sv, cv, or av says commit unknown: the formulas give the build no commit
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 22 November 2026
 
 Found by the owner's first install of `av` by hand, 22 November 2026: `brew install abbyshade111/stackvet/av` built
 v0.3.1 and `av --version` printed `av 0.3.1 (commit unknown)`.
