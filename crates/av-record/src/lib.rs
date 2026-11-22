@@ -10,6 +10,8 @@
 //!   2026 (backlog 0715).
 //! - `groups` (ADR-159): what all of these show, gathered under the design's six groups. New on 21 November 2026
 //!   (backlog 0715).
+//! - `passthrough` (ADR-159, decision 10): the record of each call an agent made to a tool through `av proxy`.
+//!   New on 21 November 2026 (backlog 0716).
 //! - `tool_behavior` (ADR-131): what the tool did that is worth a look, read from git, the hook record, and the last
 //!   report.
 //!
@@ -23,6 +25,7 @@ pub mod envelope;
 pub mod groups;
 pub mod held;
 pub mod hook_record;
+pub mod passthrough;
 pub mod plain;
 pub mod tool_behavior;
 
