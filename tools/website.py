@@ -684,7 +684,13 @@ def inline_scripts(page):
 
 def headers(out):
     """`_headers` for Cloudflare: every inline script the build wrote is allowed by its hash, and nothing else runs.
-    Inline styles are allowed, since the pages and the example report set them in `style` attributes too."""
+    Inline styles are allowed, since the pages and the example report set them in `style` attributes too.
+
+    `Cache-Control` keeps what Cloudflare served the site with until now (`public, max-age=0, must-revalidate`, so a
+    deploy shows at once) and adds `no-transform` (backlog 0740): without it, Cloudflare added a bot-detection script
+    of its own to every page, which the policy above blocks, so it did nothing but fail in each visitor's browser, and
+    the pages served were not the pages built. Its documentation says the script is not added to a response that
+    carries `no-transform`."""
     scripts = set()
     for page in sorted(out.rglob("*.html")):
         scripts.update(inline_scripts(page.read_text(encoding="utf-8")))
@@ -698,7 +704,8 @@ def headers(out):
             "  Referrer-Policy: no-referrer\n"
             "  Permissions-Policy: camera=(), microphone=(), geolocation=()\n"
             "  Cross-Origin-Opener-Policy: same-origin\n"
-            "  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n")
+            "  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n"
+            "  Cache-Control: public, max-age=0, must-revalidate, no-transform\n")
 
 
 def copy(src, dst):

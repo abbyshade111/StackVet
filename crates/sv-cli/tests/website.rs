@@ -380,6 +380,14 @@ fn the_site_says_the_settled_words_and_coverage_md_s_numbers_and_nothing_else() 
         .find_map(|d| d.trim().strip_prefix("script-src "))
         .expect("script-src");
     assert!(!script_src.contains("unsafe"), "{script_src}");
+    // No page is changed on its way out: Cloudflare adds no script of its own to a response that says `no-transform`
+    // (backlog 0740), and a deploy still shows at once.
+    assert!(
+        headers
+            .lines()
+            .any(|l| l.trim() == "Cache-Control: public, max-age=0, must-revalidate, no-transform"),
+        "{headers}"
+    );
     assert!(policy.contains("default-src 'none'") && policy.contains("frame-ancestors 'none'"));
     let mut scripts = 0;
     for page in made
