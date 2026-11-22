@@ -30,7 +30,7 @@ the owner at a terminal, signed two records, which the next report said stand as
    publishes; the cost is that "merged and green" does not yet mean "`latest` has it". Worth a look at whether the
    newer run could be slow or skip the image (a pull request that changes only the backlog), which would leave
    `latest` behind for longer. The workflow is a code-owned file: for a session on the owner's Mac, or the owner.
-   **Part status:** open
+   **Part status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 5. **`sv connect` prints the image with no tag, even when it was run from a tagged image.** Where the computer's
    `latest` is older than the image that printed the settings, the settings start an older `sv` than the one that
    wrote them; in the trial that would have dropped the `--notes` mount's use without a word. Whether `sv connect`
