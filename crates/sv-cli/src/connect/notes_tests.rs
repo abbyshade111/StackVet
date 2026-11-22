@@ -141,10 +141,10 @@ fn the_folder_must_be_there_a_real_folder_and_the_person_s_alone() {
     // There, and open to others: refused.
     let notes = dir.join(NOTES_DIR);
     std::fs::create_dir(&notes).unwrap();
-    std::fs::set_permissions(&notes, std::fs::Permissions::from_mode(0o755)).unwrap();
+    std::fs::set_permissions(&notes, std::fs::Permissions::from_mode(0o750)).unwrap();
     assert_eq!(
         std::fs::metadata(&notes).unwrap().permissions().mode() & 0o777,
-        0o755,
+        0o750,
         "the setup opened the folder"
     );
     assert!(said(&given, false).contains("can be read or written by others"));
