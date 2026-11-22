@@ -1,6 +1,6 @@
 # Every script that decides what the required check runs is code-owned
 
-**Status:** open
+**Status:** claimed by Claude Code session (packaging and ConfigVet), 21 November 2026
 
 Filed 21 November 2026, at the owner's word, from the security review of 21 November (finding A5). Title and text are
 kept to the fix, as the review asked.
