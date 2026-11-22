@@ -202,8 +202,8 @@ with how to install each, where they are not; `--no-tools` leaves them out.
 
 `cv live github <owner>/<repo>` reads one repository's settings from GitHub: the rules on its default branch, whether
 workflows may approve pull requests, what a workflow's token may do, which actions may run and whether they must be
-pinned, each environment's reviewers and deployment branches, and secret scanning. It is the one thing `cv` connects
-to, only when you type it, and every request it makes is a `GET` to `api.github.com`, listed in its report.
+pinned, each environment's reviewers and deployment branches, and secret scanning. It is one of the two things `cv`
+connects to, only when you type it, and every request it makes is a `GET` to `api.github.com`, listed in its report.
 
 It needs a token, and it should be one that can only read:
 
@@ -227,6 +227,33 @@ GitHub does not let a fine-grained token say what it can do, so `cv` says it cou
 that is why the permissions above matter. A classic token (one starting `ghp_` or `gho_`, as `gh auth token` gives)
 that can write is refused, and `cv` reads nothing with it. What is safe is credited *in part*, since GitHub's word for
 a setting is not a test of what it does; what GitHub did not show the token is *not assessed*, never a pass.
+
+### Reading a Cloudflare zone's settings
+
+`cv live cloudflare <zone>` reads one zone's settings from Cloudflare: its SSL/TLS mode (the connection from Cloudflare
+to your app's server), the lowest TLS version it accepts, TLS 1.3, Always Use HTTPS, HSTS, Automatic HTTPS Rewrites,
+and its cache rules. Every request is a `GET` to `api.cloudflare.com`, listed in its report, about ten for one zone.
+
+It needs an API token that can only read:
+
+1. In the Cloudflare dashboard: your profile, **API Tokens**, **Create Token**, **Create Custom Token**.
+2. **Permissions:** **Zone**, **Zone**, **Read**; **Zone**, **Zone Settings**, **Read**; and **Zone**, **Cache
+   Rules**, **Read**. Nothing that edits, and not **API Tokens**.
+3. **Zone Resources:** **Include**, **Specific zone**, and pick the one to read. A short expiry is fine.
+4. Put it in `CLOUDFLARE_API_TOKEN` for the command. On a Mac, keep it in the keychain and read it for the one command:
+
+```bash
+security add-generic-password -s cv-cloudflare -a "$USER" -w
+```
+
+```bash
+CLOUDFLARE_API_TOKEN="$(security find-generic-password -s cv-cloudflare -a "$USER" -w)" cv live cloudflare example.com
+```
+
+Cloudflare shows a token what it may do only if the token may read all of your API tokens, which `cv` does not ask
+for, so `cv` says it could not confirm the token is read-only; that is why the permissions above matter. A Global API
+Key, or the token `wrangler login` keeps, can change your whole account, and `cv` refuses either without sending it.
+What is safe is credited *in part*; what Cloudflare did not show the token is *not assessed*, never a pass.
 
 
 ## AgentVet (`av`), StackVet's companion that vets the AI coding tool

@@ -9,12 +9,17 @@
 //!   size of each answer, and the time each may take.
 //! - **Every request listed in the report:** method, host, path, and status.
 //!
-//! The providers are modules of their own: [`github`] is the first (ADR-157, Later, 21 November 2026).
+//! The providers are modules of their own: [`github`] is the first (ADR-157, Later, 21 November 2026), and
+//! [`cloudflare`] the second (ADR-157, Later, 22 November 2026; backlog 0732). Both send their requests through one
+//! [`Client`], which holds the limits and checks each redirect.
 
+pub mod cloudflare;
+pub mod cloudflare_judge;
 pub mod github;
 pub mod judge;
 
 use serde::Serialize;
+use serde_json::Value;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
@@ -77,11 +82,14 @@ fn curl_program() -> std::ffi::OsString {
 pub struct Curl {
     folder: PathBuf,
     count: usize,
+    /// The provider's own headers, sent beside the token: `github::HEADERS` or `cloudflare::HEADERS`.
+    headers: &'static [&'static str],
 }
 
 impl Curl {
-    /// A `curl` that writes each answer into a folder of its own, which only this user can open, removed when done.
-    pub fn new() -> Result<Self, String> {
+    /// A `curl` that writes each answer into a folder of its own, which only this user can open, removed when done, and
+    /// sends `headers`, the provider's own, beside the token.
+    pub fn new(headers: &'static [&'static str]) -> Result<Self, String> {
         let folder = std::env::temp_dir().join(format!(
             "cv-live-{}-{}",
             std::process::id(),
@@ -96,7 +104,11 @@ impl Curl {
         builder
             .create(&folder)
             .map_err(|e| format!("cv could not make a private folder for the answers ({e})"))?;
-        Ok(Curl { folder, count: 0 })
+        Ok(Curl {
+            folder,
+            count: 0,
+            headers,
+        })
     }
 
     /// Every flag but the address and the two files: `--disable` first, the only place curl reads it, so no
@@ -161,9 +173,10 @@ impl Transport for Curl {
                 .take()
                 .ok_or("curl's input could not be opened")?;
             // The token goes no further than this pipe: not into an argument, a file, or anything printed.
-            let sent = writeln!(stdin, "Authorization: Bearer {token}")
-                .and_then(|_| writeln!(stdin, "Accept: application/vnd.github+json"))
-                .and_then(|_| writeln!(stdin, "X-GitHub-Api-Version: 2022-11-28"));
+            let mut sent = writeln!(stdin, "Authorization: Bearer {token}");
+            for header in self.headers {
+                sent = sent.and_then(|_| writeln!(stdin, "{header}"));
+            }
             sent.map_err(|e| format!("curl's input could not be written ({e})"))?;
         }
         let out = child
@@ -209,6 +222,102 @@ pub fn parse_headers(text: &str) -> Vec<(String, String)> {
         .filter_map(|line| line.split_once(':'))
         .map(|(n, v)| (n.trim().to_ascii_lowercase(), v.trim().to_owned()))
         .collect()
+}
+
+/// One provider's requests: every one a `GET` to `host`, a redirect followed only when it stays on that host, and no
+/// more than [`MOST_REQUESTS`] of them, redirects included.
+pub(crate) struct Client<'t> {
+    transport: &'t mut dyn Transport,
+    token: &'t str,
+    host: &'static str,
+    /// The provider's name, for what a person reads: "GitHub", "Cloudflare".
+    name: &'static str,
+    /// The path each request is listed under begins after this: the host, and the API's own folder.
+    base: &'static str,
+    pub(crate) requests: Vec<Sent>,
+}
+
+/// An answer: its JSON, when it was a 200 that held JSON; otherwise its status.
+pub(crate) enum Got {
+    Json(Value, Answer),
+    Status(u16, Answer),
+}
+
+impl<'t> Client<'t> {
+    pub(crate) fn new(
+        host: &'static str,
+        base: &'static str,
+        name: &'static str,
+        transport: &'t mut dyn Transport,
+        token: &'t str,
+    ) -> Self {
+        Client {
+            transport,
+            token,
+            host,
+            name,
+            base,
+            requests: Vec::new(),
+        }
+    }
+
+    /// A `GET` of `path`, under `https://<host><base>`, following a redirect only when it stays on that host.
+    pub(crate) fn get(&mut self, path: &str) -> Result<Got, String> {
+        let (host, name) = (self.host, self.name);
+        let mut url = format!("https://{host}{}{path}", self.base);
+        for _ in 0..=MOST_REDIRECTS {
+            if self.requests.len() >= MOST_REQUESTS {
+                return Err(format!(
+                    "cv stopped at its limit of {MOST_REQUESTS} requests"
+                ));
+            }
+            let shown = url
+                .trim_start_matches(&format!("https://{host}"))
+                .to_owned();
+            let answer = match self.transport.get(&url, self.token) {
+                Ok(answer) => answer,
+                Err(why) => {
+                    self.requests.push(Sent {
+                        method: "GET",
+                        host: host.to_owned(),
+                        path: shown,
+                        status: 0,
+                    });
+                    return Err(why);
+                }
+            };
+            self.requests.push(Sent {
+                method: "GET",
+                host: host.to_owned(),
+                path: shown,
+                status: answer.status,
+            });
+            if (300..400).contains(&answer.status) {
+                match &answer.redirect {
+                    Some(next) if next.starts_with(&format!("https://{host}/")) => {
+                        url = next.clone();
+                        continue;
+                    }
+                    Some(next) => {
+                        return Err(format!(
+                            "{name} redirected to {next}, which is not {host}, so it was not followed"
+                        ));
+                    }
+                    None => return Ok(Got::Status(answer.status, answer)),
+                }
+            }
+            if answer.status == 200 {
+                return match serde_json::from_slice::<Value>(&answer.body) {
+                    Ok(value) => Ok(Got::Json(value, answer)),
+                    Err(_) => Err(format!("{name}'s answer to {path} was not JSON")),
+                };
+            }
+            return Ok(Got::Status(answer.status, answer));
+        }
+        Err(format!(
+            "{name} redirected {path} more than {MOST_REDIRECTS} times"
+        ))
+    }
 }
 
 /// The `curl` flags as a test reads them.
