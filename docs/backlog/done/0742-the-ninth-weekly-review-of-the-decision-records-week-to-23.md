@@ -1,6 +1,6 @@
 # The ninth weekly review of the decision records (week to 23 November 2026)
 
-**Status:** claimed by stackvet-weekly-adr-9, 23 November 2026
+**Status:** done, 23 November 2026
 
 The scheduled routine "Weekly decision-record review" (Monday 23 November 2026). Procedure: 0091 and `docs/adr/README.md`,
 "When a record is written, and how it stays true". The eighth review is 0684.
@@ -118,3 +118,29 @@ its text and fits. The four that fit poorly are ConfigVet's and are backlog 0745
 permissions, the tap's and the bucket's rulesets, and what stackvet.dev serves: the records' statements on these
 rest on the owner's dated readings. Every "with the guard removed, the test goes red" claim in the week's entries
 was read, not replayed.
+
+*Checks.* `cargo fmt --all --check`: clean. `cargo clippy --all-targets -- -D warnings` (Rust 1.100.0): clean, the
+lints of 0683 having been fixed on 16 November. `python3 tools/adr_check.py --self-test`: ok. `cargo test --workspace
+--no-fail-fast` at `029be97` (Linux cloud container, no Docker, no outside network): 388 `test result` lines, 4,870
+passed, 2 failed, 1 ignored. The two are the `sv probe` tests that need an outside address
+(`an_address_that_cannot_be_reached_exits_2_and_one_that_answers_exits_0`,
+`an_address_that_answers_is_told_what_to_fix_what_held_and_what_could_not_be_settled`), the same container-only
+failures as the fifth to eighth reviews. Tests that start an app took the honest-absence path, there being no Docker.
+After this review's edits, the 23 test files that read the records, the backlog, the architecture page, the code
+owners, or the rulesets were run again (`decision_records` among them): 134 passed, none failed.
+`python3 tools/adr_check.py` on this pull request: nothing owed, with its one line for ADR-154.
+
+**For the owner to decide:**
+1. **Backlog 0743:** should `av checkpoint` say when it names your key as trusted for an app, as `sv review` does, or
+   leave that to `sv review`? Today it does it without a word.
+2. **Backlog 0745:** whether ConfigVet should credit V13.3.1 (a secrets vault) for GitHub's secret scanning being on,
+   and three looser citations.
+3. **Backlog 0744:** whether a crashed answer may count as a refusal for the V10.5.3 credit.
+4. **The ruleset's code-scanning rule, the v1 tags' ruleset, and "dismiss stale reviews"** have no reasons written
+   anywhere. If you remember why each was set, a sentence each on ADR-051 would close it.
+5. **The "unchanged, because" lines.** About 70 of the week's 160 were boilerplate forced by one shared file sitting
+   in several records' lists, and the week's one firm miss hid among them. Narrowing those lists to the part of the
+   file each record decides (`path::NAME`, ADR-103) would make a line mean something again. Not done here; it changes
+   what the required check asks, which is yours to choose.
+6. **Still open from the fifth review:** the Governs gaps it listed, and the reasons that are not written down (Bot
+   Fight Mode, `[[left-out]]`, and the "as recommended" answers).
