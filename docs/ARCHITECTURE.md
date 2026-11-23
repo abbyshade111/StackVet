@@ -285,11 +285,14 @@ AgentVet's `av` (ADR-159) opens no network connection. `av report` reads records
 and writes nothing. `av proxy`, the pass-through, starts one program, the tool server named on its command line,
 relays between it and the agent unchanged, and writes its record outside the app's folder; what that server connects
 to is the server's own. `av checkpoint`, run by the owner at a terminal, signs where each record has got to with the key
-`sv review` signs with, and writes that signature beside the records. And `sv mcp` notes, in a file beside them, where the build-loop
+`sv review` signs with, and writes that signature beside the records; the first time for an app, it also adds that key to
+this computer's list of keys trusted for the app, as `sv review` does, without yet saying so (backlog 0743). And `sv mcp` notes, in a file beside them, where the build-loop
 record's chain has got to each time it writes a line, so a record rewritten inside the app's folder shows; through Docker it can only when `sv connect --docker` was given `--notes`, which mounts that one folder of notes into the container. A test holds what `av`'s source can show: nothing in it connects, and one file starts a
 program (`crates/av-cli/tests/report.rs`).
 
-ConfigVet's `cv` (ADR-157) opens no network connection in `cv check`, which reads files only. Its two connections are
+ConfigVet's `cv` (ADR-157) opens no network connection in `cv check`. It reads files and, unless given `--no-tools`,
+starts hadolint, Checkov, and Trivy when they are installed, each with the flags that kept it offline when measured
+(`data/cv-adapters.json`; nothing checks that the installed version is the one measured, backlog 0746). Its two connections are
 `cv live github <owner>/<repo>` and `cv live cloudflare <zone>`, typed by the person: **off** until asked for by name,
 never run by `cv check`. The first
 reads one repository's settings through `curl`, a fixed list of `GET` requests to `api.github.com` only, HTTPS only, a
