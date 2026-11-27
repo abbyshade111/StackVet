@@ -8,7 +8,7 @@
 # The probes, and the health check: tiny.
 FROM docker.io/library/busybox:1.38@sha256:a46257e06c82ad85242d0d38077d0a52d9896389ca60a1a59d3463db586e5fa4 AS probe
 # The mail server the app is given when the probes read its email: Mailpit.
-FROM docker.io/axllent/mailpit:v1.33@sha256:aef2aacc11f075ec0fb6874275ee4a421e688e11a96ebb296134d1735c7761ce AS mail
+FROM docker.io/axllent/mailpit:v1.34@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e AS mail
 # The test OpenID Connect provider, the test model, the name server, and the browser driver: a stock Node image.
 FROM docker.io/library/node:24-alpine@sha256:116b800c3754b440ee0aa3ed2f20f5bf3d99a554bfd9adeea09ea8017f6e85f5 AS provider
 # The headless browser. Its version is read from the tag, so a change of tag is a change of browser.
